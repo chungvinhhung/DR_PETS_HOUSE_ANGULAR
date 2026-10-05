@@ -192,5 +192,5 @@ See `docs/BACKEND-CONTRACT.md`.
 - Phase 4: complete — Customer and Admin shells implemented and build-verified.
 - Phase 5: complete — nested/lazy Customer and Admin routes implemented, built, and verified in the browser.
 - Phase 6: complete — environment and HTTP service foundations implemented and locally verified.
-- Phase 7: implementation complete — auth/error interceptors, auth session state, and guard skeletons added; local verification pending.
+- Phase 7: complete — auth/error interceptors, auth session state, and guard skeletons implemented and locally verified.
 - Task branch: `feature/angular-shared-foundation`.
