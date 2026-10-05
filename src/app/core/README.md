@@ -73,3 +73,19 @@ Important boundaries:
 - Guard role values are not hard-coded; routes will supply role metadata after Backend confirms exact role codes.
 - Guards are intentionally not applied to current routes yet, because the login/authentication flow is not implemented.
 - The interceptor only attaches Authorization to URLs under the configured API base URL, preventing token leakage to unrelated origins.
+
+
+## Model conventions
+
+Shared transport primitives and canonical frontend response types live in `core/models/`.
+
+Important rules:
+
+- Backend-specific DTOs should normally live with the owning feature.
+- `ApiClientService` returns the generic type requested by the calling domain service and does not globally unwrap response envelopes.
+- DTO-to-domain mapping belongs in a domain service or mapper.
+- Use explicit nullability.
+- Keep transport dates as strings until domain/presentation logic needs interpretation.
+- Prefer `unknown` over `any` for unresolved external shapes.
+
+See `docs/PHASE-8-MODEL-CONVENTIONS.md`.
