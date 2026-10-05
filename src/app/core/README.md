@@ -29,16 +29,16 @@ Avoid:
 core -> features
 ```
 
-Examples that will be added in later phases:
+Implemented infrastructure:
 
 ```text
 guards/auth.guard.ts
-guards/admin.guard.ts
+guards/role.guard.ts
 interceptors/auth.interceptor.ts
 interceptors/error.interceptor.ts
-services/api.service.ts
-services/auth.service.ts
-models/api-response.model.ts
+services/api-client.service.ts
+services/auth-session.service.ts
+models/app-http-error.model.ts
 ```
 
 
@@ -53,4 +53,23 @@ Rules:
 - `ApiClientService` reads the API base URL from Angular environment configuration.
 - The base URL is intentionally blank until the backend contract is confirmed.
 - Calling the API client without a configured base URL fails fast instead of silently targeting the frontend origin.
-- Authentication headers, refresh behavior, and centralized error mapping are added in Phase 7.
+- Authentication header skeleton and centralized error mapping are implemented in Phase 7.
+
+
+## Auth and error foundation
+
+Phase 7 adds:
+
+- `AuthSessionService` for in-memory authentication state.
+- `authInterceptor` for conditional Bearer headers on API requests only.
+- `errorInterceptor` for centralized `HttpErrorResponse` mapping.
+- `HttpErrorService` for normalized application HTTP errors.
+- `authGuard` and `roleGuard` skeletons.
+
+Important boundaries:
+
+- Token persistence is intentionally not implemented yet.
+- Refresh-token behavior is intentionally not implemented yet.
+- Guard role values are not hard-coded; routes will supply role metadata after Backend confirms exact role codes.
+- Guards are intentionally not applied to current routes yet, because the login/authentication flow is not implemented.
+- The interceptor only attaches Authorization to URLs under the configured API base URL, preventing token leakage to unrelated origins.

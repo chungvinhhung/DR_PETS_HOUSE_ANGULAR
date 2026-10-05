@@ -179,6 +179,7 @@ See `docs/BACKEND-CONTRACT.md`.
 - `docs/PHASE-4-APP-SHELLS.md` - Customer/Admin shell composition and boundaries.
 - `docs/PHASE-5-ROUTING.md` - nested Customer/Admin route tree and lazy route wiring.
 - `docs/PHASE-6-ENV-HTTP.md` - Angular environments and low-level HttpClient service foundation.
+- `docs/PHASE-7-AUTH-ERROR.md` - auth interceptor/guard skeletons and centralized HTTP error handling.
 - `docs/BACKEND-CONTRACT.md` - backend questions that must be confirmed before auth/API integration.
 - `CONTRIBUTING.md` - branch, naming, and contribution conventions.
 
@@ -191,4 +192,5 @@ See `docs/BACKEND-CONTRACT.md`.
 - Phase 4: complete — Customer and Admin shells implemented and build-verified.
 - Phase 5: complete — nested/lazy Customer and Admin routes implemented, built, and verified in the browser.
 - Phase 6: complete — environment and HTTP service foundations implemented and locally verified.
+- Phase 7: implementation complete — auth/error interceptors, auth session state, and guard skeletons added; local verification pending.
 - Task branch: `feature/angular-shared-foundation`.
