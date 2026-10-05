@@ -1,11 +1,21 @@
 <main class="foundation">
   <section class="foundation__card">
-    <p class="foundation__eyebrow">Angular 22 foundation</p>
-    <h1>{{ title }}</h1>
-    <p>
-      Workspace initialized successfully. Customer/Admin shells and shared
-      foundation will be added in the next phases of task 2.7.
-    </p>
+    <p class="foundation__eyebrow">Angular 22 shared foundation</p>
+
+    <app-page-title
+      [title]="title"
+      subtitle="Reusable UI components are now wired into the standalone Angular application."
+    />
+
+    <div class="foundation__actions" aria-label="Shared button examples">
+      <app-button>Primary action</app-button>
+      <app-button variant="secondary">Secondary action</app-button>
+      <app-button [loading]="true">Saving</app-button>
+    </div>
+
+    <div class="foundation__loading">
+      <app-loading label="Shared loading indicator" />
+    </div>
   </section>
 </main>
 
