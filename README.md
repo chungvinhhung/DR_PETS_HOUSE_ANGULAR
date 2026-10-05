@@ -176,6 +176,7 @@ See `docs/BACKEND-CONTRACT.md`.
 - `docs/PHASE-1-WORKSPACE.md` - Angular workspace setup and verification.
 - `docs/PHASE-2-FOLDER-ARCHITECTURE.md` - folder boundaries, responsibilities, and dependency rules.
 - `docs/PHASE-3-SHARED-UI.md` - reusable standalone UI component foundation.
+- `docs/PHASE-4-APP-SHELLS.md` - Customer/Admin shell composition and boundaries.
 - `docs/BACKEND-CONTRACT.md` - backend questions that must be confirmed before auth/API integration.
 - `CONTRIBUTING.md` - branch, naming, and contribution conventions.
 
@@ -185,4 +186,5 @@ See `docs/BACKEND-CONTRACT.md`.
 - Phase 1: complete.
 - Phase 2: complete — application layer folders and conventions are established.
 - Phase 3: complete — shared Button, Loading, and PageTitle components implemented, built, and verified in the browser.
+- Phase 4: implementation complete — Customer and Admin shells added; local build verification pending.
 - Task branch: `feature/angular-shared-foundation`.

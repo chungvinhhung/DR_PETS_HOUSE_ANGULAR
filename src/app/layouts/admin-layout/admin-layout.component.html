@@ -1,0 +1,42 @@
+<div class="admin-shell">
+  <a class="admin-shell__skip-link" href="#admin-content">Skip to content</a>
+
+  <aside class="admin-shell__sidebar">
+    <div class="admin-shell__brand">
+      <span class="admin-shell__brand-mark" aria-hidden="true">DP</span>
+      <span>
+        <strong>Dr. Pet's House</strong>
+        <small>Admin workspace</small>
+      </span>
+    </div>
+
+    <nav class="admin-shell__nav" aria-label="Admin navigation">
+      <span class="admin-shell__nav-item admin-shell__nav-item--active">Dashboard</span>
+      <span class="admin-shell__nav-item">Orders</span>
+      <span class="admin-shell__nav-item">Appointments</span>
+      <span class="admin-shell__nav-item">Products</span>
+      <span class="admin-shell__nav-item">Customers</span>
+    </nav>
+
+    <div class="admin-shell__sidebar-footer">
+      <span>Customer site</span>
+    </div>
+  </aside>
+
+  <section class="admin-shell__workspace">
+    <header class="admin-shell__header">
+      <div>
+        <p class="admin-shell__eyebrow">Administration</p>
+        <strong>Operations workspace</strong>
+      </div>
+
+      <div class="admin-shell__profile" aria-label="Admin profile">
+        Admin
+      </div>
+    </header>
+
+    <main id="admin-content" class="admin-shell__content">
+      <router-outlet />
+    </main>
+  </section>
+</div>
