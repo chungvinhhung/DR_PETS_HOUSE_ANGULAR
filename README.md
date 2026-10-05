@@ -16,7 +16,7 @@ Angular frontend for **Dr. Pet's House - Pet Clinic & E-commerce System**.
 | Routing | Angular Router with nested/lazy routes |
 | HTTP | Angular HttpClient |
 | App structure | One Angular app with separate Customer and Admin shells |
-| Styling | Tailwind CSS + component-scoped styles |
+| Styling | Component-scoped SCSS in task 2.7; Tailwind remains a planned later migration choice |
 | State management | Angular services/signals first; no NgRx until a real need is identified |
 | API flow | Component -> Domain Service -> HttpClient -> Backend |
 | Auth | Bearer access token + Auth Guard + Admin/Role Guard skeleton |
@@ -194,5 +194,5 @@ See `docs/BACKEND-CONTRACT.md`.
 - Phase 5: complete — nested/lazy Customer and Admin routes implemented, built, and verified in the browser.
 - Phase 6: complete — environment and HTTP service foundations implemented and locally verified.
 - Phase 7: complete — auth/error interceptors, auth session state, and guard skeletons implemented and locally verified.
-- Phase 8: implementation complete — model and API response conventions established; local verification pending.
+- Phase 8: complete — model and API response conventions established and locally verified.
 - Task branch: `feature/angular-shared-foundation`.
