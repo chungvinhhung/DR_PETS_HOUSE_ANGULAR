@@ -24,5 +24,13 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
 function isApiRequest(url: string): boolean {
   const apiBaseUrl = environment.apiBaseUrl.trim().replace(/\/+$/, '');
 
-  return Boolean(apiBaseUrl) && url.startsWith(apiBaseUrl);
+  if (!apiBaseUrl) {
+    return false;
+  }
+
+  return (
+    url === apiBaseUrl ||
+    url.startsWith(`${apiBaseUrl}/`) ||
+    url.startsWith(`${apiBaseUrl}?`)
+  );
 }

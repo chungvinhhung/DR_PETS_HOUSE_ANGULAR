@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import { CanActivateFn, Router, UrlTree } from '@angular/router';
 
 import { AuthSessionService } from '../services/auth-session.service';
 
@@ -17,19 +17,35 @@ export const roleGuard: CanActivateFn = (route) => {
 
   const configuredRoles = route.data['roles'];
 
-  if (!Array.isArray(configuredRoles) || configuredRoles.length === 0) {
+  if (configuredRoles === undefined) {
     return true;
   }
 
-  const requiredRoles = configuredRoles.filter(
-    (role): role is string => typeof role === 'string',
-  );
+  if (!isValidRoleConfiguration(configuredRoles)) {
+    return forbiddenRedirect(router);
+  }
 
-  return authSession.hasAnyRole(requiredRoles)
+  return authSession.hasAnyRole(configuredRoles)
     ? true
-    : router.createUrlTree(['/'], {
-        queryParams: {
-          forbidden: '1',
-        },
-      });
+    : forbiddenRedirect(router);
 };
+
+function isValidRoleConfiguration(
+  configuredRoles: unknown,
+): configuredRoles is string[] {
+  return (
+    Array.isArray(configuredRoles) &&
+    configuredRoles.length > 0 &&
+    configuredRoles.every(
+      (role) => typeof role === 'string' && role.trim().length > 0,
+    )
+  );
+}
+
+function forbiddenRedirect(router: Router): UrlTree {
+  return router.createUrlTree(['/'], {
+    queryParams: {
+      forbidden: '1',
+    },
+  });
+}
