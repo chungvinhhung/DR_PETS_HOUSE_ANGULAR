@@ -125,7 +125,18 @@ Domain service / feature
 - [x] Exact backend roles are not hard-coded.
 - [x] Token persistence/refresh assumptions are deferred.
 - [x] Interceptors registered with `provideHttpClient`.
-- [ ] `npm run build` verified locally after pulling Phase 7.
-- [ ] `npm start` verified locally after pulling Phase 7.
+- [x] `npm run build` verified locally after pulling Phase 7.
+- [x] `npm start` verified locally after pulling Phase 7.
 
-Phase 7 implementation is complete. Local verification remains before the phase is marked fully complete.
+Phase 7 is fully verified and complete.
+
+
+## Verification Evidence
+
+Verified locally on 2026-10-05:
+
+- `npm run build` completed successfully after adding guards, interceptors, and error services.
+- Lazy Customer/Admin route chunks continued to build successfully.
+- `npm start` completed successfully.
+- The application served at `http://localhost:4200/`.
+- Customer shell rendering remained unchanged, confirming the interceptor/guard skeleton did not break the current unauthenticated demo flow.
