@@ -241,7 +241,18 @@ Do not mix success response models with error models.
 - [x] Date/time boundary convention documented.
 - [x] `unknown` preferred over `any` when shape is unresolved.
 - [x] ApiClientService explicitly does not assume a backend response envelope.
-- [ ] `npm run build` verified locally after pulling Phase 8.
-- [ ] `npm start` verified locally after pulling Phase 8.
+- [x] `npm run build` verified locally after pulling Phase 8.
+- [x] `npm start` verified locally after pulling Phase 8.
 
-Phase 8 implementation is complete. Local verification remains before the phase is marked fully complete.
+Phase 8 is fully verified and complete.
+
+
+## Verification Evidence
+
+Verified locally on 2026-10-05:
+
+- `npm run build` completed successfully.
+- Existing lazy Customer/Admin route chunks continued to compile successfully.
+- `npm start` completed successfully.
+- The application served at `http://localhost:4200/`.
+- Customer shell rendering remained stable after introducing the shared model conventions.
