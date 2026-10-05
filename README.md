@@ -179,5 +179,5 @@ See `docs/BACKEND-CONTRACT.md`.
 ## Current Status
 
 - Phase 0: architecture/repository baseline complete.
-- Phase 1: workspace scaffold, local run, and production build verified; package-lock commit pending.
+- Phase 1: complete — workspace scaffolded, local run verified, production build passed, and package-lock committed.
 - Task branch: `feature/angular-shared-foundation`.
