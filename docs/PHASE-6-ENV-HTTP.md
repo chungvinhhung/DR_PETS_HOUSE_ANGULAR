@@ -100,7 +100,18 @@ See `docs/BACKEND-CONTRACT.md`.
 - [x] Missing API base URL fails fast.
 - [x] Secrets/configuration boundary documented.
 - [x] Component -> Domain Service -> ApiClient -> HttpClient convention documented.
-- [ ] `npm run build` verified locally after pulling Phase 6.
-- [ ] `npm start` verified locally after pulling Phase 6.
+- [x] `npm run build` verified locally after pulling Phase 6.
+- [x] `npm start` verified locally after pulling Phase 6.
 
-Phase 6 implementation is complete. Local verification remains before the phase is marked fully complete.
+Phase 6 is fully verified and complete.
+
+
+## Verification Evidence
+
+Verified locally on 2026-10-05:
+
+- `npm run build` completed successfully.
+- Lazy Customer/Admin route chunks were still generated.
+- `npm start` completed successfully.
+- The application served at `http://localhost:4200/`.
+- Customer routing continued to render correctly after registering `HttpClient` and environment file replacements.
