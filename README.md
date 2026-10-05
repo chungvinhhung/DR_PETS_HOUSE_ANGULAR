@@ -178,6 +178,7 @@ See `docs/BACKEND-CONTRACT.md`.
 - `docs/PHASE-3-SHARED-UI.md` - reusable standalone UI component foundation.
 - `docs/PHASE-4-APP-SHELLS.md` - Customer/Admin shell composition and boundaries.
 - `docs/PHASE-5-ROUTING.md` - nested Customer/Admin route tree and lazy route wiring.
+- `docs/PHASE-6-ENV-HTTP.md` - Angular environments and low-level HttpClient service foundation.
 - `docs/BACKEND-CONTRACT.md` - backend questions that must be confirmed before auth/API integration.
 - `CONTRIBUTING.md` - branch, naming, and contribution conventions.
 
@@ -189,4 +190,5 @@ See `docs/BACKEND-CONTRACT.md`.
 - Phase 3: complete — shared Button, Loading, and PageTitle components implemented, built, and verified in the browser.
 - Phase 4: complete — Customer and Admin shells implemented and build-verified.
 - Phase 5: complete — nested/lazy Customer and Admin routes implemented, built, and verified in the browser.
+- Phase 6: implementation complete — environment and HTTP service foundations added; local verification pending.
 - Task branch: `feature/angular-shared-foundation`.

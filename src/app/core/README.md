@@ -40,3 +40,17 @@ services/api.service.ts
 services/auth.service.ts
 models/api-response.model.ts
 ```
+
+
+## HTTP foundation
+
+`services/api-client.service.ts` is the low-level HTTP boundary for domain services.
+
+Rules:
+
+- Feature components do not inject `HttpClient` directly.
+- Domain services may depend on `ApiClientService`.
+- `ApiClientService` reads the API base URL from Angular environment configuration.
+- The base URL is intentionally blank until the backend contract is confirmed.
+- Calling the API client without a configured base URL fails fast instead of silently targeting the frontend origin.
+- Authentication headers, refresh behavior, and centralized error mapping are added in Phase 7.
