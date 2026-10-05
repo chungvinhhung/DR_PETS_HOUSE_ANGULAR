@@ -43,7 +43,6 @@ Baseline:
 Local setup:
 
 ```bash
-nvm use
 npm install
 npm start
 ```
@@ -56,7 +55,7 @@ npm run build
 
 See `docs/PHASE-1-WORKSPACE.md` for the Phase 1 verification checklist.
 
-## Planned Application Structure
+## Application Structure
 
 ```text
 src/app/
@@ -86,6 +85,8 @@ src/app/
 ├── app.config.ts
 └── app.routes.ts
 ```
+
+See `docs/PHASE-2-FOLDER-ARCHITECTURE.md` for layer responsibilities and dependency rules.
 
 ## Routing Strategy
 
@@ -173,11 +174,13 @@ See `docs/BACKEND-CONTRACT.md`.
 
 - `docs/PHASE-0-ARCHITECTURE.md` - architecture decisions and Phase 0 Definition of Done.
 - `docs/PHASE-1-WORKSPACE.md` - Angular workspace setup and verification.
+- `docs/PHASE-2-FOLDER-ARCHITECTURE.md` - folder boundaries, responsibilities, and dependency rules.
 - `docs/BACKEND-CONTRACT.md` - backend questions that must be confirmed before auth/API integration.
 - `CONTRIBUTING.md` - branch, naming, and contribution conventions.
 
 ## Current Status
 
-- Phase 0: architecture/repository baseline complete.
-- Phase 1: complete — workspace scaffolded, local run verified, production build passed, and package-lock committed.
+- Phase 0: complete.
+- Phase 1: complete.
+- Phase 2: complete — application layer folders and conventions are established.
 - Task branch: `feature/angular-shared-foundation`.
