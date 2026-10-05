@@ -1,36 +1,4 @@
-.foundation {
+:host {
+  display: block;
   min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-}
-
-.foundation__card {
-  width: min(760px, 100%);
-  padding: 32px;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 12px 30px rgb(15 23 42 / 8%);
-}
-
-.foundation__eyebrow {
-  margin: 0 0 12px;
-  font-size: 0.875rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.foundation__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 28px;
-}
-
-.foundation__loading {
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid #e2e8f0;
 }

@@ -2,24 +2,43 @@
   <a class="admin-shell__skip-link" href="#admin-content">Skip to content</a>
 
   <aside class="admin-shell__sidebar">
-    <div class="admin-shell__brand">
+    <a class="admin-shell__brand" routerLink="/admin/dashboard" aria-label="Dr. Pet's House admin dashboard">
       <span class="admin-shell__brand-mark" aria-hidden="true">DP</span>
       <span>
         <strong>Dr. Pet's House</strong>
         <small>Admin workspace</small>
       </span>
-    </div>
+    </a>
 
     <nav class="admin-shell__nav" aria-label="Admin navigation">
-      <span class="admin-shell__nav-item admin-shell__nav-item--active">Dashboard</span>
-      <span class="admin-shell__nav-item">Orders</span>
-      <span class="admin-shell__nav-item">Appointments</span>
-      <span class="admin-shell__nav-item">Products</span>
-      <span class="admin-shell__nav-item">Customers</span>
+      <a
+        class="admin-shell__nav-item"
+        routerLink="/admin/dashboard"
+        routerLinkActive="admin-shell__nav-item--active"
+        ariaCurrentWhenActive="page"
+      >
+        Dashboard
+      </a>
+      <a
+        class="admin-shell__nav-item"
+        routerLink="/admin/orders"
+        routerLinkActive="admin-shell__nav-item--active"
+        ariaCurrentWhenActive="page"
+      >
+        Orders
+      </a>
+      <a
+        class="admin-shell__nav-item"
+        routerLink="/admin/appointments"
+        routerLinkActive="admin-shell__nav-item--active"
+        ariaCurrentWhenActive="page"
+      >
+        Appointments
+      </a>
     </nav>
 
     <div class="admin-shell__sidebar-footer">
-      <span>Customer site</span>
+      <a routerLink="/">Customer site</a>
     </div>
   </aside>
 
@@ -30,9 +49,7 @@
         <strong>Operations workspace</strong>
       </div>
 
-      <div class="admin-shell__profile" aria-label="Admin profile">
-        Admin
-      </div>
+      <div class="admin-shell__profile" aria-label="Admin profile">Admin</div>
     </header>
 
     <main id="admin-content" class="admin-shell__content">

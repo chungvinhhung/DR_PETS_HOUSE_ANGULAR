@@ -44,6 +44,8 @@
   gap: 10px;
   padding: 0 8px 24px;
   border-bottom: 1px solid rgb(255 255 255 / 12%);
+  color: #ffffff;
+  text-decoration: none;
 }
 
 .admin-shell__brand-mark {
@@ -80,6 +82,12 @@
   color: #cbd5e1;
   font-size: 0.925rem;
   font-weight: 700;
+  text-decoration: none;
+}
+
+.admin-shell__nav-item:hover {
+  background: rgb(255 255 255 / 6%);
+  color: #ffffff;
 }
 
 .admin-shell__nav-item--active {
@@ -91,9 +99,17 @@
   margin-top: auto;
   padding: 18px 12px 0;
   border-top: 1px solid rgb(255 255 255 / 12%);
-  color: #94a3b8;
   font-size: 0.875rem;
   font-weight: 700;
+}
+
+.admin-shell__sidebar-footer a {
+  color: #94a3b8;
+  text-decoration: none;
+}
+
+.admin-shell__sidebar-footer a:hover {
+  color: #ffffff;
 }
 
 .admin-shell__workspace {

@@ -3,25 +3,54 @@
 
   <header class="customer-shell__header">
     <div class="customer-shell__header-inner">
-      <div class="customer-shell__brand" aria-label="Dr. Pet's House">
+      <a class="customer-shell__brand" routerLink="/" aria-label="Dr. Pet's House home">
         <span class="customer-shell__brand-mark" aria-hidden="true">DP</span>
         <span>
           <strong>Dr. Pet's House</strong>
           <small>Pet clinic & shop</small>
         </span>
-      </div>
+      </a>
 
       <nav class="customer-shell__nav" aria-label="Customer navigation">
-        <span>Home</span>
-        <span>Products</span>
-        <span>Booking</span>
-        <span>Pets</span>
-        <span>Orders</span>
+        <a
+          routerLink="/"
+          routerLinkActive="customer-shell__nav-link--active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          ariaCurrentWhenActive="page"
+        >
+          Home
+        </a>
+        <a
+          routerLink="/products"
+          routerLinkActive="customer-shell__nav-link--active"
+          ariaCurrentWhenActive="page"
+        >
+          Products
+        </a>
+        <a
+          routerLink="/booking"
+          routerLinkActive="customer-shell__nav-link--active"
+          ariaCurrentWhenActive="page"
+        >
+          Booking
+        </a>
+        <a
+          routerLink="/pets"
+          routerLinkActive="customer-shell__nav-link--active"
+          ariaCurrentWhenActive="page"
+        >
+          Pets
+        </a>
+        <a
+          routerLink="/orders"
+          routerLinkActive="customer-shell__nav-link--active"
+          ariaCurrentWhenActive="page"
+        >
+          Orders
+        </a>
       </nav>
 
-      <div class="customer-shell__account" aria-label="Account area">
-        Account
-      </div>
+      <div class="customer-shell__account" aria-label="Account area">Account</div>
     </div>
   </header>
 

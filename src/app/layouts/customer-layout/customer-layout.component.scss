@@ -50,6 +50,8 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  color: inherit;
+  text-decoration: none;
 }
 
 .customer-shell__brand-mark {
@@ -78,10 +80,26 @@
 .customer-shell__nav {
   display: flex;
   justify-content: center;
-  gap: 22px;
+  gap: 8px;
+}
+
+.customer-shell__nav a {
+  padding: 9px 10px;
+  border-radius: 9px;
   color: #475569;
   font-size: 0.925rem;
   font-weight: 700;
+  text-decoration: none;
+}
+
+.customer-shell__nav a:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.customer-shell__nav-link--active {
+  background: #e2e8f0;
+  color: #0f172a !important;
 }
 
 .customer-shell__account {
