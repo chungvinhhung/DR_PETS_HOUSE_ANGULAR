@@ -66,7 +66,7 @@ Pages/components must not call `HttpClient` directly.
 Expected flow:
 
 ```text
-Component -> Domain Service -> HttpClient -> Backend
+Component -> Domain Service -> ApiClientService -> HttpClient -> Backend
 ```
 
 ## Pull Request Minimum Checks
