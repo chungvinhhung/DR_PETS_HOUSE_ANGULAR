@@ -22,6 +22,40 @@ Angular frontend for **Dr. Pet's House - Pet Clinic & E-commerce System**.
 | Auth | Bearer access token + Auth Guard + Admin/Role Guard skeleton |
 | Error handling | Centralized HTTP interceptor/error mapping |
 
+## Workspace
+
+Phase 1 Angular workspace is now scaffolded on:
+
+```text
+feature/angular-shared-foundation
+```
+
+Baseline:
+
+- Angular 22.2.1
+- TypeScript 6.0.3
+- Standalone Components
+- Angular Router
+- SCSS
+- Client-side rendering
+- npm
+
+Local setup:
+
+```bash
+nvm use
+npm install
+npm start
+```
+
+Build check:
+
+```bash
+npm run build
+```
+
+See `docs/PHASE-1-WORKSPACE.md` for the Phase 1 verification checklist.
+
 ## Planned Application Structure
 
 ```text
@@ -138,15 +172,12 @@ See `docs/BACKEND-CONTRACT.md`.
 ## Documentation
 
 - `docs/PHASE-0-ARCHITECTURE.md` - architecture decisions and Phase 0 Definition of Done.
+- `docs/PHASE-1-WORKSPACE.md` - Angular workspace setup and verification.
 - `docs/BACKEND-CONTRACT.md` - backend questions that must be confirmed before auth/API integration.
 - `CONTRIBUTING.md` - branch, naming, and contribution conventions.
 
 ## Current Status
 
-Phase 0 repository and architecture setup is in progress on:
-
-```text
-feature/angular-shared-foundation
-```
-
-Angular application scaffolding starts in **Phase 1**.
+- Phase 0: architecture/repository baseline complete.
+- Phase 1: workspace scaffold committed; local install/build verification pending.
+- Task branch: `feature/angular-shared-foundation`.

@@ -1,0 +1,121 @@
+# Phase 1 - Angular Workspace
+
+## Goal
+
+Create a minimal Angular workspace that the team can install, run, and build before feature architecture is added.
+
+## Baseline
+
+- Angular: 22.2.1
+- Angular CLI: 22.2.1
+- TypeScript: 6.0.3
+- RxJS: 7.8.2
+- Architecture: Standalone Components
+- Rendering: Client-side only
+- Change detection: Angular's default zoneless mode
+- Styles: SCSS
+- Package manager: npm
+
+## Node.js Requirement
+
+Angular 22 requires a supported Node.js runtime. This repository pins the minimum preferred Node 22 version in `.nvmrc`:
+
+```text
+22.22.3
+```
+
+If using nvm:
+
+```bash
+nvm install
+nvm use
+```
+
+## Install
+
+```bash
+npm install
+```
+
+The first successful local install should generate `package-lock.json`. Commit that lockfile to this branch so every team member installs the same dependency graph.
+
+## Run
+
+```bash
+npm start
+```
+
+Default development URL:
+
+```text
+http://localhost:4200
+```
+
+Expected screen:
+
+```text
+Angular 22 foundation
+Dr. Pet's House
+Workspace initialized successfully.
+```
+
+## Build
+
+```bash
+npm run build
+```
+
+The command must complete without TypeScript or Angular compilation errors before Phase 1 is considered fully verified.
+
+## Workspace Files
+
+```text
+.
+├── angular.json
+├── package.json
+├── tsconfig.json
+├── tsconfig.app.json
+├── public/
+└── src/
+    ├── index.html
+    ├── main.ts
+    ├── styles.scss
+    └── app/
+        ├── app.component.ts
+        ├── app.component.html
+        ├── app.component.scss
+        ├── app.config.ts
+        └── app.routes.ts
+```
+
+## Deliberately Not Included Yet
+
+Phase 1 does not implement:
+
+- Customer shell.
+- Admin shell.
+- Shared UI library.
+- HTTP service layer.
+- Interceptors.
+- Guards.
+- Backend environments.
+- Business features.
+- Tailwind configuration.
+
+Those belong to later phases of task 2.7.
+
+## Definition of Done
+
+Repository setup:
+- [x] Angular workspace files committed.
+- [x] Standalone bootstrap configured.
+- [x] Angular Router provider configured.
+- [x] SCSS configured.
+- [x] SSR not configured.
+- [x] Node requirement documented.
+- [ ] `npm install` verified on a supported Node version.
+- [ ] `npm start` verified locally.
+- [ ] `npm run build` verified successfully.
+- [ ] Generated `package-lock.json` committed.
+
+The unchecked items require an environment with npm registry access or a team member's local machine.
