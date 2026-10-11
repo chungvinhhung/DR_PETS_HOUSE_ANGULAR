@@ -1,0 +1,97 @@
+<main class="admin-login">
+  <section class="login-card" aria-labelledby="admin-login-title">
+    <aside class="brand-panel" aria-label="Dr. Pet's House">
+      <div class="brand-panel__content">
+        <div class="brand-mark" aria-label="Dr. Pet's House logo">
+          <span class="brand-mark__dr">Dr.</span>
+          <span class="brand-mark__pets">Pet's</span>
+          <span class="brand-mark__house">House</span>
+        </div>
+
+        <div class="brand-accent" aria-hidden="true"></div>
+        <p class="brand-copy">Chỉn chu để chăm sóc<br />tốt hơn</p>
+      </div>
+
+      <div class="mascot" aria-hidden="true">
+        <div class="mascot__halo"></div>
+        <div class="mascot__figure">
+          <span class="mascot__dog">🐶</span>
+          <span class="mascot__coat">🩺</span>
+        </div>
+      </div>
+
+      <div class="wave wave--one" aria-hidden="true"></div>
+      <div class="wave wave--two" aria-hidden="true"></div>
+      <div class="wave wave--three" aria-hidden="true"></div>
+      <div class="leaf leaf--one" aria-hidden="true"></div>
+      <div class="leaf leaf--two" aria-hidden="true"></div>
+    </aside>
+
+    <section class="form-panel">
+      <div class="form-panel__decor form-panel__decor--top" aria-hidden="true"></div>
+      <div class="form-panel__decor form-panel__decor--bottom" aria-hidden="true"></div>
+
+      <form class="login-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <header class="login-heading">
+          <div class="login-heading__accent" aria-hidden="true"></div>
+          <p class="login-heading__eyebrow">ADMIN PORTAL</p>
+          <h1 id="admin-login-title">Chào mừng trở lại!</h1>
+          <span class="attention-mark" aria-hidden="true">✦</span>
+        </header>
+
+        <div class="field-group">
+          <label class="field" [class.field--invalid]="showError('identifier')">
+            <span class="field__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M7.2 3.5h2.2l1.1 4-1.9 1.9a15.4 15.4 0 0 0 6 6l1.9-1.9 4 1.1v2.2c0 1.2-1 2.2-2.2 2.2C10.9 19 5 13.1 5 5.7c0-1.2 1-2.2 2.2-2.2Z" />
+              </svg>
+            </span>
+            <input
+              type="text"
+              inputmode="tel"
+              autocomplete="username"
+              placeholder="Số điện thoại"
+              formControlName="identifier"
+              aria-label="Số điện thoại"
+            />
+          </label>
+          @if (showError('identifier')) {
+            <p class="field-error">Vui lòng nhập số điện thoại.</p>
+          }
+
+          <label class="field" [class.field--invalid]="showError('password')">
+            <span class="field__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <rect x="6" y="10" width="12" height="10" rx="2" />
+                <path d="M9 10V7a3 3 0 0 1 6 0v3" />
+              </svg>
+            </span>
+            <input
+              [type]="passwordVisible() ? 'text' : 'password'"
+              autocomplete="current-password"
+              placeholder="Mật khẩu"
+              formControlName="password"
+              aria-label="Mật khẩu"
+            />
+            <button
+              class="visibility-button"
+              type="button"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="passwordVisible() ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
+            >
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5Z" />
+                <circle cx="12" cy="12" r="2.5" />
+              </svg>
+            </button>
+          </label>
+          @if (showError('password')) {
+            <p class="field-error">Mật khẩu phải có ít nhất 8 ký tự.</p>
+          }
+        </div>
+
+        <button class="login-button" type="submit">Đăng nhập</button>
+      </form>
+    </section>
+  </section>
+</main>
