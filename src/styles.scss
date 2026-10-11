@@ -1,0 +1,28 @@
+/* Global styles for Dr. Pet's House.
+ * Tailwind CSS will be configured in a later foundation phase.
+ */
+
+html {
+  box-sizing: border-box;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #f8fafc;
+  color: #0f172a;
+}
