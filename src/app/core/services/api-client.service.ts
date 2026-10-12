@@ -24,7 +24,10 @@ export class ApiClientService {
     path: string,
     options: ApiRequestOptions = {},
   ): Observable<TResponse> {
-    return this.http.get<TResponse>(this.buildUrl(path), options);
+    return this.http.get<TResponse>(
+      this.buildUrl(path),
+      this.withDefaults(options),
+    );
   }
 
   post<TResponse, TBody = unknown>(
@@ -32,7 +35,11 @@ export class ApiClientService {
     body: TBody,
     options: ApiRequestOptions = {},
   ): Observable<TResponse> {
-    return this.http.post<TResponse>(this.buildUrl(path), body, options);
+    return this.http.post<TResponse>(
+      this.buildUrl(path),
+      body,
+      this.withDefaults(options),
+    );
   }
 
   put<TResponse, TBody = unknown>(
@@ -40,7 +47,11 @@ export class ApiClientService {
     body: TBody,
     options: ApiRequestOptions = {},
   ): Observable<TResponse> {
-    return this.http.put<TResponse>(this.buildUrl(path), body, options);
+    return this.http.put<TResponse>(
+      this.buildUrl(path),
+      body,
+      this.withDefaults(options),
+    );
   }
 
   patch<TResponse, TBody = unknown>(
@@ -48,14 +59,28 @@ export class ApiClientService {
     body: TBody,
     options: ApiRequestOptions = {},
   ): Observable<TResponse> {
-    return this.http.patch<TResponse>(this.buildUrl(path), body, options);
+    return this.http.patch<TResponse>(
+      this.buildUrl(path),
+      body,
+      this.withDefaults(options),
+    );
   }
 
   delete<TResponse>(
     path: string,
     options: ApiRequestOptions = {},
   ): Observable<TResponse> {
-    return this.http.delete<TResponse>(this.buildUrl(path), options);
+    return this.http.delete<TResponse>(
+      this.buildUrl(path),
+      this.withDefaults(options),
+    );
+  }
+
+  private withDefaults(options: ApiRequestOptions): ApiRequestOptions {
+    return {
+      withCredentials: true,
+      ...options,
+    };
   }
 
   private buildUrl(path: string): string {
