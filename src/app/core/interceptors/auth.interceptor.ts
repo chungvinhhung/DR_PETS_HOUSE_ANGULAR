@@ -8,7 +8,11 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const authSession = inject(AuthSessionService);
   const token = authSession.accessToken();
 
-  if (!token || !isApiRequest(request.url)) {
+  if (
+    !token ||
+    !isApiRequest(request.url) ||
+    isPublicAuthRequest(request.url)
+  ) {
     return next(request);
   }
 
@@ -33,4 +37,8 @@ function isApiRequest(url: string): boolean {
     url.startsWith(`${apiBaseUrl}/`) ||
     url.startsWith(`${apiBaseUrl}?`)
   );
+}
+
+function isPublicAuthRequest(url: string): boolean {
+  return /\/auth\/(?:login|refresh)(?:$|[?#])/.test(url);
 }
