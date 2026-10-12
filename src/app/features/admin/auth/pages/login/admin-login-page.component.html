@@ -110,7 +110,13 @@
         }
       </div>
 
-      <button class="login-button" type="submit">Đăng nhập</button>
+      @if (apiError()) {
+        <p class="login-error" role="alert">{{ apiError() }}</p>
+      }
+
+      <button class="login-button" type="submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Đang đăng nhập...' : 'Đăng nhập' }}
+      </button>
     </form>
   </section>
 </main>
