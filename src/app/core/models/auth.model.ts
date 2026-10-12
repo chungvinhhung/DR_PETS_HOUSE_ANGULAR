@@ -1,6 +1,11 @@
 export type SystemRole = 'ADMIN' | 'MANAGER' | 'STAFF' | 'CUSTOMER';
 
-export type StaffSubRole = 'VETERINARIAN' | 'RECEPTIONIST' | string;
+export type StaffSubRole =
+  | 'RECEPTIONIST'
+  | 'CARE_STAFF_GROOMER'
+  | 'VETERINARIAN'
+  | 'NURSE'
+  | string;
 
 export interface AuthUser {
   id: string;
@@ -10,6 +15,17 @@ export interface AuthUser {
   systemRole: SystemRole;
   staffSubRole: StaffSubRole | null;
   avatarUrl: string | null;
+}
+
+export interface CurrentUserResponse {
+  id?: string;
+  _id?: string;
+  phone: string;
+  fullName: string;
+  email?: string | null;
+  systemRole: SystemRole;
+  staffSubRole?: StaffSubRole | null;
+  avatarUrl?: string | null;
 }
 
 export interface LoginRequest {
