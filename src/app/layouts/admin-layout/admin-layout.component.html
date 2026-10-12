@@ -35,6 +35,26 @@
       >
         Appointments
       </a>
+
+      @if (canViewUsers()) {
+        <a
+          class="admin-shell__nav-item"
+          routerLink="/admin/users"
+          routerLinkActive="admin-shell__nav-item--active"
+          ariaCurrentWhenActive="page"
+        >
+          Users & Roles
+        </a>
+      }
+
+      <a
+        class="admin-shell__nav-item"
+        routerLink="/admin/profile"
+        routerLinkActive="admin-shell__nav-item--active"
+        ariaCurrentWhenActive="page"
+      >
+        Account
+      </a>
     </nav>
 
     <div class="admin-shell__sidebar-footer">
@@ -50,10 +70,14 @@
       </div>
 
       <div class="admin-shell__account">
-        <div class="admin-shell__profile" aria-label="Admin profile">
+        <a
+          class="admin-shell__profile"
+          routerLink="/admin/profile"
+          aria-label="Open account profile"
+        >
           <strong>{{ user()?.fullName || 'Admin' }}</strong>
           <small>{{ user()?.systemRole || 'ADMIN' }}</small>
-        </div>
+        </a>
         <button
           class="admin-shell__logout"
           type="button"
