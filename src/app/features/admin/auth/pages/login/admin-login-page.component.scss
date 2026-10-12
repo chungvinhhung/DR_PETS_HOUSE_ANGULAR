@@ -54,6 +54,30 @@
   pointer-events: none;
 }
 
+.paw-art {
+  position: absolute;
+  z-index: 5;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.paw-art--left {
+  left: 19.04%;
+  top: 65.56%;
+  width: 6.66%;
+  height: 7.68%;
+  transform: rotate(5deg);
+}
+
+.paw-art--right {
+  left: 33.16%;
+  top: 73.34%;
+  width: 7.24%;
+  height: 8.01%;
+  transform: rotate(5deg);
+}
+
 .botanical-art {
   position: absolute;
   z-index: 6;
@@ -63,6 +87,27 @@
   height: 34.74%;
   object-fit: contain;
   pointer-events: none;
+}
+
+.leaf-overlay {
+  position: absolute;
+  z-index: 6;
+  display: block;
+  width: 4.75%;
+  height: 9.92%;
+  object-fit: contain;
+  pointer-events: none;
+  transform: rotate(-27deg);
+}
+
+.leaf-overlay--upper {
+  left: 2.87%;
+  top: 78.42%;
+}
+
+.leaf-overlay--lower {
+  left: 0.87%;
+  top: 86.71%;
 }
 
 .brand-identity {
@@ -268,7 +313,9 @@
 
   .art-layer,
   .mascot-art,
+  .paw-art,
   .botanical-art,
+  .leaf-overlay,
   .brand-identity {
     display: none;
   }
