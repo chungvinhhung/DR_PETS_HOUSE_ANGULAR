@@ -72,18 +72,17 @@
 
       <div class="field-group">
         <label class="field" [class.field--invalid]="showError('identifier')">
-          <img class="field__icon" src="https://www.figma.com/api/mcp/asset/7d5938f8-49ee-41f3-abae-5a6cc70bc329/ae550.svg" alt="" aria-hidden="true" />
+          <span class="field__icon field__identifier-icon" aria-hidden="true"></span>
           <input
             type="text"
-            inputmode="tel"
             autocomplete="username"
-            placeholder="Số điện thoại"
+            placeholder="Số điện thoại hoặc email"
             formControlName="identifier"
-            aria-label="Số điện thoại"
+            aria-label="Số điện thoại hoặc email"
           />
         </label>
         @if (showError('identifier')) {
-          <p class="field-error">Vui lòng nhập số điện thoại.</p>
+          <p class="field-error">Vui lòng nhập số điện thoại hoặc email.</p>
         }
 
         <label class="field" [class.field--invalid]="showError('password')">
