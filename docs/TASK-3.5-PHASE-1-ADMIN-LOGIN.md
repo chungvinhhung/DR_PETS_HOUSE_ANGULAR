@@ -26,4 +26,4 @@ Phase 1 implements the Admin Login page as a standalone Angular feature.
 
 ## Visual asset note
 
-The page structure, proportions, palette and interaction match the Figma reference. The exact proprietary logo/mascot artwork is represented by a lightweight frontend-safe placeholder in this first UI phase; replace it with exported repository-owned Figma assets during visual polish before final acceptance.
+The approved Figma artwork is exported into repository-owned files under `public/assets/admin-login/`. The login page does not depend on short-lived Figma MCP asset URLs at runtime.
