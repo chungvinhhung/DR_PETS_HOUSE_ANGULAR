@@ -41,41 +41,67 @@
   z-index: 7;
 }
 
-.mascot-art {
+.mascot-frame {
   position: absolute;
   z-index: 3;
-  left: 20.2%;
-  top: 38.9%;
-  width: 31.77%;
-  height: 47.87%;
-  object-fit: contain;
-  object-position: center;
-  transform: rotate(5deg);
+  left: 20.1946%;
+  top: 38.9031%;
+  width: 31.7664%;
+  height: 47.8677%;
   pointer-events: none;
 }
 
-.paw-art {
+.mascot-art {
+  position: absolute;
+  left: 3.6%;
+  top: 4.1%;
+  width: 92.8%;
+  height: 91.8%;
+  object-fit: fill;
+  transform: rotate(5deg);
+  transform-origin: center;
+}
+
+.paw-frame {
   position: absolute;
   z-index: 5;
-  display: block;
-  object-fit: contain;
   pointer-events: none;
 }
 
-.paw-art--left {
+.paw-frame--left {
   left: 19.04%;
   top: 65.56%;
   width: 6.66%;
   height: 7.68%;
-  transform: rotate(5deg);
 }
 
-.paw-art--right {
+.paw-frame--right {
   left: 33.16%;
   top: 73.34%;
   width: 7.24%;
   height: 8.01%;
+}
+
+.paw-art {
+  position: absolute;
+  display: block;
+  object-fit: fill;
   transform: rotate(5deg);
+  transform-origin: center;
+}
+
+.paw-frame--left .paw-art {
+  left: 2.63%;
+  top: 5.54%;
+  width: 94.75%;
+  height: 88.93%;
+}
+
+.paw-frame--right .paw-art {
+  left: 2.5%;
+  top: 5.79%;
+  width: 95%;
+  height: 88.42%;
 }
 
 .botanical-art {
@@ -89,25 +115,34 @@
   pointer-events: none;
 }
 
-.leaf-overlay {
+.leaf-frame {
   position: absolute;
   z-index: 6;
-  display: block;
-  width: 4.75%;
-  height: 9.92%;
-  object-fit: contain;
+  width: 4.7474%;
+  height: 9.9242%;
   pointer-events: none;
+}
+
+.leaf-frame--upper {
+  left: 2.8746%;
+  top: 78.4206%;
+}
+
+.leaf-frame--lower {
+  left: 0.8714%;
+  top: 86.7114%;
+}
+
+.leaf-overlay {
+  position: absolute;
+  left: 24.92%;
+  top: 3.62%;
+  display: block;
+  width: 50.16%;
+  height: 92.77%;
+  object-fit: fill;
   transform: rotate(-27deg);
-}
-
-.leaf-overlay--upper {
-  left: 2.87%;
-  top: 78.42%;
-}
-
-.leaf-overlay--lower {
-  left: 0.87%;
-  top: 86.71%;
+  transform-origin: center;
 }
 
 .brand-identity {
@@ -312,10 +347,10 @@
   }
 
   .art-layer,
-  .mascot-art,
-  .paw-art,
+  .mascot-frame,
+  .paw-frame,
   .botanical-art,
-  .leaf-overlay,
+  .leaf-frame,
   .brand-identity {
     display: none;
   }
