@@ -100,8 +100,13 @@
             type="button"
             (click)="togglePasswordVisibility()"
             [attr.aria-label]="passwordVisible() ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
+            [attr.aria-pressed]="passwordVisible()"
           >
-            <img src="https://www.figma.com/api/mcp/asset/7d5938f8-49ee-41f3-abae-5a6cc70bc329/b47f1.svg" alt="" aria-hidden="true" />
+            <span
+              class="visibility-icon"
+              [class.visibility-icon--off]="passwordVisible()"
+              aria-hidden="true"
+            ></span>
           </button>
         </label>
         @if (showError('password')) {
