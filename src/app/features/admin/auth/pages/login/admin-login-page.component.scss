@@ -255,6 +255,12 @@
   margin-right: 1.6cqw;
 }
 
+.field__identifier-icon {
+  background: #617aa1;
+  -webkit-mask: url("/assets/admin-login/account-circle-outlined.svg") center / contain no-repeat;
+  mask: url("/assets/admin-login/account-circle-outlined.svg") center / contain no-repeat;
+}
+
 .field input {
   min-width: 0;
   flex: 1;
