@@ -1,5 +1,10 @@
 import { Routes } from '@angular/router';
 
+import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
+
+const BACKOFFICE_ROLES = ['ADMIN', 'MANAGER', 'STAFF'];
+
 export const routes: Routes = [
   {
     path: 'admin/login',
@@ -9,7 +14,18 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/forbidden',
+    loadComponent: () =>
+      import(
+        './features/admin/auth/pages/forbidden/admin-forbidden-page.component'
+      ).then((component) => component.AdminForbiddenPageComponent),
+  },
+  {
     path: 'admin',
+    canActivate: [authGuard, roleGuard],
+    data: {
+      roles: BACKOFFICE_ROLES,
+    },
     loadComponent: () =>
       import('./layouts/admin-layout/admin-layout.component').then(
         (component) => component.AdminLayoutComponent,
