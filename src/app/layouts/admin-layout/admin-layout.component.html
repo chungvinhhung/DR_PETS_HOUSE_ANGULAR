@@ -49,7 +49,20 @@
         <strong>Operations workspace</strong>
       </div>
 
-      <div class="admin-shell__profile" aria-label="Admin profile">Admin</div>
+      <div class="admin-shell__account">
+        <div class="admin-shell__profile" aria-label="Admin profile">
+          <strong>{{ user()?.fullName || 'Admin' }}</strong>
+          <small>{{ user()?.systemRole || 'ADMIN' }}</small>
+        </div>
+        <button
+          class="admin-shell__logout"
+          type="button"
+          (click)="logout()"
+          [disabled]="isLoggingOut()"
+        >
+          {{ isLoggingOut() ? 'Đang đăng xuất...' : 'Đăng xuất' }}
+        </button>
+      </div>
     </header>
 
     <main id="admin-content" class="admin-shell__content">
