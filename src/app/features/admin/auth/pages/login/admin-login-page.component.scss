@@ -301,6 +301,16 @@
   font-weight: 500;
 }
 
+.login-error {
+  width: 36.3cqw;
+  margin: 1.2cqw 0 -1.65cqw;
+  color: #c94848;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 1.02cqw;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 .login-button {
   width: 36.3cqw;
   height: 6.33cqw;
@@ -328,6 +338,12 @@
 
 .login-button:active {
   transform: translateY(0);
+}
+
+.login-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+  transform: none;
 }
 
 @media (max-height: 900px) and (min-width: 981px) {
@@ -420,6 +436,12 @@
 
   .field-error {
     margin: -10px 4px -4px;
+    font-size: 13px;
+  }
+
+  .login-error {
+    width: 100%;
+    margin: 12px 0 -10px;
     font-size: 13px;
   }
 
