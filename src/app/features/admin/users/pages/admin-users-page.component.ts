@@ -49,25 +49,34 @@ import { AdminUsersService } from '../services/admin-users.service';
             </div>
           </div>
 
-          <form class="create-form" [formGroup]="createForm" (ngSubmit)="createUser()">
+          <form class="create-form" [formGroup]="createForm" (ngSubmit)="createUser()" autocomplete="off">
             <label>
               <span>Họ tên</span>
-              <input type="text" formControlName="fullName" placeholder="Nguyễn Văn A" />
+              <input type="text" formControlName="fullName" placeholder="Nguyễn Văn A" autocomplete="off" />
             </label>
 
             <label>
               <span>Số điện thoại</span>
-              <input type="tel" formControlName="phone" placeholder="0901234567" />
+              <input type="tel" formControlName="phone" placeholder="0901234567" autocomplete="off" />
+              @if (createForm.controls.phone.invalid && createForm.controls.phone.touched) {
+                <small class="form-error">Số điện thoại phải có 10 chữ số và bắt đầu bằng 0.</small>
+              }
             </label>
 
             <label>
               <span>Email</span>
-              <input type="email" formControlName="email" placeholder="staff@petclinic.com" />
+              <input type="email" formControlName="email" placeholder="staff@petclinic.com" autocomplete="off" />
+              @if (createForm.controls.email.invalid && createForm.controls.email.touched) {
+                <small class="form-error">Email không đúng định dạng.</small>
+              }
             </label>
 
             <label>
               <span>Mật khẩu tạm</span>
-              <input type="password" formControlName="password" placeholder="Staff@1234" />
+              <input type="password" formControlName="password" placeholder="Staff@1234" autocomplete="new-password" />
+              @if (createForm.controls.password.invalid && createForm.controls.password.touched) {
+                <small class="form-error">Ít nhất 8 ký tự, có 1 chữ hoa và 1 chữ số.</small>
+              }
             </label>
 
             <label>
@@ -324,6 +333,13 @@ import { AdminUsersService } from '../services/admin-users.service';
       align-items: end;
     }
 
+    .form-error {
+      color: #b91c1c;
+      font-size: 0.72rem;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
     .notice,
     .error {
       margin: 0;
@@ -473,7 +489,14 @@ export class AdminUsersPageComponent {
     fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
     phone: ['', [Validators.required, Validators.pattern(/^0[0-9]{9}$/)]],
     email: ['', [Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
+    password: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.pattern(/^(?=.*[A-Z])(?=.*\d).{8,}$/),
+      ],
+    ],
     systemRole: ['STAFF' as SystemRole, [Validators.required]],
     staffSubRole: ['RECEPTIONIST' as StaffSubRole],
   });
