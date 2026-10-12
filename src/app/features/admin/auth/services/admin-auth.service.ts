@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { finalize, Observable, tap } from 'rxjs';
 
 import {
   LoginRequest,
@@ -25,6 +25,16 @@ export class AdminAuthService {
             roles: [response.user.systemRole],
             user: response.user,
           });
+        }),
+      );
+  }
+
+  logout(): Observable<void> {
+    return this.api
+      .post<void, Record<string, never>>('/auth/logout', {})
+      .pipe(
+        finalize(() => {
+          this.authSession.clearSession();
         }),
       );
   }
