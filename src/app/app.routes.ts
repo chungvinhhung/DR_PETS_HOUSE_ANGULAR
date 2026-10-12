@@ -57,6 +57,24 @@ export const routes: Routes = [
             './features/admin/pages/appointments/admin-appointments-page.component'
           ).then((component) => component.AdminAppointmentsPageComponent),
       },
+      {
+        path: 'users',
+        canActivate: [roleGuard],
+        data: {
+          roles: ['ADMIN', 'MANAGER'],
+        },
+        loadComponent: () =>
+          import(
+            './features/admin/users/pages/admin-users-page.component'
+          ).then((component) => component.AdminUsersPageComponent),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import(
+            './features/admin/auth/pages/profile/admin-profile-page.component'
+          ).then((component) => component.AdminProfilePageComponent),
+      },
     ],
   },
   {
