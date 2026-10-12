@@ -1,8 +1,11 @@
 import { computed, Injectable, signal } from '@angular/core';
 
+import { AuthUser } from '../models/auth.model';
+
 export interface AuthSession {
   accessToken: string | null;
   roles: readonly string[];
+  user: AuthUser | null;
 }
 
 @Injectable({
@@ -11,19 +14,23 @@ export interface AuthSession {
 export class AuthSessionService {
   private readonly accessTokenState = signal<string | null>(null);
   private readonly rolesState = signal<readonly string[]>([]);
+  private readonly userState = signal<AuthUser | null>(null);
 
   readonly accessToken = this.accessTokenState.asReadonly();
   readonly roles = this.rolesState.asReadonly();
+  readonly user = this.userState.asReadonly();
   readonly isAuthenticated = computed(() => Boolean(this.accessTokenState()));
 
   setSession(session: AuthSession): void {
     this.accessTokenState.set(session.accessToken);
     this.rolesState.set([...session.roles]);
+    this.userState.set(session.user);
   }
 
   clearSession(): void {
     this.accessTokenState.set(null);
     this.rolesState.set([]);
+    this.userState.set(null);
   }
 
   hasAnyRole(requiredRoles: readonly string[]): boolean {
