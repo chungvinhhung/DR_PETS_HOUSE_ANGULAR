@@ -9,7 +9,10 @@ Backend implementation is out of scope. FE consumes the backend contract from br
 ## Implemented
 
 ### Authentication
-- Admin login UI from Figma.
+- Admin login UI from Figma, including the final approved form layout.
+- Password visibility toggle switches between Design System `visibility` and `visibility_off` icons.
+- Identifier field supports phone or email with a neutral account icon.
+- Google continuation button is present per Figma; backend Google OAuth is not currently available, so FE exposes a clear unavailable-state message rather than inventing an endpoint.
 - `POST /api/v1/auth/login`.
 - Access token kept in memory.
 - HttpOnly refresh cookie via `withCredentials: true`.
@@ -43,8 +46,9 @@ Backend implementation is out of scope. FE consumes the backend contract from br
 - Current signed-in account does not expose self role/status controls in FE.
 
 ### Assets
-- Approved Admin Login Figma artwork is stored under `public/assets/admin-login/`.
-- Runtime code contains no short-lived Figma MCP asset URLs.
+- Login UI was re-synced to the approved Admin Login Figma composition, including the updated form, Google button, password visibility states and attention marks.
+- Most login assets are stored under `public/assets/admin-login/`.
+- Current known production-hardening debt: four approved raster artwork references (mascot, two paws and brand logo) still use short-lived Figma MCP URLs to preserve visual fidelity. Earlier screenshot-based localization caused incorrect white backgrounds/geometry and was intentionally not reused.
 
 ## Verification matrix
 
@@ -52,15 +56,15 @@ Backend implementation is out of scope. FE consumes the backend contract from br
 | --- | --- | --- |
 | Admin valid login | 200, session created, redirect to dashboard | Verified manually |
 | Admin logout | Refresh session revoked/cleared and redirect to login | Verified manually |
-| Browser reload while authenticated | Refresh cookie restores access token + user | Implemented; final smoke |
+| Browser reload while authenticated | Refresh cookie restores access token + user | Verified manually |
 | Customer enters Admin area | Redirect to `/admin/forbidden` | Verified manually |
 | Manager opens Users & Roles | Scoped list only; no create/role/status controls | Verified manually |
 | Manager branch scope | Only backend-authorized branch users visible | Verified manually |
 | Admin profile update | Name/email saved and header synchronized | Verified manually |
-| Unauthenticated direct `/admin/**` | Redirect to login with safe `returnUrl` | Final smoke |
+| Unauthenticated direct `/admin/**` | Redirect to login with safe `returnUrl` | Verified manually |
 | Invalid login form input | Client validation blocks invalid request | Implemented |
 | Invalid internal account input | Phone/email/password validation blocks invalid request | Implemented |
-| Expired access token | Refresh once, rotate token, retry original request | Implemented; timed smoke |
+| Expired access token | Refresh once, rotate token, retry original request | Implemented; code path covered by CI/build review, no timed manual expiry wait |
 | Refresh failure | Clear local session and redirect to login | Implemented |
 | Wrong role on `/admin/users` | 403 route handling | Implemented |
 
@@ -92,3 +96,12 @@ Local backend contract: `http://localhost:8080/api/v1`
 ## Manual smoke accounts
 
 Use the demo credentials provided by the backend seed for ADMIN, MANAGER, STAFF and CUSTOMER. Do not commit real secrets or local backend `.env` files.
+
+
+## Final Phase 6 status
+
+- Final Admin Login visual approved manually.
+- Safe protected-route `returnUrl` redirect verified manually.
+- ADMIN, MANAGER and CUSTOMER role flows verified during Task 3.5 smoke testing.
+- Latest Angular CI for the feature branch passed before final documentation cleanup.
+- PR can move to Ready for review; merge remains a reviewer/maintainer decision.
