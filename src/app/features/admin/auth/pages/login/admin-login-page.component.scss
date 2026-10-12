@@ -53,13 +53,10 @@
 
 .mascot-art {
   position: absolute;
-  left: 3.6%;
-  top: 6.8%;
-  width: 92.8%;
-  height: 91.8%;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: fill;
-  transform: rotate(5deg);
-  transform-origin: center;
 }
 
 .paw-frame {
@@ -86,24 +83,11 @@
 
 .paw-art {
   position: absolute;
+  inset: 0;
   display: block;
+  width: 100%;
+  height: 100%;
   object-fit: fill;
-  transform: rotate(5deg);
-  transform-origin: center;
-}
-
-.paw-frame--left .paw-art {
-  left: 0;
-  top: 0.45%;
-  width: 99.81%;
-  height: 99.3%;
-}
-
-.paw-frame--right .paw-art {
-  left: 0.5%;
-  top: 0;
-  width: 122.4%;
-  height: 98.31%;
 }
 
 .botanical-art {
@@ -137,14 +121,11 @@
 
 .leaf-overlay {
   position: absolute;
-  left: 24.92%;
-  top: 3.62%;
+  inset: 0;
   display: block;
-  width: 50.16%;
-  height: 92.77%;
+  width: 100%;
+  height: 100%;
   object-fit: fill;
-  transform: rotate(-27deg);
-  transform-origin: center;
 }
 
 .brand-identity {
