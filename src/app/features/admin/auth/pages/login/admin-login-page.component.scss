@@ -65,21 +65,23 @@
 .paw-frame {
   position: absolute;
   z-index: 5;
+  overflow: hidden;
   pointer-events: none;
 }
 
+/* Updated directly from the latest Figma hand nodes. */
 .paw-frame--left {
-  left: 20.7%;
-  top: 67.0%;
-  width: 6.66%;
-  height: 7.68%;
+  left: 18.8034%;
+  top: 65.5612%;
+  width: 6.6652%;
+  height: 7.6788%;
 }
 
 .paw-frame--right {
-  left: 34.82%;
-  top: 74.8%;
-  width: 7.24%;
-  height: 8.01%;
+  left: 33.5609%;
+  top: 73.4694%;
+  width: 5.9162%;
+  height: 7.8267%;
 }
 
 .paw-art {
@@ -91,17 +93,17 @@
 }
 
 .paw-frame--left .paw-art {
-  left: 2.63%;
-  top: 5.54%;
-  width: 94.75%;
-  height: 88.93%;
+  left: 0;
+  top: 0.45%;
+  width: 99.81%;
+  height: 99.3%;
 }
 
 .paw-frame--right .paw-art {
-  left: 2.5%;
-  top: 5.79%;
-  width: 95%;
-  height: 88.42%;
+  left: 0.5%;
+  top: 0;
+  width: 122.4%;
+  height: 98.31%;
 }
 
 .botanical-art {
