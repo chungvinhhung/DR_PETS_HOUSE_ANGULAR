@@ -13,6 +13,7 @@ import { finalize } from 'rxjs';
 
 import { AuthSessionService } from '../../core/services/auth-session.service';
 import { AdminAuthService } from '../../features/admin/auth/services/admin-auth.service';
+import { AdminPermissionService } from '../../features/admin/auth/services/admin-permission.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -25,10 +26,12 @@ import { AdminAuthService } from '../../features/admin/auth/services/admin-auth.
 export class AdminLayoutComponent {
   readonly user = this.authSession.user;
   readonly isLoggingOut = signal(false);
+  readonly canViewUsers = this.permissions.canViewUsers;
 
   constructor(
     private readonly authSession: AuthSessionService,
     private readonly adminAuth: AdminAuthService,
+    private readonly permissions: AdminPermissionService,
     private readonly router: Router,
   ) {}
 
