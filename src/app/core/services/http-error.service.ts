@@ -73,9 +73,18 @@ export class HttpErrorService {
   }
 
   private extractBackendMessage(body: unknown): string | null {
+    if (typeof body !== 'object' || body === null) {
+      return null;
+    }
+
     if (
-      typeof body === 'object' &&
-      body !== null &&
+      'detail' in body &&
+      typeof (body as { detail?: unknown }).detail === 'string'
+    ) {
+      return (body as { detail: string }).detail;
+    }
+
+    if (
       'message' in body &&
       typeof (body as { message?: unknown }).message === 'string'
     ) {
