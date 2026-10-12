@@ -286,10 +286,18 @@
   background: transparent;
 }
 
-.visibility-button img {
+.visibility-icon {
   display: block;
   width: 2.32cqw;
   height: 2.32cqw;
+  background: #617aa1;
+  -webkit-mask: url("/assets/admin-login/visibility-outlined.svg") center / contain no-repeat;
+  mask: url("/assets/admin-login/visibility-outlined.svg") center / contain no-repeat;
+}
+
+.visibility-icon--off {
+  -webkit-mask-image: url("/assets/admin-login/visibility-off-outlined.svg");
+  mask-image: url("/assets/admin-login/visibility-off-outlined.svg");
 }
 
 .field-error {
@@ -420,7 +428,7 @@
 
   .field__icon,
   .visibility-button,
-  .visibility-button img {
+  .visibility-icon {
     width: 26px;
     height: 26px;
   }
