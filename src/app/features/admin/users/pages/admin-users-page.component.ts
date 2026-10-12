@@ -10,15 +10,15 @@ import { finalize } from 'rxjs';
 import {
   StaffSubRole,
   SystemRole,
-} from '../../../../../core/models/auth.model';
-import { AppHttpError } from '../../../../../core/models/app-http-error.model';
-import { AuthSessionService } from '../../../../../core/services/auth-session.service';
-import { AdminPermissionService } from '../../../auth/services/admin-permission.service';
+} from '../../../../core/models/auth.model';
+import { AppHttpError } from '../../../../core/models/app-http-error.model';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { AdminPermissionService } from '../../auth/services/admin-permission.service';
 import {
   AccountStatus,
   AdminUser,
-} from '../../models/admin-user.model';
-import { AdminUsersService } from '../../services/admin-users.service';
+} from '../models/admin-user.model';
+import { AdminUsersService } from '../services/admin-users.service';
 
 @Component({
   selector: 'app-admin-users-page',
