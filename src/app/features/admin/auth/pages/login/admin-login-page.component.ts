@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AppHttpError } from '../../../../../core/models/app-http-error.model';
@@ -31,6 +31,7 @@ export class AdminLoginPageComponent {
     private readonly formBuilder: FormBuilder,
     private readonly adminAuth: AdminAuthService,
     private readonly router: Router,
+    private readonly route: ActivatedRoute,
   ) {}
 
   togglePasswordVisibility(): void {
@@ -59,7 +60,7 @@ export class AdminLoginPageComponent {
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: () => {
-          void this.router.navigateByUrl('/admin/dashboard');
+          void this.router.navigateByUrl(this.safeReturnUrl());
         },
         error: (error: unknown) => {
           this.apiError.set(this.loginErrorMessage(error));
@@ -70,6 +71,21 @@ export class AdminLoginPageComponent {
   showError(controlName: LoginControlName): boolean {
     const control = this.form.controls[controlName];
     return control.invalid && (control.touched || this.submitted());
+  }
+
+  private safeReturnUrl(): string {
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+
+    if (
+      returnUrl &&
+      returnUrl.startsWith('/admin/') &&
+      returnUrl !== '/admin/login' &&
+      returnUrl !== '/admin/forbidden'
+    ) {
+      return returnUrl;
+    }
+
+    return '/admin/dashboard';
   }
 
   private loginErrorMessage(error: unknown): string {
