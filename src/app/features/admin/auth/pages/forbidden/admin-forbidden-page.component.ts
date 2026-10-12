@@ -14,7 +14,7 @@ import { RouterLink } from '@angular/router';
           Tài khoản hiện tại không có role hoặc permission phù hợp với khu vực này.
         </p>
         <div class="forbidden-card__actions">
-          <a routerLink="/admin/dashboard">Về Dashboard</a>
+          <a routerLink="/">Về trang chủ</a>
           <a routerLink="/admin/login" class="secondary">Đăng nhập tài khoản khác</a>
         </div>
       </section>
