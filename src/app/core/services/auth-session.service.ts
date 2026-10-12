@@ -27,6 +27,10 @@ export class AuthSessionService {
     this.userState.set(session.user);
   }
 
+  updateAccessToken(accessToken: string): void {
+    this.accessTokenState.set(accessToken);
+  }
+
   clearSession(): void {
     this.accessTokenState.set(null);
     this.rolesState.set([]);
