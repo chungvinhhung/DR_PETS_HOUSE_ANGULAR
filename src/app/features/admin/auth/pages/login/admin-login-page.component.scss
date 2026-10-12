@@ -137,11 +137,14 @@
 
 .leaf-overlay {
   position: absolute;
-  inset: 0;
+  left: 24.92%;
+  top: 3.62%;
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 50.16%;
+  height: 92.77%;
   object-fit: fill;
+  transform: rotate(-27deg);
+  transform-origin: center;
 }
 
 .brand-identity {
