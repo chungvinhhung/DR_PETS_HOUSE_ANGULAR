@@ -54,6 +54,27 @@ export class AdminProductListPageComponent implements OnInit {
     }
   }
 
+  onSearchInput(): void {
+    // Search is applied on Enter; keep the entered value editable until then.
+  }
+
+  toggleCategory(id: string): void {
+    this.categoryFilter = this.categoryFilter === id ? '' : id;
+  }
+
+  toggleStatus(status: 'ACTIVE' | 'INACTIVE'): void {
+    this.statusFilter = this.statusFilter === status ? '' : status;
+  }
+
+  clearFilters(): void {
+    this.categoryFilter = '';
+    this.statusFilter = this.archiveView ? 'ARCHIVED' : '';
+    this.searchTerm = '';
+    this.sort = 'NEWEST';
+    this.applyFilters();
+    this.filterOpen = false;
+  }
+
   applyFilters(): void {
     this.cursors = [null];
     this.pageNumber.set(1);
