@@ -1,8 +1,23 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
-interface VariantDraft { label: string; sku: string; price: number; discount: number; active: boolean; }
+interface ProductImageDraft {
+  id: number;
+  file: File;
+  previewUrl: string;
+}
+
+interface VariantDraft {
+  label: string;
+  sku: string;
+  price: number;
+  discount: number;
+  active: boolean;
+  imageFile: File | null;
+  imageUrl: string | null;
+}
+
 @Component({
   selector: 'app-admin-product-create-page',
   standalone: true,
@@ -11,19 +26,26 @@ interface VariantDraft { label: string; sku: string; price: number; discount: nu
   styleUrl: './admin-product-create-page.component.scss',
   changeDetection: ChangeDetectionStrategy.Default,
 })
-export class AdminProductCreatePageComponent {
+export class AdminProductCreatePageComponent implements OnDestroy {
   productName = '';
   categoryId = '';
   usageType = '';
   description = '';
   hasVariants = true;
   active = false;
-  images: string[] = [];
+  images: ProductImageDraft[] = [];
+  primaryImageId: number | null = null;
   feedback = '';
+
   variants: VariantDraft[] = [
-    { label: '500g', sku: '', price: 250000, discount: 0, active: false },
-    { label: '1.5kg', sku: '', price: 420000, discount: 0, active: false },
+    this.newVariant('500g', 250000),
+    this.newVariant('1.5kg', 420000),
   ];
+
+  private nextImageId = 1;
+  private readonly maxImageCount = 10;
+  private readonly maxImageSize = 5 * 1024 * 1024;
+
   get emptyPreviewSlots(): number[] {
     return Array.from(
       { length: Math.max(0, 3 - this.images.length) },
@@ -36,32 +58,128 @@ export class AdminProductCreatePageComponent {
     if (!prices.length) return '0đ';
     return `${Math.min(...prices).toLocaleString('vi-VN')}đ – ${Math.max(...prices).toLocaleString('vi-VN')}đ`;
   }
+
   finalPrice(v: VariantDraft): number {
-    return Math.round(Math.max(0, Number(v.price) || 0) * (1 - Math.min(100, Math.max(0, Number(v.discount) || 0)) / 100));
+    return Math.round(
+      Math.max(0, Number(v.price) || 0) *
+      (1 - Math.min(100, Math.max(0, Number(v.discount) || 0)) / 100),
+    );
   }
+
+  private newVariant(label = '', price = 0): VariantDraft {
+    return {
+      label,
+      sku: '',
+      price,
+      discount: 0,
+      active: false,
+      imageFile: null,
+      imageUrl: null,
+    };
+  }
+
+  private releaseVariantImage(variant: VariantDraft): void {
+    if (variant.imageUrl) URL.revokeObjectURL(variant.imageUrl);
+    variant.imageFile = null;
+    variant.imageUrl = null;
+  }
+
   selectVariantMode(value: boolean): void {
+    if (value === this.hasVariants) return;
+    this.variants.forEach(v => this.releaseVariantImage(v));
     this.hasVariants = value;
-    if (!value) this.variants = [{ label: 'Mặc định', sku: '', price: 0, discount: 0, active: false }];
-    else if (this.variants.length === 1 && this.variants[0].label === 'Mặc định')
-      this.variants = [{ label: '', sku: '', price: 0, discount: 0, active: false }];
+    this.variants = value
+      ? [this.newVariant()]
+      : [this.newVariant('Mặc định')];
   }
-  addVariant(): void { this.variants.push({ label: '', sku: '', price: 0, discount: 0, active: false }); }
+
+  addVariant(): void {
+    this.variants.push(this.newVariant());
+  }
+
   removeVariant(index: number): void {
-    if (this.variants.length > 1) this.variants.splice(index, 1);
+    if (this.variants.length <= 1) return;
+    const removed = this.variants.splice(index, 1)[0];
+    if (removed) this.releaseVariantImage(removed);
   }
+
+  private isValidImage(file: File): boolean {
+    return ['image/jpeg', 'image/png'].includes(file.type) &&
+      file.size <= this.maxImageSize;
+  }
+
   onImagesSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const files = Array.from(input.files || []);
-    const allowed = files.filter(f => /image\/(jpeg|png)/.test(f.type) && f.size <= 5 * 1024 * 1024);
-    if (allowed.length !== files.length) this.feedback = 'Chỉ hỗ trợ ảnh JPG/PNG tối đa 5MB.';
-    const accepted = allowed.slice(0, Math.max(0, 10 - this.images.length));
-    for (const file of accepted) {
-      const reader = new FileReader();
-      reader.onload = () => { if (typeof reader.result === 'string') this.images.push(reader.result); };
-      reader.readAsDataURL(file);
-    }
+    const files = Array.from(input.files ?? []);
     input.value = '';
+    if (!files.length) return;
+
+    const validFiles = files.filter(file => this.isValidImage(file));
+    const allowed = validFiles.slice(
+      0,
+      Math.max(0, this.maxImageCount - this.images.length),
+    );
+
+    for (const file of allowed) {
+      this.images.push({
+        id: this.nextImageId++,
+        file,
+        previewUrl: URL.createObjectURL(file),
+      });
+    }
+
+    // Exactly one main image: pick the first uploaded image, unless the
+    // user has explicitly chosen a different existing one.
+    if (this.primaryImageId === null && this.images.length > 0) {
+      this.primaryImageId = this.images[0].id;
+    }
+
+    if (validFiles.length !== files.length) {
+      this.feedback = 'Chỉ hỗ trợ ảnh JPG/PNG, tối đa 5MB mỗi ảnh.';
+    } else if (allowed.length !== validFiles.length) {
+      this.feedback = 'Chỉ được tải tối đa 10 ảnh sản phẩm.';
+    } else {
+      this.feedback = '';
+    }
   }
+
+  setPrimaryImage(id: number): void {
+    if (this.images.some(image => image.id === id)) {
+      this.primaryImageId = id;
+    }
+  }
+
+  removeProductImage(id: number): void {
+    const index = this.images.findIndex(image => image.id === id);
+    if (index === -1) return;
+    const [removed] = this.images.splice(index, 1);
+    URL.revokeObjectURL(removed.previewUrl);
+    if (this.primaryImageId === id) {
+      this.primaryImageId = this.images[0]?.id ?? null;
+    }
+  }
+
+  onVariantImageSelected(event: Event, variant: VariantDraft): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (!this.isValidImage(file)) {
+      this.feedback = 'Ảnh biến thể phải là JPG/PNG và không quá 5MB.';
+      return;
+    }
+
+    this.releaseVariantImage(variant);
+    variant.imageFile = file;
+    variant.imageUrl = URL.createObjectURL(file);
+    this.feedback = '';
+  }
+
+  ngOnDestroy(): void {
+    this.images.forEach(image => URL.revokeObjectURL(image.previewUrl));
+    this.variants.forEach(variant => this.releaseVariantImage(variant));
+  }
+
   saveDraft(): void {
     if (!this.productName.trim() || !this.categoryId.trim() || !this.usageType.trim()
       || this.variants.some(v => !v.label.trim() || !v.sku.trim() || Number(v.price) < 0)) {
