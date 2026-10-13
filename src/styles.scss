@@ -470,3 +470,76 @@ td:last-child,th:last-child{width:88px;text-align:center}
 @media(max-width:800px){.screen-body{display:block}.sidebar{display:none}.topbar{height:80px;padding:10px 16px}.brand img{width:135px;height:60px}.main{padding:24px 16px}.page-heading{align-items:start}.top-actions .view-site{display:none}}
 @media(max-width:540px){.page-heading{flex-direction:column;align-items:stretch}.top-actions .bell{display:none}.profile{width:auto}.list-toolbar{align-items:stretch}.search-field{max-width:none}.filter-label{min-width:100%}.list-toolbar>.btn-outline{flex:1}.pagination{flex-direction:column;align-items:stretch}.pagination-controls{align-self:flex-end}.main{padding:20px 12px}}
 }
+
+/* Category Management refinements for Task 3.6 */
+app-admin-category-page {
+  .sidebar-group .chevron {
+    display: block;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    margin-left: auto;
+    color: #fff;
+  }
+
+  /* Native select arrows vary by browser; use the same inset as Product form. */
+  .filter-label select,
+  .form-field select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 44px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6' fill='none' stroke='%231b273b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-position: right 16px center;
+    background-repeat: no-repeat;
+    background-size: 16px 16px;
+  }
+
+  .form-field .field-label {
+    display: inline;
+    line-height: 21px;
+    white-space: normal;
+  }
+
+  .form-field .field-label .required {
+    display: inline;
+    margin-left: 2px;
+    color: #dc2626;
+  }
+
+  .slug code {
+    color: #394e6e;
+    font: 500 13px/18px Roboto Mono, Consolas, monospace;
+    overflow-wrap: anywhere;
+  }
+
+  .slug-field .form-field {
+    gap: 9px;
+  }
+
+  .slug-regenerate {
+    margin-top: 8px;
+    padding: 6px 10px;
+    border: 1px solid #0d47a1;
+    border-radius: 6px;
+    background: #fff;
+    color: #0d47a1;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .slug-regenerate:hover {
+    background: #e5f6fd;
+  }
+
+  .field-hint {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .field-hint code {
+    font-family: Consolas, monospace;
+    color: #334155;
+  }
+}
