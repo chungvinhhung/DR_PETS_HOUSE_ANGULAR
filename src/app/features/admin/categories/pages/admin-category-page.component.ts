@@ -37,6 +37,7 @@ export class AdminCategoryPageComponent implements OnInit {
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly nextCursor = signal<string | null>(null);
+  readonly totalCategories = signal<number | null>(null);
   readonly dialogOpen = signal(false);
   readonly errorMessage = signal('');
   readonly notice = signal('');
@@ -92,6 +93,8 @@ export class AdminCategoryPageComponent implements OnInit {
       finalize(() => this.loading.set(false)),
     ).subscribe({
       next: (response) => {
+        const meta = response as typeof response & { total?: number; totalCount?: number };
+        this.totalCategories.set(typeof meta.total === 'number' ? meta.total : typeof meta.totalCount === 'number' ? meta.totalCount : null);
         this.categories.set(response.items);
         this.nextCursor.set(response.nextCursor);
         this.currentCursor = cursor;
