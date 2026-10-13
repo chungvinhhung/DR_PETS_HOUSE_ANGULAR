@@ -76,3 +76,17 @@
   }
 </main>
 </app-admin-catalog-shell>
+
+@if (leaveDialogOpen) {
+  <div class="product-leave-overlay" (keydown.escape)="resolveLeave(false)">
+    <section class="product-leave-dialog" role="alertdialog" aria-modal="true"
+             aria-labelledby="product-leave-title" aria-describedby="product-leave-description" tabindex="-1">
+      <h2 id="product-leave-title">Rời trang khi chưa lưu?</h2>
+      <p id="product-leave-description">Bạn đã nhập hoặc thay đổi thông tin sản phẩm. Nếu rời khỏi trang, các thay đổi chưa lưu sẽ bị mất.</p>
+      <div class="product-leave-actions">
+        <button class="product-leave-stay" type="button" autofocus (click)="resolveLeave(false)">Tiếp tục chỉnh sửa</button>
+        <button class="product-leave-exit" type="button" (click)="resolveLeave(true)">Rời trang</button>
+      </div>
+    </section>
+  </div>
+}
