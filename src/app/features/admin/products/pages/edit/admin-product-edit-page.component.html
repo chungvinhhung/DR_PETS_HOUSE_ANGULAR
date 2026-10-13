@@ -47,8 +47,29 @@
         </section>
         <section class="panel image-panel">
           <h2><span class="panel-icon blue">▣</span> Hình ảnh</h2>
-          <div class="upload-preview"><span class="upload-icon">☁</span><span>Ảnh sản phẩm</span><small>Chưa hỗ trợ tải ảnh mới từ FE</small></div>
-          @if (product()!.images?.length) { <div class="images">@for (src of product()!.images; track src) { <img [src]="src" alt="Ảnh sản phẩm"> }</div> }
+          <div class="upload-preview"><span class="upload-icon">☁</span><span>Liên kết ảnh sản phẩm</span><small>BE hỗ trợ URL ảnh, chưa có API upload file</small></div>
+          <div class="image-url-editor">
+            <label for="product-image-url">URL ảnh (HTTPS)</label>
+            <div class="image-url-add">
+              <input id="product-image-url" type="url" [(ngModel)]="imageUrlDraft" placeholder="https://example.com/image.jpg">
+              <button type="button" class="outline-btn" (click)="addImageUrl()">Thêm ảnh</button>
+            </div>
+            @if (imageError) { <p role="alert" class="field-note">{{ imageError }}</p> }
+            @if (images.length) {
+              <div class="images">
+                @for (src of images; track src; let i = $index) {
+                  <div class="product-image-entry">
+                    <img [src]="src" [alt]="'Ảnh sản phẩm ' + (i + 1)">
+                    @if (i === 0) { <strong>Ảnh chính</strong> }
+                    <div class="image-actions">
+                      <button type="button" class="outline-btn" [disabled]="i === 0" (click)="makePrimaryImage(i)">Đặt chính</button>
+                      <button type="button" class="outline-btn" (click)="removeImageUrl(i)">Xóa</button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
         </section>
       </div>
     </div>
