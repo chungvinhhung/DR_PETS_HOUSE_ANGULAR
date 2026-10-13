@@ -55,7 +55,6 @@ export class AdminLoginPageComponent {
       .login({
         identifier: identifier.trim(),
         password,
-        rememberMe: false,
       })
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
