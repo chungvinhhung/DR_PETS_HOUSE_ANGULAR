@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -10,6 +10,13 @@ import { AdminCategory } from '../../../categories/models/admin-category.model';
 import { AdminProductService } from '../../services/admin-product.service';
 import { AdminProduct, ProductVariantWrite, ProductWrite } from '../../models/admin-product.model';
 
+interface EditableProductImage {
+  id: number;
+  savedUrl: string | null;
+  previewUrl: string;
+  localFile: File | null;
+}
+
 @Component({
   selector: 'app-admin-product-edit-page',
   standalone: true,
@@ -18,7 +25,7 @@ import { AdminProduct, ProductVariantWrite, ProductWrite } from '../../models/ad
   styleUrl: './admin-product-edit-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminProductEditPageComponent implements OnInit {
+export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly api = inject(AdminProductService);
   private readonly categoriesApi = inject(AdminCategoryService);
@@ -36,9 +43,9 @@ export class AdminProductEditPageComponent implements OnInit {
   categoryId = '';
   active = false;
   variants: ProductVariantWrite[] = [];
-  images: string[] = [];
-  imageUrlDraft = '';
+  imageSlots: EditableProductImage[] = [];
   imageError = '';
+  private nextImageId = 1;
   readonly leaveDialogOpen = signal(false);
   private leaveResolver: ((confirmed: boolean) => void) | null = null;
   private lastSavedSnapshot = '';
@@ -57,7 +64,13 @@ export class AdminProductEditPageComponent implements OnInit {
       name: this.name, description: this.description, categoryId: this.categoryId,
       active: this.active,
       variants: this.variants.map(v => ({ id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status })),
-      images: this.images,
+      images: this.imageSlots.map(image => ({
+        id: image.id,
+        savedUrl: image.savedUrl,
+        fileName: image.localFile?.name,
+        fileSize: image.localFile?.size,
+        fileModified: image.localFile?.lastModified,
+      })),
     });
   }
 
@@ -91,6 +104,23 @@ export class AdminProductEditPageComponent implements OnInit {
     void this.load();
   }
 
+  ngOnDestroy(): void {
+    this.imageSlots.forEach(image => this.releaseImagePreview(image));
+  }
+
+  private releaseImagePreview(image: EditableProductImage): void {
+    if (image.localFile) URL.revokeObjectURL(image.previewUrl);
+  }
+
+  private fromSavedImages(urls: string[]): EditableProductImage[] {
+    return urls.map(url => ({
+      id: this.nextImageId++,
+      savedUrl: url,
+      previewUrl: url,
+      localFile: null,
+    }));
+  }
+
   private async load(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
@@ -109,7 +139,7 @@ export class AdminProductEditPageComponent implements OnInit {
       this.description = product.description ?? '';
       this.categoryId = product.categoryId;
       this.active = product.status === 'ACTIVE';
-      this.images = [...(product.images ?? [])];
+      this.imageSlots = this.fromSavedImages(product.images ?? []);
       this.variants = product.variants.map(v => ({
         id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status,
       }));
@@ -130,6 +160,10 @@ export class AdminProductEditPageComponent implements OnInit {
     }
     this.error.set('');
     this.success.set('');
+    if (this.imageSlots.some(image => image.localFile)) {
+      this.error.set('Ảnh mới chỉ đang được xem trước trên máy. Backend chưa có API upload ảnh sản phẩm, vì vậy chưa thể lưu các ảnh đã chọn. Vui lòng đợi BE hỗ trợ hoặc bỏ những ảnh mới để lưu các thông tin khác.');
+      return;
+    }
     if (!this.name.trim() || !this.categoryId || !this.variants.length ||
         this.variants.some(v => !v.sku.trim() || !v.label.trim() || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0)) {
       this.error.set('Vui lòng nhập tên, danh mục và thông tin SKU/giá hợp lệ.');
@@ -146,7 +180,7 @@ export class AdminProductEditPageComponent implements OnInit {
       name: this.name.trim(),
       description: this.description.trim(),
       categoryId: this.categoryId,
-      images: [...this.images],
+      images: this.imageSlots.map(image => image.savedUrl).filter((url): url is string => !!url),
       status: this.active ? 'ACTIVE' : 'INACTIVE',
       variants: this.variants.map(v => ({
         id: v.id, label: v.label.trim(), sku: originalSkuById.get(v.id!) ?? v.sku, price: Number(v.price), status: v.status,
@@ -164,7 +198,8 @@ export class AdminProductEditPageComponent implements OnInit {
         this.description = updated.description ?? '';
         this.categoryId = updated.categoryId;
         this.active = updated.status === 'ACTIVE';
-        this.images = [...(updated.images ?? [])];
+        this.imageSlots.forEach(image => this.releaseImagePreview(image));
+        this.imageSlots = this.fromSavedImages(updated.images ?? []);
         this.variants = updated.variants.map(v => ({
           id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status,
         }));
@@ -175,29 +210,70 @@ export class AdminProductEditPageComponent implements OnInit {
     });
   }
 
-  addImageUrl(): void {
+  private checkImage(file: File): boolean {
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      this.imageError = 'Chỉ hỗ trợ ảnh JPG hoặc PNG.';
+      return false;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.imageError = 'Mỗi ảnh phải có dung lượng tối đa 5MB.';
+      return false;
+    }
+    return true;
+  }
+
+  onImagesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    input.value = '';
     this.imageError = '';
-    try {
-      const parsed = new URL(this.imageUrlDraft.trim());
-      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') throw new Error('Invalid scheme');
-      if (this.images.length >= 10) { this.imageError = 'Tối đa 10 ảnh sản phẩm.'; return; }
-      if (this.images.includes(parsed.href)) { this.imageError = 'Ảnh đã có trong danh sách.'; return; }
-      this.images = [...this.images, parsed.href];
-      this.imageUrlDraft = '';
-    } catch {
-      this.imageError = 'URL ảnh phải bắt đầu bằng http:// hoặc https://.';
+    for (const file of files) {
+      if (this.imageSlots.length >= 10) {
+        this.imageError = 'Chỉ được chọn tối đa 10 ảnh sản phẩm.';
+        break;
+      }
+      if (!this.checkImage(file)) continue;
+      this.imageSlots = [...this.imageSlots, {
+        id: this.nextImageId++,
+        savedUrl: null,
+        previewUrl: URL.createObjectURL(file),
+        localFile: file,
+      }];
     }
   }
 
-  removeImageUrl(index: number): void {
-    this.images = this.images.filter((_, i) => i !== index);
+  replaceProductImage(event: Event, imageId: number): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    this.imageError = '';
+    if (!this.checkImage(file)) return;
+    const index = this.imageSlots.findIndex(image => image.id === imageId);
+    if (index < 0) return;
+    const oldImage = this.imageSlots[index];
+    const newImage: EditableProductImage = {
+      id: imageId, savedUrl: null,
+      previewUrl: URL.createObjectURL(file), localFile: file,
+    };
+    this.releaseImagePreview(oldImage);
+    this.imageSlots = this.imageSlots.map(image => image.id === imageId ? newImage : image);
   }
 
-  makePrimaryImage(index: number): void {
-    if (index <= 0 || index >= this.images.length) return;
-    const urls = [...this.images];
-    const selected = urls.splice(index, 1)[0];
-    this.images = [selected, ...urls];
+  removeProductImage(imageId: number): void {
+    const image = this.imageSlots.find(item => item.id === imageId);
+    if (!image) return;
+    this.releaseImagePreview(image);
+    this.imageSlots = this.imageSlots.filter(item => item.id !== imageId);
+    this.imageError = '';
+  }
+
+  setPrimaryImage(imageId: number): void {
+    const index = this.imageSlots.findIndex(image => image.id === imageId);
+    if (index <= 0) return;
+    const images = [...this.imageSlots];
+    const [selected] = images.splice(index, 1);
+    this.imageSlots = [selected, ...images];
   }
 
   addVariant(): void {
