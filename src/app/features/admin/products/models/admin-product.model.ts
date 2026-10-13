@@ -14,6 +14,8 @@ export interface ProductWrite {
   name: string;
   description: string;
   categoryId: string;
+  /** Publicly reachable image URLs; upload endpoint is not yet available. */
+  images?: string[];
   variants: ProductVariantWrite[];
   status: Exclude<ProductStatus, 'ARCHIVED'>;
 }
