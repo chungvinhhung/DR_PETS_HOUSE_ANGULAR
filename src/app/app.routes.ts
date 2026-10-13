@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 
+import { adminLoginEntryGuard } from './core/guards/admin-login-entry.guard';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 
@@ -7,7 +8,17 @@ const BACKOFFICE_ROLES = ['ADMIN', 'MANAGER', 'STAFF'];
 
 export const routes: Routes = [
   {
+    path: 'admin',
+    pathMatch: 'full',
+    canActivate: [adminLoginEntryGuard],
+    loadComponent: () =>
+      import('./features/admin/auth/pages/login/admin-login-page.component').then(
+        (component) => component.AdminLoginPageComponent,
+      ),
+  },
+  {
     path: 'admin/login',
+    canActivate: [adminLoginEntryGuard],
     loadComponent: () =>
       import('./features/admin/auth/pages/login/admin-login-page.component').then(
         (component) => component.AdminLoginPageComponent,
