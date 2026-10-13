@@ -136,12 +136,64 @@
   text-transform: uppercase;
 }
 
+.admin-shell__account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .admin-shell__profile {
-  padding: 9px 12px;
+  min-width: 112px;
+  padding: 8px 12px;
   border: 1px solid #cbd5e1;
   border-radius: 10px;
+  color: #0f172a;
   font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.admin-shell__profile:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.admin-shell__profile strong,
+.admin-shell__profile small {
+  display: block;
+}
+
+.admin-shell__profile strong {
   font-weight: 700;
+}
+
+.admin-shell__profile small {
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.admin-shell__logout {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.admin-shell__logout:hover:not(:disabled) {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.admin-shell__logout:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .admin-shell__content {
@@ -171,6 +223,18 @@
 
   .admin-shell__sidebar-footer {
     display: none;
+  }
+
+  .admin-shell__account {
+    gap: 6px;
+  }
+
+  .admin-shell__profile {
+    min-width: 0;
+  }
+
+  .admin-shell__logout {
+    padding: 0 10px;
   }
 
   .admin-shell__content {

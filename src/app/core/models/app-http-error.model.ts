@@ -6,6 +6,7 @@ export type AppHttpErrorKind =
   | 'not-found'
   | 'conflict'
   | 'validation'
+  | 'locked'
   | 'server'
   | 'unknown';
 

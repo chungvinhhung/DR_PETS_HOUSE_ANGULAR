@@ -38,6 +38,7 @@ export class HttpErrorService {
     if (status === 404) return 'not-found';
     if (status === 409) return 'conflict';
     if (status === 422) return 'validation';
+    if (status === 423) return 'locked';
     if (status >= 500) return 'server';
 
     return 'unknown';
@@ -65,6 +66,8 @@ export class HttpErrorService {
         return 'The request conflicts with the current server state.';
       case 422:
         return 'The submitted data could not be processed.';
+      case 423:
+        return 'The account is temporarily locked.';
       default:
         return error.status >= 500
           ? 'The server encountered an error.'
@@ -73,9 +76,18 @@ export class HttpErrorService {
   }
 
   private extractBackendMessage(body: unknown): string | null {
+    if (typeof body !== 'object' || body === null) {
+      return null;
+    }
+
     if (
-      typeof body === 'object' &&
-      body !== null &&
+      'detail' in body &&
+      typeof (body as { detail?: unknown }).detail === 'string'
+    ) {
+      return (body as { detail: string }).detail;
+    }
+
+    if (
       'message' in body &&
       typeof (body as { message?: unknown }).message === 'string'
     ) {
