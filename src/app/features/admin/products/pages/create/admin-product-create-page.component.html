@@ -3,8 +3,24 @@
 <main class="main"><div class="page-head"><div><p class="crumb">Bán hàng　›　Sản phẩm　›　Thêm sản phẩm mới</p><h1>Thêm sản phẩm mới</h1></div><div class="head-buttons"><a class="btn-outline" routerLink="/admin/dashboard">Hủy bỏ</a><button class="btn-primary" type="button" (click)="saveDraft()"><img class="btn-icon save-icon" src="/assets/admin-product/icon-save.svg" alt="">Lưu sản phẩm</button></div></div>
 <div class="form-grid"><div class="left-column"><section class="panel basics"><h2><img src="/assets/admin-product/icon-basic.svg" alt="">Thông tin cơ bản</h2>
 <label class="form-field"><span class="field-label">Tên sản phẩm <b>*</b></span><input [(ngModel)]="productName" placeholder="Nhập tên sản phẩm (VD: Hạt Royal Canin Poodle)"></label>
-<div class="form-field"><span>Loại sản phẩm <b>*</b></span><div class="radios"><label><input type="radio" name="variantType" [checked]="!hasVariants" (change)="selectVariantMode(false)"> Không có biến thể</label><label><input type="radio" name="variantType" [checked]="hasVariants" (change)="selectVariantMode(true)"> Có biến thể</label></div></div>
-<label class="form-field usage"><span class="field-label">Loại sử dụng <b>*</b></span><select [(ngModel)]="usageType"><option value="">Chọn loại sử dụng</option><option value="DOG">Chó</option><option value="CAT">Mèo</option><option value="BOTH">Chó và mèo</option></select></label>
+<div class="product-type-usage-row">
+  <div class="form-field product-variant-type">
+    <span class="field-label">Loại sản phẩm <b>*</b></span>
+    <div class="radios">
+      <label><input type="radio" name="variantType" [checked]="!hasVariants" (change)="selectVariantMode(false)"> Không có biến thể</label>
+      <label><input type="radio" name="variantType" [checked]="hasVariants" (change)="selectVariantMode(true)"> Có biến thể</label>
+    </div>
+  </div>
+  <label class="form-field usage">
+    <span class="field-label">Loại sử dụng <b>*</b></span>
+    <select [(ngModel)]="usageType" aria-label="Loại sử dụng">
+      <option value="" disabled hidden>Chọn loại sử dụng</option>
+      <option value="SALE">Hàng bán</option>
+      <option value="SHARED">Dùng chung</option>
+      <option value="SERVICE_SUPPLY">Vật tư dịch vụ</option>
+    </select>
+  </label>
+</div>
 <div class="two-fields"><label class="form-field"><span class="field-label">Danh mục <b>*</b></span><select [(ngModel)]="categoryId"><option value="">Chọn danh mục</option><option value="pending" disabled>Danh mục sẽ tải từ API</option></select></label><label class="form-field"><span class="field-label">Mã SKU</span>@if (hasVariants) { <input value="N/A" readonly aria-label="Mã SKU từ biến thể"> } @else { <input [(ngModel)]="variants[0].sku" [readonly]="!categoryId" [placeholder]="categoryId ? 'Nhập mã SKU' : 'Vui lòng chọn danh mục trước'" aria-label="Mã SKU"> }</label></div>
 <label class="form-field description"><span class="field-label">Mô tả sản phẩm</span><textarea [(ngModel)]="description" placeholder="Nhập mô tả chi tiết về sản phẩm..."></textarea></label></section>
 <section class="panel price"><h2><img src="/assets/admin-product/icon-price.svg" alt="">Giá bán</h2>@if (hasVariants) {<div class="price-summary"><b>Khoảng giá</b><strong>{{ priceRange }}</strong></div>} @else {<div class="single-price-fields"><label class="form-field"><span class="field-label">Giá bán (VNĐ) <b>*</b></span><span class="currency-input"><input type="number" min="0" step="1000" [(ngModel)]="variants[0].price" aria-label="Giá bán (VNĐ)"><span>đ</span></span></label><label class="form-field"><span class="field-label">Khuyến mại (%)</span><span class="currency-input"><input type="number" min="0" max="100" step="1" [(ngModel)]="variants[0].discount" aria-label="Khuyến mại (%)"><span>%</span></span></label><label class="form-field"><span class="field-label">Giá sau khuyến mại (VNĐ)</span><span class="currency-input calculated-price"><output>{{finalPrice(variants[0]).toLocaleString('vi-VN')}}</output><span>đ</span></span></label></div>}</section></div>
