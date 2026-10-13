@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { AppHttpError } from '../../../../../core/models/app-http-error.model';
+import { AdminCategory } from '../../../categories/models/admin-category.model';
+import { AdminCategoryService } from '../../../categories/services/admin-category.service';
+import { AdminProductService } from '../../services/admin-product.service';
+import { ProductWrite } from '../../models/admin-product.model';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
@@ -27,7 +33,16 @@ interface VariantDraft {
   styleUrl: './admin-product-create-page.component.scss',
   changeDetection: ChangeDetectionStrategy.Default,
 })
-export class AdminProductCreatePageComponent implements OnDestroy {
+export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
+  private readonly categoryService = inject(AdminCategoryService);
+  private readonly productService = inject(AdminProductService);
+
+  categories: AdminCategory[] = [];
+  loadingCategories = false;
+  categoryError = '';
+  saving = false;
+  createdProductId: string | null = null;
+  private destroyed = false;
   productName = '';
   categoryId = '';
   usageType = '';
@@ -39,10 +54,8 @@ export class AdminProductCreatePageComponent implements OnDestroy {
   primaryImageId: number | null = null;
   feedback = '';
 
-  variants: VariantDraft[] = [
-    this.newVariant('500g', 250000),
-    this.newVariant('1.5kg', 420000),
-  ];
+  // No demonstration SKU/price data should be accidentally saved.
+  variants: VariantDraft[] = [this.newVariant()];
 
   private nextImageId = 1;
   private readonly maxImageCount = 10;
@@ -191,17 +204,120 @@ export class AdminProductCreatePageComponent implements OnDestroy {
     this.feedback = '';
   }
 
+  ngOnInit(): void {
+    void this.loadCategories();
+  }
+
+  async loadCategories(): Promise<void> {
+    if (this.loadingCategories) return;
+    this.loadingCategories = true;
+    this.categoryError = '';
+    try {
+      const results = new Map<string, AdminCategory>();
+      let cursor: string | null = null;
+      // OpenAPI page limit is 100. Read subsequent pages for large catalogs.
+      for (let page = 0; page < 30; page++) {
+        const response = await firstValueFrom(this.categoryService.listCategories({
+          limit: 100,
+          status: 'ACTIVE',
+          cursor,
+        }));
+        if (this.destroyed) return;
+        for (const item of response.items) {
+          if (item.status === 'ACTIVE') results.set(item.id, item);
+        }
+        cursor = response.nextCursor;
+        if (!cursor) break;
+        if (page === 29) {
+          throw new Error('Danh mục quá nhiều, chưa thể tải hết. Vui lòng thử lại.');
+        }
+      }
+      this.categories = [...results.values()].sort(
+        (a, b) => a.name.localeCompare(b.name, 'vi'),
+      );
+      if (this.categoryId && !results.has(this.categoryId)) this.categoryId = '';
+    } catch (error: unknown) {
+      if (!this.destroyed) {
+        this.categoryError = error instanceof Error ? error.message : 'Không thể tải danh mục.';
+      }
+    } finally {
+      if (!this.destroyed) this.loadingCategories = false;
+    }
+  }
+
   ngOnDestroy(): void {
+    this.destroyed = true;
     this.images.forEach(image => URL.revokeObjectURL(image.previewUrl));
     this.variants.forEach(variant => this.releaseVariantImage(variant));
   }
 
   saveDraft(): void {
-    if (!this.productName.trim() || !this.categoryId.trim() || !this.usageType.trim()
-      || this.variants.some(v => !v.label.trim() || !v.sku.trim() || Number(v.price) < 0)) {
-      this.feedback = 'Vui lòng nhập tên, loại sử dụng, danh mục và đầy đủ SKU/giá biến thể.';
+    if (this.saving || this.createdProductId) return;
+    const name = this.productName.trim();
+    const selectedCategory = this.categories.find(item => item.id === this.categoryId);
+    if (!name || !selectedCategory || !this.usageType) {
+      this.feedback = 'Vui lòng nhập tên sản phẩm, chọn loại sử dụng và danh mục đang hoạt động.';
       return;
     }
-    this.feedback = 'Phase 1: Giao diện đã kiểm tra dữ liệu. Chức năng lưu API sẽ được kết nối ở phase tích hợp Backend.';
+
+    // Contract v7 treats Product as a purchasable master item. These two
+    // usage modes require BE business handling before data can be persisted.
+    if (this.usageType !== 'SALE') {
+      this.feedback = 'BE hiện chỉ hỗ trợ tạo Hàng bán. Dùng chung và Vật tư dịch vụ đang chờ bổ sung API.';
+      return;
+    }
+    if (this.images.length || this.variants.some(v => v.imageFile)) {
+      this.feedback = 'Ảnh đang được xem trước trên máy. BE chưa có API upload ảnh nên chưa thể lưu sản phẩm có ảnh.';
+      return;
+    }
+    if (this.variants.some(v => Number(v.discount) !== 0)) {
+      this.feedback = 'BE chưa hỗ trợ lưu khuyến mại (%). Vui lòng đặt 0% để tạo sản phẩm mà không mất thông tin.';
+      return;
+    }
+    if (!this.variants.length || this.variants.some(v =>
+      !v.label.trim() ||
+      !v.sku.trim() ||
+      !Number.isSafeInteger(Number(v.price)) ||
+      Number(v.price) < 0
+    )) {
+      this.feedback = 'Mỗi biến thể phải có tên, SKU và giá bán hợp lệ (số nguyên không âm).';
+      return;
+    }
+
+    const skus = this.variants.map(v => v.sku.trim().toUpperCase());
+    if (new Set(skus).size !== skus.length) {
+      this.feedback = 'SKU giữa các biến thể không được trùng nhau.';
+      return;
+    }
+
+    const payload: ProductWrite = {
+      name,
+      description: this.description.trim(),
+      categoryId: selectedCategory.id,
+      status: this.active ? 'ACTIVE' : 'INACTIVE',
+      variants: this.variants.map(v => ({
+        label: v.label.trim(),
+        sku: v.sku.trim(),
+        price: Number(v.price),
+        status: v.active ? 'ACTIVE' : 'INACTIVE',
+      })),
+    };
+
+    this.saving = true;
+    this.feedback = '';
+    this.productService.createProduct(payload).subscribe({
+      next: product => {
+        this.saving = false;
+        this.createdProductId = product.id;
+        this.feedback = 'Đã tạo sản phẩm thành công (mã: ' + product.id + '). Tồn kho ban đầu bằng 0 và phải nhập qua module Kho.';
+      },
+      error: (error: unknown) => {
+        this.saving = false;
+        const message = error instanceof AppHttpError
+          ? error.message
+          : error instanceof Error ? error.message : 'Không thể lưu sản phẩm.';
+        this.feedback = 'Không lưu được sản phẩm: ' + message;
+      },
+    });
   }
 }
