@@ -36,7 +36,7 @@ export class AdminProductEditPageComponent implements OnInit {
   categoryId = '';
   active = false;
   variants: ProductVariantWrite[] = [];
-  leaveDialogOpen = false;
+  readonly leaveDialogOpen = signal(false);
   private leaveResolver: ((confirmed: boolean) => void) | null = null;
   private lastSavedSnapshot = '';
 
@@ -65,14 +65,14 @@ export class AdminProductEditPageComponent implements OnInit {
     if (this.saving()) return false;
     if (!this.hasUnsavedChanges()) return true;
     if (this.leaveResolver) return false;
-    this.leaveDialogOpen = true;
+    this.leaveDialogOpen.set(true);
     return new Promise<boolean>(resolve => { this.leaveResolver = resolve; });
   }
 
   resolveLeave(confirmed: boolean): void {
     const resolver = this.leaveResolver;
     this.leaveResolver = null;
-    this.leaveDialogOpen = false;
+    this.leaveDialogOpen.set(false);
     resolver?.(confirmed);
   }
 
