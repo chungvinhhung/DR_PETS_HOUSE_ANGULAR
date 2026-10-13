@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnDestroy, OnInit } from '@angular/core';
 import { finalize, firstValueFrom, TimeoutError, timeout } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppHttpError } from '../../../../../core/models/app-http-error.model';
@@ -38,6 +38,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
   private readonly categoryService = inject(AdminCategoryService);
   private readonly productService = inject(AdminProductService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly cdr = inject(ChangeDetectorRef);
   private createAttemptFingerprint: string | null = null;
   private createAttemptKey: string | null = null;
 
@@ -245,7 +246,10 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
         this.categoryError = error instanceof Error ? error.message : 'Không thể tải danh mục.';
       }
     } finally {
-      if (!this.destroyed) this.loadingCategories = false;
+      if (!this.destroyed) {
+        this.loadingCategories = false;
+        this.cdr.markForCheck();
+      }
     }
   }
 
@@ -317,26 +321,42 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
 
     this.saving = true;
     this.feedback = '';
-    this.productService.createProduct(payload, this.createAttemptKey).pipe(
-      // Angular HttpClient may otherwise wait indefinitely for a stalled BE.
-      timeout({ first: 30000 }),
-      takeUntilDestroyed(this.destroyRef),
-      finalize(() => { this.saving = false; }),
-    ).subscribe({
-      next: product => {
-        this.createdProductId = product.id;
-        this.feedback = 'Đã tạo sản phẩm thành công (mã: ' + product.id + '). Tồn kho ban đầu bằng 0 và phải nhập qua module Kho.';
-      },
-      error: (error: unknown) => {
-        if (error instanceof TimeoutError) {
-          this.feedback = 'Chưa nhận được phản hồi từ Backend sau 30 giây. Sản phẩm CÓ THỂ đã được tạo. Hãy kiểm tra log BE và danh sách sản phẩm trước khi thử lưu lại để tránh trùng.';
-          return;
-        }
-        const message = error instanceof AppHttpError
-          ? error.message
-          : error instanceof Error ? error.message : 'Không thể lưu sản phẩm.';
-        this.feedback = 'Không lưu được sản phẩm: ' + message;
-      },
-    });
+    this.cdr.markForCheck();
+
+    try {
+      this.productService.createProduct(payload, this.createAttemptKey).pipe(
+        // Angular 22 is zoneless by default. Explicitly schedule view refresh
+        // after async RxJS callbacks; otherwise "Đang lưu..." stays visible.
+        timeout({ first: 30000 }),
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.saving = false;
+          if (!this.destroyed) this.cdr.markForCheck();
+        }),
+      ).subscribe({
+        next: product => {
+          this.createdProductId = product.id;
+          this.feedback = 'Đã tạo sản phẩm thành công (mã: ' + product.id + '). Tồn kho ban đầu bằng 0 và phải nhập qua module Kho.';
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          if (error instanceof TimeoutError) {
+            this.feedback = 'Chưa nhận được phản hồi từ Backend sau 30 giây. Sản phẩm CÓ THỂ đã được tạo. Hãy kiểm tra log BE và danh sách sản phẩm trước khi thử lưu lại để tránh trùng.';
+          } else {
+            const message = error instanceof AppHttpError
+              ? error.message
+              : error instanceof Error ? error.message : 'Không thể lưu sản phẩm.';
+            this.feedback = 'Không lưu được sản phẩm: ' + message;
+          }
+          this.cdr.markForCheck();
+        },
+      });
+    } catch (error: unknown) {
+      // Guard against a synchronous API setup failure leaving saving=true.
+      this.saving = false;
+      this.feedback = 'Không khởi tạo được request lưu sản phẩm: ' +
+        (error instanceof Error ? error.message : 'Lỗi không xác định.');
+      this.cdr.markForCheck();
+    }
   }
 }
