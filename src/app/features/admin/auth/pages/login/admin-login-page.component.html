@@ -124,22 +124,6 @@
           <button class="login-button" type="submit" [disabled]="isSubmitting()">
             {{ isSubmitting() ? 'ĐANG ĐĂNG NHẬP...' : 'ĐĂNG NHẬP' }}
           </button>
-
-          <div class="social-divider" aria-hidden="true">
-            <span class="social-divider__line"></span>
-            <span class="social-divider__text">Hoặc tiếp tục với</span>
-            <span class="social-divider__line"></span>
-          </div>
-
-          <button
-            class="google-button"
-            type="button"
-            (click)="continueWithGoogle()"
-            aria-label="Tiếp tục với Google"
-          >
-            <img src="/assets/admin-login/google.svg" alt="" aria-hidden="true" />
-            <span>Tiếp tục với Google</span>
-          </button>
         </div>
       </div>
     </form>
