@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { AdminCatalogShellComponent } from '../../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 
 interface ProductImageDraft {
   id: number;
@@ -21,7 +22,7 @@ interface VariantDraft {
 @Component({
   selector: 'app-admin-product-create-page',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, AdminCatalogShellComponent],
   templateUrl: './admin-product-create-page.component.html',
   styleUrl: './admin-product-create-page.component.scss',
   changeDetection: ChangeDetectionStrategy.Default,
