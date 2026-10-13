@@ -171,6 +171,31 @@ export class AdminProductEditPageComponent implements OnInit {
     });
   }
 
+  addImageUrl(): void {
+    this.imageError = '';
+    try {
+      const parsed = new URL(this.imageUrlDraft.trim());
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') throw new Error('Invalid scheme');
+      if (this.images.length >= 10) { this.imageError = 'Tối đa 10 ảnh sản phẩm.'; return; }
+      if (this.images.includes(parsed.href)) { this.imageError = 'Ảnh đã có trong danh sách.'; return; }
+      this.images = [...this.images, parsed.href];
+      this.imageUrlDraft = '';
+    } catch {
+      this.imageError = 'URL ảnh phải bắt đầu bằng http:// hoặc https://.';
+    }
+  }
+
+  removeImageUrl(index: number): void {
+    this.images = this.images.filter((_, i) => i !== index);
+  }
+
+  makePrimaryImage(index: number): void {
+    if (index <= 0 || index >= this.images.length) return;
+    const urls = [...this.images];
+    const selected = urls.splice(index, 1)[0];
+    this.images = [selected, ...urls];
+  }
+
   addVariant(): void {
     this.variants = [...this.variants, { label: '', sku: '', price: 0, status: 'INACTIVE' }];
   }
