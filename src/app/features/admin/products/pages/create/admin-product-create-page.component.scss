@@ -10,3 +10,29 @@
   background-position: right 16px center;
   background-size: 16px 16px;
 }
+
+/* Match both adjacent fields in Figma Create Product / Basic Info. */
+.product-type-usage-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 20px;
+  align-items: start;
+}
+.product-type-usage-row > .form-field {
+  min-width: 0;
+}
+.product-type-usage-row .usage {
+  max-width: none;
+}
+.product-type-usage-row .radios {
+  height: 42px;
+  gap: 20px;
+}
+.product-type-usage-row .radios label {
+  white-space: nowrap;
+}
+@media (max-width: 1350px) {
+  .product-type-usage-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
