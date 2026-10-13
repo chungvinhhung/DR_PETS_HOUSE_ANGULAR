@@ -163,6 +163,16 @@ export class AdminCategoryPageComponent implements OnInit {
     this.dialogOpen.set(true);
   }
 
+  openSlugSuggestion(category: AdminCategory): void {
+    this.openEdit(category);
+    const suggestion = this.slugifyVietnamese(category.name);
+    if (suggestion) {
+      // Preview only: do not modify an existing public URL until ADMIN saves.
+      this.formSlug = suggestion;
+      this.slugEdited = true;
+    }
+  }
+
   closeDialog(): void {
     if (this.saving()) return;
     this.dialogOpen.set(false);
