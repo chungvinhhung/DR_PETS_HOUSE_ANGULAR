@@ -124,6 +124,10 @@ export class AdminProductEditPageComponent implements OnInit {
   save(): void {
     const item = this.product();
     if (!item || this.saving()) return;
+    if (item.status === 'ARCHIVED') {
+      this.error.set('Vui lòng khôi phục sản phẩm từ tab Đã lưu trữ trước khi chỉnh sửa.');
+      return;
+    }
     this.error.set('');
     this.success.set('');
     if (!this.name.trim() || !this.categoryId || !this.variants.length ||
