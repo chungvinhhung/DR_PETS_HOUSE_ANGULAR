@@ -235,29 +235,28 @@ app-admin-product-create-page {
 }
 .primary-image-badge {
   position: absolute;
-  left: 0;
-  bottom: 0;
   z-index: 1;
-  max-width: 100%;
-  padding: 3px 7px;
-  background: #0d47a1;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 2px 0;
+  background: rgba(0, 49, 120, 0.8);
   color: white;
-  font-size: 11px;
-  line-height: 15px;
-  white-space: nowrap;
-  border-radius: 0 5px 0 0;
+  font: 500 10px/15px Roboto, Arial, sans-serif;
+  text-align: center;
+  border-radius: 0;
+  pointer-events: none;
 }
 .product-thumbnail__actions {
   position: absolute;
   z-index: 2;
-  inset: 0;
+  top: 4px;
+  right: 4px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 6px;
-  background: rgb(15 38 75 / 78%);
+  gap: 3px;
+  background: transparent;
   opacity: 0;
   pointer-events: none;
   transition: opacity 160ms ease;
@@ -268,29 +267,46 @@ app-admin-product-create-page {
   pointer-events: auto;
 }
 .thumbnail-action {
-  width: 100%;
-  max-width: 125px;
-  min-height: 26px;
-  padding: 4px 5px;
-  border: 1px solid #c8dbf4;
-  border-radius: 5px;
-  background: white;
-  color: #0d47a1;
-  font: 600 10px/16px Roboto, Arial, sans-serif;
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #d6e2f1;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  color: #003178;
   cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+.thumbnail-action svg {
+  display: block;
+  width: 12px;
+  height: 12px;
 }
 .thumbnail-action--selected {
-  background: #d6eaf9;
+  background: #003178;
+  border-color: #003178;
+  color: #fff;
 }
 .thumbnail-action--delete {
-  color: #b91c1c;
-  border-color: #f3d1d1;
+  background: rgba(186, 26, 26, 0.9);
+  border-color: rgba(186, 26, 26, 0.9);
+  color: #fff;
 }
-.thumbnail-action:hover {
-  background: #e5f6fd;
+.thumbnail-action:hover,
+.thumbnail-action:focus-visible {
+  background: #dceafb;
 }
-.thumbnail-action--delete:hover {
-  background: #fff1f2;
+.thumbnail-action--selected:hover,
+.thumbnail-action--selected:focus-visible {
+  background: #003178;
+}
+.thumbnail-action--delete:hover,
+.thumbnail-action--delete:focus-visible {
+  background: #9d1818;
 }
 .thumbnail-action:focus-visible,
 .variant-image-picker:focus-visible {
@@ -350,13 +366,6 @@ app-admin-product-create-page {
   .product-thumbnail__actions {
     opacity: 1;
     pointer-events: auto;
-    justify-content: flex-end;
-    gap: 4px;
-    padding: 5px;
-    background: linear-gradient(transparent 10%, rgb(15 38 75 / 65%) 100%);
-  }
-  .thumbnail-action {
-    min-height: 23px;
   }
 }
 
