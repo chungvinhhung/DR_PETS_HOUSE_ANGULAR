@@ -32,6 +32,15 @@ export const routes: Routes = [
       ).then((component) => component.AdminForbiddenPageComponent),
   },
   {
+    path: 'admin/categories',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () =>
+      import('./features/admin/categories/pages/admin-category-page.component').then(
+        (component) => component.AdminCategoryPageComponent,
+      ),
+  },
+  {
     path: 'admin/products/new',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN'] },
