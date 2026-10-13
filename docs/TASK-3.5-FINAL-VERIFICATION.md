@@ -12,7 +12,6 @@ Backend implementation is out of scope. FE consumes the backend contract from br
 - Admin login UI from Figma, including the final approved form layout.
 - Password visibility toggle switches between Design System `visibility` and `visibility_off` icons.
 - Identifier field supports phone or email with a neutral account icon.
-- Google continuation button is present per Figma; backend Google OAuth is not currently available, so FE exposes a clear unavailable-state message rather than inventing an endpoint.
 - `POST /api/v1/auth/login`.
 - Access token kept in memory.
 - HttpOnly refresh cookie via `withCredentials: true`.
@@ -46,7 +45,7 @@ Backend implementation is out of scope. FE consumes the backend contract from br
 - Current signed-in account does not expose self role/status controls in FE.
 
 ### Assets
-- Login UI was re-synced to the approved Admin Login Figma composition, including the updated form, Google button, password visibility states and attention marks.
+- Login UI was re-synced to the approved Admin Login composition, including the updated form, password visibility states and attention marks. The Google continuation section was removed per final team direction and the form was rebalanced vertically.
 - Most login assets are stored under `public/assets/admin-login/`.
 - Current known production-hardening debt: four approved raster artwork references (mascot, two paws and brand logo) still use short-lived Figma MCP URLs to preserve visual fidelity. Earlier screenshot-based localization caused incorrect white backgrounds/geometry and was intentionally not reused.
 
@@ -100,7 +99,7 @@ Use the demo credentials provided by the backend seed for ADMIN, MANAGER, STAFF 
 
 ## Final Phase 6 status
 
-- Final Admin Login visual approved manually.
+- Final Admin Login visual approved manually, then updated per leader direction to remove the Google continuation section and rebalance the form.
 - Safe protected-route `returnUrl` redirect verified manually.
 - ADMIN, MANAGER and CUSTOMER role flows verified during Task 3.5 smoke testing.
 - Latest Angular CI for the feature branch passed before final documentation cleanup.
