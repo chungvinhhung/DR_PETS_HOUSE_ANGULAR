@@ -30,6 +30,7 @@ export class AdminProductListPageComponent implements OnInit {
   readonly updatingId = signal<string | null>(null);
   readonly pageNumber = signal(1);
   readonly nextCursor = signal<string | null>(null);
+  readonly totalProducts = signal<number | null>(null);
 
   searchTerm = '';
   categoryFilter = '';
@@ -109,6 +110,8 @@ export class AdminProductListPageComponent implements OnInit {
       finalize(() => this.loading.set(false)),
     ).subscribe({
       next: result => {
+        const meta = result as typeof result & { total?: number; totalCount?: number };
+        this.totalProducts.set(typeof meta.total === 'number' ? meta.total : typeof meta.totalCount === 'number' ? meta.totalCount : null);
         if (serial !== this.requestNumber) return;
         // Current tab should never render archived rows; the BE currently
         // allows ADMIN to see every status without an explicit status filter.
