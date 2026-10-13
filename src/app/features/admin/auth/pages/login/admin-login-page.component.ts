@@ -38,10 +38,6 @@ export class AdminLoginPageComponent {
     this.passwordVisible.update((visible) => !visible);
   }
 
-  continueWithGoogle(): void {
-    this.apiError.set('Đăng nhập Google chưa được Backend hỗ trợ.');
-  }
-
   submit(): void {
     this.submitted.set(true);
     this.apiError.set(null);
