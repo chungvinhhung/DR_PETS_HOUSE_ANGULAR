@@ -9,9 +9,10 @@ import { AdminProduct, ProductWrite } from '../models/admin-product.model';
 export class AdminProductService {
   private readonly api = inject(ApiClientService);
 
-  createProduct(body: ProductWrite): Observable<AdminProduct> {
-    // POST /products is idempotent according to the BE's OpenAPI v7 contract.
-    const headers = new HttpHeaders({ 'Idempotency-Key': crypto.randomUUID() });
+  createProduct(body: ProductWrite, idempotencyKey: string): Observable<AdminProduct> {
+    // Preserve the same key across retries of the same draft. Generating a
+    // fresh key after a network timeout could create a duplicate Product.
+    const headers = new HttpHeaders({ 'Idempotency-Key': idempotencyKey });
     return this.api.post<AdminProduct, ProductWrite>('/products', body, { headers });
   }
 }
