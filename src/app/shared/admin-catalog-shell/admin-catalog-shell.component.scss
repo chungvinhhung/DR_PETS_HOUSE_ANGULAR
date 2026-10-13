@@ -170,7 +170,7 @@
   padding: 6px;
   border: 0;
   border-radius: 0 0 10px 10px;
-  background: #f7fbfe;
+  background: #f1f5f9;
 }
 .catalog-sidebar__children .catalog-sidebar__sub {
   min-height: 39px;
@@ -178,11 +178,11 @@
   border-radius: 7px;
 }
 .catalog-sidebar__children .catalog-sidebar__sub:not(.catalog-sidebar__sub--active):hover {
-  background: #e7f2fc;
+  background: #e9f1f8;
 }
 .catalog-sidebar__children .catalog-sidebar__sub--active {
-  background: #b9def8;
-  color: #06458f;
+  background: #deecf7;
+  color: #0d47a1;
   font-weight: 700;
 }
 .catalog-sidebar__sub {
