@@ -104,9 +104,15 @@
                     <a [routerLink]="['/admin/products', product.id, 'edit']" title="Chỉnh sửa" [attr.aria-label]="'Chỉnh sửa ' + product.name">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m13 6 5 5M4 20l4.6-1 10.9-10.9a2.1 2.1 0 0 0-3-3L5.6 16z"/></svg>
                     </a>
-                    <button type="button" class="archive-action" [disabled]="!!updatingId() || product.status === 'ARCHIVED'" (click)="requestArchive(product)" [title]="product.status === 'ARCHIVED' ? 'Sản phẩm đã lưu trữ' : 'Lưu trữ sản phẩm'" [attr.aria-label]="'Lưu trữ ' + product.name">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="1"/><path d="M3 4h18v4H3zM12 11v6m-3-3 3 3 3-3"/></svg>
-                    </button>
+                    @if (product.status === 'ARCHIVED') {
+                      <button type="button" class="archive-action restore-action" [disabled]="!!updatingId()" (click)="requestRestore(product)" [attr.title]="'Khôi phục ' + product.name" [attr.aria-label]="'Khôi phục ' + product.name">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>
+                      </button>
+                    } @else {
+                      <button type="button" class="archive-action" [disabled]="!!updatingId()" (click)="requestArchive(product)" title="Lưu trữ sản phẩm" [attr.aria-label]="'Lưu trữ ' + product.name">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="1"/><path d="M3 4h18v4H3zM12 11v6m-3-3 3 3 3-3"/></svg>
+                      </button>
+                    }
                   </td>
                 </tr>
               }
@@ -136,6 +142,21 @@
       <div class="product-leave-actions">
         <button type="button" class="product-leave-stay" [disabled]="!!updatingId()" (click)="closeArchiveDialog()">Hủy bỏ</button>
         <button type="button" class="product-leave-exit" [disabled]="!!updatingId()" (click)="confirmArchive()">{{ updatingId() ? 'Đang lưu trữ...' : 'Xác nhận lưu trữ' }}</button>
+      </div>
+    </section>
+  </div>
+}
+
+@if (restoreTarget(); as target) {
+  <div class="product-leave-overlay" (keydown.escape)="closeRestoreDialog()">
+    <section class="product-leave-dialog" role="alertdialog" aria-modal="true"
+      aria-labelledby="restore-product-title" aria-describedby="restore-product-desc" tabindex="-1">
+      <h2 id="restore-product-title">Khôi phục sản phẩm?</h2>
+      <p id="restore-product-desc">Khôi phục <strong>{{ target.name }}</strong> về danh sách Sản phẩm hiện tại ở trạng thái <strong>Tạm ngưng</strong>. Bạn có thể kích hoạt bán lại sau khi kiểm tra thông tin và tồn kho.</p>
+      @if (restoreError()) { <p class="error" role="alert">{{ restoreError() }}</p> }
+      <div class="product-leave-actions">
+        <button type="button" class="product-leave-stay" [disabled]="!!updatingId()" (click)="closeRestoreDialog()">Hủy bỏ</button>
+        <button type="button" class="product-leave-exit" [disabled]="!!updatingId()" (click)="confirmRestore()">{{ updatingId() ? 'Đang khôi phục...' : 'Khôi phục sản phẩm' }}</button>
       </div>
     </section>
   </div>
