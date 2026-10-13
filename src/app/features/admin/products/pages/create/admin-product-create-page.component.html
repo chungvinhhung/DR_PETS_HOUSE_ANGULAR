@@ -10,7 +10,44 @@
 <label class="form-field description"><span class="field-label">Mô tả sản phẩm</span><textarea [(ngModel)]="description" placeholder="Nhập mô tả chi tiết về sản phẩm..."></textarea></label></section>
 <section class="panel price"><h2><img src="/assets/admin-product/icon-price.svg" alt="">Giá bán</h2><div class="price-summary"><b>Khoảng giá</b><strong>{{ priceRange }}</strong></div></section></div>
 <div class="right-column"><section class="panel status"><h2><img src="/assets/admin-product/icon-status.svg" alt="">Trạng thái sản phẩm</h2><div class="status-row"><button type="button" class="switch" [class.on]="active" (click)="active = !active" [attr.aria-pressed]="active" aria-label="Đổi trạng thái sản phẩm"><span></span></button><span>{{active?'Hoạt động':'Tạm ngưng'}}</span></div></section>
-<section class="panel photos"><h2><img src="/assets/admin-product/icon-images.svg" alt="">Hình ảnh</h2><label class="upload"><input type="file" hidden multiple accept=".jpg,.jpeg,.png" (change)="onImagesSelected($event)"><img class="cloud" src="/assets/admin-product/icon-upload.svg" alt="">Tải lên ảnh sản phẩm<small>Hỗ trợ JPG, PNG (Tối đa 10 ảnh, 5MB/ảnh)</small></label><div class="previews">@for(photo of images.slice(0,3);track $index){<img [src]="photo" alt="Ảnh sản phẩm">}@for(n of emptyPreviewSlots;track n){<span class="preview-empty"></span>}</div></section></div></div>
-<section class="panel variant-panel"><h2><img src="/assets/admin-product/icon-variants.svg" alt="">Biến thể sản phẩm</h2><button type="button" class="btn-outline add" (click)="addVariant()"><img class="btn-icon add-icon" src="/assets/admin-product/icon-add.svg" alt="">Thêm biến thể</button><div class="table-scroll"><table><thead><tr><th>Ảnh</th><th>Biến thể</th><th>SKU</th><th>Giá bán</th><th>Khuyến mại (%)</th><th>Giá sau khuyến mại</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>@for(v of variants;track $index){<tr><td><span class="image-picker"><img src="/assets/admin-product/icon-image-picker.svg" alt=""></span></td><td><input aria-label="Biến thể" [(ngModel)]="v.label"></td><td><input aria-label="SKU" [(ngModel)]="v.sku" placeholder="Nhập SKU"></td><td><input aria-label="Giá bán" type="number" min="0" [(ngModel)]="v.price"></td><td><input aria-label="Khuyến mại" type="number" min="0" max="100" [(ngModel)]="v.discount"></td><td><output class="discount-price">{{finalPrice(v).toLocaleString('vi-VN')}}đ</output></td><td><button type="button" class="switch tiny" [class.on]="v.active" (click)="v.active=!v.active" aria-label="Trạng thái biến thể"><span></span></button></td><td><button type="button" class="trash" (click)="removeVariant($index)" [disabled]="variants.length===1" aria-label="Xóa biến thể"><img src="/assets/admin-product/icon-delete.svg" alt=""></button></td></tr>}</tbody></table></div></section>
+<section class="panel photos"><h2><img src="/assets/admin-product/icon-images.svg" alt="">Hình ảnh</h2><label class="upload"><input type="file" hidden multiple accept=".jpg,.jpeg,.png" (change)="onImagesSelected($event)"><img class="cloud" src="/assets/admin-product/icon-upload.svg" alt="">Tải lên ảnh sản phẩm<small>Hỗ trợ JPG, PNG (Tối đa 10 ảnh, 5MB/ảnh)</small></label><div class="previews">
+  @for (photo of images; track photo.id) {
+    <div class="product-thumbnail" [class.product-thumbnail--primary]="primaryImageId === photo.id">
+      <img class="product-thumbnail__image" [src]="photo.previewUrl" [alt]="'Ảnh sản phẩm ' + ($index + 1)">
+      @if (primaryImageId === photo.id) {
+        <span class="primary-image-badge">Ảnh chính</span>
+      }
+      <div class="product-thumbnail__actions">
+        <button type="button" class="thumbnail-action" [class.thumbnail-action--selected]="primaryImageId === photo.id"
+          [attr.aria-pressed]="primaryImageId === photo.id"
+          [attr.aria-label]="'Đặt ảnh ' + ($index + 1) + ' làm ảnh chính'"
+          (click)="setPrimaryImage(photo.id)">{{ primaryImageId === photo.id ? 'Ảnh chính ✓' : 'Đặt ảnh chính' }}</button>
+        <button type="button" class="thumbnail-action thumbnail-action--delete"
+          [attr.aria-label]="'Xóa ảnh sản phẩm ' + ($index + 1)"
+          (click)="removeProductImage(photo.id)">Xóa ảnh</button>
+      </div>
+    </div>
+  }
+  @for (n of emptyPreviewSlots; track n) {
+    <span class="preview-empty" aria-label="Chưa có ảnh"></span>
+  }
+</div></section></div></div>
+<section class="panel variant-panel"><h2><img src="/assets/admin-product/icon-variants.svg" alt="">Biến thể sản phẩm</h2><button type="button" class="btn-outline add" (click)="addVariant()"><img class="btn-icon add-icon" src="/assets/admin-product/icon-add.svg" alt="">Thêm biến thể</button><div class="table-scroll"><table><thead><tr><th>Ảnh</th><th>Biến thể</th><th>SKU</th><th>Giá bán</th><th>Khuyến mại (%)</th><th>Giá sau khuyến mại</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>@for(v of variants;track $index){<tr><td class="variant-image-cell">
+  <input #variantImageInput class="file-input-hidden" type="file" accept=".jpg,.jpeg,.png"
+    [attr.aria-label]="'Tải lên hoặc thay ảnh cho biến thể ' + ($index + 1)"
+    (change)="onVariantImageSelected($event, v)">
+  <button type="button" class="image-picker variant-image-picker"
+    [class.variant-image-picker--filled]="!!v.imageUrl"
+    [attr.title]="v.imageUrl ? 'Chọn ảnh khác' : 'Chọn ảnh'"
+    [attr.aria-label]="v.imageUrl ? 'Thay ảnh biến thể ' + ($index + 1) : 'Chọn ảnh cho biến thể ' + ($index + 1)"
+    (click)="variantImageInput.click()">
+    @if (v.imageUrl) {
+      <img class="variant-image-picker__photo" [src]="v.imageUrl" [alt]="'Ảnh biến thể ' + ($index + 1)">
+    } @else {
+      <img class="variant-image-picker__placeholder" src="/assets/admin-product/icon-image-picker.svg" alt="">
+    }
+    <span class="variant-image-picker__overlay" aria-hidden="true">{{ v.imageUrl ? 'Đổi ảnh' : 'Chọn ảnh' }}</span>
+  </button>
+</td><td><input aria-label="Biến thể" [(ngModel)]="v.label"></td><td><input aria-label="SKU" [(ngModel)]="v.sku" placeholder="Nhập SKU"></td><td><input aria-label="Giá bán" type="number" min="0" [(ngModel)]="v.price"></td><td><input aria-label="Khuyến mại" type="number" min="0" max="100" [(ngModel)]="v.discount"></td><td><output class="discount-price">{{finalPrice(v).toLocaleString('vi-VN')}}đ</output></td><td><button type="button" class="switch tiny" [class.on]="v.active" (click)="v.active=!v.active" aria-label="Trạng thái biến thể"><span></span></button></td><td><button type="button" class="trash" (click)="removeVariant($index)" [disabled]="variants.length===1" aria-label="Xóa biến thể"><img src="/assets/admin-product/icon-delete.svg" alt=""></button></td></tr>}</tbody></table></div></section>
 @if(feedback){<p class="feedback" role="status">{{feedback}}</p>}
 </main></div></div>
