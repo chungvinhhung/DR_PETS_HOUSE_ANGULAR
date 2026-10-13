@@ -60,7 +60,7 @@ export class AdminProductEditPageComponent implements OnInit {
       this.categoryId = product.categoryId;
       this.active = product.status === 'ACTIVE';
       this.variants = product.variants.map(v => ({
-        sku: v.sku, label: v.label, price: v.price, status: v.status,
+        id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status,
       }));
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'Không thể lấy chi tiết sản phẩm.');
@@ -90,7 +90,7 @@ export class AdminProductEditPageComponent implements OnInit {
       categoryId: this.categoryId,
       status: this.active ? 'ACTIVE' : 'INACTIVE',
       variants: this.variants.map(v => ({
-        label: v.label.trim(), sku: v.sku.trim(), price: Number(v.price), status: v.status,
+        id: v.id, label: v.label.trim(), sku: v.sku.trim(), price: Number(v.price), status: v.status,
       })),
     };
     this.saving.set(true);
