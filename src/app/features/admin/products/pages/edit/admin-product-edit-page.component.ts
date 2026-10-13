@@ -37,6 +37,20 @@ export class AdminProductEditPageComponent implements OnInit {
   active = false;
   variants: ProductVariantWrite[] = [];
 
+  get hasVariants(): boolean { return this.variants.length > 1; }
+  get priceRange(): string {
+    const prices = this.variants.map(v => Number(v.price)).filter(Number.isFinite);
+    if (!prices.length) return '—';
+    const minimum = Math.min(...prices), maximum = Math.max(...prices);
+    return minimum === maximum ? this.formatPrice(minimum) : this.formatPrice(minimum) + ' – ' + this.formatPrice(maximum);
+  }
+  get singleFinalPrice(): string { return this.formatPrice(this.variants[0]?.price ?? 0); }
+  formatPrice(price: number): string { return Number(price || 0).toLocaleString('vi-VN') + 'đ'; }
+  onSingleSkuInput(event: Event): void {
+    if (this.hasVariants || !this.variants.length) return;
+    this.variants[0].sku = (event.target as HTMLInputElement).value;
+  }
+
   ngOnInit(): void {
     void this.load();
   }
