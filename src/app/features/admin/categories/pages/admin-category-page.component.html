@@ -110,7 +110,7 @@
                   <tr>
                     <td>{{ $index + 1 + (pageNumber - 1) * 20 }}</td>
                     <td class="category-name">{{ category.name }}</td>
-                    <td class="slug" [title]="'Slug đang lưu trên Backend: ' + category.slug"><code>{{ category.slug }}</code><button type="button" class="slug-edit-link" (click)="openSlugSuggestion(category)" [attr.aria-label]="'Gợi ý slug không dấu cho ' + category.name" title="Xem slug không dấu và lưu nếu phù hợp">Chuẩn hóa</button></td>
+                    <td class="slug" [title]="'Slug đang lưu trên Backend: ' + category.slug"><code>{{ category.slug }}</code></td>
                     <td>{{ parentName(category.parentId) }}</td>
                     <td>
                       <span class="status" [class.status--active]="category.status === 'ACTIVE'"
@@ -170,13 +170,10 @@
             <label class="form-field" for="category-slug">
               <span class="field-label">Đường dẫn (slug) <span class="required">*</span></span>
               <input id="category-slug" type="text" maxlength="120" spellcheck="false"
-                [ngModel]="formSlug" (ngModelChange)="onSlugInput($event)"
-                placeholder="thuc-an-hat-cho-meo" autocomplete="off">
+                [value]="formSlug" readonly aria-readonly="true"
+                placeholder="Slug sẽ tự tạo từ tên danh mục">
             </label>
-            <button type="button" class="slug-regenerate" (click)="regenerateSlug()">
-              Tạo lại từ tên
-            </button>
-            <p class="field-hint">Ví dụ: Thức Ăn Hạt Cho Mèo → <code>thuc-an-hat-cho-meo</code>. Đổi slug của danh mục đã có có thể ảnh hưởng đường dẫn đang được sử dụng.</p>
+            <p class="field-hint">Slug được tạo tự động từ tên danh mục. Ví dụ: Thức Ăn Hạt Cho Mèo → <code>thuc-an-hat-cho-meo</code>. Với danh mục cũ, slug mới chỉ được lưu khi bạn nhấn Lưu thay đổi.</p>
           </div>
           <label class="form-field">
             Danh mục cha
