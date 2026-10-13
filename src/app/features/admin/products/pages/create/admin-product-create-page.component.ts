@@ -4,8 +4,9 @@ import { RouterLink } from '@angular/router';
 
 interface ProductImageDraft {
   id: number;
-  file: File;
-  previewUrl: string;
+  file: File | null;
+  previewUrl: string | null;
+  isDemo: boolean;
 }
 
 interface VariantDraft {
@@ -33,8 +34,14 @@ export class AdminProductCreatePageComponent implements OnDestroy {
   description = '';
   hasVariants = true;
   active = false;
-  images: ProductImageDraft[] = [];
-  primaryImageId: number | null = null;
+  // Figma's three checkerboard thumbnails are a visual demo state, not
+  // uploaded files. They are replaced by real photos at the first upload.
+  images: ProductImageDraft[] = [
+    { id: 1, file: null, previewUrl: null, isDemo: true },
+    { id: 2, file: null, previewUrl: null, isDemo: true },
+    { id: 3, file: null, previewUrl: null, isDemo: true },
+  ];
+  primaryImageId: number | null = 1;
   feedback = '';
 
   variants: VariantDraft[] = [
@@ -42,7 +49,7 @@ export class AdminProductCreatePageComponent implements OnDestroy {
     this.newVariant('1.5kg', 420000),
   ];
 
-  private nextImageId = 1;
+  private nextImageId = 4;
   private readonly maxImageCount = 10;
   private readonly maxImageSize = 5 * 1024 * 1024;
 
@@ -115,16 +122,26 @@ export class AdminProductCreatePageComponent implements OnDestroy {
     if (!files.length) return;
 
     const validFiles = files.filter(file => this.isValidImage(file));
+    const realImages = this.images.filter(image => !image.isDemo);
     const allowed = validFiles.slice(
       0,
-      Math.max(0, this.maxImageCount - this.images.length),
+      Math.max(0, this.maxImageCount - realImages.length),
     );
+
+    if (allowed.length > 0) {
+      // Never treat Figma's visual demo images as uploaded product files.
+      this.images = realImages;
+      if (!this.images.some(image => image.id === this.primaryImageId)) {
+        this.primaryImageId = null;
+      }
+    }
 
     for (const file of allowed) {
       this.images.push({
         id: this.nextImageId++,
         file,
         previewUrl: URL.createObjectURL(file),
+        isDemo: false,
       });
     }
 
@@ -153,7 +170,7 @@ export class AdminProductCreatePageComponent implements OnDestroy {
     const index = this.images.findIndex(image => image.id === id);
     if (index === -1) return;
     const [removed] = this.images.splice(index, 1);
-    URL.revokeObjectURL(removed.previewUrl);
+    if (removed.previewUrl) URL.revokeObjectURL(removed.previewUrl);
     if (this.primaryImageId === id) {
       this.primaryImageId = this.images[0]?.id ?? null;
     }
@@ -176,7 +193,9 @@ export class AdminProductCreatePageComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.images.forEach(image => URL.revokeObjectURL(image.previewUrl));
+    this.images.forEach(image => {
+      if (image.previewUrl) URL.revokeObjectURL(image.previewUrl);
+    });
     this.variants.forEach(variant => this.releaseVariantImage(variant));
   }
 
