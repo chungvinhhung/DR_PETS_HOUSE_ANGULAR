@@ -29,18 +29,20 @@
           <img class="catalog-sidebar__group-chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true" width="16" height="16">
         </div>
 
-        <a class="catalog-sidebar__sub" routerLink="/admin/categories"
-          [class.catalog-sidebar__sub--active]="activeItem === 'categories'"
-          [attr.aria-current]="activeItem === 'categories' ? 'page' : null">
-          Danh mục sản phẩm
-        </a>
-        <a class="catalog-sidebar__sub" routerLink="/admin/products/new"
-          [class.catalog-sidebar__sub--active]="activeItem === 'products'"
-          [attr.aria-current]="activeItem === 'products' ? 'page' : null">
-          Sản phẩm
-        </a>
-        <a class="catalog-sidebar__sub" routerLink="/admin/orders">Đơn hàng</a>
-        <span class="catalog-sidebar__sub">Khuyến mãi</span>
+        <div class="catalog-sidebar__children" aria-label="Các mục thuộc Bán hàng">
+          <a class="catalog-sidebar__sub" routerLink="/admin/categories"
+            [class.catalog-sidebar__sub--active]="activeItem === 'categories'"
+            [attr.aria-current]="activeItem === 'categories' ? 'page' : null">
+            Danh mục sản phẩm
+          </a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/products/new"
+            [class.catalog-sidebar__sub--active]="activeItem === 'products'"
+            [attr.aria-current]="activeItem === 'products' ? 'page' : null">
+            Sản phẩm
+          </a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/orders">Đơn hàng</a>
+          <span class="catalog-sidebar__sub">Khuyến mãi</span>
+        </div>
 
         <a class="catalog-sidebar__link" routerLink="/admin/appointments">
           <img src="/assets/admin-product/icon-services.svg" alt="" width="20" height="20">
