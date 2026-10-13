@@ -19,6 +19,8 @@ Backend implementation is out of scope. FE consumes the backend contract from br
 - Automatic `TOKEN_EXPIRED` refresh + failed-request retry.
 - Session restore after browser reload using `/auth/refresh` + `/auth/me`.
 - Logout via `POST /api/v1/auth/logout`.
+- `/admin` is the Admin login entry page for unauthenticated users; an existing valid session is sent to `/admin/dashboard`.
+- `/admin/login` uses the same session-aware entry behavior.
 - Login honors a safe internal `returnUrl` for protected Admin routes.
 
 ### Authorization / RBAC
@@ -53,6 +55,8 @@ Backend implementation is out of scope. FE consumes the backend contract from br
 
 | Case | Expected result | Status |
 | --- | --- | --- |
+| Unauthenticated `/admin` | Render Admin login page | Implemented |
+| Authenticated `/admin` | Restore/use session and redirect to `/admin/dashboard` | Implemented |
 | Admin valid login | 200, session created, redirect to dashboard | Verified manually |
 | Admin logout | Refresh session revoked/cleared and redirect to login | Verified manually |
 | Browser reload while authenticated | Refresh cookie restores access token + user | Verified manually |
