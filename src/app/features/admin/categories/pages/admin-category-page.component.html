@@ -1,50 +1,6 @@
 <div class="category-page">
-  <header class="topbar">
-    <a class="brand" routerLink="/admin/dashboard" aria-label="Dr. Pet's House - Dashboard">
-      <img src="/assets/admin-product/logo-figma.png" alt="Dr. Pet's House">
-    </a>
-    <div class="top-actions">
-      <a class="view-site" routerLink="/">Xem trang web</a>
-      <img class="bell" src="/assets/admin-product/icon-notification.svg" alt="Thông báo">
-      <a class="profile" routerLink="/admin/profile">
-        <img class="avatar" src="/assets/admin-product/avatar-figma.png" alt="">
-        <span>Quản trị viên<small>Tên tài khoản</small></span>
-        <span aria-hidden="true">⌄</span>
-      </a>
-    </div>
-  </header>
-
-  <div class="screen-body">
-    <nav class="sidebar" aria-label="Điều hướng Admin">
-      <a routerLink="/admin/dashboard" class="sidebar-link">
-        <img src="/assets/admin-product/icon-dashboard.svg" alt=""> Dashboard
-      </a>
-      <div class="sidebar-group">
-        <img src="/assets/admin-product/icon-sales.svg" alt=""> Bán hàng
-        <img class="admin-menu-chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
-      </div>
-      <a class="sidebar-sub selected" routerLink="/admin/categories" aria-current="page">Danh mục sản phẩm</a>
-      <a class="sidebar-sub" routerLink="/admin/products/new">Sản phẩm</a>
-      <a class="sidebar-sub" routerLink="/admin/orders">Đơn hàng</a>
-      <div class="sidebar-sub">Khuyến mãi</div>
-      <a class="sidebar-link" routerLink="/admin/appointments">
-        <img src="/assets/admin-product/icon-services.svg" alt=""> Dịch vụ
-      </a>
-      <div class="sidebar-link">
-        <img src="/assets/admin-product/icon-operations.svg" alt=""> Vận hành
-      </div>
-      <a class="sidebar-link" routerLink="/admin/users">
-        <img src="/assets/admin-product/icon-users.svg" alt=""> Quản lý người dùng
-      </a>
-      <div class="sidebar-link">
-        <img src="/assets/admin-product/icon-content.svg" alt=""> Nội dung &amp; Cộng đồng
-      </div>
-      <div class="sidebar-link">
-        <img src="/assets/admin-product/icon-reviews.svg" alt=""> Đánh giá &amp; Phản hồi
-      </div>
-    </nav>
-
-    <main class="main">
+  <app-admin-catalog-shell activeItem="categories">
+<main class="main">
       <header class="page-heading">
         <div>
           <p class="breadcrumb">Bán hàng <span>›</span> Sản phẩm <span>›</span> Danh mục</p>
@@ -148,7 +104,7 @@
         </footer>
       </section>
     </main>
-  </div>
+  </app-admin-catalog-shell>
 
   @if (dialogOpen()) {
     <div class="modal-backdrop">
