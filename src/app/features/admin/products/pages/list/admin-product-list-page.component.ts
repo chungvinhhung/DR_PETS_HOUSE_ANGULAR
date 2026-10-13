@@ -137,7 +137,15 @@ export class AdminProductListPageComponent implements OnInit {
     if (product.status === 'ARCHIVED' || this.updatingId()) return;
     this.updatingId.set(product.id);
     this.error.set('');
+    // OpenAPI v7 PATCH currently validates against ProductWrite, whose
+    // required name/category/variants must be present even for status changes.
     this.productsApi.updateProduct(product.id, {
+      name: product.name,
+      description: product.description ?? '',
+      categoryId: product.categoryId,
+      variants: product.variants.map(v => ({
+        id: v.id, label: v.label, sku: v.sku, price: v.price, status: v.status,
+      })),
       status: product.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE',
     }).pipe(
       timeout({ first: 30000 }),
