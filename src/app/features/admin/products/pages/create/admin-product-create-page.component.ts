@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnDestroy, OnInit } from '@angular/core';
+import { finalize, firstValueFrom, TimeoutError, timeout } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppHttpError } from '../../../../../core/models/app-http-error.model';
 import { AdminCategory, CategoryPageResponse } from '../../../categories/models/admin-category.model';
 import { AdminCategoryService } from '../../../categories/services/admin-category.service';
@@ -36,6 +37,9 @@ interface VariantDraft {
 export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
   private readonly categoryService = inject(AdminCategoryService);
   private readonly productService = inject(AdminProductService);
+  private readonly destroyRef = inject(DestroyRef);
+  private createAttemptFingerprint: string | null = null;
+  private createAttemptKey: string | null = null;
 
   categories: AdminCategory[] = [];
   loadingCategories = false;
@@ -303,16 +307,31 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
       })),
     };
 
+    // Keep the same idempotency key if the same payload needs to be retried
+    // after a lost response. A changed form gets a fresh key.
+    const fingerprint = JSON.stringify(payload);
+    if (this.createAttemptFingerprint !== fingerprint || !this.createAttemptKey) {
+      this.createAttemptFingerprint = fingerprint;
+      this.createAttemptKey = crypto.randomUUID();
+    }
+
     this.saving = true;
     this.feedback = '';
-    this.productService.createProduct(payload).subscribe({
+    this.productService.createProduct(payload, this.createAttemptKey).pipe(
+      // Angular HttpClient may otherwise wait indefinitely for a stalled BE.
+      timeout({ first: 30000 }),
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => { this.saving = false; }),
+    ).subscribe({
       next: product => {
-        this.saving = false;
         this.createdProductId = product.id;
         this.feedback = 'Đã tạo sản phẩm thành công (mã: ' + product.id + '). Tồn kho ban đầu bằng 0 và phải nhập qua module Kho.';
       },
       error: (error: unknown) => {
-        this.saving = false;
+        if (error instanceof TimeoutError) {
+          this.feedback = 'Chưa nhận được phản hồi từ Backend sau 30 giây. Sản phẩm CÓ THỂ đã được tạo. Hãy kiểm tra log BE và danh sách sản phẩm trước khi thử lưu lại để tránh trùng.';
+          return;
+        }
         const message = error instanceof AppHttpError
           ? error.message
           : error instanceof Error ? error.message : 'Không thể lưu sản phẩm.';
