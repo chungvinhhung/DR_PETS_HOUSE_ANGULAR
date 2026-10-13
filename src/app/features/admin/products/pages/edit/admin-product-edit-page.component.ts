@@ -46,11 +46,6 @@ export class AdminProductEditPageComponent implements OnInit {
   }
   get singleFinalPrice(): string { return this.formatPrice(this.variants[0]?.price ?? 0); }
   formatPrice(price: number): string { return Number(price || 0).toLocaleString('vi-VN') + 'đ'; }
-  onSingleSkuInput(event: Event): void {
-    if (this.hasVariants || !this.variants.length) return;
-    this.variants[0].sku = (event.target as HTMLInputElement).value;
-  }
-
   ngOnInit(): void {
     void this.load();
   }
@@ -98,13 +93,15 @@ export class AdminProductEditPageComponent implements OnInit {
       this.error.set('SKU của các biến thể không được trùng nhau.');
       return;
     }
+    // The original SKU is immutable: keep canonical BE data regardless of form edits.
+    const originalSkuById = new Map(item.variants.map(v => [v.id, v.sku]));
     const body: ProductWrite = {
       name: this.name.trim(),
       description: this.description.trim(),
       categoryId: this.categoryId,
       status: this.active ? 'ACTIVE' : 'INACTIVE',
       variants: this.variants.map(v => ({
-        id: v.id, label: v.label.trim(), sku: v.sku.trim(), price: Number(v.price), status: v.status,
+        id: v.id, label: v.label.trim(), sku: originalSkuById.get(v.id!) ?? v.sku, price: Number(v.price), status: v.status,
       })),
     };
     this.saving.set(true);
