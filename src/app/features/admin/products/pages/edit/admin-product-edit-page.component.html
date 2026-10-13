@@ -22,7 +22,7 @@
           </div>
           <div class="two-fields">
             <label class="form-field"><span>Danh mục <b>*</b></span><select [(ngModel)]="categoryId">@for (cat of categories(); track cat.id) { <option [value]="cat.id">{{ cat.name }}</option> }</select></label>
-            <label class="form-field"><span>Mã SKU</span><input [value]="hasVariants ? 'N/A' : (variants[0]?.sku || '')" [readonly]="hasVariants" (input)="onSingleSkuInput($event)" aria-label="Mã SKU"></label>
+            <label class="form-field"><span>Mã SKU</span><input [value]="hasVariants ? 'N/A' : (variants[0]?.sku || '')" readonly aria-label="Mã SKU (không thể chỉnh sửa)" title="SKU đã tạo được giữ nguyên để bảo toàn liên kết Kho và Đơn hàng"></label>
           </div>
           <label class="form-field"><span>Mô tả sản phẩm</span><textarea [(ngModel)]="description" rows="5" placeholder="Nhập mô tả chi tiết về sản phẩm..."></textarea></label>
         </section>
@@ -55,19 +55,19 @@
     @if (hasVariants) {
       <section class="panel variant-panel">
         <h2><span class="panel-icon">♧</span> Biến thể sản phẩm</h2>
-        <button class="outline-btn add-variant" type="button" (click)="addVariant()">＋ Thêm biến thể</button>
+        <button class="outline-btn add-variant" type="button" disabled title="Chờ BE hỗ trợ sinh SKU tự động và API thêm biến thể tương thích">＋ Thêm biến thể</button>
         <div class="table-scroll"><table>
           <thead><tr><th>Ảnh</th><th>Biến thể</th><th>SKU</th><th>Giá bán (VNĐ)</th><th>Khuyến mại (%)</th><th>Giá sau khuyến mại (VNĐ)</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
           <tbody>@for (variant of variants; track $index) {
             <tr>
               <td><span class="image-square" title="BE chưa hỗ trợ ảnh biến thể">▣</span></td>
               <td><input [(ngModel)]="variant.label" aria-label="Tên biến thể"></td>
-              <td><input [(ngModel)]="variant.sku" aria-label="SKU"></td>
+              <td><input [value]="variant.sku" readonly aria-label="SKU (không thể chỉnh sửa)" title="SKU đã tạo không được đổi"></td>
               <td><input type="number" min="0" step="1000" [(ngModel)]="variant.price" aria-label="Giá bán"></td>
               <td><input value="0" readonly aria-label="Khuyến mại phần trăm"></td>
               <td><output class="final-price">{{ formatPrice(variant.price) }}</output></td>
               <td><button class="switch small" role="switch" type="button" [class.on]="variant.status === 'ACTIVE'" [attr.aria-checked]="variant.status === 'ACTIVE'" [attr.aria-label]="'Trạng thái biến thể ' + variant.label" (click)="variant.status = variant.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'"><span></span></button></td>
-              <td><button class="delete-btn" type="button" [disabled]="variants.length === 1" (click)="removeVariant($index)" aria-label="Xóa biến thể" title="Xóa biến thể">▤</button></td>
+              <td><button class="delete-btn" type="button" disabled aria-label="Xóa biến thể chưa hỗ trợ" title="Chờ BE xác nhận quy tắc lưu trữ biến thể và giữ SKU lịch sử">▤</button></td>
             </tr>
           }</tbody>
         </table></div>
