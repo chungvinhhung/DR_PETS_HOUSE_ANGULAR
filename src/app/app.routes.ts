@@ -1,10 +1,16 @@
-import { Routes } from '@angular/router';
+import { CanDeactivateFn, Routes } from '@angular/router';
 
 import { adminLoginEntryGuard } from './core/guards/admin-login-entry.guard';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 
 const BACKOFFICE_ROLES = ['ADMIN', 'MANAGER', 'STAFF'];
+
+/** Protect create/edit product drafts even when leaving via sidebar or browser Back. */
+interface ProductLeaveAware {
+  canLeavePage(): boolean | Promise<boolean>;
+}
+const confirmProductLeave: CanDeactivateFn<ProductLeaveAware> = (component) => component.canLeavePage();
 
 export const routes: Routes = [
   {
@@ -52,6 +58,7 @@ export const routes: Routes = [
   {
     path: 'admin/products/:id/edit',
     canActivate: [authGuard, roleGuard],
+    canDeactivate: [confirmProductLeave],
     data: { roles: ['ADMIN'] },
     loadComponent: () =>
       import('./features/admin/products/pages/edit/admin-product-edit-page.component').then(
@@ -61,6 +68,7 @@ export const routes: Routes = [
   {
     path: 'admin/products/new',
     canActivate: [authGuard, roleGuard],
+    canDeactivate: [confirmProductLeave],
     data: { roles: ['ADMIN'] },
     loadComponent: () =>
       import('./features/admin/products/pages/create/admin-product-create-page.component').then(
