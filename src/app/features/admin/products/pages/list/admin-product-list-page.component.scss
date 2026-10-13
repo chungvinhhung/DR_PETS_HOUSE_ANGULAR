@@ -47,3 +47,9 @@ th:nth-child(10),td:nth-child(10) { width: 85px; text-align: center; }
   .toolbar { gap: 12px; }
   .filter-panel { top: 108px; }
 }
+
+/* Differentiate restore from archive without changing table alignment. */
+.actions .restore-action { color: #0d47a1; }
+.actions .restore-action:hover:not(:disabled),
+.actions .restore-action:focus-visible { background: #e7f2fc; border-radius: 6px; }
+.actions .restore-action:disabled { opacity: .45; }
