@@ -77,7 +77,7 @@
 </main>
 </app-admin-catalog-shell>
 
-@if (leaveDialogOpen) {
+@if (leaveDialogOpen()) {
   <div class="product-leave-overlay" (keydown.escape)="resolveLeave(false)">
     <section class="product-leave-dialog" role="alertdialog" aria-modal="true"
              aria-labelledby="product-leave-title" aria-describedby="product-leave-description" tabindex="-1">
