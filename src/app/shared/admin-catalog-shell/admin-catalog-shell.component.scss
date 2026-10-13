@@ -167,10 +167,10 @@
   flex-direction: column;
   gap: 3px;
   margin: 5px 0 12px;
-  padding: 6px 6px 6px 7px;
-  border-left: 3px solid #a1bdd1;
+  padding: 6px;
+  border: 0;
   border-radius: 0 0 10px 10px;
-  background: #d5e5ef;
+  background: #f7fbfe;
 }
 .catalog-sidebar__children .catalog-sidebar__sub {
   min-height: 39px;
@@ -178,7 +178,12 @@
   border-radius: 7px;
 }
 .catalog-sidebar__children .catalog-sidebar__sub:not(.catalog-sidebar__sub--active):hover {
-  background: #c8deed;
+  background: #e7f2fc;
+}
+.catalog-sidebar__children .catalog-sidebar__sub--active {
+  background: #b9def8;
+  color: #06458f;
+  font-weight: 700;
 }
 .catalog-sidebar__sub {
   display: flex;
