@@ -48,33 +48,60 @@
         </section>
         <section class="panel image-panel">
           <h2><img class="panel-icon-img" src="/assets/admin-product/icon-images.svg" alt="">Hình ảnh</h2>
-          <div class="upload-preview"><img class="upload-icon-image" src="/assets/admin-product/icon-upload.svg" alt=""><span>Liên kết ảnh sản phẩm</span><small>Chưa có API tải ảnh trực tiếp, sử dụng URL ảnh</small></div>
-          <div class="image-url-editor">
-            <label for="product-image-url">Đường dẫn ảnh (URL)</label>
-            <div class="image-url-add">
-              <input id="product-image-url" type="url" [(ngModel)]="imageUrlDraft" placeholder="https://example.com/image.jpg">
-              <button type="button" class="outline-btn" (click)="addImageUrl()">Thêm ảnh</button>
-            </div>
-            @if (imageError) { <p role="alert" class="field-note">{{ imageError }}</p> }
-            @if (images.length) {
-              <div class="images">
-                @for (src of images; track src; let i = $index) {
-                  <div class="product-image-entry">
-                    <img [src]="src" [alt]="'Ảnh sản phẩm ' + (i + 1)">
-                    @if (i === 0) { <strong class="primary-image-tag">Ảnh chính</strong> }
-                    <div class="image-actions">
-                      <button type="button" class="image-action" [disabled]="i === 0" (click)="makePrimaryImage(i)" [attr.aria-label]="'Đặt ảnh ' + (i + 1) + ' làm ảnh chính'" title="Đặt làm ảnh chính">
-                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 9V4l1-1V2H7v1l1 1v5c0 1.66-1.34 3-3 3v2h6v7l1 1 1-1v-7h6v-2c-1.66 0-3-1.34-3-3Z"/></svg>
-                      </button>
-                      <button type="button" class="image-action image-action-delete" (click)="removeImageUrl(i)" [attr.aria-label]="'Xóa ảnh ' + (i + 1)" title="Xóa ảnh">
-                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1ZM18 7H6v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7Z"/></svg>
-                      </button>
-                    </div>
+          <label class="upload-preview" [class.upload-preview--disabled]="product()?.status === 'ARCHIVED'">
+            <input type="file" hidden multiple accept=".jpg,.jpeg,.png"
+              [disabled]="product()?.status === 'ARCHIVED'"
+              (change)="onImagesSelected($event)">
+            <img class="upload-icon-image" src="/assets/admin-product/icon-upload.svg" alt="">
+            <span>Tải lên ảnh sản phẩm</span>
+            <small>Hỗ trợ JPG, PNG (Tối đa 10 ảnh, 5MB/ảnh)</small>
+          </label>
+          @if (imageError) { <p class="image-upload-error" role="alert">{{ imageError }}</p> }
+          @if (imageSlots.length > 0) {
+            <div class="previews">
+              @for (photo of imageSlots; track photo.id) {
+                <div class="product-thumbnail">
+                  <img class="product-thumbnail__image" [src]="photo.previewUrl"
+                    [alt]="'Ảnh sản phẩm ' + ($index + 1)">
+                  @if ($index === 0) { <span class="primary-image-badge">Ảnh chính</span> }
+                  <input #replaceImageInput type="file" class="file-input-hidden" accept=".jpg,.jpeg,.png"
+                    [disabled]="product()?.status === 'ARCHIVED'"
+                    [attr.aria-label]="'Chọn ảnh thay thế cho ảnh sản phẩm ' + ($index + 1)"
+                    (change)="replaceProductImage($event, photo.id)">
+                  <div class="product-thumbnail__actions">
+                    <button type="button" class="thumbnail-action thumbnail-action--main"
+                      [class.thumbnail-action--selected]="$index === 0"
+                      [disabled]="product()?.status === 'ARCHIVED'"
+                      [attr.aria-pressed]="$index === 0"
+                      [attr.aria-label]="$index === 0 ? 'Đây là ảnh chính' : 'Đặt ảnh ' + ($index + 1) + ' làm ảnh chính'"
+                      [attr.title]="$index === 0 ? 'Ảnh chính' : 'Đặt làm ảnh chính'"
+                      (click)="setPrimaryImage(photo.id)">
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M16 9V4l1-1V2H7v1l1 1v5c0 1.66-1.34 3-3 3v2h6v-2c-1.66 0-3-1.34-3-3Z"/>
+                      </svg>
+                    </button>
+                    <button type="button" class="thumbnail-action thumbnail-action--replace"
+                      [disabled]="product()?.status === 'ARCHIVED'"
+                      [attr.aria-label]="'Thay ảnh sản phẩm ' + ($index + 1)"
+                      title="Thay ảnh" (click)="replaceImageInput.click()">
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5 0 .8-.19 1.55-.52 2.22l1.46 1.46C18.6 15.61 19 14.35 19 13c0-3.87-3.13-7-7-7Zm0 12c-2.76 0-5-2.24-5-5 0-.8.19-1.55.52-2.22l-1.46-1.46C5.4 10.39 5 11.65 5 13c0 3.87 3.13 7 7 7v3l4-4-4-4v3Z"/>
+                      </svg>
+                    </button>
+                    <button type="button" class="thumbnail-action thumbnail-action--delete"
+                      [disabled]="product()?.status === 'ARCHIVED'"
+                      [attr.aria-label]="'Xóa ảnh sản phẩm ' + ($index + 1)"
+                      title="Xóa ảnh" (click)="removeProductImage(photo.id)">
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1ZM18 7H6v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7Z"/>
+                      </svg>
+                    </button>
                   </div>
-                }
-              </div>
-            }
-          </div>
+                </div>
+              }
+            </div>
+          }
+          <p class="image-upload-note">Ảnh tải từ máy chỉ được xem trước. BE chưa có API upload ảnh nên cần tích hợp trước khi có thể lưu ảnh mới.</p>
         </section>
       </div>
     </div>
