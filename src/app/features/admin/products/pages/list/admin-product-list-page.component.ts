@@ -28,6 +28,9 @@ export class AdminProductListPageComponent implements OnInit {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly updatingId = signal<string | null>(null);
+  readonly archiveTarget = signal<AdminProduct | null>(null);
+  readonly archiveError = signal('');
+  private readonly archiveKeys = new Map<string, string>();
   readonly pageNumber = signal(1);
   readonly nextCursor = signal<string | null>(null);
   readonly totalProducts = signal<number | null>(null);
@@ -180,6 +183,42 @@ export class AdminProductListPageComponent implements OnInit {
         this.products.update(rows => rows.map(row => row.id === product.id ? updated : row));
       },
       error: err => this.error.set(err instanceof Error ? err.message : 'Không thể cập nhật trạng thái.'),
+    });
+  }
+
+  requestArchive(product: AdminProduct): void {
+    if (product.status === 'ARCHIVED' || this.updatingId()) return;
+    this.archiveError.set('');
+    this.archiveTarget.set(product);
+  }
+
+  closeArchiveDialog(): void {
+    if (!this.updatingId()) this.archiveTarget.set(null);
+  }
+
+  confirmArchive(): void {
+    const product = this.archiveTarget();
+    if (!product || this.updatingId()) return;
+    const key = this.archiveKeys.get(product.id) ?? crypto.randomUUID();
+    this.archiveKeys.set(product.id, key);
+    this.updatingId.set(product.id);
+    this.archiveError.set('');
+    this.productsApi.archiveProduct(product.id, key).pipe(
+      timeout({ first: 30000 }),
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.updatingId.set(null)),
+    ).subscribe({
+      next: () => {
+        this.archiveKeys.delete(product.id);
+        this.archiveTarget.set(null);
+        this.applyFilters();
+      },
+      error: error => {
+        this.archiveError.set(
+          (error instanceof Error ? error.message : 'Không thể lưu trữ sản phẩm.') +
+          ' Nếu kết quả chưa rõ, hãy kiểm tra tab Đã lưu trữ trước khi thử lại.',
+        );
+      },
     });
   }
 
