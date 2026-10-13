@@ -30,6 +30,8 @@ export class AdminProductListPageComponent implements OnInit {
   readonly updatingId = signal<string | null>(null);
   readonly archiveTarget = signal<AdminProduct | null>(null);
   readonly archiveError = signal('');
+  readonly restoreTarget = signal<AdminProduct | null>(null);
+  readonly restoreError = signal('');
   private readonly archiveKeys = new Map<string, string>();
   readonly pageNumber = signal(1);
   readonly nextCursor = signal<string | null>(null);
@@ -217,6 +219,51 @@ export class AdminProductListPageComponent implements OnInit {
         this.archiveError.set(
           (error instanceof Error ? error.message : 'Không thể lưu trữ sản phẩm.') +
           ' Nếu kết quả chưa rõ, hãy kiểm tra tab Đã lưu trữ trước khi thử lại.',
+        );
+      },
+    });
+  }
+
+  requestRestore(product: AdminProduct): void {
+    if (product.status !== 'ARCHIVED' || this.updatingId()) return;
+    this.restoreError.set('');
+    this.restoreTarget.set(product);
+  }
+
+  closeRestoreDialog(): void {
+    if (!this.updatingId()) this.restoreTarget.set(null);
+  }
+
+  confirmRestore(): void {
+    const product = this.restoreTarget();
+    if (!product || product.status !== 'ARCHIVED' || this.updatingId()) return;
+    this.restoreError.set('');
+    this.updatingId.set(product.id);
+    // BE does not expose a dedicated restore route. PATCH ProductWrite is
+    // required by OpenAPI v7; retain all existing data and only change status.
+    this.productsApi.updateProduct(product.id, {
+      name: product.name,
+      description: product.description ?? '',
+      categoryId: product.categoryId,
+      images: [...(product.images ?? [])],
+      variants: product.variants.map(v => ({
+        id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status,
+      })),
+      // Do not put the archived item back on sale without manual review.
+      status: 'INACTIVE',
+    }).pipe(
+      timeout({ first: 30000 }),
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.updatingId.set(null)),
+    ).subscribe({
+      next: () => {
+        this.restoreTarget.set(null);
+        this.applyFilters();
+      },
+      error: (error: unknown) => {
+        this.restoreError.set(
+          (error instanceof Error ? error.message : 'Không thể khôi phục sản phẩm.') +
+          ' Nếu chưa rõ kết quả, hãy kiểm tra tab Sản phẩm hiện tại trước khi thử lại.',
         );
       },
     });
