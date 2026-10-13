@@ -110,7 +110,7 @@
                   <tr>
                     <td>{{ $index + 1 + (pageNumber - 1) * 20 }}</td>
                     <td class="category-name">{{ category.name }}</td>
-                    <td class="slug" [title]="'Slug đang lưu trên Backend: ' + category.slug"><code>{{ category.slug }}</code><button type="button" class="slug-edit-link" (click)="openEdit(category)" [attr.aria-label]="'Sửa slug cho ' + category.name" title="Chỉnh sửa slug">Sửa</button></td>
+                    <td class="slug" [title]="'Slug đang lưu trên Backend: ' + category.slug"><code>{{ category.slug }}</code><button type="button" class="slug-edit-link" (click)="openSlugSuggestion(category)" [attr.aria-label]="'Gợi ý slug không dấu cho ' + category.name" title="Xem slug không dấu và lưu nếu phù hợp">Chuẩn hóa</button></td>
                     <td>{{ parentName(category.parentId) }}</td>
                     <td>
                       <span class="status" [class.status--active]="category.status === 'ACTIVE'"
