@@ -21,7 +21,10 @@
       </a>
       <div class="sidebar-group">
         <img src="/assets/admin-product/icon-sales.svg" alt=""> Bán hàng
-        <span class="chevron" aria-hidden="true">⌄</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m6 9 6 6 6-6"></path>
+        </svg>
       </div>
       <a class="sidebar-sub" routerLink="/admin/products/new">Sản phẩm</a>
       <a class="sidebar-sub selected" routerLink="/admin/categories" aria-current="page">Danh mục sản phẩm</a>
@@ -94,7 +97,7 @@
               <tr>
                 <th scope="col">STT</th>
                 <th scope="col">Tên danh mục</th>
-                <th scope="col">Slug</th>
+                <th scope="col">Đường dẫn (slug)</th>
                 <th scope="col">Danh mục cha</th>
                 <th scope="col">Trạng thái</th>
                 <th scope="col">Thao tác</th>
@@ -110,7 +113,7 @@
                   <tr>
                     <td>{{ $index + 1 + (pageNumber - 1) * 20 }}</td>
                     <td class="category-name">{{ category.name }}</td>
-                    <td class="slug">{{ category.slug }}</td>
+                    <td class="slug" [title]="'Đường dẫn hiện tại: ' + category.slug"><code>{{ category.slug }}</code></td>
                     <td>{{ parentName(category.parentId) }}</td>
                     <td>
                       <span class="status" [class.status--active]="category.status === 'ACTIVE'"
@@ -161,10 +164,23 @@
         </header>
         <div class="modal-body">
           <label class="form-field">
-            Tên danh mục <span class="required">*</span>
+            <span class="field-label">Tên danh mục <span class="required">*</span></span>
             <input type="text" maxlength="120" [(ngModel)]="formName"
+              (ngModelChange)="onCategoryNameChange($event)"
               placeholder="Nhập tên danh mục" autocomplete="off">
           </label>
+          <div class="slug-field">
+            <label class="form-field" for="category-slug">
+              <span class="field-label">Đường dẫn (slug) <span class="required">*</span></span>
+              <input id="category-slug" type="text" maxlength="120" spellcheck="false"
+                [ngModel]="formSlug" (ngModelChange)="onSlugInput($event)"
+                placeholder="thuc-an-hat-cho-meo" autocomplete="off">
+            </label>
+            <button type="button" class="slug-regenerate" (click)="regenerateSlug()">
+              Tạo lại từ tên
+            </button>
+            <p class="field-hint">Ví dụ: Thức Ăn Hạt Cho Mèo → <code>thuc-an-hat-cho-meo</code>. Đổi slug của danh mục đã có có thể ảnh hưởng đường dẫn đang được sử dụng.</p>
+          </div>
           <label class="form-field">
             Danh mục cha
             <select [(ngModel)]="formParentId">
