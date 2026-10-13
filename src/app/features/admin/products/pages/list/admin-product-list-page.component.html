@@ -115,7 +115,7 @@
         </table>
       </div>
       <footer class="pagination">
-        <span>Đang hiển thị {{ products().length }} sản phẩm — Trang {{ pageNumber() }}</span>
+        <span>Đang hiển thị {{ products().length }} sản phẩm{{ totalProducts() !== null ? " trên tổng số " + totalProducts() + " sản phẩm" : " — Trang " + pageNumber() }}</span>
         <div class="pagination-buttons">
           <button type="button" (click)="previous()" [disabled]="loading() || pageNumber() === 1" aria-label="Trang trước">‹</button>
           <span aria-current="page">{{ pageNumber() }}</span>
