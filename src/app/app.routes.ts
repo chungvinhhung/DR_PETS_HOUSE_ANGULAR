@@ -41,6 +41,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/products',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () =>
+      import('./features/admin/products/pages/list/admin-product-list-page.component').then(
+        (component) => component.AdminProductListPageComponent,
+      ),
+  },
+  {
     path: 'admin/products/new',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN'] },
