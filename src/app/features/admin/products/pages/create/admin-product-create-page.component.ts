@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { AppHttpError } from '../../../../../core/models/app-http-error.model';
-import { AdminCategory } from '../../../categories/models/admin-category.model';
+import { AdminCategory, CategoryPageResponse } from '../../../categories/models/admin-category.model';
 import { AdminCategoryService } from '../../../categories/services/admin-category.service';
 import { AdminProductService } from '../../services/admin-product.service';
 import { ProductWrite } from '../../models/admin-product.model';
@@ -217,7 +217,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
       let cursor: string | null = null;
       // OpenAPI page limit is 100. Read subsequent pages for large catalogs.
       for (let page = 0; page < 30; page++) {
-        const response = await firstValueFrom(this.categoryService.listCategories({
+        const response: CategoryPageResponse = await firstValueFrom(this.categoryService.listCategories({
           limit: 100,
           status: 'ACTIVE',
           cursor,
