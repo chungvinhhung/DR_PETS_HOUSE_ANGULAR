@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, HostListener, inject, OnDestroy, OnInit } from '@angular/core';
 import { finalize, firstValueFrom, TimeoutError, timeout } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppHttpError } from '../../../../../core/models/app-http-error.model';
@@ -58,6 +58,8 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
   images: ProductImageDraft[] = [];
   primaryImageId: number | null = null;
   feedback = '';
+  leaveDialogOpen = false;
+  private leaveResolver: ((confirmed: boolean) => void) | null = null;
 
   // No demonstration SKU/price data should be accidentally saved.
   variants: VariantDraft[] = [this.newVariant()];
@@ -251,6 +253,42 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       }
     }
+  }
+
+  /** Do not treat an untouched form as dirty, including its default empty variant row. */
+  hasUnsavedChanges(): boolean {
+    if (this.createdProductId) return false;
+    if (this.productName.trim() || this.categoryId || this.usageType || this.description.trim()) return true;
+    if (this.images.length || this.active || !this.hasVariants || this.variants.length !== 1) return true;
+    return this.variants.some(v =>
+      !!v.label.trim() || !!v.sku.trim() || Number(v.price) !== 0 ||
+      Number(v.discount) !== 0 || v.active || !!v.imageFile,
+    );
+  }
+
+  /** Angular CanDeactivate: covers breadcrumb, Cancel, sidebar and browser Back. */
+  canLeavePage(): boolean | Promise<boolean> {
+    if (this.saving) return false;
+    if (!this.hasUnsavedChanges()) return true;
+    if (this.leaveResolver) return false;
+    this.leaveDialogOpen = true;
+    this.cdr.markForCheck();
+    return new Promise<boolean>(resolve => { this.leaveResolver = resolve; });
+  }
+
+  resolveLeave(confirmed: boolean): void {
+    const resolver = this.leaveResolver;
+    this.leaveResolver = null;
+    this.leaveDialogOpen = false;
+    this.cdr.markForCheck();
+    resolver?.(confirmed);
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  confirmBrowserUnload(event: BeforeUnloadEvent): void {
+    if (!this.saving && !this.hasUnsavedChanges()) return;
+    event.preventDefault();
+    event.returnValue = '';
   }
 
   ngOnDestroy(): void {
