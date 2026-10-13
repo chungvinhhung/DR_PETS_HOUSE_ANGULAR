@@ -13,18 +13,29 @@
 <section class="panel photos"><h2><img src="/assets/admin-product/icon-images.svg" alt="">Hình ảnh</h2><label class="upload"><input type="file" hidden multiple accept=".jpg,.jpeg,.png" (change)="onImagesSelected($event)"><img class="cloud" src="/assets/admin-product/icon-upload.svg" alt="">Tải lên ảnh sản phẩm<small>Hỗ trợ JPG, PNG (Tối đa 10 ảnh, 5MB/ảnh)</small></label><div class="previews">
   @for (photo of images; track photo.id) {
     <div class="product-thumbnail" [class.product-thumbnail--primary]="primaryImageId === photo.id">
-      <img class="product-thumbnail__image" [src]="photo.previewUrl" [alt]="'Ảnh sản phẩm ' + ($index + 1)">
+      @if (photo.previewUrl) {
+        <img class="product-thumbnail__image" [src]="photo.previewUrl" [alt]="'Ảnh sản phẩm ' + ($index + 1)">
+      } @else {
+        <span class="product-thumbnail__mock" role="img" aria-label="Ảnh xem trước mẫu từ Figma"></span>
+      }
+
       @if (primaryImageId === photo.id) {
         <span class="primary-image-badge">Ảnh chính</span>
       }
+
       <div class="product-thumbnail__actions">
-        <button type="button" class="thumbnail-action" [class.thumbnail-action--selected]="primaryImageId === photo.id"
-          [attr.aria-pressed]="primaryImageId === photo.id"
-          [attr.aria-label]="'Đặt ảnh ' + ($index + 1) + ' làm ảnh chính'"
-          (click)="setPrimaryImage(photo.id)">{{ primaryImageId === photo.id ? 'Ảnh chính ✓' : 'Đặt ảnh chính' }}</button>
+        @if (primaryImageId !== photo.id) {
+          <button type="button" class="thumbnail-action thumbnail-action--main"
+            [attr.aria-label]="'Đặt ảnh ' + ($index + 1) + ' làm ảnh chính'"
+            title="Đặt làm ảnh chính" (click)="setPrimaryImage(photo.id)">
+            ★
+          </button>
+        }
         <button type="button" class="thumbnail-action thumbnail-action--delete"
           [attr.aria-label]="'Xóa ảnh sản phẩm ' + ($index + 1)"
-          (click)="removeProductImage(photo.id)">Xóa ảnh</button>
+          title="Xóa ảnh" (click)="removeProductImage(photo.id)">
+          ×
+        </button>
       </div>
     </div>
   }
