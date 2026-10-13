@@ -626,3 +626,95 @@ app-admin-product-create-page .price:has(.single-price-fields) {
     white-space: normal;
   }
 }
+
+
+/* Task 3.6 — consistent Figma pricing controls in the SKU/variant table. */
+app-admin-product-create-page .variant-panel th:nth-child(4),
+app-admin-product-create-page .variant-panel td:nth-child(4) {
+  min-width: 176px;
+}
+app-admin-product-create-page .variant-panel th:nth-child(5),
+app-admin-product-create-page .variant-panel td:nth-child(5) {
+  min-width: 145px;
+}
+app-admin-product-create-page .variant-panel th:nth-child(6),
+app-admin-product-create-page .variant-panel td:nth-child(6) {
+  min-width: 195px;
+}
+app-admin-product-create-page .variant-panel .variant-currency-input {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 158px;
+  height: 42px;
+  overflow: hidden;
+  border: 1px solid #dee5f0;
+  border-radius: 7px;
+  background: #fff;
+}
+app-admin-product-create-page .variant-panel td .variant-currency-input > input[type="number"] {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 8px 3px 8px 10px;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  color: #202e45;
+  font-size: 14px;
+}
+app-admin-product-create-page .variant-panel .variant-currency-input:focus-within {
+  border-color: #0d47a1;
+  box-shadow: 0 0 0 2px rgba(13, 71, 161, .12);
+}
+app-admin-product-create-page .variant-panel .variant-unit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 24px;
+  align-self: stretch;
+  color: #64748b;
+  font-size: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+app-admin-product-create-page .variant-panel .variant-price-output {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  max-width: 158px;
+  min-height: 40px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: #e5f6fd;
+  color: #202e45;
+  font-size: 14px;
+  white-space: nowrap;
+}
+app-admin-product-create-page .variant-panel .variant-price-output > span {
+  color: #64748b;
+}
+app-admin-product-create-page .variant-panel th:last-child,
+app-admin-product-create-page .variant-panel td:last-child {
+  text-align: center;
+  vertical-align: middle;
+  width: 85px;
+}
+app-admin-product-create-page .variant-panel td:last-child .trash {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: 0 auto;
+  padding: 0;
+}
+app-admin-product-create-page .variant-panel td:last-child .trash > img {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
