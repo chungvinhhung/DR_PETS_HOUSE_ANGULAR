@@ -104,7 +104,7 @@
                     <a [routerLink]="['/admin/products', product.id, 'edit']" title="Chỉnh sửa" [attr.aria-label]="'Chỉnh sửa ' + product.name">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m13 6 5 5M4 20l4.6-1 10.9-10.9a2.1 2.1 0 0 0-3-3L5.6 16z"/></svg>
                     </a>
-                    <button type="button" class="archive-action" disabled title="Chức năng lưu trữ đang chờ API Backend" aria-label="Lưu trữ sản phẩm (chưa hỗ trợ)">
+                    <button type="button" class="archive-action" [disabled]="!!updatingId() || product.status === 'ARCHIVED'" (click)="requestArchive(product)" [title]="product.status === 'ARCHIVED' ? 'Sản phẩm đã lưu trữ' : 'Lưu trữ sản phẩm'" [attr.aria-label]="'Lưu trữ ' + product.name">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="1"/><path d="M3 4h18v4H3zM12 11v6m-3-3 3 3 3-3"/></svg>
                     </button>
                   </td>
@@ -125,3 +125,18 @@
     </section>
   </main>
 </app-admin-catalog-shell>
+
+@if (archiveTarget(); as target) {
+  <div class="product-leave-overlay" (keydown.escape)="closeArchiveDialog()">
+    <section class="product-leave-dialog" role="alertdialog" aria-modal="true"
+      aria-labelledby="archive-product-title" aria-describedby="archive-product-desc" tabindex="-1">
+      <h2 id="archive-product-title">Lưu trữ sản phẩm?</h2>
+      <p id="archive-product-desc">Bạn muốn lưu trữ <strong>{{ target.name }}</strong>? Sản phẩm sẽ không còn xuất hiện trong danh sách đang bán. Dữ liệu lịch sử vẫn được giữ lại.</p>
+      @if (archiveError()) { <p role="alert" class="error">{{ archiveError() }}</p> }
+      <div class="product-leave-actions">
+        <button type="button" class="product-leave-stay" [disabled]="!!updatingId()" (click)="closeArchiveDialog()">Hủy bỏ</button>
+        <button type="button" class="product-leave-exit" [disabled]="!!updatingId()" (click)="confirmArchive()">{{ updatingId() ? 'Đang lưu trữ...' : 'Xác nhận lưu trữ' }}</button>
+      </div>
+    </section>
+  </div>
+}
