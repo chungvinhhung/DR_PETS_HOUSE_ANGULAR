@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
@@ -43,6 +44,8 @@ export class AdminCategoryPageComponent implements OnInit {
   searchTerm = '';
   statusFilter: 'ALL' | CategoryStatus = 'ALL';
   formName = '';
+  formSlug = '';
+  private slugEdited = false;
   formParentId = '';
   formStatus: CategoryStatus = 'ACTIVE';
   editing: AdminCategory | null = null;
@@ -141,6 +144,8 @@ export class AdminCategoryPageComponent implements OnInit {
   openCreate(): void {
     this.editing = null;
     this.formName = '';
+    this.formSlug = '';
+    this.slugEdited = false;
     this.formParentId = '';
     this.formStatus = 'ACTIVE';
     this.formError.set('');
@@ -150,6 +155,8 @@ export class AdminCategoryPageComponent implements OnInit {
   openEdit(item: AdminCategory): void {
     this.editing = item;
     this.formName = item.name;
+    this.formSlug = item.slug;
+    this.slugEdited = true;
     this.formParentId = item.parentId || '';
     this.formStatus = item.status;
     this.formError.set('');
@@ -162,11 +169,48 @@ export class AdminCategoryPageComponent implements OnInit {
     this.formError.set('');
   }
 
+  /**
+   * Convert Vietnamese accents into an SEO-friendly ASCII path segment.
+   * The BE's current fallback slugifier removes accented letters entirely.
+   */
+  private slugifyVietnamese(text: string): string {
+    return text.toLowerCase()
+      .replace(/đ/g, 'd')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s-]/g, ' ')
+      .trim()
+      .replace(/[\s-]+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
+
+  onCategoryNameChange(value: string): void {
+    this.formName = value;
+    if (!this.editing && !this.slugEdited) {
+      this.formSlug = this.slugifyVietnamese(value);
+    }
+  }
+
+  onSlugInput(value: string): void {
+    this.formSlug = value;
+    this.slugEdited = true;
+  }
+
+  regenerateSlug(): void {
+    this.formSlug = this.slugifyVietnamese(this.formName);
+    this.slugEdited = false;
+  }
+
   saveCategory(): void {
     if (this.saving()) return;
     const name = this.formName.trim();
     if (name.length < 2 || name.length > 120) {
       this.formError.set('Tên danh mục phải có từ 2 đến 120 ký tự.');
+      return;
+    }
+    const slug = this.slugifyVietnamese(this.formSlug);
+    if (!slug || slug.length > 120) {
+      this.formError.set('Đường dẫn phải có 1–120 ký tự hợp lệ (chữ, số và dấu gạch ngang).');
       return;
     }
     if (this.formParentId && !this.parentOptions().some(
@@ -175,11 +219,19 @@ export class AdminCategoryPageComponent implements OnInit {
       this.formError.set('Danh mục cha không hợp lệ.');
       return;
     }
+    if (this.editing?.parentId && !this.formParentId) {
+      this.formError.set('API hiện chưa hỗ trợ chuyển danh mục con thành danh mục gốc. Vui lòng giữ danh mục cha hoặc nhờ BE cập nhật schema.');
+      return;
+    }
 
     const body: SaveCategoryRequest = {
       name,
-      parentId: this.formParentId || null,
       status: this.formStatus,
+      // The OpenAPI v7 schema rejects parentId:null. For a new root category
+      // or edits without a parent, leave this field out of the request body.
+      ...(this.formParentId ? { parentId: this.formParentId } : {}),
+      // Existing category URLs should not change just because the name changes.
+      ...(!this.editing || slug !== this.editing.slug ? { slug } : {}),
     };
     this.saving.set(true);
     this.formError.set('');
@@ -207,6 +259,20 @@ export class AdminCategoryPageComponent implements OnInit {
   }
 
   private errorText(error: unknown, fallback: string): string {
+    if (error instanceof HttpErrorResponse) {
+      if (error.status === 409) {
+        return 'Đường dẫn (slug) đã tồn tại. Vui lòng chọn đường dẫn khác.';
+      }
+      const body: unknown = error.error;
+      if (body && typeof body === 'object') {
+        const details = body as { detail?: unknown; message?: unknown; errors?: unknown };
+        if (typeof details.detail === 'string' && details.detail.trim()) return details.detail;
+        if (typeof details.message === 'string' && details.message.trim()) return details.message;
+      }
+      if (error.status === 400) return 'Dữ liệu chưa đúng định dạng API. Vui lòng kiểm tra tên và đường dẫn.';
+      if (error.status === 401 || error.status === 403) return 'Bạn không có quyền thực hiện thao tác này. Hãy đăng nhập bằng tài khoản ADMIN.';
+      return fallback;
+    }
     if (error instanceof Error && error.message) return error.message;
     return fallback;
   }
