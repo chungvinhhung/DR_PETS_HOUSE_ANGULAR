@@ -50,6 +50,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/products/:id/edit',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () =>
+      import('./features/admin/products/pages/edit/admin-product-edit-page.component').then(
+        (component) => component.AdminProductEditPageComponent,
+      ),
+  },
+  {
     path: 'admin/products/new',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN'] },
