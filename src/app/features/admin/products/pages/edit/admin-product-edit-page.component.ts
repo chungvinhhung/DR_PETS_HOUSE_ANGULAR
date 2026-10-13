@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -36,6 +36,9 @@ export class AdminProductEditPageComponent implements OnInit {
   categoryId = '';
   active = false;
   variants: ProductVariantWrite[] = [];
+  leaveDialogOpen = false;
+  private leaveResolver: ((confirmed: boolean) => void) | null = null;
+  private lastSavedSnapshot = '';
 
   get hasVariants(): boolean { return this.variants.length > 1; }
   get priceRange(): string {
@@ -46,6 +49,40 @@ export class AdminProductEditPageComponent implements OnInit {
   }
   get singleFinalPrice(): string { return this.formatPrice(this.variants[0]?.price ?? 0); }
   formatPrice(price: number): string { return Number(price || 0).toLocaleString('vi-VN') + 'đ'; }
+  private draftSnapshot(): string {
+    return JSON.stringify({
+      name: this.name, description: this.description, categoryId: this.categoryId,
+      active: this.active,
+      variants: this.variants.map(v => ({ id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status })),
+    });
+  }
+
+  hasUnsavedChanges(): boolean {
+    return !!this.product() && this.draftSnapshot() !== this.lastSavedSnapshot;
+  }
+
+  canLeavePage(): boolean | Promise<boolean> {
+    if (this.saving()) return false;
+    if (!this.hasUnsavedChanges()) return true;
+    if (this.leaveResolver) return false;
+    this.leaveDialogOpen = true;
+    return new Promise<boolean>(resolve => { this.leaveResolver = resolve; });
+  }
+
+  resolveLeave(confirmed: boolean): void {
+    const resolver = this.leaveResolver;
+    this.leaveResolver = null;
+    this.leaveDialogOpen = false;
+    resolver?.(confirmed);
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  confirmBrowserUnload(event: BeforeUnloadEvent): void {
+    if (!this.saving() && !this.hasUnsavedChanges()) return;
+    event.preventDefault();
+    event.returnValue = '';
+  }
+
   ngOnInit(): void {
     void this.load();
   }
@@ -71,6 +108,7 @@ export class AdminProductEditPageComponent implements OnInit {
       this.variants = product.variants.map(v => ({
         id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status,
       }));
+      this.lastSavedSnapshot = this.draftSnapshot();
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'Không thể lấy chi tiết sản phẩm.');
     } finally {
@@ -112,6 +150,14 @@ export class AdminProductEditPageComponent implements OnInit {
     ).subscribe({
       next: updated => {
         this.product.set(updated);
+        this.name = updated.name;
+        this.description = updated.description ?? '';
+        this.categoryId = updated.categoryId;
+        this.active = updated.status === 'ACTIVE';
+        this.variants = updated.variants.map(v => ({
+          id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status,
+        }));
+        this.lastSavedSnapshot = this.draftSnapshot();
         this.success.set('Cập nhật sản phẩm thành công.');
       },
       error: error => this.error.set(error instanceof Error ? error.message : 'Không thể cập nhật sản phẩm.'),
