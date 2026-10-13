@@ -3,6 +3,7 @@ export type ProductStatus = 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
 export type VariantStatus = 'ACTIVE' | 'INACTIVE';
 
 export interface ProductVariantWrite {
+  id?: string;
   sku: string;
   label: string;
   price: number;
