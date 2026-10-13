@@ -6,9 +6,6 @@
           <p class="breadcrumb">Bán hàng <span>›</span> Danh mục sản phẩm</p>
           <h1>Quản lý danh mục</h1>
         </div>
-        <button type="button" class="btn-primary" (click)="openCreate()">
-          <span aria-hidden="true">＋</span> Thêm danh mục
-        </button>
       </header>
 
       <section class="list-panel" aria-label="Danh sách danh mục">
@@ -23,17 +20,22 @@
               placeholder="Tìm theo tên danh mục..." aria-label="Tìm danh mục"
               (keyup.enter)="applyFilters()">
           </div>
-          <label class="filter-label">
-            Trạng thái
-            <select [(ngModel)]="statusFilter" (change)="applyFilters()" aria-label="Lọc theo trạng thái">
-              <option value="ALL">Tất cả</option>
-              <option value="ACTIVE">Đang hoạt động</option>
-              <option value="INACTIVE">Tạm ngưng</option>
-            </select>
-          </label>
-          <button type="button" class="btn-outline" (click)="applyFilters()" [disabled]="loading()">
-            Tìm kiếm
-          </button>
+          <div class="toolbar-actions">
+            <label class="filter-label">
+              Trạng thái
+              <select [(ngModel)]="statusFilter" (change)="applyFilters()" aria-label="Lọc theo trạng thái">
+                <option value="ALL">Tất cả</option>
+                <option value="ACTIVE">Đang hoạt động</option>
+                <option value="INACTIVE">Tạm ngưng</option>
+              </select>
+            </label>
+            <button type="button" class="btn-outline" (click)="applyFilters()" [disabled]="loading()">
+              Tìm kiếm
+            </button>
+            <button type="button" class="btn-primary" (click)="openCreate()">
+              <span aria-hidden="true">＋</span> Thêm danh mục
+            </button>
+          </div>
         </div>
 
         @if (notice()) {
