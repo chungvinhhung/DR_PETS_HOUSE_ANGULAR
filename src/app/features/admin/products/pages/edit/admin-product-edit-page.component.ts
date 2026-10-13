@@ -36,6 +36,9 @@ export class AdminProductEditPageComponent implements OnInit {
   categoryId = '';
   active = false;
   variants: ProductVariantWrite[] = [];
+  images: string[] = [];
+  imageUrlDraft = '';
+  imageError = '';
   readonly leaveDialogOpen = signal(false);
   private leaveResolver: ((confirmed: boolean) => void) | null = null;
   private lastSavedSnapshot = '';
@@ -54,6 +57,7 @@ export class AdminProductEditPageComponent implements OnInit {
       name: this.name, description: this.description, categoryId: this.categoryId,
       active: this.active,
       variants: this.variants.map(v => ({ id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status })),
+      images: this.images,
     });
   }
 
@@ -105,6 +109,7 @@ export class AdminProductEditPageComponent implements OnInit {
       this.description = product.description ?? '';
       this.categoryId = product.categoryId;
       this.active = product.status === 'ACTIVE';
+      this.images = [...(product.images ?? [])];
       this.variants = product.variants.map(v => ({
         id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status,
       }));
@@ -137,6 +142,7 @@ export class AdminProductEditPageComponent implements OnInit {
       name: this.name.trim(),
       description: this.description.trim(),
       categoryId: this.categoryId,
+      images: [...this.images],
       status: this.active ? 'ACTIVE' : 'INACTIVE',
       variants: this.variants.map(v => ({
         id: v.id, label: v.label.trim(), sku: originalSkuById.get(v.id!) ?? v.sku, price: Number(v.price), status: v.status,
@@ -154,6 +160,7 @@ export class AdminProductEditPageComponent implements OnInit {
         this.description = updated.description ?? '';
         this.categoryId = updated.categoryId;
         this.active = updated.status === 'ACTIVE';
+        this.images = [...(updated.images ?? [])];
         this.variants = updated.variants.map(v => ({
           id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status,
         }));
