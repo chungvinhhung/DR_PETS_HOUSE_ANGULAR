@@ -29,6 +29,13 @@ export class AdminProductService {
     );
   }
 
+  archiveProduct(id: string, idempotencyKey: string): Observable<AdminProduct> {
+    const headers = new HttpHeaders({ 'Idempotency-Key': idempotencyKey });
+    return this.api.post<AdminProduct, Record<string, never>>(
+      '/products/' + encodeURIComponent(id) + '/archive', {}, { headers },
+    );
+  }
+
   createProduct(body: ProductWrite, idempotencyKey: string): Observable<AdminProduct> {
     // Preserve the same key across retries of the same draft. Generating a
     // fresh key after a network timeout could create a duplicate Product.
