@@ -24,6 +24,13 @@ export class AdminProductCreatePageComponent {
     { label: '500g', sku: '', price: 250000, discount: 0, active: false },
     { label: '1.5kg', sku: '', price: 420000, discount: 0, active: false },
   ];
+  get emptyPreviewSlots(): number[] {
+    return Array.from(
+      { length: Math.max(0, 3 - this.images.length) },
+      (_, index) => index,
+    );
+  }
+
   get priceRange(): string {
     const prices = this.variants.map(v => Number(v.price) || 0);
     if (!prices.length) return '0đ';
