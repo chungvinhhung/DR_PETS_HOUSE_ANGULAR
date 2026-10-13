@@ -161,6 +161,25 @@
   object-fit: contain;
   filter: brightness(0) invert(1);
 }
+/* A single shaded panel makes the expanded Sales submenu visibly nested. */
+.catalog-sidebar__children {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 5px 0 12px;
+  padding: 6px 6px 6px 7px;
+  border-left: 3px solid #a1bdd1;
+  border-radius: 0 0 10px 10px;
+  background: #d5e5ef;
+}
+.catalog-sidebar__children .catalog-sidebar__sub {
+  min-height: 39px;
+  padding-left: 31px;
+  border-radius: 7px;
+}
+.catalog-sidebar__children .catalog-sidebar__sub:not(.catalog-sidebar__sub--active):hover {
+  background: #c8deed;
+}
 .catalog-sidebar__sub {
   display: flex;
   align-items: center;
