@@ -22,18 +22,18 @@
     </select>
   </label>
 </div>
-<div class="two-fields"><label class="form-field"><span class="field-label">Danh mục <b>*</b></span><select [(ngModel)]="categoryId" [disabled]="loadingCategories || !!categoryError" aria-label="Danh mục">
+<div class="two-fields"><div class="category-picker"><label class="form-field"><span class="field-label">Danh mục <b>*</b></span><select [(ngModel)]="categoryId" [disabled]="loadingCategories || !!categoryError" aria-label="Danh mục">
   <option value="">{{ loadingCategories ? 'Đang tải danh mục...' : 'Chọn danh mục' }}</option>
   @for (category of categories; track category.id) {
     <option [value]="category.id">{{ category.name }}</option>
   }
-</select>
+</select></label>
 @if (categoryError) {
   <span class="category-load-error" role="alert">{{ categoryError }}</span>
   <button class="category-retry" type="button" (click)="loadCategories()">Tải lại danh mục</button>
 } @else if (!loadingCategories && categories.length === 0) {
   <span class="category-load-error">Chưa có danh mục đang hoạt động. Vui lòng tạo danh mục trước.</span>
-}</label><label class="form-field"><span class="field-label">Mã SKU</span>@if (hasVariants) { <input value="N/A" readonly aria-label="Mã SKU từ biến thể"> } @else { <input [(ngModel)]="variants[0].sku" [readonly]="!categoryId" [placeholder]="categoryId ? 'Nhập mã SKU' : 'Vui lòng chọn danh mục trước'" aria-label="Mã SKU"> }</label></div>
+}</div><label class="form-field"><span class="field-label">Mã SKU</span>@if (hasVariants) { <input value="N/A" readonly aria-label="Mã SKU từ biến thể"> } @else { <input [(ngModel)]="variants[0].sku" [readonly]="!categoryId" [placeholder]="categoryId ? 'Nhập mã SKU' : 'Vui lòng chọn danh mục trước'" aria-label="Mã SKU"> }</label></div>
 <label class="form-field description"><span class="field-label">Mô tả sản phẩm</span><textarea [(ngModel)]="description" placeholder="Nhập mô tả chi tiết về sản phẩm..."></textarea></label></section>
 <section class="panel price"><h2><img src="/assets/admin-product/icon-price.svg" alt="">Giá bán</h2>@if (hasVariants) {<div class="price-summary"><b>Khoảng giá</b><strong>{{ priceRange }}</strong></div>} @else {<div class="single-price-fields"><label class="form-field"><span class="field-label">Giá bán (VNĐ) <b>*</b></span><span class="currency-input"><input type="number" min="0" step="1000" [(ngModel)]="variants[0].price" aria-label="Giá bán (VNĐ)"><span>đ</span></span></label><label class="form-field"><span class="field-label">Khuyến mại (%)</span><span class="currency-input"><input type="number" min="0" max="100" step="1" [(ngModel)]="variants[0].discount" aria-label="Khuyến mại (%)"><span>%</span></span></label><label class="form-field"><span class="field-label">Giá sau khuyến mại (VNĐ)</span><span class="currency-input calculated-price"><output>{{finalPrice(variants[0]).toLocaleString('vi-VN')}}</output><span>đ</span></span></label></div>}</section></div>
 <div class="right-column"><section class="panel status"><h2><img src="/assets/admin-product/icon-status.svg" alt="">Trạng thái sản phẩm</h2><div class="status-row"><button type="button" class="switch" [class.on]="active" (click)="active = !active" [attr.aria-pressed]="active" aria-label="Đổi trạng thái sản phẩm"><span></span></button><span>{{active?'Hoạt động':'Tạm ngưng'}}</span></div></section>
