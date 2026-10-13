@@ -45,7 +45,6 @@ export class AdminCategoryPageComponent implements OnInit {
   statusFilter: 'ALL' | CategoryStatus = 'ALL';
   formName = '';
   formSlug = '';
-  private slugEdited = false;
   formParentId = '';
   formStatus: CategoryStatus = 'ACTIVE';
   editing: AdminCategory | null = null;
@@ -145,7 +144,6 @@ export class AdminCategoryPageComponent implements OnInit {
     this.editing = null;
     this.formName = '';
     this.formSlug = '';
-    this.slugEdited = false;
     this.formParentId = '';
     this.formStatus = 'ACTIVE';
     this.formError.set('');
@@ -155,22 +153,12 @@ export class AdminCategoryPageComponent implements OnInit {
   openEdit(item: AdminCategory): void {
     this.editing = item;
     this.formName = item.name;
-    this.formSlug = item.slug;
-    this.slugEdited = true;
+    // Generate from the current Vietnamese name; legacy slugs are updated only on Save.
+    this.formSlug = this.slugifyVietnamese(item.name);
     this.formParentId = item.parentId || '';
     this.formStatus = item.status;
     this.formError.set('');
     this.dialogOpen.set(true);
-  }
-
-  openSlugSuggestion(category: AdminCategory): void {
-    this.openEdit(category);
-    const suggestion = this.slugifyVietnamese(category.name);
-    if (suggestion) {
-      // Preview only: do not modify an existing public URL until ADMIN saves.
-      this.formSlug = suggestion;
-      this.slugEdited = true;
-    }
   }
 
   closeDialog(): void {
@@ -196,20 +184,10 @@ export class AdminCategoryPageComponent implements OnInit {
 
   onCategoryNameChange(value: string): void {
     this.formName = value;
-    if (!this.editing && !this.slugEdited) {
-      this.formSlug = this.slugifyVietnamese(value);
-    }
+    // Always regenerate on name changes, for create and edit alike.
+    this.formSlug = this.slugifyVietnamese(value);
   }
 
-  onSlugInput(value: string): void {
-    this.formSlug = value;
-    this.slugEdited = true;
-  }
-
-  regenerateSlug(): void {
-    this.formSlug = this.slugifyVietnamese(this.formName);
-    this.slugEdited = false;
-  }
 
   saveCategory(): void {
     if (this.saving()) return;
@@ -240,7 +218,7 @@ export class AdminCategoryPageComponent implements OnInit {
       // The OpenAPI v7 schema rejects parentId:null. For a new root category
       // or edits without a parent, leave this field out of the request body.
       ...(this.formParentId ? { parentId: this.formParentId } : {}),
-      // Existing category URLs should not change just because the name changes.
+      // Slug is derived from the name and persisted if it differs from the old one.
       ...(!this.editing || slug !== this.editing.slug ? { slug } : {}),
     };
     this.saving.set(true);
