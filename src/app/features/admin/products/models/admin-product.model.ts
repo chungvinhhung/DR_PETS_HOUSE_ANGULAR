@@ -28,3 +28,20 @@ export interface AdminProduct extends Omit<ProductWrite, 'variants' | 'status'> 
   images: string[];
   outOfStock: boolean;
 }
+
+/** Backend OpenAPI v7 uses cursor-based pagination, not numbered pages. */
+export interface ProductPageResponse {
+  items: AdminProduct[];
+  nextCursor: string | null;
+}
+
+export type ProductSort = 'NEWEST' | 'NAME_ASC' | 'NAME_DESC' | 'PRICE_ASC' | 'PRICE_DESC';
+
+export interface ProductQuery {
+  q?: string;
+  categoryId?: string;
+  status?: ProductStatus;
+  sort?: ProductSort;
+  limit?: number;
+  cursor?: string | null;
+}
