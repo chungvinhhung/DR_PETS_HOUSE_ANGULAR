@@ -3,7 +3,7 @@
 <main class="main">
       <header class="page-heading">
         <div>
-          <p class="breadcrumb">Bán hàng <span>›</span> Danh mục sản phẩm</p>
+          
           <h1>Quản lý danh mục</h1>
         </div>
       </header>
@@ -29,9 +29,6 @@
                 <option value="INACTIVE">Tạm ngưng</option>
               </select>
             </label>
-            <button type="button" class="btn-outline" (click)="applyFilters()" [disabled]="loading()">
-              Tìm kiếm
-            </button>
             <button type="button" class="btn-primary" (click)="openCreate()">
               <span aria-hidden="true">＋</span> Thêm danh mục
             </button>
@@ -95,7 +92,7 @@
         </div>
 
         <footer class="pagination">
-          <span>Đang hiển thị {{ categories().length }} danh mục — Trang {{ pageNumber }}</span>
+          <span>Đang hiển thị {{ categories().length }} danh mục{{ totalCategories() !== null ? " trên tổng số " + totalCategories() + " danh mục" : " — Trang " + pageNumber }}</span>
           <div class="pagination-controls">
             <button type="button" (click)="previousPage()"
               [disabled]="!hasPreviousPage || loading()" aria-label="Trang trước">‹</button>
