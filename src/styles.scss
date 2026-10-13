@@ -516,21 +516,6 @@ app-admin-category-page {
     gap: 9px;
   }
 
-  .slug-regenerate {
-    margin-top: 8px;
-    padding: 6px 10px;
-    border: 1px solid #0d47a1;
-    border-radius: 6px;
-    background: #fff;
-    color: #0d47a1;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .slug-regenerate:hover {
-    background: #e5f6fd;
-  }
-
   .field-hint {
     margin: 6px 0 0;
     color: #64748b;
@@ -582,22 +567,40 @@ app-admin-product-create-page .single-price-fields .currency-input {
   background: white;
   overflow: hidden;
 }
-app-admin-product-create-page .single-price-fields .currency-input input {
+/* Override Angular's component-level .form-field input border.
+   Keep only the outer currency-input border; reserve a suffix slot for đ/%. */
+app-admin-product-create-page .single-price-fields .form-field .currency-input > input[type="number"] {
+  box-sizing: border-box;
+  display: block;
   width: 100%;
   min-width: 0;
-  flex: 1;
-  height: 40px;
+  flex: 1 1 auto;
+  height: 100%;
+  margin: 0;
+  padding: 9px 10px 9px 12px;
   border: 0;
-  outline-offset: -2px;
-  padding: 9px 12px;
+  border-radius: 0;
+  box-shadow: none;
+  outline: none;
   background: transparent;
-  font: 400 16px Roboto,Arial,sans-serif;
+  color: #202e45;
+  font: 400 16px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .single-price-fields .currency-input:focus-within {
+  border-color: #0d47a1;
+  box-shadow: 0 0 0 2px rgba(13, 71, 161, .12);
 }
 app-admin-product-create-page .single-price-fields .currency-input > span {
-  flex: 0 0 auto;
-  margin-right: 12px;
+  display: inline-flex;
+  flex: 0 0 28px;
+  justify-content: center;
+  align-items: center;
+  align-self: stretch;
+  margin: 0 6px 0 0;
+  white-space: nowrap;
   color: #64748b;
   font-size: 14px;
+  pointer-events: none;
 }
 app-admin-product-create-page .single-price-fields .calculated-price {
   background: #e5f6fd;
@@ -622,19 +625,4 @@ app-admin-product-create-page .price:has(.single-price-fields) {
   app-admin-product-create-page .single-price-fields .field-label {
     white-space: normal;
   }
-}
-app-admin-category-page .slug-edit-link {
-  display: inline;
-  margin-left: 8px;
-  padding: 2px 5px;
-  border: 0;
-  border-radius: 4px;
-  background: transparent;
-  color: #0d47a1;
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: underline;
-}
-app-admin-category-page .slug-edit-link:hover {
-  background: #e5f6fd;
 }
