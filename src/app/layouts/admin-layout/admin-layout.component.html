@@ -100,7 +100,7 @@
         </a>
         <div class="admin-shell__catalog-actions">
           <a class="admin-shell__catalog-site" routerLink="/">Xem trang web</a>
-          <span class="admin-shell__catalog-bell" aria-label="Thông báo" role="img">♧</span>
+          <span class="admin-shell__catalog-bell" aria-label="Thông báo" role="img"><img src="/assets/service-catalog/notifications.svg" alt="" aria-hidden="true" /></span>
           <a class="admin-shell__catalog-profile" routerLink="/admin/profile" aria-label="Mở hồ sơ tài khoản">
             <span class="admin-shell__catalog-avatar" aria-hidden="true">{{ (user()?.fullName || 'A').slice(0, 1) }}</span>
             <span><strong>{{ user()?.fullName || 'Quản trị viên' }}</strong><small>{{ user()?.systemRole || 'ADMIN' }}</small></span>
