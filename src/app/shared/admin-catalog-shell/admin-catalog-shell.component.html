@@ -51,7 +51,7 @@
         </div>
 
         <button type="button" class="catalog-sidebar__group"
-          [class.catalog-sidebar__group--active]="activeItem === 'services'"
+          [class.catalog-sidebar__group--active]="activeItem === 'services' || activeItem === 'branches'"
           [attr.aria-expanded]="servicesExpanded" aria-controls="admin-services-submenu"
           (click)="toggleServices()">
           <img src="/assets/admin-product/icon-services.svg" alt="" width="20" height="20">
@@ -61,14 +61,16 @@
             alt="" aria-hidden="true" width="16" height="16">
         </button>
         <div id="admin-services-submenu" class="catalog-sidebar__children"
-          [class.catalog-sidebar__children--services]="activeItem === 'services'"
+          [class.catalog-sidebar__children--services]="activeItem === 'services' || activeItem === 'branches'"
           [hidden]="!servicesExpanded" aria-label="Các mục thuộc Dịch vụ">
           <a class="catalog-sidebar__sub" routerLink="/admin/services"
             [class.catalog-sidebar__sub--active]="activeItem === 'services'"
             [attr.aria-current]="activeItem === 'services' ? 'page' : null">
             Danh mục dịch vụ
           </a>
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Cấu hình chi nhánh sẽ được thực hiện trong Phase 3">Chi nhánh</span>
+          <a class="catalog-sidebar__sub" routerLink="/admin/branches"
+            [class.catalog-sidebar__sub--active]="activeItem === 'branches'"
+            [attr.aria-current]="activeItem === 'branches' ? 'page' : null">Chi nhánh</a>
           <a class="catalog-sidebar__sub" routerLink="/admin/appointments">Lịch hẹn</a>
         </div>
 
