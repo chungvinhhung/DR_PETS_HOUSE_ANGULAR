@@ -19,6 +19,7 @@ import {
 } from 'rxjs';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import {
   CatalogBranch,
   CatalogFilterMode,
@@ -34,6 +35,7 @@ type CatalogAction = 'view' | 'edit' | 'configure';
 @Component({
   selector: 'app-service-catalog-list',
   standalone: true,
+  imports: [AdminCatalogShellComponent],
   templateUrl: './service-catalog-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
