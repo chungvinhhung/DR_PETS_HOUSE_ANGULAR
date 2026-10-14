@@ -293,8 +293,10 @@
 }
 
 .catalog-sidebar__sub--disabled {
-  color: #8490a0;
-  cursor: not-allowed;
+  /* Phase 3 placeholder: readable like the other submenu labels, but still not a link. */
+  color: #1b273b;
+  opacity: 1;
+  cursor: default;
 }
 
 .catalog-sidebar__group:focus-visible {
