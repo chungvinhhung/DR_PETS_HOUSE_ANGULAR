@@ -248,19 +248,7 @@ export class AdminProductListPageComponent implements OnInit {
     if (!product || product.status !== 'ARCHIVED' || this.updatingId()) return;
     this.restoreError.set('');
     this.updatingId.set(product.id);
-    // BE does not expose a dedicated restore route. PATCH ProductWrite is
-    // required by OpenAPI v7; retain all existing data and only change status.
-    this.productsApi.updateProduct(product.id, {
-      name: product.name,
-      description: product.description ?? '',
-      categoryId: product.categoryId,
-      images: [...(product.images ?? [])],
-      variants: product.variants.map(v => ({
-        id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status,
-      })),
-      // Do not put the archived item back on sale without manual review.
-      status: 'INACTIVE',
-    }).pipe(
+    this.productsApi.restoreProduct(product.id, crypto.randomUUID()).pipe(
       timeout({ first: 30000 }),
       takeUntilDestroyed(this.destroyRef),
       finalize(() => this.updatingId.set(null)),
