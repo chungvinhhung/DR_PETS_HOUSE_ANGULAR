@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
@@ -23,7 +22,7 @@ import { AdminCategoryService } from '../services/admin-category.service';
 @Component({
   selector: 'app-admin-category-page',
   standalone: true,
-  imports: [FormsModule, RouterLink, AdminCatalogShellComponent],
+  imports: [FormsModule, AdminCatalogShellComponent],
   templateUrl: './admin-category-page.component.html',
   styleUrl: './admin-category-page.component.scss',
   changeDetection: ChangeDetectionStrategy.Default,
