@@ -60,8 +60,7 @@
             [src]="servicesExpanded ? '/assets/admin-product/expand_less.svg' : '/assets/admin-product/expand_more.svg'"
             alt="" aria-hidden="true" width="16" height="16">
         </button>
-        <div id="admin-services-submenu" class="catalog-sidebar__children"
-          [class.catalog-sidebar__children--services]="activeItem === 'services'"
+        <div id="admin-services-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
           [hidden]="!servicesExpanded" aria-label="Các mục thuộc Dịch vụ">
           <a class="catalog-sidebar__sub" routerLink="/admin/services"
             [class.catalog-sidebar__sub--active]="activeItem === 'services'"
