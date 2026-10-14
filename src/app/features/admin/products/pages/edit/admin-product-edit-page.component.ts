@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, firstValueFrom, timeout } from 'rxjs';
 
@@ -27,6 +27,7 @@ interface EditableProductImage {
 })
 export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly api = inject(AdminProductService);
   private readonly categoriesApi = inject(AdminCategoryService);
   private readonly destroyRef = inject(DestroyRef);
@@ -45,6 +46,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   categoryId = '';
   usageType: ProductUsageType = 'SALE';
   active = false;
+  submitted = false;
   variants: ProductVariantWrite[] = [];
   imageSlots: EditableProductImage[] = [];
   imageError = '';
@@ -67,6 +69,34 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   private lastSavedSnapshot = '';
 
   get hasVariants(): boolean { return this.product()?.productType === 'VARIANT'; }
+  get nameInvalid(): boolean { return this.submitted && !this.name.trim(); }
+  get categoryInvalid(): boolean { return this.submitted && !this.categories().some(c => c.id === this.categoryId); }
+  get usageInvalid(): boolean { return this.submitted && !this.usageType; }
+  variantLabelInvalid(v: ProductVariantWrite): boolean { return this.submitted && !v.label.trim(); }
+  variantSkuInvalid(v: ProductVariantWrite): boolean { return this.submitted && !v.sku?.trim(); }
+  variantPriceInvalid(v: ProductVariantWrite): boolean {
+    return this.submitted && (!Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0);
+  }
+  variantDiscountInvalid(v: ProductVariantWrite): boolean {
+    return this.submitted && (!Number.isFinite(Number(v.discountPercent)) || Number(v.discountPercent) < 0 || Number(v.discountPercent) > 100);
+  }
+  selectNumericInput(event: FocusEvent): void {
+    (event.target as HTMLInputElement).select();
+  }
+
+  setProductActive(value: boolean): void {
+    this.active = value;
+    if (!value) this.variants.forEach(v => { v.status = 'INACTIVE'; });
+    else if (this.variants.length && !this.variants.some(v => v.status === 'ACTIVE')) {
+      this.variants[0].status = 'ACTIVE';
+    }
+  }
+
+  toggleVariantActive(variant: ProductVariantWrite): void {
+    if (this.saving() || this.product()?.status === 'ARCHIVED') return;
+    variant.status = variant.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    this.active = this.variants.some(v => v.status === 'ACTIVE');
+  }
   get priceRange(): string {
     this.pricingInputRevision();
     const prices = this.variants.map(v => Number(v.price)).filter(Number.isFinite);
@@ -183,7 +213,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       this.active = product.status === 'ACTIVE';
       this.imageSlots = this.fromSavedImages(product.images ?? []);
       this.variants = product.variants.map(v => ({
-        id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status, discountPercent: v.discountPercent, image: v.image,
+        id: v.id, sku: v.sku, label: v.label, price: v.price, status: product.status === 'ACTIVE' ? v.status : 'INACTIVE', discountPercent: v.discountPercent, image: v.image,
       }));
       this.lastSavedSnapshot = this.draftSnapshot();
     } catch (error) {
@@ -194,6 +224,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   }
 
   save(): void {
+    this.submitted = true;
     const item = this.product();
     if (!item || this.saving()) return;
     if (item.status === 'ARCHIVED') {
@@ -202,6 +233,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     }
     this.error.set('');
     this.success.set('');
+    this.active = this.variants.some(v => v.status === 'ACTIVE');
     if (!this.name.trim() || !this.categoryId || !this.variants.length ||
         this.variants.some(v => !v.sku?.trim() || !v.label.trim() || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0 || !Number.isFinite(Number(v.discountPercent ?? 0)) || Number(v.discountPercent ?? 0) < 0 || Number(v.discountPercent ?? 0) > 100)) {
       this.error.set('Vui lòng nhập tên, danh mục và thông tin SKU/giá hợp lệ.');
@@ -265,6 +297,9 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       const updated = await firstValueFrom(this.api.updateProduct(item.id, body).pipe(timeout({ first: 30000 })));
       this.applyUpdatedProduct(updated);
       this.success.set('Cập nhật sản phẩm thành công.');
+      await this.router.navigate(['/admin/products'], {
+        state: { productNotice: 'Đã cập nhật sản phẩm ' + updated.name + ' thành công.' },
+      });
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'Không thể cập nhật sản phẩm.');
     } finally {
@@ -389,7 +424,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     this.imageSlots = this.fromSavedImages(updated.images ?? []);
     this.variants = updated.variants.map(v => ({
       id: v.id, sku: v.sku, label: v.label, price: v.price,
-      status: v.status, discountPercent: v.discountPercent, image: v.image,
+      status: updated.status === 'ACTIVE' ? v.status : 'INACTIVE', discountPercent: v.discountPercent, image: v.image,
     }));
     this.variantImagePreviews.forEach(url => URL.revokeObjectURL(url));
     this.variantImagePreviews.clear();
