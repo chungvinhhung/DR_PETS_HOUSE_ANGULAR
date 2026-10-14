@@ -36,6 +36,11 @@ export interface AdminProduct extends Omit<ProductWrite, 'variants' | 'status'> 
 export interface ProductPageResponse {
   items: AdminProduct[];
   nextCursor: string | null;
+  /** Optional: not yet supplied by BE OpenAPI v7. */
+  totalItems?: number;
+  /** Compatibility with potential older API total names. */
+  totalCount?: number;
+  total?: number;
 }
 
 export type ProductSort = 'NEWEST' | 'NAME_ASC' | 'NAME_DESC' | 'PRICE_ASC' | 'PRICE_DESC';
