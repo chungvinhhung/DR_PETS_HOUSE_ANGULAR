@@ -12,10 +12,10 @@
 
     @if (isCatalogLayout()) {
       <nav class="admin-shell__catalog-nav" aria-label="Điều hướng quản trị">
-        <a routerLink="/admin/dashboard">▦ <span>Dashboard</span></a>
-        <a routerLink="/admin/orders">▣ <span>Bán hàng</span><span class="nav-end">›</span></a>
+        <a routerLink="/admin/dashboard"><img src="/assets/service-catalog/dashboard.svg" alt="" aria-hidden="true" /><span>Dashboard</span></a>
+        <a routerLink="/admin/orders"><img src="/assets/service-catalog/sales.svg" alt="" aria-hidden="true" /><span>Bán hàng</span><span class="nav-end">›</span></a>
 
-        <div class="admin-shell__catalog-nav-group">▤ <span>Dịch vụ</span><span class="nav-end">⌄</span></div>
+        <div class="admin-shell__catalog-nav-group"><img src="/assets/service-catalog/services.svg" alt="" aria-hidden="true" /><span>Dịch vụ</span><span class="nav-end">⌄</span></div>
         <a class="admin-shell__catalog-child" routerLink="/admin/services"
           routerLinkActive="admin-shell__catalog-child--active" ariaCurrentWhenActive="page">
           Danh mục dịch vụ
