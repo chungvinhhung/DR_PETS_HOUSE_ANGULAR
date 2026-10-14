@@ -78,6 +78,10 @@ function foldText(value: string): string {
 export class ServiceCatalogMockRepository {
   readonly branches = DEMO_BRANCHES;
 
+  getAll(): readonly CatalogService[] {
+    return DEMO_SERVICES;
+  }
+
   getById(id: string): CatalogService | null {
     return DEMO_SERVICES.find((service) => service.id === id) ?? null;
   }
