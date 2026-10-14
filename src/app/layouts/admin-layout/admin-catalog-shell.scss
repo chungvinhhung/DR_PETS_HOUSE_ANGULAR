@@ -62,6 +62,13 @@ app-admin-layout .admin-shell--catalog .admin-shell__content {
   object-position: left center;
 }
 
+.admin-shell__catalog-bell img {
+  display: block;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
 .admin-shell__catalog-actions {
   display: flex;
   align-items: center;
@@ -159,6 +166,13 @@ app-admin-layout .admin-shell--catalog .admin-shell__content {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.admin-shell__catalog-nav img {
+  display: block;
+  flex: none;
+  width: 20px;
+  height: 20px;
 }
 
 .admin-shell__catalog-nav a,
