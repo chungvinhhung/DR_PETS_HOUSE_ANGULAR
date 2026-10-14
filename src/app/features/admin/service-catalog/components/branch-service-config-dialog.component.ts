@@ -200,7 +200,8 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
   }
 
   @HostListener('document:keydown.tab', ['$event'])
-  trapFocus(event: KeyboardEvent): void {
+  trapFocus(event: Event): void {
+    const keyboardEvent = event as KeyboardEvent;
     if (!this.dialogRef) return;
     const root = this.dialogRef.nativeElement;
     const focusables = Array.from(root.querySelectorAll<HTMLElement>(
@@ -210,11 +211,11 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     const first = focusables[0];
     const last = focusables[focusables.length - 1];
     const active = document.activeElement;
-    if (event.shiftKey && (active === first || active === root)) {
-      event.preventDefault();
+    if (keyboardEvent.shiftKey && (active === first || active === root)) {
+      keyboardEvent.preventDefault();
       last.focus();
-    } else if (!event.shiftKey && (active === last || active === root)) {
-      event.preventDefault();
+    } else if (!keyboardEvent.shiftKey && (active === last || active === root)) {
+      keyboardEvent.preventDefault();
       first.focus();
     }
   }
