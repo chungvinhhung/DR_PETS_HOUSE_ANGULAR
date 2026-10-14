@@ -8,11 +8,11 @@ import { AdminCatalogShellComponent } from '../../../../../shared/admin-catalog-
 import { AdminCategoryService } from '../../../categories/services/admin-category.service';
 import { AdminCategory } from '../../../categories/models/admin-category.model';
 import { AdminProductService } from '../../services/admin-product.service';
-import { AdminProduct, ProductVariantWrite, ProductWrite } from '../../models/admin-product.model';
+import { AdminProduct, ProductImage, ProductVariantWrite, ProductWrite } from '../../models/admin-product.model';
 
 interface EditableProductImage {
   id: number;
-  savedUrl: string | null;
+  savedImage: ProductImage | null;
   previewUrl: string;
   localFile: File | null;
 }
@@ -66,7 +66,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       variants: this.variants.map(v => ({ id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status })),
       images: this.imageSlots.map(image => ({
         id: image.id,
-        savedUrl: image.savedUrl,
+        savedUrl: image.savedImage?.url,
         fileName: image.localFile?.name,
         fileSize: image.localFile?.size,
         fileModified: image.localFile?.lastModified,
@@ -112,11 +112,11 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     if (image.localFile) URL.revokeObjectURL(image.previewUrl);
   }
 
-  private fromSavedImages(urls: string[]): EditableProductImage[] {
-    return urls.map(url => ({
+  private fromSavedImages(images: ProductImage[]): EditableProductImage[] {
+    return images.map(image => ({
       id: this.nextImageId++,
-      savedUrl: url,
-      previewUrl: url,
+      savedImage: image,
+      previewUrl: image.url,
       localFile: null,
     }));
   }
@@ -160,16 +160,12 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     }
     this.error.set('');
     this.success.set('');
-    if (this.imageSlots.some(image => image.localFile)) {
-      this.error.set('Ảnh mới chỉ đang được xem trước trên máy. Backend chưa có API upload ảnh sản phẩm, vì vậy chưa thể lưu các ảnh đã chọn. Vui lòng đợi BE hỗ trợ hoặc bỏ những ảnh mới để lưu các thông tin khác.');
-      return;
-    }
     if (!this.name.trim() || !this.categoryId || !this.variants.length ||
-        this.variants.some(v => !v.sku.trim() || !v.label.trim() || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0)) {
+        this.variants.some(v => !v.sku?.trim() || !v.label.trim() || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0)) {
       this.error.set('Vui lòng nhập tên, danh mục và thông tin SKU/giá hợp lệ.');
       return;
     }
-    const normalized = this.variants.map(v => v.sku.trim().toLowerCase());
+    const normalized = this.variants.map(v => (v.sku ?? '').trim().toLowerCase());
     if (new Set(normalized).size !== normalized.length) {
       this.error.set('SKU của các biến thể không được trùng nhau.');
       return;
@@ -180,34 +176,54 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       name: this.name.trim(),
       description: this.description.trim(),
       categoryId: this.categoryId,
-      images: this.imageSlots.map(image => image.savedUrl).filter((url): url is string => !!url),
+      images: this.imageSlots.map((image, index) => ({
+        id: image.savedImage?.id ?? `img-${index + 1}`,
+        url: image.savedImage?.url ?? '',
+        isPrimary: index === 0,
+        sortOrder: index,
+      })),
       status: this.active ? 'ACTIVE' : 'INACTIVE',
       variants: this.variants.map(v => ({
         id: v.id, label: v.label.trim(), sku: originalSkuById.get(v.id!) ?? v.sku, price: Number(v.price), status: v.status,
       })),
     };
     this.saving.set(true);
-    this.api.updateProduct(item.id, body).pipe(
-      timeout({ first: 30000 }),
-      takeUntilDestroyed(this.destroyRef),
-      finalize(() => this.saving.set(false)),
-    ).subscribe({
-      next: updated => {
-        this.product.set(updated);
-        this.name = updated.name;
-        this.description = updated.description ?? '';
-        this.categoryId = updated.categoryId;
-        this.active = updated.status === 'ACTIVE';
-        this.imageSlots.forEach(image => this.releaseImagePreview(image));
-        this.imageSlots = this.fromSavedImages(updated.images ?? []);
-        this.variants = updated.variants.map(v => ({
-          id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status,
-        }));
-        this.lastSavedSnapshot = this.draftSnapshot();
-        this.success.set('Cập nhật sản phẩm thành công.');
-      },
-      error: error => this.error.set(error instanceof Error ? error.message : 'Không thể cập nhật sản phẩm.'),
-    });
+    void this.updateWithUploads(item, body);
+  }
+
+  private async updateWithUploads(item: AdminProduct, body: ProductWrite): Promise<void> {
+    try {
+      const images: ProductImage[] = [];
+      for (const image of this.imageSlots) {
+        let url = image.savedImage?.url;
+        let id = image.savedImage?.id;
+        if (image.localFile) {
+          const result = await firstValueFrom(this.api.uploadImages([image.localFile]).pipe(timeout({ first: 30000 })));
+          url = result.items[0]?.url;
+          id = result.items[0]?.id;
+        }
+        if (!url) throw new Error('Upload ảnh không trả về URL.');
+        images.push({ id: id ?? `img-${images.length + 1}`, url, isPrimary: images.length === 0, sortOrder: images.length });
+      }
+      body.images = images;
+      const updated = await firstValueFrom(this.api.updateProduct(item.id, body).pipe(timeout({ first: 30000 })));
+      this.product.set(updated);
+      this.name = updated.name;
+      this.description = updated.description ?? '';
+      this.categoryId = updated.categoryId;
+      this.active = updated.status === 'ACTIVE';
+      this.imageSlots.forEach(image => this.releaseImagePreview(image));
+      this.imageSlots = this.fromSavedImages(updated.images ?? []);
+      this.variants = updated.variants.map(v => ({
+        id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status, discountPercent: v.discountPercent, image: v.image,
+      }));
+      this.lastSavedSnapshot = this.draftSnapshot();
+      this.success.set('Cập nhật sản phẩm thành công.');
+    } catch (error) {
+      this.error.set(error instanceof Error ? error.message : 'Không thể cập nhật sản phẩm.');
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   private checkImage(file: File): boolean {
@@ -253,7 +269,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     if (index < 0) return;
     const oldImage = this.imageSlots[index];
     const newImage: EditableProductImage = {
-      id: imageId, savedUrl: null,
+      id: imageId, savedImage: null,
       previewUrl: URL.createObjectURL(file), localFile: file,
     };
     this.releaseImagePreview(oldImage);
