@@ -55,6 +55,13 @@ export const routes: Routes = [
           ).then((component) => component.AdminDashboardPageComponent),
       },
       {
+        path: 'services',
+        loadComponent: () =>
+          import(
+            './features/admin/service-catalog/pages/service-catalog-list.component'
+          ).then((component) => component.ServiceCatalogListComponent),
+      },
+      {
         path: 'orders',
         loadComponent: () =>
           import('./features/admin/pages/orders/admin-orders-page.component').then(
