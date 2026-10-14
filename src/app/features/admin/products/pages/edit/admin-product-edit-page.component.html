@@ -108,19 +108,48 @@
     @if (hasVariants) {
       <section class="panel variant-panel">
         <h2><img class="panel-icon-img" src="/assets/admin-product/icon-variants.svg" alt="">Biến thể sản phẩm</h2>
-        <button class="outline-btn add-variant" type="button" disabled title="Chờ BE hỗ trợ sinh SKU và thao tác thêm biến thể tương thích"><img class="action-icon" src="/assets/admin-product/icon-add.svg" alt="">Thêm biến thể</button>
+        <button class="outline-btn add-variant" type="button" [disabled]="saving() || product()?.status === 'ARCHIVED'" (click)="toggleAddVariant()">
+          <img class="action-icon" src="/assets/admin-product/icon-add.svg" alt="">{{ addVariantOpen() ? 'Đóng' : 'Thêm biến thể' }}
+        </button>
+        @if (addVariantOpen()) {
+          <form class="new-variant-form" (ngSubmit)="submitNewVariant()">
+            <label>Tên biến thể <b>*</b><input type="text" name="newVariantLabel" [(ngModel)]="newVariantLabel" required placeholder="VD: 500g"></label>
+            <label>Giá bán (VNĐ) <b>*</b><input type="number" name="newVariantPrice" [(ngModel)]="newVariantPrice" required min="0" step="1000"></label>
+            <label>Khuyến mại (%)<input type="number" name="newVariantDiscount" [(ngModel)]="newVariantDiscount" min="0" max="100" step="1"></label>
+            <label class="variant-active-checkbox"><input type="checkbox" name="newVariantActive" [(ngModel)]="newVariantActive"> Hoạt động</label>
+            <button type="submit" class="primary-btn" [disabled]="saving()">{{ saving() ? 'Đang thêm...' : 'Tạo biến thể' }}</button>
+          </form>
+        }
+        @if (variantActionError() && !variantActionTarget()) { <p class="notice error" role="alert">{{ variantActionError() }}</p> }
         <div class="table-scroll"><table>
           <thead><tr><th>Ảnh</th><th>Biến thể</th><th>SKU</th><th>Giá bán (VNĐ)</th><th>Khuyến mại (%)</th><th>Giá sau khuyến mại (VNĐ)</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
           <tbody>@for (variant of variants; track $index) {
             <tr>
-              <td><span class="image-square" title="BE chưa hỗ trợ ảnh biến thể"><img src="/assets/admin-product/icon-image-picker.svg" alt="Ảnh biến thể"></span></td>
+              <td>
+                <input #variantImageInput type="file" hidden accept=".jpg,.jpeg,.png"
+                  [disabled]="saving() || product()?.status === 'ARCHIVED'"
+                  (change)="selectVariantImage($event, variant.id!)">
+                <button class="image-square variant-photo-button" type="button"
+                  [disabled]="saving() || product()?.status === 'ARCHIVED'"
+                  [attr.aria-label]="'Chọn hoặc thay ảnh cho biến thể ' + variant.label"
+                  [title]="'Chọn hoặc thay ảnh ' + variant.label" (click)="variantImageInput.click()">
+                  @if (variantImagePreview(variant); as preview) { <img [src]="preview" [alt]="'Ảnh biến thể ' + variant.label"> }
+                  @else { <img src="/assets/admin-product/icon-image-picker.svg" alt=""> }
+                </button>
+              </td>
               <td><input [(ngModel)]="variant.label" aria-label="Tên biến thể"></td>
               <td><input [value]="variant.sku" readonly aria-label="SKU (không thể chỉnh sửa)" title="SKU đã tạo không được đổi"></td>
               <td><input type="number" min="0" step="1000" [(ngModel)]="variant.price" aria-label="Giá bán"></td>
               <td><input type="number" min="0" max="100" step="1" [(ngModel)]="variant.discountPercent" aria-label="Khuyến mại phần trăm"></td>
               <td><output class="final-price">{{ formatVariantFinalPrice(variant) }}</output></td>
               <td><button class="switch small" role="switch" type="button" [class.on]="variant.status === 'ACTIVE'" [attr.aria-checked]="variant.status === 'ACTIVE'" [attr.aria-label]="'Trạng thái biến thể ' + variant.label" (click)="variant.status = variant.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'"><span></span></button></td>
-              <td><button class="delete-btn" type="button" disabled aria-label="Xóa biến thể chưa hỗ trợ" title="Chờ BE xác nhận quy tắc lưu trữ biến thể"><img src="/assets/admin-product/icon-delete.svg" alt=""></button></td>
+              <td><button class="delete-btn" type="button"
+                [disabled]="saving() || variant.status !== 'ACTIVE' || product()?.status === 'ARCHIVED'"
+                [attr.aria-label]="'Ngừng hoạt động biến thể ' + variant.label"
+                [title]="variant.status === 'ACTIVE' ? 'Ngừng biến thể (không xóa SKU)' : 'Biến thể đã ngừng'"
+                (click)="requestDeactivateVariant(variant)">
+                  <img src="/assets/admin-product/icon-delete.svg" alt="">
+              </button></td>
             </tr>
           }</tbody>
         </table></div>
@@ -129,6 +158,25 @@
   }
 </main>
 </app-admin-catalog-shell>
+
+@if (variantActionTarget(); as target) {
+  <div class="product-leave-overlay" (keydown.escape)="closeDeactivateVariant()">
+    <section class="product-leave-dialog" role="alertdialog" aria-modal="true"
+      aria-labelledby="variant-deactivate-title" aria-describedby="variant-deactivate-description" tabindex="-1">
+      <h2 id="variant-deactivate-title">Ngừng hoạt động biến thể?</h2>
+      <p id="variant-deactivate-description">
+        Biến thể <strong>{{ target.label }}</strong> sẽ tạm ngừng bán. SKU và dữ liệu đơn hàng/tồn kho vẫn được bảo toàn.
+      </p>
+      @if (variantActionError()) { <p class="notice error" role="alert">{{ variantActionError() }}</p> }
+      <div class="product-leave-actions">
+        <button class="product-leave-stay" type="button" [disabled]="saving()" (click)="closeDeactivateVariant()">Hủy bỏ</button>
+        <button class="product-leave-exit" type="button" [disabled]="saving()" (click)="confirmDeactivateVariant()">
+          {{ saving() ? 'Đang xử lý...' : 'Xác nhận ngừng' }}
+        </button>
+      </div>
+    </section>
+  </div>
+}
 
 @if (leaveDialogOpen()) {
   <div class="product-leave-overlay" (keydown.escape)="resolveLeave(false)">
