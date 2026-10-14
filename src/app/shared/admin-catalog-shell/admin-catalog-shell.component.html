@@ -1,0 +1,73 @@
+<div class="catalog-shell">
+  <header class="catalog-header">
+    <a class="catalog-header__brand" routerLink="/admin/dashboard" aria-label="Dr. Pet's House — Admin Dashboard">
+      <img src="/assets/admin-product/logo-user.webp" alt="Dr. Pet's House" width="166" height="72">
+    </a>
+
+    <div class="catalog-header__actions">
+      <a routerLink="/" class="catalog-header__view-site">Xem trang web</a>
+      <img class="catalog-header__notification" src="/assets/admin-product/icon-notification.svg" alt="Thông báo" width="41" height="41">
+      <a routerLink="/admin/profile" class="catalog-header__profile" aria-label="Xem hồ sơ quản trị viên">
+        <img class="catalog-header__avatar" src="/assets/admin-product/avatar-figma.png" alt="" width="36" height="36">
+        <span class="catalog-header__identity">Quản trị viên<small>Tên tài khoản</small></span>
+        <img class="catalog-header__chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true" width="16" height="16">
+      </a>
+    </div>
+  </header>
+
+  <div class="catalog-layout">
+    <aside class="catalog-sidebar">
+      <nav aria-label="Điều hướng quản trị bán hàng">
+        <a class="catalog-sidebar__link" routerLink="/admin/dashboard">
+          <img src="/assets/admin-product/icon-dashboard.svg" alt="" width="20" height="20">
+          Dashboard
+        </a>
+
+        <div class="catalog-sidebar__group">
+          <img src="/assets/admin-product/icon-sales.svg" alt="" width="20" height="20">
+          Bán hàng
+          <img class="catalog-sidebar__group-chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true" width="16" height="16">
+        </div>
+
+        <div class="catalog-sidebar__children" aria-label="Các mục thuộc Bán hàng">
+          <a class="catalog-sidebar__sub" routerLink="/admin/categories"
+            [class.catalog-sidebar__sub--active]="activeItem === 'categories'"
+            [attr.aria-current]="activeItem === 'categories' ? 'page' : null">
+            Danh mục sản phẩm
+          </a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/products"
+            [class.catalog-sidebar__sub--active]="activeItem === 'products'"
+            [attr.aria-current]="activeItem === 'products' ? 'page' : null">
+            Sản phẩm
+          </a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/orders">Đơn hàng</a>
+          <span class="catalog-sidebar__sub">Khuyến mãi</span>
+        </div>
+
+        <a class="catalog-sidebar__link" routerLink="/admin/appointments">
+          <img src="/assets/admin-product/icon-services.svg" alt="" width="20" height="20">
+          Dịch vụ
+        </a>
+        <div class="catalog-sidebar__link">
+          <img src="/assets/admin-product/icon-operations.svg" alt="" width="20" height="20">
+          Vận hành
+        </div>
+        <a class="catalog-sidebar__link" routerLink="/admin/users">
+          <img src="/assets/admin-product/icon-users.svg" alt="" width="20" height="20">
+          Quản lý người dùng
+        </a>
+        <div class="catalog-sidebar__link">
+          <img src="/assets/admin-product/icon-content.svg" alt="" width="20" height="20">
+          Nội dung &amp; Cộng đồng
+        </div>
+        <div class="catalog-sidebar__link">
+          <img src="/assets/admin-product/icon-reviews.svg" alt="" width="20" height="20">
+          Đánh giá &amp; Phản hồi
+        </div>
+      </nav>
+    </aside>
+    <div class="catalog-layout__content">
+      <ng-content />
+    </div>
+  </div>
+</div>
