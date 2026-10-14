@@ -177,7 +177,7 @@
   padding-left: 31px;
   border-radius: 7px;
 }
-.catalog-sidebar__children .catalog-sidebar__sub:not(.catalog-sidebar__sub--active):hover {
+.catalog-sidebar__children a.catalog-sidebar__sub:not(.catalog-sidebar__sub--active):hover {
   background: #e9f1f8;
 }
 .catalog-sidebar__children .catalog-sidebar__sub--active {
@@ -293,10 +293,11 @@
 }
 
 .catalog-sidebar__sub--disabled {
-  /* Phase 3 placeholder: readable like the other submenu labels, but still not a link. */
+  /* Figma displays all labels, but pages not yet built do not navigate. */
   color: #1b273b;
   opacity: 1;
   cursor: default;
+  user-select: text;
 }
 
 .catalog-sidebar__group:focus-visible {
