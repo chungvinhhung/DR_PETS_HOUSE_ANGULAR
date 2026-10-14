@@ -8,7 +8,7 @@ import { AdminCatalogShellComponent } from '../../../../../shared/admin-catalog-
 import { AdminCategoryService } from '../../../categories/services/admin-category.service';
 import { AdminCategory } from '../../../categories/models/admin-category.model';
 import { AdminProductService } from '../../services/admin-product.service';
-import { AdminProduct, ProductImage, ProductVariantWrite, ProductWrite } from '../../models/admin-product.model';
+import { AdminProduct, ProductImage, ProductUsageType, ProductVariantWrite, ProductWrite } from '../../models/admin-product.model';
 
 interface EditableProductImage {
   id: number;
@@ -41,6 +41,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   name = '';
   description = '';
   categoryId = '';
+  usageType: ProductUsageType = 'SALE';
   active = false;
   variants: ProductVariantWrite[] = [];
   imageSlots: EditableProductImage[] = [];
@@ -61,9 +62,9 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   formatPrice(price: number): string { return Number(price || 0).toLocaleString('vi-VN') + 'đ'; }
   private draftSnapshot(): string {
     return JSON.stringify({
-      name: this.name, description: this.description, categoryId: this.categoryId,
+      name: this.name, description: this.description, categoryId: this.categoryId, usageType: this.usageType,
       active: this.active,
-      variants: this.variants.map(v => ({ id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status })),
+      variants: this.variants.map(v => ({ id: v.id, sku: v.sku, label: v.label, price: v.price, discountPercent: v.discountPercent, image: v.image, status: v.status })),
       images: this.imageSlots.map(image => ({
         id: image.id,
         savedUrl: image.savedImage?.url,
@@ -138,10 +139,11 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       this.name = product.name;
       this.description = product.description ?? '';
       this.categoryId = product.categoryId;
+      this.usageType = product.usageType ?? 'SALE';
       this.active = product.status === 'ACTIVE';
       this.imageSlots = this.fromSavedImages(product.images ?? []);
       this.variants = product.variants.map(v => ({
-        id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status,
+        id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status, discountPercent: v.discountPercent, image: v.image,
       }));
       this.lastSavedSnapshot = this.draftSnapshot();
     } catch (error) {
@@ -176,6 +178,8 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       name: this.name.trim(),
       description: this.description.trim(),
       categoryId: this.categoryId,
+      usageType: this.usageType,
+      productType: item.productType,
       images: this.imageSlots.map((image, index) => ({
         id: image.savedImage?.id ?? `img-${index + 1}`,
         url: image.savedImage?.url ?? '',
@@ -184,7 +188,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       })),
       status: this.active ? 'ACTIVE' : 'INACTIVE',
       variants: this.variants.map(v => ({
-        id: v.id, label: v.label.trim(), sku: originalSkuById.get(v.id!) ?? v.sku, price: Number(v.price), status: v.status,
+        id: v.id, label: v.label.trim(), sku: originalSkuById.get(v.id!) ?? v.sku, price: Number(v.price), discountPercent: Number(v.discountPercent ?? 0), image: v.image ?? null, status: v.status,
       })),
     };
     this.saving.set(true);
@@ -211,6 +215,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       this.name = updated.name;
       this.description = updated.description ?? '';
       this.categoryId = updated.categoryId;
+      this.usageType = updated.usageType;
       this.active = updated.status === 'ACTIVE';
       this.imageSlots.forEach(image => this.releaseImagePreview(image));
       this.imageSlots = this.fromSavedImages(updated.images ?? []);
