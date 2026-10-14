@@ -2,7 +2,7 @@
 <main class="edit-page">
   <header class="page-heading">
     <div><p class="breadcrumb"><a routerLink="/admin/products">Sản phẩm</a> <span>›</span> Chỉnh sửa sản phẩm</p><h1>Chỉnh sửa sản phẩm</h1></div>
-    <div class="actions"><a class="outline-btn" routerLink="/admin/products">Hủy bỏ</a><button class="primary-btn" type="button" (click)="save()" [disabled]="loading() || saving() || product()?.status === 'ARCHIVED'"><img class="action-icon" src="/assets/admin-product/icon-save.svg" alt="">{{ saving() ? 'Đang lưu...' : 'Lưu sản phẩm' }}</button></div>
+    <div class="actions"><a class="outline-btn" routerLink="/admin/products">Hủy bỏ</a><button class="primary-btn" type="button" (click)="save()" [disabled]="loading() || saving() || !product() || product()?.status === 'ARCHIVED' || !hasUnsavedChanges()"><img class="action-icon" src="/assets/admin-product/icon-save.svg" alt="">{{ saving() ? 'Đang lưu...' : 'Lưu sản phẩm' }}</button></div>
   </header>
   @if (error()) { <p class="notice error" role="alert">{{ error() }}</p> }
   @if (success()) { <p class="notice success" role="status">{{ success() }}</p> }
