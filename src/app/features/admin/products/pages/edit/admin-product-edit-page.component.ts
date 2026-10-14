@@ -307,6 +307,30 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * BE variant activation/deactivation endpoints currently update only the
+   * variant, not its parent. Keep the parent sale status consistent in FE.
+   * The rule must also be enforced in BE for writes from other clients.
+   */
+  private async syncAvailability(product: AdminProduct): Promise<AdminProduct> {
+    if (product.status === 'ARCHIVED') return product;
+    const nextStatus = product.variants.some(v => v.status === 'ACTIVE') ? 'ACTIVE' : 'INACTIVE';
+    if (nextStatus === product.status) return product;
+    return firstValueFrom(this.api.updateProduct(product.id, {
+      name: product.name,
+      description: product.description ?? '',
+      categoryId: product.categoryId,
+      usageType: product.usageType,
+      productType: product.productType,
+      images: product.images,
+      variants: product.variants.map(v => ({
+        id: v.id, sku: v.sku, label: v.label, price: v.price,
+        discountPercent: v.discountPercent, image: v.image, status: v.status,
+      })),
+      status: nextStatus,
+    }).pipe(timeout({ first: 30000 })));
+  }
+
   variantImagePreview(variant: ProductVariantWrite): string | null {
     return (variant.id ? this.variantImagePreviews.get(variant.id) : null) || variant.image || null;
   }
@@ -357,7 +381,8 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     this.saving.set(true);
     try {
       const updated = await firstValueFrom(this.api.addVariant(product.id, body, this.addVariantKey).pipe(timeout({ first: 30000 })));
-      this.applyUpdatedProduct(updated);
+      const synchronized = await this.syncAvailability(updated);
+      this.applyUpdatedProduct(synchronized);
       this.addVariantKey = '';
       this.addVariantFingerprint = '';
       this.addVariantOpen.set(false);
@@ -399,8 +424,9 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     this.variantActionError.set('');
     try {
       const updated = await firstValueFrom(this.api.deactivateVariant(product.id, variant.id, key).pipe(timeout({ first: 30000 })));
+      const synchronized = await this.syncAvailability(updated);
       this.deactivateKeys.delete(variant.id);
-      this.applyUpdatedProduct(updated);
+      this.applyUpdatedProduct(synchronized);
       this.variantActionTarget.set(null);
       this.success.set('Đã ngừng hoạt động biến thể. SKU và dữ liệu lịch sử vẫn được giữ.');
     } catch (error) {
