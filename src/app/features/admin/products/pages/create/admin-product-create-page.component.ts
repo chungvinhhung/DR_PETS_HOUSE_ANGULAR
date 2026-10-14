@@ -113,7 +113,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     return this.submitted && (v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0);
   }
   variantDiscountInvalid(v: VariantDraft): boolean {
-    return this.submitted && (v.discount == null || v.discount == null || !Number.isFinite(Number(v.discount)) || Number(v.discount) < 0 || Number(v.discount) > 100);
+    return this.submitted && (v.discount == null || !Number.isFinite(Number(v.discount)) || Number(v.discount) < 0 || Number(v.discount) > 100);
   }
 
   /** Select the complete existing number so typing replaces the default zero. */
@@ -350,7 +350,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     if (!this.variants.length || this.variants.some(v =>
       (this.hasVariants && !v.label.trim()) ||
       v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0 ||
-      !Number.isFinite(Number(v.discount)) || Number(v.discount) < 0 || Number(v.discount) > 100
+      v.discount == null || !Number.isFinite(Number(v.discount)) || Number(v.discount) < 0 || Number(v.discount) > 100
     )) {
       this.feedback = 'Mỗi biến thể phải có giá bán hợp lệ và khuyến mại từ 0 đến 100%.';
       return;
