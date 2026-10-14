@@ -232,11 +232,16 @@
   width: 100%;
   border: 0;
   background: transparent;
+  color: #1b273b;
   text-align: left;
   font: inherit;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
+}
+
+.catalog-sidebar__group:not(.catalog-sidebar__group--active) > img:first-child {
+  filter: brightness(0);
 }
 
 .catalog-sidebar__group:hover {
