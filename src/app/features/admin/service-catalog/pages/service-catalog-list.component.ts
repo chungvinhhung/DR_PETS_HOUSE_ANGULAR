@@ -35,7 +35,6 @@ type CatalogAction = 'view' | 'edit' | 'configure';
   selector: 'app-service-catalog-list',
   standalone: true,
   templateUrl: './service-catalog-list.component.html',
-  styleUrl: './service-catalog-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServiceCatalogListComponent {
