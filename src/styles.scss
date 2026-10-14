@@ -1,3 +1,6 @@
+@use './app/layouts/admin-layout/admin-catalog-shell';
+@use './app/features/admin/service-catalog/pages/service-catalog-list.component';
+
 /* Global styles for Dr. Pet's House.
  * Tailwind CSS will be configured in a later foundation phase.
  */
