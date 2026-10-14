@@ -188,21 +188,6 @@ export class ServiceCatalogListComponent {
     return this.isEffectiveEnabled(service, this.filters().branchId);
   }
 
-  availabilityLabel(service: CatalogService): string {
-    const branchIds = this.filters().branchId === 'ALL'
-      ? this.scopedBranches().map((branch) => branch.id)
-      : [this.filters().branchId];
-    const configs = service.branchServices.filter((config) => branchIds.includes(config.branchId));
-    if (!configs.length) {
-      return '—';
-    }
-    const values = new Set(configs.map((config) => config.availability));
-    if (values.size > 1) {
-      return 'Nhiều cấu hình';
-    }
-    return configs[0].availability === 'BY_SHIFT' ? 'Theo ca' : 'Liên hệ';
-  }
-
   executorLabel(value: string): string {
     return value === 'CARE_STAFF_GROOMER' || value === 'CARE_STAFF'
       ? 'CARE STAFF'
