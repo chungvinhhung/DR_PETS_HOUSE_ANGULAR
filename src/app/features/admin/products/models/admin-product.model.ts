@@ -1,12 +1,24 @@
-/** OpenAPI v7 product contract. Stock is managed by Inventory, not Product. */
+/** Backend Product contract (Task 3.6, feat/foundation-v6). */
 export type ProductStatus = 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
 export type VariantStatus = 'ACTIVE' | 'INACTIVE';
+export type ProductType = 'SIMPLE' | 'VARIANT';
+export type ProductUsageType = 'SALE' | 'SHARED' | 'SERVICE_SUPPLY';
+
+export interface ProductImage {
+  id: string;
+  url: string;
+  isPrimary: boolean;
+  sortOrder: number;
+}
 
 export interface ProductVariantWrite {
   id?: string;
-  sku: string;
+  /** Optional on create; Backend allocates an immutable SKU. */
+  sku?: string;
   label: string;
   price: number;
+  discountPercent?: number;
+  image?: string | null;
   status: VariantStatus;
 }
 
@@ -14,33 +26,55 @@ export interface ProductWrite {
   name: string;
   description: string;
   categoryId: string;
-  /** Publicly reachable image URLs; upload endpoint is not yet available. */
-  images?: string[];
+  productType?: ProductType;
+  usageType?: ProductUsageType;
+  origin?: string | null;
+  expiryInfo?: string | null;
+  images?: ProductImage[];
   variants: ProductVariantWrite[];
   status: Exclude<ProductStatus, 'ARCHIVED'>;
 }
 
 export interface ProductVariant extends ProductVariantWrite {
   id: string;
+  sku: string;
+  finalPrice: number;
+  availableStock?: number;
 }
 
-export interface AdminProduct extends Omit<ProductWrite, 'variants' | 'status'> {
+export interface AdminProduct extends Omit<ProductWrite, 'variants' | 'status' | 'images'> {
   id: string;
+  productCode: string | null;
+  productType: ProductType;
+  usageType: ProductUsageType;
   variants: ProductVariant[];
   status: ProductStatus;
-  images: string[];
+  images: ProductImage[];
   outOfStock: boolean;
+  totalStock: number;
+  createdAt?: string;
+  updatedAt?: string;
+  archivedAt?: string;
 }
 
-/** Backend OpenAPI v7 uses cursor-based pagination, not numbered pages. */
 export interface ProductPageResponse {
   items: AdminProduct[];
   nextCursor: string | null;
-  /** Optional: not yet supplied by BE OpenAPI v7. */
   totalItems?: number;
-  /** Compatibility with potential older API total names. */
   totalCount?: number;
   total?: number;
+}
+
+export interface UploadedProductImage {
+  id: string;
+  url: string;
+  isPrimary?: boolean;
+  sortOrder?: number;
+}
+
+export interface ProductUploadResponse {
+  items: UploadedProductImage[];
+  total: number;
 }
 
 export type ProductSort = 'NEWEST' | 'NAME_ASC' | 'NAME_DESC' | 'PRICE_ASC' | 'PRICE_DESC';
@@ -48,6 +82,7 @@ export type ProductSort = 'NEWEST' | 'NAME_ASC' | 'NAME_DESC' | 'PRICE_ASC' | 'P
 export interface ProductQuery {
   q?: string;
   categoryId?: string;
+  usageType?: ProductUsageType;
   status?: ProductStatus;
   sort?: ProductSort;
   limit?: number;
