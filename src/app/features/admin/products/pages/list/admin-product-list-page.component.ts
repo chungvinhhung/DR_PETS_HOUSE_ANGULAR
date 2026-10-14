@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, firstValueFrom, timeout } from 'rxjs';
 
@@ -20,6 +20,7 @@ import { AdminProduct, ProductQuery, ProductSort, ProductStatus, ProductUsageTyp
 })
 export class AdminProductListPageComponent implements OnInit {
   private readonly productsApi = inject(AdminProductService);
+  private readonly router = inject(Router);
   private readonly categoriesApi = inject(AdminCategoryService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -27,6 +28,7 @@ export class AdminProductListPageComponent implements OnInit {
   readonly categories = signal<AdminCategory[]>([]);
   readonly loading = signal(false);
   readonly error = signal('');
+  readonly notice = signal('');
   readonly updatingId = signal<string | null>(null);
   readonly archiveTarget = signal<AdminProduct | null>(null);
   readonly archiveError = signal('');
@@ -50,6 +52,13 @@ export class AdminProductListPageComponent implements OnInit {
   private requestNumber = 0;
 
   ngOnInit(): void {
+    const navState = window.history.state as { productNotice?: unknown } | null;
+    if (typeof navState?.productNotice === 'string') {
+      this.notice.set(navState.productNotice);
+      // Do not re-show the same success notice after a reload.
+      const { productNotice: ignored, ...rest } = navState;
+      window.history.replaceState(rest, '', window.location.href);
+    }
     void this.loadCategories();
     this.loadPage(1);
   }
