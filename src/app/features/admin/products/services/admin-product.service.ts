@@ -45,6 +45,31 @@ export class AdminProductService {
     );
   }
 
+  addVariant(id: string, body: {
+    label: string; price: number; discountPercent: number; image?: string | null; status: 'ACTIVE' | 'INACTIVE';
+  }, key: string): Observable<AdminProduct> {
+    const headers = new HttpHeaders({ 'Idempotency-Key': key });
+    return this.api.post<AdminProduct, typeof body>(
+      '/products/' + encodeURIComponent(id) + '/variants', body, { headers },
+    );
+  }
+
+  deactivateVariant(productId: string, variantId: string, key: string): Observable<AdminProduct> {
+    const headers = new HttpHeaders({ 'Idempotency-Key': key });
+    return this.api.post<AdminProduct, Record<string, never>>(
+      '/products/' + encodeURIComponent(productId) + '/variants/' +
+      encodeURIComponent(variantId) + '/deactivate', {}, { headers },
+    );
+  }
+
+  activateVariant(productId: string, variantId: string, key: string): Observable<AdminProduct> {
+    const headers = new HttpHeaders({ 'Idempotency-Key': key });
+    return this.api.post<AdminProduct, Record<string, never>>(
+      '/products/' + encodeURIComponent(productId) + '/variants/' +
+      encodeURIComponent(variantId) + '/activate', {}, { headers },
+    );
+  }
+
   restoreProduct(id: string, key: string): Observable<AdminProduct> {
     const headers = new HttpHeaders({ 'Idempotency-Key': key });
     return this.api.post<AdminProduct, Record<string, never>>(
