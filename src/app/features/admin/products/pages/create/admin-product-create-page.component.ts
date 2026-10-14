@@ -7,7 +7,7 @@ import { AdminCategoryService } from '../../../categories/services/admin-categor
 import { AdminProductService } from '../../services/admin-product.service';
 import { ProductWrite } from '../../models/admin-product.model';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 
 interface ProductImageDraft {
@@ -39,6 +39,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
   private readonly productService = inject(AdminProductService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly router = inject(Router);
   private createAttemptFingerprint: string | null = null;
   private createAttemptKey: string | null = null;
   private uploadedImageCache = new Map<number, { file: File; url: string; id: string }>();
@@ -60,6 +61,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
   images: ProductImageDraft[] = [];
   primaryImageId: number | null = null;
   feedback = '';
+  submitted = false;
   leaveDialogOpen = false;
   private leaveResolver: ((confirmed: boolean) => void) | null = null;
 
@@ -101,10 +103,44 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     variant.imageUrl = null;
   }
 
+  get nameInvalid(): boolean { return this.submitted && !this.productName.trim(); }
+  get usageInvalid(): boolean { return this.submitted && !this.usageType; }
+  get categoryInvalid(): boolean { return this.submitted && !this.categories.some(c => c.id === this.categoryId); }
+  variantLabelInvalid(v: VariantDraft): boolean {
+    return this.submitted && this.hasVariants && !v.label.trim();
+  }
+  variantPriceInvalid(v: VariantDraft): boolean {
+    return this.submitted && (!Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0);
+  }
+  variantDiscountInvalid(v: VariantDraft): boolean {
+    return this.submitted && (!Number.isFinite(Number(v.discount)) || Number(v.discount) < 0 || Number(v.discount) > 100);
+  }
+
+  /** Select the complete existing number so typing replaces the default zero. */
+  selectNumericInput(event: FocusEvent): void {
+    const input = event.target as HTMLInputElement;
+    input.select();
+  }
+
+  setProductActive(value: boolean): void {
+    this.active = value;
+    if (!value) {
+      this.variants.forEach(v => { v.active = false; });
+    } else if (!this.variants.some(v => v.active) && this.variants.length) {
+      this.variants[0].active = true;
+    }
+  }
+
+  toggleVariantActive(variant: VariantDraft): void {
+    variant.active = !variant.active;
+    this.active = this.variants.some(v => v.active);
+  }
+
   selectVariantMode(value: boolean): void {
     if (value === this.hasVariants) return;
     this.variants.forEach(v => this.releaseVariantImage(v));
     this.hasVariants = value;
+    this.active = false;
     this.variants = value
       ? [this.newVariant()]
       : [this.newVariant('Mặc định')];
@@ -118,6 +154,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     if (this.variants.length <= 1) return;
     const removed = this.variants.splice(index, 1)[0];
     if (removed) this.releaseVariantImage(removed);
+    this.active = this.variants.some(v => v.active);
   }
 
   private isValidImage(file: File): boolean {
@@ -301,6 +338,8 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
 
   saveDraft(): void {
     if (this.saving || this.createdProductId) return;
+    this.submitted = true;
+    this.active = this.variants.some(v => v.active);
     const name = this.productName.trim();
     const selectedCategory = this.categories.find(item => item.id === this.categoryId);
     if (!name || !selectedCategory || !this.usageType) {
@@ -386,6 +425,9 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
       if (this.destroyed) return;
       this.createdProductId = product.id;
       this.feedback = 'Đã tạo sản phẩm ' + (product.productCode ?? product.id) + ' thành công. SKU được Backend tự động sinh.';
+      await this.router.navigate(['/admin/products'], {
+        state: { productNotice: this.feedback },
+      });
     } catch (error: unknown) {
       if (this.destroyed) return;
       this.feedback = error instanceof TimeoutError
