@@ -8,6 +8,22 @@ const BACKOFFICE_ROLES = ['ADMIN', 'MANAGER', 'STAFF'];
 
 export const routes: Routes = [
   {
+    path: 'admin/branches/:id',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () =>
+      import('./features/admin/branch-management/pages/branch-management-page.component')
+        .then((component) => component.BranchManagementPageComponent),
+  },
+  {
+    path: 'admin/branches',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () =>
+      import('./features/admin/branch-management/pages/branch-management-page.component')
+        .then((component) => component.BranchManagementPageComponent),
+  },
+  {
     path: 'admin/services/new',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN'], editorMode: 'create' },
