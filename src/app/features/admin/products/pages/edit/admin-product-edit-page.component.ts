@@ -37,6 +37,8 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   readonly success = signal('');
   readonly categories = signal<AdminCategory[]>([]);
   readonly product = signal<AdminProduct | null>(null);
+  // Signals notify zoneless Angular when a nested variant price is edited.
+  readonly pricingInputRevision = signal(0);
 
   name = '';
   description = '';
@@ -66,20 +68,33 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
 
   get hasVariants(): boolean { return this.product()?.productType === 'VARIANT'; }
   get priceRange(): string {
+    this.pricingInputRevision();
     const prices = this.variants.map(v => Number(v.price)).filter(Number.isFinite);
     if (!prices.length) return '—';
     const minimum = Math.min(...prices), maximum = Math.max(...prices);
     return minimum === maximum ? this.formatPrice(minimum) : this.formatPrice(minimum) + ' – ' + this.formatPrice(maximum);
   }
   get singleFinalPrice(): string {
+    this.pricingInputRevision();
     const v = this.variants[0];
     return this.formatPrice(Math.round(Number(v?.price ?? 0) * (1 - Number(v?.discountPercent ?? 0) / 100)));
   }
   formatPrice(price: number): string { return Number(price || 0).toLocaleString('vi-VN') + 'đ'; }
   formatVariantFinalPrice(variant: ProductVariantWrite): string {
+    this.pricingInputRevision();
     const discount = Math.min(100, Math.max(0, Number(variant.discountPercent ?? 0)));
     return this.formatPrice(Math.round(Number(variant.price || 0) * (1 - discount / 100)));
   }
+  onVariantPriceChange(variant: ProductVariantWrite, value: number | null): void {
+    variant.price = value === null ? NaN : Number(value);
+    this.pricingInputRevision.update(current => current + 1);
+  }
+
+  onVariantDiscountChange(variant: ProductVariantWrite, value: number | null): void {
+    variant.discountPercent = value === null ? NaN : Number(value);
+    this.pricingInputRevision.update(current => current + 1);
+  }
+
   private draftSnapshot(): string {
     return JSON.stringify({
       name: this.name, description: this.description, categoryId: this.categoryId, usageType: this.usageType,
