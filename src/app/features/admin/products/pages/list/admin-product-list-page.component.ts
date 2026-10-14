@@ -8,7 +8,7 @@ import { AdminCatalogShellComponent } from '../../../../../shared/admin-catalog-
 import { AdminCategoryService } from '../../../categories/services/admin-category.service';
 import { AdminCategory } from '../../../categories/models/admin-category.model';
 import { AdminProductService } from '../../services/admin-product.service';
-import { AdminProduct, ProductQuery, ProductSort, ProductStatus } from '../../models/admin-product.model';
+import { AdminProduct, ProductQuery, ProductSort, ProductStatus, ProductUsageType } from '../../models/admin-product.model';
 
 @Component({
   selector: 'app-admin-product-list-page',
@@ -39,6 +39,9 @@ export class AdminProductListPageComponent implements OnInit {
 
   searchTerm = '';
   categoryFilter = '';
+  usageFilter: ProductUsageType | '' = '';
+  priceFilter = '';
+  daysFilter = 0;
   statusFilter: ProductStatus | '' = '';
   sort: ProductSort = 'NEWEST';
   archiveView = false;
@@ -68,12 +71,27 @@ export class AdminProductListPageComponent implements OnInit {
     this.categoryFilter = this.categoryFilter === id ? '' : id;
   }
 
+  toggleUsage(value: ProductUsageType): void {
+    this.usageFilter = this.usageFilter === value ? '' : value;
+  }
+
+  togglePrice(value: string): void {
+    this.priceFilter = this.priceFilter === value ? '' : value;
+  }
+
+  toggleDays(value: number): void {
+    this.daysFilter = this.daysFilter === value ? 0 : value;
+  }
+
   toggleStatus(status: 'ACTIVE' | 'INACTIVE'): void {
     this.statusFilter = this.statusFilter === status ? '' : status;
   }
 
   clearFilters(): void {
     this.categoryFilter = '';
+    this.usageFilter = '';
+    this.priceFilter = '';
+    this.daysFilter = 0;
     this.statusFilter = this.archiveView ? 'ARCHIVED' : '';
     this.searchTerm = '';
     this.sort = 'NEWEST';
@@ -107,6 +125,10 @@ export class AdminProductListPageComponent implements OnInit {
       cursor,
       q: this.searchTerm.trim() || undefined,
       categoryId: this.categoryFilter || undefined,
+      usageType: this.usageFilter || undefined,
+      createdWithinDays: this.daysFilter || undefined,
+      minPrice: this.priceFilter === 'MID' ? 100000 : this.priceFilter === 'HIGH' ? 500001 : undefined,
+      maxPrice: this.priceFilter === 'LOW' ? 99999 : this.priceFilter === 'MID' ? 500000 : undefined,
       status: this.archiveView ? 'ARCHIVED' : this.statusFilter || undefined,
       sort: this.sort,
     };
