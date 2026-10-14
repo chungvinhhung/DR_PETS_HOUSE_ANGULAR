@@ -8,6 +8,30 @@ const BACKOFFICE_ROLES = ['ADMIN', 'MANAGER', 'STAFF'];
 
 export const routes: Routes = [
   {
+    path: 'admin/services/new',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN'], editorMode: 'create' },
+    loadComponent: () =>
+      import('./features/admin/service-catalog/pages/service-catalog-editor.component')
+        .then((component) => component.ServiceCatalogEditorComponent),
+  },
+  {
+    path: 'admin/services/:id/edit',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN'], editorMode: 'edit' },
+    loadComponent: () =>
+      import('./features/admin/service-catalog/pages/service-catalog-editor.component')
+        .then((component) => component.ServiceCatalogEditorComponent),
+  },
+  {
+    path: 'admin/services/:id',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: BACKOFFICE_ROLES, editorMode: 'view' },
+    loadComponent: () =>
+      import('./features/admin/service-catalog/pages/service-catalog-editor.component')
+        .then((component) => component.ServiceCatalogEditorComponent),
+  },
+  {
     path: 'admin/services',
     canActivate: [authGuard, roleGuard],
     data: { roles: BACKOFFICE_ROLES },
