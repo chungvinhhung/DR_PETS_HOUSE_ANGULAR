@@ -195,7 +195,13 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
   priceRange(product: AdminProduct): string {
-    const prices = product.variants.map(v => v.price).filter(Number.isFinite);
+    // Keep Product List pricing consistent with Create/Edit and the payable price.
+    const prices = product.variants
+      .filter(v => Number.isFinite(Number(v.price)) && Number(v.price) >= 0)
+      .map(v => {
+        const discount = Math.min(100, Math.max(0, Number(v.discountPercent) || 0));
+        return Math.round(Number(v.price) * (1 - discount / 100));
+      });
     if (!prices.length) return '—';
     const min = Math.min(...prices), max = Math.max(...prices);
     const currency = (value: number) => value.toLocaleString('vi-VN') + 'đ';
