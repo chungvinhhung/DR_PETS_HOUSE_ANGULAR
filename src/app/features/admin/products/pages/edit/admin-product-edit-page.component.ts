@@ -251,7 +251,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       if (!this.checkImage(file)) continue;
       this.imageSlots = [...this.imageSlots, {
         id: this.nextImageId++,
-        savedUrl: null,
+        savedImage: null,
         previewUrl: URL.createObjectURL(file),
         localFile: file,
       }];
