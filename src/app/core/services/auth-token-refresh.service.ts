@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { finalize, map, Observable, shareReplay, tap } from 'rxjs';
+import { finalize, map, Observable, shareReplay, tap, timeout } from 'rxjs';
 
 import { RefreshResponse } from '../models/auth.model';
 import { ApiClientService } from './api-client.service';
@@ -22,6 +22,9 @@ export class AuthTokenRefreshService {
     this.refreshRequest$ = this.api
       .post<RefreshResponse, Record<string, never>>('/auth/refresh', {})
       .pipe(
+        // Render can cold-start or fail to respond. Never leave route guards
+        // waiting forever, and cancel the underlying request on timeout.
+        timeout({ first: 12000 }),
         map((response) => response.accessToken),
         tap((accessToken) => {
           this.authSession.updateAccessToken(accessToken);

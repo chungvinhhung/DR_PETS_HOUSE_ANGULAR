@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/angular-shared-foundation
+      - feature/admin-product-category
   pull_request:
     branches:
       - develop
