@@ -23,12 +23,12 @@
         <a class="admin-shell__catalog-child" routerLink="/admin/appointments">Lịch hẹn</a>
         <span class="admin-shell__catalog-child admin-shell__catalog-child--disabled">Hồ sơ dịch vụ</span>
 
-        <span class="admin-shell__catalog-nav-disabled">▤ <span>Vận hành</span><span class="nav-end">›</span></span>
+        <span class="admin-shell__catalog-nav-disabled"><img src="/assets/service-catalog/operations.svg" alt="" aria-hidden="true" /><span>Vận hành</span><span class="nav-end">›</span></span>
         @if (canViewUsers()) {
-          <a routerLink="/admin/users">♙ <span>Quản lý người dùng</span></a>
+          <a routerLink="/admin/users"><img src="/assets/service-catalog/users.svg" alt="" aria-hidden="true" /><span>Quản lý người dùng</span></a>
         }
-        <span class="admin-shell__catalog-nav-disabled">▤ <span>Nội dung &amp; Cộng đồng</span><span class="nav-end">›</span></span>
-        <span class="admin-shell__catalog-nav-disabled">▤ <span>Đánh giá &amp; Phản hồi</span><span class="nav-end">›</span></span>
+        <span class="admin-shell__catalog-nav-disabled"><img src="/assets/service-catalog/content.svg" alt="" aria-hidden="true" /><span>Nội dung &amp; Cộng đồng</span><span class="nav-end">›</span></span>
+        <span class="admin-shell__catalog-nav-disabled"><img src="/assets/service-catalog/feedback.svg" alt="" aria-hidden="true" /><span>Đánh giá &amp; Phản hồi</span><span class="nav-end">›</span></span>
       </nav>
     } @else {
     <nav class="admin-shell__nav" aria-label="Admin navigation">
