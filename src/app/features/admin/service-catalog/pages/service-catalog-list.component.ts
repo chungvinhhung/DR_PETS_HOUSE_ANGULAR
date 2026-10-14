@@ -20,6 +20,7 @@ import {
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { BranchServiceConfigDialogComponent } from '../components/branch-service-config-dialog.component';
 import {
   CatalogBranch,
   CatalogFilterMode,
@@ -35,7 +36,7 @@ type CatalogAction = 'view' | 'edit' | 'configure';
 @Component({
   selector: 'app-service-catalog-list',
   standalone: true,
-  imports: [AdminCatalogShellComponent],
+  imports: [AdminCatalogShellComponent, BranchServiceConfigDialogComponent],
   templateUrl: './service-catalog-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -63,6 +64,8 @@ export class ServiceCatalogListComponent {
   readonly error = signal<string | null>(null);
   readonly notice = signal<string | null>(null);
   readonly openMenuId = signal<string | null>(null);
+  readonly configuringService = signal<CatalogService | null>(null);
+  readonly configuringBranchId = signal('ALL');
   readonly searchText = signal('');
 
   readonly filters = signal<ListFilters>({
@@ -245,7 +248,9 @@ export class ServiceCatalogListComponent {
   selectAction(action: CatalogAction, service: CatalogService): void {
     this.openMenuId.set(null);
     if (action === 'configure') {
-      this.notice.set('Cấu hình tại chi nhánh thuộc Phase 3, chưa có API Backend để lưu.');
+      if (!this.canConfigure()) return;
+      this.configuringBranchId.set(this.filters().branchId);
+      this.configuringService.set(service);
       return;
     }
     if (action === 'edit' && !this.isAdmin()) return;
@@ -254,6 +259,10 @@ export class ServiceCatalogListComponent {
         ? '/admin/services/' + encodeURIComponent(service.id) + '/edit'
         : '/admin/services/' + encodeURIComponent(service.id),
     );
+  }
+
+  closeBranchConfig(): void {
+    this.configuringService.set(null);
   }
 
   createService(): void {
