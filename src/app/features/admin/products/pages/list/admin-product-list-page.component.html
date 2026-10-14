@@ -95,8 +95,8 @@
                   </td>
                   <td>{{ categoryName(product.categoryId) }}</td>
                   <td class="price">{{ priceRange(product) }}</td>
-                  <td class="stock-cell"><span title="Cần tích hợp API Inventory để hiển thị tổng tồn kho">—</span></td>
-                  <td class="date-cell" title="API Product hiện chưa trả về ngày tạo">—</td>
+                  <td class="stock-cell">{{ product.totalStock ?? 0 }}</td>
+                  <td class="date-cell">{{ product.createdAt ? product.createdAt.slice(0, 10) : '—' }}</td>
                   <td class="status-cell">
                     <span class="status" [class.active]="product.status === 'ACTIVE'" [class.archived]="product.status === 'ARCHIVED'">{{ product.status === 'ACTIVE' ? 'Đang hoạt động' : product.status === 'ARCHIVED' ? 'Đã lưu trữ' : 'Tạm ngưng' }}</span>
                   </td>
