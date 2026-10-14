@@ -20,7 +20,6 @@ import {
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
-import { BranchServiceConfigDialogComponent } from '../components/branch-service-config-dialog.component';
 import {
   CatalogBranch,
   CatalogFilterMode,
@@ -36,7 +35,7 @@ type CatalogAction = 'view' | 'edit' | 'configure';
 @Component({
   selector: 'app-service-catalog-list',
   standalone: true,
-  imports: [AdminCatalogShellComponent, BranchServiceConfigDialogComponent],
+  imports: [AdminCatalogShellComponent],
   templateUrl: './service-catalog-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -64,8 +63,6 @@ export class ServiceCatalogListComponent {
   readonly error = signal<string | null>(null);
   readonly notice = signal<string | null>(null);
   readonly openMenuId = signal<string | null>(null);
-  readonly configuringService = signal<CatalogService | null>(null);
-  readonly configuringBranchId = signal('ALL');
   readonly searchText = signal('');
 
   readonly filters = signal<ListFilters>({
@@ -249,8 +246,11 @@ export class ServiceCatalogListComponent {
     this.openMenuId.set(null);
     if (action === 'configure') {
       if (!this.canConfigure()) return;
-      this.configuringBranchId.set(this.filters().branchId);
-      this.configuringService.set(service);
+      const selected = this.filters().branchId;
+      const path = selected === 'ALL'
+        ? '/admin/branches'
+        : '/admin/branches/' + encodeURIComponent(selected);
+      void this.router.navigate([path], { queryParams: { serviceId: service.id } });
       return;
     }
     if (action === 'edit' && !this.isAdmin()) return;
@@ -259,10 +259,6 @@ export class ServiceCatalogListComponent {
         ? '/admin/services/' + encodeURIComponent(service.id) + '/edit'
         : '/admin/services/' + encodeURIComponent(service.id),
     );
-  }
-
-  closeBranchConfig(): void {
-    this.configuringService.set(null);
   }
 
   createService(): void {
