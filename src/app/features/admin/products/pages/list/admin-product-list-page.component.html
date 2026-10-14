@@ -3,6 +3,7 @@
     <header class="page-header">
       <h1>Quản lý sản phẩm</h1>
     </header>
+    @if (notice()) { <p class="product-list-notice" role="status" aria-live="polite"><span>{{ notice() }}</span><button type="button" (click)="notice.set('')" aria-label="Đóng thông báo">×</button></p> }
 
     <nav class="lifecycle-tabs" aria-label="Nhóm sản phẩm">
       <button type="button" [class.selected]="!archiveView" [attr.aria-current]="!archiveView ? 'page' : null" (click)="selectArchiveView(false)">Sản phẩm hiện tại</button>
