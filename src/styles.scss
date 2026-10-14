@@ -865,6 +865,7 @@ app-admin-product-edit-page {
   .page-heading .actions { gap: 12px; }
   .page-heading .outline-btn { border-color: #0d47a1; }
   .page-heading .primary-btn { min-height: 40px; background: #003681; border-color: #003681; font-weight: 600; gap: 8px; }
+  .page-heading .primary-btn:disabled { background: #7a95b9; border-color: #7a95b9; color: #fff; opacity: .65; cursor: not-allowed; }
   .action-icon { display: block; width: 14px; height: 14px; object-fit: contain; }
   .columns { display: grid; grid-template-columns: minmax(0,697.67fr) minmax(240px,297.33fr); gap: 39px; align-items: start; }
   .left-column,.right-column { display: flex; flex-direction: column; min-width: 0; gap: 24px; }
