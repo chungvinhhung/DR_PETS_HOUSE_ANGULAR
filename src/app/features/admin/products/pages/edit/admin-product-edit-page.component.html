@@ -19,7 +19,7 @@
               <label><input type="radio" name="editVariantMode" [checked]="!hasVariants" [disabled]="true"> Không có biến thể</label>
               <label><input type="radio" name="editVariantMode" [checked]="hasVariants" [disabled]="true"> Có biến thể</label>
             </div></div>
-            <label class="form-field"><span>Loại sử dụng <b>*</b></span><select disabled aria-label="Loại sử dụng"><option>Hàng bán</option></select><small class="field-note">Chưa có dữ liệu loại sử dụng từ API</small></label>
+            <label class="form-field"><span>Loại sử dụng <b>*</b></span><select [(ngModel)]="usageType" aria-label="Loại sử dụng"><option value="SALE">Hàng bán</option><option value="SHARED">Dùng chung</option><option value="SERVICE_SUPPLY">Vật tư dịch vụ</option></select></label>
           </div>
           <div class="two-fields">
             <label class="form-field"><span>Danh mục <b>*</b></span><select [(ngModel)]="categoryId">@for (cat of categories(); track cat.id) { <option [value]="cat.id">{{ cat.name }}</option> }</select></label>
@@ -34,10 +34,10 @@
           } @else {
             <div class="single-prices">
               <label class="form-field"><span>Giá bán (VNĐ) <b>*</b></span><span class="unit-input"><input type="number" min="0" step="1000" [(ngModel)]="variants[0].price"><em>đ</em></span></label>
-              <label class="form-field"><span>Khuyến mại (%)</span><span class="unit-input"><input value="0" readonly><em>%</em></span></label>
+              <label class="form-field"><span>Khuyến mại (%)</span><span class="unit-input"><input type="number" min="0" max="100" [(ngModel)]="variants[0].discountPercent"><em>%</em></span></label>
               <label class="form-field"><span>Giá sau khuyến mại (VNĐ)</span><span class="unit-input calculated"><output>{{ singleFinalPrice }}</output><em>đ</em></span></label>
             </div>
-            <p class="field-note">Khuyến mại chưa được Backend hỗ trợ cập nhật.</p>
+            
           }
         </section>
       </div>
