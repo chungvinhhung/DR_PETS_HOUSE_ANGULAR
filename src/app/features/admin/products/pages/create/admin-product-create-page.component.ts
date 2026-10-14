@@ -41,6 +41,8 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
   private readonly cdr = inject(ChangeDetectorRef);
   private createAttemptFingerprint: string | null = null;
   private createAttemptKey: string | null = null;
+  private uploadedImageCache = new Map<number, { file: File; url: string; id: string }>();
+  private uploadedVariantCache = new WeakMap<File, string>();
 
   categories: AdminCategory[] = [];
   loadingCategories = false;
@@ -306,95 +308,93 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Contract v7 treats Product as a purchasable master item. These two
-    // usage modes require BE business handling before data can be persisted.
-    if (this.usageType !== 'SALE') {
-      this.feedback = 'BE hiện chỉ hỗ trợ tạo Hàng bán. Dùng chung và Vật tư dịch vụ đang chờ bổ sung API.';
-      return;
-    }
-    if (this.images.length || this.variants.some(v => v.imageFile)) {
-      this.feedback = 'Ảnh đang được xem trước trên máy. BE chưa có API upload ảnh nên chưa thể lưu sản phẩm có ảnh.';
-      return;
-    }
-    if (this.variants.some(v => Number(v.discount) !== 0)) {
-      this.feedback = 'BE chưa hỗ trợ lưu khuyến mại (%). Vui lòng đặt 0% để tạo sản phẩm mà không mất thông tin.';
-      return;
-    }
     if (!this.variants.length || this.variants.some(v =>
-      !v.label.trim() ||
-      !v.sku.trim() ||
-      !Number.isSafeInteger(Number(v.price)) ||
-      Number(v.price) < 0
+      (this.hasVariants && !v.label.trim()) ||
+      !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0 ||
+      !Number.isFinite(Number(v.discount)) || Number(v.discount) < 0 || Number(v.discount) > 100
     )) {
-      this.feedback = 'Mỗi biến thể phải có tên, SKU và giá bán hợp lệ (số nguyên không âm).';
+      this.feedback = 'Mỗi biến thể phải có giá bán hợp lệ và khuyến mại từ 0 đến 100%.';
       return;
     }
 
-    const skus = this.variants.map(v => v.sku.trim().toUpperCase());
-    if (new Set(skus).size !== skus.length) {
-      this.feedback = 'SKU giữa các biến thể không được trùng nhau.';
-      return;
-    }
-
-    const payload: ProductWrite = {
+    // BE generates productCode and SKU. Never send the old user-entered SKU.
+    const initialPayload: ProductWrite = {
       name,
       description: this.description.trim(),
       categoryId: selectedCategory.id,
+      productType: this.hasVariants ? 'VARIANT' : 'SIMPLE',
+      usageType: this.usageType as 'SALE' | 'SHARED' | 'SERVICE_SUPPLY',
       status: this.active ? 'ACTIVE' : 'INACTIVE',
-      variants: this.variants.map(v => ({
-        label: v.label.trim(),
-        sku: v.sku.trim(),
+      variants: this.variants.map((v, i) => ({
+        label: this.hasVariants ? v.label.trim() : 'Mặc định',
         price: Number(v.price),
+        discountPercent: Number(v.discount),
         status: v.active ? 'ACTIVE' : 'INACTIVE',
       })),
     };
-
-    // Keep the same idempotency key if the same payload needs to be retried
-    // after a lost response. A changed form gets a fresh key.
-    const fingerprint = JSON.stringify(payload);
-    if (this.createAttemptFingerprint !== fingerprint || !this.createAttemptKey) {
-      this.createAttemptFingerprint = fingerprint;
-      this.createAttemptKey = crypto.randomUUID();
-    }
 
     this.saving = true;
     this.feedback = '';
     this.cdr.markForCheck();
 
     try {
-      this.productService.createProduct(payload, this.createAttemptKey).pipe(
-        // Angular 22 is zoneless by default. Explicitly schedule view refresh
-        // after async RxJS callbacks; otherwise "Đang lưu..." stays visible.
-        timeout({ first: 30000 }),
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => {
-          this.saving = false;
-          if (!this.destroyed) this.cdr.markForCheck();
-        }),
-      ).subscribe({
-        next: product => {
-          this.createdProductId = product.id;
-          this.feedback = 'Đã tạo sản phẩm thành công (mã: ' + product.id + '). Tồn kho ban đầu bằng 0 và phải nhập qua module Kho.';
-          this.cdr.markForCheck();
-        },
-        error: (error: unknown) => {
-          if (error instanceof TimeoutError) {
-            this.feedback = 'Chưa nhận được phản hồi từ Backend sau 30 giây. Sản phẩm CÓ THỂ đã được tạo. Hãy kiểm tra log BE và danh sách sản phẩm trước khi thử lưu lại để tránh trùng.';
-          } else {
-            const message = error instanceof AppHttpError
-              ? error.message
-              : error instanceof Error ? error.message : 'Không thể lưu sản phẩm.';
-            this.feedback = 'Không lưu được sản phẩm: ' + message;
-          }
-          this.cdr.markForCheck();
-        },
-      });
+      void this.saveProductWithUploads(initialPayload);
     } catch (error: unknown) {
-      // Guard against a synchronous API setup failure leaving saving=true.
       this.saving = false;
-      this.feedback = 'Không khởi tạo được request lưu sản phẩm: ' +
-        (error instanceof Error ? error.message : 'Lỗi không xác định.');
+      this.feedback = error instanceof Error ? error.message : 'Không thể bắt đầu lưu sản phẩm.';
       this.cdr.markForCheck();
     }
+  }
+
+  private async saveProductWithUploads(initialPayload: ProductWrite): Promise<void> {
+    try {
+      const uploadedImages = [];
+      for (const image of this.images) {
+        let item = this.uploadedImageCache.get(image.id);
+        if (!item || item.file !== image.file) {
+          const response = await firstValueFrom(this.productService.uploadImages([image.file]).pipe(timeout({ first: 30000 })));
+          const uploaded = response.items[0];
+          if (!uploaded?.url) throw new Error('Upload ảnh không trả về URL.');
+          item = { file: image.file, id: uploaded.id, url: uploaded.url };
+          this.uploadedImageCache.set(image.id, item);
+        }
+        uploadedImages.push({ id: item.id, url: item.url, isPrimary: image.id === this.primaryImageId, sortOrder: uploadedImages.length });
+      }
+
+      const variants = [];
+      for (let i = 0; i < this.variants.length; i++) {
+        const variant = this.variants[i];
+        let imageUrl: string | null = null;
+        if (variant.imageFile) {
+          imageUrl = this.uploadedVariantCache.get(variant.imageFile) ?? null;
+          if (!imageUrl) {
+            const response = await firstValueFrom(this.productService.uploadImages([variant.imageFile]).pipe(timeout({ first: 30000 })));
+            imageUrl = response.items[0]?.url ?? null;
+            if (!imageUrl) throw new Error('Upload ảnh biến thể không trả về URL.');
+            this.uploadedVariantCache.set(variant.imageFile, imageUrl);
+          }
+        }
+        variants.push({ ...initialPayload.variants[i], image: imageUrl });
+      }
+      const payload: ProductWrite = { ...initialPayload, images: uploadedImages, variants };
+      const fingerprint = JSON.stringify(payload);
+      if (this.createAttemptFingerprint !== fingerprint || !this.createAttemptKey) {
+        this.createAttemptFingerprint = fingerprint;
+        this.createAttemptKey = crypto.randomUUID();
+      }
+      const product = await firstValueFrom(this.productService.createProduct(payload, this.createAttemptKey).pipe(timeout({ first: 30000 })));
+      if (this.destroyed) return;
+      this.createdProductId = product.id;
+      this.feedback = 'Đã tạo sản phẩm ' + (product.productCode ?? product.id) + ' thành công. SKU được Backend tự động sinh.';
+    } catch (error: unknown) {
+      if (this.destroyed) return;
+      this.feedback = error instanceof TimeoutError
+        ? 'Quá 30 giây chưa nhận phản hồi. Sản phẩm có thể đã được tạo; hãy kiểm tra danh sách trước khi thử lại.'
+        : 'Không lưu được sản phẩm: ' + (error instanceof Error ? error.message : 'Lỗi không xác định.');
+    } finally {
+      this.saving = false;
+      if (!this.destroyed) this.cdr.markForCheck();
+    }
+
   }
 }
