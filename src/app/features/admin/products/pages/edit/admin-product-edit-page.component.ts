@@ -75,10 +75,10 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   variantLabelInvalid(v: ProductVariantWrite): boolean { return this.submitted && !v.label.trim(); }
   variantSkuInvalid(v: ProductVariantWrite): boolean { return this.submitted && !v.sku?.trim(); }
   variantPriceInvalid(v: ProductVariantWrite): boolean {
-    return this.submitted && (!Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0);
+    return this.submitted && (v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0);
   }
   variantDiscountInvalid(v: ProductVariantWrite): boolean {
-    return this.submitted && (!Number.isFinite(Number(v.discountPercent)) || Number(v.discountPercent) < 0 || Number(v.discountPercent) > 100);
+    return this.submitted && (v.discountPercent == null || !Number.isFinite(Number(v.discountPercent)) || Number(v.discountPercent) < 0 || Number(v.discountPercent) > 100);
   }
   selectNumericInput(event: FocusEvent): void {
     (event.target as HTMLInputElement).select();
@@ -213,7 +213,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       this.active = product.status === 'ACTIVE';
       this.imageSlots = this.fromSavedImages(product.images ?? []);
       this.variants = product.variants.map(v => ({
-        id: v.id, sku: v.sku, label: v.label, price: v.price, status: product.status === 'ACTIVE' ? v.status : 'INACTIVE', discountPercent: v.discountPercent, image: v.image,
+        id: v.id, sku: v.sku, label: v.label, price: v.price, status: product.status === 'ACTIVE' ? v.status : 'INACTIVE', discountPercent: v.discountPercent ?? 0, image: v.image,
       }));
       this.lastSavedSnapshot = this.draftSnapshot();
     } catch (error) {
@@ -235,7 +235,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     this.success.set('');
     this.active = this.variants.some(v => v.status === 'ACTIVE');
     if (!this.name.trim() || !this.categoryId || !this.variants.length ||
-        this.variants.some(v => !v.sku?.trim() || !v.label.trim() || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0 || !Number.isFinite(Number(v.discountPercent ?? 0)) || Number(v.discountPercent ?? 0) < 0 || Number(v.discountPercent ?? 0) > 100)) {
+        this.variants.some(v => !v.sku?.trim() || !v.label.trim() || v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0 || v.discountPercent == null || !Number.isFinite(Number(v.discountPercent)) || Number(v.discountPercent) < 0 || Number(v.discountPercent) > 100)) {
       this.error.set('Vui lòng nhập tên, danh mục và thông tin SKU/giá hợp lệ.');
       return;
     }
@@ -450,7 +450,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     this.imageSlots = this.fromSavedImages(updated.images ?? []);
     this.variants = updated.variants.map(v => ({
       id: v.id, sku: v.sku, label: v.label, price: v.price,
-      status: updated.status === 'ACTIVE' ? v.status : 'INACTIVE', discountPercent: v.discountPercent, image: v.image,
+      status: updated.status === 'ACTIVE' ? v.status : 'INACTIVE', discountPercent: v.discountPercent ?? 0, image: v.image,
     }));
     this.variantImagePreviews.forEach(url => URL.revokeObjectURL(url));
     this.variantImagePreviews.clear();
