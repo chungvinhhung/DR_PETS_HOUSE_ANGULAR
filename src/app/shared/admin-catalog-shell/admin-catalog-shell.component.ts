@@ -19,10 +19,12 @@ export class AdminCatalogShellComponent {
 
   salesExpanded = false;
   servicesExpanded = false;
+  operationsExpanded = false;
 
   ngOnInit(): void {
     this.salesExpanded = this.activeItem === 'categories' || this.activeItem === 'products';
-    this.servicesExpanded = this.activeItem === 'services' || this.activeItem === 'branches';
+    this.servicesExpanded = this.activeItem === 'services';
+    this.operationsExpanded = this.activeItem === 'branches';
   }
 
   toggleSales(): void {
@@ -31,5 +33,9 @@ export class AdminCatalogShellComponent {
 
   toggleServices(): void {
     this.servicesExpanded = !this.servicesExpanded;
+  }
+
+  toggleOperations(): void {
+    this.operationsExpanded = !this.operationsExpanded;
   }
 }
