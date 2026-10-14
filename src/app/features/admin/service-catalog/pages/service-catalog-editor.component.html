@@ -212,72 +212,13 @@
       </section>
 
       <section class="service-editor__card" aria-labelledby="service-branches-title">
-        <h2 id="service-branches-title">Áp dụng tại chi nhánh</h2>
-        <div class="service-editor__field">
-          <span>Chi nhánh áp dụng (đã chọn {{ selectedBranches.length }}/{{ branches.length }})</span>
-          <div #branchPicker class="service-editor__branch-picker">
-            <button type="button" class="service-editor__branch-picker-button"
-              [attr.aria-expanded]="branchPickerOpen()"
-              [disabled]="!mayEdit"
-              (click)="toggleBranchPicker()">
-              <span class="service-editor__chips">
-                @for (branch of selectedBranches; track branch.id) {
-                  <span class="service-editor__chip">{{ branch.name }}</span>
-                }
-                @if (!selectedBranches.length) {
-                  <span class="service-editor__placeholder">Chọn chi nhánh áp dụng</span>
-                }
-              </span>
-              <img src="/assets/admin-product/expand_more.svg" alt="" aria-hidden="true"/>
-            </button>
-            @if (branchPickerOpen() && mayEdit) {
-              <div class="service-editor__branch-options" [class.service-editor__branch-options--up]="branchPickerOpensUp()" role="group" aria-label="Chọn chi nhánh áp dụng">
-                @for (branch of branchLines; track branch.id) {
-                  <label><input type="checkbox" [checked]="branch.selected" (change)="setBranchSelected(branch, $any($event.target).checked)" /><span class="service-editor__branch-option-name">{{ branch.name }}</span></label>
-                }
-              </div>
-            }
-          </div>
-        </div>
-        <div class="service-editor__branch-list">
-          @for (branch of selectedBranches; track branch.id) {
-            <div class="service-editor__branch-row">
-              <strong>{{ branch.name }}</strong>
-              <div class="service-editor__branch-field">
-                <span>Sức chứa đồng thời</span>
-                <div class="service-editor__stepper">
-                  <button type="button" [disabled]="!mayEdit || branch.capacity === 0"
-                    (click)="setCapacity(branch, branch.capacity - 1)" [attr.aria-label]="'Giảm sức chứa ' + branch.name">−</button>
-                  <output>{{ branch.capacity }}</output>
-                  <button type="button" [disabled]="!mayEdit || branch.capacity >= 100"
-                    (click)="setCapacity(branch, branch.capacity + 1)" [attr.aria-label]="'Tăng sức chứa ' + branch.name">+</button>
-                </div>
-              </div>
-              <label class="service-editor__branch-field">
-                <span>Khả dụng</span>
-                <select [disabled]="!mayEdit" [(ngModel)]="branch.availability" (ngModelChange)="markDirty()">
-                  <option value="BY_SHIFT">Theo ca</option>
-                  <option value="CONTACT">Liên hệ</option>
-                </select>
-              </label>
-              <div class="service-editor__branch-field">
-                <span>Kích hoạt tại chi nhánh</span>
-                <div class="service-editor__switch-row">
-                  <button type="button" class="service-editor__switch"
-                    [class.service-editor__switch--on]="branch.enabled"
-                    [attr.aria-label]="'Kích hoạt ' + branch.name"
-                    [attr.aria-pressed]="branch.enabled"
-                    [disabled]="!mayEdit || branch.capacity === 0 || !active"
-                    (click)="setBranchEnabled(branch, !branch.enabled)"><span></span></button>
-                  <small>{{ branch.enabled ? 'Bật' : 'Tắt' }}</small>
-                </div>
-              </div>
-            </div>
-          }
-          @if (!selectedBranches.length) {
-            <p class="service-editor__no-branches">Chưa chọn chi nhánh. Dịch vụ sẽ chưa có cấu hình hoạt động tại chi nhánh nào.</p>
-          }
-        </div>
+        <h2 id="service-branches-title">Cấu hình theo chi nhánh</h2>
+        <p class="service-editor__field-hint">
+          Catalog chỉ quản lý danh mục dịch vụ chung. Bật/Tắt, sức chứa và lịch tạm khóa
+          được quản lý tại Chi nhánh → Dịch vụ &amp; Capacity.
+        </p>
+        <a class="service-editor__btn service-editor__btn--secondary"
+          routerLink="/admin/branches">Đi đến quản lý chi nhánh →</a>
       </section>
 
       <footer class="service-editor__footer">
