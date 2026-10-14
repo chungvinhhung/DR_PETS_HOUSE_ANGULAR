@@ -23,7 +23,7 @@
           </div>
           <div class="two-fields">
             <label class="form-field" [class.field-invalid]="categoryInvalid"><span>Danh mục <b>*</b></span><select [(ngModel)]="categoryId" [attr.aria-invalid]="categoryInvalid">@for (cat of categories(); track cat.id) { <option [value]="cat.id">{{ cat.name }}</option> }</select>@if (categoryInvalid) {<small class="field-help-error">Vui lòng chọn danh mục hợp lệ.</small>}</label>
-            <label class="form-field"><span>Mã SKU</span><input [value]="hasVariants ? 'N/A' : (variants[0]?.sku || '')" readonly aria-label="Mã SKU (không thể chỉnh sửa)" title="SKU đã tạo được giữ nguyên để bảo toàn liên kết Kho và Đơn hàng"></label>
+            <label class="form-field"><span>{{ hasVariants ? 'Mã sản phẩm' : 'Mã SKU' }}</span><input [value]="hasVariants ? (product()?.productCode || variants[0]?.sku || '—') : (variants[0]?.sku || '—')" readonly [attr.aria-label]="hasVariants ? 'Mã sản phẩm' : 'Mã SKU'" title="Mã đã cấp cho sản phẩm"></label>
           </div>
           <label class="form-field"><span>Mô tả sản phẩm</span><textarea [(ngModel)]="description" rows="5" placeholder="Nhập mô tả chi tiết về sản phẩm..."></textarea></label>
         </section>
@@ -101,7 +101,7 @@
               }
             </div>
           }
-          <p class="image-upload-note">Ảnh JPG/PNG được tải lên Backend khi nhấn Lưu sản phẩm. Chỉ thoát trang sau khi nhận thông báo lưu thành công.</p>
+          <p class="image-upload-note">Ảnh sẽ được lưu cùng sản phẩm khi bạn nhấn Lưu sản phẩm.</p>
         </section>
       </div>
     </div>
