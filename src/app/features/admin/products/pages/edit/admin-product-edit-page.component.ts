@@ -253,6 +253,131 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     }
   }
 
+  variantImagePreview(variant: ProductVariantWrite): string | null {
+    return (variant.id ? this.variantImagePreviews.get(variant.id) : null) || variant.image || null;
+  }
+
+  selectVariantImage(event: Event, variantId: string): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file || !this.checkImage(file)) {
+      this.imageError = file ? 'Chỉ nhận JPG, PNG tối đa 5MB.' : '';
+      return;
+    }
+    const existingPreview = this.variantImagePreviews.get(variantId);
+    if (existingPreview) URL.revokeObjectURL(existingPreview);
+    this.variantImageFiles.set(variantId, file);
+    this.variantImagePreviews.set(variantId, URL.createObjectURL(file));
+    this.imageError = '';
+  }
+
+  toggleAddVariant(): void {
+    if (this.saving() || !this.hasVariants || this.product()?.status === 'ARCHIVED') return;
+    this.addVariantOpen.update(open => !open);
+    this.variantActionError.set('');
+  }
+
+  async submitNewVariant(): Promise<void> {
+    const product = this.product();
+    if (!product || this.saving() || product.status === 'ARCHIVED' || !this.hasVariants) return;
+    this.variantActionError.set('');
+    if (this.hasUnsavedChanges()) {
+      this.variantActionError.set('Vui lòng lưu các thay đổi hiện tại trước khi thêm biến thể.');
+      return;
+    }
+    const label = this.newVariantLabel.trim();
+    const price = Number(this.newVariantPrice);
+    const discountPercent = Number(this.newVariantDiscount);
+    if (!label || !Number.isSafeInteger(price) || price < 0 || !Number.isFinite(discountPercent) ||
+        discountPercent < 0 || discountPercent > 100) {
+      this.variantActionError.set('Nhập tên, giá hợp lệ và khuyến mại từ 0–100%.');
+      return;
+    }
+    const body = { label, price, discountPercent, image: null, status: this.newVariantActive ? 'ACTIVE' as const : 'INACTIVE' as const };
+    const fingerprint = JSON.stringify({ productId: product.id, ...body });
+    if (fingerprint !== this.addVariantFingerprint) {
+      this.addVariantFingerprint = fingerprint;
+      this.addVariantKey = crypto.randomUUID();
+    }
+    this.saving.set(true);
+    try {
+      const updated = await firstValueFrom(this.api.addVariant(product.id, body, this.addVariantKey).pipe(timeout({ first: 30000 })));
+      this.applyUpdatedProduct(updated);
+      this.addVariantKey = '';
+      this.addVariantFingerprint = '';
+      this.addVariantOpen.set(false);
+      this.newVariantLabel = '';
+      this.newVariantPrice = 0;
+      this.newVariantDiscount = 0;
+      this.newVariantActive = false;
+      this.success.set('Đã thêm biến thể. SKU được Backend tự động sinh.');
+    } catch (error) {
+      this.variantActionError.set(
+        (error instanceof Error ? error.message : 'Không thêm được biến thể.') +
+        ' Nếu request hết thời gian chờ, kiểm tra danh sách biến thể trước khi thử lại.',
+      );
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  requestDeactivateVariant(variant: ProductVariantWrite): void {
+    if (!variant.id || variant.status !== 'ACTIVE' || this.saving() || !this.hasVariants) return;
+    this.variantActionError.set('');
+    this.variantActionTarget.set(variant);
+  }
+
+  closeDeactivateVariant(): void {
+    if (!this.saving()) this.variantActionTarget.set(null);
+  }
+
+  async confirmDeactivateVariant(): Promise<void> {
+    const product = this.product(), variant = this.variantActionTarget();
+    if (!product || !variant?.id || this.saving() || product.status === 'ARCHIVED') return;
+    if (this.hasUnsavedChanges()) {
+      this.variantActionError.set('Lưu các thay đổi đang chỉnh sửa trước khi ngừng biến thể.');
+      return;
+    }
+    const key = this.deactivateKeys.get(variant.id) ?? crypto.randomUUID();
+    this.deactivateKeys.set(variant.id, key);
+    this.saving.set(true);
+    this.variantActionError.set('');
+    try {
+      const updated = await firstValueFrom(this.api.deactivateVariant(product.id, variant.id, key).pipe(timeout({ first: 30000 })));
+      this.deactivateKeys.delete(variant.id);
+      this.applyUpdatedProduct(updated);
+      this.variantActionTarget.set(null);
+      this.success.set('Đã ngừng hoạt động biến thể. SKU và dữ liệu lịch sử vẫn được giữ.');
+    } catch (error) {
+      this.variantActionError.set(
+        (error instanceof Error ? error.message : 'Không thể ngừng biến thể.') +
+        ' Nếu chưa rõ kết quả, kiểm tra lại trạng thái biến thể trước khi thử lại.',
+      );
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  private applyUpdatedProduct(updated: AdminProduct): void {
+    this.product.set(updated);
+    this.name = updated.name;
+    this.description = updated.description ?? '';
+    this.categoryId = updated.categoryId;
+    this.usageType = updated.usageType;
+    this.active = updated.status === 'ACTIVE';
+    this.imageSlots.forEach(image => this.releaseImagePreview(image));
+    this.imageSlots = this.fromSavedImages(updated.images ?? []);
+    this.variants = updated.variants.map(v => ({
+      id: v.id, sku: v.sku, label: v.label, price: v.price,
+      status: v.status, discountPercent: v.discountPercent, image: v.image,
+    }));
+    this.variantImagePreviews.forEach(url => URL.revokeObjectURL(url));
+    this.variantImagePreviews.clear();
+    this.variantImageFiles.clear();
+    this.lastSavedSnapshot = this.draftSnapshot();
+  }
+
   private checkImage(file: File): boolean {
     if (!['image/jpeg', 'image/png'].includes(file.type)) {
       this.imageError = 'Chỉ hỗ trợ ảnh JPG hoặc PNG.';
