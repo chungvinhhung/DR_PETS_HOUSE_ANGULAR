@@ -81,7 +81,7 @@
                 <tr [class.out-of-stock]="product.outOfStock">
                   <td>{{ (pageNumber() - 1) * 20 + $index + 1 }}</td>
                   <td><div class="thumbnail">
-                    @if (product.images?.length) { <img [src]="product.images[0].url" [alt]="product.name"> }
+                    @if (product.images.length) { <img [src]="product.images[0].url" [alt]="product.name"> }
                     @else { <span class="empty-photo" aria-label="Chưa có ảnh"></span> }
                   </div></td>
                   <td class="product-name"><strong>{{ product.name }}</strong></td>
@@ -92,7 +92,7 @@
                   </td>
                   <td>{{ categoryName(product.categoryId) }}</td>
                   <td class="price">{{ priceRange(product) }}</td>
-                  <td class="stock-cell">{{ product.totalStock ?? 0 }}</td>
+                  <td class="stock-cell">{{ product.totalStock }}</td>
                   <td class="date-cell">{{ product.createdAt ? product.createdAt.slice(0, 10) : '—' }}</td>
                   <td class="status-cell">
                     <span class="status" [class.active]="product.status === 'ACTIVE'" [class.archived]="product.status === 'ARCHIVED'">{{ product.status === 'ACTIVE' ? 'Đang hoạt động' : product.status === 'ARCHIVED' ? 'Đã lưu trữ' : 'Tạm ngưng' }}</span>
