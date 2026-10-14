@@ -8,6 +8,15 @@ const BACKOFFICE_ROLES = ['ADMIN', 'MANAGER', 'STAFF'];
 
 export const routes: Routes = [
   {
+    path: 'admin/services',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: BACKOFFICE_ROLES },
+    loadComponent: () =>
+      import(
+        './features/admin/service-catalog/pages/service-catalog-list.component'
+      ).then((component) => component.ServiceCatalogListComponent),
+  },
+  {
     path: 'admin',
     pathMatch: 'full',
     canActivate: [adminLoginEntryGuard],
@@ -53,13 +62,6 @@ export const routes: Routes = [
           import(
             './features/admin/pages/dashboard/admin-dashboard-page.component'
           ).then((component) => component.AdminDashboardPageComponent),
-      },
-      {
-        path: 'services',
-        loadComponent: () =>
-          import(
-            './features/admin/service-catalog/pages/service-catalog-list.component'
-          ).then((component) => component.ServiceCatalogListComponent),
       },
       {
         path: 'orders',
