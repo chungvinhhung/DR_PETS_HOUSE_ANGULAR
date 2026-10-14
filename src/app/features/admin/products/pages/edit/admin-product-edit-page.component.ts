@@ -92,6 +92,9 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
         fileSize: image.localFile?.size,
         fileModified: image.localFile?.lastModified,
       })),
+      variantImageFiles: Array.from(this.variantImageFiles, ([id, file]) => ({
+        id, name: file.name, size: file.size, modified: file.lastModified,
+      })),
     });
   }
 
@@ -232,19 +235,20 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
         images.push({ id: id ?? `img-${images.length + 1}`, url, isPrimary: images.length === 0, sortOrder: images.length });
       }
       body.images = images;
+      for (const variant of body.variants) {
+        const file = variant.id ? this.variantImageFiles.get(variant.id) : undefined;
+        if (!file) continue;
+        let url = this.variantUploadCache.get(file);
+        if (!url) {
+          const uploaded = await firstValueFrom(this.api.uploadImages([file]).pipe(timeout({ first: 30000 })));
+          url = uploaded.items[0]?.url;
+          if (!url) throw new Error('Upload ảnh biến thể không trả về URL.');
+          this.variantUploadCache.set(file, url);
+        }
+        variant.image = url;
+      }
       const updated = await firstValueFrom(this.api.updateProduct(item.id, body).pipe(timeout({ first: 30000 })));
-      this.product.set(updated);
-      this.name = updated.name;
-      this.description = updated.description ?? '';
-      this.categoryId = updated.categoryId;
-      this.usageType = updated.usageType;
-      this.active = updated.status === 'ACTIVE';
-      this.imageSlots.forEach(image => this.releaseImagePreview(image));
-      this.imageSlots = this.fromSavedImages(updated.images ?? []);
-      this.variants = updated.variants.map(v => ({
-        id: v.id, sku: v.sku, label: v.label, price: v.price, status: v.status, discountPercent: v.discountPercent, image: v.image,
-      }));
-      this.lastSavedSnapshot = this.draftSnapshot();
+      this.applyUpdatedProduct(updated);
       this.success.set('Cập nhật sản phẩm thành công.');
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'Không thể cập nhật sản phẩm.');
