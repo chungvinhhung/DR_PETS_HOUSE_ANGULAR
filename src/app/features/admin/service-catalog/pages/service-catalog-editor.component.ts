@@ -1,9 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
-  HostListener,
-  ViewChild,
   inject,
   signal,
 } from '@angular/core';
@@ -12,24 +9,13 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
-import {
-  BranchAvailability,
-  CatalogBranch,
-  ServiceBookingMode,
-} from '../models/service-catalog.model';
+import { ServiceBookingMode } from '../models/service-catalog.model';
 import { ServiceCatalogMockRepository } from '../services/service-catalog-mock.repository';
 
 type PriceMode = 'FIXED' | 'QUOTE';
 type Tier = { key: string; weight: string; mode: PriceMode; price: number | null };
 type MaterialOption = { sku: string; name: string; unit: string };
 type MaterialLine = { key: number; sku: string; query: string; quantity: number | null; unit: string };
-type BranchLine = CatalogBranch & {
-  selected: boolean;
-  capacity: number;
-  availability: BranchAvailability;
-  enabled: boolean;
-};
-
 const TIER_WEIGHTS = [
   { key: 'XS', weight: '< 5 kg' },
   { key: 'S', weight: '5 – < 10 kg' },
@@ -54,7 +40,6 @@ const DEMO_PRODUCT_SKUS: readonly MaterialOption[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServiceCatalogEditorComponent {
-  @ViewChild('branchPicker') private branchPickerElement?: ElementRef<HTMLElement>;
   private readonly repository = inject(ServiceCatalogMockRepository);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -68,7 +53,6 @@ export class ServiceCatalogEditorComponent {
   readonly isNew = this.editorMode === 'create';
   readonly title = this.editorMode === 'view' ? 'Chi tiết dịch vụ' : this.isNew ? 'Thêm dịch vụ' : 'Chỉnh sửa dịch vụ';
   readonly productOptions = DEMO_PRODUCT_SKUS;
-  readonly branches = this.repository.branches;
 
   serviceName = this.source?.name ?? '';
   category = this.source?.category ?? 'GROOMING';
@@ -84,28 +68,14 @@ export class ServiceCatalogEditorComponent {
     price: this.source ? (this.source.minFixedTierPrice ?? this.source.referencePrice ?? null) : null,
   }));
   materials: MaterialLine[] = [];
-  branchLines: BranchLine[] = [];
   private nextMaterialKey = 1;
 
   readonly errors = signal<string[]>([]);
   readonly notice = signal('');
   readonly dirty = signal(false);
   readonly showCancelConfirmation = signal(false);
-  readonly branchPickerOpen = signal(false);
-  readonly branchPickerOpensUp = signal(false);
 
   constructor() {
-    this.branchLines = this.repository.branches.map((branch) => {
-      const existing = this.source?.branchServices.find((line) => line.branchId === branch.id);
-      return {
-        ...branch,
-        selected: !!existing && existing.capacity > 0,
-        capacity: existing?.capacity ?? 0,
-        availability: existing?.availability ?? 'BY_SHIFT',
-        enabled: !!existing && existing.enabled && existing.capacity > 0,
-      };
-    });
-
     if (this.source?.category === 'GROOMING') {
       for (const product of DEMO_PRODUCT_SKUS.slice(0, 4)) {
         this.materials.push({
@@ -121,10 +91,6 @@ export class ServiceCatalogEditorComponent {
     if (this.source?.bookingMode === 'CONTACT_ONLY') {
       this.durationMinutes = null;
     }
-  }
-
-  get selectedBranches(): BranchLine[] {
-    return this.branchLines.filter((line) => line.selected);
   }
 
   get mayEdit(): boolean {
@@ -178,65 +144,8 @@ export class ServiceCatalogEditorComponent {
     this.markDirty();
   }
 
-  toggleBranchPicker(): void {
-    if (!this.mayEdit) return;
-
-    if (this.branchPickerOpen()) {
-      this.branchPickerOpen.set(false);
-      return;
-    }
-
-    // The picker sits close to the bottom of the long editor in most viewport sizes.
-    // Flip above the trigger when the list would be clipped by the viewport.
-    const trigger = this.branchPickerElement?.nativeElement.getBoundingClientRect();
-    if (trigger && typeof window !== 'undefined') {
-      const estimatedHeight = Math.min(220, this.branchLines.length * 42 + 14);
-      const roomBelow = window.innerHeight - trigger.bottom - 12;
-      const roomAbove = trigger.top - 12;
-      this.branchPickerOpensUp.set(roomBelow < estimatedHeight && roomAbove > roomBelow);
-    } else {
-      this.branchPickerOpensUp.set(false);
-    }
-    this.branchPickerOpen.set(true);
-  }
-
-  @HostListener('document:click', ['$event'])
-  onOutsideClick(event: MouseEvent): void {
-    if (!this.branchPickerOpen()) return;
-    const target = event.target;
-    if (target instanceof Node && !this.branchPickerElement?.nativeElement.contains(target)) {
-      this.branchPickerOpen.set(false);
-    }
-  }
-
-  @HostListener('document:keydown.escape')
-  closeBranchPicker(): void {
-    this.branchPickerOpen.set(false);
-  }
-
-  setBranchSelected(branch: BranchLine, selected: boolean): void {
-    branch.selected = selected;
-    if (selected && branch.capacity < 1) branch.capacity = 1;
-    if (!selected) branch.enabled = false;
-    this.markDirty();
-  }
-
-  setCapacity(branch: BranchLine, raw: number): void {
-    branch.capacity = Math.max(0, Math.min(100, Number.isFinite(raw) ? Math.trunc(raw) : 0));
-    if (branch.capacity === 0) branch.enabled = false;
-    this.markDirty();
-  }
-
-  setBranchEnabled(branch: BranchLine, enabled: boolean): void {
-    branch.enabled = enabled && branch.capacity > 0 && this.active;
-    this.markDirty();
-  }
-
   toggleStatus(): void {
     this.active = !this.active;
-    if (!this.active) {
-      for (const branch of this.branchLines) branch.enabled = false;
-    }
     this.markDirty();
   }
 
@@ -289,14 +198,6 @@ export class ServiceCatalogEditorComponent {
         messages.push('Số lượng vật liệu phải lớn hơn 0.');
       }
       if (!line.unit.trim()) messages.push('Đơn vị vật liệu không được để trống.');
-    }
-    for (const branch of this.selectedBranches) {
-      if (!Number.isSafeInteger(branch.capacity) || branch.capacity < 0) {
-        messages.push('Sức chứa chi nhánh phải là số nguyên không âm.');
-      }
-      if (branch.enabled && branch.capacity === 0) {
-        messages.push('Không thể bật chi nhánh có sức chứa bằng 0.');
-      }
     }
     return [...new Set(messages)];
   }
