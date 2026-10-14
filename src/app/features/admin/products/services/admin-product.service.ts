@@ -16,6 +16,9 @@ export class AdminProductService {
     if (query.q?.trim()) params = params.set('q', query.q.trim());
     if (query.categoryId) params = params.set('categoryId', query.categoryId);
     if (query.usageType) params = params.set('usageType', query.usageType);
+    if (query.createdWithinDays) params = params.set('createdWithinDays', String(query.createdWithinDays));
+    if (query.minPrice !== undefined) params = params.set('minPrice', String(query.minPrice));
+    if (query.maxPrice !== undefined) params = params.set('maxPrice', String(query.maxPrice));
     if (query.status) params = params.set('status', query.status);
     if (query.sort) params = params.set('sort', query.sort);
     if (query.cursor) params = params.set('cursor', query.cursor);
