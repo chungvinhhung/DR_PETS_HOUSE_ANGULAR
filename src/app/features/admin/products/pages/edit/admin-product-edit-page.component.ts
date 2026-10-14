@@ -51,14 +51,17 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   private leaveResolver: ((confirmed: boolean) => void) | null = null;
   private lastSavedSnapshot = '';
 
-  get hasVariants(): boolean { return this.variants.length > 1; }
+  get hasVariants(): boolean { return this.product()?.productType === 'VARIANT'; }
   get priceRange(): string {
     const prices = this.variants.map(v => Number(v.price)).filter(Number.isFinite);
     if (!prices.length) return '—';
     const minimum = Math.min(...prices), maximum = Math.max(...prices);
     return minimum === maximum ? this.formatPrice(minimum) : this.formatPrice(minimum) + ' – ' + this.formatPrice(maximum);
   }
-  get singleFinalPrice(): string { return this.formatPrice(this.variants[0]?.price ?? 0); }
+  get singleFinalPrice(): string {
+    const v = this.variants[0];
+    return this.formatPrice(Math.round(Number(v?.price ?? 0) * (1 - Number(v?.discountPercent ?? 0) / 100)));
+  }
   formatPrice(price: number): string { return Number(price || 0).toLocaleString('vi-VN') + 'đ'; }
   private draftSnapshot(): string {
     return JSON.stringify({
@@ -163,7 +166,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     this.error.set('');
     this.success.set('');
     if (!this.name.trim() || !this.categoryId || !this.variants.length ||
-        this.variants.some(v => !v.sku?.trim() || !v.label.trim() || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0)) {
+        this.variants.some(v => !v.sku?.trim() || !v.label.trim() || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0 || !Number.isFinite(Number(v.discountPercent ?? 0)) || Number(v.discountPercent ?? 0) < 0 || Number(v.discountPercent ?? 0) > 100)) {
       this.error.set('Vui lòng nhập tên, danh mục và thông tin SKU/giá hợp lệ.');
       return;
     }
