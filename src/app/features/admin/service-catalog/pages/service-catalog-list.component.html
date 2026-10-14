@@ -237,12 +237,3 @@
   </p>
 </section>
 </app-admin-catalog-shell>
-
-@if (configuringService(); as service) {
-  <app-branch-service-config-dialog
-    [service]="service"
-    [branches]="scopedBranches()"
-    [initialBranchId]="configuringBranchId()"
-    (dismiss)="closeBranchConfig()" />
-}
-
