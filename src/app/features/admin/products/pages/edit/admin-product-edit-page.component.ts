@@ -48,6 +48,19 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   imageError = '';
   private nextImageId = 1;
   readonly leaveDialogOpen = signal(false);
+  readonly addVariantOpen = signal(false);
+  readonly variantActionTarget = signal<ProductVariantWrite | null>(null);
+  readonly variantActionError = signal('');
+  newVariantLabel = '';
+  newVariantPrice = 0;
+  newVariantDiscount = 0;
+  newVariantActive = false;
+  private addVariantFingerprint = '';
+  private addVariantKey = '';
+  private readonly deactivateKeys = new Map<string, string>();
+  private readonly variantImageFiles = new Map<string, File>();
+  private readonly variantImagePreviews = new Map<string, string>();
+  private readonly variantUploadCache = new WeakMap<File, string>();
   private leaveResolver: ((confirmed: boolean) => void) | null = null;
   private lastSavedSnapshot = '';
 
@@ -114,6 +127,8 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.imageSlots.forEach(image => this.releaseImagePreview(image));
+    this.variantImagePreviews.forEach(url => URL.revokeObjectURL(url));
+    this.variantImagePreviews.clear();
   }
 
   private releaseImagePreview(image: EditableProductImage): void {
