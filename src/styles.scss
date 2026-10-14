@@ -1063,3 +1063,36 @@ app-admin-product-edit-page {
   }
   .variant-panel .variant-photo-button:disabled { cursor: not-allowed; }
 }
+
+/* Phase 6 UAT validation: errors adjacent to inputs, aligned with Admin design. */
+app-admin-product-create-page,
+app-admin-product-edit-page {
+  .field-help-error {
+    display: block;
+    color: #dc2626;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 17px;
+    margin-top: 5px;
+    white-space: normal;
+  }
+  .form-field.field-invalid input:not([type=radio]),
+  .form-field.field-invalid select,
+  .form-field.field-invalid textarea,
+  input.input-invalid,
+  .currency-input input.input-invalid,
+  .unit-input input.input-invalid,
+  .variant-currency-input input.input-invalid {
+    border: 1px solid #ef4444 !important;
+    background-color: #fffafa;
+    outline-color: #ef4444;
+  }
+  .form-field.field-invalid input:focus-visible,
+  input.input-invalid:focus-visible {
+    outline: 2px solid rgba(239,68,68,.25);
+    outline-offset: 1px;
+  }
+  .variant-panel td .field-help-error { max-width: 210px; }
+  .field-invalid .field-help-error,
+  .form-field .field-help-error { margin-top: 2px; }
+}
