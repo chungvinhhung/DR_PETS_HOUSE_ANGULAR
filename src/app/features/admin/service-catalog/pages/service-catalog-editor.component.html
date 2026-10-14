@@ -170,7 +170,7 @@
             <thead><tr>
               <th scope="col">Mã vật liệu</th>
               <th scope="col">Tên vật liệu (tìm sản phẩm)</th>
-              <th scope="col">SL mặc định</th>
+              <th scope="col">Số lượng mặc định</th>
               <th scope="col">Đơn vị</th>
               <th scope="col">Thao tác</th>
             </tr></thead>
@@ -185,7 +185,7 @@
                   </td>
                   <td><input type="number" min="0.01" step="0.01" [disabled]="!mayEdit"
                     [(ngModel)]="line.quantity" (ngModelChange)="markDirty()"
-                    placeholder="Nhập SL" [attr.aria-label]="'Số lượng vật liệu dòng ' + ($index + 1)"/></td>
+                    placeholder="Nhập số lượng" [attr.aria-label]="'Số lượng vật liệu dòng ' + ($index + 1)"/></td>
                   <td><input type="text" maxlength="30" [disabled]="!mayEdit"
                     [(ngModel)]="line.unit" (ngModelChange)="markDirty()"
                     placeholder="Đơn vị" [attr.aria-label]="'Đơn vị vật liệu dòng ' + ($index + 1)"/></td>
@@ -215,11 +215,11 @@
         <h2 id="service-branches-title">Áp dụng tại chi nhánh</h2>
         <div class="service-editor__field">
           <span>Chi nhánh áp dụng (đã chọn {{ selectedBranches.length }}/{{ branches.length }})</span>
-          <div class="service-editor__branch-picker">
+          <div #branchPicker class="service-editor__branch-picker">
             <button type="button" class="service-editor__branch-picker-button"
               [attr.aria-expanded]="branchPickerOpen()"
               [disabled]="!mayEdit"
-              (click)="branchPickerOpen.set(!branchPickerOpen())">
+              (click)="toggleBranchPicker()">
               <span class="service-editor__chips">
                 @for (branch of selectedBranches; track branch.id) {
                   <span class="service-editor__chip">{{ branch.name }}</span>
@@ -231,9 +231,9 @@
               <img src="/assets/admin-product/expand_more.svg" alt="" aria-hidden="true"/>
             </button>
             @if (branchPickerOpen() && mayEdit) {
-              <div class="service-editor__branch-options" role="group" aria-label="Chọn chi nhánh áp dụng">
+              <div class="service-editor__branch-options" [class.service-editor__branch-options--up]="branchPickerOpensUp()" role="group" aria-label="Chọn chi nhánh áp dụng">
                 @for (branch of branchLines; track branch.id) {
-                  <label><input type="checkbox" [checked]="branch.selected" (change)="setBranchSelected(branch, $any($event.target).checked)" /> {{ branch.name }}</label>
+                  <label><input type="checkbox" [checked]="branch.selected" (change)="setBranchSelected(branch, $any($event.target).checked)" /><span class="service-editor__branch-option-name">{{ branch.name }}</span></label>
                 }
               </div>
             }
