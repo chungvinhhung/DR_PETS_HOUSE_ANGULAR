@@ -10,26 +10,32 @@
       <a routerLink="/admin/profile" class="catalog-header__profile" aria-label="Xem hồ sơ quản trị viên">
         <img class="catalog-header__avatar" src="/assets/admin-product/avatar-figma.png" alt="" width="36" height="36">
         <span class="catalog-header__identity">Quản trị viên<small>Tên tài khoản</small></span>
-        <img class="catalog-header__chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true" width="16" height="16">
+        <img class="catalog-header__chevron" src="/assets/admin-product/expand_more.svg" alt="" aria-hidden="true" width="16" height="16">
       </a>
     </div>
   </header>
 
   <div class="catalog-layout">
     <aside class="catalog-sidebar">
-      <nav aria-label="Điều hướng quản trị bán hàng">
+      <nav aria-label="Điều hướng quản trị">
         <a class="catalog-sidebar__link" routerLink="/admin/dashboard">
           <img src="/assets/admin-product/icon-dashboard.svg" alt="" width="20" height="20">
           Dashboard
         </a>
 
-        <div class="catalog-sidebar__group">
+        <button type="button" class="catalog-sidebar__group"
+          [class.catalog-sidebar__group--active]="activeItem === 'categories' || activeItem === 'products'"
+          [attr.aria-expanded]="salesExpanded" aria-controls="admin-sales-submenu"
+          (click)="toggleSales()">
           <img src="/assets/admin-product/icon-sales.svg" alt="" width="20" height="20">
-          Bán hàng
-          <img class="catalog-sidebar__group-chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true" width="16" height="16">
-        </div>
+          <span>Bán hàng</span>
+          <img class="catalog-sidebar__group-chevron"
+            [src]="salesExpanded ? '/assets/admin-product/expand_less.svg' : '/assets/admin-product/expand_more.svg'"
+            alt="" aria-hidden="true" width="16" height="16">
+        </button>
 
-        <div class="catalog-sidebar__children" aria-label="Các mục thuộc Bán hàng">
+        <div id="admin-sales-submenu" class="catalog-sidebar__children"
+          [hidden]="!salesExpanded" aria-label="Các mục thuộc Bán hàng">
           <a class="catalog-sidebar__sub" routerLink="/admin/categories"
             [class.catalog-sidebar__sub--active]="activeItem === 'categories'"
             [attr.aria-current]="activeItem === 'categories' ? 'page' : null">
@@ -44,10 +50,28 @@
           <span class="catalog-sidebar__sub">Khuyến mãi</span>
         </div>
 
-        <a class="catalog-sidebar__link" routerLink="/admin/appointments">
+        <button type="button" class="catalog-sidebar__group"
+          [class.catalog-sidebar__group--active]="activeItem === 'services'"
+          [attr.aria-expanded]="servicesExpanded" aria-controls="admin-services-submenu"
+          (click)="toggleServices()">
           <img src="/assets/admin-product/icon-services.svg" alt="" width="20" height="20">
-          Dịch vụ
-        </a>
+          <span>Dịch vụ</span>
+          <img class="catalog-sidebar__group-chevron"
+            [src]="servicesExpanded ? '/assets/admin-product/expand_less.svg' : '/assets/admin-product/expand_more.svg'"
+            alt="" aria-hidden="true" width="16" height="16">
+        </button>
+        <div id="admin-services-submenu" class="catalog-sidebar__children"
+          [class.catalog-sidebar__children--services]="activeItem === 'services'"
+          [hidden]="!servicesExpanded" aria-label="Các mục thuộc Dịch vụ">
+          <a class="catalog-sidebar__sub" routerLink="/admin/services"
+            [class.catalog-sidebar__sub--active]="activeItem === 'services'"
+            [attr.aria-current]="activeItem === 'services' ? 'page' : null">
+            Danh mục dịch vụ
+          </a>
+          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Cấu hình chi nhánh sẽ được thực hiện trong Phase 3">Chi nhánh</span>
+          <a class="catalog-sidebar__sub" routerLink="/admin/appointments">Lịch hẹn</a>
+        </div>
+
         <div class="catalog-sidebar__link">
           <img src="/assets/admin-product/icon-operations.svg" alt="" width="20" height="20">
           Vận hành
