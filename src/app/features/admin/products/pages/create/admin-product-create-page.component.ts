@@ -399,7 +399,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
         if (!item || item.file !== image.file) {
           const response = await firstValueFrom(this.productService.uploadImages([image.file]).pipe(timeout({ first: 30000 })));
           const uploaded = response.items[0];
-          if (!uploaded?.url) throw new Error('Upload ảnh không trả về URL.');
+          if (!uploaded?.url) throw new Error('Không tải được ảnh sản phẩm. Vui lòng thử lại.');
           item = { file: image.file, id: uploaded.id, url: uploaded.url };
           this.uploadedImageCache.set(image.id, item);
         }
@@ -415,7 +415,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
           if (!imageUrl) {
             const response = await firstValueFrom(this.productService.uploadImages([variant.imageFile]).pipe(timeout({ first: 30000 })));
             imageUrl = response.items[0]?.url ?? null;
-            if (!imageUrl) throw new Error('Upload ảnh biến thể không trả về URL.');
+            if (!imageUrl) throw new Error('Không tải được ảnh biến thể. Vui lòng thử lại.');
             this.uploadedVariantCache.set(variant.imageFile, imageUrl);
           }
         }
@@ -430,7 +430,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
       const product = await firstValueFrom(this.productService.createProduct(payload, this.createAttemptKey).pipe(timeout({ first: 30000 })));
       if (this.destroyed) return;
       this.createdProductId = product.id;
-      this.feedback = 'Đã tạo sản phẩm ' + (product.productCode ?? product.id) + ' thành công. SKU được Backend tự động sinh.';
+      this.feedback = 'Đã tạo sản phẩm ' + (product.productCode ?? product.id) + ' thành công.';
       await this.router.navigate(['/admin/products'], {
         state: { productNotice: this.feedback },
       });
