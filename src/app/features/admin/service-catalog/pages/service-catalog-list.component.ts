@@ -6,7 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   BehaviorSubject,
@@ -43,6 +43,7 @@ export class ServiceCatalogListComponent {
   private readonly repository = inject(ServiceCatalogMockRepository);
   private readonly authSession = inject(AuthSessionService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   private readonly demoState = this.route.snapshot.queryParamMap.get('demoState');
   private failNextRequest = this.demoState === 'error';
@@ -243,19 +244,20 @@ export class ServiceCatalogListComponent {
 
   selectAction(action: CatalogAction, service: CatalogService): void {
     this.openMenuId.set(null);
-    const label: Record<CatalogAction, string> = {
-      view: 'Xem chi tiết',
-      edit: 'Chỉnh sửa',
-      configure: 'Cấu hình tại chi nhánh',
-    };
-    this.notice.set(
-      label[action] + ' — ' + service.serviceCode +
-      ': giao diện thuộc Phase ' + (action === 'configure' ? '3' : '2') +
-      ', chưa tích hợp ở Phase 1.',
+    if (action === 'configure') {
+      this.notice.set('Cấu hình tại chi nhánh thuộc Phase 3, chưa có API Backend để lưu.');
+      return;
+    }
+    if (action === 'edit' && !this.isAdmin()) return;
+    void this.router.navigateByUrl(
+      action === 'edit'
+        ? '/admin/services/' + encodeURIComponent(service.id) + '/edit'
+        : '/admin/services/' + encodeURIComponent(service.id),
     );
   }
 
   createService(): void {
-    this.notice.set('Thêm dịch vụ sẽ được triển khai ở Phase 2; chưa có thao tác lưu dữ liệu.');
+    if (!this.isAdmin()) return;
+    void this.router.navigateByUrl('/admin/services/new');
   }
 }
