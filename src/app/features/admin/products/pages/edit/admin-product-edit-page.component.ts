@@ -99,7 +99,13 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   }
   get priceRange(): string {
     this.pricingInputRevision();
-    const prices = this.variants.map(v => Number(v.price)).filter(Number.isFinite);
+    // Use the discounted prices shown in the variant table, not raw list prices.
+    const prices = this.variants
+      .filter(v => Number.isFinite(Number(v.price)) && Number(v.price) >= 0)
+      .map(v => {
+        const discount = Math.min(100, Math.max(0, Number(v.discountPercent) || 0));
+        return Math.round(Number(v.price) * (1 - discount / 100));
+      });
     if (!prices.length) return '—';
     const minimum = Math.min(...prices), maximum = Math.max(...prices);
     return minimum === maximum ? this.formatPrice(minimum) : this.formatPrice(minimum) + ' – ' + this.formatPrice(maximum);
