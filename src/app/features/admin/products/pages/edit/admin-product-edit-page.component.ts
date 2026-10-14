@@ -234,9 +234,14 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     this.error.set('');
     this.success.set('');
     this.active = this.variants.some(v => v.status === 'ACTIVE');
-    if (!this.name.trim() || !this.categoryId || !this.variants.length ||
-        this.variants.some(v => !v.sku?.trim() || !v.label.trim() || v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0 || v.discountPercent == null || !Number.isFinite(Number(v.discountPercent)) || Number(v.discountPercent) < 0 || Number(v.discountPercent) > 100)) {
-      this.error.set('Vui lòng nhập tên, danh mục và thông tin SKU/giá hợp lệ.');
+    if (!this.name.trim() || !this.usageType ||
+        !this.categories().some(category => category.id === this.categoryId) ||
+        !this.variants.length ||
+        this.variants.some(v => !v.sku?.trim() || !v.label.trim() ||
+          v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0 ||
+          v.discountPercent == null || !Number.isFinite(Number(v.discountPercent)) ||
+          Number(v.discountPercent) < 0 || Number(v.discountPercent) > 100)) {
+      this.error.set('Vui lòng kiểm tra các trường bắt buộc và thông tin biến thể được đánh dấu đỏ.');
       return;
     }
     const normalized = this.variants.map(v => (v.sku ?? '').trim().toLowerCase());
