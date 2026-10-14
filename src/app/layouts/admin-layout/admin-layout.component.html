@@ -1,4 +1,4 @@
-<div class="admin-shell">
+<div class="admin-shell" [class.admin-shell--catalog]="isCatalogLayout()">
   <a class="admin-shell__skip-link" href="#admin-content">Skip to content</a>
 
   <aside class="admin-shell__sidebar">
@@ -10,6 +10,27 @@
       </span>
     </a>
 
+    @if (isCatalogLayout()) {
+      <nav class="admin-shell__catalog-nav" aria-label="Điều hướng quản trị">
+        <a routerLink="/admin/dashboard">▦ <span>Dashboard</span></a>
+        <a routerLink="/admin/orders">▣ <span>Bán hàng</span><span class="nav-end">›</span></a>
+
+        <div class="admin-shell__catalog-nav-group">▤ <span>Dịch vụ</span><span class="nav-end">⌄</span></div>
+        <a class="admin-shell__catalog-child" routerLink="/admin/services"
+          routerLinkActive="admin-shell__catalog-child--active" ariaCurrentWhenActive="page">
+          Danh mục dịch vụ
+        </a>
+        <a class="admin-shell__catalog-child" routerLink="/admin/appointments">Lịch hẹn</a>
+        <span class="admin-shell__catalog-child admin-shell__catalog-child--disabled">Hồ sơ dịch vụ</span>
+
+        <span class="admin-shell__catalog-nav-disabled">▤ <span>Vận hành</span><span class="nav-end">›</span></span>
+        @if (canViewUsers()) {
+          <a routerLink="/admin/users">♙ <span>Quản lý người dùng</span></a>
+        }
+        <span class="admin-shell__catalog-nav-disabled">▤ <span>Nội dung &amp; Cộng đồng</span><span class="nav-end">›</span></span>
+        <span class="admin-shell__catalog-nav-disabled">▤ <span>Đánh giá &amp; Phản hồi</span><span class="nav-end">›</span></span>
+      </nav>
+    } @else {
     <nav class="admin-shell__nav" aria-label="Admin navigation">
       <a
         class="admin-shell__nav-item"
@@ -26,6 +47,14 @@
         ariaCurrentWhenActive="page"
       >
         Orders
+      </a>
+      <a
+        class="admin-shell__nav-item"
+        routerLink="/admin/services"
+        routerLinkActive="admin-shell__nav-item--active"
+        ariaCurrentWhenActive="page"
+      >
+        Services
       </a>
       <a
         class="admin-shell__nav-item"
@@ -56,6 +85,7 @@
         Account
       </a>
     </nav>
+    }
 
     <div class="admin-shell__sidebar-footer">
       <a routerLink="/">Customer site</a>
@@ -64,29 +94,38 @@
 
   <section class="admin-shell__workspace">
     <header class="admin-shell__header">
-      <div>
-        <p class="admin-shell__eyebrow">Administration</p>
-        <strong>Operations workspace</strong>
-      </div>
-
-      <div class="admin-shell__account">
-        <a
-          class="admin-shell__profile"
-          routerLink="/admin/profile"
-          aria-label="Open account profile"
-        >
-          <strong>{{ user()?.fullName || 'Admin' }}</strong>
-          <small>{{ user()?.systemRole || 'ADMIN' }}</small>
+      @if (isCatalogLayout()) {
+        <a class="admin-shell__catalog-logo" routerLink="/admin/dashboard" aria-label="Dr. Pet's House">
+          <img src="/assets/admin-login/logo.png" alt="Dr. Pet's House" />
         </a>
-        <button
-          class="admin-shell__logout"
-          type="button"
-          (click)="logout()"
-          [disabled]="isLoggingOut()"
-        >
-          {{ isLoggingOut() ? 'Đang đăng xuất...' : 'Đăng xuất' }}
-        </button>
-      </div>
+        <div class="admin-shell__catalog-actions">
+          <a class="admin-shell__catalog-site" routerLink="/">Xem trang web</a>
+          <span class="admin-shell__catalog-bell" aria-label="Thông báo" role="img">♧</span>
+          <a class="admin-shell__catalog-profile" routerLink="/admin/profile" aria-label="Mở hồ sơ tài khoản">
+            <span class="admin-shell__catalog-avatar" aria-hidden="true">{{ (user()?.fullName || 'A').slice(0, 1) }}</span>
+            <span><strong>{{ user()?.fullName || 'Quản trị viên' }}</strong><small>{{ user()?.systemRole || 'ADMIN' }}</small></span>
+            <span aria-hidden="true">⌄</span>
+          </a>
+          <button class="admin-shell__catalog-logout" type="button" (click)="logout()"
+            [disabled]="isLoggingOut()" aria-label="Đăng xuất">
+            {{ isLoggingOut() ? 'Đang thoát...' : 'Đăng xuất' }}
+          </button>
+        </div>
+      } @else {
+        <div>
+          <p class="admin-shell__eyebrow">Administration</p>
+          <strong>Operations workspace</strong>
+        </div>
+        <div class="admin-shell__account">
+          <a class="admin-shell__profile" routerLink="/admin/profile" aria-label="Open account profile">
+            <strong>{{ user()?.fullName || 'Admin' }}</strong>
+            <small>{{ user()?.systemRole || 'ADMIN' }}</small>
+          </a>
+          <button class="admin-shell__logout" type="button" (click)="logout()" [disabled]="isLoggingOut()">
+            {{ isLoggingOut() ? 'Đang đăng xuất...' : 'Đăng xuất' }}
+          </button>
+        </div>
+      }
     </header>
 
     <main id="admin-content" class="admin-shell__content">
