@@ -10,7 +10,7 @@
         <h2 id="branch-config-title">Cấu hình dịch vụ tại chi nhánh</h2>
         <p id="branch-config-description">
           {{ service.serviceCode }} · {{ service.name }}
-          @if (selectedBranch()) { · {{ selectedBranch()!.name }} }
+          @if (selectedBranch) { · {{ selectedBranch!.name }} }
         </p>
       </div>
       <button type="button" class="branch-config__close" aria-label="Đóng cấu hình"
@@ -36,7 +36,7 @@
             [class.branch-config__switch--active]="enabled()"
             [attr.aria-pressed]="enabled()"
             [disabled]="!canEnable"
-            [attr.aria-label]="'Kích hoạt dịch vụ ' + service.name + ' tại ' + (selectedBranch()?.name || 'chi nhánh')"
+            [attr.aria-label]="'Kích hoạt dịch vụ ' + service.name + ' tại ' + (selectedBranch?.name || 'chi nhánh')"
             (click)="toggleEnabled()">
             <span></span>
           </button>
