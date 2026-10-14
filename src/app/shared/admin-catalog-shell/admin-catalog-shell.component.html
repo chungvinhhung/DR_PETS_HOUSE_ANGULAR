@@ -47,7 +47,7 @@
             Sản phẩm
           </a>
           <a class="catalog-sidebar__sub" routerLink="/admin/orders">Đơn hàng</a>
-          <span class="catalog-sidebar__sub">Khuyến mãi</span>
+          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Voucher / Khuyến mãi</span>
         </div>
 
         <button type="button" class="catalog-sidebar__group"
@@ -69,6 +69,7 @@
             Danh mục dịch vụ
           </a>
           <a class="catalog-sidebar__sub" routerLink="/admin/appointments">Lịch hẹn</a>
+          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Hồ sơ dịch vụ</span>
         </div>
 
         <button type="button" class="catalog-sidebar__group"
@@ -83,23 +84,49 @@
         </button>
         <div id="admin-operations-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
           [hidden]="!operationsExpanded" aria-label="Các mục thuộc Vận hành">
+          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Kho</span>
           <a class="catalog-sidebar__sub" routerLink="/admin/branches"
             [class.catalog-sidebar__sub--active]="activeItem === 'branches'"
             [attr.aria-current]="activeItem === 'branches' ? 'page' : null">
             Chi nhánh
           </a>
+          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Nhân sự</span>
         </div>
         <a class="catalog-sidebar__link" routerLink="/admin/users">
           <img src="/assets/admin-product/icon-users.svg" alt="" width="20" height="20">
           Quản lý người dùng
         </a>
-        <div class="catalog-sidebar__link">
+        <button type="button" class="catalog-sidebar__group"
+          [attr.aria-expanded]="contentExpanded" aria-controls="admin-content-submenu"
+          (click)="toggleContent()">
           <img src="/assets/admin-product/icon-content.svg" alt="" width="20" height="20">
-          Nội dung &amp; Cộng đồng
+          <span>Nội dung &amp; Cộng đồng</span>
+          <img class="catalog-sidebar__group-chevron"
+            [src]="contentExpanded ? '/assets/admin-product/expand_less.svg' : '/assets/admin-product/expand_more.svg'"
+            alt="" aria-hidden="true" width="16" height="16">
+        </button>
+        <div id="admin-content-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
+          [hidden]="!contentExpanded" aria-label="Các mục thuộc Nội dung và Cộng đồng">
+          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Bài viết / Kiến thức</span>
+          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Cẩm nang sơ cứu</span>
+          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Bài đăng cộng đồng</span>
+          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Cứu trợ &amp; Nhận nuôi</span>
         </div>
-        <div class="catalog-sidebar__link">
+
+        <button type="button" class="catalog-sidebar__group"
+          [attr.aria-expanded]="feedbackExpanded" aria-controls="admin-feedback-submenu"
+          (click)="toggleFeedback()">
           <img src="/assets/admin-product/icon-reviews.svg" alt="" width="20" height="20">
-          Đánh giá &amp; Phản hồi
+          <span>Đánh giá &amp; Phản hồi</span>
+          <img class="catalog-sidebar__group-chevron"
+            [src]="feedbackExpanded ? '/assets/admin-product/expand_less.svg' : '/assets/admin-product/expand_more.svg'"
+            alt="" aria-hidden="true" width="16" height="16">
+        </button>
+        <div id="admin-feedback-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
+          [hidden]="!feedbackExpanded" aria-label="Các mục thuộc Đánh giá và Phản hồi">
+          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Đánh giá</span>
+          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Phản hồi khách hàng</span>
+          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Báo cáo vi phạm</span>
         </div>
       </nav>
     </aside>
