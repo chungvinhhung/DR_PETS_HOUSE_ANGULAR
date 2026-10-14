@@ -15,5 +15,21 @@ import { RouterLink } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminCatalogShellComponent {
-  @Input({ required: true }) activeItem!: 'categories' | 'products';
+  @Input({ required: true }) activeItem!: 'categories' | 'products' | 'services';
+
+  salesExpanded = false;
+  servicesExpanded = false;
+
+  ngOnInit(): void {
+    this.salesExpanded = this.activeItem === 'categories' || this.activeItem === 'products';
+    this.servicesExpanded = this.activeItem === 'services';
+  }
+
+  toggleSales(): void {
+    this.salesExpanded = !this.salesExpanded;
+  }
+
+  toggleServices(): void {
+    this.servicesExpanded = !this.servicesExpanded;
+  }
 }
