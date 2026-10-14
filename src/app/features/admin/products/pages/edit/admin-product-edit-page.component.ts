@@ -63,6 +63,10 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     return this.formatPrice(Math.round(Number(v?.price ?? 0) * (1 - Number(v?.discountPercent ?? 0) / 100)));
   }
   formatPrice(price: number): string { return Number(price || 0).toLocaleString('vi-VN') + 'đ'; }
+  formatVariantFinalPrice(variant: ProductVariantWrite): string {
+    const discount = Math.min(100, Math.max(0, Number(variant.discountPercent ?? 0)));
+    return this.formatPrice(Math.round(Number(variant.price || 0) * (1 - discount / 100)));
+  }
   private draftSnapshot(): string {
     return JSON.stringify({
       name: this.name, description: this.description, categoryId: this.categoryId, usageType: this.usageType,
