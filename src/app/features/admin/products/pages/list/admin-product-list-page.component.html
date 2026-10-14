@@ -34,16 +34,14 @@
               @if (!categories().length) { <span class="filter-hint">Chưa tải được danh mục</span> }
             </fieldset>
             <fieldset><legend>Loại sử dụng</legend>
-              <label class="check unsupported" title="Backend chưa có bộ lọc loại sử dụng"><input type="checkbox" disabled>Hàng bán</label>
-              <label class="check unsupported" title="Backend chưa có bộ lọc loại sử dụng"><input type="checkbox" disabled>Dùng chung</label>
-              <label class="check unsupported" title="Backend chưa có bộ lọc loại sử dụng"><input type="checkbox" disabled>Vật tư dịch vụ</label>
-              <span class="filter-hint">Chờ API hỗ trợ</span>
+              <label class="check"><input type="checkbox" [checked]="usageFilter === 'SALE'" (change)="toggleUsage('SALE')">Hàng bán</label>
+              <label class="check"><input type="checkbox" [checked]="usageFilter === 'SHARED'" (change)="toggleUsage('SHARED')">Dùng chung</label>
+              <label class="check"><input type="checkbox" [checked]="usageFilter === 'SERVICE_SUPPLY'" (change)="toggleUsage('SERVICE_SUPPLY')">Vật tư dịch vụ</label>
             </fieldset>
             <fieldset><legend>Khoảng giá</legend>
-              <label class="check unsupported"><input type="checkbox" disabled>Dưới 100.000đ</label>
-              <label class="check unsupported"><input type="checkbox" disabled>100.000–500.000đ</label>
-              <label class="check unsupported"><input type="checkbox" disabled>Trên 500.000đ</label>
-              <span class="filter-hint">Chờ API hỗ trợ</span>
+              <label class="check"><input type="checkbox" [checked]="priceFilter === 'LOW'" (change)="togglePrice('LOW')">Dưới 100.000đ</label>
+              <label class="check"><input type="checkbox" [checked]="priceFilter === 'MID'" (change)="togglePrice('MID')">100.000–500.000đ</label>
+              <label class="check"><input type="checkbox" [checked]="priceFilter === 'HIGH'" (change)="togglePrice('HIGH')">Trên 500.000đ</label>
             </fieldset>
             <fieldset><legend>Trạng thái</legend>
               @if (!archiveView) {
@@ -52,10 +50,9 @@
               } @else { <span class="filter-hint">Đang xem sản phẩm lưu trữ</span> }
             </fieldset>
             <fieldset><legend>Ngày tạo</legend>
-              <label class="check unsupported"><input type="checkbox" disabled>7 ngày qua</label>
-              <label class="check unsupported"><input type="checkbox" disabled>30 ngày qua</label>
-              <label class="check unsupported"><input type="checkbox" disabled>90 ngày qua</label>
-              <span class="filter-hint">Chờ API hỗ trợ</span>
+              <label class="check"><input type="checkbox" [checked]="daysFilter === 7" (change)="toggleDays(7)">7 ngày qua</label>
+              <label class="check"><input type="checkbox" [checked]="daysFilter === 30" (change)="toggleDays(30)">30 ngày qua</label>
+              <label class="check"><input type="checkbox" [checked]="daysFilter === 90" (change)="toggleDays(90)">90 ngày qua</label>
             </fieldset>
           </div>
           <div class="filter-footer">
