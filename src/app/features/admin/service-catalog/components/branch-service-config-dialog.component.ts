@@ -14,15 +14,17 @@ import {
 } from '@angular/core';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
-import {
-  BranchAvailability,
-  CatalogBranch,
-  CatalogService,
-} from '../models/service-catalog.model';
+import { CatalogBranch, CatalogService } from '../models/service-catalog.model';
+
+interface BlockedWindow {
+  id: number;
+  start: string;
+  end: string;
+}
 
 /**
- * Phase 3 UI preview. Never call a write API or indicate that data was persisted.
- * Real branch scope and edit permissions MUST be enforced by the backend.
+ * Phase 3 BranchService preview — opened ONLY from Branch Detail.
+ * No Backend writes. Availability is computed by BE, never manually configured.
  */
 @Component({
   selector: 'app-branch-service-config-dialog',
@@ -35,22 +37,23 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
 
   @Input({ required: true }) service!: CatalogService;
   @Input({ required: true }) branches: readonly CatalogBranch[] = [];
-  @Input() initialBranchId = 'ALL';
+  @Input({ required: true }) initialBranchId = '';
 
   @Output() readonly dismiss = new EventEmitter<void>();
-
   @ViewChild('dialog') private dialogRef?: ElementRef<HTMLElement>;
 
   readonly selectedBranchId = signal('');
   readonly capacity = signal(0);
   readonly enabled = signal(false);
-  readonly availability = signal<BranchAvailability>('BY_SHIFT');
+  readonly blockedWindows = signal<readonly BlockedWindow[]>([]);
+  readonly blockStart = signal('');
+  readonly blockEnd = signal('');
   readonly dirty = signal(false);
   readonly feedback = signal('');
   readonly errors = signal<string[]>([]);
   readonly confirmDiscard = signal(false);
-
   readonly isManager = this.session.user()?.systemRole === 'MANAGER';
+  private nextBlockedId = 1;
 
   get isServiceActive(): boolean {
     return this.service.status === 'ACTIVE';
@@ -60,56 +63,27 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     return this.branches.find((branch) => branch.id === this.selectedBranchId());
   }
 
-  get branchPickerVisible(): boolean {
-    return this.initialBranchId === 'ALL' && this.branches.length > 1;
-  }
-
-  get requiresContact(): boolean {
-    return this.service.bookingMode === 'CONTACT_ONLY';
-  }
-
   get canEnable(): boolean {
     return this.isServiceActive && this.capacity() > 0;
   }
 
   ngOnInit(): void {
-    const initial = this.branches.some((b) => b.id === this.initialBranchId)
-      ? this.initialBranchId
-      : (this.branches[0]?.id ?? '');
-    this.loadBranch(initial);
+    const branch = this.branches.find((item) => item.id === this.initialBranchId);
+    if (!branch) {
+      this.errors.set(['Chi nhánh không hợp lệ hoặc không nằm trong phạm vi được phép.']);
+      return;
+    }
+    const current = this.service.branchServices.find((entry) => entry.branchId === branch.id);
+    const count = current?.capacity ?? 0;
+    this.selectedBranchId.set(branch.id);
+    this.capacity.set(Math.max(0, count));
+    this.enabled.set(this.isServiceActive && count > 0 && (current?.enabled ?? false));
+    // Empty until the BE exposes per-service blocked windows. Do not invent existing periods.
+    this.blockedWindows.set([]);
   }
 
   ngAfterViewInit(): void {
     this.dialogRef?.nativeElement.focus();
-  }
-
-  private loadBranch(branchId: string): void {
-    if (!this.branches.some((branch) => branch.id === branchId)) return;
-
-    const current = this.service.branchServices.find((config) => config.branchId === branchId);
-    const capacity = current?.capacity ?? 0;
-    this.selectedBranchId.set(branchId);
-    this.capacity.set(Math.max(0, capacity));
-    this.enabled.set(
-      this.isServiceActive && capacity > 0 && (current?.enabled ?? false),
-    );
-    this.availability.set(
-      this.requiresContact ? 'CONTACT' : (current?.availability ?? 'BY_SHIFT'),
-    );
-    this.dirty.set(false);
-    this.feedback.set('');
-    this.errors.set([]);
-    this.confirmDiscard.set(false);
-  }
-
-  changeBranch(branchId: string): void {
-    // Keep the unsaved draft visible; switching branches must not silently discard it.
-    if (branchId === this.selectedBranchId()) return;
-    if (this.dirty()) {
-      this.errors.set(['Hãy hủy thay đổi hoặc kiểm tra bản xem trước trước khi chuyển chi nhánh.']);
-      return;
-    }
-    this.loadBranch(branchId);
   }
 
   decrease(): void {
@@ -121,22 +95,62 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
   }
 
   updateCapacity(raw: number): void {
-    const capacity = Number.isFinite(raw) ? Math.max(0, Math.min(100, Math.trunc(raw))) : 0;
-    this.capacity.set(capacity);
-    if (capacity === 0) this.enabled.set(false);
-    this.markChanged();
-  }
-
-  setAvailability(mode: string): void {
-    if (this.requiresContact) return;
-    if (mode !== 'BY_SHIFT' && mode !== 'CONTACT') return;
-    this.availability.set(mode);
+    const count = Number.isFinite(raw) ? Math.max(0, Math.min(100, Math.trunc(raw))) : 0;
+    this.capacity.set(count);
+    if (count === 0) this.enabled.set(false);
     this.markChanged();
   }
 
   toggleEnabled(): void {
     if (!this.canEnable) return;
-    this.enabled.update((value) => !value);
+    this.enabled.update((old) => !old);
+    this.markChanged();
+  }
+
+  updateStart(value: string): void {
+    this.blockStart.set(value);
+    this.markChanged();
+  }
+
+  updateEnd(value: string): void {
+    this.blockEnd.set(value);
+    this.markChanged();
+  }
+
+  private validWindow(start: string, end: string): boolean {
+    const from = new Date(start).getTime();
+    const to = new Date(end).getTime();
+    return !!start && !!end && Number.isFinite(from) && Number.isFinite(to) && to > from;
+  }
+
+  addBlockedWindow(): void {
+    const start = this.blockStart();
+    const end = this.blockEnd();
+    if (!this.validWindow(start, end)) {
+      this.errors.set(['Khoảng tạm khóa phải có ngày/giờ kết thúc sau ngày/giờ bắt đầu.']);
+      return;
+    }
+    const first = new Date(start).getTime();
+    const last = new Date(end).getTime();
+    const overlaps = this.blockedWindows().some((window) =>
+      first < new Date(window.end).getTime() && last > new Date(window.start).getTime(),
+    );
+    if (overlaps) {
+      this.errors.set(['Khoảng tạm khóa mới bị trùng với khoảng đã nhập.']);
+      return;
+    }
+    this.blockedWindows.update((windows) => [...windows, {
+      id: this.nextBlockedId++,
+      start,
+      end,
+    }].sort((a, b) => a.start.localeCompare(b.start)));
+    this.blockStart.set('');
+    this.blockEnd.set('');
+    this.markChanged();
+  }
+
+  removeBlockedWindow(id: number): void {
+    this.blockedWindows.update((windows) => windows.filter((window) => window.id !== id));
     this.markChanged();
   }
 
@@ -148,21 +162,22 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
 
   validatePreview(): void {
     const errors: string[] = [];
-    const branchId = this.selectedBranchId();
-    if (!this.branches.some((b) => b.id === branchId)) {
-      errors.push('Vui lòng chọn một chi nhánh trong phạm vi được phép.');
+    if (!this.selectedBranch) {
+      errors.push('Không tìm thấy chi nhánh hợp lệ.');
     }
     if (!Number.isInteger(this.capacity()) || this.capacity() < 0) {
       errors.push('Sức chứa phải là số nguyên không âm.');
     }
-    if (this.enabled() && this.capacity() === 0) {
-      errors.push('Sức chứa bằng 0 phải tắt kích hoạt tại chi nhánh.');
+    if (this.enabled() && !this.canEnable) {
+      errors.push('Không thể bật khi capacity bằng 0 hoặc dịch vụ tạm ngưng.');
     }
-    if (this.enabled() && !this.isServiceActive) {
-      errors.push('Dịch vụ đang tạm ngưng toàn hệ thống nên không thể bật ở chi nhánh.');
+    if (this.blockStart() || this.blockEnd()) {
+      errors.push('Bạn còn khoảng tạm khóa đang nhập dở. Hãy thêm hoặc xóa dữ liệu vừa nhập.');
     }
-    if (this.requiresContact && this.availability() !== 'CONTACT') {
-      errors.push('Dịch vụ CONTACT_ONLY phải chọn khả dụng Liên hệ.');
+    for (const window of this.blockedWindows()) {
+      if (!this.validWindow(window.start, window.end)) {
+        errors.push('Có khoảng tạm khóa không hợp lệ.');
+      }
     }
     this.errors.set(errors);
     if (errors.length) {
@@ -170,16 +185,16 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
       return;
     }
     this.feedback.set(
-      'Cấu hình hợp lệ (bản xem trước). Chưa lưu vào Backend vì API BranchService chưa được bàn giao.',
+      'Dữ liệu hợp lệ (bản xem trước). Không có thay đổi nào được lưu vào Backend.',
     );
   }
 
   requestClose(): void {
     if (this.dirty()) {
       this.confirmDiscard.set(true);
-      return;
+    } else {
+      this.dismiss.emit();
     }
-    this.dismiss.emit();
   }
 
   discardChanges(): void {
@@ -201,12 +216,12 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
 
   @HostListener('document:keydown.tab', ['$event'])
   trapFocus(event: Event): void {
-    const keyboardEvent = event as KeyboardEvent;
     if (!this.dialogRef) return;
+    const keyboardEvent = event as KeyboardEvent;
     const root = this.dialogRef.nativeElement;
     const focusables = Array.from(root.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), select:not([disabled]), input:not([disabled]), [tabindex="0"]',
-    )).filter((node) => node.getClientRects().length > 0);
+      'button:not([disabled]), input:not([disabled]), [tabindex="0"]',
+    )).filter((element) => element.getClientRects().length > 0);
     if (!focusables.length) return;
     const first = focusables[0];
     const last = focusables[focusables.length - 1];
