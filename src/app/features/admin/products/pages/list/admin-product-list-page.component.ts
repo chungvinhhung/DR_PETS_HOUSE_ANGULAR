@@ -101,6 +101,7 @@ export class AdminProductListPageComponent implements OnInit {
     const serial = ++this.requestNumber;
     this.loading.set(true);
     this.error.set('');
+    this.totalProducts.set(null);
     const query: ProductQuery = {
       limit: 20,
       cursor,
@@ -115,8 +116,6 @@ export class AdminProductListPageComponent implements OnInit {
       finalize(() => this.loading.set(false)),
     ).subscribe({
       next: result => {
-        const meta = result as typeof result & { total?: number; totalCount?: number };
-        this.totalProducts.set(typeof meta.total === 'number' ? meta.total : typeof meta.totalCount === 'number' ? meta.totalCount : null);
         if (serial !== this.requestNumber) return;
         // Current tab should never render archived rows; the BE currently
         // allows ADMIN to see every status without an explicit status filter.
@@ -124,6 +123,16 @@ export class AdminProductListPageComponent implements OnInit {
           ? result.items.filter(p => p.status === 'ARCHIVED')
           : result.items.filter(p => p.status !== 'ARCHIVED');
         this.products.set(items);
+        // Prefer the API's filtered total. The current BE v7 cursor response
+        // does not include totalItems; a single (final) first page is the only
+        // case where the exact total can be inferred without counting other pages.
+        // Never label the current page length as the full total if nextCursor exists.
+        const apiTotal = result.totalItems ?? result.totalCount ?? result.total;
+        this.totalProducts.set(
+          typeof apiTotal === 'number' && Number.isSafeInteger(apiTotal) && apiTotal >= 0
+            ? apiTotal
+            : page === 1 && !result.nextCursor ? items.length : null,
+        );
         this.pageNumber.set(page);
         this.nextCursor.set(result.nextCursor ?? null);
         this.cursors = this.cursors.slice(0, page);
