@@ -73,9 +73,15 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
   private readonly maxImageSize = 5 * 1024 * 1024;
 
   get priceRange(): string {
-    const prices = this.variants.map(v => Number(v.price) || 0);
-    if (!prices.length) return '0đ';
-    return `${Math.min(...prices).toLocaleString('vi-VN')}đ – ${Math.max(...prices).toLocaleString('vi-VN')}đ`;
+    // The displayed range is the amount the customer actually pays, not list price.
+    // Include every variant, even if its sale status is currently inactive.
+    const prices = this.variants
+      .filter(v => Number.isFinite(Number(v.price)) && Number(v.price) >= 0)
+      .map(v => this.finalPrice(v));
+    if (!prices.length) return '—';
+    const min = Math.min(...prices), max = Math.max(...prices);
+    const currency = (value: number) => value.toLocaleString('vi-VN') + 'đ';
+    return min === max ? currency(min) : currency(min) + ' – ' + currency(max);
   }
 
   finalPrice(v: VariantDraft): number {
