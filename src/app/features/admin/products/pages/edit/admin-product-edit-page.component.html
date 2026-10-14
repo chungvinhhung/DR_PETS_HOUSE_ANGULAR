@@ -118,7 +118,7 @@
               <td><input [value]="variant.sku" readonly aria-label="SKU (không thể chỉnh sửa)" title="SKU đã tạo không được đổi"></td>
               <td><input type="number" min="0" step="1000" [(ngModel)]="variant.price" aria-label="Giá bán"></td>
               <td><input type="number" min="0" max="100" step="1" [(ngModel)]="variant.discountPercent" aria-label="Khuyến mại phần trăm"></td>
-              <td><output class="final-price">{{ formatPrice(Math.round(variant.price * (1 - (variant.discountPercent ?? 0) / 100))) }}</output></td>
+              <td><output class="final-price">{{ formatVariantFinalPrice(variant) }}</output></td>
               <td><button class="switch small" role="switch" type="button" [class.on]="variant.status === 'ACTIVE'" [attr.aria-checked]="variant.status === 'ACTIVE'" [attr.aria-label]="'Trạng thái biến thể ' + variant.label" (click)="variant.status = variant.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'"><span></span></button></td>
               <td><button class="delete-btn" type="button" disabled aria-label="Xóa biến thể chưa hỗ trợ" title="Chờ BE xác nhận quy tắc lưu trữ biến thể"><img src="/assets/admin-product/icon-delete.svg" alt=""></button></td>
             </tr>
