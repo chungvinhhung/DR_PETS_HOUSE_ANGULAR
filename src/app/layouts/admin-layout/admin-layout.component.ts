@@ -4,14 +4,12 @@ import {
   signal,
 } from '@angular/core';
 import {
-  NavigationEnd,
   Router,
   RouterLink,
   RouterLinkActive,
   RouterOutlet,
 } from '@angular/router';
-import { filter, finalize } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 
 import { AuthSessionService } from '../../core/services/auth-session.service';
 import { AdminAuthService } from '../../features/admin/auth/services/admin-auth.service';
@@ -28,7 +26,6 @@ import { AdminPermissionService } from '../../features/admin/auth/services/admin
 export class AdminLayoutComponent {
   readonly user = this.authSession.user;
   readonly isLoggingOut = signal(false);
-  readonly isCatalogLayout = signal(false);
   readonly canViewUsers = this.permissions.canViewUsers;
 
   constructor(
@@ -36,15 +33,7 @@ export class AdminLayoutComponent {
     private readonly adminAuth: AdminAuthService,
     private readonly permissions: AdminPermissionService,
     private readonly router: Router,
-  ) {
-    this.isCatalogLayout.set(this.router.url.startsWith('/admin/services'));
-    this.router.events.pipe(
-      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-      takeUntilDestroyed(),
-    ).subscribe((event) => {
-      this.isCatalogLayout.set(event.urlAfterRedirects.startsWith('/admin/services'));
-    });
-  }
+  ) {}
 
   logout(): void {
     if (this.isLoggingOut()) {
