@@ -51,7 +51,7 @@
         </div>
 
         <button type="button" class="catalog-sidebar__group"
-          [class.catalog-sidebar__group--active]="activeItem === 'services' || activeItem === 'branches'"
+          [class.catalog-sidebar__group--active]="activeItem === 'services'"
           [attr.aria-expanded]="servicesExpanded" aria-controls="admin-services-submenu"
           (click)="toggleServices()">
           <img src="/assets/admin-product/icon-services.svg" alt="" width="20" height="20">
@@ -61,22 +61,33 @@
             alt="" aria-hidden="true" width="16" height="16">
         </button>
         <div id="admin-services-submenu" class="catalog-sidebar__children"
-          [class.catalog-sidebar__children--services]="activeItem === 'services' || activeItem === 'branches'"
+          [class.catalog-sidebar__children--services]="activeItem === 'services'"
           [hidden]="!servicesExpanded" aria-label="Các mục thuộc Dịch vụ">
           <a class="catalog-sidebar__sub" routerLink="/admin/services"
             [class.catalog-sidebar__sub--active]="activeItem === 'services'"
             [attr.aria-current]="activeItem === 'services' ? 'page' : null">
             Danh mục dịch vụ
           </a>
-          <a class="catalog-sidebar__sub" routerLink="/admin/branches"
-            [class.catalog-sidebar__sub--active]="activeItem === 'branches'"
-            [attr.aria-current]="activeItem === 'branches' ? 'page' : null">Chi nhánh</a>
           <a class="catalog-sidebar__sub" routerLink="/admin/appointments">Lịch hẹn</a>
         </div>
 
-        <div class="catalog-sidebar__link">
+        <button type="button" class="catalog-sidebar__group"
+          [class.catalog-sidebar__group--active]="activeItem === 'branches'"
+          [attr.aria-expanded]="operationsExpanded" aria-controls="admin-operations-submenu"
+          (click)="toggleOperations()">
           <img src="/assets/admin-product/icon-operations.svg" alt="" width="20" height="20">
-          Vận hành
+          <span>Vận hành</span>
+          <img class="catalog-sidebar__group-chevron"
+            [src]="operationsExpanded ? '/assets/admin-product/expand_less.svg' : '/assets/admin-product/expand_more.svg'"
+            alt="" aria-hidden="true" width="16" height="16">
+        </button>
+        <div id="admin-operations-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
+          [hidden]="!operationsExpanded" aria-label="Các mục thuộc Vận hành">
+          <a class="catalog-sidebar__sub" routerLink="/admin/branches"
+            [class.catalog-sidebar__sub--active]="activeItem === 'branches'"
+            [attr.aria-current]="activeItem === 'branches' ? 'page' : null">
+            Chi nhánh
+          </a>
         </div>
         <a class="catalog-sidebar__link" routerLink="/admin/users">
           <img src="/assets/admin-product/icon-users.svg" alt="" width="20" height="20">
