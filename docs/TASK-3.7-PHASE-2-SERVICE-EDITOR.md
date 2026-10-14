@@ -21,7 +21,7 @@
 - Five tier price matrix (XS/S/M/L/XL) with per-tier FIXED or QUOTE, or one shared price when weight pricing is off.
 - Quote tiers do not accept numeric prices. Fixed price must be a positive whole number.
 - Materials: search existing Product SKUs using a datalist; locked SKU and editable quantity/unit, no duplicates; no Product creation.
-- Branch selection, capacity stepper, availability dropdown, enabled switch (capacity zero or master inactive disables the switch).
+- Service Master Create/Edit does NOT allow BranchService configuration. It links to `/admin/branches`; Bật/Tắt, Capacity and blocked windows are managed only under Branch Detail.
 - Cancel warns about unsaved FE changes.
 - View is readonly, permissions enforced by existing frontend role guard, pending BE RBAC authority.
 
@@ -44,7 +44,7 @@ Service Master versus BranchService responsibilities and roles still require BE/
 2. Invalid Save shows errors; valid Save clearly says Backend has not received data.
 3. Enter material SKU text not in catalog => validation rejects; select existing SKU => code automatically locks.
 4. Duplicate SKU is rejected; quantity <= 0 and blank unit rejected.
-5. Select/deselect a branch; capacity 0 automatically disables enabled switch; readonly View doesn't permit editing.
+5. Confirm the Service Master form does not expose per-branch capacity, enable switch or availability controls. It links to Branch Management; readonly View doesn't permit editing.
 6. Unsaved Cancel opens confirmation before leaving.
 7. ADMIN can Edit a demo record, MANAGER/STAFF can only View; unauthorized Edit is blocked by role guard.
 8. Readonly editor for an unknown service ID shows not-found state.
