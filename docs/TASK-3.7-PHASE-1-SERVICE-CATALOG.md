@@ -11,7 +11,7 @@ This is an Angular Phase 1 UI prototype with a local typed demo repository, not 
 1. Run npm run start:admin.
 2. Sign in with a permitted backoffice account.
 3. Open http://localhost:3001/admin/services.
-4. Only this Catalog route uses the light Figma-inspired admin shell. Approved Task 3.5 screens retain the old shell.
+4. This route reuses the exact shared AdminCatalogShell and source artwork from the Product branch (header, logo, avatar, sidebar); Service navigation has its own active/expanded state. Task 3.5 screens retain their existing shell.
 
 ## Phase 1 implemented
 
@@ -24,6 +24,8 @@ This is an Angular Phase 1 UI prototype with a local typed demo repository, not 
 - One accessible row menu at a time; closes on outside click or Escape. Prototype role actions ADMIN view/edit/configure, MANAGER view/configure, STAFF view.
 - Loading skeleton, initial empty, empty search, retryable error and live result range.
 - Figma search and three-dot icon files are repository-owned local SVGs.
+- Sales/Service group dropdowns, header profile caret and filter selects use `expand_more` / `expand_less` exported from Figma Design System > Navigation.
+- The shared Product navbar/sidebar and source images were copied intact from `feature/admin-product-category`; Service-only dropdown state and disabled future branch link are added without duplicating the shell.
 
 ## Phase 1 boundaries and honest mock notice
 
