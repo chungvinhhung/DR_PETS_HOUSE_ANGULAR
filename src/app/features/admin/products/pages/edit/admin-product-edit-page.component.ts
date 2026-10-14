@@ -232,7 +232,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   save(): void {
     this.submitted = true;
     const item = this.product();
-    if (!item || this.saving()) return;
+    if (!item || this.saving() || !this.hasUnsavedChanges()) return;
     if (item.status === 'ARCHIVED') {
       this.error.set('Vui lòng khôi phục sản phẩm từ tab Đã lưu trữ trước khi chỉnh sửa.');
       return;
