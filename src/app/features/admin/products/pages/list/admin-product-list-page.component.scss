@@ -53,3 +53,16 @@ th:nth-child(10),td:nth-child(10) { width: 85px; text-align: center; }
 .actions .restore-action:hover:not(:disabled),
 .actions .restore-action:focus-visible { background: #e7f2fc; border-radius: 6px; }
 .actions .restore-action:disabled { opacity: .45; }
+
+.product-list-notice {
+  display:flex; justify-content:space-between; align-items:center; gap:12px;
+  margin:0 0 18px; padding:12px 16px;
+  color:#166534; background:#eaf8ee; border:1px solid #bbebcc; border-radius:8px;
+  font-size:14px; line-height:1.5;
+}
+.product-list-notice button {
+  flex:0 0 auto; display:grid; place-items:center; width:26px; height:26px;
+  border:0; border-radius:5px; color:#166534; background:transparent;
+  font-size:20px; cursor:pointer;
+}
+.product-list-notice button:hover {background:#d1f0da;}
