@@ -1,6 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  HostListener,
+  ViewChild,
   inject,
   signal,
 } from '@angular/core';
@@ -51,6 +54,7 @@ const DEMO_PRODUCT_SKUS: readonly MaterialOption[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServiceCatalogEditorComponent {
+  @ViewChild('branchPicker') private branchPickerElement?: ElementRef<HTMLElement>;
   private readonly repository = inject(ServiceCatalogMockRepository);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -88,6 +92,7 @@ export class ServiceCatalogEditorComponent {
   readonly dirty = signal(false);
   readonly showCancelConfirmation = signal(false);
   readonly branchPickerOpen = signal(false);
+  readonly branchPickerOpensUp = signal(false);
 
   constructor() {
     this.branchLines = this.repository.branches.map((branch) => {
@@ -171,6 +176,42 @@ export class ServiceCatalogEditorComponent {
     line.sku = product?.sku ?? '';
     if (product && !line.unit) line.unit = product.unit;
     this.markDirty();
+  }
+
+  toggleBranchPicker(): void {
+    if (!this.mayEdit) return;
+
+    if (this.branchPickerOpen()) {
+      this.branchPickerOpen.set(false);
+      return;
+    }
+
+    // The picker sits close to the bottom of the long editor in most viewport sizes.
+    // Flip above the trigger when the list would be clipped by the viewport.
+    const trigger = this.branchPickerElement?.nativeElement.getBoundingClientRect();
+    if (trigger && typeof window !== 'undefined') {
+      const estimatedHeight = Math.min(220, this.branchLines.length * 42 + 14);
+      const roomBelow = window.innerHeight - trigger.bottom - 12;
+      const roomAbove = trigger.top - 12;
+      this.branchPickerOpensUp.set(roomBelow < estimatedHeight && roomAbove > roomBelow);
+    } else {
+      this.branchPickerOpensUp.set(false);
+    }
+    this.branchPickerOpen.set(true);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onOutsideClick(event: MouseEvent): void {
+    if (!this.branchPickerOpen()) return;
+    const target = event.target;
+    if (target instanceof Node && !this.branchPickerElement?.nativeElement.contains(target)) {
+      this.branchPickerOpen.set(false);
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  closeBranchPicker(): void {
+    this.branchPickerOpen.set(false);
   }
 
   setBranchSelected(branch: BranchLine, selected: boolean): void {
