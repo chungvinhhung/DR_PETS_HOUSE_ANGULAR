@@ -289,7 +289,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
           url = result.items[0]?.url;
           id = result.items[0]?.id;
         }
-        if (!url) throw new Error('Upload ảnh không trả về URL.');
+        if (!url) throw new Error('Không tải được ảnh sản phẩm. Vui lòng thử lại.');
         images.push({ id: id ?? `img-${images.length + 1}`, url, isPrimary: images.length === 0, sortOrder: images.length });
       }
       body.images = images;
@@ -300,7 +300,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
         if (!url) {
           const uploaded = await firstValueFrom(this.api.uploadImages([file]).pipe(timeout({ first: 30000 })));
           url = uploaded.items[0]?.url;
-          if (!url) throw new Error('Upload ảnh biến thể không trả về URL.');
+          if (!url) throw new Error('Không tải được ảnh biến thể. Vui lòng thử lại.');
           this.variantUploadCache.set(file, url);
         }
         variant.image = url;
@@ -401,11 +401,11 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       this.newVariantPrice = 0;
       this.newVariantDiscount = 0;
       this.newVariantActive = false;
-      this.success.set('Đã thêm biến thể. SKU được Backend tự động sinh.');
+      this.success.set('Đã thêm biến thể thành công.');
     } catch (error) {
       this.variantActionError.set(
         (error instanceof Error ? error.message : 'Không thêm được biến thể.') +
-        ' Nếu request hết thời gian chờ, kiểm tra danh sách biến thể trước khi thử lại.',
+        ' Vui lòng kiểm tra danh sách biến thể trước khi thử lại.',
       );
     } finally {
       this.saving.set(false);
@@ -439,7 +439,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       this.deactivateKeys.delete(variant.id);
       this.applyUpdatedProduct(synchronized);
       this.variantActionTarget.set(null);
-      this.success.set('Đã ngừng hoạt động biến thể. SKU và dữ liệu lịch sử vẫn được giữ.');
+      this.success.set('Đã ngừng bán biến thể.');
     } catch (error) {
       this.variantActionError.set(
         (error instanceof Error ? error.message : 'Không thể ngừng biến thể.') +
