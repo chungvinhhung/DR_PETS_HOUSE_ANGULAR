@@ -83,6 +83,9 @@ export interface ProductQuery {
   q?: string;
   categoryId?: string;
   usageType?: ProductUsageType;
+  createdWithinDays?: number;
+  minPrice?: number;
+  maxPrice?: number;
   status?: ProductStatus;
   sort?: ProductSort;
   limit?: number;
