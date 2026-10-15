@@ -177,7 +177,7 @@
   padding-left: 31px;
   border-radius: 7px;
 }
-.catalog-sidebar__children .catalog-sidebar__sub:not(.catalog-sidebar__sub--active):hover {
+.catalog-sidebar__children a.catalog-sidebar__sub:not(.catalog-sidebar__sub--active):hover {
   background: #e9f1f8;
 }
 .catalog-sidebar__children .catalog-sidebar__sub--active {
@@ -223,4 +223,84 @@
   .catalog-header__notification { display: none; }
   .catalog-header__profile { width: auto; }
   .catalog-header__identity { display: none; }
+}
+
+
+/* Shared navigation: the same Product shell supports Service Catalog.
+   The expand icons are exported from Figma > Design System > Navigation. */
+.catalog-sidebar__group {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #1b273b;
+  text-align: left;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.catalog-sidebar__group:not(.catalog-sidebar__group--active) > img:first-child {
+  filter: brightness(0);
+}
+
+.catalog-sidebar__group:hover {
+  background: #d4ebf9;
+}
+
+.catalog-sidebar__group--active,
+.catalog-sidebar__group--active:hover {
+  background: #0d47a1;
+  color: #fff;
+  font-weight: 700;
+}
+
+.catalog-sidebar__group--active > img:first-child {
+  filter: brightness(0) invert(1);
+}
+
+.catalog-sidebar__group .catalog-sidebar__group-chevron {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  margin-left: auto;
+  filter: none;
+}
+
+.catalog-sidebar__group--active .catalog-sidebar__group-chevron {
+  filter: brightness(0) invert(1);
+}
+
+.catalog-sidebar__children[hidden] {
+  display: none;
+}
+
+.catalog-sidebar__children--services {
+  margin-top: 4px;
+  margin-bottom: 16px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.catalog-sidebar__children--services .catalog-sidebar__sub {
+  min-height: 41px;
+  padding-left: 40px;
+}
+
+.catalog-sidebar__children--services .catalog-sidebar__sub--active {
+  background: #cbe6f6;
+}
+
+.catalog-sidebar__sub--disabled {
+  /* Figma displays all labels, but pages not yet built do not navigate. */
+  color: #1b273b;
+  opacity: 1;
+  cursor: default;
+  user-select: text;
+}
+
+.catalog-sidebar__group:focus-visible {
+  outline: 2px solid #0d47a1;
+  outline-offset: 2px;
 }
