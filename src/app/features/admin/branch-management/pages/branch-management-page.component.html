@@ -1,7 +1,7 @@
 <app-admin-catalog-shell activeItem="branches">
-  <main class="branch-management">
+  <main class="branch-management" [class.branch-management--detail]="!!branch">
     <nav class="branch-management__breadcrumb" aria-label="Đường dẫn">
-      <a routerLink="/admin/services">Dịch vụ</a><span aria-hidden="true">›</span>
+      <span>Vận hành</span><span aria-hidden="true">›</span>
       @if (branch) {
         <a routerLink="/admin/branches">Chi nhánh</a><span aria-hidden="true">›</span>
         <strong aria-current="page">{{ branch.name }}</strong>
