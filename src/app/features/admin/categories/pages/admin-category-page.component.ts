@@ -19,6 +19,7 @@ import {
 } from '../models/admin-category.model';
 import { AdminCategoryService } from '../services/admin-category.service';
 import { ADMIN_TABLE_PAGE_SIZE, countCursorItems } from '../../../../shared/utils/admin-table-pagination';
+import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 
 @Component({
   selector: 'app-admin-category-page',
@@ -42,6 +43,10 @@ export class AdminCategoryPageComponent implements OnInit {
   readonly dialogOpen = signal(false);
   readonly errorMessage = signal('');
   readonly notice = signal('');
+  private readonly toast = inject(AdminToastService);
+  private readonly notifyError = effect(() => { if (this.errorMessage()) this.toast.show(this.errorMessage()); });
+  private readonly notifyForm = effect(() => { if (this.formError()) this.toast.show(this.formError()); });
+  private readonly notifySuccess = effect(() => { if (this.notice()) this.toast.show(this.notice(), 'success'); });
   readonly formError = signal('');
 
   searchTerm = '';
@@ -56,6 +61,7 @@ export class AdminCategoryPageComponent implements OnInit {
   private cursorStack: (string | null)[] = [];
   private countGeneration = 0;
   private countRequested = false;
+  private loadSequence = 0;
 
   get hasPreviousPage(): boolean {
     return this.cursorStack.length > 0;
@@ -83,7 +89,7 @@ export class AdminCategoryPageComponent implements OnInit {
   }
 
   loadPage(cursor: string | null): void {
-    if (this.loading()) return;
+    const serial = ++this.loadSequence;
     this.loading.set(true);
     this.errorMessage.set('');
     this.categoryService.listCategories({
@@ -93,9 +99,10 @@ export class AdminCategoryPageComponent implements OnInit {
       cursor,
     }).pipe(
       takeUntilDestroyed(this.destroyRef),
-      finalize(() => this.loading.set(false)),
+      finalize(() => { if (serial === this.loadSequence) this.loading.set(false); }),
     ).subscribe({
       next: (response) => {
+        if (serial !== this.loadSequence) return;
         const meta = response as typeof response & { total?: number; totalCount?: number; totalItems?: number };
         const apiTotal = meta.totalItems ?? meta.totalCount ?? meta.total;
         if (typeof apiTotal === 'number' && Number.isSafeInteger(apiTotal) && apiTotal >= 0) {
@@ -110,6 +117,7 @@ export class AdminCategoryPageComponent implements OnInit {
         this.currentCursor = cursor;
       },
       error: (err: unknown) => {
+        if (serial !== this.loadSequence) return;
         this.errorMessage.set(this.errorText(err, 'Không thể tải danh sách danh mục.'));
       },
     });
@@ -128,6 +136,10 @@ export class AdminCategoryPageComponent implements OnInit {
         this.totalCategories.set(total);
       }
     });
+  }
+
+  onSearchInput(): void {
+    if (!this.searchTerm.trim()) this.applyFilters();
   }
 
   applyFilters(): void {
