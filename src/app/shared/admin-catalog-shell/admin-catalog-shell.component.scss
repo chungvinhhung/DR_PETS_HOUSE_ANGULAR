@@ -304,3 +304,37 @@
   outline: 2px solid #0d47a1;
   outline-offset: 2px;
 }
+
+/* Shared, short-lived feedback centered in the visible viewport. */
+.admin-feedback-toast {
+  position: fixed;
+  z-index: 15000;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: max-content;
+  max-width: min(92vw, 540px);
+  padding: 14px 18px;
+  border: 1px solid #b9d8f0;
+  border-radius: 12px;
+  background: #182840;
+  color: white;
+  box-shadow: 0 12px 36px rgba(0,0,0,.24);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: left;
+  pointer-events: auto;
+}
+.admin-feedback-toast--error { border-color: #f7aa9e; background: #74312d; }
+.admin-feedback-toast--success { border-color: #9ad4b6; background: #116046; }
+.admin-feedback-toast button {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 23px;
+  cursor: pointer;
+}
