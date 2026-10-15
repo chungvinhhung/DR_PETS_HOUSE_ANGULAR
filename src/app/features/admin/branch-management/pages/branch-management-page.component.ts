@@ -6,6 +6,7 @@ import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-she
 import { BranchServiceConfigDialogComponent } from '../../service-catalog/components/branch-service-config-dialog.component';
 import { CatalogBranch, CatalogService } from '../../service-catalog/models/service-catalog.model';
 import { ServiceCatalogMockRepository } from '../../service-catalog/services/service-catalog-mock.repository';
+import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagination';
 
 /**
  * WBS 3.7: branch-scoped Service & Capacity UI preview.
@@ -34,6 +35,8 @@ export class BranchManagementPageComponent {
   readonly focusedServiceId = this.route.snapshot.queryParamMap.get('serviceId') || '';
   readonly focusedService = this.repository.getById(this.focusedServiceId);
   readonly allServices = this.repository.getAll();
+  readonly pageSize = ADMIN_TABLE_PAGE_SIZE;
+  readonly page = signal(1);
   readonly search = signal('');
   readonly activeService = signal<CatalogService | null>(null);
 
@@ -48,6 +51,24 @@ export class BranchManagementPageComponent {
       service.name.toLocaleLowerCase('vi').includes(q) ||
       service.serviceCode.toLocaleLowerCase('vi').includes(q),
     );
+  }
+
+  get pagedServices(): readonly CatalogService[] {
+    const start = (this.page() - 1) * this.pageSize;
+    return this.filteredServices.slice(start, start + this.pageSize);
+  }
+
+  get pageCount(): number {
+    return Math.max(1, Math.ceil(this.filteredServices.length / this.pageSize));
+  }
+
+  updateSearch(value: string): void {
+    this.search.set(value);
+    this.page.set(1);
+  }
+
+  setPage(page: number): void {
+    if (page >= 1 && page <= this.pageCount) this.page.set(page);
   }
 
   get hasFocusedService(): boolean {
