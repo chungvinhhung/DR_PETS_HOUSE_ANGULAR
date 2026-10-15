@@ -1207,3 +1207,15 @@ app-admin-catalog-shell {
 @media(prefers-reduced-motion:reduce) {
   app-admin-catalog-shell .admin-feedback-toast { animation: none; }
 }
+
+
+/* Create Product: match the field-to-field vertical spacing of the usage/SKU row. */
+app-admin-product-create-page .basics > .two-fields {
+  margin-bottom: 20px;
+}
+
+/* Keep the short positive-integer error within its price-table column. */
+app-admin-product-create-page .variant-panel tbody td:nth-child(4) .field-help-error {
+  white-space: nowrap;
+  font-size: 11px;
+}
