@@ -38,7 +38,7 @@ export class AdminProductListPageComponent implements OnInit {
   readonly restoreError = signal('');
   private readonly archiveKeys = new Map<string, string>();
   readonly pageNumber = signal(1);
-  readonly nextCursor = signal<string | null>(null);
+  readonly hasNextPage = signal(false);
   readonly totalProducts = signal<number | null>(null);
 
   searchTerm = '';
@@ -50,7 +50,12 @@ export class AdminProductListPageComponent implements OnInit {
   sort: ProductSort = 'NEWEST';
   archiveView = false;
   filterOpen = false;
-  private cursors: (string | null)[] = [null];
+  // Offset is within one BE cursor page, NOT a product variant index.
+  // A BE page may contain archived products removed from the current tab,
+  // so we resume at the exact raw product position after collecting 6 visible ones.
+  private cursors: Array<{ cursor: string | null; offset: number }> = [
+    { cursor: null, offset: 0 },
+  ];
   private requestNumber = 0;
   private countGeneration = 0;
   private countRequested = false;
@@ -116,7 +121,8 @@ export class AdminProductListPageComponent implements OnInit {
     ++this.countGeneration;
     this.countRequested = false;
     this.totalProducts.set(null);
-    this.cursors = [null];
+    this.cursors = [{ cursor: null, offset: 0 }];
+    this.hasNextPage.set(false);
     this.pageNumber.set(1);
     this.loadPage(1);
   }
@@ -130,14 +136,17 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
   loadPage(page: number): void {
-    const cursor = this.cursors[page - 1];
-    if (page < 1 || cursor === undefined || this.loading()) return;
+    const position = this.cursors[page - 1];
+    if (page < 1 || !position || this.loading()) return;
+
     const serial = ++this.requestNumber;
     this.loading.set(true);
     this.error.set('');
+
     const query: ProductQuery = {
-      limit: this.pageSize,
-      cursor,
+      // A backend chunk is not a visual page: archived products may be mixed in.
+      // Read chunks, then paginate only the filtered parent Product records.
+      limit: 20,
       q: this.searchTerm.trim() || undefined,
       categoryId: this.categoryFilter || undefined,
       usageType: this.usageFilter || undefined,
@@ -147,44 +156,102 @@ export class AdminProductListPageComponent implements OnInit {
       status: this.archiveView ? 'ARCHIVED' : this.statusFilter || undefined,
       sort: this.sort,
     };
-    this.productsApi.listProducts(query).pipe(
-      timeout({ first: 30000 }),
-      takeUntilDestroyed(this.destroyRef),
-      finalize(() => this.loading.set(false)),
-    ).subscribe({
-      next: result => {
-        if (serial !== this.requestNumber) return;
-        // Current tab should never render archived rows; the BE currently
-        // allows ADMIN to see every status without an explicit status filter.
-        const items = this.archiveView
-          ? result.items.filter(p => p.status === 'ARCHIVED')
-          : result.items.filter(p => p.status !== 'ARCHIVED');
+
+    void this.loadVisibleProductPage(query, position)
+      .then(({ items, nextPosition, apiTotal }) => {
+        if (serial !== this.requestNumber || this.destroyRef.destroyed) return;
         this.products.set(items);
-        // Prefer server metadata when its filter matches the displayed view.
-        // In the unfiltered view BE may include archived products, which FE hides.
-        const apiTotal = result.totalItems ?? result.totalCount ?? result.total;
+        this.pageNumber.set(page);
+        this.hasNextPage.set(nextPosition !== null);
+        this.cursors = this.cursors.slice(0, page);
+        if (nextPosition) this.cursors[page] = nextPosition;
+
+        // Count parent Product records, not entries in product.variants.
+        // Unfiltered BE totals may include ARCHIVED products excluded from this tab.
         if (
           (this.archiveView || !!this.statusFilter) &&
           typeof apiTotal === 'number' && Number.isSafeInteger(apiTotal) && apiTotal >= 0
         ) {
           this.totalProducts.set(apiTotal);
-        } else if (page === 1 && !result.nextCursor) {
-          this.totalProducts.set(items.length);
+        } else if (!nextPosition) {
+          this.totalProducts.set((page - 1) * this.pageSize + items.length);
         } else {
           this.countDisplayedProducts(query);
         }
-        this.pageNumber.set(page);
-        this.nextCursor.set(result.nextCursor ?? null);
-        this.cursors = this.cursors.slice(0, page);
-        if (result.nextCursor) this.cursors[page] = result.nextCursor;
-      },
-      error: error => {
-        if (serial === this.requestNumber) {
-          this.error.set(error instanceof Error ? error.message : 'Không thể tải danh sách sản phẩm.');
-          this.products.set([]);
+      })
+      .catch((error: unknown) => {
+        if (serial !== this.requestNumber || this.destroyRef.destroyed) return;
+        this.error.set(error instanceof Error ? error.message : 'Không thể tải danh sách sản phẩm.');
+        this.products.set([]);
+        this.hasNextPage.set(false);
+      })
+      .finally(() => {
+        if (serial === this.requestNumber && !this.destroyRef.destroyed) {
+          this.loading.set(false);
         }
-      },
-    });
+      });
+  }
+
+  /**
+   * Cursor points to the NEXT backend chunk, not to the next visible Product.
+   * Look ahead for a seventh non-archived Product so that Next is only enabled
+   * if the following UI page has an actual parent record.
+   */
+  private async loadVisibleProductPage(
+    query: ProductQuery,
+    initial: { cursor: string | null; offset: number },
+  ): Promise<{
+    items: AdminProduct[];
+    nextPosition: { cursor: string | null; offset: number } | null;
+    apiTotal: number | null;
+  }> {
+    const items: AdminProduct[] = [];
+    const knownCursors = new Set<string>();
+    let cursor = initial.cursor;
+    let offset = initial.offset;
+    let apiTotal: number | null = null;
+
+    // Guard against an invalid cursor loop; never silently misreport the count.
+    for (let chunk = 0; chunk < 100; chunk++) {
+      if (cursor !== null) {
+        if (knownCursors.has(cursor)) throw new Error('Backend trả về cursor phân trang lặp.');
+        knownCursors.add(cursor);
+      }
+      const result = await firstValueFrom(
+        this.productsApi.listProducts({ ...query, cursor }).pipe(
+          timeout({ first: 30000 }),
+          takeUntilDestroyed(this.destroyRef),
+        ),
+      );
+
+      if (apiTotal === null) {
+        const reported = result.totalItems ?? result.totalCount ?? result.total;
+        if (typeof reported === 'number' && Number.isSafeInteger(reported) && reported >= 0) {
+          apiTotal = reported;
+        }
+      }
+
+      // Every item is one Product Master (variants are nested inside it).
+      for (let index = offset; index < result.items.length; index++) {
+        const product = result.items[index];
+        const visible = this.archiveView
+          ? product.status === 'ARCHIVED'
+          : product.status !== 'ARCHIVED';
+        if (!visible) continue;
+
+        if (items.length === this.pageSize) {
+          return { items, nextPosition: { cursor, offset: index }, apiTotal };
+        }
+        items.push(product);
+      }
+
+      if (!result.nextCursor) {
+        return { items, nextPosition: null, apiTotal };
+      }
+      cursor = result.nextCursor;
+      offset = 0;
+    }
+    throw new Error('Danh sách quá dài để phân trang tại giao diện. Vui lòng thu hẹp bộ lọc.');
   }
 
   private countDisplayedProducts(query: ProductQuery): void {
@@ -209,7 +276,7 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
   next(): void {
-    if (this.nextCursor()) this.loadPage(this.pageNumber() + 1);
+    if (this.hasNextPage()) this.loadPage(this.pageNumber() + 1);
   }
 
   categoryName(id: string): string {
