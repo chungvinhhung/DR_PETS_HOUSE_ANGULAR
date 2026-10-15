@@ -18,6 +18,7 @@ import {
   SaveCategoryRequest,
 } from '../models/admin-category.model';
 import { AdminCategoryService } from '../services/admin-category.service';
+import { ADMIN_TABLE_PAGE_SIZE, countCursorItems } from '../../../../shared/utils/admin-table-pagination';
 
 @Component({
   selector: 'app-admin-category-page',
@@ -31,6 +32,7 @@ export class AdminCategoryPageComponent implements OnInit {
   private readonly categoryService = inject(AdminCategoryService);
   private readonly destroyRef = inject(DestroyRef);
 
+  readonly pageSize = ADMIN_TABLE_PAGE_SIZE;
   readonly categories = signal<AdminCategory[]>([]);
   readonly parentOptions = signal<AdminCategory[]>([]);
   readonly loading = signal(false);
@@ -52,6 +54,8 @@ export class AdminCategoryPageComponent implements OnInit {
 
   private currentCursor: string | null = null;
   private cursorStack: (string | null)[] = [];
+  private countGeneration = 0;
+  private countRequested = false;
 
   get hasPreviousPage(): boolean {
     return this.cursorStack.length > 0;
@@ -85,15 +89,22 @@ export class AdminCategoryPageComponent implements OnInit {
     this.categoryService.listCategories({
       q: this.searchTerm,
       status: this.statusFilter === 'ALL' ? undefined : this.statusFilter,
-      limit: 20,
+      limit: this.pageSize,
       cursor,
     }).pipe(
       takeUntilDestroyed(this.destroyRef),
       finalize(() => this.loading.set(false)),
     ).subscribe({
       next: (response) => {
-        const meta = response as typeof response & { total?: number; totalCount?: number };
-        this.totalCategories.set(typeof meta.total === 'number' ? meta.total : typeof meta.totalCount === 'number' ? meta.totalCount : null);
+        const meta = response as typeof response & { total?: number; totalCount?: number; totalItems?: number };
+        const apiTotal = meta.totalItems ?? meta.totalCount ?? meta.total;
+        if (typeof apiTotal === 'number' && Number.isSafeInteger(apiTotal) && apiTotal >= 0) {
+          this.totalCategories.set(apiTotal);
+        } else if (this.pageNumber === 1 && !response.nextCursor) {
+          this.totalCategories.set(response.items.length);
+        } else {
+          this.countDisplayedCategories();
+        }
         this.categories.set(response.items);
         this.nextCursor.set(response.nextCursor);
         this.currentCursor = cursor;
@@ -104,7 +115,25 @@ export class AdminCategoryPageComponent implements OnInit {
     });
   }
 
+  private countDisplayedCategories(): void {
+    if (this.countRequested || this.totalCategories() !== null) return;
+    this.countRequested = true;
+    const generation = this.countGeneration;
+    const q = this.searchTerm;
+    const status = this.statusFilter === 'ALL' ? undefined : this.statusFilter;
+    void countCursorItems(
+      (cursor) => this.categoryService.listCategories({ q, status, limit: 100, cursor }),
+    ).then((total) => {
+      if (generation === this.countGeneration && total !== null) {
+        this.totalCategories.set(total);
+      }
+    });
+  }
+
   applyFilters(): void {
+    ++this.countGeneration;
+    this.countRequested = false;
+    this.totalCategories.set(null);
     this.cursorStack = [];
     this.currentCursor = null;
     this.loadPage(null);
@@ -238,9 +267,7 @@ export class AdminCategoryPageComponent implements OnInit {
         const wasEdit = Boolean(this.editing);
         this.dialogOpen.set(false);
         this.notice.set(wasEdit ? 'Đã cập nhật danh mục thành công.' : 'Đã tạo danh mục thành công.');
-        this.cursorStack = [];
-        this.currentCursor = null;
-        this.loadPage(null);
+        this.applyFilters();
         this.loadParentOptions();
       },
       error: (err: unknown) => {
