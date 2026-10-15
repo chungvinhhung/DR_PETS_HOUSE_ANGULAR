@@ -339,14 +339,74 @@
   cursor: pointer;
 }
 
-/* One accordion style for sales, services, operations and content. */
-.catalog-sidebar__group[aria-expanded="true"], .catalog-sidebar__group[aria-expanded="true"]:hover {background:#0d47a1;color:#fff;font-weight:700;border-radius:9px 9px 0 0;margin-bottom:0}
-.catalog-sidebar__group[aria-expanded="true"] > img:first-child,.catalog-sidebar__group[aria-expanded="true"] .catalog-sidebar__group-chevron{filter:brightness(0) invert(1)}
-.catalog-sidebar__children,.catalog-sidebar__children--services{display:flex;flex-direction:column;gap:3px;margin:0 0 12px;padding:7px 8px 9px 16px;background:#f1f5f9;border-radius:0 0 10px 10px}
-.catalog-sidebar__children .catalog-sidebar__sub,.catalog-sidebar__children--services .catalog-sidebar__sub{min-height:40px;padding:8px 12px 8px 26px;border-radius:7px;font-size:15px}
-.catalog-sidebar__children .catalog-sidebar__sub--active,.catalog-sidebar__children--services .catalog-sidebar__sub--active{background:#deecf7;color:#0d47a1;font-weight:700}
-.catalog-sidebar__group[aria-expanded="false"].catalog-sidebar__group--active{background:transparent;color:#1b273b;font-weight:500}
-.catalog-sidebar__group[aria-expanded="false"].catalog-sidebar__group--active > img:first-child,.catalog-sidebar__group[aria-expanded="false"].catalog-sidebar__group--active .catalog-sidebar__group-chevron{filter:none}
+/* Unified sidebar navigation: tree line instead of child section panel. */
+.catalog-sidebar__group[aria-expanded="true"],
+.catalog-sidebar__group[aria-expanded="true"]:hover {
+  background: #0d47a1;
+  color: #fff;
+  font-weight: 700;
+  border-radius: 9px;
+  margin-bottom: 6px;
+}
+.catalog-sidebar__group[aria-expanded="true"] > img:first-child,
+.catalog-sidebar__group[aria-expanded="true"] .catalog-sidebar__group-chevron {
+  filter: brightness(0) invert(1);
+}
+/* White source icons must be dark in every collapsed, unselected group. */
+.catalog-sidebar__group[aria-expanded="false"] > img:first-child {
+  filter: brightness(0);
+}
+.catalog-sidebar__group[aria-expanded="false"] .catalog-sidebar__group-chevron {
+  filter: none;
+}
+.catalog-sidebar__group[aria-expanded="false"].catalog-sidebar__group--active {
+  background: transparent;
+  color: #1b273b;
+  font-weight: 500;
+}
+.catalog-sidebar__group[aria-expanded="false"].catalog-sidebar__group--active:hover {
+  background: #d4ebf9;
+}
+/* Apply the same nested-line design to all group categories. */
+.catalog-sidebar__children,
+.catalog-sidebar__children--services {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 16px 20px;
+  padding: 2px 0 4px 14px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  position: relative;
+}
+.catalog-sidebar__children::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: 8px;
+  left: 3px;
+  width: 2px;
+  border-radius: 2px;
+  background: #9aaec3;
+}
+.catalog-sidebar__children .catalog-sidebar__sub,
+.catalog-sidebar__children--services .catalog-sidebar__sub {
+  min-height: 40px;
+  padding: 8px 11px 8px 16px;
+  border-radius: 8px;
+  font-size: 15px;
+  background: transparent;
+}
+.catalog-sidebar__children .catalog-sidebar__sub--active,
+.catalog-sidebar__children--services .catalog-sidebar__sub--active {
+  background: #deecf7;
+  color: #0d47a1;
+  font-weight: 700;
+}
+.catalog-sidebar__children .catalog-sidebar__sub:not(.catalog-sidebar__sub--active):hover {
+  background: #e9f1f8;
+}
 /* Bottom-right notification, preserving the current blue palette. */
 .admin-feedback-toast{top:auto;left:auto;right:20px;bottom:20px;transform:none;width:min(420px,calc(100vw - 32px));max-width:none;gap:12px;padding:14px 15px;border:1px solid #d7e1ee;border-left:4px solid #0d47a1;border-radius:12px;background:#fff;color:#203047;box-shadow:0 12px 32px rgba(20,40,75,.16);animation:toast-in .2s ease-out}
 .admin-feedback-toast--error{border-color:#f0d8d8;border-left-color:#c43d3d;background:#fff;color:#7e2929}
