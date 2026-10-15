@@ -80,7 +80,7 @@
             } @else {
               @for (product of products(); track product.id) {
                 <tr [class.out-of-stock]="product.outOfStock">
-                  <td>{{ (pageNumber() - 1) * 20 + $index + 1 }}</td>
+                  <td>{{ (pageNumber() - 1) * pageSize + $index + 1 }}</td>
                   <td><div class="thumbnail">
                     @if (product.images.length) { <img [src]="product.images[0].url" [alt]="product.name"> }
                     @else { <span class="empty-photo" aria-label="Chưa có ảnh"></span> }
@@ -119,11 +119,11 @@
         </table>
       </div>
       <footer class="pagination">
-        <span>Đang hiển thị {{ products().length }} sản phẩm trên tổng số {{ totalProducts() === null ? "…" : totalProducts() }} sản phẩm</span>
+        <span>Đang hiển thị {{ products().length }} trên tổng số {{ totalProducts() === null ? '…' : totalProducts() }} sản phẩm</span>
         <div class="pagination-buttons">
           <button type="button" (click)="previous()" [disabled]="loading() || pageNumber() === 1" aria-label="Trang trước">‹</button>
           <span aria-current="page">{{ pageNumber() }}</span>
-          <button type="button" (click)="next()" [disabled]="loading() || !nextCursor()" aria-label="Trang tiếp">›</button>
+          <button type="button" (click)="next()" [disabled]="loading() || !hasNextPage()" aria-label="Trang tiếp">›</button>
         </div>
       </footer>
     </section>
