@@ -21,7 +21,7 @@
 
   <div class="service-catalog__filters" role="search" aria-label="Tìm kiếm và lọc danh mục dịch vụ">
     <label class="service-catalog__search">
-      <img src="/assets/service-catalog/search.svg" alt="" aria-hidden="true" />
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#66758C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"></circle><path d="m16 16 4.2 4.2"></path></svg>
       <input
         #serviceSearch
         type="search"
@@ -166,7 +166,7 @@
                       [attr.aria-expanded]="openMenuId() === service.id"
                       (click)="toggleMenu($event, service.id)"
                     >
-                      <img src="/assets/service-catalog/more-horiz.svg" alt="" aria-hidden="true" />
+                      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><circle cx="6" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="18" cy="12" r="2"></circle></svg>
                     </button>
                     @if (openMenuId() === service.id) {
                       <div class="service-catalog__action-menu" [class.service-catalog__action-menu--up]="i >= 4"
@@ -198,7 +198,7 @@
         } @else if (error()) {
           Không thể hiển thị dữ liệu
         } @else {
-          Đang hiển thị {{ rangeStart() }}–{{ rangeEnd() }} trên tổng số {{ total() }} dịch vụ
+          Đang hiển thị {{ rows().length }} trên tổng số {{ total() }} dịch vụ
         }
       </p>
 
