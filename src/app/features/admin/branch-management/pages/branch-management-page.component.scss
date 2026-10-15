@@ -101,7 +101,7 @@ app-branch-management-page {
   width: min(100%,315px); height: 40px; flex: 0 0 315px;
   padding: 0 10px; border: 1px solid #dfe7f1; border-radius: 7px; background: #fff;
 }
-.branch-management__search img { width: 15px; height: 15px; }
+.branch-management__search svg { width: 18px; height: 18px; flex-shrink: 0; }
 .branch-management__search input {
   min-width: 0; width: 100%; border: none; outline: none;
   font: inherit; font-size: 12px; color: #1c3351;
