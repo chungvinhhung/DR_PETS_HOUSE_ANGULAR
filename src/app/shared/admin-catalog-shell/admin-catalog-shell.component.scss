@@ -305,40 +305,6 @@
   outline-offset: 2px;
 }
 
-/* Shared, short-lived feedback centered in the visible viewport. */
-.admin-feedback-toast {
-  position: fixed;
-  z-index: 15000;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  width: max-content;
-  max-width: min(92vw, 540px);
-  padding: 14px 18px;
-  border: 1px solid #b9d8f0;
-  border-radius: 12px;
-  background: #182840;
-  color: white;
-  box-shadow: 0 12px 36px rgba(0,0,0,.24);
-  font-size: 14px;
-  line-height: 1.5;
-  text-align: left;
-  pointer-events: auto;
-}
-.admin-feedback-toast--error { border-color: #f7aa9e; background: #74312d; }
-.admin-feedback-toast--success { border-color: #9ad4b6; background: #116046; }
-.admin-feedback-toast button {
-  flex: 0 0 auto;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font-size: 23px;
-  cursor: pointer;
-}
-
 /* Unified sidebar navigation: tree line instead of child section panel. */
 .catalog-sidebar__group[aria-expanded="true"],
 .catalog-sidebar__group[aria-expanded="true"]:hover {
@@ -407,16 +373,3 @@
 .catalog-sidebar__children .catalog-sidebar__sub:not(.catalog-sidebar__sub--active):hover {
   background: #e9f1f8;
 }
-/* Bottom-right notification, preserving the current blue palette. */
-.admin-feedback-toast{top:auto;left:auto;right:20px;bottom:20px;transform:none;width:min(420px,calc(100vw - 32px));max-width:none;gap:12px;padding:14px 15px;border:1px solid #d7e1ee;border-left:4px solid #0d47a1;border-radius:12px;background:#fff;color:#203047;box-shadow:0 12px 32px rgba(20,40,75,.16);animation:toast-in .2s ease-out}
-.admin-feedback-toast--error{border-color:#f0d8d8;border-left-color:#c43d3d;background:#fff;color:#7e2929}
-.admin-feedback-toast--success{border-color:#d6ebde;border-left-color:#248a54;background:#fff;color:#205b3a}
-.admin-feedback-toast__icon{width:28px;height:28px;flex:0 0 28px;display:grid;place-items:center;border-radius:50%;background:#eaf2ff;color:#0d47a1;font-size:17px;font-weight:700}
-.admin-feedback-toast--error .admin-feedback-toast__icon{background:#fff0ef;color:#c43d3d}
-.admin-feedback-toast--success .admin-feedback-toast__icon{background:#e5f7eb;color:#248a54}
-.admin-feedback-toast__message{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;font-weight:500}
-.admin-feedback-toast button{display:grid;place-items:center;width:28px;height:28px;border-radius:6px;color:#64748b}
-.admin-feedback-toast button:hover{background:#f1f5f9}
-@keyframes toast-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:600px){.admin-feedback-toast{right:12px;bottom:12px;width:calc(100vw - 24px)}}
-@media(prefers-reduced-motion:reduce){.admin-feedback-toast{animation:none}}
