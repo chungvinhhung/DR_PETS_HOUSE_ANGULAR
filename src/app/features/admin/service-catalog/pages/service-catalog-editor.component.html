@@ -208,15 +208,6 @@
           routerLink="/admin/branches">Đi đến quản lý chi nhánh →</a>
       </section>
 
-      <footer class="service-editor__footer">
-        <button type="button" class="service-editor__btn service-editor__btn--secondary" (click)="cancel()">
-          {{ readOnly ? 'Quay lại' : 'Hủy' }}
-        </button>
-        @if (mayEdit) {
-          <button type="button" class="service-editor__btn service-editor__btn--primary"
-            (click)="validateDraft()">Lưu dịch vụ</button>
-        }
-      </footer>
       <p class="service-editor__disclaimer">Bản xem trước FE Phase 2: chưa có API Service Master hoặc Product SKU lookup. Kiểm tra hợp lệ không ghi dữ liệu lên Backend.</p>
     }
   </main>
