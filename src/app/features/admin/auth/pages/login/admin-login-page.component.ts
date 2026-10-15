@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal, effect, inject } from '@angular/core';
-import { AdminToastService } from '../../../../../shared/services/admin-toast.service';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -18,11 +17,6 @@ type LoginControlName = 'identifier' | 'password';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminLoginPageComponent {
-  readonly toast = inject(AdminToastService);
-  private readonly notifyLoginError = effect(() => {
-    const message = this.apiError();
-    if (message) this.toast.show(message);
-  });
   readonly passwordVisible = signal(false);
   readonly submitted = signal(false);
   readonly isSubmitting = signal(false);
@@ -50,7 +44,6 @@ export class AdminLoginPageComponent {
     this.form.markAllAsTouched();
 
     if (this.form.invalid || this.isSubmitting()) {
-      if (this.form.invalid) this.toast.show('Vui lòng nhập tài khoản và mật khẩu hợp lệ.');
       return;
     }
 
