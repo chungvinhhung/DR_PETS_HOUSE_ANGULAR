@@ -116,9 +116,7 @@
           }
         </div>
 
-        @if (apiError()) {
-          <p class="login-error" role="alert">{{ apiError() }}</p>
-        }
+        
 
         <div class="login-actions">
           <button class="login-button" type="submit" [disabled]="isSubmitting()">
@@ -129,3 +127,10 @@
     </form>
   </section>
 </main>
+
+@if (toast.current(); as notice) {
+  <div class="login-feedback-toast" role="alert" aria-live="assertive">
+    <span>{{ notice.message }}</span>
+    <button type="button" aria-label="Đóng thông báo" (click)="toast.dismiss()">×</button>
+  </div>
+}
