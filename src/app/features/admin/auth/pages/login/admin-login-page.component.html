@@ -118,6 +118,10 @@
 
         
 
+        @if (apiError()) {
+          <p class="login-error" role="alert">{{ apiError() }}</p>
+        }
+
         <div class="login-actions">
           <button class="login-button" type="submit" [disabled]="isSubmitting()">
             {{ isSubmitting() ? 'ĐANG ĐĂNG NHẬP...' : 'ĐĂNG NHẬP' }}
@@ -128,9 +132,3 @@
   </section>
 </main>
 
-@if (toast.current(); as notice) {
-  <div class="login-feedback-toast" role="alert" aria-live="assertive">
-    <span class="login-feedback-toast__icon" aria-hidden="true">{{ notice.kind === 'success' ? '✓' : notice.kind === 'error' ? '!' : 'i' }}</span><span class="login-feedback-toast__message">{{ notice.message }}</span>
-    <button type="button" aria-label="Đóng thông báo" (click)="toast.dismiss()">×</button>
-  </div>
-}
