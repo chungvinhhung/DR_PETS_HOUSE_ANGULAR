@@ -146,9 +146,7 @@
               <option value="INACTIVE">Tạm ngưng</option>
             </select>
           </label>
-          @if (formError()) {
-            <p class="error" role="alert">{{ formError() }}</p>
-          }
+          
         </div>
         <footer class="modal-actions">
           <button type="button" class="btn-outline" (click)="closeDialog()" [disabled]="saving()">Hủy bỏ</button>
