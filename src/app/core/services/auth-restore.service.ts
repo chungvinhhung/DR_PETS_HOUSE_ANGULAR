@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
+import { catchError, map, Observable, of, switchMap, tap, timeout } from 'rxjs';
 
 import { AuthUser, CurrentUserResponse } from '../models/auth.model';
 import { ApiClientService } from './api-client.service';
@@ -30,6 +30,8 @@ export class AuthRestoreService {
         });
       }),
       map(() => true),
+      // Cover both refresh and /auth/me with a bounded total wait.
+      timeout({ first: 18000 }),
       catchError(() => {
         this.authSession.clearSession();
         return of(false);

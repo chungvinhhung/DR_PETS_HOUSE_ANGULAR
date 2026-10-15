@@ -31,7 +31,6 @@ export interface CurrentUserResponse {
 export interface LoginRequest {
   identifier: string;
   password: string;
-  rememberMe: boolean;
 }
 
 export interface LoginResponse {
