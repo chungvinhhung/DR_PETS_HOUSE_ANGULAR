@@ -178,10 +178,10 @@
   border-radius: 7px;
 }
 .catalog-sidebar__children a.catalog-sidebar__sub:not(.catalog-sidebar__sub--active):hover {
-  background: #e9f1f8;
+  background: #d4ebf9;
 }
 .catalog-sidebar__children .catalog-sidebar__sub--active {
-  background: rgba(0, 88, 190, 0.12);
+  background: rgba(0, 88, 190, 0.06);
   color: #0d47a1;
   font-weight: 700;
 }
@@ -197,7 +197,7 @@
   white-space: nowrap;
 }
 .catalog-sidebar__sub--active {
-  background: rgba(0, 88, 190, 0.12);
+  background: rgba(0, 88, 190, 0.06);
   color: #0d47a1;
   font-weight: 700;
 }
@@ -289,7 +289,7 @@
 }
 
 .catalog-sidebar__children--services .catalog-sidebar__sub--active {
-  background: rgba(0, 88, 190, 0.12);
+  background: rgba(0, 88, 190, 0.06);
 }
 
 .catalog-sidebar__sub--disabled {
@@ -366,10 +366,15 @@
 }
 .catalog-sidebar__children .catalog-sidebar__sub--active,
 .catalog-sidebar__children--services .catalog-sidebar__sub--active {
-  background: rgba(0, 88, 190, 0.12);
+  background: rgba(0, 88, 190, 0.06);
   color: #0d47a1;
   font-weight: 700;
 }
 .catalog-sidebar__children .catalog-sidebar__sub:not(.catalog-sidebar__sub--active):hover {
-  background: #e9f1f8;
+  background: #d4ebf9;
+}
+
+/* Match parent hover on the currently selected submenu link as well. */
+.catalog-sidebar__children a.catalog-sidebar__sub.catalog-sidebar__sub--active:hover {
+  background: #d4ebf9;
 }
