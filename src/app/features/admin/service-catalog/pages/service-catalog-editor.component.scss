@@ -112,31 +112,32 @@ app-service-catalog-editor {
 
 .service-editor__btn {
   display: inline-flex;
-  min-height: 38px;
+  min-height: 40px;
   align-items: center;
   justify-content: center;
-  padding: 0 17px;
+  padding: 0 16px;
   border: 1px solid #dce5f1;
-  border-radius: 7px;
+  border-radius: 8px;
   white-space: nowrap;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   text-decoration: none;
 }
 
 .service-editor__btn--secondary {
+  border-color: #0d47a1;
   background: #fff;
-  color: #2d3d53;
+  color: #0d47a1;
 }
 
 .service-editor__btn--primary {
-  border-color: #0d47a1;
-  background: #0d47a1;
+  border-color: #003681;
+  background: #003681;
   color: #fff;
 }
 
 .service-editor__btn--secondary:hover:not(:disabled) { background: #f2f7fc; }
-.service-editor__btn--primary:hover:not(:disabled) { background: #073984; }
+.service-editor__btn--primary:hover:not(:disabled) { background: #002d70; }
 
 .service-editor__card {
   min-width: 0;
