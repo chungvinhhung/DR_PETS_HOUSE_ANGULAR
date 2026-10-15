@@ -138,7 +138,7 @@
 @if (toast.current(); as notice) {
   <div class="admin-feedback-toast" [class.admin-feedback-toast--error]="notice.kind === 'error'"
        [class.admin-feedback-toast--success]="notice.kind === 'success'"
-       role="status" aria-live="polite">
+       [attr.role]="notice.kind === 'error' ? 'alert' : 'status'" aria-live="polite">
     <span>{{ notice.message }}</span>
     <button type="button" aria-label="Đóng thông báo" (click)="toast.dismiss()">×</button>
   </div>
