@@ -3,7 +3,6 @@
     <header class="service-editor__header">
       <div>
         <nav class="service-editor__breadcrumb" aria-label="Đường dẫn">
-          <span>Dịch vụ</span><span aria-hidden="true">›</span>
           <a routerLink="/admin/services">Danh mục dịch vụ</a><span aria-hidden="true">›</span>
           <strong aria-current="page">{{ title }}</strong>
         </nav>
@@ -63,7 +62,7 @@
 
       <div class="service-editor__two-cards">
         <section class="service-editor__card" aria-labelledby="service-schedule-title">
-          <h2 id="service-schedule-title">Lịch đặt &amp; nhân sự</h2>
+          <h2 id="service-schedule-title">Thời lượng &amp; Nhân sự</h2>
           <div class="service-editor__fields service-editor__fields--two">
             <label class="service-editor__field">
               <span>Thời lượng (phút) <b>*</b></span>
@@ -111,7 +110,7 @@
                 <th scope="col">Mức</th>
                 <th scope="col">Cân nặng</th>
                 <th scope="col">Hình thức thu phí</th>
-                <th scope="col">Giá bán (VNĐ)</th>
+                <th scope="col">Giá cơ sở (VNĐ)</th>
               </tr>
             </thead>
             <tbody>
@@ -132,7 +131,7 @@
                       <span class="service-editor__price-input">
                         <input type="number" min="1" step="1000" [disabled]="!mayEdit || tier.mode === 'QUOTE'"
                           [(ngModel)]="tier.price" (ngModelChange)="markDirty()"
-                          [attr.aria-label]="'Giá bán mức ' + tier.key"
+                          [attr.aria-label]="'Giá cơ sở mức ' + tier.key"
                           [placeholder]="tier.mode === 'QUOTE' ? '—' : 'Nhập giá'"/>
                         @if (tier.mode === 'FIXED') { <span>đ</span> }
                       </span>
