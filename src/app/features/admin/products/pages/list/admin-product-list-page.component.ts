@@ -9,6 +9,7 @@ import { AdminCategoryService } from '../../../categories/services/admin-categor
 import { AdminCategory } from '../../../categories/models/admin-category.model';
 import { AdminProductService } from '../../services/admin-product.service';
 import { AdminProduct, ProductQuery, ProductSort, ProductStatus, ProductUsageType } from '../../models/admin-product.model';
+import { ADMIN_TABLE_PAGE_SIZE, countCursorItems } from '../../../../../shared/utils/admin-table-pagination';
 
 @Component({
   selector: 'app-admin-product-list-page',
@@ -24,6 +25,7 @@ export class AdminProductListPageComponent implements OnInit {
   private readonly categoriesApi = inject(AdminCategoryService);
   private readonly destroyRef = inject(DestroyRef);
 
+  readonly pageSize = ADMIN_TABLE_PAGE_SIZE;
   readonly products = signal<AdminProduct[]>([]);
   readonly categories = signal<AdminCategory[]>([]);
   readonly loading = signal(false);
@@ -50,6 +52,8 @@ export class AdminProductListPageComponent implements OnInit {
   filterOpen = false;
   private cursors: (string | null)[] = [null];
   private requestNumber = 0;
+  private countGeneration = 0;
+  private countRequested = false;
 
   ngOnInit(): void {
     const navState = window.history.state as { productNotice?: unknown } | null;
@@ -109,6 +113,9 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
   applyFilters(): void {
+    ++this.countGeneration;
+    this.countRequested = false;
+    this.totalProducts.set(null);
     this.cursors = [null];
     this.pageNumber.set(1);
     this.loadPage(1);
@@ -128,9 +135,8 @@ export class AdminProductListPageComponent implements OnInit {
     const serial = ++this.requestNumber;
     this.loading.set(true);
     this.error.set('');
-    this.totalProducts.set(null);
     const query: ProductQuery = {
-      limit: 20,
+      limit: this.pageSize,
       cursor,
       q: this.searchTerm.trim() || undefined,
       categoryId: this.categoryFilter || undefined,
@@ -154,16 +160,19 @@ export class AdminProductListPageComponent implements OnInit {
           ? result.items.filter(p => p.status === 'ARCHIVED')
           : result.items.filter(p => p.status !== 'ARCHIVED');
         this.products.set(items);
-        // Prefer the API's filtered total. The current BE v7 cursor response
-        // does not include totalItems; a single (final) first page is the only
-        // case where the exact total can be inferred without counting other pages.
-        // Never label the current page length as the full total if nextCursor exists.
+        // Prefer server metadata when its filter matches the displayed view.
+        // In the unfiltered view BE may include archived products, which FE hides.
         const apiTotal = result.totalItems ?? result.totalCount ?? result.total;
-        this.totalProducts.set(
+        if (
+          (this.archiveView || !!this.statusFilter) &&
           typeof apiTotal === 'number' && Number.isSafeInteger(apiTotal) && apiTotal >= 0
-            ? apiTotal
-            : page === 1 && !result.nextCursor ? items.length : null,
-        );
+        ) {
+          this.totalProducts.set(apiTotal);
+        } else if (page === 1 && !result.nextCursor) {
+          this.totalProducts.set(items.length);
+        } else {
+          this.countDisplayedProducts(query);
+        }
         this.pageNumber.set(page);
         this.nextCursor.set(result.nextCursor ?? null);
         this.cursors = this.cursors.slice(0, page);
@@ -175,6 +184,23 @@ export class AdminProductListPageComponent implements OnInit {
           this.products.set([]);
         }
       },
+    });
+  }
+
+  private countDisplayedProducts(query: ProductQuery): void {
+    if (this.countRequested || this.totalProducts() !== null) return;
+    this.countRequested = true;
+    const generation = this.countGeneration;
+    const archiveView = this.archiveView;
+    void countCursorItems(
+      (cursor) => this.productsApi.listProducts({ ...query, cursor, limit: 100 }),
+      (product: AdminProduct) => archiveView
+        ? product.status === 'ARCHIVED'
+        : product.status !== 'ARCHIVED',
+    ).then((total) => {
+      if (generation === this.countGeneration && total !== null) {
+        this.totalProducts.set(total);
+      }
     });
   }
 
