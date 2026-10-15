@@ -26,7 +26,7 @@ export async function countCursorItems<T>(
 
   try {
     for (let i = 0; i < 20; i++) {
-      const page = await firstValueFrom(
+      const page: CursorPage<T> = await firstValueFrom(
         fetchPage(cursor).pipe(timeout({ first: 15000 })),
       );
       count += page.items.filter(include).length;
