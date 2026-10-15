@@ -1219,3 +1219,16 @@ app-admin-product-create-page .variant-panel tbody td:nth-child(4) .field-help-e
   white-space: nowrap;
   font-size: 11px;
 }
+
+/* Product Create: all variant editors share the 42px currency-control height. */
+app-admin-product-create-page .variant-panel tbody td:nth-child(2) > input,
+app-admin-product-create-page .variant-panel tbody td:nth-child(3) > input {
+  display: block;
+  width: 100%;
+  height: 42px;
+  min-height: 42px;
+  box-sizing: border-box;
+}
+app-admin-product-create-page .variant-panel .variant-price-output {
+  min-height: 42px;
+}
