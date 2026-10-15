@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, OnDestroy, OnInit, signal, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, firstValueFrom, timeout } from 'rxjs';
 
 import { AdminCatalogShellComponent } from '../../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminToastService, adminErrorMessage } from '../../../../../shared/services/admin-toast.service';
 import { AdminCategoryService } from '../../../categories/services/admin-category.service';
 import { AdminCategory } from '../../../categories/models/admin-category.model';
 import { AdminProductService } from '../../services/admin-product.service';
@@ -31,6 +32,19 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   private readonly api = inject(AdminProductService);
   private readonly categoriesApi = inject(AdminCategoryService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly toast = inject(AdminToastService);
+  private readonly errorNotifications = effect(() => {
+    const message = this.error();
+    if (message) this.toast.show(message);
+  });
+  private readonly variantNotifications = effect(() => {
+    const message = this.variantActionError();
+    if (message) this.toast.show(message);
+  });
+  private readonly successNotifications = effect(() => {
+    const message = this.success();
+    if (message) this.toast.show(message, 'success');
+  });
 
   readonly loading = signal(true);
   readonly saving = signal(false);
@@ -53,10 +67,11 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   private nextImageId = 1;
   readonly leaveDialogOpen = signal(false);
   readonly addVariantOpen = signal(false);
+  readonly restoreDialogOpen = signal(false);
   readonly variantActionTarget = signal<ProductVariantWrite | null>(null);
   readonly variantActionError = signal('');
   newVariantLabel = '';
-  newVariantPrice = 0;
+  newVariantPrice: number | null = null;
   newVariantDiscount = 0;
   newVariantActive = false;
   private addVariantFingerprint = '';
@@ -67,6 +82,10 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   private readonly variantUploadCache = new WeakMap<File, string>();
   private leaveResolver: ((confirmed: boolean) => void) | null = null;
   private lastSavedSnapshot = '';
+
+  get archivedReturnQuery(): { view: string } | null {
+    return this.product()?.status === 'ARCHIVED' ? { view: 'archived' } : null;
+  }
 
   get hasVariants(): boolean { return this.product()?.productType === 'VARIANT'; }
   get nameInvalid(): boolean { return this.submitted && !this.name.trim(); }
@@ -223,7 +242,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       }));
       this.lastSavedSnapshot = this.draftSnapshot();
     } catch (error) {
-      this.error.set(error instanceof Error ? error.message : 'Không thể lấy chi tiết sản phẩm.');
+      this.error.set(adminErrorMessage(error, 'Không thể lấy chi tiết sản phẩm.'));
     } finally {
       this.loading.set(false);
     }
@@ -312,7 +331,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
         state: { productNotice: 'Đã cập nhật sản phẩm ' + updated.name + ' thành công.' },
       });
     } catch (error) {
-      this.error.set(error instanceof Error ? error.message : 'Không thể cập nhật sản phẩm.');
+      this.error.set(adminErrorMessage(error, 'Không thể cập nhật sản phẩm.'));
     } finally {
       this.saving.set(false);
     }
@@ -352,6 +371,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     input.value = '';
     if (!file || !this.checkImage(file)) {
       this.imageError = file ? 'Chỉ nhận JPG, PNG tối đa 5MB.' : '';
+      if (this.imageError) this.toast.show(this.imageError);
       return;
     }
     const existingPreview = this.variantImagePreviews.get(variantId);
@@ -359,6 +379,28 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     this.variantImageFiles.set(variantId, file);
     this.variantImagePreviews.set(variantId, URL.createObjectURL(file));
     this.imageError = '';
+  }
+
+  requestRestore(): void {
+    if (this.product()?.status === 'ARCHIVED' && !this.saving()) this.restoreDialogOpen.set(true);
+  }
+
+  async confirmRestore(): Promise<void> {
+    const item = this.product();
+    if (!item || item.status !== 'ARCHIVED' || this.saving()) return;
+    this.saving.set(true);
+    try {
+      const updated = await firstValueFrom(
+        this.api.restoreProduct(item.id, crypto.randomUUID()).pipe(timeout({ first: 30000 })),
+      );
+      this.applyUpdatedProduct(updated);
+      this.restoreDialogOpen.set(false);
+      this.success.set('Đã khôi phục sản phẩm. Bạn có thể chỉnh sửa tiếp.');
+    } catch (error) {
+      this.error.set(adminErrorMessage(error, 'Không thể khôi phục sản phẩm.'));
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   toggleAddVariant(): void {
@@ -376,9 +418,9 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       return;
     }
     const label = this.newVariantLabel.trim();
-    const price = Number(this.newVariantPrice);
+    const price = this.newVariantPrice === null ? NaN : Number(this.newVariantPrice);
     const discountPercent = Number(this.newVariantDiscount);
-    if (!label || !Number.isSafeInteger(price) || price < 0 || !Number.isFinite(discountPercent) ||
+    if (!label || !Number.isSafeInteger(price) || price <= 0 || !Number.isFinite(discountPercent) ||
         discountPercent < 0 || discountPercent > 100) {
       this.variantActionError.set('Nhập tên, giá hợp lệ và khuyến mại từ 0–100%.');
       return;
@@ -398,13 +440,13 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       this.addVariantFingerprint = '';
       this.addVariantOpen.set(false);
       this.newVariantLabel = '';
-      this.newVariantPrice = 0;
+      this.newVariantPrice = null;
       this.newVariantDiscount = 0;
       this.newVariantActive = false;
       this.success.set('Đã thêm biến thể thành công.');
     } catch (error) {
       this.variantActionError.set(
-        (error instanceof Error ? error.message : 'Không thêm được biến thể.') +
+        adminErrorMessage(error, 'Không thêm được biến thể.') +
         ' Vui lòng kiểm tra danh sách biến thể trước khi thử lại.',
       );
     } finally {
@@ -442,7 +484,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
       this.success.set('Đã ngừng bán biến thể.');
     } catch (error) {
       this.variantActionError.set(
-        (error instanceof Error ? error.message : 'Không thể ngừng biến thể.') +
+        adminErrorMessage(error, 'Không thể ngừng biến thể.') +
         ' Nếu chưa rõ kết quả, kiểm tra lại trạng thái biến thể trước khi thử lại.',
       );
     } finally {
@@ -472,10 +514,12 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   private checkImage(file: File): boolean {
     if (!['image/jpeg', 'image/png'].includes(file.type)) {
       this.imageError = 'Chỉ hỗ trợ ảnh JPG hoặc PNG.';
+      this.toast.show(this.imageError);
       return false;
     }
     if (file.size > 5 * 1024 * 1024) {
       this.imageError = 'Mỗi ảnh phải có dung lượng tối đa 5MB.';
+      this.toast.show(this.imageError);
       return false;
     }
     return true;
@@ -489,6 +533,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     for (const file of files) {
       if (this.imageSlots.length >= 10) {
         this.imageError = 'Chỉ được chọn tối đa 10 ảnh sản phẩm.';
+        this.toast.show(this.imageError);
         break;
       }
       if (!this.checkImage(file)) continue;

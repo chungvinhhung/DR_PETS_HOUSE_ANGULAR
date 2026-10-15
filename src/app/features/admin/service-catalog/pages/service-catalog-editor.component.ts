@@ -3,12 +3,14 @@ import {
   Component,
   inject,
   signal,
+  effect,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { ServiceBookingMode } from '../models/service-catalog.model';
 import { ServiceCatalogMockRepository } from '../services/service-catalog-mock.repository';
 
@@ -44,6 +46,15 @@ export class ServiceCatalogEditorComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly authSession = inject(AuthSessionService);
+  private readonly toast = inject(AdminToastService);
+  private readonly validateErrorToast = effect(() => {
+    const errors = this.errors();
+    if (errors.length) this.toast.show(errors.slice(0, 2).join(' '));
+  });
+  private readonly previewToast = effect(() => {
+    const message = this.notice();
+    if (message) this.toast.show(message, 'info');
+  });
 
   readonly editorMode = (this.route.snapshot.data['editorMode'] ?? 'create') as 'create' | 'edit' | 'view';
   readonly serviceId = this.route.snapshot.paramMap.get('id');

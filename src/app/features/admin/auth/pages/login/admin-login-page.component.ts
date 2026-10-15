@@ -96,7 +96,7 @@ export class AdminLoginPageComponent {
 
     switch (code) {
       case 'INVALID_CREDENTIALS':
-        return 'Số điện thoại/email hoặc mật khẩu không đúng.';
+        return 'Tài khoản hoặc mật khẩu không đúng.';
       case 'ACCOUNT_NOT_ACTIVATED':
         return 'Tài khoản chưa được kích hoạt. Vui lòng xác thực OTP.';
       case 'ACCOUNT_BLOCKED':
@@ -108,7 +108,10 @@ export class AdminLoginPageComponent {
           return 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra Backend đang chạy.';
         }
 
-        return error.message || 'Đăng nhập thất bại. Vui lòng thử lại.';
+        if (error.kind === 'unauthorized') return 'Tài khoản hoặc mật khẩu không đúng.';
+        if (error.kind === 'forbidden') return 'Tài khoản không có quyền truy cập khu vực quản trị.';
+        if (error.kind === 'server') return 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.';
+        return 'Đăng nhập thất bại. Vui lòng thử lại.';
     }
   }
 

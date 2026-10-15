@@ -5,6 +5,7 @@ import {
   OnInit,
   inject,
   signal,
+  effect,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -19,6 +20,7 @@ import {
 } from '../models/admin-category.model';
 import { AdminCategoryService } from '../services/admin-category.service';
 import { ADMIN_TABLE_PAGE_SIZE, countCursorItems } from '../../../../shared/utils/admin-table-pagination';
+import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 
 @Component({
   selector: 'app-admin-category-page',
@@ -42,6 +44,10 @@ export class AdminCategoryPageComponent implements OnInit {
   readonly dialogOpen = signal(false);
   readonly errorMessage = signal('');
   readonly notice = signal('');
+  private readonly toast = inject(AdminToastService);
+  private readonly notifyError = effect(() => { if (this.errorMessage()) this.toast.show(this.errorMessage()); });
+  private readonly notifyForm = effect(() => { if (this.formError()) this.toast.show(this.formError()); });
+  private readonly notifySuccess = effect(() => { if (this.notice()) this.toast.show(this.notice(), 'success'); });
   readonly formError = signal('');
 
   searchTerm = '';
@@ -56,6 +62,7 @@ export class AdminCategoryPageComponent implements OnInit {
   private cursorStack: (string | null)[] = [];
   private countGeneration = 0;
   private countRequested = false;
+  private loadSequence = 0;
 
   get hasPreviousPage(): boolean {
     return this.cursorStack.length > 0;
@@ -83,7 +90,7 @@ export class AdminCategoryPageComponent implements OnInit {
   }
 
   loadPage(cursor: string | null): void {
-    if (this.loading()) return;
+    const serial = ++this.loadSequence;
     this.loading.set(true);
     this.errorMessage.set('');
     this.categoryService.listCategories({
@@ -93,9 +100,10 @@ export class AdminCategoryPageComponent implements OnInit {
       cursor,
     }).pipe(
       takeUntilDestroyed(this.destroyRef),
-      finalize(() => this.loading.set(false)),
+      finalize(() => { if (serial === this.loadSequence) this.loading.set(false); }),
     ).subscribe({
       next: (response) => {
+        if (serial !== this.loadSequence) return;
         const meta = response as typeof response & { total?: number; totalCount?: number; totalItems?: number };
         const apiTotal = meta.totalItems ?? meta.totalCount ?? meta.total;
         if (typeof apiTotal === 'number' && Number.isSafeInteger(apiTotal) && apiTotal >= 0) {
@@ -110,6 +118,7 @@ export class AdminCategoryPageComponent implements OnInit {
         this.currentCursor = cursor;
       },
       error: (err: unknown) => {
+        if (serial !== this.loadSequence) return;
         this.errorMessage.set(this.errorText(err, 'Không thể tải danh sách danh mục.'));
       },
     });
@@ -128,6 +137,11 @@ export class AdminCategoryPageComponent implements OnInit {
         this.totalCategories.set(total);
       }
     });
+  }
+
+  onSearchInput(value: string): void {
+    this.searchTerm = value;
+    if (!value.trim()) this.applyFilters();
   }
 
   applyFilters(): void {
@@ -281,6 +295,10 @@ export class AdminCategoryPageComponent implements OnInit {
       if (error.status === 409) {
         return 'Đường dẫn (slug) đã tồn tại. Vui lòng chọn đường dẫn khác.';
       }
+      if (error.status === 0) return 'Không thể kết nối máy chủ. Vui lòng thử lại.';
+      if (error.status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+      if (error.status === 403) return 'Bạn không có quyền thực hiện thao tác này.';
+      if (error.status >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.';
       const body: unknown = error.error;
       if (body && typeof body === 'object') {
         const details = body as { detail?: unknown; message?: unknown; errors?: unknown };
@@ -291,7 +309,7 @@ export class AdminCategoryPageComponent implements OnInit {
       if (error.status === 401 || error.status === 403) return 'Bạn không có quyền thực hiện thao tác này. Hãy đăng nhập bằng tài khoản ADMIN.';
       return fallback;
     }
-    if (error instanceof Error && error.message) return error.message;
+    if (error instanceof Error && error.message && !/unauthoriz|failed to fetch|http failure/i.test(error.message)) return error.message;
     return fallback;
   }
 }

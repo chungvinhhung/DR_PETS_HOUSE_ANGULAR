@@ -9,6 +9,7 @@ import { ProductWrite } from '../../models/admin-product.model';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminToastService, adminErrorMessage } from '../../../../../shared/services/admin-toast.service';
 
 interface ProductImageDraft {
   id: number;
@@ -19,7 +20,7 @@ interface ProductImageDraft {
 interface VariantDraft {
   label: string;
   sku: string;
-  price: number;
+  price: number | null;
   discount: number;
   active: boolean;
   imageFile: File | null;
@@ -40,6 +41,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly router = inject(Router);
+  private readonly toast = inject(AdminToastService);
   private createAttemptFingerprint: string | null = null;
   private createAttemptKey: string | null = null;
   private uploadedImageCache = new Map<number, { file: File; url: string; id: string }>();
@@ -60,7 +62,12 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
   // Only show previews for photos that the user has actually uploaded.
   images: ProductImageDraft[] = [];
   primaryImageId: number | null = null;
-  feedback = '';
+  private feedbackValue = '';
+  get feedback(): string { return this.feedbackValue; }
+  set feedback(message: string) {
+    this.feedbackValue = message;
+    if (message) this.toast.show(message, /thành công/i.test(message) ? 'success' : 'error');
+  }
   submitted = false;
   leaveDialogOpen = false;
   private leaveResolver: ((confirmed: boolean) => void) | null = null;
@@ -76,7 +83,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     // The displayed range is the amount the customer actually pays, not list price.
     // Include every variant, even if its sale status is currently inactive.
     const prices = this.variants
-      .filter(v => Number.isFinite(Number(v.price)) && Number(v.price) >= 0)
+      .filter(v => v.price !== null && Number.isFinite(Number(v.price)) && Number(v.price) > 0)
       .map(v => this.finalPrice(v));
     if (!prices.length) return '—';
     const min = Math.min(...prices), max = Math.max(...prices);
@@ -91,7 +98,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     );
   }
 
-  private newVariant(label = '', price = 0): VariantDraft {
+  private newVariant(label = '', price: number | null = null): VariantDraft {
     return {
       label,
       sku: '',
@@ -116,7 +123,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     return this.submitted && this.hasVariants && !v.label.trim();
   }
   variantPriceInvalid(v: VariantDraft): boolean {
-    return this.submitted && (v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0);
+    return this.submitted && (v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) <= 0);
   }
   variantDiscountInvalid(v: VariantDraft): boolean {
     return this.submitted && (v.discount == null || !Number.isFinite(Number(v.discount)) || Number(v.discount) < 0 || Number(v.discount) > 100);
@@ -355,7 +362,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
 
     if (!this.variants.length || this.variants.some(v =>
       (this.hasVariants && !v.label.trim()) ||
-      v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0 ||
+      v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) <= 0 ||
       v.discount == null || !Number.isFinite(Number(v.discount)) || Number(v.discount) < 0 || Number(v.discount) > 100
     )) {
       this.feedback = 'Mỗi biến thể phải có giá bán hợp lệ và khuyến mại từ 0 đến 100%.';
@@ -438,7 +445,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
       if (this.destroyed) return;
       this.feedback = error instanceof TimeoutError
         ? 'Quá 30 giây chưa nhận phản hồi. Sản phẩm có thể đã được tạo; hãy kiểm tra danh sách trước khi thử lại.'
-        : 'Không lưu được sản phẩm: ' + (error instanceof Error ? error.message : 'Lỗi không xác định.');
+        : adminErrorMessage(error, 'Không lưu được sản phẩm. Vui lòng thử lại.');
     } finally {
       this.saving = false;
       if (!this.destroyed) this.cdr.markForCheck();
