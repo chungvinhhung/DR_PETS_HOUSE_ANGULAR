@@ -50,6 +50,7 @@ export class AdminLoginPageComponent {
     this.form.markAllAsTouched();
 
     if (this.form.invalid || this.isSubmitting()) {
+      if (this.form.invalid) this.toast.show('Vui lòng nhập tài khoản và mật khẩu hợp lệ.');
       return;
     }
 
@@ -114,7 +115,10 @@ export class AdminLoginPageComponent {
           return 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra Backend đang chạy.';
         }
 
-        return error.message || 'Đăng nhập thất bại. Vui lòng thử lại.';
+        if (error.kind === 'unauthorized') return 'Tài khoản hoặc mật khẩu không đúng.';
+        if (error.kind === 'forbidden') return 'Tài khoản không có quyền truy cập khu vực quản trị.';
+        if (error.kind === 'server') return 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.';
+        return 'Đăng nhập thất bại. Vui lòng thử lại.';
     }
   }
 
