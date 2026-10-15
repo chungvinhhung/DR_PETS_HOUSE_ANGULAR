@@ -18,7 +18,7 @@
             </svg>
             <input type="search" [(ngModel)]="searchTerm"
               placeholder="Tìm theo tên danh mục..." aria-label="Tìm danh mục"
-              (keyup.enter)="applyFilters()">
+              (ngModelChange)="onSearchInput($event)" (keyup.enter)="applyFilters()">
           </div>
           <div class="toolbar-actions">
             <label class="filter-label">
@@ -35,11 +35,9 @@
           </div>
         </div>
 
-        @if (notice()) {
-          <p class="notice" role="status">{{ notice() }}</p>
-        }
+        
         @if (errorMessage()) {
-          <p class="error" role="alert">{{ errorMessage() }}</p>
+
           <button type="button" class="btn-outline retry" (click)="loadPage(null)">Thử lại</button>
         }
 
@@ -148,9 +146,7 @@
               <option value="INACTIVE">Tạm ngưng</option>
             </select>
           </label>
-          @if (formError()) {
-            <p class="error" role="alert">{{ formError() }}</p>
-          }
+          
         </div>
         <footer class="modal-actions">
           <button type="button" class="btn-outline" (click)="closeDialog()" [disabled]="saving()">Hủy bỏ</button>

@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, firstValueFrom, timeout } from 'rxjs';
 
@@ -10,6 +10,7 @@ import { AdminCategory } from '../../../categories/models/admin-category.model';
 import { AdminProductService } from '../../services/admin-product.service';
 import { AdminProduct, ProductQuery, ProductSort, ProductStatus, ProductUsageType } from '../../models/admin-product.model';
 import { ADMIN_TABLE_PAGE_SIZE, countCursorItems } from '../../../../../shared/utils/admin-table-pagination';
+import { AdminToastService, adminErrorMessage } from '../../../../../shared/services/admin-toast.service';
 
 @Component({
   selector: 'app-admin-product-list-page',
@@ -22,6 +23,11 @@ import { ADMIN_TABLE_PAGE_SIZE, countCursorItems } from '../../../../../shared/u
 export class AdminProductListPageComponent implements OnInit {
   private readonly productsApi = inject(AdminProductService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly toast = inject(AdminToastService);
+  private readonly showErrors = effect(() => { if (this.error()) this.toast.show(this.error()); });
+  private readonly showArchiveErrors = effect(() => { if (this.archiveError()) this.toast.show(this.archiveError()); });
+  private readonly showRestoreErrors = effect(() => { if (this.restoreError()) this.toast.show(this.restoreError()); });
   private readonly categoriesApi = inject(AdminCategoryService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -61,15 +67,25 @@ export class AdminProductListPageComponent implements OnInit {
   private countRequested = false;
 
   ngOnInit(): void {
+    this.archiveView = this.route.snapshot.queryParamMap.get('view') === 'archived';
+    this.statusFilter = this.archiveView ? 'ARCHIVED' : '';
     const navState = window.history.state as { productNotice?: unknown } | null;
     if (typeof navState?.productNotice === 'string') {
-      this.notice.set(navState.productNotice);
+      this.toast.show(navState.productNotice, 'success');
       // Do not re-show the same success notice after a reload.
       const { productNotice: ignored, ...rest } = navState;
       window.history.replaceState(rest, '', window.location.href);
     }
     void this.loadCategories();
     this.loadPage(1);
+    // A newly created/updated product may briefly be absent from BE read replicas.
+    // Refresh once without showing a mock result or reusing the previous list.
+    if (typeof navState?.productNotice === 'string') {
+      setTimeout(() => {
+        if (!this.destroyRef.destroyed && this.pageNumber() === 1 && !this.archiveView &&
+            !this.searchTerm && !this.categoryFilter) this.applyFilters();
+      }, 900);
+    }
   }
 
   private async loadCategories(): Promise<void> {
@@ -81,8 +97,9 @@ export class AdminProductListPageComponent implements OnInit {
     }
   }
 
-  onSearchInput(): void {
-    // Search is applied on Enter; keep the entered value editable until then.
+  onSearchInput(value: string): void {
+    this.searchTerm = value;
+    if (!value.trim()) this.applyFilters();
   }
 
   toggleCategory(id: string): void {
@@ -137,7 +154,7 @@ export class AdminProductListPageComponent implements OnInit {
 
   loadPage(page: number): void {
     const position = this.cursors[page - 1];
-    if (page < 1 || !position || this.loading()) return;
+    if (page < 1 || !position) return;
 
     const serial = ++this.requestNumber;
     this.loading.set(true);
@@ -181,7 +198,7 @@ export class AdminProductListPageComponent implements OnInit {
       })
       .catch((error: unknown) => {
         if (serial !== this.requestNumber || this.destroyRef.destroyed) return;
-        this.error.set(error instanceof Error ? error.message : 'Không thể tải danh sách sản phẩm.');
+        this.error.set(adminErrorMessage(error, 'Không thể tải danh sách sản phẩm.'));
         this.products.set([]);
         this.hasNextPage.set(false);
       })
@@ -271,6 +288,51 @@ export class AdminProductListPageComponent implements OnInit {
     });
   }
 
+
+  visiblePageNumbers(): number[] {
+    const total = this.totalProducts();
+    const count = total === null ? this.pageNumber() + (this.hasNextPage() ? 1 : 0)
+      : Math.max(1, Math.ceil(total / this.pageSize));
+    return Array.from({ length: count }, (_, index) => index + 1);
+  }
+
+  async goToPage(page: number): Promise<void> {
+    const total = this.totalProducts();
+    if (!Number.isInteger(page) || page < 1 ||
+        (total !== null && page > Math.max(1, Math.ceil(total / this.pageSize))) ||
+        this.loading() || page === this.pageNumber()) return;
+    if (this.cursors[page - 1]) { this.loadPage(page); return; }
+    // BE uses cursors rather than offsets; discover boundaries before jumping.
+    const generation = this.requestNumber;
+    const query: ProductQuery = {
+      limit: 20, q: this.searchTerm.trim() || undefined,
+      categoryId: this.categoryFilter || undefined,
+      usageType: this.usageFilter || undefined,
+      createdWithinDays: this.daysFilter || undefined,
+      minPrice: this.priceFilter === 'MID' ? 100000 : this.priceFilter === 'HIGH' ? 500001 : undefined,
+      maxPrice: this.priceFilter === 'LOW' ? 99999 : this.priceFilter === 'MID' ? 500000 : undefined,
+      status: this.archiveView ? 'ARCHIVED' : this.statusFilter || undefined,
+      sort: this.sort,
+    };
+    this.loading.set(true);
+    try {
+      while (this.cursors.length < page) {
+        const position = this.cursors[this.cursors.length - 1];
+        const result = await this.loadVisibleProductPage(query, position);
+        if (generation !== this.requestNumber || this.destroyRef.destroyed) return;
+        if (!result.nextPosition) return;
+        this.cursors.push(result.nextPosition);
+      }
+    } catch (error) {
+      if (generation === this.requestNumber && !this.destroyRef.destroyed)
+        this.error.set(adminErrorMessage(error, 'Không thể chuyển đến trang này.'));
+      return;
+    } finally {
+      if (generation === this.requestNumber && !this.destroyRef.destroyed) this.loading.set(false);
+    }
+    if (generation === this.requestNumber && !this.destroyRef.destroyed) this.loadPage(page);
+  }
+
   previous(): void {
     if (this.pageNumber() > 1) this.loadPage(this.pageNumber() - 1);
   }
@@ -352,11 +414,12 @@ export class AdminProductListPageComponent implements OnInit {
       next: () => {
         this.archiveKeys.delete(product.id);
         this.archiveTarget.set(null);
+        this.toast.show('Đã lưu trữ sản phẩm thành công.', 'success');
         this.applyFilters();
       },
       error: error => {
         this.archiveError.set(
-          (error instanceof Error ? error.message : 'Không thể lưu trữ sản phẩm.') +
+          adminErrorMessage(error, 'Không thể lưu trữ sản phẩm.') +
           ' Nếu kết quả chưa rõ, hãy kiểm tra tab Đã lưu trữ trước khi thử lại.',
         );
       },
@@ -385,11 +448,12 @@ export class AdminProductListPageComponent implements OnInit {
     ).subscribe({
       next: () => {
         this.restoreTarget.set(null);
+        this.toast.show('Đã khôi phục sản phẩm thành công.', 'success');
         this.applyFilters();
       },
       error: (error: unknown) => {
         this.restoreError.set(
-          (error instanceof Error ? error.message : 'Không thể khôi phục sản phẩm.') +
+          adminErrorMessage(error, 'Không thể khôi phục sản phẩm.') +
           ' Nếu chưa rõ kết quả, hãy kiểm tra tab Sản phẩm hiện tại trước khi thử lại.',
         );
       },

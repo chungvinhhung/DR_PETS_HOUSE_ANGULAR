@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
+import { AdminToastService } from '../services/admin-toast.service';
 import { RouterLink } from '@angular/router';
 
 /**
@@ -15,6 +16,7 @@ import { RouterLink } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminCatalogShellComponent {
+  readonly toast = inject(AdminToastService);
   @Input({ required: true }) activeItem!: 'categories' | 'products' | 'services' | 'branches';
 
   salesExpanded = false;
