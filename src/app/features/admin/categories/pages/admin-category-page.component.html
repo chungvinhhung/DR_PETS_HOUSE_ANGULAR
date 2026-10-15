@@ -18,7 +18,7 @@
             </svg>
             <input type="search" [(ngModel)]="searchTerm"
               placeholder="Tìm theo tên danh mục..." aria-label="Tìm danh mục"
-              (input)="onSearchInput()" (keyup.enter)="applyFilters()">
+              (ngModelChange)="onSearchInput($event)" (keyup.enter)="applyFilters()">
           </div>
           <div class="toolbar-actions">
             <label class="filter-label">
