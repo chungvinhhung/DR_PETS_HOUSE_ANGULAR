@@ -1,4 +1,5 @@
 import { inject, Injectable } from '@angular/core';
+import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
@@ -16,8 +17,11 @@ import {
 export class AdminUsersService {
   private readonly api = inject(ApiClientService);
 
-  listUsers(): Observable<AdminUsersResponse> {
-    return this.api.get<AdminUsersResponse>('/admin/users');
+  listUsers(page = 1, limit = 6): Observable<AdminUsersResponse> {
+    const params = new HttpParams()
+      .set('page', String(page))
+      .set('limit', String(limit));
+    return this.api.get<AdminUsersResponse>('/admin/users', { params });
   }
 
   createInternalUser(
