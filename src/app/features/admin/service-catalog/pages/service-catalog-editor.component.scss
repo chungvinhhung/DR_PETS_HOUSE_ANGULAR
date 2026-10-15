@@ -7,8 +7,8 @@ app-service-catalog-editor {
 }
 
 .service-editor {
-  padding: 32px;
-  max-width: 1320px;
+  padding: 40px 32px 36px;
+  max-width: none;
   font-size: 13px;
   line-height: 1.4;
 }
@@ -52,39 +52,48 @@ app-service-catalog-editor {
 }
 
 .service-editor__header {
-  margin-bottom: 20px;
-  min-height: 54px;
+  gap: 16px;
+  margin-bottom: 24px;
+  min-height: 70px;
 }
 
 .service-editor__header h1 {
   display: inline-block;
-  margin: 3px 0 0;
-  color: #1d2a42;
-  font-size: 22px;
-  line-height: 27px;
+  margin: 0;
+  color: #222;
+  font-size: 28px;
+  line-height: 34px;
   font-weight: 700;
+  letter-spacing: -.28px;
 }
 
 .service-editor__breadcrumb {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  min-height: 23px;
-  color: #8791a3;
+  gap: 0;
+  min-height: 18px;
+  margin: 0 0 16px;
+  color: #6b7a8f;
   font-size: 12px;
+  line-height: 18px;
+}
+
+.service-editor__breadcrumb span[aria-hidden] {
+  padding: 0 9px;
+  color: #94a3b8;
 }
 
 .service-editor__breadcrumb a {
-  color: #8791a3;
+  color: #4d6f9d;
   text-decoration: none;
 }
 
 .service-editor__breadcrumb a:hover { color: #0d47a1; }
 
 .service-editor__breadcrumb strong {
-  color: #263952;
-  font-weight: 600;
+  color: #6b7a8f;
+  font-weight: 500;
 }
 
 .service-editor__demo-badge {
@@ -99,7 +108,7 @@ app-service-catalog-editor {
   vertical-align: 2px;
 }
 
-.service-editor__actions { flex-shrink: 0; }
+.service-editor__actions { flex-shrink: 0; gap: 12px; }
 
 .service-editor__btn {
   display: inline-flex;
@@ -644,13 +653,14 @@ app-service-catalog-editor {
 .service-editor__dialog > div { display: flex; justify-content: flex-end; gap: 9px; }
 
 @media (max-width: 1140px) {
-  .service-editor { padding: 24px; }
+  .service-editor { padding: 25px 20px; }
   .service-editor__two-cards { grid-template-columns: 1fr; gap: 0; }
   .service-editor__branch-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
 
 @media (max-width: 700px) {
-  .service-editor { padding: 18px; }
+  .service-editor { padding: 18px 12px; }
+  .service-editor__header h1 { font-size: 24px; line-height: 30px; }
   .service-editor__header { align-items: flex-start; flex-direction: column; }
   .service-editor__fields--three,
   .service-editor__fields--two,
