@@ -1232,3 +1232,39 @@ app-admin-product-create-page .variant-panel tbody td:nth-child(3) > input {
 app-admin-product-create-page .variant-panel .variant-price-output {
   min-height: 42px;
 }
+
+
+/* Edit Product: keep every variant input as tall as the discounted-price output. */
+app-admin-product-edit-page .variant-panel tbody td:nth-child(n + 2):nth-child(-n + 5) > input {
+  display: block;
+  width: 100%;
+  height: 42px;
+  min-height: 42px;
+  box-sizing: border-box;
+}
+
+/* The Edit image picker needs an in-button hover label, not a native tooltip. */
+app-admin-product-edit-page .variant-panel .variant-photo-button {
+  position: relative;
+}
+app-admin-product-edit-page .variant-panel .variant-photo-button__overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  background: rgba(13, 71, 161, .82);
+  color: #fff;
+  font: 600 9px/12px Roboto, Arial, sans-serif;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+app-admin-product-edit-page .variant-panel .variant-photo-button:hover:not(:disabled) .variant-photo-button__overlay,
+app-admin-product-edit-page .variant-panel .variant-photo-button:focus-visible .variant-photo-button__overlay {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  app-admin-product-edit-page .variant-panel .variant-photo-button__overlay { transition: none; }
+}
