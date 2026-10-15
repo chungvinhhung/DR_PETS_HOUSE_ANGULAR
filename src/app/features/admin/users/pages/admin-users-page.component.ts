@@ -19,6 +19,7 @@ import {
   AdminUser,
 } from '../models/admin-user.model';
 import { AdminUsersService } from '../services/admin-users.service';
+import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagination';
 
 @Component({
   selector: 'app-admin-users-page',
@@ -121,7 +122,7 @@ import { AdminUsersService } from '../services/admin-users.service';
         <div class="panel-heading">
           <div>
             <h2>Danh sách người dùng</h2>
-            <p>{{ total() }} tài khoản được Backend trả về theo scope hiện tại.</p>
+            <p>Danh sách tài khoản trong phạm vi Backend cho phép.</p>
           </div>
         </div>
 
@@ -212,6 +213,18 @@ import { AdminUsersService } from '../services/admin-users.service';
               </tbody>
             </table>
           </div>
+        }
+        @if (!loading() && !errorMessage()) {
+          <footer class="users-pagination">
+            <span>Đang hiển thị {{ users().length }} trên tổng số {{ total() }} tài khoản</span>
+            <nav aria-label="Phân trang tài khoản">
+              <button type="button" aria-label="Trang trước"
+                [disabled]="page() === 1" (click)="goToPage(page() - 1)">‹</button>
+              <span aria-current="page">{{ page() }}</span>
+              <button type="button" aria-label="Trang tiếp"
+                [disabled]="page() >= pageCount" (click)="goToPage(page() + 1)">›</button>
+            </nav>
+          </footer>
         }
       </section>
     </section>
@@ -363,6 +376,45 @@ import { AdminUsersService } from '../services/admin-users.service';
       color: #64748b;
     }
 
+    .users-pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 18px;
+      color: #64748b;
+      font-size: 0.8rem;
+    }
+    .users-pagination nav {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid #dce4ee;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .users-pagination nav button {
+      width: 40px;
+      min-height: 38px;
+      border: 0;
+      border-radius: 0;
+      padding: 0;
+      color: #0d47a1;
+    }
+    .users-pagination nav button:disabled { opacity: .4; cursor: default; }
+    .users-pagination nav span {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-left: 1px solid #dce4ee;
+      border-right: 1px solid #dce4ee;
+      background: #eaf3ff;
+      font-weight: 700;
+    }
+    @media (max-width: 640px) {
+      .users-pagination { align-items: flex-start; flex-direction: column; }
+    }
+
     .table-wrap {
       margin-top: 18px;
       overflow-x: auto;
@@ -473,6 +525,8 @@ export class AdminUsersPageComponent {
   private readonly authSession = inject(AuthSessionService);
   private readonly permissions = inject(AdminPermissionService);
 
+  readonly pageSize = ADMIN_TABLE_PAGE_SIZE;
+  readonly page = signal(1);
   readonly users = signal<AdminUser[]>([]);
   readonly total = signal(0);
   readonly loading = signal(false);
@@ -505,6 +559,16 @@ export class AdminUsersPageComponent {
     this.loadUsers();
   }
 
+  get pageCount(): number {
+    return Math.max(1, Math.ceil(this.total() / this.pageSize));
+  }
+
+  goToPage(target: number): void {
+    if (target < 1 || target > this.pageCount || this.loading() || target === this.page()) return;
+    this.page.set(target);
+    this.loadUsers();
+  }
+
   loadUsers(): void {
     if (this.loading()) {
       return;
@@ -514,11 +578,11 @@ export class AdminUsersPageComponent {
     this.errorMessage.set(null);
 
     this.usersService
-      .listUsers()
+      .listUsers(this.page(), this.pageSize)
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (response) => {
-          this.users.set(response.users);
+          this.users.set(response.users.slice(0, this.pageSize));
           this.total.set(response.pagination.total);
         },
         error: (error: unknown) => {

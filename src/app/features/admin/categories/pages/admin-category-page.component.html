@@ -63,7 +63,7 @@
               } @else {
                 @for (category of categories(); track category.id) {
                   <tr>
-                    <td>{{ $index + 1 + (pageNumber - 1) * 20 }}</td>
+                    <td>{{ $index + 1 + (pageNumber - 1) * pageSize }}</td>
                     <td class="category-name">{{ category.name }}</td>
                     <td class="slug" [title]="'Slug đang lưu trên Backend: ' + category.slug"><code>{{ category.slug }}</code></td>
                     <td>{{ parentName(category.parentId) }}</td>
@@ -92,7 +92,7 @@
         </div>
 
         <footer class="pagination">
-          <span>Đang hiển thị {{ categories().length }} danh mục{{ totalCategories() !== null ? " trên tổng số " + totalCategories() + " danh mục" : " — Trang " + pageNumber }}</span>
+          <span>Đang hiển thị {{ categories().length }} trên tổng số {{ totalCategories() === null ? '…' : totalCategories() }} danh mục sản phẩm</span>
           <div class="pagination-controls">
             <button type="button" (click)="previousPage()"
               [disabled]="!hasPreviousPage || loading()" aria-label="Trang trước">‹</button>

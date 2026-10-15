@@ -80,9 +80,9 @@
           </div>
           <label class="branch-management__search">
             <span class="branch-management__sr-only">Tìm theo tên hoặc mã dịch vụ</span>
-            <img src="/assets/service-catalog/search.svg" alt="" aria-hidden="true" />
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#66758C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"></circle><path d="m16 16 4.2 4.2"></path></svg>
             <input #branchServiceSearch type="search" placeholder="Tìm tên hoặc mã dịch vụ..."
-              [value]="search()" (input)="search.set(branchServiceSearch.value)" />
+              [value]="search()" (input)="updateSearch(branchServiceSearch.value)" />
           </label>
         </div>
 
@@ -98,7 +98,7 @@
               <th scope="col">Thao tác</th>
             </tr></thead>
             <tbody>
-              @for (service of filteredServices; track service.id) {
+              @for (service of pagedServices; track service.id) {
                 <tr [class.branch-management__highlight]="focusedServiceId === service.id">
                   <td class="branch-management__muted">{{ service.serviceCode }}</td>
                   <td><strong>{{ service.name }}</strong><small>{{ service.category }}</small></td>
@@ -118,6 +118,16 @@
             </tbody>
           </table>
         </div>
+        <footer class="branch-management__pagination">
+          <span>Đang hiển thị {{ pagedServices.length }} trên tổng số {{ filteredServices.length }} dịch vụ</span>
+          <nav aria-label="Phân trang dịch vụ tại chi nhánh">
+            <button type="button" aria-label="Trang trước"
+              [disabled]="page() === 1" (click)="setPage(page() - 1)">‹</button>
+            <span aria-current="page">{{ page() }}</span>
+            <button type="button" aria-label="Trang tiếp"
+              [disabled]="page() >= pageCount" (click)="setPage(page() + 1)">›</button>
+          </nav>
+        </footer>
       </section>
 
       <div class="branch-management__info">
