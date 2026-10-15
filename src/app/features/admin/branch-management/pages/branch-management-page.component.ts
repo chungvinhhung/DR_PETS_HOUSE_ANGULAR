@@ -36,7 +36,12 @@ export class BranchManagementPageComponent {
   readonly focusedService = this.repository.getById(this.focusedServiceId);
   readonly allServices = this.repository.getAll();
   readonly pageSize = ADMIN_TABLE_PAGE_SIZE;
-  readonly page = signal(1);
+  // Preserve the service selected from Catalog, including when it is on page 2+.
+  readonly page = signal(Math.max(
+    1,
+    Math.floor(this.allServices.findIndex((service) =>
+      service.id === this.focusedServiceId) / this.pageSize) + 1,
+  ));
   readonly search = signal('');
   readonly activeService = signal<CatalogService | null>(null);
 
