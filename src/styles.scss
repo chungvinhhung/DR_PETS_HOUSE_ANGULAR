@@ -1155,3 +1155,55 @@ app-admin-product-edit-page .variant-panel td .final-price__unit {
   margin-left: auto;
   color: #64748b;
 }
+
+
+/* Shared admin toast placed outside reading flow. Login uses inline errors instead. */
+app-admin-catalog-shell {
+  .admin-feedback-toast {
+    position: fixed;
+    z-index: 15000;
+    right: 20px;
+    bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: min(420px, calc(100vw - 32px));
+    padding: 14px 15px;
+    border: 1px solid #d7e1ee;
+    border-left: 4px solid #0d47a1;
+    border-radius: 12px;
+    background: #fff;
+    color: #203047;
+    box-shadow: 0 12px 32px rgba(20,40,75,.16);
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: left;
+    pointer-events: auto;
+    animation: admin-toast-in .2s ease-out;
+  }
+  .admin-feedback-toast--error { border-color: #f0d8d8; border-left-color: #c43d3d; color: #7e2929; }
+  .admin-feedback-toast--success { border-color: #d6ebde; border-left-color: #248a54; color: #205b3a; }
+  .admin-feedback-toast__icon {
+    display: grid; place-items: center; width: 28px; height: 28px;
+    flex: 0 0 28px; border-radius: 50%;
+    background: #eaf2ff; color: #0d47a1; font-size: 17px; font-weight: 700;
+  }
+  .admin-feedback-toast--error .admin-feedback-toast__icon { background: #fff0ef; color: #c43d3d; }
+  .admin-feedback-toast--success .admin-feedback-toast__icon { background: #e5f7eb; color: #248a54; }
+  .admin-feedback-toast__message { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; font-weight: 500; }
+  .admin-feedback-toast button {
+    display: grid; place-items: center; width: 28px; height: 28px;
+    flex: 0 0 28px; border: 0; border-radius: 6px; background: transparent;
+    color: #64748b; font-size: 23px; cursor: pointer;
+  }
+  .admin-feedback-toast button:hover { background: #f1f5f9; }
+}
+@keyframes admin-toast-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@media(max-width: 600px) {
+  app-admin-catalog-shell .admin-feedback-toast {
+    right: 12px; bottom: 12px; width: calc(100vw - 24px);
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  app-admin-catalog-shell .admin-feedback-toast { animation: none; }
+}
