@@ -1102,3 +1102,56 @@ app-admin-product-edit-page {
   .field-invalid .field-help-error,
   .form-field .field-help-error { margin-top: 2px; }
 }
+
+
+/* Product variant rows: validation must not shift the price input upward. */
+app-admin-product-create-page .variant-panel tbody td,
+app-admin-product-edit-page .variant-panel tbody td {
+  vertical-align: top;
+  padding-top: 13px;
+  padding-bottom: 12px;
+}
+app-admin-product-create-page .variant-panel tbody td:nth-child(1),
+app-admin-product-create-page .variant-panel tbody td:nth-child(7),
+app-admin-product-create-page .variant-panel tbody td:nth-child(8),
+app-admin-product-edit-page .variant-panel tbody td:nth-child(1),
+app-admin-product-edit-page .variant-panel tbody td:nth-child(7),
+app-admin-product-edit-page .variant-panel tbody td:nth-child(8) {
+  vertical-align: middle;
+}
+app-admin-product-create-page .variant-panel tbody td .field-help-error,
+app-admin-product-edit-page .variant-panel tbody td .field-help-error {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 16px;
+  overflow-wrap: anywhere;
+}
+app-admin-product-create-page .variant-panel .variant-currency-input--invalid {
+  border-color: #ef4444;
+  background: #fffafa;
+}
+app-admin-product-create-page .variant-panel .variant-currency-input--invalid > input.input-invalid {
+  border: 0 !important; background: transparent;
+  outline: none; box-shadow: none;
+}
+
+/* Match the create form's full-width, read-only final price on Edit. */
+app-admin-product-edit-page .variant-panel td .final-price {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 11px;
+  border-radius: 7px;
+  background: #e5f6fd;
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+app-admin-product-edit-page .variant-panel td .final-price__unit {
+  margin-left: auto;
+  color: #64748b;
+}
