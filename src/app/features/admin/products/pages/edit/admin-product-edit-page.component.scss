@@ -73,7 +73,4 @@
   :host .edit-page .new-variant-actions { justify-content: space-between; }
 }
 
-/* Keep all row inputs top-aligned even when an error label appears. */
-:host .edit-page .variant-panel tbody td { vertical-align: top; padding-top: 16px; }
-:host .edit-page .variant-panel tbody td input { height: 42px; box-sizing: border-box; }
-:host .edit-page .variant-panel tbody td .field-help-error { display: block; margin-top: 6px; font-size: 11px; line-height: 16px; white-space: normal; }
+/* Variant table alignment and errors are shared with Create in src/styles.scss. */
