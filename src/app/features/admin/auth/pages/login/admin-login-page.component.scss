@@ -519,3 +519,13 @@
   box-shadow: 0 14px 42px rgba(0,0,0,.24); font-size: 14px; line-height: 1.5;
 }
 .login-feedback-toast button { border: 0; background: transparent; color: inherit; font-size: 24px; cursor: pointer; }
+
+/* Match the admin toast's bottom-right placement and restrained visual style. */
+.login-feedback-toast{top:auto;left:auto;right:20px;bottom:20px;transform:none;width:min(420px,calc(100vw - 32px));max-width:none;padding:14px 15px;gap:12px;border:1px solid #f0d8d8;border-left:4px solid #c43d3d;background:#fff;color:#7e2929;box-shadow:0 12px 32px rgba(20,40,75,.16);animation:login-toast-in .2s ease-out}
+.login-feedback-toast__icon{width:28px;height:28px;flex:0 0 28px;display:grid;place-items:center;border-radius:50%;background:#fff0ef;color:#c43d3d;font-weight:700;font-size:17px}
+.login-feedback-toast__message{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;font-weight:500}
+.login-feedback-toast button{display:grid;place-items:center;width:28px;height:28px;border-radius:6px;color:#64748b}
+.login-feedback-toast button:hover{background:#f1f5f9}
+@keyframes login-toast-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.login-feedback-toast{right:12px;bottom:12px;width:calc(100vw - 24px)}}
+@media(prefers-reduced-motion:reduce){.login-feedback-toast{animation:none}}
