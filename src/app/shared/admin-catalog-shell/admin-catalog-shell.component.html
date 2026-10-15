@@ -139,7 +139,7 @@
   <div class="admin-feedback-toast" [class.admin-feedback-toast--error]="notice.kind === 'error'"
        [class.admin-feedback-toast--success]="notice.kind === 'success'"
        [attr.role]="notice.kind === 'error' ? 'alert' : 'status'" aria-live="polite">
-    <span>{{ notice.message }}</span>
+    <span class="admin-feedback-toast__icon" aria-hidden="true">{{ notice.kind === 'success' ? '✓' : notice.kind === 'error' ? '!' : 'i' }}</span><span class="admin-feedback-toast__message">{{ notice.message }}</span>
     <button type="button" aria-label="Đóng thông báo" (click)="toast.dismiss()">×</button>
   </div>
 }
