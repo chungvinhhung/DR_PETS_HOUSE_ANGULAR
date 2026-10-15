@@ -123,7 +123,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     return this.submitted && this.hasVariants && !v.label.trim();
   }
   variantPriceInvalid(v: VariantDraft): boolean {
-    return this.submitted && (v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0);
+    return this.submitted && (v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) <= 0);
   }
   variantDiscountInvalid(v: VariantDraft): boolean {
     return this.submitted && (v.discount == null || !Number.isFinite(Number(v.discount)) || Number(v.discount) < 0 || Number(v.discount) > 100);
