@@ -510,3 +510,12 @@
     margin-top: 210px;
   }
 }
+
+.login-feedback-toast {
+  position: fixed; z-index: 20000; top: 50%; left: 50%;
+  transform: translate(-50%, -50%); display: flex; align-items: center; gap: 16px;
+  width: max-content; max-width: min(92vw, 540px); padding: 16px 20px;
+  border: 1px solid #f4ada2; border-radius: 12px; background: #74312d; color: #fff;
+  box-shadow: 0 14px 42px rgba(0,0,0,.24); font-size: 14px; line-height: 1.5;
+}
+.login-feedback-toast button { border: 0; background: transparent; color: inherit; font-size: 24px; cursor: pointer; }
