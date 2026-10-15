@@ -181,7 +181,7 @@
   background: #e9f1f8;
 }
 .catalog-sidebar__children .catalog-sidebar__sub--active {
-  background: #deecf7;
+  background: rgba(0, 88, 190, 0.12);
   color: #0d47a1;
   font-weight: 700;
 }
@@ -197,7 +197,7 @@
   white-space: nowrap;
 }
 .catalog-sidebar__sub--active {
-  background: #cbe6f6;
+  background: rgba(0, 88, 190, 0.12);
   color: #0d47a1;
   font-weight: 700;
 }
@@ -289,7 +289,7 @@
 }
 
 .catalog-sidebar__children--services .catalog-sidebar__sub--active {
-  background: #cbe6f6;
+  background: rgba(0, 88, 190, 0.12);
 }
 
 .catalog-sidebar__sub--disabled {
@@ -366,7 +366,7 @@
 }
 .catalog-sidebar__children .catalog-sidebar__sub--active,
 .catalog-sidebar__children--services .catalog-sidebar__sub--active {
-  background: #deecf7;
+  background: rgba(0, 88, 190, 0.12);
   color: #0d47a1;
   font-weight: 700;
 }
