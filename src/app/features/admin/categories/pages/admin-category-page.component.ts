@@ -139,8 +139,9 @@ export class AdminCategoryPageComponent implements OnInit {
     });
   }
 
-  onSearchInput(): void {
-    if (!this.searchTerm.trim()) this.applyFilters();
+  onSearchInput(value: string): void {
+    this.searchTerm = value;
+    if (!value.trim()) this.applyFilters();
   }
 
   applyFilters(): void {
