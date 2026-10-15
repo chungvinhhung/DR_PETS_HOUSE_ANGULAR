@@ -294,6 +294,10 @@ export class AdminCategoryPageComponent implements OnInit {
       if (error.status === 409) {
         return 'Đường dẫn (slug) đã tồn tại. Vui lòng chọn đường dẫn khác.';
       }
+      if (error.status === 0) return 'Không thể kết nối máy chủ. Vui lòng thử lại.';
+      if (error.status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+      if (error.status === 403) return 'Bạn không có quyền thực hiện thao tác này.';
+      if (error.status >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.';
       const body: unknown = error.error;
       if (body && typeof body === 'object') {
         const details = body as { detail?: unknown; message?: unknown; errors?: unknown };
@@ -304,7 +308,7 @@ export class AdminCategoryPageComponent implements OnInit {
       if (error.status === 401 || error.status === 403) return 'Bạn không có quyền thực hiện thao tác này. Hãy đăng nhập bằng tài khoản ADMIN.';
       return fallback;
     }
-    if (error instanceof Error && error.message) return error.message;
+    if (error instanceof Error && error.message && !/unauthoriz|failed to fetch|http failure/i.test(error.message)) return error.message;
     return fallback;
   }
 }
