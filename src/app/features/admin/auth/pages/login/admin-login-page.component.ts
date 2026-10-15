@@ -96,7 +96,7 @@ export class AdminLoginPageComponent {
 
     switch (code) {
       case 'INVALID_CREDENTIALS':
-        return 'Số điện thoại/email hoặc mật khẩu không đúng.';
+        return 'Tài khoản hoặc mật khẩu không đúng.';
       case 'ACCOUNT_NOT_ACTIVATED':
         return 'Tài khoản chưa được kích hoạt. Vui lòng xác thực OTP.';
       case 'ACCOUNT_BLOCKED':
