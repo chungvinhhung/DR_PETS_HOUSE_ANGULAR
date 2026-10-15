@@ -288,6 +288,51 @@ export class AdminProductListPageComponent implements OnInit {
     });
   }
 
+
+  visiblePageNumbers(): number[] {
+    const total = this.totalProducts();
+    const count = total === null ? this.pageNumber() + (this.hasNextPage() ? 1 : 0)
+      : Math.max(1, Math.ceil(total / this.pageSize));
+    return Array.from({ length: count }, (_, index) => index + 1);
+  }
+
+  async goToPage(page: number): Promise<void> {
+    const total = this.totalProducts();
+    if (!Number.isInteger(page) || page < 1 ||
+        (total !== null && page > Math.max(1, Math.ceil(total / this.pageSize))) ||
+        this.loading() || page === this.pageNumber()) return;
+    if (this.cursors[page - 1]) { this.loadPage(page); return; }
+    // BE uses cursors rather than offsets; discover boundaries before jumping.
+    const generation = this.requestNumber;
+    const query: ProductQuery = {
+      limit: 20, q: this.searchTerm.trim() || undefined,
+      categoryId: this.categoryFilter || undefined,
+      usageType: this.usageFilter || undefined,
+      createdWithinDays: this.daysFilter || undefined,
+      minPrice: this.priceFilter === 'MID' ? 100000 : this.priceFilter === 'HIGH' ? 500001 : undefined,
+      maxPrice: this.priceFilter === 'LOW' ? 99999 : this.priceFilter === 'MID' ? 500000 : undefined,
+      status: this.archiveView ? 'ARCHIVED' : this.statusFilter || undefined,
+      sort: this.sort,
+    };
+    this.loading.set(true);
+    try {
+      while (this.cursors.length < page) {
+        const position = this.cursors[this.cursors.length - 1];
+        const result = await this.loadVisibleProductPage(query, position);
+        if (generation !== this.requestNumber || this.destroyRef.destroyed) return;
+        if (!result.nextPosition) return;
+        this.cursors.push(result.nextPosition);
+      }
+    } catch (error) {
+      if (generation === this.requestNumber && !this.destroyRef.destroyed)
+        this.error.set(adminErrorMessage(error, 'Không thể chuyển đến trang này.'));
+      return;
+    } finally {
+      if (generation === this.requestNumber && !this.destroyRef.destroyed) this.loading.set(false);
+    }
+    if (generation === this.requestNumber && !this.destroyRef.destroyed) this.loadPage(page);
+  }
+
   previous(): void {
     if (this.pageNumber() > 1) this.loadPage(this.pageNumber() - 1);
   }
