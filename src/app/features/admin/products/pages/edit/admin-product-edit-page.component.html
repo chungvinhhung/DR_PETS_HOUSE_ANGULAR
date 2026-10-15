@@ -2,11 +2,11 @@
 <main class="edit-page">
   <header class="page-heading">
     <div><p class="breadcrumb"><a routerLink="/admin/products">Sản phẩm</a> <span>›</span> Chỉnh sửa sản phẩm</p><h1>Chỉnh sửa sản phẩm</h1></div>
-    <div class="actions"><a class="outline-btn" routerLink="/admin/products">Hủy bỏ</a><button class="primary-btn" type="button" (click)="save()" [disabled]="loading() || saving() || !product() || product()?.status === 'ARCHIVED' || !hasUnsavedChanges()"><img class="action-icon" src="/assets/admin-product/icon-save.svg" alt="">{{ saving() ? 'Đang lưu...' : 'Lưu sản phẩm' }}</button></div>
+    <div class="actions"><a class="outline-btn" routerLink="/admin/products" [queryParams]="archivedReturnQuery">Hủy bỏ</a>@if (product()?.status === 'ARCHIVED') {<button class="primary-btn" type="button" (click)="requestRestore()" [disabled]="saving()">Khôi phục sản phẩm</button>}<button class="primary-btn" type="button" (click)="save()" [disabled]="loading() || saving() || !product() || product()?.status === 'ARCHIVED' || !hasUnsavedChanges()"><img class="action-icon" src="/assets/admin-product/icon-save.svg" alt="">{{ saving() ? 'Đang lưu...' : 'Lưu sản phẩm' }}</button></div>
   </header>
-  @if (error()) { <p class="notice error" role="alert">{{ error() }}</p> }
-  @if (success()) { <p class="notice success" role="status">{{ success() }}</p> }
-  @if (product()?.status === 'ARCHIVED') { <p class="notice info">Sản phẩm đang lưu trữ. Hãy khôi phục tại tab Đã lưu trữ trước khi chỉnh sửa.</p> }
+  
+  
+  @if (product()?.status === 'ARCHIVED') { <p class="notice info">Sản phẩm đang lưu trữ. Bấm “Khôi phục sản phẩm” ở phía trên để tiếp tục chỉnh sửa.</p> }
   @if (loading()) { <section class="panel">Đang tải chi tiết sản phẩm...</section> }
   @else if (product()) {
     <div class="columns">
@@ -109,18 +109,24 @@
       <section class="panel variant-panel">
         <h2><img class="panel-icon-img" src="/assets/admin-product/icon-variants.svg" alt="">Biến thể sản phẩm</h2>
         <button class="outline-btn add-variant" type="button" [disabled]="saving() || product()?.status === 'ARCHIVED'" (click)="toggleAddVariant()">
-          <img class="action-icon" src="/assets/admin-product/icon-add.svg" alt="">{{ addVariantOpen() ? 'Đóng' : 'Thêm biến thể' }}
+          <span class="variant-expand-icon" aria-hidden="true">{{ addVariantOpen() ? '×' : '+' }}</span>{{ addVariantOpen() ? 'Đóng biểu mẫu' : 'Thêm biến thể' }}
         </button>
         @if (addVariantOpen()) {
           <form class="new-variant-form" (ngSubmit)="submitNewVariant()">
+            <h3>Thêm biến thể mới</h3>
+            <p>Thông tin biến thể sẽ được tạo và đồng bộ vào bảng bên dưới sau khi lưu.</p>
+            <div class="new-variant-grid">
             <label>Tên biến thể <b>*</b><input type="text" name="newVariantLabel" [(ngModel)]="newVariantLabel" required placeholder="VD: 500g"></label>
-            <label>Giá bán (VNĐ) <b>*</b><input type="number" (focus)="selectNumericInput($event)" name="newVariantPrice" [(ngModel)]="newVariantPrice" required min="0" step="1000"></label>
+            <label>Giá bán (VNĐ) <b>*</b><input type="number" (focus)="selectNumericInput($event)" name="newVariantPrice" [(ngModel)]="newVariantPrice" required min="1" step="1000" placeholder="Nhập giá bán"></label>
             <label>Khuyến mại (%)<input type="number" (focus)="selectNumericInput($event)" name="newVariantDiscount" [(ngModel)]="newVariantDiscount" min="0" max="100" step="1"></label>
-            <label class="variant-active-checkbox"><input type="checkbox" name="newVariantActive" [(ngModel)]="newVariantActive"> Hoạt động</label>
-            <button type="submit" class="primary-btn" [disabled]="saving()">{{ saving() ? 'Đang thêm...' : 'Tạo biến thể' }}</button>
+            </div>
+            <div class="new-variant-actions">
+              <label class="variant-active-checkbox"><input type="checkbox" name="newVariantActive" [(ngModel)]="newVariantActive"> Hoạt động</label>
+              <button type="submit" class="primary-btn" [disabled]="saving()">{{ saving() ? 'Đang thêm...' : 'Tạo biến thể' }}</button>
+            </div>
           </form>
         }
-        @if (variantActionError() && !variantActionTarget()) { <p class="notice error" role="alert">{{ variantActionError() }}</p> }
+        
         <div class="table-scroll"><table>
           <thead><tr><th>Ảnh</th><th>Biến thể</th><th>SKU</th><th>Giá bán (VNĐ)</th><th>Khuyến mại (%)</th><th>Giá sau khuyến mại (VNĐ)</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
           <tbody>@for (variant of variants; track $index) {
@@ -167,7 +173,7 @@
       <p id="variant-deactivate-description">
         Biến thể <strong>{{ target.label }}</strong> sẽ tạm ngừng bán. SKU và dữ liệu đơn hàng/tồn kho vẫn được bảo toàn.
       </p>
-      @if (variantActionError()) { <p class="notice error" role="alert">{{ variantActionError() }}</p> }
+      
       <div class="product-leave-actions">
         <button class="product-leave-stay" type="button" [disabled]="saving()" (click)="closeDeactivateVariant()">Hủy bỏ</button>
         <button class="product-leave-exit" type="button" [disabled]="saving()" (click)="confirmDeactivateVariant()">
@@ -187,6 +193,22 @@
       <div class="product-leave-actions">
         <button class="product-leave-stay" type="button" autofocus (click)="resolveLeave(false)">Tiếp tục chỉnh sửa</button>
         <button class="product-leave-exit" type="button" (click)="resolveLeave(true)">Rời trang</button>
+      </div>
+    </section>
+  </div>
+}
+
+@if (restoreDialogOpen()) {
+  <div class="product-leave-overlay">
+    <section class="product-leave-dialog" role="alertdialog" aria-modal="true"
+      aria-labelledby="restore-in-editor-heading" tabindex="-1">
+      <h2 id="restore-in-editor-heading">Khôi phục sản phẩm?</h2>
+      <p>Sản phẩm sẽ trở lại trạng thái Tạm ngưng. Bạn có thể tiếp tục chỉnh sửa sau khi khôi phục.</p>
+      <div class="product-leave-actions">
+        <button class="product-leave-stay" type="button" [disabled]="saving()"
+          (click)="restoreDialogOpen.set(false)">Hủy bỏ</button>
+        <button class="product-leave-exit" type="button" [disabled]="saving()"
+          (click)="confirmRestore()">{{ saving() ? 'Đang khôi phục...' : 'Xác nhận khôi phục' }}</button>
       </div>
     </section>
   </div>
