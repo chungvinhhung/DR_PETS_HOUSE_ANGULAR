@@ -97,9 +97,9 @@ export class AdminProductListPageComponent implements OnInit {
     }
   }
 
-  onSearchInput(): void {
-    // Clearing the input must clear the old server search immediately.
-    if (!this.searchTerm.trim()) this.applyFilters();
+  onSearchInput(value: string): void {
+    this.searchTerm = value;
+    if (!value.trim()) this.applyFilters();
   }
 
   toggleCategory(id: string): void {
