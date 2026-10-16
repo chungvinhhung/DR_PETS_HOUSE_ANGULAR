@@ -1,7 +1,7 @@
 <app-admin-catalog-shell activeItem="staff">
 <main class="assign-page">
   <nav class="assign-crumb" aria-label="Breadcrumb"><span>Vận hành</span> › <a routerLink="/admin/staff">Nhân sự</a> › <a routerLink="/admin/staff/schedule">Lịch làm việc</a> › <strong>Phân ca</strong></nav>
-  <header class="assign-header"><h1>Phân ca theo tuần</h1><div><a class="assign-cancel" routerLink="/admin/staff/schedule" (click)="requestClose()">Hủy</a><button type="button" class="assign-save" (click)="validatePreview()">Kiểm tra phân ca</button></div></header>
+  <header class="assign-header"><h1>Phân ca theo tuần</h1><div><button type="button" class="assign-cancel" (click)="requestClose()">Hủy</button><button type="button" class="assign-save" (click)="validatePreview()">Kiểm tra phân ca</button></div></header>
   <p class="assign-note">Giao diện mẫu Phase 5 · Ca làm việc chưa được lưu vào Backend.</p>
   <section class="assign-panel">
     <div class="assign-row"><label>Nhân viên <select [value]="chosenId()" (change)="setStaff($any($event.target).value)">
