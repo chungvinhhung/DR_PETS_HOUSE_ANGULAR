@@ -66,8 +66,13 @@ export class ServiceCatalogEditorComponent {
   readonly saving = signal(false);
   private pricingDirty = false;
   private saveIdempotencyKey: string | null = null;
-  readonly authSessionRole = this.authSession.user()?.systemRole;
-  readonly readOnly = this.editorMode === 'view' || this.authSessionRole !== 'ADMIN';
+  get authSessionRole(): string | undefined {
+    return this.authSession.user()?.systemRole ?? this.authSession.roles()[0];
+  }
+
+  get readOnly(): boolean {
+    return this.editorMode === 'view' || this.authSessionRole !== 'ADMIN';
+  }
   readonly isNew = this.editorMode === 'create';
   readonly title = this.editorMode === 'view' ? 'Chi tiết dịch vụ' : this.isNew ? 'Thêm dịch vụ' : 'Chỉnh sửa dịch vụ';
   productOptions: MaterialOption[] = [];
