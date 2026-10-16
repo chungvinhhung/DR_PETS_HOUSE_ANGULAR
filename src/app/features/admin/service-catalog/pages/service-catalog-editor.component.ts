@@ -109,7 +109,7 @@ export class ServiceCatalogEditorComponent {
       const value = current?.price ?? (!this.weightPricing && item.key === 'XS' ? detail.basePrice : null);
       return {
         ...item,
-        mode: value !== null && value > 0 ? 'FIXED' as PriceMode : 'QUOTE' as PriceMode,
+        mode: item.key !== 'XL' && value !== null && value > 0 ? 'FIXED' as PriceMode : 'QUOTE' as PriceMode,
         price: value,
       };
     });
