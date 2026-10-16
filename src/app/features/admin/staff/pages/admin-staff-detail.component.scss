@@ -115,3 +115,8 @@
 .staff-detail__confirm h2 { font-size: 20px; color: #1d2b42; margin: 0 0 12px; }
 .staff-detail__confirm p { color: #64748b; font-size: 14px; line-height: 22px; margin: 0 0 20px; }
 .staff-detail__confirm-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; }
+
+/* Shared two-line date treatment on weekly staff tables. */
+.staff-detail__day { display:inline-flex; flex-direction:column; gap:3px; line-height:16px; white-space:nowrap; }
+.staff-detail__day > span { font-size:12px; color:#1b273b; font-weight:500; }
+.staff-detail__day > small { font-size:10px; line-height:13px; color:#7b8ca2; }
