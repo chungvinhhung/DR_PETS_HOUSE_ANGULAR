@@ -188,7 +188,7 @@ export class AdminStaffFormComponent {
     this.cdr.markForCheck();
   }
   cancel(): void {
-    void this.router.navigateByUrl(this.isEdit && this.staff ? `/admin/staff/${this.staffId}` : '/admin/staff');
+    void this.router.navigateByUrl('/admin/staff');
   }
   @HostListener('window:beforeunload', ['$event'])
   confirmBrowserUnload(event: BeforeUnloadEvent): void {
