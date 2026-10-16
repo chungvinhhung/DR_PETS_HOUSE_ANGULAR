@@ -199,6 +199,11 @@ export class ServiceCatalogEditorComponent {
     this.markDirty();
   }
 
+  markMaterialDirty(): void {
+    this.materialsDirty = true;
+    this.markDirty();
+  }
+
   addMaterial(): void {
     this.materialsDirty = true;
     this.materials.push({
