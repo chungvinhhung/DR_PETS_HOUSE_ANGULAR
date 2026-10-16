@@ -32,7 +32,7 @@
     } @else {
       <form [formGroup]="form" (ngSubmit)="submit('save')" novalidate>
         <section class="panel">
-          <h2>Thông tin nhân viên</h2>
+          <h2>{{ isEdit ? 'Hồ sơ nhân viên' : 'Thông tin nhân viên' }}</h2>
           <div class="fields basic-fields">
             <label>
               <span class="field-label">Họ và tên <em>*</em></span>
