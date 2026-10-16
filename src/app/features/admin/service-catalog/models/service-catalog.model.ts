@@ -17,7 +17,7 @@ export interface ServiceWrite {
   description?: string;
   basePrice: number;
   priceVariants: ServicePriceVariant[];
-  durationMinutes: number;
+  durationMinutes: number | null;
   requiredStaffRole: 'CARE_STAFF_GROOMER' | 'NURSE' | 'VETERINARIAN';
   bookingMode: ServiceBookingMode;
   status: ServiceMasterStatus;
