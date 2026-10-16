@@ -84,6 +84,15 @@ export class AdminStaffDetailComponent {
     const next = new Date(dateFromISO(this.weekMonday()).getTime() + weeks * 7 * DAY_IN_MS);
     this.weekMonday.set(isoDate(next));
   }
+  goToday(): void {
+    const today = new Date();
+    today.setDate(today.getDate() - (today.getDay() + 6) % 7);
+    this.weekMonday.set([
+      today.getFullYear(),
+      String(today.getMonth() + 1).padStart(2, '0'),
+      String(today.getDate()).padStart(2, '0'),
+    ].join('-'));
+  }
   openWeekDatePicker(): void {
     const picker = this.weekDatePicker?.nativeElement;
     if (!picker) return;
