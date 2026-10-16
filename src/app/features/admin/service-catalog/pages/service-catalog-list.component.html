@@ -3,8 +3,7 @@
   <header class="service-catalog__heading">
     <div class="service-catalog__heading-text">
       <h1 id="service-catalog-title">Danh mục dịch vụ</h1>
-      <span class="service-catalog__demo-label">Dữ liệu từ Backend</span>
-    </div>
+     </div>
     @if (isAdmin()) {
       <button type="button" class="service-catalog__create" (click)="createService()">
         + Thêm dịch vụ
@@ -231,9 +230,5 @@
       }
     </footer>
   </section>
-  <p class="service-catalog__disclaimer">
-    Danh sách chỉ phục vụ kiểm tra UI Phase 1. Số chi nhánh, giá và trạng thái đang là dữ liệu demo;
-    quyền và phạm vi truy cập thực tế sẽ do Backend xác nhận.
-  </p>
 </section>
 </app-admin-catalog-shell>
