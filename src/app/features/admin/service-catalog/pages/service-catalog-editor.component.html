@@ -13,7 +13,7 @@
         <button type="button" class="service-editor__btn service-editor__btn--secondary" (click)="cancel()">
           {{ readOnly ? 'Quay lại' : 'Hủy' }}
         </button>
-        @if (mayEdit) {
+        @if (!readOnly && !loading() && !missingService) {
           <button type="button" class="service-editor__btn service-editor__btn--primary"
             (click)="save()" [disabled]="saving()">{{ saving() ? 'Đang lưu...' : 'Lưu dịch vụ' }}</button>
         }
