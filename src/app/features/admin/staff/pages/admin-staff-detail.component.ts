@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import {
   JOB_LABELS,
   STAFF_PREVIEW,
@@ -44,6 +45,8 @@ function dayLabel(day: number): string {
 export class AdminStaffDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly toast = inject(AdminToastService);
+  blockDialogOpen = false;
 
   readonly staffId = this.route.snapshot.paramMap.get('id') ?? '';
   readonly staff: StaffPreview | undefined = STAFF_PREVIEW.find(item => item.id === this.staffId);
@@ -73,6 +76,16 @@ export class AdminStaffDetailComponent {
   moveWeek(weeks: number): void {
     const next = new Date(dateFromISO(this.weekMonday()).getTime() + weeks * 7 * DAY_IN_MS);
     this.weekMonday.set(isoDate(next));
+  }
+  openBlockConfirmation(): void {
+    this.blockDialogOpen = true;
+  }
+  closeBlockConfirmation(): void {
+    this.blockDialogOpen = false;
+  }
+  confirmBlockPreview(): void {
+    this.blockDialogOpen = false;
+    this.toast.show('Chưa có API Staff/Account. Chưa thay đổi trạng thái tài khoản.', 'info');
   }
   goBack(): void {
     void this.router.navigateByUrl('/admin/staff');
