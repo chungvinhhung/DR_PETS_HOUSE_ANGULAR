@@ -7,22 +7,26 @@
           <strong aria-current="page">{{ title }}</strong>
         </nav>
         <h1 id="service-editor-title">{{ title }}</h1>
-        <span class="service-editor__demo-badge">Giao diện mẫu · Chờ API Backend</span>
-      </div>
+       </div>
       <div class="service-editor__actions">
         <button type="button" class="service-editor__btn service-editor__btn--secondary" (click)="cancel()">
           {{ readOnly ? 'Quay lại' : 'Hủy' }}
         </button>
+        @if (editorMode === 'view' && authSessionRole === 'ADMIN' && serviceId && !missingService()) {
+          <a class="service-editor__btn service-editor__btn--primary" [routerLink]="['/admin/services', serviceId, 'edit']">Chỉnh sửa</a>
+        }
         @if (mayEdit) {
           <button type="button" class="service-editor__btn service-editor__btn--primary"
-            (click)="validateDraft()">Lưu dịch vụ</button>
+            [disabled]="saving() || loading()" (click)="validateDraft()">{{ saving() ? 'Đang lưu…' : 'Lưu dịch vụ' }}</button>
         }
       </div>
     </header>
 
-    @if (missingService) {
+    @if (loading()) {
+      <div class="service-editor__error" role="status">Đang tải thông tin dịch vụ từ Backend...</div>
+    } @else if (missingService()) {
       <div class="service-editor__error" role="alert">
-        Không tìm thấy dịch vụ mẫu để xem hoặc chỉnh sửa.
+        Không tải được dịch vụ từ Backend. Vui lòng thử lại hoặc kiểm tra quyền truy cập.
         <a routerLink="/admin/services">Về danh mục</a>
       </div>
     } @else {
@@ -65,16 +69,17 @@
           <h2 id="service-schedule-title">Thời lượng &amp; Nhân sự</h2>
           <div class="service-editor__fields service-editor__fields--two">
             <label class="service-editor__field">
-              <span>Thời lượng (phút) <b>*</b></span>
+              <span>Thời lượng (phút) @if (bookingMode !== 'CONTACT_ONLY') { <b>*</b> }</span>
               <input type="number" min="1" max="1440" step="1"
-                [disabled]="!mayEdit || bookingMode === 'CONTACT_ONLY'"
+                [disabled]="!mayEdit"
                 [(ngModel)]="durationMinutes" (ngModelChange)="markDirty()"
-                [placeholder]="bookingMode === 'CONTACT_ONLY' ? 'Không áp dụng' : '60'"/>
+                placeholder="60"/>
             </label>
             <label class="service-editor__field">
               <span>Vai trò thực hiện <b>*</b></span>
               <select [disabled]="!mayEdit" [(ngModel)]="executorRole" (ngModelChange)="markDirty()">
-                <option value="CARE_STAFF">CARE STAFF</option>
+                <option value="CARE_STAFF_GROOMER">CARE STAFF</option>
+                <option value="NURSE" [disabled]="category !== 'MEDICAL'">NURSE</option>
                 <option value="VETERINARIAN">VETERINARIAN</option>
               </select>
             </label>
@@ -97,7 +102,7 @@
         <h2 id="service-price-title">Giá dịch vụ</h2>
         <label class="service-editor__field service-editor__price-settings">
           <span>Giá theo cân nặng</span>
-          <select [disabled]="!mayEdit" [(ngModel)]="weightPricing" (ngModelChange)="markDirty()">
+          <select [disabled]="!mayEdit" [(ngModel)]="weightPricing" (ngModelChange)="markPricingDirty()">
             <option [ngValue]="true">Có áp dụng</option>
             <option [ngValue]="false">Không áp dụng</option>
           </select>
@@ -130,7 +135,7 @@
                     <td>
                       <span class="service-editor__price-input">
                         <input type="number" min="1" step="1000" [disabled]="!mayEdit || tier.mode === 'QUOTE'"
-                          [(ngModel)]="tier.price" (ngModelChange)="markDirty()"
+                          [(ngModel)]="tier.price" (ngModelChange)="markPricingDirty()"
                           [attr.aria-label]="'Giá cơ sở mức ' + tier.key"
                           [placeholder]="tier.mode === 'QUOTE' ? '—' : 'Nhập giá'"/>
                         @if (tier.mode === 'FIXED') { <span>đ</span> }
@@ -146,7 +151,6 @@
 
       <section class="service-editor__card" aria-labelledby="service-materials-title">
         <h2 id="service-materials-title">Vật liệu mặc định</h2>
-        <p class="service-editor__field-hint">Chỉ chọn SKU sản phẩm đã tồn tại. Các lựa chọn bên dưới là dữ liệu demo, chưa liên kết Product API.</p>
         <datalist id="service-product-options">
           @for (product of productOptions; track product.sku) {
             <option [value]="product.name">{{ product.sku }}</option>
@@ -171,10 +175,10 @@
                       placeholder="Tìm SKU / tên sản phẩm..." [attr.aria-label]="'Tìm sản phẩm vật liệu dòng ' + ($index + 1)" />
                   </td>
                   <td><input type="number" min="0.01" step="0.01" [disabled]="!mayEdit"
-                    [(ngModel)]="line.quantity" (ngModelChange)="markDirty()"
+                    [(ngModel)]="line.quantity" (ngModelChange)="markMaterialDirty()"
                     placeholder="Nhập số lượng" [attr.aria-label]="'Số lượng vật liệu dòng ' + ($index + 1)"/></td>
                   <td><input type="text" maxlength="30" [disabled]="!mayEdit"
-                    [(ngModel)]="line.unit" (ngModelChange)="markDirty()"
+                    [(ngModel)]="line.unit" (ngModelChange)="markMaterialDirty()"
                     placeholder="Đơn vị" [attr.aria-label]="'Đơn vị vật liệu dòng ' + ($index + 1)"/></td>
                   <td class="service-editor__remove-cell">
                     @if (mayEdit) {
@@ -200,15 +204,10 @@
 
       <section class="service-editor__card" aria-labelledby="service-branches-title">
         <h2 id="service-branches-title">Cấu hình theo chi nhánh</h2>
-        <p class="service-editor__field-hint">
-          Catalog chỉ quản lý danh mục dịch vụ chung. Bật/Tắt, sức chứa và lịch tạm khóa
-          được quản lý tại Chi nhánh → Dịch vụ &amp; Capacity.
-        </p>
         <a class="service-editor__btn service-editor__btn--secondary"
           routerLink="/admin/branches">Đi đến quản lý chi nhánh →</a>
       </section>
 
-      <p class="service-editor__disclaimer">Bản xem trước FE Phase 2: chưa có API Service Master hoặc Product SKU lookup. Kiểm tra hợp lệ không ghi dữ liệu lên Backend.</p>
     }
   </main>
 </app-admin-catalog-shell>
