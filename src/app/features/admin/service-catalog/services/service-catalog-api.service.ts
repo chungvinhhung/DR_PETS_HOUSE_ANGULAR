@@ -101,6 +101,14 @@ export class ServiceCatalogApiService {
     );
   }
 
+  archive(id: string, key: string): Observable<ServiceDetail> {
+    return this.api.post<ServiceDetail, Record<string, never>>(
+      '/services/' + encodeURIComponent(id) + '/archive',
+      {},
+      { headers: new HttpHeaders({ 'Idempotency-Key': key }) },
+    );
+  }
+
   private toCatalogRow(item: ServiceDetail): CatalogService {
     const prices = (item.priceVariants ?? []).map((variant) => variant.price)
       .filter((value) => Number.isFinite(value) && value > 0);
