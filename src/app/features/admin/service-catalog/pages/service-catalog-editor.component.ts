@@ -64,7 +64,8 @@ export class ServiceCatalogEditorComponent {
   readonly saving = signal(false);
   private pricingDirty = false;
   private saveIdempotencyKey: string | null = null;
-  readonly readOnly = this.editorMode === 'view' || this.authSession.user()?.systemRole !== 'ADMIN';
+  readonly authSessionRole = this.authSession.user()?.systemRole;
+  readonly readOnly = this.editorMode === 'view' || this.authSessionRole !== 'ADMIN';
   readonly isNew = this.editorMode === 'create';
   readonly title = this.editorMode === 'view' ? 'Chi tiết dịch vụ' : this.isNew ? 'Thêm dịch vụ' : 'Chỉnh sửa dịch vụ';
   readonly productOptions = INVENTORY_OPTIONS;
@@ -172,8 +173,7 @@ export class ServiceCatalogEditorComponent {
 
   changeBookingMode(mode: ServiceBookingMode): void {
     this.bookingMode = mode;
-    // ServiceWrite.durationMinutes is required >= 1 for all booking modes, including CONTACT_ONLY.
-    if (this.durationMinutes === null) this.durationMinutes = 30;
+    // CONTACT_ONLY does not require a standard duration (business rule).
     this.markDirty();
   }
 
@@ -227,8 +227,13 @@ export class ServiceCatalogEditorComponent {
     if (!['CARE_STAFF_GROOMER', 'VETERINARIAN', 'NURSE'].includes(this.executorRole)) {
       messages.push('Vai trò thực hiện không hợp lệ.');
     }
-    if (!Number.isSafeInteger(this.durationMinutes) || (this.durationMinutes ?? 0) <= 0) {
-      messages.push('Thời lượng phải là số nguyên dương, kể cả dịch vụ chỉ liên hệ.');
+    if (this.bookingMode !== 'CONTACT_ONLY' &&
+      (!Number.isSafeInteger(this.durationMinutes) || (this.durationMinutes ?? 0) <= 0)) {
+      messages.push('Thời lượng phải là số nguyên dương đối với dịch vụ đặt lịch hoặc yêu cầu.');
+    }
+    if (this.bookingMode === 'CONTACT_ONLY' && this.durationMinutes !== null &&
+      (!Number.isSafeInteger(this.durationMinutes) || this.durationMinutes <= 0)) {
+      messages.push('Thời lượng nếu nhập phải là số nguyên dương.');
     }
     if (/phẫu thuật|triệt sản|mổ/i.test(this.serviceName) && this.bookingMode !== 'REQUEST_ONLY') {
       messages.push('Phẫu thuật chỉ được tiếp nhận theo yêu cầu (REQUEST_ONLY).');
@@ -288,7 +293,7 @@ export class ServiceCatalogEditorComponent {
       description: this.description.trim(),
       bookingMode: this.bookingMode,
       requiredStaffRole: this.executorRole as ServiceWrite['requiredStaffRole'],
-      durationMinutes: this.durationMinutes!,
+      durationMinutes: this.bookingMode === 'CONTACT_ONLY' ? this.durationMinutes : this.durationMinutes!,
       status: this.active ? 'ACTIVE' : 'INACTIVE',
       ...prices,
     };
