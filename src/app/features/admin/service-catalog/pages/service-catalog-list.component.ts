@@ -6,7 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   BehaviorSubject,
@@ -27,7 +27,7 @@ import {
   CatalogListQuery,
   CatalogService,
 } from '../models/service-catalog.model';
-import { ServiceCatalogMockRepository } from '../services/service-catalog-mock.repository';
+import { ServiceCatalogApiService } from '../services/service-catalog-api.service';
 
 type ListFilters = Omit<CatalogListQuery, 'search'>;
 type CatalogAction = 'view' | 'edit' | 'configure';
@@ -40,21 +40,15 @@ type CatalogAction = 'view' | 'edit' | 'configure';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServiceCatalogListComponent {
-  private readonly repository = inject(ServiceCatalogMockRepository);
+  private readonly repository = inject(ServiceCatalogApiService);
   private readonly authSession = inject(AuthSessionService);
-  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
-  private readonly demoState = this.route.snapshot.queryParamMap.get('demoState');
-  private failNextRequest = this.demoState === 'error';
-
-  readonly allBranches = this.repository.branches;
+  readonly allBranches = signal<readonly CatalogBranch[]>([]);
   readonly role = computed(() => this.authSession.user()?.systemRole ?? 'STAFF');
   readonly isAdmin = computed(() => this.role() === 'ADMIN');
   readonly canConfigure = computed(() => this.role() === 'ADMIN' || this.role() === 'MANAGER');
-  readonly scopedBranches = computed<readonly CatalogBranch[]>(() =>
-    this.isAdmin() ? this.allBranches : this.allBranches.slice(0, 1),
-  );
+  readonly scopedBranches = computed<readonly CatalogBranch[]>(() => this.allBranches());
 
   readonly pageSize = 6;
   readonly rows = signal<readonly CatalogService[]>([]);
@@ -89,6 +83,11 @@ export class ServiceCatalogListComponent {
   });
 
   constructor() {
+    this.repository.listBranches().pipe(takeUntilDestroyed()).subscribe({
+      next: (branches) => this.allBranches.set(branches),
+      error: () => this.notice.set('Không tải được danh sách chi nhánh. Danh mục dịch vụ vẫn có thể xem theo toàn hệ thống.'),
+    });
+
     combineLatest([
       this.searchSubject.pipe(debounceTime(350)),
       this.filterSubject,
@@ -98,13 +97,7 @@ export class ServiceCatalogListComponent {
         this.error.set(null);
         this.openMenuId.set(null);
 
-        const shouldFail = this.failNextRequest;
-        this.failNextRequest = false;
-
-        return this.repository.list(
-          { ...filters, search },
-          { empty: this.demoState === 'empty', fail: shouldFail },
-        ).pipe(
+        return this.repository.list({ ...filters, search }).pipe(
           map((result) => ({ result, error: null as string | null })),
           catchError(() => of({
             result: null,
@@ -173,19 +166,16 @@ export class ServiceCatalogListComponent {
     this.patchFilters({ branchId: 'ALL', mode: 'ALL', status: 'ALL', page: 1 });
   }
 
-  isEffectiveEnabled(service: CatalogService, branchId: string): boolean {
-    const config = service.branchServices.find((item) => item.branchId === branchId);
-    return service.status === 'ACTIVE' && !!config && config.enabled && config.capacity > 0;
+  enabledCount(service: CatalogService): number {
+    return service.enabledBranchCount ?? 0;
   }
 
-  enabledCount(service: CatalogService): number {
-    return this.scopedBranches().filter((branch) =>
-      this.isEffectiveEnabled(service, branch.id),
-    ).length;
+  totalBranchCount(service: CatalogService): number {
+    return service.totalBranchCount ?? 0;
   }
 
   isEnabledAtSelectedBranch(service: CatalogService): boolean {
-    return this.isEffectiveEnabled(service, this.filters().branchId);
+    return service.branchEnabled === true;
   }
 
   executorLabel(value: string): string {
