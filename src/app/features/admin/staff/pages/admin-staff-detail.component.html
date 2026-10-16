@@ -78,6 +78,7 @@
                 [value]="weekMonday()" aria-label="Chọn ngày trong tuần cần xem"
                 (change)="selectWeekDate(weekDatePicker.value)">
             </span>
+            <button type="button" class="staff-detail__today" (click)="goToday()">Hôm nay</button>
             <button type="button" aria-label="Tuần sau" (click)="moveWeek(1)">›</button>
           </nav>
         </header>
