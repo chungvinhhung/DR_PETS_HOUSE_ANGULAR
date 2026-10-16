@@ -13,8 +13,8 @@
         </div>
         <div class="staff-detail__actions">
           <button type="button" class="staff-detail__button staff-detail__button--outline" (click)="goBack()">Hủy</button>
-          <button type="button" class="staff-detail__button staff-detail__button--primary"
-            title="Chi tiết nhân viên chỉ xem; chức năng lưu ở màn chỉnh sửa" disabled>Lưu thay đổi</button>
+          <a class="staff-detail__button staff-detail__button--primary"
+            [routerLink]="['/admin/staff', employee.id, 'edit']">Chỉnh sửa nhân viên</a>
           <button type="button" class="staff-detail__button staff-detail__button--outline"
             title="Chặn tài khoản yêu cầu màn quản lý và API Backend" disabled>Chặn tài khoản</button>
         </div>
