@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.component';
+import { formatStaffWeekRange } from '../utils/staff-week-range';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import {
@@ -30,7 +32,7 @@ interface ShiftDay {
 @Component({
   selector: 'app-admin-staff-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, AdminCatalogShellComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AdminCatalogShellComponent, AdminStaffWeekNavComponent],
   templateUrl: './admin-staff-form.component.html',
   styleUrl: './admin-staff-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,7 +44,6 @@ export class AdminStaffFormComponent {
   private readonly toast = inject(AdminToastService);
   private readonly session = inject(AuthSessionService);
   private readonly cdr = inject(ChangeDetectorRef);
-  @ViewChild('formWeekDatePicker') private formWeekDatePicker?: ElementRef<HTMLInputElement>;
 
   readonly isEdit = this.route.snapshot.data['mode'] === 'edit';
   readonly staffId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -145,12 +146,7 @@ export class AdminStaffFormComponent {
     const count = this.selectedBranches.size;
     return count ? [...this.selectedBranches].join(', ') : 'Chọn một hoặc nhiều chi nhánh';
   }
-  get weekLabel(): string {
-    const start = new Date(this.weekMonday + 'T00:00:00Z');
-    const end = new Date(start.getTime() + 6 * 86400000);
-    const fmt = (d: Date) => `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
-    return `${fmt(start)} - ${fmt(end)}/${end.getUTCFullYear()}`;
-  }
+  get weekLabel(): string { return formatStaffWeekRange(this.weekMonday); }
   get weekDays(): ShiftDay[] {
     const monday = new Date(this.weekMonday + 'T00:00:00Z').getTime();
     return Array.from({ length: 7 }, (_, n) => {
@@ -181,15 +177,6 @@ export class AdminStaffFormComponent {
     const dayOffset = (today.getDay() + 6) % 7;
     today.setDate(today.getDate() - dayOffset);
     this.weekMonday = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
-  }
-  openWeekDatePicker(): void {
-    const picker = this.formWeekDatePicker?.nativeElement;
-    if (!picker) return;
-    if (typeof picker.showPicker === 'function') {
-      try { picker.showPicker(); return; } catch { /* Browser fallback. */ }
-    }
-    picker.focus();
-    picker.click();
   }
   selectWeekDate(value: string): void {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return;

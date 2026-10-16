@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.component';
+import { formatStaffWeekRange } from '../utils/staff-week-range';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import {
@@ -40,7 +42,7 @@ function dayLabel(day: number): string {
 @Component({
   selector: 'app-admin-staff-detail',
   standalone: true,
-  imports: [RouterLink, AdminCatalogShellComponent],
+  imports: [RouterLink, AdminCatalogShellComponent, AdminStaffWeekNavComponent],
   templateUrl: './admin-staff-detail.component.html',
   styleUrl: './admin-staff-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,7 +53,6 @@ export class AdminStaffDetailComponent {
   private readonly toast = inject(AdminToastService);
   private readonly session = inject(AuthSessionService);
   blockDialogOpen = false;
-  @ViewChild('weekDatePicker') private weekDatePicker?: ElementRef<HTMLInputElement>;
 
   readonly staffId = this.route.snapshot.paramMap.get('id') ?? '';
   readonly staff: StaffPreview | undefined = STAFF_PREVIEW.find(item => item.id === this.staffId);
@@ -70,11 +71,7 @@ export class AdminStaffDetailComponent {
       };
     });
   });
-  readonly weekLabel = computed(() => {
-    const monday = dateFromISO(this.weekMonday());
-    const sunday = new Date(monday.getTime() + 6 * DAY_IN_MS);
-    return `${shortDate(monday)} - ${shortDate(sunday)}/${sunday.getUTCFullYear()}`;
-  });
+  readonly weekLabel = computed(() => formatStaffWeekRange(this.weekMonday()));
 
   displayName(item: StaffPreview): string { return displayStaffName(item); }
   roleName(item: StaffPreview): string { return JOB_LABELS[item.jobRole]; }
@@ -93,17 +90,6 @@ export class AdminStaffDetailComponent {
       String(today.getDate()).padStart(2, '0'),
     ].join('-'));
   }
-  openWeekDatePicker(): void {
-    const picker = this.weekDatePicker?.nativeElement;
-    if (!picker) return;
-    // Use the native date picker when supported, with a focus/click fallback.
-    if (typeof picker.showPicker === 'function') {
-      try { picker.showPicker(); return; } catch { /* Some browsers disallow programmatic picker opening. */ }
-    }
-    picker.focus();
-    picker.click();
-  }
-
   selectWeekDate(value: string): void {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return;
     const selected = dateFromISO(value);

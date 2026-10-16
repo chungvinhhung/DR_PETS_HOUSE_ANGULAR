@@ -155,21 +155,11 @@
           <section class="panel schedule-panel" aria-labelledby="schedule-heading">
             <div class="schedule-header">
               <h2 id="schedule-heading">Lịch làm việc theo tuần</h2>
-              <nav class="week-nav" aria-label="Chuyển tuần làm việc">
-                <button type="button" aria-label="Tuần trước" (click)="changeWeek(-1)">‹</button>
-                <span class="week-nav__date">
-                  <button type="button" class="week-nav__date-button"
-                    aria-label="Mở lịch chọn ngày" (click)="openWeekDatePicker()">
-                    {{ weekLabel }}
-                    <img src="/assets/admin-staff/calendar-today.svg" width="16" height="16" alt="" aria-hidden="true">
-                  </button>
-                  <input #formWeekDatePicker class="week-nav__native" type="date"
-                    aria-label="Chọn ngày để xem tuần" [value]="weekMonday"
-                    (change)="selectWeekDate(formWeekDatePicker.value)">
-                </span>
-                <button type="button" class="week-nav__today" (click)="goToday()">Hôm nay</button>
-                <button type="button" aria-label="Tuần sau" (click)="changeWeek(1)">›</button>
-              </nav>
+              <app-admin-staff-week-nav
+                [monday]="weekMonday" [label]="weekLabel"
+                (previousWeek)="changeWeek(-1)" (nextWeek)="changeWeek(1)"
+                (currentWeek)="goToday()" (dateSelected)="selectWeekDate($event)">
+              </app-admin-staff-week-nav>
             </div>
             <div class="schedule-scroll">
               <table class="schedule-table">

@@ -65,22 +65,11 @@
       <section class="staff-detail__card staff-detail__schedule" aria-labelledby="staff-weekly-heading">
         <header class="staff-detail__schedule-top">
           <h2 id="staff-weekly-heading">Lịch làm việc theo tuần</h2>
-          <nav class="staff-detail__week-control" aria-label="Chuyển tuần lịch làm việc">
-            <button type="button" aria-label="Tuần trước" (click)="moveWeek(-1)">‹</button>
-            <span class="staff-detail__week-label">
-              {{ weekLabel() }}
-              <button type="button" class="staff-detail__calendar-button"
-                aria-label="Chọn ngày để xem tuần chứa ngày đó" title="Chọn ngày"
-                (click)="openWeekDatePicker()">
-                <img src="/assets/admin-staff/calendar-today.svg" width="16" height="16" alt="" aria-hidden="true">
-              </button>
-              <input #weekDatePicker class="staff-detail__date-picker" type="date"
-                [value]="weekMonday()" aria-label="Chọn ngày trong tuần cần xem"
-                (change)="selectWeekDate(weekDatePicker.value)">
-            </span>
-            <button type="button" class="staff-detail__today" (click)="goToday()">Hôm nay</button>
-            <button type="button" aria-label="Tuần sau" (click)="moveWeek(1)">›</button>
-          </nav>
+          <app-admin-staff-week-nav
+            [monday]="weekMonday()" [label]="weekLabel()"
+            (previousWeek)="moveWeek(-1)" (nextWeek)="moveWeek(1)"
+            (currentWeek)="goToday()" (dateSelected)="selectWeekDate($event)">
+          </app-admin-staff-week-nav>
         </header>
         <div class="staff-detail__schedule-scroll">
           <table class="staff-detail__schedule-table">

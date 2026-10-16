@@ -22,7 +22,7 @@
 .staff-detail__button--primary { color:#fff; background:#0d47a1; border-color:#0d47a1; }
 .staff-detail__button:hover:not(:disabled) { filter:brightness(.96); }
 .staff-detail__button:disabled { cursor:not-allowed; opacity:.5; }
-.staff-detail__button:focus-visible, .staff-detail__week-control button:focus-visible {
+.staff-detail__button:focus-visible {
   outline:2px solid #0d47a1; outline-offset:2px;
 }
 .staff-detail__card { width:100%; min-width:0; padding:20px; border:1px solid #e2e8f0; border-radius:10px; background:#fff; }
@@ -47,28 +47,6 @@
 .staff-detail__schedule { margin-top:16px; }
 .staff-detail__schedule-top { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:15px; }
 .staff-detail__schedule-top h2 { margin:0; }
-.staff-detail__week-control { display:flex; align-items:center; gap:8px; }
-.staff-detail__week-control button, .staff-detail__week-label {
-  display:inline-flex; justify-content:center; align-items:center;
-  height:40px; border:1px solid #e2e8f0; border-radius:8px; background:#fff; color:#1b273b;
-}
-.staff-detail__week-control button { width:40px; cursor:pointer; font:400 13px/20px Roboto,Arial,sans-serif; }
-.staff-detail__week-control button:hover { background:#eff6ff; }
-.staff-detail__week-label { gap:8px; min-width:211px; padding:0 12px; font-size:13px; line-height:20px; white-space:nowrap; }
-.staff-detail__week-label img { display:block; width:16px; height:16px; flex:0 0 16px; }
-.staff-detail__week-label { position:relative; padding-right:6px; }
-.staff-detail__week-control .staff-detail__today { width:auto; min-width:82px; padding:0 12px; white-space:nowrap; font:400 13px/20px Roboto,Arial,sans-serif; }
-.staff-detail__week-control .staff-detail__calendar-button {
-  display:inline-flex; align-items:center; justify-content:center;
-  width:30px; height:30px; flex:0 0 30px; padding:0;
-  background:transparent; border:0; border-radius:6px; cursor:pointer;
-}
-.staff-detail__week-control .staff-detail__calendar-button:hover { background:#eff6ff; }
-.staff-detail__date-picker {
-  position:absolute; right:6px; top:100%; width:1px; height:1px;
-  padding:0; border:0; opacity:0; pointer-events:none;
-}
-
 .staff-detail__schedule-scroll { width:100%; overflow-x:auto; border:1px solid #e2e8f0; border-radius:8px; }
 .staff-detail__schedule-table { width:100%; min-width:720px; border-collapse:collapse; text-align:left; table-layout:fixed; }
 .staff-detail__schedule-table th {
@@ -99,7 +77,6 @@
 @media(max-width:420px) {
   .staff-detail__info-grid { grid-template-columns:1fr; }
   .staff-detail__two-fields { gap:12px; }
-  .staff-detail__week-label { min-width:0; font-size:12px; }
 }
 
 /* Account management preview action, consistent with the shared Admin confirmation pattern. */

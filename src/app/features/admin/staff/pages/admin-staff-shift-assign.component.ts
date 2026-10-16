@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.component';
+import { formatStaffWeekRange } from '../utils/staff-week-range';
 import { JOB_LABELS, STAFF_PREVIEW, STAFF_SHIFTS_PREVIEW, displayStaffName } from '../models/staff-preview.model';
 
 interface ShiftDraft { date: string; branch: string; template: string; start: string; end: string; }
@@ -18,7 +20,7 @@ const plusDays = (date: string, n: number) => new Date(Date.parse(date + 'T00:00
 @Component({
   selector: 'app-admin-staff-shift-assign',
   standalone: true,
-  imports: [AdminCatalogShellComponent, RouterLink],
+  imports: [AdminCatalogShellComponent, RouterLink, AdminStaffWeekNavComponent],
   templateUrl: './admin-staff-shift-assign.component.html',
   styleUrl: './admin-staff-shift-assign.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,6 +31,7 @@ export class AdminStaffShiftAssignComponent {
   readonly staff = STAFF_PREVIEW;
   readonly chosenId = signal(this.route.snapshot.queryParamMap.get('staffId') ?? '');
   readonly monday = signal(monday('2026-10-19'));
+  readonly weekLabel = computed(() => formatStaffWeekRange(this.monday()));
   readonly draft = signal<readonly ShiftDraft[]>([]);
   readonly errors = signal<readonly string[]>([]);
   readonly success = signal('');
@@ -67,6 +70,18 @@ export class AdminStaffShiftAssignComponent {
     ].join('-'));
     this.errors.set([]);
   }
+  selectWeekDate(value: string): void {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return;
+    const selected = new Date(value + 'T00:00:00Z');
+    if (Number.isNaN(selected.getTime()) || selected.toISOString().slice(0, 10) !== value) return;
+    if (this.hasChanges()) {
+      this.errors.set(['Bạn có ca chưa lưu. Hãy xóa bản nháp trước khi chọn tuần khác.']);
+      return;
+    }
+    this.monday.set(monday(value));
+    this.errors.set([]);
+  }
+
   add(date: string, branch: string, templateName: string) {
     this.errors.set([]); this.success.set('');
     const staff = this.selectedStaff();

@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.component';
+import { formatStaffWeekRange } from '../utils/staff-week-range';
 import { JOB_LABELS, JobRole, STAFF_PREVIEW, STAFF_SHIFTS_PREVIEW, displayStaffName } from '../models/staff-preview.model';
 
 const DAY = 86_400_000;
@@ -22,13 +24,12 @@ const readable = (iso: string): string => iso.slice(8, 10) + '/' + iso.slice(5, 
 @Component({
   selector: 'app-admin-staff-schedule',
   standalone: true,
-  imports: [AdminCatalogShellComponent, RouterLink],
+  imports: [AdminCatalogShellComponent, RouterLink, AdminStaffWeekNavComponent],
   templateUrl: './admin-staff-schedule.component.html',
   styleUrl: './admin-staff-schedule.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminStaffScheduleComponent {
-  @ViewChild('weekDatePicker') private weekDatePicker?: ElementRef<HTMLInputElement>;
   readonly monday = signal(mondayOf(todayIso()));
   readonly branch = signal('ALL');
   readonly role = signal('ALL');
@@ -44,8 +45,7 @@ export class AdminStaffScheduleComponent {
       dayMonth: readable(iso),
     };
   }));
-  readonly weekLabel = computed(() => readable(this.monday()) + ' – ' +
-    readable(dateFor(this.monday(), 6)) + '/' + dateFor(this.monday(), 6).slice(0, 4));
+  readonly weekLabel = computed(() => formatStaffWeekRange(this.monday()));
   readonly filtered = computed(() => STAFF_PREVIEW.filter(staff =>
     (this.role() === 'ALL' || staff.jobRole === this.role()) &&
     (this.branch() === 'ALL' || staff.branches.includes(this.branch()))));
@@ -64,16 +64,6 @@ export class AdminStaffScheduleComponent {
   changePage(value: number) { if (value >= 1 && value <= this.pageCount()) this.page.set(value); }
   changeWeek(delta: number) { this.monday.set(dateFor(this.monday(), delta * 7)); }
   goToday(): void { this.monday.set(mondayOf(todayIso())); }
-
-  openDatePicker(): void {
-    const input = this.weekDatePicker?.nativeElement;
-    if (!input) return;
-    if (typeof input.showPicker === 'function') {
-      try { input.showPicker(); return; } catch { /* Browser fallback. */ }
-    }
-    input.focus();
-    input.click();
-  }
 
   selectDate(value: string): void {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return;

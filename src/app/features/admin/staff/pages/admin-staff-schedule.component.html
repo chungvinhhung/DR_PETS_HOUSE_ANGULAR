@@ -7,21 +7,11 @@
       <div class="schedule-toolbar">
         <h2 class="schedule-toolbar__title">Lịch làm việc theo tuần</h2>
         <div class="schedule-toolbar__controls">
-          <nav class="schedule-week" aria-label="Chuyển tuần làm việc">
-            <button class="schedule-week__arrow" type="button" (click)="changeWeek(-1)" aria-label="Tuần trước">‹</button>
-            <span class="schedule-week__picker">
-              <button type="button" class="schedule-week__date-button"
-                aria-label="Mở lịch chọn ngày" (click)="openDatePicker()">
-                <span>{{ weekLabel() }}</span>
-                <img src="/assets/admin-staff/calendar-today.svg" width="16" height="16" alt="" aria-hidden="true">
-              </button>
-              <input #weekDatePicker class="schedule-week__native" type="date"
-                aria-label="Chọn ngày trong tuần" [value]="monday()"
-                (change)="selectDate(weekDatePicker.value)">
-            </span>
-            <button class="schedule-week__today" type="button" (click)="goToday()">Hôm nay</button>
-            <button class="schedule-week__arrow" type="button" (click)="changeWeek(1)" aria-label="Tuần sau">›</button>
-          </nav>
+          <app-admin-staff-week-nav
+            [monday]="monday()" [label]="weekLabel()"
+            (previousWeek)="changeWeek(-1)" (nextWeek)="changeWeek(1)"
+            (currentWeek)="goToday()" (dateSelected)="selectDate($event)">
+          </app-admin-staff-week-nav>
           <div class="schedule-filters">
             <label class="schedule-filter">
               <span class="sr-only">Vai trò</span>

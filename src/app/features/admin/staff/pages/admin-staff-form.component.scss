@@ -71,11 +71,6 @@
 .schedule-panel { margin-bottom: 16px; }
 .schedule-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
 .schedule-header h2 { margin: 0; }
-.week-nav { display: flex; align-items: center; gap: 8px; }
-.week-nav button, .week-nav span { height: 40px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; color: #244565; }
-.week-nav button { width: 40px; cursor: pointer; font-size: 19px; }
-.week-nav span { gap: 8px; padding: 0 12px; white-space: nowrap; font-size: 12px; }
-.week-nav span img { width: 16px; height: 16px; }
 .schedule-scroll { overflow-x: auto; }
 .schedule-table { border-collapse: collapse; text-align: left; min-width: 750px; width: 100%; font-size: 12px; border: 1px solid #e2e8f0; border-radius: 10px; }
 .schedule-table th { padding: 12px; font-weight: 500; color: #475569; background: #e5f6fd; font-size: 11px; }
