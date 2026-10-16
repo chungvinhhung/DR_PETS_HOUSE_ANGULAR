@@ -14,7 +14,7 @@
         <div class="staff-detail__actions">
           <button type="button" class="staff-detail__button staff-detail__button--outline" (click)="goBack()">Hủy</button>
           <a class="staff-detail__button staff-detail__button--primary"
-            [routerLink]="['/admin/staff', employee.id, 'edit']">Chỉnh sửa nhân viên</a>
+            [routerLink]="['/admin/staff', employee.id, 'edit']" [queryParams]="{ from: 'detail' }">Chỉnh sửa nhân viên</a>
           <button type="button" class="staff-detail__button staff-detail__button--danger"
             [disabled]="!canBlockAccount"
             [title]="canBlockAccount ? 'Quản lý trạng thái tài khoản' : 'Chỉ Admin được chặn/bỏ chặn tài khoản'"
