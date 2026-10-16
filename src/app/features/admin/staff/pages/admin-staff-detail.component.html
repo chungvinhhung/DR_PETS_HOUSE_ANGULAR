@@ -15,8 +15,8 @@
           <button type="button" class="staff-detail__button staff-detail__button--outline" (click)="goBack()">Hủy</button>
           <a class="staff-detail__button staff-detail__button--primary"
             [routerLink]="['/admin/staff', employee.id, 'edit']">Chỉnh sửa nhân viên</a>
-          <button type="button" class="staff-detail__button staff-detail__button--outline"
-            title="Chặn tài khoản yêu cầu màn quản lý và API Backend" disabled>Chặn tài khoản</button>
+          <button type="button" class="staff-detail__button staff-detail__button--danger"
+            (click)="openBlockConfirmation()">{{ employee.accountStatus === 'BLOCKED' ? 'Bỏ chặn tài khoản' : 'Chặn tài khoản' }}</button>
         </div>
       </header>
 
@@ -122,3 +122,17 @@
     }
   </main>
 </app-admin-catalog-shell>
+
+@if (blockDialogOpen && staff; as employee) {
+  <div class="staff-detail__confirm-overlay" (keydown.escape)="closeBlockConfirmation()">
+    <section class="staff-detail__confirm" role="alertdialog" aria-modal="true"
+      aria-labelledby="staff-block-title" aria-describedby="staff-block-description" tabindex="-1">
+      <h2 id="staff-block-title">{{ employee.accountStatus === 'BLOCKED' ? 'Bỏ chặn tài khoản?' : 'Chặn tài khoản?' }}</h2>
+      <p id="staff-block-description">Bạn đang yêu cầu {{ employee.accountStatus === 'BLOCKED' ? 'bỏ chặn' : 'chặn' }} tài khoản của {{ displayName(employee) }}. Chức năng này hiện chưa có API Backend, nên không thay đổi trạng thái thật.</p>
+      <div class="staff-detail__confirm-actions">
+        <button class="staff-detail__button staff-detail__button--outline" type="button" autofocus (click)="closeBlockConfirmation()">Hủy</button>
+        <button class="staff-detail__button staff-detail__button--danger" type="button" (click)="confirmBlockPreview()">Xác nhận</button>
+      </div>
+    </section>
+  </div>
+}
