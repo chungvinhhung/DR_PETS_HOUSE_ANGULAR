@@ -7,12 +7,14 @@
           <strong aria-current="page">{{ title }}</strong>
         </nav>
         <h1 id="service-editor-title">{{ title }}</h1>
-        <span class="service-editor__demo-badge">Dữ liệu từ Backend</span>
-      </div>
+       </div>
       <div class="service-editor__actions">
         <button type="button" class="service-editor__btn service-editor__btn--secondary" (click)="cancel()">
           {{ readOnly ? 'Quay lại' : 'Hủy' }}
         </button>
+        @if (editorMode === 'view' && authSessionRole === 'ADMIN' && serviceId && !missingService()) {
+          <a class="service-editor__btn service-editor__btn--primary" [routerLink]="['/admin/services', serviceId, 'edit']">Chỉnh sửa</a>
+        }
         @if (mayEdit) {
           <button type="button" class="service-editor__btn service-editor__btn--primary"
             [disabled]="saving() || loading()" (click)="validateDraft()">{{ saving() ? 'Đang lưu…' : 'Lưu dịch vụ' }}</button>
@@ -149,7 +151,6 @@
 
       <section class="service-editor__card" aria-labelledby="service-materials-title">
         <h2 id="service-materials-title">Vật liệu mặc định</h2>
-        <p class="service-editor__field-hint">Vật liệu hiện có được hiển thị chỉ đọc theo mã InventoryItem của Backend. Chưa có API tra cứu InventoryItem để chọn vật liệu mới; khi lưu dịch vụ, các vật liệu hiện có được giữ nguyên.</p>
         <datalist id="service-product-options">
           @for (product of productOptions; track product.sku) {
             <option [value]="product.name">{{ product.sku }}</option>
@@ -195,15 +196,10 @@
 
       <section class="service-editor__card" aria-labelledby="service-branches-title">
         <h2 id="service-branches-title">Cấu hình theo chi nhánh</h2>
-        <p class="service-editor__field-hint">
-          Catalog chỉ quản lý danh mục dịch vụ chung. Bật/Tắt, sức chứa và lịch tạm khóa
-          được quản lý tại Chi nhánh → Dịch vụ &amp; Capacity.
-        </p>
         <a class="service-editor__btn service-editor__btn--secondary"
           routerLink="/admin/branches">Đi đến quản lý chi nhánh →</a>
       </section>
 
-      <p class="service-editor__disclaimer">Dữ liệu dịch vụ được tải và lưu qua API Service Master. Vật liệu (InventoryItem) và cấu hình chi nhánh chưa chỉnh sửa tại màn hình này.</p>
     }
   </main>
 </app-admin-catalog-shell>
