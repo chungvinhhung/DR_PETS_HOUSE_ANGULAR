@@ -2,15 +2,15 @@
   <main class="staff-form-page">
     <header class="form-head">
       <div class="form-heading">
-        <h1>{{ isEdit ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên' }}</h1>
         <nav class="crumb" aria-label="Đường dẫn">
           <a routerLink="/admin/staff">Nhân sự</a>
           <span aria-hidden="true">›</span>
-          <strong>{{ isEdit ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên' }}</strong>
+          <strong>{{ isEdit ? 'Chỉnh sửa nhân viên' : 'Thêm mới' }}</strong>
         </nav>
+        <h1>{{ isEdit ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên' }}</h1>
       </div>
       <div class="head-actions">
-        <button type="button" class="secondary" (click)="cancel()">Hủy</button>
+        <button type="button" class="secondary" (click)="cancel()">Hủy bỏ</button>
         @if (!isEdit) {
           <button type="button" class="secondary icon-button" (click)="submit('assign')">
             <img src="/assets/admin-staff/calendar-today.svg" width="16" height="16" alt="" aria-hidden="true">
