@@ -12,7 +12,25 @@ interface ProductLeaveAware {
 }
 const confirmProductLeave: CanDeactivateFn<ProductLeaveAware> = (component) => component.canLeavePage();
 
+const confirmStaffLeave: CanDeactivateFn<{canLeavePage(): boolean}> = component => component.canLeavePage();
+
 export const routes: Routes = [
+  {
+    path: 'admin/staff/new',
+    canActivate: [authGuard, roleGuard],
+    canDeactivate: [confirmStaffLeave],
+    data: { roles: ['ADMIN'], mode: 'create' },
+    loadComponent: () => import('./features/admin/staff/pages/admin-staff-form.component')
+      .then(component => component.AdminStaffFormComponent),
+  },
+  {
+    path: 'admin/staff/:id/edit',
+    canActivate: [authGuard, roleGuard],
+    canDeactivate: [confirmStaffLeave],
+    data: { roles: ['ADMIN', 'MANAGER'], mode: 'edit' },
+    loadComponent: () => import('./features/admin/staff/pages/admin-staff-form.component')
+      .then(component => component.AdminStaffFormComponent),
+  },
   {
     path: 'admin/staff/:id',
     canActivate: [authGuard, roleGuard],
