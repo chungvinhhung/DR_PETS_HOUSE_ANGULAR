@@ -170,18 +170,23 @@
                 <tr>
                   <td><input class="service-editor__readonly" [value]="line.sku" placeholder="SKU" readonly tabindex="-1" aria-label="Mã SKU đã chọn"/></td>
                   <td>
-                    <input type="text" list="service-product-options" disabled
+                    <input type="text" list="service-product-options" [disabled]="!mayEdit"
                       [ngModel]="line.query" (ngModelChange)="matchProduct(line, $event)"
                       placeholder="Tìm SKU / tên sản phẩm..." [attr.aria-label]="'Tìm sản phẩm vật liệu dòng ' + ($index + 1)" />
                   </td>
-                  <td><input type="number" min="0.01" step="0.01" disabled
+                  <td><input type="number" min="0.01" step="0.01" [disabled]="!mayEdit"
                     [(ngModel)]="line.quantity" (ngModelChange)="markDirty()"
                     placeholder="Nhập số lượng" [attr.aria-label]="'Số lượng vật liệu dòng ' + ($index + 1)"/></td>
-                  <td><input type="text" maxlength="30" disabled
+                  <td><input type="text" maxlength="30" [disabled]="!mayEdit"
                     [(ngModel)]="line.unit" (ngModelChange)="markDirty()"
                     placeholder="Đơn vị" [attr.aria-label]="'Đơn vị vật liệu dòng ' + ($index + 1)"/></td>
                   <td class="service-editor__remove-cell">
-                    <span aria-label="Vật liệu giữ nguyên trên Backend">—</span>
+                    @if (mayEdit) {
+                      <button type="button" class="service-editor__remove" (click)="removeMaterial(line.key)"
+                        [attr.aria-label]="'Xóa vật liệu ' + ($index + 1)">
+                        <img src="/assets/service-catalog/delete_outline.svg" alt="" aria-hidden="true" />
+                      </button>
+                    }
                   </td>
                 </tr>
               }
@@ -191,7 +196,10 @@
             </tbody>
           </table>
         </div>
-
+        @if (mayEdit) {
+          <button type="button" class="service-editor__btn service-editor__btn--secondary service-editor__add-material"
+            (click)="addMaterial()">+ Thêm vật liệu</button>
+        }
       </section>
 
       <section class="service-editor__card" aria-labelledby="service-branches-title">
