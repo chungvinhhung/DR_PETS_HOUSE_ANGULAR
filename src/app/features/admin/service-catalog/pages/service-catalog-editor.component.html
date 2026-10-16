@@ -7,22 +7,26 @@
           <strong aria-current="page">{{ title }}</strong>
         </nav>
         <h1 id="service-editor-title">{{ title }}</h1>
-        <span class="service-editor__demo-badge">Giao diện mẫu · Chờ API Backend</span>
+        
       </div>
       <div class="service-editor__actions">
         <button type="button" class="service-editor__btn service-editor__btn--secondary" (click)="cancel()">
           {{ readOnly ? 'Quay lại' : 'Hủy' }}
         </button>
-        @if (mayEdit) {
+        @if (!readOnly && !loading() && !missingService) {
           <button type="button" class="service-editor__btn service-editor__btn--primary"
-            (click)="validateDraft()">Lưu dịch vụ</button>
+            (click)="save()" [disabled]="saving()">{{ saving() ? 'Đang lưu...' : 'Lưu dịch vụ' }}</button>
         }
       </div>
     </header>
 
-    @if (missingService) {
+    @if (notice()) { <div class="service-editor__error" role="alert">{{ notice() }}</div> }
+
+    @if (loading()) {
+      <p role="status">Đang tải thông tin dịch vụ…</p>
+    } @else if (missingService) {
       <div class="service-editor__error" role="alert">
-        Không tìm thấy dịch vụ mẫu để xem hoặc chỉnh sửa.
+        {{ loadError() }}
         <a routerLink="/admin/services">Về danh mục</a>
       </div>
     } @else {
@@ -67,15 +71,16 @@
             <label class="service-editor__field">
               <span>Thời lượng (phút) <b>*</b></span>
               <input type="number" min="1" max="1440" step="1"
-                [disabled]="!mayEdit || bookingMode === 'CONTACT_ONLY'"
+                [disabled]="!mayEdit"
                 [(ngModel)]="durationMinutes" (ngModelChange)="markDirty()"
-                [placeholder]="bookingMode === 'CONTACT_ONLY' ? 'Không áp dụng' : '60'"/>
+                placeholder="60"/>
             </label>
             <label class="service-editor__field">
               <span>Vai trò thực hiện <b>*</b></span>
               <select [disabled]="!mayEdit" [(ngModel)]="executorRole" (ngModelChange)="markDirty()">
-                <option value="CARE_STAFF">CARE STAFF</option>
-                <option value="VETERINARIAN">VETERINARIAN</option>
+                <option value="CARE_STAFF_GROOMER" [disabled]="category !== 'GROOMING'">CARE STAFF GROOMER</option>
+                <option value="NURSE" [disabled]="category !== 'MEDICAL'">NURSE</option>
+                <option value="VETERINARIAN" [disabled]="category !== 'MEDICAL'">VETERINARIAN</option>
               </select>
             </label>
           </div>
@@ -120,7 +125,7 @@
                     <td><strong>{{ weightPricing ? tier.key : 'Chung' }}</strong></td>
                     <td>{{ weightPricing ? tier.weight : 'Mọi cân nặng' }}</td>
                     <td>
-                      <select [disabled]="!mayEdit" class="service-editor__price-select"
+                      <select [disabled]="!mayEdit || tier.key === 'XL'" class="service-editor__price-select"
                         [ngModel]="tier.mode" (ngModelChange)="setTierMode(tier, $event)"
                         [attr.aria-label]="'Hình thức thu phí mức ' + tier.key">
                         <option value="FIXED">Giá cố định</option>
@@ -129,7 +134,7 @@
                     </td>
                     <td>
                       <span class="service-editor__price-input">
-                        <input type="number" min="1" step="1000" [disabled]="!mayEdit || tier.mode === 'QUOTE'"
+                        <input type="number" min="1" step="1000" [disabled]="!mayEdit || tier.mode === 'QUOTE' || tier.key === 'XL'"
                           [(ngModel)]="tier.price" (ngModelChange)="markDirty()"
                           [attr.aria-label]="'Giá cơ sở mức ' + tier.key"
                           [placeholder]="tier.mode === 'QUOTE' ? '—' : 'Nhập giá'"/>
@@ -146,12 +151,7 @@
 
       <section class="service-editor__card" aria-labelledby="service-materials-title">
         <h2 id="service-materials-title">Vật liệu mặc định</h2>
-        <p class="service-editor__field-hint">Chỉ chọn SKU sản phẩm đã tồn tại. Các lựa chọn bên dưới là dữ liệu demo, chưa liên kết Product API.</p>
-        <datalist id="service-product-options">
-          @for (product of productOptions; track product.sku) {
-            <option [value]="product.name">{{ product.sku }}</option>
-          }
-        </datalist>
+        <p class="service-editor__field-hint">Đang hiển thị mã vật liệu do Backend lưu. Chức năng chọn InventoryItem mới sẽ được nối khi có API tra cứu vật liệu; lưu dịch vụ không thay đổi danh sách vật liệu hiện có.</p>
         <div class="service-editor__table-scroll">
           <table class="service-editor__table service-editor__table--materials">
             <thead><tr>
@@ -166,36 +166,26 @@
                 <tr>
                   <td><input class="service-editor__readonly" [value]="line.sku" placeholder="SKU" readonly tabindex="-1" aria-label="Mã SKU đã chọn"/></td>
                   <td>
-                    <input type="text" list="service-product-options" [disabled]="!mayEdit"
-                      [ngModel]="line.query" (ngModelChange)="matchProduct(line, $event)"
+                    <input type="text" disabled
+                      [ngModel]="line.query"
                       placeholder="Tìm SKU / tên sản phẩm..." [attr.aria-label]="'Tìm sản phẩm vật liệu dòng ' + ($index + 1)" />
                   </td>
-                  <td><input type="number" min="0.01" step="0.01" [disabled]="!mayEdit"
-                    [(ngModel)]="line.quantity" (ngModelChange)="markDirty()"
+                  <td><input type="number" min="0.01" step="0.01" disabled
+                    [(ngModel)]="line.quantity"
                     placeholder="Nhập số lượng" [attr.aria-label]="'Số lượng vật liệu dòng ' + ($index + 1)"/></td>
-                  <td><input type="text" maxlength="30" [disabled]="!mayEdit"
-                    [(ngModel)]="line.unit" (ngModelChange)="markDirty()"
+                  <td><input type="text" maxlength="30" disabled
+                    [(ngModel)]="line.unit"
                     placeholder="Đơn vị" [attr.aria-label]="'Đơn vị vật liệu dòng ' + ($index + 1)"/></td>
-                  <td class="service-editor__remove-cell">
-                    @if (mayEdit) {
-                      <button type="button" class="service-editor__remove" (click)="removeMaterial(line.key)"
-                        [attr.aria-label]="'Xóa vật liệu ' + ($index + 1)">
-                        <img src="/assets/service-catalog/delete_outline.svg" alt="" aria-hidden="true" />
-                      </button>
-                    }
-                  </td>
+                  <td class="service-editor__remove-cell">—</td>
                 </tr>
               }
               @if (!materials.length) {
-                <tr><td colspan="5" class="service-editor__no-rows">Chưa có vật liệu. Bạn có thể thêm từ SKU hiện có.</td></tr>
+                <tr><td colspan="5" class="service-editor__no-rows">Dịch vụ chưa có vật liệu mặc định.</td></tr>
               }
             </tbody>
           </table>
         </div>
-        @if (mayEdit) {
-          <button type="button" class="service-editor__btn service-editor__btn--secondary service-editor__add-material"
-            (click)="addMaterial()">+ Thêm vật liệu</button>
-        }
+
       </section>
 
       <section class="service-editor__card" aria-labelledby="service-branches-title">
@@ -208,7 +198,7 @@
           routerLink="/admin/branches">Đi đến quản lý chi nhánh →</a>
       </section>
 
-      <p class="service-editor__disclaimer">Bản xem trước FE Phase 2: chưa có API Service Master hoặc Product SKU lookup. Kiểm tra hợp lệ không ghi dữ liệu lên Backend.</p>
+      <p class="service-editor__disclaimer">Danh mục dịch vụ được lưu qua API Backend. Cấu hình chi nhánh và lựa chọn vật liệu InventoryItem được quản lý riêng.</p>
     }
   </main>
 </app-admin-catalog-shell>

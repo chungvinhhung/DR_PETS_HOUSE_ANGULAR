@@ -3,7 +3,7 @@
   <header class="service-catalog__heading">
     <div class="service-catalog__heading-text">
       <h1 id="service-catalog-title">Danh mục dịch vụ</h1>
-      <span class="service-catalog__demo-label">Dữ liệu mẫu · Chờ API Backend</span>
+      
     </div>
     @if (isAdmin()) {
       <button type="button" class="service-catalog__create" (click)="createService()">
@@ -144,7 +144,7 @@
                   @if (filters().branchId === 'ALL') {
                     <span class="service-catalog__activation"
                       [class.service-catalog__activation--off]="enabledCount(service) === 0">
-                      {{ enabledCount(service) }}/{{ scopedBranches().length }} bật
+                      {{ enabledCount(service) }}/{{ totalBranchCount(service) }} bật
                     </span>
                   } @else {
                     <span class="service-catalog__activation"
@@ -154,7 +154,7 @@
                   }
                 </td>
                 <td>
-                  <span class="service-catalog__availability">Chờ BE</span>
+                  <span class="service-catalog__availability">{{ service.availabilityText || (service.isAvailable === true ? "Khả dụng" : service.isAvailable === false ? "Không khả dụng" : "Chưa xác định") }}</span>
                 </td>
                 <td class="service-catalog__actions-cell">
                   <div class="service-catalog__row-action">
@@ -232,8 +232,7 @@
     </footer>
   </section>
   <p class="service-catalog__disclaimer">
-    Danh sách chỉ phục vụ kiểm tra UI Phase 1. Số chi nhánh, giá và trạng thái đang là dữ liệu demo;
-    quyền và phạm vi truy cập thực tế sẽ do Backend xác nhận.
+    Danh sách dịch vụ và trạng thái lấy từ Backend. Cấu hình sức chứa và tạm khóa thuộc màn Quản lý chi nhánh.
   </p>
 </section>
 </app-admin-catalog-shell>

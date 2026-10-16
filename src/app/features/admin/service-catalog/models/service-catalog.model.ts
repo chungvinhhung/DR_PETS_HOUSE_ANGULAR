@@ -27,6 +27,12 @@ export interface CatalogService {
   referencePrice: number | null;
   minFixedTierPrice: number | null;
   branchServices: BranchServicePreview[];
+  /** BE aggregate fields; do not derive branch scope from FE demo values. */
+  enabledBranchCount?: number;
+  totalBranchCount?: number;
+  branchEnabled?: boolean;
+  availabilityText?: string;
+  isAvailable?: boolean;
 }
 
 export type CatalogFilterStatus = ServiceMasterStatus | 'ALL';
