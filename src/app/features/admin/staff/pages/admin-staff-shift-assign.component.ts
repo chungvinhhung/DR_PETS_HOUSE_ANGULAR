@@ -45,7 +45,28 @@ export class AdminStaffShiftAssignComponent {
   readonly otherShifts = (date: string) => STAFF_SHIFTS_PREVIEW.filter(s => s.staffId === this.chosenId() && s.isoDate === date);
 
   setStaff(id: string) { this.chosenId.set(id); this.draft.set([]); this.errors.set([]); this.hasChanges.set(false); }
-  changeWeek(week: number) { this.monday.set(plusDays(this.monday(), week * 7)); this.draft.set([]); this.hasChanges.set(false); this.errors.set([]); }
+  changeWeek(week: number): void {
+    if (this.hasChanges()) {
+      this.errors.set(['Bạn có ca chưa lưu. Hãy xóa bản nháp trước khi chuyển tuần.']);
+      return;
+    }
+    this.monday.set(plusDays(this.monday(), week * 7));
+    this.errors.set([]);
+  }
+  goToday(): void {
+    if (this.hasChanges()) {
+      this.errors.set(['Bạn có ca chưa lưu. Hãy xóa bản nháp trước khi chuyển về tuần hiện tại.']);
+      return;
+    }
+    const today = new Date();
+    today.setDate(today.getDate() - (today.getDay() + 6) % 7);
+    this.monday.set([
+      today.getFullYear(),
+      String(today.getMonth() + 1).padStart(2, '0'),
+      String(today.getDate()).padStart(2, '0'),
+    ].join('-'));
+    this.errors.set([]);
+  }
   add(date: string, branch: string, templateName: string) {
     this.errors.set([]); this.success.set('');
     const staff = this.selectedStaff();
