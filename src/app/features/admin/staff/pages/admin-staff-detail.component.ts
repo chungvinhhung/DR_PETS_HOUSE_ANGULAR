@@ -16,6 +16,8 @@ import {
 interface WeekDayRow {
   isoDate: string;
   label: string;
+  weekday: string;
+  dayMonth: string;
   shifts: readonly StaffShiftPreview[];
 }
 
@@ -62,6 +64,8 @@ export class AdminStaffDetailComponent {
       return {
         isoDate: key,
         label: `${dayLabel(i)} · ${shortDate(date)}`,
+        weekday: dayLabel(i),
+        dayMonth: shortDate(date),
         shifts: STAFF_SHIFTS_PREVIEW.filter(s => s.staffId === this.staffId && s.isoDate === key),
       };
     });
