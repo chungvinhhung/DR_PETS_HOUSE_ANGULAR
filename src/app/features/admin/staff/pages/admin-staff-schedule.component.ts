@@ -33,7 +33,11 @@ export class AdminStaffScheduleComponent {
   readonly branches = [...new Set(STAFF_PREVIEW.flatMap(staff => staff.branches))];
   readonly days = computed(() => Array.from({ length: 7 }, (_, index) => {
     const iso = dateFor(this.monday(), index);
-    return { iso, label: (index === 6 ? 'CN' : 'T' + (index + 2)) + ' · ' + readable(iso) };
+    return {
+      iso,
+      weekday: index === 6 ? 'CN' : 'Thứ ' + (index + 2),
+      dayMonth: readable(iso),
+    };
   }));
   readonly weekLabel = computed(() => readable(this.monday()) + ' – ' +
     readable(dateFor(this.monday(), 6)) + '/' + dateFor(this.monday(), 6).slice(0, 4));
