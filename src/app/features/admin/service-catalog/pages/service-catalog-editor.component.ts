@@ -6,13 +6,16 @@ import {
   effect,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
-import { ServiceBookingMode } from '../models/service-catalog.model';
-import { ServiceCatalogMockRepository } from '../services/service-catalog-mock.repository';
+import { CatalogService, ServiceApiRecord, ServiceBookingMode, ServicePriceVariant, ServiceWrite } from '../models/service-catalog.model';
+import { ServiceCatalogApiService, serviceFromApi } from '../services/service-catalog-api.service';
 
 type PriceMode = 'FIXED' | 'QUOTE';
 type Tier = { key: string; weight: string; mode: PriceMode; price: number | null };
@@ -26,13 +29,8 @@ const TIER_WEIGHTS = [
   { key: 'XL', weight: '> 30 kg' },
 ] as const;
 
-const DEMO_PRODUCT_SKUS: readonly MaterialOption[] = [
-  { sku: 'MAT014', name: 'Dầu gội Grooming / Shampoo', unit: 'ml' },
-  { sku: 'MAT015', name: 'Dầu xả / Conditioner', unit: 'ml' },
-  { sku: 'MAT016', name: 'Dung dịch vệ sinh tai', unit: 'ml' },
-  { sku: 'MAT002', name: 'Bông tẩy trang / Cotton pad', unit: 'miếng' },
-  { sku: 'MAT018', name: 'Bông băng y tế', unit: 'cuộn' },
-];
+// BE requires InventoryItem ObjectIds, not Product SKU strings.
+const INVENTORY_OPTIONS: readonly MaterialOption[] = [];
 
 @Component({
   selector: 'app-service-catalog-editor',
@@ -42,7 +40,8 @@ const DEMO_PRODUCT_SKUS: readonly MaterialOption[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServiceCatalogEditorComponent {
-  private readonly repository = inject(ServiceCatalogMockRepository);
+  private readonly repository = inject(ServiceCatalogApiService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly authSession = inject(AuthSessionService);
@@ -58,25 +57,27 @@ export class ServiceCatalogEditorComponent {
 
   readonly editorMode = (this.route.snapshot.data['editorMode'] ?? 'create') as 'create' | 'edit' | 'view';
   readonly serviceId = this.route.snapshot.paramMap.get('id');
-  readonly source = this.serviceId ? this.repository.getById(this.serviceId) : null;
-  readonly missingService = this.editorMode !== 'create' && !this.source;
+  source: CatalogService | null = null;
+  readonly loading = signal(this.editorMode !== 'create');
+  readonly missingService = signal(false);
+  readonly saving = signal(false);
+  private pricingDirty = false;
+  private saveIdempotencyKey: string | null = null;
   readonly readOnly = this.editorMode === 'view' || this.authSession.user()?.systemRole !== 'ADMIN';
   readonly isNew = this.editorMode === 'create';
   readonly title = this.editorMode === 'view' ? 'Chi tiết dịch vụ' : this.isNew ? 'Thêm dịch vụ' : 'Chỉnh sửa dịch vụ';
-  readonly productOptions = DEMO_PRODUCT_SKUS;
+  readonly productOptions = INVENTORY_OPTIONS;
 
-  serviceName = this.source?.name ?? '';
-  category = this.source?.category ?? 'GROOMING';
-  bookingMode: ServiceBookingMode = this.source?.bookingMode ?? 'BOOKABLE';
+  serviceName = '';
+  category = 'GROOMING';
+  bookingMode: ServiceBookingMode = 'BOOKABLE';
   description = '';
-  durationMinutes: number | null = this.source?.durationMinutes ?? 60;
-  executorRole = this.source?.executorRole === 'VETERINARIAN' ? 'VETERINARIAN' : 'CARE_STAFF';
-  active = this.source?.status !== 'INACTIVE';
+  durationMinutes: number | null = 60;
+  executorRole = 'CARE_STAFF_GROOMER';
+  active = true;
   weightPricing = true;
-  priceTiers: Tier[] = TIER_WEIGHTS.map((item, index) => ({
-    ...item,
-    mode: this.source?.minFixedTierPrice === null && this.source?.referencePrice === null ? 'QUOTE' : 'FIXED',
-    price: this.source ? (this.source.minFixedTierPrice ?? this.source.referencePrice ?? null) : null,
+  priceTiers: Tier[] = TIER_WEIGHTS.map((item) => ({
+    ...item, mode: 'FIXED', price: null,
   }));
   materials: MaterialLine[] = [];
   private nextMaterialKey = 1;
@@ -87,25 +88,70 @@ export class ServiceCatalogEditorComponent {
   readonly showCancelConfirmation = signal(false);
 
   constructor() {
-    if (this.source?.category === 'GROOMING') {
-      for (const product of DEMO_PRODUCT_SKUS.slice(0, 4)) {
-        this.materials.push({
-          key: this.nextMaterialKey++,
-          sku: product.sku,
-          query: product.name,
-          quantity: 1,
-          unit: product.unit,
-        });
-      }
-    }
-
-    if (this.source?.bookingMode === 'CONTACT_ONLY') {
-      this.durationMinutes = null;
+    if (this.serviceId && this.editorMode !== 'create') {
+      this.repository.get(this.serviceId).pipe(
+        takeUntilDestroyed(this.destroyRef),
+      ).subscribe({
+        next: (raw) => {
+          this.hydrate(raw);
+          this.loading.set(false);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.loading.set(false);
+          this.missingService.set(true);
+          this.errors.set([this.errorLabel(error)]);
+        },
+      });
     }
   }
 
+  private hydrate(raw: ServiceApiRecord): void {
+    this.source = serviceFromApi(raw);
+    this.serviceName = raw.name;
+    this.category = raw.serviceType;
+    this.bookingMode = raw.bookingMode;
+    this.description = raw.description ?? '';
+    this.durationMinutes = raw.durationMinutes;
+    this.executorRole = raw.requiredStaffRole;
+    this.active = raw.status === 'ACTIVE';
+    const variants = raw.priceVariants ?? [];
+    this.weightPricing = variants.length > 0;
+    this.priceTiers = TIER_WEIGHTS.map((t) => {
+      const found = variants.find((v) => v.label === t.key);
+      return {
+        ...t,
+        mode: found ? 'FIXED' as const : 'QUOTE' as const,
+        price: found?.price ?? null,
+      };
+    });
+    if (!this.weightPricing) {
+      this.priceTiers[0].mode = 'FIXED';
+      this.priceTiers[0].price = raw.basePrice;
+    }
+    // InventoryItem.materialId is NOT a Product SKU. Preserve existing
+    // materials server-side and show them read-only until Inventory lookup is ready.
+    this.materials = (raw.defaultMaterials ?? []).map((m) => ({
+      key: this.nextMaterialKey++,
+      sku: m.materialId,
+      query: m.materialId,
+      quantity: m.defaultQuantity,
+      unit: m.unit,
+    }));
+  }
+
+  private errorLabel(error: HttpErrorResponse): string {
+    const body = error.error as { message?: string; error?: { message?: string }; code?: string } | null;
+    if (error.status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+    if (error.status === 403) return 'Tài khoản không có quyền thao tác danh mục dịch vụ.';
+    if (error.status === 404) return 'Không tìm thấy dịch vụ trong Backend.';
+    if (error.status === 409) return 'Dữ liệu đã thay đổi hoặc mã dịch vụ bị trùng. Vui lòng kiểm tra và thử lại.';
+    if (error.status === 422 || error.status === 400)
+      return body?.message ?? body?.error?.message ?? 'Dữ liệu không hợp lệ theo quy tắc Backend.';
+    return 'Không kết nối được Backend. Vui lòng kiểm tra lại hoặc thử sau.';
+  }
+
   get mayEdit(): boolean {
-    return !this.readOnly && !this.missingService;
+    return !this.readOnly && !this.missingService() && !this.loading() && !this.saving();
   }
 
   markDirty(): void {
@@ -116,20 +162,25 @@ export class ServiceCatalogEditorComponent {
 
   changeCategory(category: string): void {
     this.category = category;
-    this.executorRole = category === 'GROOMING' ? 'CARE_STAFF' : 'VETERINARIAN';
+    this.executorRole = category === 'GROOMING' ? 'CARE_STAFF_GROOMER' : 'VETERINARIAN';
     this.markDirty();
   }
 
   changeBookingMode(mode: ServiceBookingMode): void {
     this.bookingMode = mode;
-    if (mode === 'CONTACT_ONLY') this.durationMinutes = null;
-    if (mode === 'BOOKABLE' && this.durationMinutes === null) this.durationMinutes = 30;
+    // ServiceWrite.durationMinutes is required >= 1 for all booking modes, including CONTACT_ONLY.
+    if (this.durationMinutes === null) this.durationMinutes = 30;
     this.markDirty();
   }
 
   setTierMode(tier: Tier, mode: PriceMode): void {
     tier.mode = mode;
     if (mode === 'QUOTE') tier.price = null;
+    this.markPricingDirty();
+  }
+
+  markPricingDirty(): void {
+    this.pricingDirty = true;
     this.markDirty();
   }
 
@@ -169,17 +220,16 @@ export class ServiceCatalogEditorComponent {
     if (!['BOOKABLE', 'REQUEST_ONLY', 'CONTACT_ONLY'].includes(this.bookingMode)) {
       messages.push('Vui lòng chọn hình thức đặt lịch.');
     }
-    if (!['CARE_STAFF', 'VETERINARIAN'].includes(this.executorRole)) {
+    if (!['CARE_STAFF_GROOMER', 'VETERINARIAN', 'NURSE'].includes(this.executorRole)) {
       messages.push('Vai trò thực hiện không hợp lệ.');
     }
-    if (this.bookingMode !== 'CONTACT_ONLY' &&
-      (!Number.isSafeInteger(this.durationMinutes) || (this.durationMinutes ?? 0) <= 0)) {
-      messages.push('Thời lượng phải là số nguyên dương, trừ dịch vụ chỉ liên hệ.');
+    if (!Number.isSafeInteger(this.durationMinutes) || (this.durationMinutes ?? 0) <= 0) {
+      messages.push('Thời lượng phải là số nguyên dương, kể cả dịch vụ chỉ liên hệ.');
     }
-    if (this.source?.serviceCode === 'MED06' && this.bookingMode !== 'REQUEST_ONLY') {
+    if (/phẫu thuật|triệt sản|mổ/i.test(this.serviceName) && this.bookingMode !== 'REQUEST_ONLY') {
       messages.push('Phẫu thuật chỉ được tiếp nhận theo yêu cầu (REQUEST_ONLY).');
     }
-    if (this.source?.serviceCode === 'MED07' && this.bookingMode !== 'CONTACT_ONLY') {
+    if (/cấp cứu/i.test(this.serviceName) && this.bookingMode !== 'CONTACT_ONLY') {
       messages.push('Cấp cứu chỉ cho liên hệ (CONTACT_ONLY).');
     }
 
@@ -196,21 +246,26 @@ export class ServiceCatalogEditorComponent {
       messages.push('Giá dịch vụ phải là số nguyên dương hoặc chọn Liên hệ báo giá.');
     }
 
-    const materialSkus = new Set<string>();
-    for (const line of this.materials) {
-      if (!line.sku || !this.productOptions.some((item) => item.sku === line.sku)) {
-        messages.push('Một vật liệu chưa được chọn từ danh sách SKU hiện có.');
-      } else if (materialSkus.has(line.sku)) {
-        messages.push('Không được chọn trùng SKU vật liệu: ' + line.sku + '.');
-      } else {
-        materialSkus.add(line.sku);
-      }
-      if (line.quantity === null || !Number.isFinite(line.quantity) || line.quantity <= 0) {
-        messages.push('Số lượng vật liệu phải lớn hơn 0.');
-      }
-      if (!line.unit.trim()) messages.push('Đơn vị vật liệu không được để trống.');
-    }
     return [...new Set(messages)];
+  }
+
+  private pricePayload(): { basePrice: number; priceVariants: ServicePriceVariant[] } {
+    if (!this.weightPricing) {
+      return { basePrice: this.priceTiers[0].mode === 'FIXED' ? this.priceTiers[0].price ?? 0 : 0, priceVariants: [] };
+    }
+    const bounds: Record<string, [number | undefined, number | undefined]> = {
+      XS: [undefined, 5], S: [5, 10], M: [10, 20], L: [20, 30], XL: [30, undefined],
+    };
+    const priceVariants = this.priceTiers.filter((t) => t.mode === 'FIXED' && t.price !== null)
+      .map((t) => {
+        const [minWeightKg, maxWeightKg] = bounds[t.key] ?? [];
+        return {
+          label: t.key, price: t.price!,
+          ...(minWeightKg === undefined ? {} : { minWeightKg }),
+          ...(maxWeightKg === undefined ? {} : { maxWeightKg }),
+        };
+      });
+    return { basePrice: priceVariants.length ? Math.min(...priceVariants.map((v) => v.price)) : 0, priceVariants };
   }
 
   validateDraft(): void {
@@ -221,8 +276,37 @@ export class ServiceCatalogEditorComponent {
       this.notice.set('');
       return;
     }
-
-    this.notice.set('Dữ liệu hợp lệ, nhưng chưa lưu lên Backend. API Service CRUD chưa được bàn giao; đây chỉ là bản xem trước Phase 2.');
+    const prices = this.pricePayload();
+    const body: ServiceWrite = {
+      name: this.serviceName.trim(),
+      serviceType: this.category as 'GROOMING' | 'MEDICAL',
+      category: this.category,
+      description: this.description.trim(),
+      bookingMode: this.bookingMode,
+      requiredStaffRole: this.executorRole as ServiceWrite['requiredStaffRole'],
+      durationMinutes: this.durationMinutes!,
+      status: this.active ? 'ACTIVE' : 'INACTIVE',
+      ...prices,
+    };
+    // Never send Product SKU strings as InventoryItem IDs.
+    // On EDIT, leave existing defaultMaterials untouched in Backend.
+    this.saving.set(true);
+    const request = this.isNew
+      ? this.repository.create(body, this.saveIdempotencyKey ??= crypto.randomUUID())
+      : this.repository.update(this.serviceId!, this.pricingDirty
+        ? body : (({ basePrice: _price, priceVariants: _variants, ...rest }) => rest)(body));
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.dirty.set(false);
+        this.notice.set(this.isNew ? 'Đã thêm dịch vụ thành công.' : 'Đã cập nhật dịch vụ thành công.');
+        void this.router.navigateByUrl('/admin/services');
+      },
+      error: (error: HttpErrorResponse) => {
+        this.saving.set(false);
+        this.errors.set([this.errorLabel(error)]);
+      },
+    });
   }
 
   cancel(): void {
