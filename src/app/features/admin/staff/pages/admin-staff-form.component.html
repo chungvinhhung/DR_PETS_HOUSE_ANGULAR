@@ -19,7 +19,9 @@
         }
         <button type="button" class="primary" (click)="submit('save')">{{ isEdit ? 'Lưu thay đổi' : 'Tạo nhân viên' }}</button>
         @if (isEdit) {
-          <button type="button" class="danger-outline" (click)="notAvailable('Chặn/Bỏ chặn tài khoản')">{{ staff?.accountStatus === 'BLOCKED' ? 'Bỏ chặn tài khoản' : 'Chặn tài khoản' }}</button>
+          @if (canManageAccount && staff) {
+            <a class="danger-outline" [routerLink]="['/admin/staff', staffId]" title="Chặn/Bỏ chặn tại trang chi tiết">Quản lý chặn tài khoản</a>
+          }
         }
       </div>
     </header>
