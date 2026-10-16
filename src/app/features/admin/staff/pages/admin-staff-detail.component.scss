@@ -88,3 +88,18 @@
   .staff-detail__two-fields { gap:12px; }
   .staff-detail__week-label { min-width:0; font-size:12px; }
 }
+
+/* Account management preview action, consistent with the shared Admin confirmation pattern. */
+.staff-detail__button--danger { border-color: #c72929; color: #c72929; background: #fff; }
+.staff-detail__button--danger:hover { background: #fff4f4; }
+.staff-detail__confirm-overlay {
+  position: fixed; inset: 0; z-index: 220; display: grid; place-items: center;
+  background: #0f172a80; padding: 16px;
+}
+.staff-detail__confirm {
+  width: min(480px, 100%); padding: 28px; border-radius: 12px;
+  background: #fff; box-shadow: 0 16px 40px #0b1a3050;
+}
+.staff-detail__confirm h2 { font-size: 20px; color: #1d2b42; margin: 0 0 12px; }
+.staff-detail__confirm p { color: #64748b; font-size: 14px; line-height: 22px; margin: 0 0 20px; }
+.staff-detail__confirm-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; }
