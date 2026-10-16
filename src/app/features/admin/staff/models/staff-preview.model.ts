@@ -16,6 +16,7 @@ export interface StaffPreview {
   homeBranch?: string;
   phone?: string;
   email?: string;
+  loginUsername?: string;
 }
 
 export interface StaffShiftPreview {
@@ -45,8 +46,8 @@ export const JOB_PREFIX: Record<JobRole, string> = {
 /** Existing Staff List sample rows; retained unchanged to avoid breaking accepted UI. */
 export const STAFF_PREVIEW: readonly StaffPreview[] = [
   { id: 'NV001', fullName: 'Minh Anh', jobRole: 'VETERINARIAN',
-    branches: ['Quận 1'], homeBranch: 'Quận 1', phone: '0901 234 567',
-    email: 'minhanh@drpetshouse.vn', todayShift: '07:00–15:00', accountStatus: 'ACTIVE' },
+    branches: ['Quận 1', 'Quận 3'], homeBranch: 'Quận 1', phone: '0901 234 567',
+    email: 'minhanh@drpetshouse.vn', loginUsername: 'minhanhbsthuy', todayShift: '07:00–15:00', accountStatus: 'ACTIVE' },
   { id: 'NV002', fullName: 'Gia Bảo', jobRole: 'CARE_STAFF',
     branches: ['Quận 3'], todayShift: '08:00–17:00', accountStatus: 'ACTIVE' },
   { id: 'NV003', fullName: 'Thu Hà', jobRole: 'MANAGER',
