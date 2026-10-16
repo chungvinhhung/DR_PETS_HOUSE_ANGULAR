@@ -8,7 +8,7 @@
       <option value="">Chọn nhân viên</option>
       @for (item of staff; track item.id) { <option [value]="item.id">{{ displayName(item) }}</option> }
     </select></label>
-    <div class="assign-weeks"><button type="button" (click)="changeWeek(-1)" aria-label="Tuần trước">‹</button><strong>Tuần {{ monday() }}</strong><button type="button" (click)="changeWeek(1)" aria-label="Tuần sau">›</button></div></div>
+    <div class="assign-weeks"><button type="button" (click)="changeWeek(-1)" aria-label="Tuần trước">‹</button><strong>Tuần {{ monday() }}</strong><button class="assign-today" type="button" (click)="goToday()">Hôm nay</button><button type="button" (click)="changeWeek(1)" aria-label="Tuần sau">›</button></div></div>
     @if (!selectedStaff()) { <p class="assign-empty">Chọn nhân viên để bắt đầu phân ca.</p> }
     @else {
       <div class="assign-table"><table><thead><tr><th>Ngày</th><th>Ca đã phân công (mẫu)</th><th>Ca thêm trong bản nháp</th><th>Thêm ca</th></tr></thead>
