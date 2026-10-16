@@ -51,10 +51,9 @@ export class AdminStaffListComponent {
   updateBranch(value: string): void { this.branchFilter.set(value); this.page.set(1); }
   updateStatus(value: string): void { this.statusFilter.set(value as StaffStatus | 'ALL'); this.page.set(1); }
   changePage(next: number): void { if (next > 0 && next <= this.pages()) this.page.set(next); }
-  showActionNotice(action: 'view' | 'edit', staff: StaffPreview): void {
-    const label = action === 'view' ? 'Xem chi tiết' : 'Chỉnh sửa';
+  showActionNotice(staff: StaffPreview): void {
     this.actionNotice.set(
-      `${label} nhân viên ${this.displayName(staff)} sẽ được triển khai trong bước tiếp theo của Task 3.8. Chưa có dữ liệu Staff API.`,
+      `Chỉnh sửa nhân viên ${this.displayName(staff)} sẽ được triển khai ở phase tiếp theo. Chưa có API Staff để lưu thay đổi.`,
     );
   }
 
