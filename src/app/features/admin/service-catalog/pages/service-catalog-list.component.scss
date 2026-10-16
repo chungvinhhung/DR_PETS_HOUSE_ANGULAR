@@ -211,9 +211,9 @@ app-service-catalog-list {
 .service-catalog__table th:nth-child(3) { width: 12%; }
 .service-catalog__table th:nth-child(4) { width: 12.5%; }
 .service-catalog__table th:nth-child(5) { width: 10%; }
-.service-catalog__table th:nth-child(6) { width: 15%; }
-.service-catalog__table th:nth-child(7) { width: 9.5%; }
-.service-catalog__table th:nth-child(8) { width: 9%; }
+.service-catalog__table th:nth-child(6) { width: 12%; }
+.service-catalog__table th:nth-child(7) { width: 10%; }
+.service-catalog__table th:nth-child(8) { width: 11.5%; }
 .service-catalog__table th:nth-child(9) { width: 8%; }
 
 .service-catalog__table th {
@@ -309,10 +309,10 @@ app-service-catalog-list {
 }
 
 .service-catalog__availability {
-  min-width: 66px;
+  min-width: 106px;
   background: #eef4fc;
   color: #3f668c;
-  white-space: normal;
+  white-space: nowrap;
 }
 
 .service-catalog__actions-col,
