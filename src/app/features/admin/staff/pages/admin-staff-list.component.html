@@ -30,7 +30,7 @@
             <option value="BLOCKED">Đã chặn</option>
           </select><img class="staff-filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" width="20" height="20" alt="" aria-hidden="true"></label>
         </div>
-        <button class="staff-add" type="button" disabled title="Đang chờ màn Thêm nhân viên và API tạo tài khoản">+ Thêm nhân viên</button>
+        <a class="staff-add" routerLink="/admin/staff/new">+ Thêm nhân viên</a>
       </div>
       @if (actionNotice(); as notice) {
         <div class="staff-action-notice" role="status">
@@ -54,12 +54,12 @@
                     title="Xem chi tiết">
                     <img src="/assets/admin-login/visibility-outlined.svg" width="20" height="20" alt="" aria-hidden="true">
                   </a>
-                  <button type="button" class="staff-action-button"
-                    [attr.aria-label]="'Chỉnh sửa ' + displayName(staff) + ' (sắp triển khai)'"
-                    title="Chỉnh sửa (sắp triển khai)"
-                    (click)="showActionNotice(staff)">
+                  <a class="staff-action-button"
+                    [routerLink]="['/admin/staff', staff.id, 'edit']"
+                    [attr.aria-label]="'Chỉnh sửa ' + displayName(staff)"
+                    title="Chỉnh sửa">
                     <img src="/assets/admin-staff/icon-edit.svg" width="20" height="20" alt="" aria-hidden="true">
-                  </button>
+                  </a>
                 </div>
               </td>
             </tr>
