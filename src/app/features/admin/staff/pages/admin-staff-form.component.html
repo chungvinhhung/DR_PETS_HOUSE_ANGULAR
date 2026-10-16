@@ -10,6 +10,7 @@
     <div class="head-actions">
       <button type="button" class="secondary" (click)="cancel()">Hủy</button>
       <button type="button" class="primary" (click)="submit('save')">{{ isEdit ? 'Lưu thay đổi' : 'Tạo nhân viên' }}</button>
+      @if (!isEdit) {<button type="button" class="primary" (click)="submit('assign')">Tạo và phân ca</button>}
     </div>
   </header>
   @if (isEdit && !staff) {
@@ -71,11 +72,7 @@
       </div>
     </section>
     @if (notice) {<p class="alert" role="status">{{ notice }}</p>}
-    <div class="bottom-actions">
-      <button type="button" class="secondary" (click)="cancel()">Hủy</button>
-      <button type="submit" class="primary">{{ isEdit ? 'Lưu thay đổi' : 'Tạo nhân viên' }}</button>
-      @if (!isEdit) {<button type="button" class="primary" (click)="submit('assign')">Tạo và phân ca</button>}
-    </div>
+
   </form>
   }
 </main>
