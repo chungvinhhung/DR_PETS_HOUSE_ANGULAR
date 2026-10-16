@@ -16,6 +16,8 @@
           <a class="staff-detail__button staff-detail__button--primary"
             [routerLink]="['/admin/staff', employee.id, 'edit']">Chỉnh sửa nhân viên</a>
           <button type="button" class="staff-detail__button staff-detail__button--danger"
+            [disabled]="!canBlockAccount"
+            [title]="canBlockAccount ? 'Quản lý trạng thái tài khoản' : 'Chỉ Admin được chặn/bỏ chặn tài khoản'"
             (click)="openBlockConfirmation()">{{ employee.accountStatus === 'BLOCKED' ? 'Bỏ chặn tài khoản' : 'Chặn tài khoản' }}</button>
         </div>
       </header>
