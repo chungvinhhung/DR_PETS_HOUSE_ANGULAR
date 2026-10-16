@@ -123,3 +123,35 @@
 .staff-reset-actions{display:flex;justify-content:flex-end;gap:8px;border-top:1px solid #e2e8f0;padding-top:20px}
 .staff-reset-dialog .staff-reset-note{font-size:11px;color:#8191a7;margin-top:16px}
 @media(max-width:600px){.staff-reset-dialog{padding:20px}.staff-reset-actions{flex-wrap:wrap}}
+
+/* Phase 5 UI polish: keep account status action consistent with Figma buttons. */
+.head-actions .danger-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 16px;
+  line-height: 20px;
+  background: #fff;
+  color: #c72929;
+  border: 1px solid #c72929;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 13px;
+  text-decoration: none;
+  appearance: none;
+}
+.head-actions .danger-outline:hover { background: #fff4f4; }
+.head-actions .danger-outline:focus-visible { outline: 2px solid #c72929; outline-offset: 2px; }
+/* The weekday and its date appear on separate lines, as in the Figma schedule. */
+.schedule-table .shift-day {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+.schedule-table .shift-day__weekday { color: #1b273b; font-size: 12px; line-height: 16px; font-weight: 500; }
+.schedule-table .shift-day__date { color: #7b8ca2; font-size: 10px; line-height: 14px; }
