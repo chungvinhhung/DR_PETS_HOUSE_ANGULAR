@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AppHttpError } from '../../../../core/models/app-http-error.model';
 import { DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -96,7 +97,7 @@ export class ServiceCatalogEditorComponent {
           this.hydrate(raw);
           this.loading.set(false);
         },
-        error: (error: HttpErrorResponse) => {
+        error: (error: HttpErrorResponse | AppHttpError) => {
           this.loading.set(false);
           this.missingService.set(true);
           this.errors.set([this.errorLabel(error)]);
@@ -139,14 +140,15 @@ export class ServiceCatalogEditorComponent {
     }));
   }
 
-  private errorLabel(error: HttpErrorResponse): string {
-    const body = error.error as { message?: string; error?: { message?: string }; code?: string } | null;
+  private errorLabel(error: HttpErrorResponse | AppHttpError): string {
+    const body = (error instanceof AppHttpError ? error.details : error.error) as
+      { message?: string; error?: { message?: string }; code?: string } | null;
     if (error.status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
     if (error.status === 403) return 'Tài khoản không có quyền thao tác danh mục dịch vụ.';
     if (error.status === 404) return 'Không tìm thấy dịch vụ trong Backend.';
     if (error.status === 409) return 'Dữ liệu đã thay đổi hoặc mã dịch vụ bị trùng. Vui lòng kiểm tra và thử lại.';
     if (error.status === 422 || error.status === 400)
-      return body?.message ?? body?.error?.message ?? 'Dữ liệu không hợp lệ theo quy tắc Backend.';
+      return body?.message ?? body?.error?.message ?? error.message ?? 'Dữ liệu không hợp lệ theo quy tắc Backend.';
     return 'Không kết nối được Backend. Vui lòng kiểm tra lại hoặc thử sau.';
   }
 
@@ -304,7 +306,7 @@ export class ServiceCatalogEditorComponent {
         this.notice.set(this.isNew ? 'Đã thêm dịch vụ thành công.' : 'Đã cập nhật dịch vụ thành công.');
         void this.router.navigateByUrl('/admin/services');
       },
-      error: (error: HttpErrorResponse) => {
+      error: (error: HttpErrorResponse | AppHttpError) => {
         this.saving.set(false);
         this.errors.set([this.errorLabel(error)]);
       },
