@@ -123,6 +123,12 @@ export class AdminStaffFormComponent {
   }
 
   toggleBranchMenu(): void { this.branchMenuOpen = !this.branchMenuOpen; }
+  selectHomeBranch(branch: string): void {
+    this.form.controls.homeBranch.setValue(branch);
+    if (branch && !this.selectedBranches.has(branch)) {
+      this.toggleBranch(branch, true);
+    }
+  }
   toggleBranch(branch: string, checked: boolean): void {
     if (checked) this.selectedBranches.add(branch);
     else this.selectedBranches.delete(branch);
