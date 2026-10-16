@@ -69,10 +69,10 @@
               <label>
                 <span class="field-label">Chi nhánh chính <em>*</em></span>
                 <span class="select-wrap">
-                  <select formControlName="homeBranch">
+                  <select formControlName="homeBranch" (change)="selectHomeBranch($any($event.target).value)">
                     <option value="">Chọn chi nhánh</option>
                     @for (branch of branches; track branch) {
-                      <option [value]="branch" [disabled]="!selectedBranches.has(branch)">{{ branch }}</option>
+                      <option [value]="branch">{{ branch }}</option>
                     }
                   </select>
                   <img src="/assets/admin-product/expand_more.svg" width="17" height="17" alt="" aria-hidden="true">
