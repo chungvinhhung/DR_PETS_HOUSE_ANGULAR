@@ -69,7 +69,14 @@
             <button type="button" aria-label="Tuần trước" (click)="moveWeek(-1)">‹</button>
             <span class="staff-detail__week-label">
               {{ weekLabel() }}
-              <img src="/assets/admin-staff/calendar-today.svg" width="16" height="16" alt="" aria-hidden="true">
+              <button type="button" class="staff-detail__calendar-button"
+                aria-label="Chọn ngày để xem tuần chứa ngày đó" title="Chọn ngày"
+                (click)="openWeekDatePicker()">
+                <img src="/assets/admin-staff/calendar-today.svg" width="16" height="16" alt="" aria-hidden="true">
+              </button>
+              <input #weekDatePicker class="staff-detail__date-picker" type="date"
+                [value]="weekMonday()" aria-label="Chọn ngày trong tuần cần xem"
+                (change)="selectWeekDate(weekDatePicker.value)">
             </span>
             <button type="button" aria-label="Tuần sau" (click)="moveWeek(1)">›</button>
           </nav>
