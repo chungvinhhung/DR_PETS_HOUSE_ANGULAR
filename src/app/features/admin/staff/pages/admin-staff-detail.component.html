@@ -95,7 +95,7 @@
                 @if (day.shifts.length) {
                   @for (shift of day.shifts; track shift.isoDate + shift.branch + shift.time) {
                     <tr>
-                      <td>{{ day.label }}</td>
+                      <td><span class="staff-detail__day"><span>{{ day.weekday }}</span><small>{{ day.dayMonth }}</small></span></td>
                       <td>{{ shift.branch }}</td>
                       <td>{{ shift.shiftName }}</td>
                       <td>{{ displayShift(shift.time) }}</td>
