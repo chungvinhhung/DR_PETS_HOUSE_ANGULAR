@@ -5,10 +5,7 @@
     <nav class="schedule-tabs" aria-label="Nhân sự"><a routerLink="/admin/staff">Nhân viên</a><span aria-current="page">Lịch làm việc</span></nav>
     <section class="schedule-panel">
       <div class="schedule-toolbar">
-        <div class="schedule-toolbar__heading">
-          <h2 class="schedule-toolbar__title">Lịch làm việc theo tuần</h2>
-          <a class="schedule-primary" routerLink="/admin/staff/shifts/assign">+ Phân ca làm việc</a>
-        </div>
+        <h2 class="schedule-toolbar__title">Lịch làm việc theo tuần</h2>
         <div class="schedule-toolbar__controls">
           <nav class="schedule-week" aria-label="Chuyển tuần làm việc">
             <button class="schedule-week__arrow" type="button" (click)="changeWeek(-1)" aria-label="Tuần trước">‹</button>
@@ -44,6 +41,8 @@
             </label>
           </div>
         </div>
+        <button type="button" class="schedule-primary" disabled
+          title="Chức năng phân ca làm việc tạm thời chưa khả dụng">+ Phân ca làm việc</button>
       </div>
       <div class="schedule-scroller"><table>
         <colgroup><col class="schedule-col-staff">@for (day of days(); track day.iso) { <col class="schedule-col-day"> }</colgroup>
