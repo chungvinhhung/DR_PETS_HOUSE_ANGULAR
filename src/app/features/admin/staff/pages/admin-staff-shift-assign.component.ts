@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { JOB_LABELS, STAFF_PREVIEW, STAFF_SHIFTS_PREVIEW, displayStaffName } from '../models/staff-preview.model';
 
@@ -25,6 +25,7 @@ const plusDays = (date: string, n: number) => new Date(Date.parse(date + 'T00:00
 })
 export class AdminStaffShiftAssignComponent {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   readonly staff = STAFF_PREVIEW;
   readonly chosenId = signal(this.route.snapshot.queryParamMap.get('staffId') ?? '');
   readonly monday = signal(monday('2026-10-19'));
@@ -67,6 +68,6 @@ export class AdminStaffShiftAssignComponent {
     if (!this.draft().length) { this.errors.set(['Chưa có ca mới trong bản nháp.']); return; }
     this.success.set('Các ca trong bản nháp hợp lệ. Chưa có API Shift nên chưa lưu lên máy chủ.');
   }
-  requestClose() { this.confirmLeave.set(this.hasChanges()); }
-  discard() { this.draft.set([]); this.hasChanges.set(false); this.confirmLeave.set(false); this.errors.set([]); }
+  requestClose() { if (this.hasChanges()) this.confirmLeave.set(true); else void this.router.navigateByUrl('/admin/staff/schedule'); }
+  discard() { this.draft.set([]); this.hasChanges.set(false); this.confirmLeave.set(false); this.errors.set([]); void this.router.navigateByUrl('/admin/staff/schedule'); }
 }
