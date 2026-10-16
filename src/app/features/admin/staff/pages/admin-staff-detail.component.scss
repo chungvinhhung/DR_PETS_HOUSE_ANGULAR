@@ -56,6 +56,18 @@
 .staff-detail__week-control button:hover { background:#eff6ff; }
 .staff-detail__week-label { gap:8px; min-width:211px; padding:0 12px; font-size:14px; white-space:nowrap; }
 .staff-detail__week-label img { display:block; width:16px; height:16px; flex:0 0 16px; }
+.staff-detail__week-label { position:relative; padding-right:6px; }
+.staff-detail__week-control .staff-detail__calendar-button {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:30px; height:30px; flex:0 0 30px; padding:0;
+  background:transparent; border:0; border-radius:6px; cursor:pointer;
+}
+.staff-detail__week-control .staff-detail__calendar-button:hover { background:#eff6ff; }
+.staff-detail__date-picker {
+  position:absolute; right:6px; top:100%; width:1px; height:1px;
+  padding:0; border:0; opacity:0; pointer-events:none;
+}
+
 .staff-detail__schedule-scroll { width:100%; overflow-x:auto; border:1px solid #e2e8f0; border-radius:8px; }
 .staff-detail__schedule-table { width:100%; min-width:720px; border-collapse:collapse; text-align:left; table-layout:fixed; }
 .staff-detail__schedule-table th {
