@@ -57,15 +57,17 @@
 .branch-option:hover { background: #eef6fd; }
 .branch-option input { accent-color: #0d47a1; width: 16px; height: 16px; margin: 0; }
 .error { font-size: 12px; line-height: 17px; color: #bf2121; font-weight: 400; }
-.password-wrap { display: flex; align-items: center; width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; height: 40px; }
+.password-wrap { display: flex; align-items: stretch; width: 100%; min-width: 0; max-width: 100%; overflow: hidden; border: 1px solid #e2e8f0; border-radius: 8px; height: 40px; background: #fff; }
 .password-wrap:focus-within { border-color: #0d47a1; box-shadow: 0 0 0 2px #0d47a120; }
-.password-wrap input { border: 0 !important; box-shadow: none !important; flex: 1; min-width: 0; }
-.password-wrap button { background: transparent; border: 0; display: grid; place-items: center; width: 38px; height: 38px; cursor: pointer; }
+.fields .password-wrap input:not([type='checkbox']) { flex: 1 1 0; width: 0; min-width: 0; height: 38px; border: 0; border-radius: 0; box-shadow: none; background: transparent; padding: 8px 11px; }
+.password-wrap button { flex: 0 0 40px; align-self: stretch; min-width: 40px; background: transparent; border: 0; display: grid; place-items: center; width: 40px; height: 38px; cursor: pointer; padding: 0; }
 .password-wrap button img { width: 20px; height: 20px; }
-.account-edit-layout { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 28px; align-items: start; }
+.edit-branch-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 22px; align-items: end; }
+.account-edit-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .9fr) auto; gap: 16px; align-items: end; min-height: 46px; }
+.account-value { display: block; min-width: 0; min-height: 23px; color: #1b273b; font-weight: 400; font-size: 13px; line-height: 22px; overflow-wrap: anywhere; }
 .account-state .status-badge { display: inline-flex; width: fit-content; border-radius: 999px; background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; font-size: 12px; font-weight: 500; line-height: 16px; white-space: nowrap; padding: 2px 9px; }
 .account-state .status-badge--blocked { background: #ffdad6; color: #a22; border-color: #ffcdd2; }
-.reset-button { margin-top: 15px; }
+.reset-button { margin: 0; align-self: end; min-height: 38px; padding: 0 10px; font-size: 12px; }
 .schedule-panel { margin-bottom: 16px; }
 .schedule-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
 .schedule-header h2 { margin: 0; }
@@ -98,7 +100,7 @@
   .staff-form-page { padding: 18px 12px; }
   .form-head { flex-wrap: wrap; }
   .form-head h1 { font-size: 22px; }
-  .basic-fields, .lower-cards, .account-edit-layout { grid-template-columns: 1fr; }
+  .basic-fields, .lower-cards, .account-edit-layout, .edit-branch-fields { grid-template-columns: 1fr; }
   .head-actions { justify-content: flex-start; }
   .schedule-header { align-items: flex-start; flex-direction: column; }
 }
