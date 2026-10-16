@@ -14,6 +14,14 @@ const confirmProductLeave: CanDeactivateFn<ProductLeaveAware> = (component) => c
 
 export const routes: Routes = [
   {
+    path: 'admin/staff/:id',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () =>
+      import('./features/admin/staff/pages/admin-staff-detail.component')
+        .then(component => component.AdminStaffDetailComponent),
+  },
+  {
     path: 'admin/staff',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN', 'MANAGER'] },
