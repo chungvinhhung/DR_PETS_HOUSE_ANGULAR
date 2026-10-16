@@ -188,7 +188,9 @@ export class AdminStaffFormComponent {
     this.cdr.markForCheck();
   }
   cancel(): void {
-    void this.router.navigateByUrl('/admin/staff');
+    const fromDetail = this.isEdit && !!this.staff && this.route.snapshot.queryParamMap.get('from') === 'detail';
+    const target = fromDetail ? `/admin/staff/${this.staffId}` : '/admin/staff';
+    void this.router.navigateByUrl(target);
   }
   @HostListener('window:beforeunload', ['$event'])
   confirmBrowserUnload(event: BeforeUnloadEvent): void {
