@@ -49,12 +49,11 @@
               <td><span class="staff-status" [class.staff-status--blocked]="staff.accountStatus === 'BLOCKED'">{{ staff.accountStatus === 'ACTIVE' ? 'Đang hoạt động' : 'Đã chặn' }}</span></td>
               <td class="staff-actions">
                 <div class="staff-action-group" role="group" [attr.aria-label]="'Thao tác ' + displayName(staff)">
-                  <button type="button" class="staff-action-button"
-                    [attr.aria-label]="'Xem chi tiết ' + displayName(staff) + ' (sắp triển khai)'"
-                    title="Xem chi tiết (sắp triển khai)"
-                    (click)="showActionNotice('view', staff)">
+                  <a class="staff-action-button" [routerLink]="['/admin/staff', staff.id]"
+                    [attr.aria-label]="'Xem chi tiết ' + displayName(staff)"
+                    title="Xem chi tiết">
                     <img src="/assets/admin-login/visibility-outlined.svg" width="20" height="20" alt="" aria-hidden="true">
-                  </button>
+                  </a>
                   <button type="button" class="staff-action-button"
                     [attr.aria-label]="'Chỉnh sửa ' + displayName(staff) + ' (sắp triển khai)'"
                     title="Chỉnh sửa (sắp triển khai)"
