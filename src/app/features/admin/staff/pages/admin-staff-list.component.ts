@@ -1,49 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
-
-type JobRole = 'VETERINARIAN' | 'NURSE' | 'RECEPTIONIST' | 'CARE_STAFF' | 'MANAGER';
-type StaffStatus = 'ACTIVE' | 'BLOCKED';
-
-interface StaffPreview {
-  id: string;
-  fullName: string;
-  jobRole: JobRole;
-  branches: string[];
-  todayShift: string;
-  accountStatus: StaffStatus;
-}
-
-const JOB_LABELS: Record<JobRole, string> = {
-  VETERINARIAN: 'Bác sĩ thú y',
-  NURSE: 'Y tá',
-  RECEPTIONIST: 'Lễ tân',
-  CARE_STAFF: 'Nhân viên chăm sóc',
-  MANAGER: 'Quản lý',
-};
-const JOB_PREFIX: Record<JobRole, string> = {
-  VETERINARIAN: 'BS.',
-  NURSE: 'YT.',
-  RECEPTIONIST: 'LT.',
-  CARE_STAFF: 'CS.',
-  MANAGER: 'QL.',
-};
-
-// Figma-like FE preview fixtures only. No real staffing/Shift/permissions are inferred.
-const STAFF_PREVIEW: readonly StaffPreview[] = [
-  { id: 'NV001', fullName: 'Minh Anh', jobRole: 'VETERINARIAN', branches: ['Quận 1'], todayShift: '07:00–15:00', accountStatus: 'ACTIVE' },
-  { id: 'NV002', fullName: 'Gia Bảo', jobRole: 'CARE_STAFF', branches: ['Quận 3'], todayShift: '08:00–17:00', accountStatus: 'ACTIVE' },
-  { id: 'NV003', fullName: 'Thu Hà', jobRole: 'MANAGER', branches: ['Quận 1', 'Quận 3'], todayShift: '—', accountStatus: 'ACTIVE' },
-  { id: 'NV004', fullName: 'Quốc Huy', jobRole: 'RECEPTIONIST', branches: ['Bình Thạnh'], todayShift: '08:00–16:00', accountStatus: 'ACTIVE' },
-  { id: 'NV005', fullName: 'Thanh Huy', jobRole: 'RECEPTIONIST', branches: ['Quận 10'], todayShift: '07:00–15:00', accountStatus: 'ACTIVE' },
-  { id: 'NV006', fullName: 'Phương Vy', jobRole: 'NURSE', branches: ['Thủ Đức', 'Bình Thạnh'], todayShift: '—', accountStatus: 'BLOCKED' },
-  { id: 'NV007', fullName: 'Hoàng Khang', jobRole: 'CARE_STAFF', branches: ['Quận 3'], todayShift: '08:00–17:00', accountStatus: 'ACTIVE' },
-];
+import { RouterLink } from '@angular/router';
+import { STAFF_PREVIEW, JOB_LABELS, StaffPreview, JobRole, StaffStatus, displayStaffName, displayStaffShift } from '../models/staff-preview.model';
 
 @Component({
   selector: 'app-admin-staff-list',
   standalone: true,
-  imports: [AdminCatalogShellComponent, FormsModule],
+  imports: [AdminCatalogShellComponent, FormsModule, RouterLink],
   templateUrl: './admin-staff-list.component.html',
   styleUrl: './admin-staff-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -73,13 +37,13 @@ export class AdminStaffListComponent {
 
   displayName(staff: StaffPreview): string {
     // fullName stays raw; prefix is presentation-only.
-    return `${JOB_PREFIX[staff.jobRole]} ${staff.fullName}`;
+    return displayStaffName(staff);
   }
   roleName(role: JobRole): string { return JOB_LABELS[role]; }
 
   // Display-only formatting; preserve the original Shift start/end values.
   displayShift(value: string): string {
-    return value === '—' ? value : value.replace(/\s*[–—]\s*/g, ' - ');
+    return displayStaffShift(value);
   }
 
   updateQuery(value: string): void { this.query.set(value); this.page.set(1); }
