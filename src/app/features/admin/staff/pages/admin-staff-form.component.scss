@@ -87,11 +87,6 @@
 .schedule-table .select-wrap select { height: 36px; background: #fff; padding: 7px 32px 7px 10px; width: 100%; color: #1b273b; border: 1px solid #e2e8f0; border-radius: 7px; font: inherit; appearance: none; }
 .schedule-table .select-wrap select:disabled { border: 0; background: #e5f6fd; opacity: 1; }
 .schedule-note { color: #7d8ea3; font-size: 11px; line-height: 17px; margin: 12px 0 0; }
-.staff-leave-overlay { position: fixed; inset: 0; z-index: 220; display: grid; place-items: center; background: #0f172a80; padding: 16px; }
-.staff-leave-dialog { width: min(480px,100%); border-radius: 12px; background: #fff; padding: 28px; box-shadow: 0 16px 40px #0b1a3050; }
-.staff-leave-dialog h2 { margin: 0 0 12px; color: #1d2b42; font-size: 20px; }
-.staff-leave-dialog p { font-size: 14px; color: #64748b; line-height: 22px; margin: 0 0 20px; }
-.staff-leave-actions { display: flex; justify-content: flex-end; gap: 12px; }
 @media(max-width:1200px) {
   .basic-fields { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .staff-form-page { padding: 28px 20px; }
@@ -105,53 +100,3 @@
   .schedule-header { align-items: flex-start; flex-direction: column; }
 }
 
-.staff-reset-overlay{position:fixed;inset:0;z-index:240;display:grid;place-items:center;padding:16px;background:rgba(15,23,42,.55)}
-.staff-reset-dialog{width:min(596px,100%);max-height:calc(100vh - 32px);overflow:auto;background:#fff;border-radius:12px;padding:28px 32px;box-shadow:0 18px 45px #10203340;color:#1b273b}
-.staff-reset-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.staff-reset-heading h2{margin:0;font-size:20px;line-height:28px}
-.staff-reset-close{border:0;background:#fff;color:#64748b;font-size:26px;cursor:pointer;line-height:1}
-.staff-reset-dialog>p{font-size:12px;color:#475569;line-height:19px;margin:10px 0 0}
-.staff-reset-dialog .staff-reset-username{margin-top:4px}
-.staff-reset-fields{display:grid;gap:16px;margin:24px 0}
-.staff-reset-fields label{display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:500;color:#475569}
-.staff-reset-fields em{font-style:normal;color:#d32f2f}
-.staff-reset-input{display:flex;align-items:center;height:42px;border:1px solid #e2e8f0;border-radius:8px;padding:0 10px}
-.staff-reset-input:focus-within{border-color:#0d47a1;box-shadow:0 0 0 2px #0d47a122}
-.staff-reset-input input{flex:1;min-width:0;border:0;outline:0;color:#1b273b;font-size:13px;background:transparent}
-.staff-reset-input button{display:grid;place-items:center;border:0;background:transparent;padding:5px;cursor:pointer}
-.staff-reset-error{color:#a51c30!important;margin:-6px 0 12px!important}
-.staff-reset-actions{display:flex;justify-content:flex-end;gap:8px;border-top:1px solid #e2e8f0;padding-top:20px}
-.staff-reset-dialog .staff-reset-note{font-size:11px;color:#8191a7;margin-top:16px}
-@media(max-width:600px){.staff-reset-dialog{padding:20px}.staff-reset-actions{flex-wrap:wrap}}
-
-/* Phase 5 UI polish: keep account status action consistent with Figma buttons. */
-.head-actions .danger-outline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 40px;
-  padding: 0 16px;
-  line-height: 20px;
-  background: #fff;
-  color: #c72929;
-  border: 1px solid #c72929;
-  border-radius: 8px;
-  font-family: inherit;
-  font-weight: 500;
-  font-size: 13px;
-  text-decoration: none;
-  appearance: none;
-}
-.head-actions .danger-outline:hover { background: #fff4f4; }
-.head-actions .danger-outline:focus-visible { outline: 2px solid #c72929; outline-offset: 2px; }
-/* The weekday and its date appear on separate lines, as in the Figma schedule. */
-.schedule-table .shift-day {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 3px;
-  white-space: nowrap;
-}
-.schedule-table .shift-day__weekday { color: #1b273b; font-size: 12px; line-height: 16px; font-weight: 500; }
-.schedule-table .shift-day__date { color: #7b8ca2; font-size: 10px; line-height: 14px; }
