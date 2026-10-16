@@ -41,7 +41,8 @@
   pointer-events:none;
 }
 .staff-filters select:focus-visible { outline:2px solid #0d47a1; outline-offset:2px; }
-.staff-add { min-height:40px; padding:0 14px; background:#0d47a1; color:white; border:0; border-radius:8px; white-space:nowrap; font-weight:600; }
+.staff-add { display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:0 14px; background:#0d47a1; color:white; border:0; border-radius:8px; white-space:nowrap; font-weight:600; font-size:13px; text-decoration:none; }
+.staff-add:hover { background:#073984; text-decoration:none; }
 .staff-add:disabled { opacity:.65; cursor:not-allowed; }
 .staff-table-wrap { overflow-x:auto; }
 .staff-table-wrap table { width:100%; min-width:960px; border-collapse:collapse; text-align:left; }
