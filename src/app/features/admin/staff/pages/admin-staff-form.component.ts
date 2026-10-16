@@ -19,6 +19,8 @@ const WEEK_MS = 7 * 86400000;
 interface ShiftDay {
   key: string;
   label: string;
+  weekday: string;
+  dayMonth: string;
   branch: string;
   template: string;
   hours: string;
@@ -61,6 +63,7 @@ export class AdminStaffFormComponent {
   submitted = false;
   showPassword = false;
   resetPasswordOpen = false;
+  accountStatusDialogOpen = false;
   newPassword = '';
   confirmPassword = '';
   resetVisible = false;
@@ -68,6 +71,18 @@ export class AdminStaffFormComponent {
   resetError = '';
 
   get canManageAccount(): boolean { return this.isEdit && this.session.hasAnyRole(['ADMIN']); }
+
+  openAccountStatusDialog(): void {
+    if (!this.canManageAccount || !this.staff) return;
+    this.accountStatusDialogOpen = true;
+  }
+  closeAccountStatusDialog(): void {
+    this.accountStatusDialogOpen = false;
+  }
+  confirmAccountStatusPreview(): void {
+    this.accountStatusDialogOpen = false;
+    this.toast.show('Chưa có API chặn/bỏ chặn tài khoản. Trạng thái chưa thay đổi.', 'info');
+  }
 
   openResetPassword(): void {
     if (!this.canManageAccount || !this.staff) {
@@ -144,6 +159,8 @@ export class AdminStaffFormComponent {
       return {
         key: iso,
         label: `${n === 6 ? 'CN' : 'T' + (n + 2)} · ${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}`,
+        weekday: n === 6 ? 'CN' : 'T' + (n + 2),
+        dayMonth: `${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}`,
         branch: value?.branch ?? '',
         template: value?.template ?? '',
         hours: value ? this.templateHours(value.template, iso) : '—',
