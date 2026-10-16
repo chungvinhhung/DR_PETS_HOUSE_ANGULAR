@@ -77,6 +77,11 @@ export class AdminStaffListComponent {
   }
   roleName(role: JobRole): string { return JOB_LABELS[role]; }
 
+  // Display-only formatting; preserve the original Shift start/end values.
+  displayShift(value: string): string {
+    return value === '—' ? value : value.replace(/\s*[–—]\s*/g, ' - ');
+  }
+
   updateQuery(value: string): void { this.query.set(value); this.page.set(1); }
   updateRole(value: string): void { this.roleFilter.set(value as JobRole | 'ALL'); this.page.set(1); }
   updateBranch(value: string): void { this.branchFilter.set(value); this.page.set(1); }
