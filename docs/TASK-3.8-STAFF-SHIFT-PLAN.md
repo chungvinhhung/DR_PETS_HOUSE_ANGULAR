@@ -47,6 +47,17 @@ No fake API writes or success notifications. Use clearly marked FE preview where
 - Weekly schedule 6334:25009
 - Weekly shift assignment 6357:26732
 
+## Phase 2 — Staff Detail FE preview (implemented)
+- Reference: Figma Staff Detail node `6413:26693`, including approved read-only data cards, account status badge, and 7-day shift table.
+- Route: `/admin/staff/:id` protected by ADMIN/MANAGER role guard. Eye/View action on Staff List now navigates to it; Edit remains planned for next phase.
+- Shared sample in `models/staff-preview.model.ts`, preserving list rows; NV001 assigned branches and login name follow Staff Detail Figma so sample shifts stay in assigned branches.
+- Personal info: id, prefixed name, job role, phone, email; branch card: home/assigned branches; account card: login id and status. Unknown sample fields show an em dash, never fabricated.
+- Sample schedule: 19–25 Oct 2026 for NV001 from Figma; weekday table supports zero or multiple shifts for a day and next/previous week selection. Empty weeks are preview placeholders, not proof of no actual shifts.
+- Figma calendar icon exported at 16px into `public/assets/admin-staff/calendar-today.svg`; shared header/sidebar remain unchanged.
+- Figma renders Hủy / Lưu thay đổi / Chặn tài khoản but BA defines Detail as read-only: Hủy returns to Staff list; Save / Block stay disabled here, with explanatory tooltips.
+- Error state for unknown `:id` leads back to Staff list.
+- No real Staff API / Shift API writes or unverified Manager branch permission claims. Browser regression and Angular CI still need verification.
+
 ## Suggested sequence
 1. Review all Figma nodes, reusable component inventory and role/capability contracts.
 2. Shared models/mappings, staff shell submenu, routes, list (first FE-only).
