@@ -1,16 +1,29 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
-import { JOB_LABELS, JOB_PREFIX, JobRole, STAFF_PREVIEW, StaffPreview } from '../models/staff-preview.model';
+import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import {
+  JOB_LABELS, JOB_PREFIX, JobRole, STAFF_PREVIEW, STAFF_SHIFTS_PREVIEW,
+  StaffPreview, StaffShiftPreview,
+} from '../models/staff-preview.model';
 
 const JOB_ROLES = Object.keys(JOB_LABELS) as JobRole[];
 const BRANCHES = ['Quận 1', 'Quận 3', 'Quận 10', 'Bình Thạnh', 'Thủ Đức'];
 const STRONG_PASSWORD = /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
-const PHONE = /^(?:0[0-9]{9})$/;
+const PHONE = /^0[0-9]{9}$/;
+const WEEK_MS = 7 * 86400000;
 
-/** Phase 3 form preview. Never persists unimplemented Staff or credentials. */
+interface ShiftDay {
+  key: string;
+  label: string;
+  branch: string;
+  template: string;
+  hours: string;
+}
+
+/** FE-only editor: validated local draft, no fabricated backend persistence. */
 @Component({
   selector: 'app-admin-staff-form',
   standalone: true,
@@ -23,93 +36,158 @@ export class AdminStaffFormComponent {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly toast = inject(AdminToastService);
+  private readonly cdr = inject(ChangeDetectorRef);
+
   readonly isEdit = this.route.snapshot.data['mode'] === 'edit';
   readonly staffId = this.route.snapshot.paramMap.get('id') ?? '';
   readonly staff: StaffPreview | undefined = STAFF_PREVIEW.find(s => s.id === this.staffId);
   readonly roles = JOB_ROLES;
   readonly labels = JOB_LABELS;
   readonly branches = BRANCHES;
-  readonly accountName = this.staff?.loginUsername ?? '';
   readonly form = this.fb.nonNullable.group({
     fullName: [this.staff?.fullName ?? '', [Validators.required, Validators.maxLength(120)]],
     jobRole: [this.staff?.jobRole ?? 'VETERINARIAN' as JobRole, Validators.required],
     phone: [(this.staff?.phone ?? '').replace(/\s/g, ''), Validators.pattern(PHONE)],
     email: [this.staff?.email ?? '', Validators.email],
-    homeBranch: [this.staff?.homeBranch ?? this.staff?.branches[0] ?? '', Validators.required],
+    homeBranch: [this.staff?.homeBranch ?? this.staff?.branches[0] ?? ''],
     assignedBranches: [this.staff?.branches.join(',') ?? '', Validators.required],
     loginIdentifier: [this.staff?.loginUsername ?? '', Validators.required],
     password: ['', this.isEdit ? [] : [Validators.required, Validators.pattern(STRONG_PASSWORD)]],
-    confirmPassword: ['', this.isEdit ? [] : Validators.required],
-    requirePasswordChange: [true],
   });
+
   submitted = false;
   showPassword = false;
-  showConfirm = false;
-  notice = '';
-  showDiscard = false;
+  branchMenuOpen = false;
   selectedBranches = new Set<string>(this.staff?.branches ?? []);
-  readonly branchChoices = BRANCHES;
+  leaveDialogOpen = false;
+  private leaveResolver: ((allowed: boolean) => void) | null = null;
+  private allowNavigation = false;
+
+  // Figma edit page uses a 7-day table. This is a local preview, not a BE shift write.
+  weekMonday = '2026-10-19';
+  shifts: Record<string, { branch: string; template: string }> = {};
+  shiftDraftDirty = false;
 
   constructor() {
-    if (this.isEdit) {
-      this.form.controls.loginIdentifier.disable();
+    this.form.controls.loginIdentifier.disable({ emitEvent: false });
+    if (!this.isEdit) this.form.controls.loginIdentifier.enable({ emitEvent: false });
+    for (const shift of STAFF_SHIFTS_PREVIEW.filter(s => s.staffId === this.staffId)) {
+      this.shifts[shift.isoDate] = { branch: shift.branch, template: shift.shiftName };
     }
   }
 
+  get hasStaff(): boolean { return !this.isEdit || !!this.staff; }
   get displayName(): string {
     const name = this.form.controls.fullName.value.trim();
     return name ? `${JOB_PREFIX[this.form.controls.jobRole.value]} ${name}` : 'Chưa nhập họ tên';
   }
-  get hasStaff(): boolean { return !this.isEdit || !!this.staff; }
-  get passwordMismatch(): boolean {
-    return !this.isEdit && this.form.controls.confirmPassword.value !== this.form.controls.password.value;
+  get branchText(): string {
+    const count = this.selectedBranches.size;
+    return count ? [...this.selectedBranches].join(', ') : 'Chọn một hoặc nhiều chi nhánh';
   }
+  get weekLabel(): string {
+    const start = new Date(this.weekMonday + 'T00:00:00Z');
+    const end = new Date(start.getTime() + 6 * 86400000);
+    const fmt = (d: Date) => `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+    return `${fmt(start)} - ${fmt(end)}/${end.getUTCFullYear()}`;
+  }
+  get weekDays(): ShiftDay[] {
+    const monday = new Date(this.weekMonday + 'T00:00:00Z').getTime();
+    return Array.from({ length: 7 }, (_, n) => {
+      const date = new Date(monday + n * 86400000);
+      const iso = date.toISOString().slice(0, 10);
+      const value = this.shifts[iso];
+      return {
+        key: iso,
+        label: `${n === 6 ? 'CN' : 'T' + (n + 2)} · ${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}`,
+        branch: value?.branch ?? '',
+        template: value?.template ?? '',
+        hours: value ? this.templateHours(value.template, iso) : '—',
+      };
+    });
+  }
+  templateHours(template: string, iso: string): string {
+    const fixture: StaffShiftPreview | undefined = STAFF_SHIFTS_PREVIEW.find(s => s.staffId === this.staffId && s.isoDate === iso && s.shiftName === template);
+    if (fixture) return fixture.time.replace('–', ' - ');
+    return template === 'Ca sáng' ? '07:00 - 15:00' : template === 'Ca chiều' ? '15:00 - 22:00' : '—';
+  }
+  changeWeek(delta: number): void {
+    this.weekMonday = new Date(new Date(this.weekMonday + 'T00:00:00Z').getTime() + delta * WEEK_MS).toISOString().slice(0, 10);
+  }
+  setShift(iso: string, field: 'branch' | 'template', value: string): void {
+    const previous = this.shifts[iso] ?? { branch: '', template: '' };
+    this.shifts = { ...this.shifts, [iso]: { ...previous, [field]: value } };
+    if (!this.shifts[iso].template) this.shifts[iso] = { branch: '', template: '' };
+    this.shiftDraftDirty = true;
+  }
+
+  toggleBranchMenu(): void { this.branchMenuOpen = !this.branchMenuOpen; }
   toggleBranch(branch: string, checked: boolean): void {
     if (checked) this.selectedBranches.add(branch);
     else this.selectedBranches.delete(branch);
+    this.selectedBranches = new Set(this.selectedBranches);
     this.form.controls.assignedBranches.setValue([...this.selectedBranches].join(','));
     this.form.controls.assignedBranches.markAsDirty();
     if (!this.selectedBranches.has(this.form.controls.homeBranch.value)) {
       this.form.controls.homeBranch.setValue('');
     }
   }
-  fieldError(field: 'fullName'|'jobRole'|'phone'|'email'|'homeBranch'|'assignedBranches'|'loginIdentifier'|'password'|'confirmPassword'): string {
+  fieldError(field: 'fullName' | 'jobRole' | 'phone' | 'email' | 'assignedBranches' | 'loginIdentifier' | 'password'): string {
     const control = this.form.controls[field];
     if (!control.invalid || !(control.touched || this.submitted)) return '';
     if (control.hasError('required')) return 'Vui lòng nhập/chọn thông tin bắt buộc.';
     if (field === 'email') return 'Email không đúng định dạng.';
-    if (field === 'phone') return 'Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0.';
+    if (field === 'phone') return 'Số điện thoại phải có 10 chữ số và bắt đầu bằng 0.';
     if (field === 'password') return 'Mật khẩu cần ít nhất 8 ký tự, có chữ hoa và chữ số.';
-    return 'Giá trị chưa hợp lệ.';
+    return 'Giá trị không hợp lệ.';
   }
-  submit(intent: 'save'|'assign'): void {
+  submit(intent: 'save' | 'assign'): void {
     this.submitted = true;
     this.form.markAllAsTouched();
-    this.notice = '';
-    if (!this.hasStaff) { this.notice = 'Không tìm thấy nhân viên mẫu.'; return; }
-    if (!this.selectedBranches.size || !this.selectedBranches.has(this.form.controls.homeBranch.value)) {
-      this.notice = 'Chọn tối thiểu một chi nhánh và bảo đảm chi nhánh chính thuộc danh sách được phân công.';
+    if (!this.hasStaff) {
+      this.toast.show('Không tìm thấy nhân viên trong dữ liệu mẫu.', 'error');
       return;
     }
-    if (!this.isEdit && this.passwordMismatch) {
-      this.notice = 'Xác nhận mật khẩu không khớp.';
+    if (!this.selectedBranches.size || (this.form.controls.homeBranch.value && !this.selectedBranches.has(this.form.controls.homeBranch.value))) {
+      this.toast.show('Vui lòng chọn chi nhánh làm việc phù hợp với chi nhánh chính.', 'error');
       return;
     }
-    if (this.form.invalid) return;
-    this.notice = intent === 'assign'
-      ? 'Biểu mẫu hợp lệ. Chưa có API tạo nhân viên; không thể chuyển sang phân ca khi chưa có staffId thật.'
-      : 'Biểu mẫu hợp lệ, nhưng chưa kết nối API Staff/Account. Không có dữ liệu nào được lưu.';
+    if (this.form.invalid) {
+      this.toast.show('Vui lòng kiểm tra các trường được đánh dấu lỗi.', 'error');
+      return;
+    }
+    this.toast.show(intent === 'assign'
+      ? 'Chưa có API tạo nhân viên. Không thể phân ca khi chưa nhận staffId thật.'
+      : 'Đây là giao diện mẫu. Chưa kết nối API nên chưa thể lưu thay đổi.', 'info');
   }
-  canLeavePage(): boolean {
-    return !this.form.dirty || this.showDiscard || window.confirm('Hủy các thay đổi chưa lưu?');
+  notAvailable(action: string): void {
+    this.toast.show(`${action} đang chờ API Backend và phân quyền Admin.`, 'info');
+  }
+
+  hasChanges(): boolean { return this.form.dirty || this.shiftDraftDirty; }
+  canLeavePage(): boolean | Promise<boolean> {
+    if (this.allowNavigation || !this.hasChanges()) return true;
+    if (this.leaveResolver) return false;
+    this.leaveDialogOpen = true;
+    this.cdr.markForCheck();
+    return new Promise<boolean>(resolve => { this.leaveResolver = resolve; });
+  }
+  resolveLeave(confirmed: boolean): void {
+    this.leaveDialogOpen = false;
+    this.allowNavigation = confirmed;
+    const resolver = this.leaveResolver;
+    this.leaveResolver = null;
+    resolver?.(confirmed);
+    this.cdr.markForCheck();
   }
   cancel(): void {
-    if (this.form.dirty) { this.showDiscard = true; return; }
     void this.router.navigateByUrl(this.isEdit && this.staff ? `/admin/staff/${this.staffId}` : '/admin/staff');
   }
-  discard(): void {
-    this.showDiscard = false;
-    this.form.markAsPristine();
-    void this.router.navigateByUrl(this.isEdit && this.staff ? `/admin/staff/${this.staffId}` : '/admin/staff');
+  @HostListener('window:beforeunload', ['$event'])
+  confirmBrowserUnload(event: BeforeUnloadEvent): void {
+    if (!this.hasChanges()) return;
+    event.preventDefault();
+    event.returnValue = '';
   }
 }
