@@ -50,7 +50,7 @@ export class AdminStaffFormComponent {
     jobRole: [this.staff?.jobRole ?? 'VETERINARIAN' as JobRole, Validators.required],
     phone: [(this.staff?.phone ?? '').replace(/\s/g, ''), Validators.pattern(PHONE)],
     email: [this.staff?.email ?? '', Validators.email],
-    homeBranch: [this.staff?.homeBranch ?? this.staff?.branches[0] ?? ''],
+    homeBranch: [this.staff?.homeBranch ?? this.staff?.branches[0] ?? '', Validators.required],
     assignedBranches: [this.staff?.branches.join(',') ?? '', Validators.required],
     loginIdentifier: [this.staff?.loginUsername ?? '', Validators.required],
     password: ['', this.isEdit ? [] : [Validators.required, Validators.pattern(STRONG_PASSWORD)]],
@@ -133,7 +133,7 @@ export class AdminStaffFormComponent {
       this.form.controls.homeBranch.setValue('');
     }
   }
-  fieldError(field: 'fullName' | 'jobRole' | 'phone' | 'email' | 'assignedBranches' | 'loginIdentifier' | 'password'): string {
+  fieldError(field: 'fullName' | 'jobRole' | 'phone' | 'email' | 'homeBranch' | 'assignedBranches' | 'loginIdentifier' | 'password'): string {
     const control = this.form.controls[field];
     if (!control.invalid || !(control.touched || this.submitted)) return '';
     if (control.hasError('required')) return 'Vui lòng nhập/chọn thông tin bắt buộc.';
@@ -149,7 +149,7 @@ export class AdminStaffFormComponent {
       this.toast.show('Không tìm thấy nhân viên trong dữ liệu mẫu.', 'error');
       return;
     }
-    if (!this.selectedBranches.size || (this.form.controls.homeBranch.value && !this.selectedBranches.has(this.form.controls.homeBranch.value))) {
+    if (!this.selectedBranches.size || !this.form.controls.homeBranch.value || !this.selectedBranches.has(this.form.controls.homeBranch.value)) {
       this.toast.show('Vui lòng chọn chi nhánh làm việc phù hợp với chi nhánh chính.', 'error');
       return;
     }
