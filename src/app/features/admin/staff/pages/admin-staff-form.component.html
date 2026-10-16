@@ -65,9 +65,9 @@
         <div class="lower-cards">
           <section class="panel branch-panel">
             <h2>Phân công chi nhánh</h2>
-            <div class="fields stacked">
+            <div class="fields stacked" [class.edit-branch-fields]="isEdit">
               <label>
-                <span class="field-label">Chi nhánh chính <em>*</em></span>
+                <span class="field-label">Chi nhánh chính @if (!isEdit) { <em>*</em> }</span>
                 <span class="select-wrap">
                   <select formControlName="homeBranch" (change)="selectHomeBranch($any($event.target).value)">
                     <option value="">Chọn chi nhánh</option>
@@ -80,7 +80,7 @@
                 @if (fieldError('homeBranch')) { <small class="error">{{ fieldError('homeBranch') }}</small> }
               </label>
               <div class="multi-field">
-                <span class="field-label">Chi nhánh làm việc <em>*</em></span>
+                <span class="field-label">{{ isEdit ? 'Chi nhánh được phân công' : 'Chi nhánh làm việc' }} @if (!isEdit) { <em>*</em> }</span>
                 <div class="branch-picker">
                   <button type="button" class="branch-trigger" (click)="toggleBranchMenu()"
                     [attr.aria-expanded]="branchMenuOpen" aria-controls="staff-branch-options">
@@ -108,18 +108,18 @@
             <h2>{{ isEdit ? 'Tài khoản đăng nhập' : 'Tạo tài khoản đăng nhập' }}</h2>
             @if (isEdit) {
               <div class="account-edit-layout">
-                <label class="account-data">
+                <div class="account-data">
                   <span class="field-label">Tài khoản đăng nhập</span>
-                  <input formControlName="loginIdentifier" autocomplete="off">
-                </label>
+                  <span class="account-value">{{ form.controls.loginIdentifier.value || '—' }}</span>
+                </div>
                 <div class="account-state">
                   <span class="field-label">Trạng thái tài khoản</span>
                   <span class="status-badge" [class.status-badge--blocked]="staff?.accountStatus === 'BLOCKED'">
                     {{ staff?.accountStatus === 'BLOCKED' ? 'Đã chặn' : 'Đang hoạt động' }}
                   </span>
                 </div>
+                <button type="button" class="secondary reset-button" (click)="notAvailable('Đặt lại mật khẩu')">Đặt lại mật khẩu</button>
               </div>
-              <button type="button" class="secondary reset-button" (click)="notAvailable('Đặt lại mật khẩu')">Đặt lại mật khẩu</button>
             } @else {
               <div class="fields stacked">
                 <label>
