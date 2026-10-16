@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -42,6 +42,7 @@ export class AdminStaffFormComponent {
   private readonly toast = inject(AdminToastService);
   private readonly session = inject(AuthSessionService);
   private readonly cdr = inject(ChangeDetectorRef);
+  @ViewChild('formWeekDatePicker') private formWeekDatePicker?: ElementRef<HTMLInputElement>;
 
   readonly isEdit = this.route.snapshot.data['mode'] === 'edit';
   readonly staffId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -174,6 +175,28 @@ export class AdminStaffFormComponent {
   }
   changeWeek(delta: number): void {
     this.weekMonday = new Date(new Date(this.weekMonday + 'T00:00:00Z').getTime() + delta * WEEK_MS).toISOString().slice(0, 10);
+  }
+  goToday(): void {
+    const today = new Date();
+    const dayOffset = (today.getDay() + 6) % 7;
+    today.setDate(today.getDate() - dayOffset);
+    this.weekMonday = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
+  }
+  openWeekDatePicker(): void {
+    const picker = this.formWeekDatePicker?.nativeElement;
+    if (!picker) return;
+    if (typeof picker.showPicker === 'function') {
+      try { picker.showPicker(); return; } catch { /* Browser fallback. */ }
+    }
+    picker.focus();
+    picker.click();
+  }
+  selectWeekDate(value: string): void {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return;
+    const date = new Date(value + 'T00:00:00Z');
+    if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) return;
+    date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 6) % 7);
+    this.weekMonday = date.toISOString().slice(0, 10);
   }
   setShift(iso: string, field: 'branch' | 'template', value: string): void {
     const previous = this.shifts[iso] ?? { branch: '', template: '' };
