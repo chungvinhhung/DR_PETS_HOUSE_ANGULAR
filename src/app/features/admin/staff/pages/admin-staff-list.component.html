@@ -32,12 +32,6 @@
         </div>
         <a class="staff-add" routerLink="/admin/staff/new">+ Thêm nhân viên</a>
       </div>
-      @if (actionNotice(); as notice) {
-        <div class="staff-action-notice" role="status">
-          <span>{{ notice }}</span>
-          <button type="button" aria-label="Đóng thông báo" (click)="actionNotice.set(null)">×</button>
-        </div>
-      }
       <div class="staff-table-wrap"><table>
         <thead><tr><th>Mã nhân viên</th><th>Họ tên</th><th>Vai trò nghiệp vụ</th><th>Chi nhánh được phân công</th><th>Ca hôm nay</th><th>Trạng thái tài khoản</th><th>Thao tác</th></tr></thead>
         <tbody>
