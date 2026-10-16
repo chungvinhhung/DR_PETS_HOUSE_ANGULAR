@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import {
   JOB_LABELS,
   STAFF_PREVIEW,
@@ -46,6 +47,7 @@ export class AdminStaffDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toast = inject(AdminToastService);
+  private readonly session = inject(AuthSessionService);
   blockDialogOpen = false;
 
   readonly staffId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -77,7 +79,12 @@ export class AdminStaffDetailComponent {
     const next = new Date(dateFromISO(this.weekMonday()).getTime() + weeks * 7 * DAY_IN_MS);
     this.weekMonday.set(isoDate(next));
   }
+  get canBlockAccount(): boolean { return this.session.hasAnyRole(['ADMIN']); }
   openBlockConfirmation(): void {
+    if (!this.canBlockAccount) {
+      this.toast.show('Tài khoản không có quyền chặn hoặc bỏ chặn nhân viên.', 'error');
+      return;
+    }
     this.blockDialogOpen = true;
   }
   closeBlockConfirmation(): void {
