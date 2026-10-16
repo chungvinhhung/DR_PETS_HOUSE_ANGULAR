@@ -58,6 +58,7 @@ export class AdminStaffListComponent {
   readonly branchFilter = signal('ALL');
   readonly statusFilter = signal<StaffStatus | 'ALL'>('ALL');
   readonly page = signal(1);
+  readonly actionNotice = signal<string | null>(null);
   readonly filtered = computed(() => {
     const q = this.query().trim().toLocaleLowerCase('vi');
     return STAFF_PREVIEW.filter(s =>
@@ -81,6 +82,13 @@ export class AdminStaffListComponent {
   updateBranch(value: string): void { this.branchFilter.set(value); this.page.set(1); }
   updateStatus(value: string): void { this.statusFilter.set(value as StaffStatus | 'ALL'); this.page.set(1); }
   changePage(next: number): void { if (next > 0 && next <= this.pages()) this.page.set(next); }
+  showActionNotice(action: 'view' | 'edit', staff: StaffPreview): void {
+    const label = action === 'view' ? 'Xem chi tiết' : 'Chỉnh sửa';
+    this.actionNotice.set(
+      `${label} nhân viên ${this.displayName(staff)} sẽ được triển khai trong bước tiếp theo của Task 3.8. Chưa có dữ liệu Staff API.`,
+    );
+  }
+
   clearFilters(): void {
     this.query.set(''); this.roleFilter.set('ALL'); this.branchFilter.set('ALL');
     this.statusFilter.set('ALL'); this.page.set(1);
