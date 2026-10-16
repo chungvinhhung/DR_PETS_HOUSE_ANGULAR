@@ -69,7 +69,7 @@
           <h2 id="service-schedule-title">Thời lượng &amp; Nhân sự</h2>
           <div class="service-editor__fields service-editor__fields--two">
             <label class="service-editor__field">
-              <span>Thời lượng (phút) <b>*</b></span>
+              <span>Thời lượng (phút) @if (bookingMode !== 'CONTACT_ONLY') { <b>*</b> }</span>
               <input type="number" min="1" max="1440" step="1"
                 [disabled]="!mayEdit"
                 [(ngModel)]="durationMinutes" (ngModelChange)="markDirty()"
