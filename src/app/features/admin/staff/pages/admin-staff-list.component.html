@@ -2,7 +2,7 @@
   <main class="staff-page">
     <nav class="staff-breadcrumb" aria-label="Breadcrumb"><span>Vận hành</span><span aria-hidden="true">›</span><strong>Nhân sự</strong></nav>
     <header class="staff-heading">
-      <div><h1>Quản lý nhân sự</h1><p class="staff-subtitle">Danh sách và phân công nhân viên</p></div>
+      <div><h1>Quản lý nhân sự</h1></div>
       <span class="staff-preview-label">Giao diện mẫu · Chờ API Staff/Shift</span>
     </header>
     <nav class="staff-tabs" aria-label="Nhân sự">
@@ -19,19 +19,25 @@
           <label><span class="sr-only">Vai trò</span><select aria-label="Lọc vai trò" [ngModel]="roleFilter()" (ngModelChange)="updateRole($event)">
             <option value="ALL">Tất cả vai trò</option>
             @for (role of roleChoices; track role) { <option [value]="role">{{ roleName(role) }}</option> }
-          </select></label>
+          </select><img class="staff-filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" width="20" height="20" alt="" aria-hidden="true"></label>
           <label><span class="sr-only">Chi nhánh</span><select aria-label="Lọc chi nhánh" [ngModel]="branchFilter()" (ngModelChange)="updateBranch($event)">
             <option value="ALL">Tất cả chi nhánh</option>
             @for (branch of branches; track branch) { <option [value]="branch">{{ branch }}</option> }
-          </select></label>
+          </select><img class="staff-filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" width="20" height="20" alt="" aria-hidden="true"></label>
           <label><span class="sr-only">Trạng thái</span><select aria-label="Lọc trạng thái tài khoản" [ngModel]="statusFilter()" (ngModelChange)="updateStatus($event)">
             <option value="ALL">Tất cả trạng thái</option>
             <option value="ACTIVE">Đang hoạt động</option>
             <option value="BLOCKED">Đã chặn</option>
-          </select></label>
+          </select><img class="staff-filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" width="20" height="20" alt="" aria-hidden="true"></label>
         </div>
         <button class="staff-add" type="button" disabled title="Đang chờ màn Thêm nhân viên và API tạo tài khoản">+ Thêm nhân viên</button>
       </div>
+      @if (actionNotice(); as notice) {
+        <div class="staff-action-notice" role="status">
+          <span>{{ notice }}</span>
+          <button type="button" aria-label="Đóng thông báo" (click)="actionNotice.set(null)">×</button>
+        </div>
+      }
       <div class="staff-table-wrap"><table>
         <thead><tr><th>Mã nhân viên</th><th>Họ tên</th><th>Vai trò nghiệp vụ</th><th>Chi nhánh được phân công</th><th>Ca hôm nay</th><th>Trạng thái tài khoản</th><th>Thao tác</th></tr></thead>
         <tbody>
@@ -41,7 +47,22 @@
               <td>{{ roleName(staff.jobRole) }}</td><td>{{ staff.branches.join(' · ') }}</td>
               <td>{{ staff.todayShift }}</td>
               <td><span class="staff-status" [class.staff-status--blocked]="staff.accountStatus === 'BLOCKED'">{{ staff.accountStatus === 'ACTIVE' ? 'Đang hoạt động' : 'Đã chặn' }}</span></td>
-              <td class="staff-actions"><span aria-label="Xem và sửa nhân viên sẽ khả dụng ở bước kế tiếp" title="Chờ triển khai màn chi tiết/chỉnh sửa">—</span></td>
+              <td class="staff-actions">
+                <div class="staff-action-group" role="group" [attr.aria-label]="'Thao tác ' + displayName(staff)">
+                  <button type="button" class="staff-action-button"
+                    [attr.aria-label]="'Xem chi tiết ' + displayName(staff) + ' (sắp triển khai)'"
+                    title="Xem chi tiết (sắp triển khai)"
+                    (click)="showActionNotice('view', staff)">
+                    <img src="/assets/admin-login/visibility-outlined.svg" width="20" height="20" alt="" aria-hidden="true">
+                  </button>
+                  <button type="button" class="staff-action-button"
+                    [attr.aria-label]="'Chỉnh sửa ' + displayName(staff) + ' (sắp triển khai)'"
+                    title="Chỉnh sửa (sắp triển khai)"
+                    (click)="showActionNotice('edit', staff)">
+                    <img src="/assets/admin-staff/icon-edit.svg" width="20" height="20" alt="" aria-hidden="true">
+                  </button>
+                </div>
+              </td>
             </tr>
           } @empty {
             <tr><td colspan="7" class="staff-empty"><p>Không tìm thấy nhân viên phù hợp.</p><button type="button" (click)="clearFilters()">Xóa bộ lọc</button></td></tr>
