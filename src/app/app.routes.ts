@@ -61,6 +61,7 @@ export const routes: Routes = [
       import('./features/admin/staff/pages/admin-staff-list.component')
         .then(component => component.AdminStaffListComponent),
   },
+
   {
     path: 'admin/branches/:id',
     canActivate: [authGuard, roleGuard],

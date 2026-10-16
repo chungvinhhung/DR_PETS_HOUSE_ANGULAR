@@ -13,7 +13,6 @@
     <header class="branch-management__header">
       <div>
         <h1>{{ pageTitle }}</h1>
-        <span class="branch-management__demo">Dữ liệu mẫu · Chờ API Backend</span>
       </div>
       @if (branch) {
         <a class="branch-management__button branch-management__button--outline" routerLink="/admin/branches">Tất cả chi nhánh</a>
@@ -28,10 +27,6 @@
         <a routerLink="/admin/branches">Xem danh sách được phép</a>
       </div>
     } @else if (!branch) {
-      <p class="branch-management__intro">
-        Chọn chi nhánh để quản lý Bật/Tắt, Capacity và các khoảng tạm khóa dịch vụ.
-        Thông tin chi nhánh và phạm vi quyền hiện chỉ là dữ liệu demo.
-      </p>
 
       @if (hasFocusedService) {
         <p class="branch-management__notice">
@@ -46,10 +41,9 @@
             <div class="branch-management__branch-icon" aria-hidden="true"><img src="/assets/admin-product/icon-operations.svg" alt=""/></div>
             <div>
               <h2>{{ item.name }}</h2>
-              <p>Thông tin địa chỉ, lịch làm việc và liên hệ: chờ API Branch.</p>
             </div>
             <div class="branch-management__branch-meta">
-              <span>{{ getEnabledCount(item) }} dịch vụ đang bật (demo)</span>
+              <span>{{ getEnabledCount(item) }} dịch vụ đang bật</span>
               <a class="branch-management__button branch-management__button--primary"
                 [routerLink]="branchLink(item)" [queryParams]="branchQueryParams()">
                 Dịch vụ &amp; Capacity <span aria-hidden="true">→</span>
@@ -68,8 +62,8 @@
 
       <section class="branch-management__summary" aria-label="Tổng quan chi nhánh">
         <div><span>Chi nhánh</span><strong>{{ branch.name }}</strong></div>
-        <div><span>Dịch vụ đang bật</span><strong>{{ getEnabledCount(branch) }}/{{ allServices.length }} (demo)</strong></div>
-        <div><span>Phân quyền</span><strong>{{ isAdmin ? 'ADMIN' : 'MANAGER – phạm vi demo' }}</strong></div>
+        <div><span>Dịch vụ đang bật</span><strong>{{ getEnabledCount(branch) }}/{{ allServices.length }}</strong></div>
+        <div><span>Phân quyền</span><strong>{{ isAdmin ? 'ADMIN' : 'MANAGER' }}</strong></div>
       </section>
 
       <section class="branch-management__panel" aria-labelledby="branch-service-heading">
@@ -129,16 +123,7 @@
           </nav>
         </footer>
       </section>
-
-      <div class="branch-management__info">
-        <h2>Thông tin chi nhánh &amp; lịch vận hành</h2>
-        <p>Phần địa chỉ, hotline và lịch hoạt động trong wireframe Branch Detail sẽ được nối từ dữ liệu BE. Chưa hiển thị thông tin giả làm dữ liệu thật.</p>
-      </div>
     }
-    <p class="branch-management__disclaimer">
-      Giao diện FE Task 3.7 (dữ liệu mẫu). Số chi nhánh được phân công, tình trạng khả dụng,
-      quyền thao tác và lưu cấu hình thực tế phải do Backend xác nhận.
-    </p>
   </main>
 </app-admin-catalog-shell>
 

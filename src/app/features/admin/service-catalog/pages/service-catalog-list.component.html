@@ -3,8 +3,7 @@
   <header class="service-catalog__heading">
     <div class="service-catalog__heading-text">
       <h1 id="service-catalog-title">Danh mục dịch vụ</h1>
-      <span class="service-catalog__demo-label">Dữ liệu mẫu · Chờ API Backend</span>
-    </div>
+     </div>
     @if (isAdmin()) {
       <button type="button" class="service-catalog__create" (click)="createService()">
         + Thêm dịch vụ
@@ -144,17 +143,17 @@
                   @if (filters().branchId === 'ALL') {
                     <span class="service-catalog__activation"
                       [class.service-catalog__activation--off]="enabledCount(service) === 0">
-                      {{ enabledCount(service) }}/{{ scopedBranches().length }} bật
+                      {{ enabledCount(service) }}/{{ service.totalBranchCount ?? '—' }} bật
                     </span>
                   } @else {
                     <span class="service-catalog__activation"
                       [class.service-catalog__activation--off]="!isEnabledAtSelectedBranch(service)">
-                      {{ isEnabledAtSelectedBranch(service) ? 'Bật' : 'Tắt' }}
+                      {{ service.branchServices.length ? (isEnabledAtSelectedBranch(service) ? 'Bật' : 'Tắt') : 'Chờ BE' }}
                     </span>
                   }
                 </td>
                 <td>
-                  <span class="service-catalog__availability">Chờ BE</span>
+                  <span class="service-catalog__availability" [class.service-catalog__availability--inactive]="enabledCount(service) === 0">{{ enabledCount(service) === 0 ? 'Chưa có CN bật' : (service.availabilityText ?? '—') }}</span>
                 </td>
                 <td class="service-catalog__actions-cell">
                   <div class="service-catalog__row-action">
@@ -231,9 +230,5 @@
       }
     </footer>
   </section>
-  <p class="service-catalog__disclaimer">
-    Danh sách chỉ phục vụ kiểm tra UI Phase 1. Số chi nhánh, giá và trạng thái đang là dữ liệu demo;
-    quyền và phạm vi truy cập thực tế sẽ do Backend xác nhận.
-  </p>
 </section>
 </app-admin-catalog-shell>
