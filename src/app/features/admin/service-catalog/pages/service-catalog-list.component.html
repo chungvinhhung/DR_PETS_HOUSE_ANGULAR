@@ -3,7 +3,7 @@
   <header class="service-catalog__heading">
     <div class="service-catalog__heading-text">
       <h1 id="service-catalog-title">Danh mục dịch vụ</h1>
-      <span class="service-catalog__demo-label">Dữ liệu mẫu · Chờ API Backend</span>
+      <span class="service-catalog__demo-label">Dữ liệu từ Backend</span>
     </div>
     @if (isAdmin()) {
       <button type="button" class="service-catalog__create" (click)="createService()">
@@ -144,17 +144,17 @@
                   @if (filters().branchId === 'ALL') {
                     <span class="service-catalog__activation"
                       [class.service-catalog__activation--off]="enabledCount(service) === 0">
-                      {{ enabledCount(service) }}/{{ scopedBranches().length }} bật
+                      {{ enabledCount(service) }}/{{ service.totalBranchCount ?? '—' }} bật
                     </span>
                   } @else {
                     <span class="service-catalog__activation"
                       [class.service-catalog__activation--off]="!isEnabledAtSelectedBranch(service)">
-                      {{ isEnabledAtSelectedBranch(service) ? 'Bật' : 'Tắt' }}
+                      {{ service.branchServices.length ? (isEnabledAtSelectedBranch(service) ? 'Bật' : 'Tắt') : 'Chờ BE' }}
                     </span>
                   }
                 </td>
                 <td>
-                  <span class="service-catalog__availability">Chờ BE</span>
+                  <span class="service-catalog__availability">{{ service.availabilityText ?? '—' }}</span>
                 </td>
                 <td class="service-catalog__actions-cell">
                   <div class="service-catalog__row-action">
