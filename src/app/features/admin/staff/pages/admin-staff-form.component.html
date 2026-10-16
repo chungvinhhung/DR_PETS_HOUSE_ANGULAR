@@ -20,7 +20,9 @@
         <button type="button" class="primary" (click)="submit('save')">{{ isEdit ? 'Lưu thay đổi' : 'Tạo nhân viên' }}</button>
         @if (isEdit) {
           @if (canManageAccount && staff) {
-            <a class="danger-outline" [routerLink]="['/admin/staff', staffId]" title="Chặn/Bỏ chặn tại trang chi tiết">Quản lý chặn tài khoản</a>
+            <button type="button" class="danger-outline" (click)="openAccountStatusDialog()">
+              {{ staff.accountStatus === 'BLOCKED' ? 'Bỏ chặn tài khoản' : 'Chặn tài khoản' }}
+            </button>
           }
         }
       </div>
@@ -167,7 +169,7 @@
                 <tbody>
                   @for (day of weekDays; track day.key) {
                     <tr>
-                      <td>{{ day.label }}</td>
+                      <td><span class="shift-day"><span class="shift-day__weekday">{{ day.weekday }}</span><small class="shift-day__date">{{ day.dayMonth }}</small></span></td>
                       <td>
                         <span class="select-wrap">
                           <select aria-label="Chi nhánh của {{ day.label }}" [value]="day.branch"
@@ -261,6 +263,20 @@
         <button type="button" class="primary" (click)="validateResetPassword()">Đặt lại mật khẩu</button>
       </div>
       <p class="staff-reset-note">Chưa kết nối API Backend. Không lưu hoặc thay đổi mật khẩu thật.</p>
+    </section>
+  </div>
+}
+
+@if (accountStatusDialogOpen && staff && canManageAccount) {
+  <div class="staff-leave-overlay" (keydown.escape)="closeAccountStatusDialog()">
+    <section class="staff-leave-dialog" role="alertdialog" aria-modal="true"
+      aria-labelledby="staff-account-status-title" tabindex="-1">
+      <h2 id="staff-account-status-title">{{ staff.accountStatus === 'BLOCKED' ? 'Bỏ chặn tài khoản?' : 'Chặn tài khoản?' }}</h2>
+      <p>{{ displayName }} · {{ staffId }}. Đây là bản FE preview; chưa kết nối API nên trạng thái tài khoản sẽ không thay đổi.</p>
+      <div class="staff-leave-actions">
+        <button type="button" class="secondary" (click)="closeAccountStatusDialog()">Hủy</button>
+        <button type="button" class="danger-outline" (click)="confirmAccountStatusPreview()">Xác nhận</button>
+      </div>
     </section>
   </div>
 }
