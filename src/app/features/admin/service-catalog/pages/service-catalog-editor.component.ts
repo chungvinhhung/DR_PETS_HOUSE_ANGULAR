@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, switchMap } from 'rxjs';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
@@ -38,6 +38,7 @@ export class ServiceCatalogEditorComponent {
   private readonly authSession = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
   private readonly createKey = crypto.randomUUID();
+  private readonly archiveKey = crypto.randomUUID();
 
   readonly editorMode = (this.route.snapshot.data['editorMode'] ?? 'create') as 'create' | 'edit' | 'view';
   readonly serviceId = this.route.snapshot.paramMap.get('id');
@@ -223,9 +224,15 @@ export class ServiceCatalogEditorComponent {
       return;
     }
     const body = this.toWrite();
+    const shouldArchive = !this.isNew && this.source()?.status === 'ACTIVE' && !this.active;
     const request = this.isNew
       ? this.api.create(body, this.createKey)
-      : this.api.update(this.serviceId!, body);
+      : shouldArchive
+        ? this.api.update(this.serviceId!, body).pipe(
+            // The BE archive endpoint also disables existing branch configs.
+            switchMap(() => this.api.archive(this.serviceId!, this.archiveKey)),
+          )
+        : this.api.update(this.serviceId!, body);
     this.saving.set(true);
     request.pipe(finalize(() => this.saving.set(false))).subscribe({
       next: () => {
