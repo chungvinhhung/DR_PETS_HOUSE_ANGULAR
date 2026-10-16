@@ -1268,3 +1268,112 @@ app-admin-product-edit-page .variant-panel .variant-photo-button:focus-visible .
 @media (prefers-reduced-motion: reduce) {
   app-admin-product-edit-page .variant-panel .variant-photo-button__overlay { transition: none; }
 }
+
+
+/* Staff forms (Task 3.8): modal/preview styles extracted from component SCSS to stay within Angular component style budget. */
+.staff-leave-overlay { position: fixed; inset: 0; z-index: 220; display: grid; place-items: center; background: #0f172a80; padding: 16px; }
+.staff-leave-dialog { width: min(480px,100%); border-radius: 12px; background: #fff; padding: 28px; box-shadow: 0 16px 40px #0b1a3050; }
+.staff-leave-dialog h2 { margin: 0 0 12px; color: #1d2b42; font-size: 20px; }
+.staff-leave-dialog p { font-size: 14px; color: #64748b; line-height: 22px; margin: 0 0 20px; }
+.staff-leave-actions { display: flex; justify-content: flex-end; gap: 12px; }
+
+.staff-reset-overlay{position:fixed;inset:0;z-index:240;display:grid;place-items:center;padding:16px;background:rgba(15,23,42,.55)}
+.staff-reset-dialog{width:min(596px,100%);max-height:calc(100vh - 32px);overflow:auto;background:#fff;border-radius:12px;padding:28px 32px;box-shadow:0 18px 45px #10203340;color:#1b273b}
+.staff-reset-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.staff-reset-heading h2{margin:0;font-size:20px;line-height:28px}
+.staff-reset-close{border:0;background:#fff;color:#64748b;font-size:26px;cursor:pointer;line-height:1}
+.staff-reset-dialog>p{font-size:12px;color:#475569;line-height:19px;margin:10px 0 0}
+.staff-reset-dialog .staff-reset-username{margin-top:4px}
+.staff-reset-fields{display:grid;gap:16px;margin:24px 0}
+.staff-reset-fields label{display:flex;flex-direction:column;gap:8px;font-size:12px;font-weight:500;color:#475569}
+.staff-reset-fields em{font-style:normal;color:#d32f2f}
+.staff-reset-input{display:flex;align-items:center;height:42px;border:1px solid #e2e8f0;border-radius:8px;padding:0 10px}
+.staff-reset-input:focus-within{border-color:#0d47a1;box-shadow:0 0 0 2px #0d47a122}
+.staff-reset-input input{flex:1;min-width:0;border:0;outline:0;color:#1b273b;font-size:13px;background:transparent}
+.staff-reset-input button{display:grid;place-items:center;border:0;background:transparent;padding:5px;cursor:pointer}
+.staff-reset-error{color:#a51c30!important;margin:-6px 0 12px!important}
+.staff-reset-actions{display:flex;justify-content:flex-end;gap:8px;border-top:1px solid #e2e8f0;padding-top:20px}
+.staff-reset-dialog .staff-reset-note{font-size:11px;color:#8191a7;margin-top:16px}
+@media(max-width:600px){.staff-reset-dialog{padding:20px}.staff-reset-actions{flex-wrap:wrap}}
+
+
+/* Phase 5 UI polish: keep account status action consistent with Figma buttons. */
+app-admin-staff-form .head-actions .danger-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 16px;
+  line-height: 20px;
+  background: #fff;
+  color: #c72929;
+  border: 1px solid #c72929;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 13px;
+  text-decoration: none;
+  appearance: none;
+}
+app-admin-staff-form .head-actions .danger-outline:hover { background: #fff4f4; }
+app-admin-staff-form .head-actions .danger-outline:focus-visible { outline: 2px solid #c72929; outline-offset: 2px; }
+/* The weekday and its date appear on separate lines, as in the Figma schedule. */
+app-admin-staff-form .schedule-table .shift-day {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+app-admin-staff-form .schedule-table .shift-day__weekday { color: #1b273b; font-size: 12px; line-height: 16px; font-weight: 500; }
+app-admin-staff-form .schedule-table .shift-day__date { color: #7b8ca2; font-size: 10px; line-height: 14px; }
+
+/* Task 3.8: native calendar button and Today controls across Staff Edit/Detail. */
+app-admin-staff-form .week-nav__date {
+  position: relative;
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+app-admin-staff-form .week-nav .week-nav__date-button {
+  width: auto;
+  min-width: 188px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+app-admin-staff-form .week-nav__date-button img { width: 16px; height: 16px; }
+app-admin-staff-form .week-nav__native {
+  position: absolute;
+  right: 8px;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  padding: 0;
+  border: 0;
+  pointer-events: none;
+}
+app-admin-staff-form .week-nav .week-nav__today,
+app-admin-staff-detail .staff-detail__week-control .staff-detail__today {
+  width: auto;
+  min-width: 82px;
+  padding: 0 12px;
+  font: 500 13px Roboto, Arial, sans-serif;
+  white-space: nowrap;
+  border-radius: 8px;
+}
+app-admin-staff-form .week-nav__date-button:focus-visible,
+app-admin-staff-detail .staff-detail__calendar-button:focus-visible {
+  outline: 2px solid #0d47a1;
+  outline-offset: 1px;
+}
+@media (max-width: 760px) {
+  app-admin-staff-form .week-nav,
+  app-admin-staff-detail .staff-detail__week-control { flex-wrap: wrap; }
+}
