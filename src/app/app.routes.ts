@@ -12,7 +12,56 @@ interface ProductLeaveAware {
 }
 const confirmProductLeave: CanDeactivateFn<ProductLeaveAware> = (component) => component.canLeavePage();
 
+const confirmStaffLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
+
 export const routes: Routes = [
+  {
+    path: 'admin/staff/schedule',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+    loadComponent: () => import('./features/admin/staff/pages/admin-staff-schedule.component')
+      .then(component => component.AdminStaffScheduleComponent),
+  },
+  {
+    path: 'admin/staff/shifts/assign',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () => import('./features/admin/staff/pages/admin-staff-shift-assign.component')
+      .then(component => component.AdminStaffShiftAssignComponent),
+  },
+  {
+    path: 'admin/staff/new',
+    canActivate: [authGuard, roleGuard],
+    canDeactivate: [confirmStaffLeave],
+    data: { roles: ['ADMIN'], mode: 'create' },
+    loadComponent: () => import('./features/admin/staff/pages/admin-staff-form.component')
+      .then(component => component.AdminStaffFormComponent),
+  },
+  {
+    path: 'admin/staff/:id/edit',
+    canActivate: [authGuard, roleGuard],
+    canDeactivate: [confirmStaffLeave],
+    data: { roles: ['ADMIN', 'MANAGER'], mode: 'edit' },
+    loadComponent: () => import('./features/admin/staff/pages/admin-staff-form.component')
+      .then(component => component.AdminStaffFormComponent),
+  },
+  {
+    path: 'admin/staff/:id',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () =>
+      import('./features/admin/staff/pages/admin-staff-detail.component')
+        .then(component => component.AdminStaffDetailComponent),
+  },
+  {
+    path: 'admin/staff',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () =>
+      import('./features/admin/staff/pages/admin-staff-list.component')
+        .then(component => component.AdminStaffListComponent),
+  },
+
   {
     path: 'admin/branches/:id',
     canActivate: [authGuard, roleGuard],
