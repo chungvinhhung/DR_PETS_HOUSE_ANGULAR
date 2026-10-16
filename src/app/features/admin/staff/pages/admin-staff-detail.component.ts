@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
@@ -49,6 +49,7 @@ export class AdminStaffDetailComponent {
   private readonly toast = inject(AdminToastService);
   private readonly session = inject(AuthSessionService);
   blockDialogOpen = false;
+  @ViewChild('weekDatePicker') private weekDatePicker?: ElementRef<HTMLInputElement>;
 
   readonly staffId = this.route.snapshot.paramMap.get('id') ?? '';
   readonly staff: StaffPreview | undefined = STAFF_PREVIEW.find(item => item.id === this.staffId);
@@ -79,6 +80,26 @@ export class AdminStaffDetailComponent {
     const next = new Date(dateFromISO(this.weekMonday()).getTime() + weeks * 7 * DAY_IN_MS);
     this.weekMonday.set(isoDate(next));
   }
+  openWeekDatePicker(): void {
+    const picker = this.weekDatePicker?.nativeElement;
+    if (!picker) return;
+    // Use the native date picker when supported, with a focus/click fallback.
+    if (typeof picker.showPicker === 'function') {
+      try { picker.showPicker(); return; } catch { /* Some browsers disallow programmatic picker opening. */ }
+    }
+    picker.focus();
+    picker.click();
+  }
+
+  selectWeekDate(value: string): void {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return;
+    const selected = dateFromISO(value);
+    if (Number.isNaN(selected.getTime()) || isoDate(selected) !== value) return;
+    const daysFromMonday = (selected.getUTCDay() + 6) % 7;
+    const monday = new Date(selected.getTime() - daysFromMonday * DAY_IN_MS);
+    this.weekMonday.set(isoDate(monday));
+  }
+
   get canBlockAccount(): boolean { return this.session.hasAnyRole(['ADMIN']); }
   openBlockConfirmation(): void {
     if (!this.canBlockAccount) {
