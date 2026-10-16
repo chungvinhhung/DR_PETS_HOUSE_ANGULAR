@@ -125,8 +125,8 @@ export class ServiceCatalogEditorComponent {
       };
     });
     if (!this.weightPricing) {
-      this.priceTiers[0].mode = 'FIXED';
-      this.priceTiers[0].price = raw.basePrice;
+      this.priceTiers[0].mode = raw.basePrice > 0 ? 'FIXED' : 'QUOTE';
+      this.priceTiers[0].price = raw.basePrice > 0 ? raw.basePrice : null;
     }
     // InventoryItem.materialId is NOT a Product SKU. Preserve existing
     // materials server-side and show them read-only until Inventory lookup is ready.
@@ -155,6 +155,8 @@ export class ServiceCatalogEditorComponent {
   }
 
   markDirty(): void {
+    // A changed draft must use a new idempotency key; unchanged retries reuse the key.
+    this.saveIdempotencyKey = null;
     this.dirty.set(true);
     this.notice.set('');
     if (this.errors().length) this.errors.set([]);
@@ -280,7 +282,7 @@ export class ServiceCatalogEditorComponent {
     const body: ServiceWrite = {
       name: this.serviceName.trim(),
       serviceType: this.category as 'GROOMING' | 'MEDICAL',
-      category: this.category,
+      // BE category is an independent optional taxonomy field; don't overwrite it with serviceType.
       description: this.description.trim(),
       bookingMode: this.bookingMode,
       requiredStaffRole: this.executorRole as ServiceWrite['requiredStaffRole'],
