@@ -153,7 +153,7 @@
                   }
                 </td>
                 <td>
-                  <span class="service-catalog__availability">{{ service.availabilityText ?? '—' }}</span>
+                  <span class="service-catalog__availability" [class.service-catalog__availability--inactive]="enabledCount(service) === 0">{{ enabledCount(service) === 0 ? 'Chưa có CN bật' : (service.availabilityText ?? '—') }}</span>
                 </td>
                 <td class="service-catalog__actions-cell">
                   <div class="service-catalog__row-action">
