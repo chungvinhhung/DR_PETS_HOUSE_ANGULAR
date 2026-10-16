@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { JOB_LABELS, JobRole, STAFF_PREVIEW, STAFF_SHIFTS_PREVIEW, displayStaffName } from '../models/staff-preview.model';
@@ -9,7 +9,11 @@ const mondayOf = (iso: string): string => {
   day.setUTCDate(day.getUTCDate() - (day.getUTCDay() + 6) % 7);
   return day.toISOString().slice(0, 10);
 };
-const todayIso = (): string => new Date().toISOString().slice(0, 10);
+// Use the browser's LOCAL day rather than UTC, so "Hôm nay" works near midnight.
+const todayIso = (): string => {
+  const date = new Date();
+  return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+};
 const dateFor = (monday: string, offset: number): string =>
   new Date(new Date(monday + 'T00:00:00Z').getTime() + offset * DAY).toISOString().slice(0, 10);
 const readable = (iso: string): string => iso.slice(8, 10) + '/' + iso.slice(5, 7);
@@ -24,6 +28,7 @@ const readable = (iso: string): string => iso.slice(8, 10) + '/' + iso.slice(5, 
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminStaffScheduleComponent {
+  @ViewChild('weekDatePicker') private weekDatePicker?: ElementRef<HTMLInputElement>;
   readonly monday = signal(mondayOf(todayIso()));
   readonly branch = signal('ALL');
   readonly role = signal('ALL');
@@ -58,6 +63,22 @@ export class AdminStaffScheduleComponent {
   selectBranch(value: string) { this.branch.set(value); this.page.set(1); }
   changePage(value: number) { if (value >= 1 && value <= this.pageCount()) this.page.set(value); }
   changeWeek(delta: number) { this.monday.set(dateFor(this.monday(), delta * 7)); }
-  goToday() { this.monday.set(mondayOf(todayIso())); }
-  selectDate(value: string) { if (/^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value))) this.monday.set(mondayOf(value)); }
+  goToday(): void { this.monday.set(mondayOf(todayIso())); }
+
+  openDatePicker(): void {
+    const input = this.weekDatePicker?.nativeElement;
+    if (!input) return;
+    if (typeof input.showPicker === 'function') {
+      try { input.showPicker(); return; } catch { /* Browser fallback. */ }
+    }
+    input.focus();
+    input.click();
+  }
+
+  selectDate(value: string): void {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return;
+    const parsed = new Date(value + 'T00:00:00Z');
+    if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) return;
+    this.monday.set(mondayOf(value));
+  }
 }
