@@ -1328,3 +1328,52 @@ app-admin-staff-form .schedule-table .shift-day {
 }
 app-admin-staff-form .schedule-table .shift-day__weekday { color: #1b273b; font-size: 12px; line-height: 16px; font-weight: 500; }
 app-admin-staff-form .schedule-table .shift-day__date { color: #7b8ca2; font-size: 10px; line-height: 14px; }
+
+/* Task 3.8: native calendar button and Today controls across Staff Edit/Detail. */
+app-admin-staff-form .week-nav__date {
+  position: relative;
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+app-admin-staff-form .week-nav .week-nav__date-button {
+  width: auto;
+  min-width: 188px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+app-admin-staff-form .week-nav__date-button img { width: 16px; height: 16px; }
+app-admin-staff-form .week-nav__native {
+  position: absolute;
+  right: 8px;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  padding: 0;
+  border: 0;
+  pointer-events: none;
+}
+app-admin-staff-form .week-nav .week-nav__today,
+app-admin-staff-detail .staff-detail__week-control .staff-detail__today {
+  width: auto;
+  min-width: 82px;
+  padding: 0 12px;
+  font: 500 13px Roboto, Arial, sans-serif;
+  white-space: nowrap;
+  border-radius: 8px;
+}
+app-admin-staff-form .week-nav__date-button:focus-visible,
+app-admin-staff-detail .staff-detail__calendar-button:focus-visible {
+  outline: 2px solid #0d47a1;
+  outline-offset: 1px;
+}
+@media (max-width: 760px) {
+  app-admin-staff-form .week-nav,
+  app-admin-staff-detail .staff-detail__week-control { flex-wrap: wrap; }
+}
