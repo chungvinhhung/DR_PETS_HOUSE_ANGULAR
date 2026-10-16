@@ -67,7 +67,7 @@
             <h2>Phân công chi nhánh</h2>
             <div class="fields stacked">
               <label>
-                <span class="field-label">Chi nhánh chính</span>
+                <span class="field-label">Chi nhánh chính <em>*</em></span>
                 <span class="select-wrap">
                   <select formControlName="homeBranch">
                     <option value="">Chọn chi nhánh</option>
@@ -77,6 +77,7 @@
                   </select>
                   <img src="/assets/admin-product/expand_more.svg" width="17" height="17" alt="" aria-hidden="true">
                 </span>
+                @if (fieldError('homeBranch')) { <small class="error">{{ fieldError('homeBranch') }}</small> }
               </label>
               <div class="multi-field">
                 <span class="field-label">Chi nhánh làm việc <em>*</em></span>
