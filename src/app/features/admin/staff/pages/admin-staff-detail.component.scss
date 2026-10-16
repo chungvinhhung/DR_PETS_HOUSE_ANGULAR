@@ -52,11 +52,12 @@
   display:inline-flex; justify-content:center; align-items:center;
   height:40px; border:1px solid #e2e8f0; border-radius:8px; background:#fff; color:#1b273b;
 }
-.staff-detail__week-control button { width:40px; cursor:pointer; font-size:19px; }
+.staff-detail__week-control button { width:40px; cursor:pointer; font:400 13px/20px Roboto,Arial,sans-serif; }
 .staff-detail__week-control button:hover { background:#eff6ff; }
-.staff-detail__week-label { gap:8px; min-width:211px; padding:0 12px; font-size:14px; white-space:nowrap; }
+.staff-detail__week-label { gap:8px; min-width:211px; padding:0 12px; font-size:13px; line-height:20px; white-space:nowrap; }
 .staff-detail__week-label img { display:block; width:16px; height:16px; flex:0 0 16px; }
 .staff-detail__week-label { position:relative; padding-right:6px; }
+.staff-detail__week-control .staff-detail__today { width:auto; min-width:82px; padding:0 12px; white-space:nowrap; font:400 13px/20px Roboto,Arial,sans-serif; }
 .staff-detail__week-control .staff-detail__calendar-button {
   display:inline-flex; align-items:center; justify-content:center;
   width:30px; height:30px; flex:0 0 30px; padding:0;
