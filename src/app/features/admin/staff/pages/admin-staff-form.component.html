@@ -1,0 +1,89 @@
+<app-admin-catalog-shell activeItem="staff">
+<main class="staff-form-page">
+  <nav class="crumb" aria-label="Breadcrumb">
+    <a routerLink="/admin/staff">Nhân sự</a><span aria-hidden="true">›</span>
+    <strong>{{ isEdit ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên' }}</strong>
+  </nav>
+  <header class="form-head">
+    <div><h1>{{ isEdit ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên' }}</h1>
+      <p class="preview">Giao diện mẫu · Chờ API Staff/Account</p></div>
+    <div class="head-actions">
+      <button type="button" class="secondary" (click)="cancel()">Hủy</button>
+      <button type="button" class="primary" (click)="submit('save')">{{ isEdit ? 'Lưu thay đổi' : 'Tạo nhân viên' }}</button>
+    </div>
+  </header>
+  @if (isEdit && !staff) {
+    <div class="alert" role="alert">Không tìm thấy nhân viên trong dữ liệu mẫu. <a routerLink="/admin/staff">Về danh sách</a></div>
+  } @else {
+  <form [formGroup]="form" (ngSubmit)="submit('save')" novalidate>
+    <section class="panel">
+      <h2>Thông tin nhân viên</h2>
+      @if (isEdit) {<p class="meta">Mã nhân viên: <strong>{{ staffId }}</strong></p>}
+      <div class="fields two">
+        <label>Họ và tên <em>*</em><input formControlName="fullName" type="text" placeholder="Nhập họ và tên" autocomplete="name">
+          @if (fieldError('fullName')) {<small class="error">{{ fieldError('fullName') }}</small>}</label>
+        <label>Vai trò nghiệp vụ <em>*</em><select formControlName="jobRole">
+          @for (role of roles; track role) {<option [value]="role">{{ labels[role] }}</option>}</select>
+          @if (fieldError('jobRole')) {<small class="error">{{ fieldError('jobRole') }}</small>}</label>
+        <label>Số điện thoại<input formControlName="phone" type="tel" placeholder="Nhập số điện thoại" autocomplete="tel">
+          @if (fieldError('phone')) {<small class="error">{{ fieldError('phone') }}</small>}</label>
+        <label>Email liên hệ<input formControlName="email" type="email" placeholder="Nhập email" autocomplete="email">
+          @if (fieldError('email')) {<small class="error">{{ fieldError('email') }}</small>}</label>
+      </div>
+      <p class="hint">Tên hiển thị theo vai trò: <strong>{{ displayName }}</strong>. Tên lưu không chứa tiền tố.</p>
+    </section>
+    <section class="panel">
+      <h2>Phân công chi nhánh</h2>
+      <div class="fields two">
+        <label>Chi nhánh chính <em>*</em><select formControlName="homeBranch">
+          <option value="">Chọn chi nhánh chính</option>
+          @for (branch of branches; track branch) {<option [value]="branch" [disabled]="!selectedBranches.has(branch)">{{ branch }}</option>}
+        </select>
+        @if (fieldError('homeBranch')) {<small class="error">{{ fieldError('homeBranch') }}</small>}</label>
+        <fieldset class="multi"><legend>Chi nhánh làm việc <em>*</em></legend>
+          <div class="checks">@for (branch of branchChoices; track branch) {
+            <label class="check"><input type="checkbox" [checked]="selectedBranches.has(branch)" (change)="toggleBranch(branch, $any($event.target).checked)">{{ branch }}</label>
+          }</div>
+          @if (fieldError('assignedBranches')) {<small class="error">{{ fieldError('assignedBranches') }}</small>}
+        </fieldset>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>Tài khoản đăng nhập</h2>
+      <div class="fields two">
+        <label>Tài khoản đăng nhập <em>*</em><input formControlName="loginIdentifier" placeholder="Tên đăng nhập nội bộ" autocomplete="off">
+          @if (fieldError('loginIdentifier')) {<small class="error">{{ fieldError('loginIdentifier') }}</small>}</label>
+        @if (isEdit) {
+          <div class="account-status"><span>Trạng thái tài khoản</span><strong [class.blocked]="staff?.accountStatus === 'BLOCKED'">{{ staff?.accountStatus === 'BLOCKED' ? 'Đã chặn' : 'Đang hoạt động' }}</strong>
+          <p>Đặt lại mật khẩu và chặn/bỏ chặn tài khoản sẽ được triển khai ở phase tiếp theo theo quyền Admin.</p></div>
+        } @else {
+          <label>Mật khẩu tạm thời <em>*</em><div class="password">
+            <input formControlName="password" [type]="showPassword ? 'text' : 'password'" autocomplete="new-password" placeholder="Nhập mật khẩu tạm thời">
+            <button type="button" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'">{{ showPassword ? 'Ẩn' : 'Hiện' }}</button>
+          </div>@if (fieldError('password')) {<small class="error">{{ fieldError('password') }}</small>}</label>
+          <label>Xác nhận mật khẩu <em>*</em><div class="password">
+            <input formControlName="confirmPassword" [type]="showConfirm ? 'text' : 'password'" autocomplete="new-password" placeholder="Nhập lại mật khẩu">
+            <button type="button" (click)="showConfirm = !showConfirm" [attr.aria-label]="showConfirm ? 'Ẩn xác nhận mật khẩu' : 'Hiển thị xác nhận mật khẩu'">{{ showConfirm ? 'Ẩn' : 'Hiện' }}</button>
+          </div>
+          @if (fieldError('confirmPassword') || (submitted && passwordMismatch)) {<small class="error">{{ passwordMismatch ? 'Mật khẩu xác nhận không khớp.' : fieldError('confirmPassword') }}</small>}</label>
+          <label class="check"> <input formControlName="requirePasswordChange" type="checkbox"> Yêu cầu đổi mật khẩu ở lần đăng nhập đầu tiên</label>
+        }
+      </div>
+    </section>
+    @if (notice) {<p class="alert" role="status">{{ notice }}</p>}
+    <div class="bottom-actions">
+      <button type="button" class="secondary" (click)="cancel()">Hủy</button>
+      <button type="submit" class="primary">{{ isEdit ? 'Lưu thay đổi' : 'Tạo nhân viên' }}</button>
+      @if (!isEdit) {<button type="button" class="primary" (click)="submit('assign')">Tạo và phân ca</button>}
+    </div>
+  </form>
+  }
+</main>
+@if (showDiscard) {<div class="backdrop" role="presentation">
+  <div role="dialog" aria-modal="true" aria-labelledby="confirm-exit" class="dialog">
+    <h2 id="confirm-exit">Hủy các thay đổi chưa lưu?</h2><p>Thông tin nhập trên biểu mẫu sẽ bị mất.</p>
+    <div class="head-actions"><button type="button" class="secondary" (click)="showDiscard=false">Tiếp tục chỉnh sửa</button>
+    <button type="button" class="primary" (click)="discard()">Hủy thay đổi</button></div>
+  </div>
+</div>}
+</app-admin-catalog-shell>
