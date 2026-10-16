@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import {
   JOB_LABELS, JOB_PREFIX, JobRole, STAFF_PREVIEW, STAFF_SHIFTS_PREVIEW,
   StaffPreview, StaffShiftPreview,
@@ -37,6 +38,7 @@ export class AdminStaffFormComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toast = inject(AdminToastService);
+  private readonly session = inject(AuthSessionService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   readonly isEdit = this.route.snapshot.data['mode'] === 'edit';
@@ -58,6 +60,47 @@ export class AdminStaffFormComponent {
 
   submitted = false;
   showPassword = false;
+  resetPasswordOpen = false;
+  newPassword = '';
+  confirmPassword = '';
+  resetVisible = false;
+  resetConfirmVisible = false;
+  resetError = '';
+
+  get canManageAccount(): boolean { return this.isEdit && this.session.hasAnyRole(['ADMIN']); }
+
+  openResetPassword(): void {
+    if (!this.canManageAccount || !this.staff) {
+      this.toast.show('Chỉ Admin được đặt lại mật khẩu nhân viên.', 'error');
+      return;
+    }
+    this.newPassword = '';
+    this.confirmPassword = '';
+    this.resetVisible = false;
+    this.resetConfirmVisible = false;
+    this.resetError = '';
+    this.resetPasswordOpen = true;
+  }
+  closeResetPassword(): void {
+    this.resetPasswordOpen = false;
+    this.newPassword = '';
+    this.confirmPassword = '';
+    this.resetError = '';
+  }
+  validateResetPassword(): void {
+    if (!this.canManageAccount || !this.staff) return;
+    if (!STRONG_PASSWORD.test(this.newPassword)) {
+      this.resetError = 'Mật khẩu cần ít nhất 8 ký tự, có chữ hoa và chữ số.';
+      return;
+    }
+    if (this.newPassword !== this.confirmPassword) {
+      this.resetError = 'Xác nhận mật khẩu mới không khớp.';
+      return;
+    }
+    this.resetError = '';
+    this.toast.show('Biểu mẫu hợp lệ. Chưa có API đặt lại mật khẩu, tài khoản chưa thay đổi.', 'info');
+  }
+
   branchMenuOpen = false;
   selectedBranches = new Set<string>(this.staff?.branches ?? []);
   leaveDialogOpen = false;
