@@ -44,8 +44,8 @@
           @for (staff of rows(); track staff.id) {
             <tr>
               <td>{{ staff.id }}</td><td class="staff-name">{{ displayName(staff) }}</td>
-              <td>{{ roleName(staff.jobRole) }}</td><td>{{ staff.branches.join(' · ') }}</td>
-              <td>{{ staff.todayShift }}</td>
+              <td>{{ roleName(staff.jobRole) }}</td><td>{{ staff.branches.join(' | ') }}</td>
+              <td>{{ displayShift(staff.todayShift) }}</td>
               <td><span class="staff-status" [class.staff-status--blocked]="staff.accountStatus === 'BLOCKED'">{{ staff.accountStatus === 'ACTIVE' ? 'Đang hoạt động' : 'Đã chặn' }}</span></td>
               <td class="staff-actions">
                 <div class="staff-action-group" role="group" [attr.aria-label]="'Thao tác ' + displayName(staff)">
