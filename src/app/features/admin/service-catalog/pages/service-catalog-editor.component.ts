@@ -17,6 +17,7 @@ import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-she
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { CatalogService, ServiceApiRecord, ServiceBookingMode, ServicePriceVariant, ServiceWrite } from '../models/service-catalog.model';
 import { ServiceCatalogApiService, serviceFromApi } from '../services/service-catalog-api.service';
+import { AdminProductService } from '../../products/services/admin-product.service';
 
 type PriceMode = 'FIXED' | 'QUOTE';
 type Tier = { key: string; weight: string; mode: PriceMode; price: number | null };
@@ -31,7 +32,7 @@ const TIER_WEIGHTS = [
 ] as const;
 
 // BE requires InventoryItem ObjectIds, not Product SKU strings.
-const INVENTORY_OPTIONS: readonly MaterialOption[] = [];
+
 
 @Component({
   selector: 'app-service-catalog-editor',
@@ -42,6 +43,7 @@ const INVENTORY_OPTIONS: readonly MaterialOption[] = [];
 })
 export class ServiceCatalogEditorComponent {
   private readonly repository = inject(ServiceCatalogApiService);
+  private readonly productsApi = inject(AdminProductService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -68,7 +70,8 @@ export class ServiceCatalogEditorComponent {
   readonly readOnly = this.editorMode === 'view' || this.authSessionRole !== 'ADMIN';
   readonly isNew = this.editorMode === 'create';
   readonly title = this.editorMode === 'view' ? 'Chi tiết dịch vụ' : this.isNew ? 'Thêm dịch vụ' : 'Chỉnh sửa dịch vụ';
-  readonly productOptions = INVENTORY_OPTIONS;
+  productOptions: MaterialOption[] = [];
+  private materialsDirty = false;
 
   serviceName = '';
   category = 'GROOMING';
@@ -90,6 +93,14 @@ export class ServiceCatalogEditorComponent {
   readonly showCancelConfirmation = signal(false);
 
   constructor() {
+    this.productsApi.listProducts({ limit: 100, status: 'ACTIVE' }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (page) => {
+        this.productOptions = page.items.flatMap((product) => product.variants
+          .filter((variant) => variant.status === 'ACTIVE' && !!variant.sku)
+          .map((variant) => ({ sku: variant.sku, name: product.name, unit: '' })));
+      },
+      error: () => { this.productOptions = []; },
+    });
     if (this.serviceId && this.editorMode !== 'create') {
       this.repository.get(this.serviceId).pipe(
         takeUntilDestroyed(this.destroyRef),
@@ -189,6 +200,7 @@ export class ServiceCatalogEditorComponent {
   }
 
   addMaterial(): void {
+    this.materialsDirty = true;
     this.materials.push({
       key: this.nextMaterialKey++, sku: '', query: '', quantity: null, unit: '',
     });
@@ -196,11 +208,13 @@ export class ServiceCatalogEditorComponent {
   }
 
   removeMaterial(key: number): void {
+    this.materialsDirty = true;
     this.materials = this.materials.filter((line) => line.key !== key);
     this.markDirty();
   }
 
   matchProduct(line: MaterialLine, text: string): void {
+    this.materialsDirty = true;
     line.query = text;
     const normalized = text.trim().toLocaleLowerCase('vi');
     const product = this.productOptions.find((item) =>
@@ -283,6 +297,10 @@ export class ServiceCatalogEditorComponent {
     this.errors.set(errors);
     if (errors.length) {
       this.notice.set('');
+      return;
+    }
+    if (this.materialsDirty) {
+      this.errors.set(['Backend chưa hỗ trợ lưu vật liệu theo SKU sản phẩm. Vui lòng lưu thông tin dịch vụ mà không thay đổi vật liệu; các thay đổi vật liệu đang nhập không được gửi đi.']);
       return;
     }
     const prices = this.pricePayload();
