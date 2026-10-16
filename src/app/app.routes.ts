@@ -12,7 +12,7 @@ interface ProductLeaveAware {
 }
 const confirmProductLeave: CanDeactivateFn<ProductLeaveAware> = (component) => component.canLeavePage();
 
-const confirmStaffLeave: CanDeactivateFn<{canLeavePage(): boolean}> = component => component.canLeavePage();
+const confirmStaffLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
 
 export const routes: Routes = [
   {
