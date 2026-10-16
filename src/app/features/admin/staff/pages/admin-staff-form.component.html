@@ -118,7 +118,9 @@
                     {{ staff?.accountStatus === 'BLOCKED' ? 'Đã chặn' : 'Đang hoạt động' }}
                   </span>
                 </div>
-                <button type="button" class="secondary reset-button" (click)="notAvailable('Đặt lại mật khẩu')">Đặt lại mật khẩu</button>
+                @if (canManageAccount) {
+                  <button type="button" class="secondary reset-button" (click)="openResetPassword()">Đặt lại mật khẩu</button>
+                }
               </div>
             } @else {
               <div class="fields stacked">
@@ -211,6 +213,52 @@
         <button type="button" class="secondary" autofocus (click)="resolveLeave(false)">Tiếp tục chỉnh sửa</button>
         <button type="button" class="primary" (click)="resolveLeave(true)">Rời trang</button>
       </div>
+    </section>
+  </div>
+}
+
+@if (resetPasswordOpen && staff && canManageAccount) {
+  <div class="staff-reset-overlay" (keydown.escape)="closeResetPassword()">
+    <section class="staff-reset-dialog" role="dialog" aria-modal="true"
+      aria-labelledby="staff-reset-title" aria-describedby="staff-reset-description" tabindex="-1">
+      <div class="staff-reset-heading">
+        <h2 id="staff-reset-title">Đặt lại mật khẩu</h2>
+        <button type="button" class="staff-reset-close" aria-label="Đóng" (click)="closeResetPassword()">×</button>
+      </div>
+      <p id="staff-reset-description">{{ displayName }} · {{ staffId }}</p>
+      <p class="staff-reset-username">Tài khoản đăng nhập: {{ staff.loginUsername || '—' }}</p>
+      <div class="staff-reset-fields">
+        <label><span>Mật khẩu mới <em>*</em></span>
+          <span class="staff-reset-input">
+            <input [type]="resetVisible ? 'text' : 'password'" autocomplete="new-password"
+              placeholder="Nhập mật khẩu mới" [value]="newPassword"
+              (input)="newPassword=$any($event.target).value; resetError=''">
+            <button type="button" [attr.aria-label]="resetVisible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
+              (click)="resetVisible=!resetVisible">
+              <img [src]="resetVisible ? '/assets/admin-login/visibility-off-outlined.svg' : '/assets/admin-login/visibility-outlined.svg'"
+                width="18" height="18" alt="" aria-hidden="true">
+            </button>
+          </span>
+        </label>
+        <label><span>Xác nhận mật khẩu mới <em>*</em></span>
+          <span class="staff-reset-input">
+            <input [type]="resetConfirmVisible ? 'text' : 'password'" autocomplete="new-password"
+              placeholder="Nhập lại mật khẩu mới" [value]="confirmPassword"
+              (input)="confirmPassword=$any($event.target).value; resetError=''">
+            <button type="button" [attr.aria-label]="resetConfirmVisible ? 'Ẩn mật khẩu xác nhận' : 'Hiện mật khẩu xác nhận'"
+              (click)="resetConfirmVisible=!resetConfirmVisible">
+              <img [src]="resetConfirmVisible ? '/assets/admin-login/visibility-off-outlined.svg' : '/assets/admin-login/visibility-outlined.svg'"
+                width="18" height="18" alt="" aria-hidden="true">
+            </button>
+          </span>
+        </label>
+      </div>
+      @if (resetError) { <p class="staff-reset-error" role="alert">{{ resetError }}</p> }
+      <div class="staff-reset-actions">
+        <button type="button" class="secondary" (click)="closeResetPassword()">Hủy</button>
+        <button type="button" class="primary" (click)="validateResetPassword()">Đặt lại mật khẩu</button>
+      </div>
+      <p class="staff-reset-note">Chưa kết nối API Backend. Không lưu hoặc thay đổi mật khẩu thật.</p>
     </section>
   </div>
 }
