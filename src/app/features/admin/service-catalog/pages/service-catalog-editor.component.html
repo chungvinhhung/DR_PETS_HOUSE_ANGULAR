@@ -175,10 +175,10 @@
                       placeholder="Tìm SKU / tên sản phẩm..." [attr.aria-label]="'Tìm sản phẩm vật liệu dòng ' + ($index + 1)" />
                   </td>
                   <td><input type="number" min="0.01" step="0.01" [disabled]="!mayEdit"
-                    [(ngModel)]="line.quantity" (ngModelChange)="markDirty()"
+                    [(ngModel)]="line.quantity" (ngModelChange)="markMaterialDirty()"
                     placeholder="Nhập số lượng" [attr.aria-label]="'Số lượng vật liệu dòng ' + ($index + 1)"/></td>
                   <td><input type="text" maxlength="30" [disabled]="!mayEdit"
-                    [(ngModel)]="line.unit" (ngModelChange)="markDirty()"
+                    [(ngModel)]="line.unit" (ngModelChange)="markMaterialDirty()"
                     placeholder="Đơn vị" [attr.aria-label]="'Đơn vị vật liệu dòng ' + ($index + 1)"/></td>
                   <td class="service-editor__remove-cell">
                     @if (mayEdit) {
