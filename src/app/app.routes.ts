@@ -16,6 +16,20 @@ const confirmStaffLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boo
 
 export const routes: Routes = [
   {
+    path: 'admin/staff/schedule',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+    loadComponent: () => import('./features/admin/staff/pages/admin-staff-schedule.component')
+      .then(component => component.AdminStaffScheduleComponent),
+  },
+  {
+    path: 'admin/staff/shifts/assign',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () => import('./features/admin/staff/pages/admin-staff-shift-assign.component')
+      .then(component => component.AdminStaffShiftAssignComponent),
+  },
+  {
     path: 'admin/staff/new',
     canActivate: [authGuard, roleGuard],
     canDeactivate: [confirmStaffLeave],
