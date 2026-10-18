@@ -185,10 +185,12 @@ export class ServiceCatalogListComponent {
 
   executorLabel(value: string): string {
     return value === 'CARE_STAFF_GROOMER' || value === 'CARE_STAFF'
-      ? 'CARE STAFF'
+      ? 'Nhân viên chăm sóc'
       : value === 'VETERINARIAN'
-        ? 'VETERINARIAN'
-        : value.replaceAll('_', ' ');
+        ? 'Bác sĩ thú y'
+        : value === 'NURSE'
+          ? 'Y tá'
+          : value.replaceAll('_', ' ');
   }
 
   priceLabel(service: CatalogService): string {
