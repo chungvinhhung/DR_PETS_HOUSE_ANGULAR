@@ -4,11 +4,6 @@
     <div class="service-catalog__heading-text">
       <h1 id="service-catalog-title">Danh mục dịch vụ</h1>
      </div>
-    @if (isAdmin()) {
-      <button type="button" class="service-catalog__create" (click)="createService()">
-        + Thêm dịch vụ
-      </button>
-    }
   </header>
 
   @if (notice()) {
@@ -61,6 +56,11 @@
           <option value="INACTIVE">Tạm ngưng</option>
         </select>
       </label>
+      @if (isAdmin()) {
+        <button type="button" class="service-catalog__create" (click)="createService()">
+          + Thêm dịch vụ
+        </button>
+      }
     </div>
   </div>
 
