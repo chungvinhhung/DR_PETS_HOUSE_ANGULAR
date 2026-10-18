@@ -78,9 +78,9 @@
             <label class="service-editor__field">
               <span>Vai trò thực hiện <b>*</b></span>
               <select [disabled]="!mayEdit" [(ngModel)]="executorRole" (ngModelChange)="markDirty()">
-                <option value="CARE_STAFF_GROOMER">CARE STAFF</option>
-                <option value="NURSE" [disabled]="category !== 'MEDICAL'">NURSE</option>
-                <option value="VETERINARIAN">VETERINARIAN</option>
+                <option value="CARE_STAFF_GROOMER">Nhân viên chăm sóc</option>
+                <option value="NURSE" [disabled]="category !== 'MEDICAL'">Y tá</option>
+                <option value="VETERINARIAN">Bác sĩ thú y</option>
               </select>
             </label>
           </div>
