@@ -32,8 +32,16 @@ const SAMPLE_SHIFTS: ShiftTemplatePreview[] = [
       </div>
       <div class="branch-management__table-scroll">
         <table class="branch-management__table branch-v2__shifts">
-          <thead><tr><th scope="col">TÊN CA</th><th scope="col">BẮT ĐẦU</th><th scope="col">KẾT THÚC</th>
-            <th scope="col">NGÀY ÁP DỤNG</th><th scope="col">TRẠNG THÁI</th><th scope="col">THAO TÁC</th></tr></thead>
+          <colgroup>
+            <col style="width: 18%" />
+            <col style="width: 16%" />
+            <col style="width: 18%" />
+            <col style="width: 24%" />
+            <col style="width: 15%" />
+            <col style="width: 9%" />
+          </colgroup>
+          <thead><tr><th scope="col">Tên ca</th><th scope="col">Bắt đầu</th><th scope="col">Kết thúc</th>
+            <th scope="col">Ngày áp dụng</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead>
           <tbody>
             @for (item of items(); track item.id) {
               <tr>
@@ -117,6 +125,82 @@ const SAMPLE_SHIFTS: ShiftTemplatePreview[] = [
       </div>
     }
   `,
+  styles: [`
+    /* Component-local: page SCSS cannot reliably style cells in a standalone
+       child component under Angular Emulated ViewEncapsulation. */
+    :host { display: block; min-width: 0; }
+    .branch-management__table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid #dce4ee;
+      border-radius: 10px;
+      background: #fff;
+    }
+    .branch-v2__shifts {
+      width: 100%;
+      min-width: 780px;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font: 400 13px/20px Roboto, Arial, sans-serif;
+      color: #334155;
+    }
+    .branch-v2__shifts thead { background: #f1f5f9; }
+    .branch-v2__shifts :is(th, td) {
+      padding: 12px 16px;
+      text-align: left;
+      vertical-align: middle;
+      box-sizing: border-box;
+    }
+    .branch-v2__shifts th {
+      height: 54px;
+      color: #475569;
+      font: 500 13px/20px Roboto, Arial, sans-serif;
+      white-space: nowrap;
+      text-transform: none;
+    }
+    .branch-v2__shifts td {
+      height: 72px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 14px;
+    }
+    .branch-v2__shifts tbody td strong { font-weight: 500; }
+    .branch-v2__shifts :is(th, td):last-child {
+      text-align: center;
+      padding-right: 12px;
+      padding-left: 12px;
+    }
+    .branch-v2__shifts tbody tr:hover td { background: #f8fbff; }
+    .branch-management__pill {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid #c8e6c9;
+      border-radius: 999px;
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 4px 10px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .branch-management__pill--off {
+      border-color: #dce4ee;
+      background: #eff2f5;
+      color: #64748b;
+    }
+    .branch-v2__edit-icon {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      cursor: pointer;
+    }
+    .branch-v2__edit-icon:hover { background: #e5f6fd; }
+    .branch-v2__edit-icon img { display: block; width: 20px; height: 20px; }
+  `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BranchShiftTemplatesPreviewComponent {
