@@ -60,6 +60,22 @@ export class ServiceCatalogEditorComponent {
 
   readonly editorMode = (this.route.snapshot.data['editorMode'] ?? 'create') as 'create' | 'edit' | 'view';
   readonly serviceId = this.route.snapshot.paramMap.get('id');
+  // Only allow the current service detail route or the catalog list as a return destination.
+  // Never navigate to an arbitrary URL supplied through query parameters.
+  readonly returnUrl = this.resolveReturnUrl();
+
+  private resolveReturnUrl(): string {
+    const requested = this.route.snapshot.queryParamMap.get('returnTo');
+    if (requested === '/admin/services') return requested;
+    if (this.serviceId && requested === `/admin/services/${encodeURIComponent(this.serviceId)}`) {
+      return requested;
+    }
+    return '/admin/services';
+  }
+
+  back(): void {
+    void this.router.navigateByUrl(this.returnUrl);
+  }
   source: CatalogService | null = null;
   readonly branchDetailRows = signal<readonly BranchDetailRow[]>([]);
   readonly branchesLoading = signal(false);
@@ -511,7 +527,7 @@ export class ServiceCatalogEditorComponent {
         this.saving.set(false);
         this.dirty.set(false);
         this.notice.set(this.isNew ? 'Đã thêm dịch vụ thành công.' : 'Đã cập nhật dịch vụ thành công.');
-        void this.router.navigateByUrl('/admin/services');
+        this.back();
       },
       error: (error: HttpErrorResponse | AppHttpError) => {
         this.saving.set(false);
