@@ -124,16 +124,16 @@
             </div>
           }
         </div>
-        @if (isAdmin) {
-          <button class="branch-v2-page__btn branch-v2-page__btn--outline" type="button"
-            (click)="openBranchSettings(branch)">Chỉnh sửa</button>
-        }
       </header>
 
       <section class="branch-v2-page__info" aria-label="Thông tin chi nhánh">
-        <div><span>ĐỊA CHỈ</span><strong>{{ branch.address }}</strong></div>
-        <div><span>HOTLINE</span><strong>{{ branch.hotline || '—' }}</strong></div>
+        <div><span>Địa chỉ</span><strong>{{ branch.address }}</strong></div>
+        <div><span>Hotline</span><strong>{{ branch.hotline || '—' }}</strong></div>
         <div><span>Trạng thái</span><strong class="branch-v2-page__badge">{{ branch.status === 'ACTIVE' ? 'Đang hoạt động' : 'Ngừng hoạt động' }}</strong></div>
+        @if (isAdmin) {
+          <button class="branch-v2-page__btn branch-v2-page__btn--outline branch-v2-page__info-edit" type="button"
+            (click)="openBranchSettings(branch)">Chỉnh sửa</button>
+        }
       </section>
 
       <section class="branch-v2-page__inventory" aria-label="Tồn kho chi nhánh">
@@ -176,7 +176,7 @@
             </label>
             <button type="button" class="branch-v2-page__btn branch-v2-page__btn--outline" (click)="refreshPreview()">Làm mới</button>
           </div>
-          <div class="branch-v2-page__table-scroll">
+          <div class="branch-v2-page__table-scroll branch-v2-page__table-scroll--services">
             <table class="branch-v2-page__table branch-v2-page__table--services">
               <thead><tr><th scope="col">Dịch vụ</th><th scope="col">Sức chứa đồng thời</th>
                 <th scope="col">Khả dụng</th><th scope="col">Kích hoạt tại chi nhánh</th><th scope="col">Thao tác</th></tr></thead>
