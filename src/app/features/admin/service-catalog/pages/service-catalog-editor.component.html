@@ -52,6 +52,11 @@
         </section>
         <section class="service-editor__card service-editor__detail-card" aria-labelledby="service-detail-pricing">
           <h2 id="service-detail-pricing">Giá &amp; vật liệu mặc định</h2>
+          @if (pricingDataWarning) {
+            <p class="service-editor__pricing-warning" role="status">
+              Thông tin giá từ Backend chưa khớp các mức giá đang hỗ trợ. Các số tiền chưa được xác nhận sẽ không hiển thị là giá cơ sở.
+            </p>
+          }
           <div class="service-editor__detail-pricing">
             <div class="service-editor__detail-pricing-summary">
               <div><span>Giá tham khảo</span><strong>{{ detailPriceLabel() }}</strong></div>
@@ -195,6 +200,11 @@
 
       <section class="service-editor__card" aria-labelledby="service-price-title">
         <h2 id="service-price-title">Giá dịch vụ</h2>
+        @if (pricingDataWarning) {
+          <p class="service-editor__pricing-warning" role="status">
+              Thông tin giá từ Backend chưa khớp các mức giá đang hỗ trợ. Các số tiền chưa được xác nhận sẽ không hiển thị là giá cơ sở.
+          </p>
+        }
         <label class="service-editor__field service-editor__price-settings">
           <span>Giá theo cân nặng</span>
           <select [disabled]="!mayEdit" [(ngModel)]="weightPricing" (ngModelChange)="markPricingDirty()">
