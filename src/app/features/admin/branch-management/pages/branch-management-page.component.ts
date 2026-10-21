@@ -6,6 +6,8 @@ import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-she
 import { BranchServiceConfigDialogComponent } from '../../service-catalog/components/branch-service-config-dialog.component';
 import { CatalogBranch, CatalogService } from '../../service-catalog/models/service-catalog.model';
 import { ServiceCatalogMockRepository } from '../../service-catalog/services/service-catalog-mock.repository';
+import { BranchHoursPreviewComponent } from './branch-hours-preview.component';
+import { BranchShiftTemplatesPreviewComponent } from './branch-shift-templates-preview.component';
 import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagination';
 
 /**
@@ -15,7 +17,7 @@ import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagi
 @Component({
   selector: 'app-branch-management-page',
   standalone: true,
-  imports: [RouterLink, AdminCatalogShellComponent, BranchServiceConfigDialogComponent],
+  imports: [RouterLink, AdminCatalogShellComponent, BranchServiceConfigDialogComponent, BranchHoursPreviewComponent, BranchShiftTemplatesPreviewComponent],
   templateUrl: './branch-management-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
