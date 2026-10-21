@@ -103,18 +103,30 @@
           @if (!active) {
             <p class="service-editor__detail-empty">Dịch vụ đang tạm ngưng nên chưa thể kích hoạt tại các chi nhánh.</p>
           }
-          <div class="service-editor__detail-branch-row">
-            <div>
-              <strong>Chi nhánh áp dụng</strong>
-              <small>{{ service.enabledBranchCount ?? '—' }} / {{ service.totalBranchCount ?? '—' }} chi nhánh đang bật · {{ service.availabilityText || 'Khả dụng do Backend tính' }}</small>
+          @if (branchesLoading()) {
+            <p class="service-editor__detail-empty" role="status">Đang tải danh sách chi nhánh...</p>
+          } @else if (branchLoadError()) {
+            <p class="service-editor__detail-empty" role="alert">{{ branchLoadError() }}</p>
+          } @else if (!branchDetailRows().length) {
+            <p class="service-editor__detail-empty">Không có chi nhánh nào trong phạm vi được phép.</p>
+          } @else {
+            <div class="service-editor__detail-branch-list">
+              @for (branch of branchDetailRows(); track branch.id) {
+                <div class="service-editor__detail-branch-row">
+                  <div class="service-editor__detail-branch-info">
+                    <strong>{{ branch.name }}</strong>
+                    <small>{{ branch.summary }}</small>
+                  </div>
+                  <a routerLink="/admin/branches" class="service-editor__detail-config-link"
+                    [attr.aria-label]="'Đi đến quản lý chi nhánh: ' + branch.name"
+                    [title]="'Quản lý cấu hình dịch vụ tại ' + branch.name">
+                    <img src="/assets/service-catalog/icon-settings.svg"
+                      width="20" height="20" alt="" aria-hidden="true"/>
+                  </a>
+                </div>
+              }
             </div>
-            <a routerLink="/admin/branches" class="service-editor__detail-config-link" aria-label="Cấu hình dịch vụ theo chi nhánh" title="Cấu hình tại chi nhánh">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M12 3.5 14 4.1l1.2 1.8 2.1.2 1.5 1.6-.2 2.1 1.7 1.3v2l-1.7 1.3.2 2.1-1.5 1.6-2.1.2-1.2 1.8-2 .6-2-.6-1.2-1.8-2.1-.2-1.5-1.6.2-2.1L3.7 13v-2l1.7-1.3-.2-2.1 1.5-1.6 2.1-.2L10 4.1Z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-            </a>
-          </div>
+          }
         </section>
       } @else {
       @if (errors().length) {
