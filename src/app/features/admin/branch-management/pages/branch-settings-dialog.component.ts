@@ -21,8 +21,8 @@ export interface BranchSettingsPreview {
         (click)="$event.stopPropagation()">
         <header class="branch-settings__header">
           <div>
-            <h2 id="branch-settings-title">Cấu hình chi nhánh</h2>
-            <p>Thông tin và trạng thái chi nhánh</p>
+            <h2 id="branch-settings-title">{{ createMode ? 'Thêm chi nhánh' : 'Cấu hình chi nhánh' }}</h2>
+            <p>{{ createMode ? 'Tạo chi nhánh mới trên hệ thống' : 'Thông tin và trạng thái chi nhánh' }}</p>
           </div>
           <button type="button" aria-label="Đóng cấu hình chi nhánh" [disabled]="saving" (click)="close()">×</button>
         </header>
@@ -47,10 +47,10 @@ export interface BranchSettingsPreview {
             </select>
           </label>
           @if (error()) { <p class="branch-settings__error" role="alert">{{ error() }}</p> }
-          <p class="branch-settings__disclaimer">Thay đổi sẽ được gửi đến Backend. Chỉ khi lưu thành công, hộp thoại mới đóng.</p>
+          <p class="branch-settings__disclaimer">{{ createMode ? 'Chi nhánh mới sẽ được tạo trên Backend.' : 'Thay đổi sẽ được lưu lên Backend.' }} Hộp thoại chỉ đóng sau khi API báo thành công.</p>
           <footer class="branch-settings__footer">
             <button class="branch-settings__cancel" type="button" [disabled]="saving" (click)="close()">Hủy</button>
-            <button class="branch-settings__save" type="submit" [disabled]="saving">{{ saving ? 'Đang lưu...' : 'Lưu cấu hình' }}</button>
+            <button class="branch-settings__save" type="submit" [disabled]="saving">{{ saving ? 'Đang lưu...' : (createMode ? 'Thêm chi nhánh' : 'Lưu cấu hình') }}</button>
           </footer>
         </form>
       </section>
@@ -88,6 +88,7 @@ export class BranchSettingsDialogComponent {
     this.error.set('');
   }
   @Input() saving = false;
+  @Input() createMode = false;
   @Output() dismiss = new EventEmitter<void>();
   @Output() previewSaved = new EventEmitter<BranchSettingsPreview>();
   private id = '';
