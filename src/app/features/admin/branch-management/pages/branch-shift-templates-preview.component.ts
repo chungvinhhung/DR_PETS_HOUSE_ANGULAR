@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, HostListener, Input, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { inject } from '@angular/core';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 
@@ -21,7 +20,6 @@ const SAMPLE_SHIFTS: ShiftTemplatePreview[] = [
 @Component({
   selector: 'app-branch-shift-templates-preview',
   standalone: true,
-  imports: [RouterLink],
   template: `
     <section class="branch-management__panel branch-v2" aria-labelledby="branch-shift-heading">
       <div class="branch-v2__heading">
@@ -31,13 +29,6 @@ const SAMPLE_SHIFTS: ShiftTemplatePreview[] = [
         </div>
         <button class="branch-management__button branch-management__button--primary" type="button"
           (click)="openEditor()">+ Thêm ca làm việc</button>
-      </div>
-      <div class="branch-v2__preview-note" role="status">
-        Dữ liệu mẫu để kiểm tra giao diện. Thêm/sửa chỉ áp dụng tại trang đang mở, chưa lưu Backend.
-      </div>
-      <div class="branch-v2__shift-summary">
-        <span class="branch-management__pill">{{ activeCount }} mẫu đang dùng</span>
-        <a routerLink="/admin/staff/schedule">Lịch phân công nhân viên được quản lý tại Nhân sự → Lịch làm việc.</a>
       </div>
       <div class="branch-management__table-scroll">
         <table class="branch-management__table branch-v2__shifts">
@@ -53,8 +44,8 @@ const SAMPLE_SHIFTS: ShiftTemplatePreview[] = [
                 <td><span class="branch-management__pill" [class.branch-management__pill--off]="!item.enabled">
                   {{ item.enabled ? 'Đang dùng' : 'Ngừng dùng' }}
                 </span></td>
-                <td><button class="branch-management__button branch-management__button--outline" type="button"
-                  [attr.aria-label]="'Sửa ' + item.name" (click)="openEditor(item)">Sửa</button></td>
+                <td class="branch-v2__edit-cell"><button class="branch-v2__edit-icon" type="button" title="Chỉnh sửa"
+                  [attr.aria-label]="'Sửa ' + item.name" (click)="openEditor(item)"><img src="/assets/admin-staff/icon-edit.svg" width="20" height="20" alt="" /></button></td>
               </tr>
             } @empty {
               <tr><td colspan="6" class="branch-management__empty">Chưa có mẫu ca nào.</td></tr>
@@ -62,10 +53,7 @@ const SAMPLE_SHIFTS: ShiftTemplatePreview[] = [
           </tbody>
         </table>
       </div>
-      @if (feedback()) { <p class="branch-v2__success" role="status">{{ feedback() }}</p> }
-      <div class="branch-v2__footer-actions">
-        <button type="button" class="branch-management__button branch-management__button--outline" (click)="openEditor()">+ Thêm ca làm việc</button>
-      </div>
+
     </section>
 
     @if (editorOpen()) {
