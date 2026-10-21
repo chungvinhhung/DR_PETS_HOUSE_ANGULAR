@@ -98,3 +98,8 @@
 .staff-tabs a.staff-tab { text-decoration: none; }
 .staff-tabs a.staff-tab:hover { color: #0d47a1; text-decoration: none; }
 .staff-tabs a.staff-tab:focus-visible { outline: 2px solid #0d47a1; outline-offset: -3px; }
+
+/* Separate search/filter card from the management table card. */
+.staff-filter-panel { background:#fff; border:1px solid #dee5f0; border-radius:10px; margin-bottom:20px; }
+.staff-panel { border-color:#dee5f0; }
+.staff-table-wrap th { background:#f4f6f9; color:#536783; font-weight:500; text-transform:none; }
