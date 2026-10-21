@@ -52,6 +52,7 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
   @Output() readonly dismiss = new EventEmitter<void>();
   @Output() readonly previewSaved = new EventEmitter<BranchServiceConfigPreview>();
   @Input() initialBlockedWindows: readonly BlockedWindow[] | null = null;
+  @Input() saving = false;
   @ViewChild('dialog') private dialogRef?: ElementRef<HTMLElement>;
 
   readonly selectedBranchId = signal('');
@@ -247,8 +248,8 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     if (!this.selectedBranch) {
       errors.push('Không tìm thấy chi nhánh hợp lệ.');
     }
-    if (!Number.isInteger(this.capacity()) || this.capacity() < 0) {
-      errors.push('Sức chứa phải là số nguyên không âm.');
+    if (!Number.isInteger(this.capacity()) || this.capacity() < 1) {
+      errors.push('BE yêu cầu sức chứa là số nguyên lớn hơn hoặc bằng 1.');
     }
     if (this.enabled() && !this.canEnable) {
       errors.push('Không thể bật khi capacity bằng 0 hoặc dịch vụ tạm ngưng.');
@@ -274,10 +275,10 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
       capacity: this.capacity(),
       blockedWindows: this.blockedWindows().map((window) => ({ ...window })),
     });
-    this.dismiss.emit();
   }
 
   requestClose(): void {
+    if (this.saving) return;
     if (this.dirty()) {
       this.confirmDiscard.set(true);
     } else {
