@@ -3,20 +3,19 @@
     <header class="service-editor__header">
       <div>
         <nav class="service-editor__breadcrumb" aria-label="Đường dẫn">
-          @if (editorMode === 'view') {
-            <span>Dịch vụ</span><span aria-hidden="true">›</span>
-          }
           <a routerLink="/admin/services">Danh mục dịch vụ</a><span aria-hidden="true">›</span>
-          <strong aria-current="page">{{ editorMode === 'view' ? (source?.serviceCode || 'Chi tiết') : title }}</strong>
+          <strong aria-current="page">{{ title }}</strong>
         </nav>
         <h1 id="service-editor-title">{{ title }}</h1>
        </div>
       <div class="service-editor__actions">
         @if (editorMode !== 'view') {
           <button type="button" class="service-editor__btn service-editor__btn--secondary" (click)="cancel()">Hủy</button>
+        } @else {
+          <button type="button" class="service-editor__btn service-editor__btn--secondary" (click)="back()">Quay lại</button>
         }
         @if (editorMode === 'view' && authSessionRole === 'ADMIN' && serviceId && !missingService()) {
-          <a class="service-editor__btn service-editor__btn--primary" [routerLink]="['/admin/services', serviceId, 'edit']">Chỉnh sửa</a>
+          <a class="service-editor__btn service-editor__btn--primary" [routerLink]="['/admin/services', serviceId, 'edit']" [queryParams]="{ returnTo: '/admin/services/' + serviceId }">Chỉnh sửa</a>
         }
         @if (mayEdit) {
           <button type="button" class="service-editor__btn service-editor__btn--primary"
