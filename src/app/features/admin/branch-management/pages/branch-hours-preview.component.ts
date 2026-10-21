@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 
 /** Slot figures are copied from the Figma illustration, not computed Backend availability. */
 interface SlotRow { label: string; booked: number; total: number; }
@@ -120,6 +121,7 @@ const DAY_TOTALS = [28,35,41,34,46,52,31];
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BranchHoursPreviewComponent {
+  private readonly toast = inject(AdminToastService);
   readonly selectedDate = signal('2026-10-01'); // Figma preview day (not current live availability)
   readonly selectedSlot = signal<SlotRow | null>(null);
   readonly actionNotice = signal('');
@@ -173,6 +175,6 @@ export class BranchHoursPreviewComponent {
   showSlotInfo(row: SlotRow): void { this.selectedSlot.set(row); this.actionNotice.set(''); }
   closeSlot(): void { this.selectedSlot.set(null); this.actionNotice.set(''); }
   showLockUnavailable(): void {
-    this.actionNotice.set('Chưa có API khóa khung giờ. Không thay đổi lịch hẹn hoặc sức chứa trên Backend.');
+    this.toast.show('Chưa có API khóa khung giờ. Chưa thay đổi lịch đặt.', 'info');
   }
 }
