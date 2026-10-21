@@ -1,5 +1,5 @@
 <app-admin-catalog-shell activeItem="branches">
-  <main class="branch-management branch-v2-page">
+  <main class="branch-management branch-v2-page" [class.branch-v2-page--detail]="!!branch">
     @if (branchId && !branch) {
       <nav class="branch-v2-page__breadcrumb" aria-label="Đường dẫn">
         <a routerLink="/admin/branches">Chi nhánh</a><span>›</span><strong>Không tìm thấy</strong>
@@ -96,10 +96,10 @@
         </footer>
       </section>
     } @else {
-      <nav class="branch-v2-page__breadcrumb" aria-label="Đường dẫn">
+      <nav class="branch-v2-page__breadcrumb branch-v2-page__breadcrumb--detail" aria-label="Đường dẫn">
         <a routerLink="/admin/branches">Chi nhánh</a><span aria-hidden="true">›</span><strong aria-current="page">{{ branch.name }}</strong>
       </nav>
-      <header class="branch-v2-page__header">
+      <header class="branch-v2-page__header branch-v2-page__header--detail">
         <div class="branch-v2-page__branch-choice">
           <button type="button" class="branch-v2-page__branch-choice-trigger"
             [attr.aria-expanded]="branchMenuOpen()"
@@ -107,8 +107,8 @@
             (click)="toggleBranchMenu()">
             <span>{{ branch.name }}</span>
             <img class="branch-v2-page__title-chevron"
-              src="/assets/admin-product/icon-chevron-down.svg"
-              width="18" height="18" alt="" aria-hidden="true" />
+              src="/assets/admin-branch/figma-branch-title-chevron.svg"
+              width="24" height="24" alt="" aria-hidden="true" />
           </button>
           @if (branchMenuOpen()) {
             <div class="branch-v2-page__branch-menu" id="branch-menu-options" role="listbox" aria-label="Chọn chi nhánh">
