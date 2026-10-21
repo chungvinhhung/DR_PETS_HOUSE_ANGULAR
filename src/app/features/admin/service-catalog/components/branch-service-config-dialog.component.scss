@@ -405,3 +405,134 @@ app-branch-service-config-dialog {
  .branch-config__dialog--v2 .branch-config__blocked-fields { grid-template-columns:1fr; }
  .branch-config__dialog--v2 .branch-config__blocked-field--full { grid-column:auto; }
 }
+
+
+/* Figma WEB-2: Dialog / Cấu hình dịch vụ — node 7638:39443.
+   A compact 512px modal, green activation toggle, editable blocked periods. */
+.branch-config__dialog--v2 {
+  width:min(100%,512px);
+  padding:28px 32px 25px;
+  border-radius:12px;
+  border:1px solid #e2e8f0;
+  background:#fff;
+  box-shadow:0 24px 65px rgba(0,0,0,.25);
+}
+.branch-config__dialog--v2 .branch-config__header {
+  padding-bottom:13px;
+}
+.branch-config__dialog--v2 .branch-config__header h2 {
+  font-size:19px;
+  color:#202632;
+}
+.branch-config__dialog--v2 .branch-config__header p {
+  font-size:12px;
+}
+.branch-config__dialog--v2 .branch-config__fields {
+  gap:28px;
+  padding:17px 0 20px;
+}
+.branch-config__dialog--v2 .branch-config__switch {
+  width:50px;
+  height:28px;
+  background:#a2aebc;
+}
+.branch-config__dialog--v2 .branch-config__switch--active { background:#2e7d32; }
+.branch-config__dialog--v2 .branch-config__switch > span {
+  top:4px;
+  left:4px;
+  width:20px;
+  height:20px;
+}
+.branch-config__dialog--v2 .branch-config__switch--active > span { transform:translateX(22px); }
+.branch-config__dialog--v2 .branch-config__switch-label {
+  color:#1b273b;
+  font-size:12px;
+}
+.branch-config__dialog--v2 .branch-config__stepper {
+  height:38px;
+  width:164px;
+}
+.branch-config__dialog--v2 .branch-config__blocked {
+  margin-top:0;
+  padding-top:20px;
+  padding-bottom:16px;
+}
+.branch-config__dialog--v2 .branch-config__blocked-heading {
+  min-height:35px;
+  margin-bottom:13px;
+}
+.branch-config__dialog--v2 .branch-config__blocked h3 { font-size:13px; }
+.branch-config__dialog--v2 .branch-config__blocked-heading > button {
+  height:32px;
+  padding:0 12px;
+  border-radius:6px;
+  background:#e8f3ff;
+  color:#0d47a1;
+  font-weight:600;
+}
+.branch-config__dialog--v2 .branch-config__blocked-list li {
+  padding:12px;
+  min-height:59px;
+  background:#f4f7fb;
+}
+.branch-config__dialog--v2 .branch-config__blocked-info strong {
+  font-size:12px;
+  color:#1e293b;
+}
+.branch-config__dialog--v2 .branch-config__blocked-info small {
+  font-size:11px;
+  color:#6b7890;
+}
+.branch-config__dialog--v2 .branch-config__blocked-actions button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  width:30px;
+  height:30px;
+  border-radius:5px;
+}
+.branch-config__dialog--v2 .branch-config__blocked-actions button:hover {
+  background:#e5edf8;
+}
+.branch-config__dialog--v2 .branch-config__blocked-actions img {
+  display:block;
+  width:18px;
+  height:18px;
+}
+.branch-config__dialog--v2 .branch-config__inline-block {
+  margin-top:12px;
+  padding:15px;
+  border:1px solid #d9e5f4;
+  border-radius:8px;
+  background:#f6f8fc;
+}
+.branch-config__dialog--v2 .branch-config__inline-heading {
+  margin-bottom:15px;
+}
+.branch-config__dialog--v2 .branch-config__inline-heading button.branch-config__button--primary {
+  min-height:30px;
+  padding:0 11px;
+}
+.branch-config__dialog--v2 .branch-config__blocked-field input {
+  height:40px;
+  background:#fff;
+  border-radius:7px;
+  border:1px solid #dbe3ed;
+}
+.branch-config__dialog--v2 .branch-config__footer {
+  padding-top:17px;
+  gap:10px;
+}
+.branch-config__dialog--v2 .branch-config__footer .branch-config__button {
+  min-height:39px;
+}
+@media(max-width:540px) {
+  .branch-config__dialog--v2 {
+    padding:20px 17px;
+  }
+  .branch-config__dialog--v2 .branch-config__fields,
+  .branch-config__dialog--v2 .branch-config__blocked-fields {
+    grid-template-columns:1fr;
+  }
+}
