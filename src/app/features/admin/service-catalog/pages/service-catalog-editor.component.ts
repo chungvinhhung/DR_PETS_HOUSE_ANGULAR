@@ -162,11 +162,11 @@ export class ServiceCatalogEditorComponent {
       { message?: string; error?: { message?: string }; code?: string } | null;
     if (error.status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
     if (error.status === 403) return 'Tài khoản không có quyền thao tác danh mục dịch vụ.';
-    if (error.status === 404) return 'Không tìm thấy dịch vụ trong Backend.';
+    if (error.status === 404) return 'Không tìm thấy dịch vụ.';
     if (error.status === 409) return 'Dữ liệu đã thay đổi hoặc mã dịch vụ bị trùng. Vui lòng kiểm tra và thử lại.';
     if (error.status === 422 || error.status === 400)
-      return body?.message ?? body?.error?.message ?? error.message ?? 'Dữ liệu không hợp lệ theo quy tắc Backend.';
-    return 'Không kết nối được Backend. Vui lòng kiểm tra lại hoặc thử sau.';
+      return 'Dữ liệu không hợp lệ. Vui lòng kiểm tra các trường đã nhập.';
+    return 'Không thể kết nối đến máy chủ.';
   }
 
   get mayEdit(): boolean {
@@ -310,7 +310,7 @@ export class ServiceCatalogEditorComponent {
       return;
     }
     if (this.materialsDirty) {
-      this.errors.set(['Backend chưa hỗ trợ lưu vật liệu theo SKU sản phẩm. Vui lòng lưu thông tin dịch vụ mà không thay đổi vật liệu; các thay đổi vật liệu đang nhập không được gửi đi.']);
+      this.errors.set(['Chưa thể lưu thay đổi vật liệu. Vui lòng bỏ các thay đổi vật liệu và thử lại.']);
       return;
     }
     const prices = this.pricePayload();
