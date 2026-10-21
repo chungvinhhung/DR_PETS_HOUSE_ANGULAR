@@ -86,7 +86,7 @@ export class AdminStaffShiftAssignComponent {
     this.errors.set([]); this.success.set('');
     const staff = this.selectedStaff();
     const template = this.options(branch).find(t => t.name === templateName);
-    if (!staff || !staff.branches.includes(branch) || !template) { this.errors.set(['Chọn nhân viên, chi nhánh được giao và mẫu ca hợp lệ.']); return; }
+    if (!staff || !staff.branches.includes(branch) || !template) { this.errors.set(['Chọn nhân viên, chi nhánh được giao và ca làm hợp lệ.']); return; }
     const existing = [...this.shiftsFor(date), ...this.otherShifts(date).map(s => {
       const [start,end] = s.time.split(/[–—-]/).map(x => x.trim());
       return { start, end };
