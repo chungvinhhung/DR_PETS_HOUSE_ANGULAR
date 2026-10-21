@@ -5,9 +5,11 @@ on:
     branches:
       - feature/angular-shared-foundation
       - feature/admin-product-category
+      - feat/figma-branch-v2-admin
   pull_request:
     branches:
       - develop
+      - main
 
 permissions:
   contents: read
