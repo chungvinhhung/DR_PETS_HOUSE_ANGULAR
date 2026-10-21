@@ -49,10 +49,6 @@ export class ServiceCatalogEditorComponent {
   private readonly router = inject(Router);
   private readonly authSession = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
-  private readonly validateErrorToast = effect(() => {
-    const errors = this.errors();
-    if (errors.length) this.toast.show(errors.slice(0, 2).join(' '));
-  });
   private readonly previewToast = effect(() => {
     const message = this.notice();
     if (message) this.toast.show(message, 'info');
