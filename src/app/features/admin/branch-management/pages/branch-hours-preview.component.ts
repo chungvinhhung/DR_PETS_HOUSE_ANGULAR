@@ -1,79 +1,117 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 
-interface SlotRow {
-  label: string;
-}
+/** Slot figures are copied from the Figma illustration, not computed Backend availability. */
+interface SlotRow { label: string; booked: number; total: number; }
+const FIGMA_SLOTS: readonly SlotRow[] = [
+  { label:'07:00–08:00', booked:1, total:4 }, { label:'08:00–09:00', booked:2, total:5 },
+  { label:'09:00–10:00', booked:4, total:5 }, { label:'10:00–11:00', booked:5, total:5 },
+  { label:'11:00–12:00', booked:2, total:5 }, { label:'12:00–13:00', booked:0, total:0 },
+  { label:'13:00–14:00', booked:4, total:5 }, { label:'14:00–15:00', booked:3, total:6 },
+  { label:'15:00–16:00', booked:1, total:5 }, { label:'16:00–17:00', booked:5, total:5 },
+  { label:'17:00–18:00', booked:3, total:5 }, { label:'18:00–19:00', booked:2, total:4 },
+  { label:'19:00–20:00', booked:1, total:4 }, { label:'20:00–21:00', booked:1, total:4 },
+];
+const DAY_TOTALS = [28,35,41,34,46,52,31];
 
-/**
- * Figma V2: Lịch hoạt động & sức chứa.
- * Presentation only until the BE exposes computed availability.
- * A displayed slot row is NOT a reservation slot and is not editable.
- */
 @Component({
   selector: 'app-branch-hours-preview',
   standalone: true,
   template: `
-    <section class="branch-management__panel branch-v2" aria-labelledby="branch-hours-heading">
+    <section class="branch-v2" aria-labelledby="branch-hours-heading">
       <div class="branch-v2__heading">
-        <div>
-          <h2 id="branch-hours-heading">Lịch hoạt động &amp; sức chứa</h2>
-          <p>Theo dõi lịch hoạt động trong tuần và trạng thái các khung giờ tại chi nhánh.</p>
-        </div>
+        <h2 id="branch-hours-heading">Lịch hoạt động</h2>
         <div class="branch-v2__week-nav" aria-label="Điều hướng lịch">
           <button type="button" aria-label="Tuần trước" (click)="moveWeek(-1)">‹</button>
           <label class="branch-v2__date-control">
-            <span class="branch-management__sr-only">Chọn ngày</span>
-            <input #calendarDate type="date" [value]="selectedDate()" (change)="chooseDate(calendarDate.value)" />
+            <span>{{ weekLabel() }}</span>
+            <input #calendarDate type="date" [value]="selectedDate()" (change)="chooseDate(calendarDate.value)" aria-label="Chọn ngày trong lịch" />
           </label>
           <button type="button" (click)="goToday()">Hôm nay</button>
           <button type="button" aria-label="Tuần sau" (click)="moveWeek(1)">›</button>
         </div>
       </div>
 
-      <div class="branch-v2__days" aria-label="Chọn ngày trong tuần">
+      <div class="branch-v2__days" aria-label="Các ngày trong tuần">
         @for (day of weekDays(); track day.iso) {
           <button type="button" [class.branch-v2__day--active]="selectedDate() === day.iso"
             [attr.aria-pressed]="selectedDate() === day.iso" (click)="chooseDate(day.iso)">
-            <span>{{ day.weekday }}</span><strong>{{ day.dayMonth }}</strong><small>—</small>
+            <span>{{ day.weekday }}</span><strong>{{ day.dayMonth }}</strong>
+            <small>{{ isFigmaWeek() ? day.total + ' / 62' : '—' }}</small>
           </button>
         }
       </div>
 
       <div class="branch-v2__preview-note" role="status">
-        Chưa kết nối API tính khả dụng. Số lịch đặt, sức chứa theo thời điểm và mức lấp đầy không có dữ liệu để hiển thị.
+        Bảng ngày 01/10/2026 là dữ liệu mẫu từ Figma để kiểm tra giao diện, không phải số liệu đặt lịch thật. Những ngày khác cần API khả dụng của Backend.
       </div>
 
-      <div class="branch-management__table-scroll">
-        <table class="branch-management__table branch-v2__slots">
-          <thead>
-            <tr><th scope="col">KHUNG GIỜ</th><th scope="col">TRẠNG THÁI</th><th scope="col">ĐẶT / TỔNG</th>
-              <th scope="col">CÒN TRỐNG</th><th scope="col">LẤP ĐẦY</th><th scope="col">THAO TÁC</th></tr>
-          </thead>
+      <div class="branch-v2__table-scroll">
+        <table class="branch-v2__monitor">
+          <thead><tr>
+            <th scope="col">Khung giờ</th><th scope="col">Trạng thái</th>
+            <th scope="col">Đặt / Tổng</th><th scope="col">Còn trống</th><th scope="col">Lấp đầy</th><th scope="col">Thao tác</th>
+          </tr></thead>
           <tbody>
             @for (slot of timeRows; track slot.label) {
               <tr>
-                <td><strong>{{ slot.label }}</strong></td>
-                <td><span class="branch-v2__muted-pill">Chưa có dữ liệu</span></td>
-                <td>—</td><td>—</td>
-                <td><div class="branch-v2__progress" aria-label="Chưa có dữ liệu lấp đầy"><span></span></div></td>
-                <td><button class="branch-management__button branch-management__button--outline"
-                  type="button" (click)="showSlotInfo(slot.label)" [attr.aria-label]="'Xem thông tin khung giờ ' + slot.label">Chi tiết</button></td>
+                <td>{{ slot.label }}</td>
+                <td><span class="branch-v2__status"
+                  [class.branch-v2__status--locked]="isFigmaDay() && slot.total === 0"
+                  [class.branch-v2__status--full]="isFigmaDay() && slot.total > 0 && slot.booked === slot.total"
+                  [class.branch-v2__status--near]="isFigmaDay() && slot.total > 0 && slot.booked / slot.total >= 0.8 && slot.booked < slot.total">
+                  {{ isFigmaDay() ? slotStatus(slot) : 'Chưa có dữ liệu' }}
+                </span></td>
+                <td>{{ isFigmaDay() ? slot.booked + ' / ' + slot.total : '—' }}</td>
+                <td>{{ isFigmaDay() ? slot.total - slot.booked : '—' }}</td>
+                <td>
+                  <div class="branch-v2__fill">
+                    <span>{{ isFigmaDay() ? slotPercent(slot) + '%' : '—' }}</span>
+                    <div class="branch-v2__progress"><i [style.width.%]="isFigmaDay() ? slotPercent(slot) : 0"
+                      [class.branch-v2__progress--near]="slotPercent(slot) >= 80 && slotPercent(slot) < 100"
+                      [class.branch-v2__progress--full]="slotPercent(slot) >= 100"></i></div>
+                  </div>
+                </td>
+                <td><button type="button" class="branch-v2__eye"
+                  (click)="showSlotInfo(slot)" [attr.aria-label]="'Xem khung giờ ' + slot.label" title="Xem chi tiết">◉</button></td>
               </tr>
             }
           </tbody>
         </table>
       </div>
       @if (selectedSlot(); as slot) {
-        <div class="branch-v2__overlay" (click)="closeSlot()" role="presentation">
-          <section class="branch-v2__modal" role="dialog" aria-modal="true" aria-labelledby="branch-slot-modal"
+        <div class="branch-v2__overlay" role="presentation" (click)="closeSlot()">
+          <section class="branch-v2__modal branch-v2__slot-modal" role="dialog" aria-modal="true" aria-labelledby="branch-slot-modal"
             (click)="$event.stopPropagation()">
             <header class="branch-v2__modal-header">
-              <div><h2 id="branch-slot-modal">Chi tiết khung giờ {{ slot }}</h2><p>{{ displayDate() }}</p></div>
+              <div><h2 id="branch-slot-modal">Chi tiết khung giờ</h2>
+                <p>{{ displayDate() }} · {{ slot.label }} · Chi nhánh Quận 1 (demo)</p>
+              </div>
               <button type="button" aria-label="Đóng" (click)="closeSlot()">×</button>
             </header>
-            <p>Khả dụng phải được Backend tính từ giờ hoạt động, dịch vụ, capacity, nhân viên, ca làm, lịch đã đặt và các khoảng tạm khóa.</p>
-            <p class="branch-v2__preview-note">Chưa có API để truy xuất chi tiết. Không hỗ trợ tự tạo slot hoặc ép trạng thái còn chỗ.</p>
-            <footer class="branch-v2__modal-footer"><button class="branch-management__button branch-management__button--primary" type="button" (click)="closeSlot()">Đóng</button></footer>
+            <div class="branch-v2__slot-stats">
+              <div><span>Trạng thái</span><strong>{{ isFigmaDay() ? slotStatus(slot) : '—' }}</strong></div>
+              <div><span>Đã đặt / Tổng</span><strong>{{ isFigmaDay() ? slot.booked + ' / ' + slot.total : '—' }}</strong></div>
+              <div><span>Còn trống</span><strong>{{ isFigmaDay() ? slot.total - slot.booked : '—' }}</strong></div>
+              <div><span>Lấp đầy</span><strong>{{ isFigmaDay() ? slotPercent(slot) + '%' : '—' }}</strong></div>
+            </div>
+            <h3>Dịch vụ trong khung giờ</h3>
+            <p class="branch-v2__preview-note">Các con số dưới đây chỉ minh họa đúng màn Figma, không được sử dụng để nhận lịch hoặc tính sức chứa thực tế.</p>
+            <table class="branch-v2__modal-table">
+              <thead><tr><th>Dịch vụ</th><th>Đã đặt / Tổng</th><th>Còn trống</th><th>Trạng thái</th></tr></thead>
+              <tbody>
+                @if (isFigmaDay() && slot.label === '09:00–10:00') {
+                  <tr><td>Tắm &amp; Sấy khô</td><td>2 / 3</td><td>1</td><td>Còn chỗ</td></tr>
+                  <tr><td>Khám tổng quát</td><td>2 / 2</td><td>0</td><td>Đầy</td></tr>
+                } @else {
+                  <tr><td colspan="4">Chưa có dữ liệu dịch vụ cho khung giờ này.</td></tr>
+                }
+              </tbody>
+            </table>
+            @if (actionNotice()) { <p class="branch-v2__preview-note" role="status">{{ actionNotice() }}</p> }
+            <footer class="branch-v2__modal-footer">
+              <button type="button" class="branch-v2__modal-close" (click)="closeSlot()">Đóng</button>
+              <button type="button" class="branch-v2__modal-lock" (click)="showLockUnavailable()">♙ Khóa khung giờ</button>
+            </footer>
           </section>
         </div>
       }
@@ -82,52 +120,59 @@ interface SlotRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BranchHoursPreviewComponent {
-  readonly selectedDate = signal(this.toLocalIso(new Date()));
-  readonly selectedSlot = signal<string | null>(null);
-  readonly timeRows: readonly SlotRow[] = Array.from({ length: 12 }, (_, index) => {
-    const start = index + 7;
-    return { label: `${String(start).padStart(2, '0')}:00 – ${String(start + 1).padStart(2, '0')}:00` };
-  });
+  readonly selectedDate = signal('2026-10-01'); // Figma preview day (not current live availability)
+  readonly selectedSlot = signal<SlotRow | null>(null);
+  readonly actionNotice = signal('');
+  readonly timeRows = FIGMA_SLOTS;
   readonly weekDays = computed(() => {
     const selected = this.fromIso(this.selectedDate());
     const monday = new Date(selected);
     monday.setDate(selected.getDate() - (selected.getDay() + 6) % 7);
     const labels = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
     return labels.map((weekday, index) => {
-      const date = new Date(monday);
-      date.setDate(monday.getDate() + index);
-      return { weekday, iso: this.toLocalIso(date), dayMonth: `${date.getDate()}/${date.getMonth() + 1}` };
+      const date = new Date(monday); date.setDate(monday.getDate() + index);
+      return { weekday, iso: this.toLocalIso(date), dayMonth: String(date.getDate()).padStart(2,'0') + '/' + String(date.getMonth()+1).padStart(2,'0'), total: DAY_TOTALS[index] };
     });
   });
+  readonly weekLabel = computed(() => {
+    const days = this.weekDays();
+    return this.formatDate(days[0].iso) + ' – ' + this.formatDate(days[6].iso);
+  });
   readonly displayDate = computed(() => this.fromIso(this.selectedDate()).toLocaleDateString('vi-VN'));
+  readonly isFigmaWeek = computed(() => this.weekDays()[0].iso === '2026-09-28');
+  readonly isFigmaDay = computed(() => this.selectedDate() === '2026-10-01');
 
+  private formatDate(iso: string): string {
+    const [y,m,d] = iso.split('-'); return d + '/' + m + '/' + y;
+  }
   private toLocalIso(value: Date): string {
-    const yyyy = value.getFullYear();
-    const mm = String(value.getMonth() + 1).padStart(2, '0');
-    const dd = String(value.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
+    return [value.getFullYear(),String(value.getMonth()+1).padStart(2,'0'),String(value.getDate()).padStart(2,'0')].join('-');
   }
-
   private fromIso(iso: string): Date {
-    const [year, month, day] = iso.split('-').map(Number);
-    return new Date(year, month - 1, day);
+    const [year,month,day] = iso.split('-').map(Number);
+    return new Date(year,month-1,day);
   }
-
+  slotPercent(row: SlotRow): number { return row.total > 0 ? Math.round(row.booked * 100 / row.total) : 0; }
+  slotStatus(row: SlotRow): string {
+    if (row.total === 0) return 'Tạm khóa';
+    if (row.booked >= row.total) return 'Đầy';
+    if (this.slotPercent(row) >= 80) return 'Sắp đầy';
+    return 'Còn chỗ';
+  }
   chooseDate(iso: string): void {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return;
-    const d = this.fromIso(iso);
-    if (!Number.isFinite(d.getTime()) || this.toLocalIso(d) !== iso) return;
-    this.selectedDate.set(iso);
-    this.selectedSlot.set(null);
+    const date = this.fromIso(iso);
+    if (Number.isFinite(date.getTime()) && this.toLocalIso(date) === iso) this.selectedDate.set(iso);
   }
-
   moveWeek(steps: number): void {
     const day = this.fromIso(this.selectedDate());
-    day.setDate(day.getDate() + steps * 7);
+    day.setDate(day.getDate() + 7 * steps);
     this.chooseDate(this.toLocalIso(day));
   }
-
   goToday(): void { this.chooseDate(this.toLocalIso(new Date())); }
-  showSlotInfo(label: string): void { this.selectedSlot.set(label); }
-  closeSlot(): void { this.selectedSlot.set(null); }
+  showSlotInfo(row: SlotRow): void { this.selectedSlot.set(row); this.actionNotice.set(''); }
+  closeSlot(): void { this.selectedSlot.set(null); this.actionNotice.set(''); }
+  showLockUnavailable(): void {
+    this.actionNotice.set('Chưa có API khóa khung giờ. Không thay đổi lịch hẹn hoặc sức chứa trên Backend.');
+  }
 }
