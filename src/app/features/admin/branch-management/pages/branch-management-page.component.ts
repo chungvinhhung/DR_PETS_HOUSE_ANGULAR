@@ -148,6 +148,7 @@ export class BranchManagementPageComponent {
         if (!service) return [];
         return [{
           ...service,
+          name: id === 'demo-3' ? 'Khám tổng quát' : service.name,
           branchServices: [
             ...service.branchServices.filter((item) => item.branchId !== this.branch!.id),
             { branchId: this.branch!.id, capacity, enabled, availability: 'BY_SHIFT' as const },
