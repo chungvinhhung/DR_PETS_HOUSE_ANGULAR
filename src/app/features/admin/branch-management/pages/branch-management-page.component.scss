@@ -584,3 +584,44 @@ app-branch-management-page { display:block; font-family:Roboto,Arial,sans-serif;
   .branch-v2-page__pagination{align-items:flex-start;flex-direction:column;}
   .branch-v2-page__tabs button{font-size:13px;padding:11px 8px;}
 }
+
+
+/* Phase 2 finish: Staff-like table actions and compact Figma detail tabs. */
+.branch-v2-page .branch-v2__edit-cell {text-align:center;}
+.branch-v2-page .branch-v2__edit-icon {
+  display:inline-flex;align-items:center;justify-content:center;
+  width:24px;height:24px;
+  padding:0;border:0;background:transparent;border-radius:4px;
+}
+.branch-v2-page .branch-v2__edit-icon img{display:block;width:20px;height:20px;}
+.branch-v2-page .branch-v2__edit-icon:hover{background:#e5f6fd;}
+.branch-v2-page .branch-v2__eye {
+  display:inline-flex;align-items:center;justify-content:center;
+  width:24px;height:24px;
+  border:0;border-radius:4px;background:transparent;
+}
+.branch-v2-page .branch-v2__eye img {display:block;width:20px;height:20px;}
+.branch-v2-page .branch-v2__eye:hover {background:#e5f6fd;}
+.branch-v2-page .branch-v2__demo-caption {
+  font-size:12px;color:#8191a7;line-height:18px;margin:12px 0 0;
+}
+.branch-v2-page .branch-v2__shifts {min-width:790px;}
+.branch-v2-page .branch-v2__shifts th:last-child,
+.branch-v2-page .branch-v2__shifts td:last-child {text-align:center;width:90px;}
+.branch-v2-page .branch-v2__shifts thead th:first-child,
+.branch-v2-page .branch-v2__shifts tbody td:first-child {padding-left:20px;color:#1b273b;}
+.branch-v2-page .branch-v2__heading {
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;gap:12px;flex-wrap:wrap;
+}
+.branch-v2-page .branch-v2__heading .branch-management__button--primary {
+  background:#0d47a1;border:0;min-height:40px;
+  padding:0 14px;border-radius:8px;
+  color:#fff;font-size:13px;font-weight:600;
+}
+.branch-v2-page__inventory-heading strong {font-size:13px;}
+.branch-v2-page__inventory-heading span {font-size:12px;}
+.branch-v2-page__inventory span,
+.branch-v2-page__info span {font-size:12px;}
+.branch-v2-page__inventory strong:not(.branch-v2-page__warning,.branch-v2-page__danger){color:#1b273b;}
+.branch-v2-page__switch-row {font-size:13px;}
