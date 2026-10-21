@@ -141,8 +141,11 @@ export class ServiceCatalogEditorComponent {
       };
     });
     if (!this.weightPricing) {
-      this.priceTiers[0].mode = raw.basePrice > 0 ? 'FIXED' : 'QUOTE';
-      this.priceTiers[0].price = raw.basePrice > 0 ? raw.basePrice : null;
+      // An explicitly empty tier collection is not proof of a fixed fee.
+      // The current BE contract lacks the quote/fixed mode for this case.
+      const hasConfirmedBasePrice = raw.priceVariants == null && raw.basePrice > 0;
+      this.priceTiers[0].mode = hasConfirmedBasePrice ? 'FIXED' : 'QUOTE';
+      this.priceTiers[0].price = hasConfirmedBasePrice ? raw.basePrice : null;
     }
     // InventoryItem.materialId is NOT a Product SKU. Preserve existing
     // materials server-side and show them read-only until Inventory lookup is ready.
@@ -197,6 +200,16 @@ export class ServiceCatalogEditorComponent {
       VETERINARIAN: 'Bác sĩ thú y',
     };
     return labels[this.executorRole] ?? this.executorRole ?? '—';
+  }
+
+  detailPriceLabel(): string {
+    const prices = this.priceTiers
+      .filter((tier) => tier.mode === 'FIXED' && tier.price !== null && tier.price > 0)
+      .map((tier) => tier.price as number);
+    if (prices.length) return (this.weightPricing ? 'Từ ' : '') + this.formatMoney(Math.min(...prices)) + 'đ';
+    return this.source?.referencePrice !== null && this.source?.referencePrice !== undefined
+      ? this.formatMoney(this.source.referencePrice) + 'đ'
+      : 'Chưa thiết lập giá';
   }
 
   formatMoney(price: number | null): string {
