@@ -67,9 +67,9 @@
                       <a [routerLink]="branchLink(item)" [queryParams]="branchQueryParams()"
                         class="branch-v2-page__icon-action" [attr.aria-label]="'Xem chi nhánh ' + item.name" title="Xem chi tiết"><img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="" /></a>
                       @if (isAdmin) {
-                        <button type="button" (click)="openBranchSettings(item)"
-                          class="branch-v2-page__icon-action" [attr.aria-label]="'Cấu hình chi nhánh ' + item.name"
-                          title="Cấu hình chi nhánh">
+                        <button type="button" (click)="openServicePicker(item)"
+                          class="branch-v2-page__icon-action" [attr.aria-label]="'Cấu hình dịch vụ tại ' + item.name"
+                          title="Cấu hình dịch vụ">
                           <img src="/assets/admin-branch/figma-gear.svg" width="20" height="20" alt="" />
                         </button>
                       }
@@ -195,12 +195,44 @@
   </main>
 </app-admin-catalog-shell>
 
-@if (branch && activeService(); as service) {
-  <app-branch-service-config-dialog
-    [service]="service"
-    [branches]="[branch]"
-    [initialBranchId]="branch.id"
-    (dismiss)="closeConfiguration()" />
+@if (servicePickerBranch(); as configBranch) {
+  <div class="branch-service-picker__backdrop" role="presentation" (click)="closeServicePicker()">
+    <section class="branch-service-picker__dialog" role="dialog" aria-modal="true"
+      aria-labelledby="branch-service-picker-heading" (click)="$event.stopPropagation()">
+      <header class="branch-service-picker__header">
+        <div>
+          <h2 id="branch-service-picker-heading">Cấu hình dịch vụ</h2>
+          <p>{{ configBranch.name }} · Chọn dịch vụ cần cấu hình</p>
+        </div>
+        <button type="button" aria-label="Đóng chọn dịch vụ" (click)="closeServicePicker()">×</button>
+      </header>
+      <div class="branch-service-picker__list">
+        @for (service of pickerServices; track service.id) {
+          <button type="button" class="branch-service-picker__item" (click)="configurePickedService(service)">
+            <span>{{ service.name }}</span>
+            <span>Cấu hình <img src="/assets/admin-branch/figma-gear.svg" alt="" width="18" height="18" /></span>
+          </button>
+        } @empty {
+          <p class="branch-service-picker__empty">Chi nhánh này chưa có dữ liệu cấu hình dịch vụ trong bản demo.
+            Vui lòng chọn chi nhánh Quận 1 để kiểm tra dialog Figma V2.</p>
+        }
+      </div>
+      <footer class="branch-service-picker__footer">
+        <a [routerLink]="branchLink(configBranch)" (click)="closeServicePicker()">Xem chi tiết chi nhánh</a>
+        <button type="button" (click)="closeServicePicker()">Đóng</button>
+      </footer>
+    </section>
+  </div>
+}
+
+@if (configuredServiceBranch(); as configBranch) {
+  @if (activeService(); as service) {
+    <app-branch-service-config-dialog
+      [service]="service"
+      [branches]="[configBranch]"
+      [initialBranchId]="configBranch.id"
+      (dismiss)="closeConfiguration()" />
+  }
 }
 
 @if (branchSettingsOpen(); as settings) {
