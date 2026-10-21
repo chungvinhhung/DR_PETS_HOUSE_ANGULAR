@@ -9,9 +9,6 @@
         <a routerLink="/admin/branches">Quay lại danh sách</a>
       </div>
     } @else if (!branch) {
-      <nav class="branch-v2-page__breadcrumb" aria-label="Breadcrumb">
-        <strong aria-current="page">Chi nhánh</strong>
-      </nav>
       <header class="branch-v2-page__header branch-v2-page__header--list">
         <h1>Quản lý chi nhánh</h1>
         <span class="branch-v2-page__preview-label">Giao diện mẫu · Chờ API Branch</span>
@@ -19,8 +16,7 @@
       @if (!isAdmin) {
         <p class="branch-v2-page__notice">Phạm vi chi nhánh Manager đang là dữ liệu demo; chưa có danh sách chi nhánh được BE cấp quyền.</p>
       }
-      <section class="branch-v2-page__table-card" aria-label="Danh sách chi nhánh">
-        <div class="branch-v2-page__filters" aria-label="Bộ lọc chi nhánh">
+      <section class="branch-v2-page__filters" aria-label="Bộ lọc chi nhánh">
         <label class="branch-v2-page__search">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.2 4.2"/></svg>
           <span class="branch-v2-page__sr">Tìm chi nhánh</span>
@@ -40,7 +36,8 @@
           <button type="button" class="branch-v2-page__btn branch-v2-page__btn--primary branch-v2-page__add"
             (click)="showPending('Thêm chi nhánh')">+ Thêm chi nhánh</button>
         }
-        </div>
+      </section>
+      <section class="branch-v2-page__table-card" aria-label="Danh sách chi nhánh">
         <div class="branch-v2-page__table-scroll">
           <table class="branch-v2-page__table branch-v2-page__table--branches">
             <thead><tr>
@@ -103,12 +100,30 @@
         <a routerLink="/admin/branches">Chi nhánh</a><span aria-hidden="true">›</span><strong aria-current="page">{{ branch.name }}</strong>
       </nav>
       <header class="branch-v2-page__header">
-        <h1 class="branch-v2-page__title">
-          {{ branch.name }}
-          <img class="branch-v2-page__title-chevron"
-            src="/assets/admin-product/icon-chevron-down.svg"
-            width="18" height="18" alt="" aria-hidden="true" />
-        </h1>
+        <div class="branch-v2-page__branch-choice">
+          <button type="button" class="branch-v2-page__branch-choice-trigger"
+            [attr.aria-expanded]="branchMenuOpen()"
+            aria-haspopup="listbox" aria-controls="branch-menu-options"
+            (click)="toggleBranchMenu()">
+            <span>{{ branch.name }}</span>
+            <img class="branch-v2-page__title-chevron"
+              src="/assets/admin-product/icon-chevron-down.svg"
+              width="18" height="18" alt="" aria-hidden="true" />
+          </button>
+          @if (branchMenuOpen()) {
+            <div class="branch-v2-page__branch-menu" id="branch-menu-options" role="listbox" aria-label="Chọn chi nhánh">
+              @for (otherBranch of visibleBranches; track otherBranch.id) {
+                <a [routerLink]="branchLink(otherBranch)" role="option"
+                  [attr.aria-selected]="otherBranch.id === branch.id"
+                  [class.branch-v2-page__branch-option--selected]="otherBranch.id === branch.id"
+                  (click)="selectBranch(otherBranch.id)">
+                  <span>{{ otherBranch.name }}</span>
+                  @if (otherBranch.id === branch.id) { <span aria-hidden="true">✓</span> }
+                </a>
+              }
+            </div>
+          }
+        </div>
         @if (isAdmin) {
           <button class="branch-v2-page__btn branch-v2-page__btn--outline" type="button"
             (click)="openBranchSettings(branch)">Chỉnh sửa</button>
@@ -236,6 +251,7 @@
       [service]="service"
       [branches]="[configBranch]"
       [initialBranchId]="configBranch.id"
+      (previewSaved)="applyServiceConfiguration($event)"
       (dismiss)="closeConfiguration()" />
   }
 }
