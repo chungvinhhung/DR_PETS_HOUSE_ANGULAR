@@ -641,3 +641,59 @@ app-branch-management-page { display:block; font-family:Roboto,Arial,sans-serif;
 .branch-v2-page__table--services tbody td {
   border-bottom:1px solid #e2e8f0;
 }
+
+
+/* Configuration picker is an entry point from the Branch List gear.
+   The actual service settings dialog reuses the Figma V2 service config component. */
+.branch-service-picker__backdrop {
+  position:fixed;inset:0;z-index:1250;padding:16px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(15,23,42,.55);
+}
+.branch-service-picker__dialog {
+  width:min(100%,500px);max-height:calc(100dvh - 32px);overflow-y:auto;
+  background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+  padding:24px;box-shadow:0 20px 60px rgba(15,23,42,.18);
+  color:#1b273b;font-family:Roboto,Arial,sans-serif;
+}
+.branch-service-picker__header {
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:12px;border-bottom:1px solid #e2e8f0;padding-bottom:16px;margin-bottom:14px;
+}
+.branch-service-picker__header h2{margin:0 0 5px;font-size:20px;}
+.branch-service-picker__header p{margin:0;color:#64748b;font-size:12px;}
+.branch-service-picker__header button {
+  border:0;background:transparent;color:#64748b;font-size:24px;cursor:pointer;
+}
+.branch-service-picker__list{display:flex;flex-direction:column;gap:8px;}
+.branch-service-picker__item {
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  width:100%;min-height:52px;padding:11px 12px;
+  border:1px solid #e2e8f0;border-radius:8px;
+  background:#fff;color:#1b273b;font:400 13px Roboto,Arial,sans-serif;
+  text-align:left;cursor:pointer;
+}
+.branch-service-picker__item:hover{border-color:#0d47a1;background:#f3f8ff;}
+.branch-service-picker__item > span:last-child{
+  display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
+  color:#0d47a1;font-weight:600;
+}
+.branch-service-picker__item img{display:block;width:18px;height:18px;}
+.branch-service-picker__empty{font-size:12px;line-height:1.6;color:#64748b;}
+.branch-service-picker__footer{
+  display:flex;align-items:center;justify-content:flex-end;gap:12px;
+  border-top:1px solid #e2e8f0;margin-top:18px;padding-top:16px;
+}
+.branch-service-picker__footer a{color:#0d47a1;font-size:13px;text-decoration:none;}
+.branch-service-picker__footer button{
+  height:40px;padding:0 14px;border:1px solid #e2e8f0;
+  border-radius:8px;background:#fff;color:#0d47a1;font-size:13px;cursor:pointer;
+}
+/* The shared Staff week navigator already owns the date-picker sizing, icon and
+   native picker accessibility. Only align it within the Figma branch panel. */
+.branch-v2-page .branch-v2__heading app-admin-staff-week-nav{
+  display:inline-flex;max-width:100%;min-width:0;
+}
+@media(max-width:650px){
+  .branch-v2-page .branch-v2__heading app-admin-staff-week-nav{width:100%;}
+}
