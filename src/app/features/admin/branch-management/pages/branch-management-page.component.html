@@ -66,8 +66,13 @@
                     <div class="branch-v2-page__actions">
                       <a [routerLink]="branchLink(item)" [queryParams]="branchQueryParams()"
                         class="branch-v2-page__icon-action" [attr.aria-label]="'Xem chi nhánh ' + item.name" title="Xem chi tiết"><img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="" /></a>
-                      <a [routerLink]="branchLink(item)" [queryParams]="branchQueryParams()"
-                        class="branch-v2-page__icon-action" [attr.aria-label]="'Cấu hình chi nhánh ' + item.name" title="Cấu hình"><img src="/assets/admin-branch/figma-gear.svg" width="20" height="20" alt="" /></a>
+                      @if (isAdmin) {
+                        <button type="button" (click)="openBranchSettings(item)"
+                          class="branch-v2-page__icon-action" [attr.aria-label]="'Cấu hình chi nhánh ' + item.name"
+                          title="Cấu hình chi nhánh">
+                          <img src="/assets/admin-branch/figma-gear.svg" width="20" height="20" alt="" />
+                        </button>
+                      }
                     </div>
                   </td>
                 </tr>
@@ -101,7 +106,7 @@
         <h1>{{ branch.name }} <span aria-hidden="true">⌄</span></h1>
         @if (isAdmin) {
           <button class="branch-v2-page__btn branch-v2-page__btn--outline" type="button"
-            (click)="showPending('Chỉnh sửa chi nhánh')">Chỉnh sửa</button>
+            (click)="openBranchSettings(branch)">Chỉnh sửa</button>
         }
       </header>
 
@@ -196,4 +201,10 @@
     [branches]="[branch]"
     [initialBranchId]="branch.id"
     (dismiss)="closeConfiguration()" />
+}
+
+@if (branchSettingsOpen(); as settings) {
+  <app-branch-settings-dialog [branch]="settings"
+    (dismiss)="closeBranchSettings()"
+    (previewSaved)="saveBranchSettings($event)" />
 }
