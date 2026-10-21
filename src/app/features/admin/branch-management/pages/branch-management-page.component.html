@@ -37,7 +37,7 @@
         </label>
         @if (isAdmin) {
           <button type="button" class="branch-v2-page__btn branch-v2-page__btn--primary branch-v2-page__add"
-            (click)="showPending('Thêm chi nhánh')">+ Thêm chi nhánh</button>
+            (click)="openCreateBranch()">+ Thêm chi nhánh</button>
         }
       </section>
       <section class="branch-v2-page__table-card" aria-label="Danh sách chi nhánh">
@@ -290,6 +290,7 @@
 
 @if (branchSettingsOpen(); as settings) {
   <app-branch-settings-dialog [branch]="settings"
+    [createMode]="!settings.id"
     [saving]="savingBranch()"
     (dismiss)="closeBranchSettings()"
     (previewSaved)="saveBranchSettings($event)" />
