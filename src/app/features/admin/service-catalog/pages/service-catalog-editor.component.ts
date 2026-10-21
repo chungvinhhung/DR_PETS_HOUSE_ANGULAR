@@ -194,6 +194,15 @@ export class ServiceCatalogEditorComponent {
     this.markDirty();
   }
 
+  executorRoleLabel(): string {
+    const labels: Record<string, string> = {
+      CARE_STAFF_GROOMER: 'Nhân viên chăm sóc',
+      NURSE: 'Y tá',
+      VETERINARIAN: 'Bác sĩ thú y',
+    };
+    return labels[this.executorRole] ?? this.executorRole ?? '—';
+  }
+
   formatMoney(price: number | null): string {
     return price === null || !Number.isFinite(price) ? '' : new Intl.NumberFormat('vi-VN').format(price);
   }
