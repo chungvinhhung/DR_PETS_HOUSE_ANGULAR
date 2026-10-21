@@ -85,7 +85,7 @@
           (click)="setDetailTab('hours')">Lịch hoạt động</button>
         <button type="button" [class.branch-management__tab--active]="detailTab() === 'shifts'"
           [attr.aria-current]="detailTab() === 'shifts' ? 'page' : null"
-          (click)="setDetailTab('shifts')">Ca làm việc</button>
+          (click)="setDetailTab('shifts')">Mẫu ca làm việc</button>
       </nav>
       @if (detailTab() === 'services') {
       <section class="branch-management__panel" aria-labelledby="branch-service-heading">
@@ -154,18 +154,9 @@
         </footer>
       </section>
       } @else if (detailTab() === 'hours') {
-        <section class="branch-management__panel branch-management__placeholder" aria-labelledby="branch-hours-heading">
-          <h2 id="branch-hours-heading">Lịch hoạt động &amp; sức chứa</h2>
-          <p>Lịch hoạt động và số chỗ trống phải được Backend tính từ giờ mở cửa, ca nhân viên, thời lượng dịch vụ, capacity, lịch hẹn và các khoảng tạm khóa.</p>
-          <p class="branch-management__notice">Chưa có API khả dụng theo ngày/khung giờ. Màn này chưa thể hiển thị lịch hoặc cho phép điều chỉnh slot thủ công.</p>
-        </section>
+        <app-branch-hours-preview />
       } @else {
-        <section class="branch-management__panel branch-management__placeholder" aria-labelledby="branch-shift-heading">
-          <h2 id="branch-shift-heading">Ca làm việc tại chi nhánh</h2>
-          <p>Ca làm việc phải gắn với chi nhánh và nhân viên được phân công, đồng thời kiểm tra lịch trùng trên toàn bộ chi nhánh.</p>
-          <p class="branch-management__notice">Chưa có API quản lý mẫu ca và phân công ca theo chi nhánh. Không thể lưu hoặc sửa ca tại màn này.</p>
-          <a class="branch-management__button branch-management__button--outline" routerLink="/admin/staff/schedule">Xem lịch làm việc nhân viên</a>
-        </section>
+        <app-branch-shift-templates-preview [branchName]="branch.name" />
       }
     }
   </main>
