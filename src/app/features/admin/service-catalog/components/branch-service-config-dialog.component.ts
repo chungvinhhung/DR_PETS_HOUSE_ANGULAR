@@ -17,11 +17,18 @@ import { AuthSessionService } from '../../../../core/services/auth-session.servi
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { CatalogBranch, CatalogService } from '../models/service-catalog.model';
 
-interface BlockedWindow {
+export interface BlockedWindow {
   id: number;
   start: string;
   end: string;
   reason: string;
+}
+export interface BranchServiceConfigPreview {
+  serviceId: string;
+  branchId: string;
+  capacity: number;
+  enabled: boolean;
+  blockedWindows: readonly BlockedWindow[];
 }
 
 /**
@@ -43,6 +50,8 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
   @Input({ required: true }) initialBranchId = '';
 
   @Output() readonly dismiss = new EventEmitter<void>();
+  @Output() readonly previewSaved = new EventEmitter<BranchServiceConfigPreview>();
+  @Input() initialBlockedWindows: readonly BlockedWindow[] | null = null;
   @ViewChild('dialog') private dialogRef?: ElementRef<HTMLElement>;
 
   readonly selectedBranchId = signal('');
@@ -85,7 +94,11 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     this.capacity.set(Math.max(0, count));
     this.enabled.set(this.isServiceActive && count > 0 && (current?.enabled ?? false));
     // Empty until the BE exposes per-service blocked windows. Do not invent existing periods.
-    if (branch.id === 'demo-q1') {
+    if (this.initialBlockedWindows) {
+      this.blockedWindows.set(this.initialBlockedWindows.map((window) => ({ ...window })));
+      this.nextBlockedId = Math.max(0, ...this.initialBlockedWindows.map((window) => window.id)) + 1;
+      this.showBlockForm.set(false);
+    } else if (branch.id === 'demo-q1') {
       // Figma V2 illustrations only, not fetched or persisted.
       this.blockedWindows.set([
         { id: 1, start: '2026-10-22T13:00', end: '2026-10-22T15:00', reason: 'Bảo trì khu tắm' },
@@ -243,7 +256,14 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
       this.feedback.set('');
       return;
     }
-    this.toast.show('Cấu hình đã được kiểm tra; chưa kết nối API lưu.', 'info');
+    this.previewSaved.emit({
+      serviceId: this.service.id,
+      branchId: this.selectedBranchId(),
+      enabled: this.enabled(),
+      capacity: this.capacity(),
+      blockedWindows: this.blockedWindows().map((window) => ({ ...window })),
+    });
+    this.dismiss.emit();
   }
 
   requestClose(): void {
