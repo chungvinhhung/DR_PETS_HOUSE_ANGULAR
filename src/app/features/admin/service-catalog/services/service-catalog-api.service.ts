@@ -93,6 +93,21 @@ export class ServiceCatalogApiService {
     );
   }
 
+  /** All accessible branches for Service Detail, including inactive branches.
+   * A service can be unavailable at a branch without the branch disappearing
+   * from the read-only detail card. Backend remains the authority on scope. */
+  listBranchesForServiceDetail(): Observable<CatalogBranch[]> {
+    return this.api.get<BranchApiEnvelope>('/branches', {
+      params: new HttpParams().set('limit', '100'),
+    }).pipe(map((value) => {
+      const page = value.data ?? value;
+      return (page.items ?? []).map((branch) => ({
+        id: branch.id,
+        name: branch.name,
+      }));
+    }));
+  }
+
   /** Read-only dropdown options; no BranchService config write is performed here. */
   listBranches(): Observable<CatalogBranch[]> {
     return this.api.get<BranchApiEnvelope>('/branches', {
