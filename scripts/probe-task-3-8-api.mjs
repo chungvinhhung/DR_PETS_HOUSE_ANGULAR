@@ -40,7 +40,7 @@ async function probe(entry) {
       ? String(error.cause?.code || error.cause?.message || error.message)
       : String(error);
     console.log(entry.label + ': NETWORK_ERROR ' + message.slice(0, 160));
-    return;
+    return { networkError: true };
   }
 
   const kind = response.headers.get('content-type') || '(none)';
@@ -76,9 +76,18 @@ async function probe(entry) {
   } else {
     await response.body?.cancel();
   }
+  return { status: response.status };
 }
 
 console.log('Read-only public API documentation discovery, no authentication.');
 console.log('Target host: ' + new URL(origin).host);
-for (const entry of candidates) await probe(entry);
+const results = [];
+for (const entry of candidates) results.push(await probe(entry));
+if (results.every(result => result?.status === 503)) {
+  console.error('BLOCKED: all public endpoints return HTTP 503; request BE to restore Render before API integration.');
+  process.exitCode = 2;
+} else if (results[0]?.networkError || results[0]?.status === 503) {
+  console.error('BLOCKED: API root is unreachable; investigate the Render deployment.');
+  process.exitCode = 2;
+}
 console.log('Done. HTTP 401/403/404 alone does NOT prove that a Staff/Shift API exists.');
