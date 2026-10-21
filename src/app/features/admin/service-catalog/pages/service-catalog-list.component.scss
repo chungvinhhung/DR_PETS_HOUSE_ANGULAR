@@ -116,8 +116,9 @@ app-service-catalog-list {
 }
 
 .service-catalog__search {
+  flex: 0 0 335px;
   width: 335px;
-  min-width: 180px;
+  min-width: 335px;
   height: 40px;
   display: flex;
   align-items: center;
@@ -195,7 +196,8 @@ app-service-catalog-list {
 }
 
 .service-catalog__table-scroll {
-  overflow-x: auto;
+  /* Popup menus must not be clipped by overflow:auto on desktop. */
+  overflow: visible;
 }
 
 .service-catalog__table {
@@ -352,7 +354,8 @@ app-service-catalog-list {
   height: 24px;
 }
 
-.service-catalog__action-menu {
+ .service-catalog__action-menu {
+  /* This panel sits above following rows and the footer. */
   position: absolute;
   top: 36px;
   right: 0;
@@ -484,6 +487,11 @@ app-service-catalog-list {
   color: #0d47a1;
 }
 
+@media (max-width: 1200px) {
+  .service-catalog__filters { flex-wrap: wrap; }
+  .service-catalog__search { flex: 0 1 335px; min-width: min(335px, 100%); }
+  .service-catalog__table-scroll { overflow-x: auto; }
+}
 .service-catalog__disclaimer {
   margin: 13px 0 0;
   color: #76869c;
