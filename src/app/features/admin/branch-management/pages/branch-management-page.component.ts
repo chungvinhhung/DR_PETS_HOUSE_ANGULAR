@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, signal } from '@angular/core';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { catchError, of } from 'rxjs';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
-import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import {
   BranchServiceConfigDialogComponent, BranchServiceConfigPreview,
@@ -41,6 +41,7 @@ type BranchFilter = 'ALL' | 'ACTIVE' | 'INACTIVE';
 })
 export class BranchManagementPageComponent {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly api = inject(BranchManagementApiService);
   private readonly session = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
@@ -62,6 +63,8 @@ export class BranchManagementPageComponent {
   readonly branchMenuOpen = signal(false);
   readonly savingBranch = signal(false);
   readonly savingConfig = signal(false);
+  private lastCreatePayload = '';
+  private lastCreateKey = '';
 
   private readonly routeParams = toSignal(this.route.paramMap, {
     initialValue: this.route.snapshot.paramMap,
@@ -261,6 +264,17 @@ export class BranchManagementPageComponent {
     }
   }
 
+  openCreateBranch(): void {
+    if (!this.isAdmin) {
+      this.toast.show('Chỉ Admin được thêm chi nhánh.', 'error');
+      return;
+    }
+    this.lastCreatePayload = '';
+    this.lastCreateKey = '';
+    this.branchSettingsOpen.set({
+      id: '', name: '', address: '', hotline: '', status: 'ACTIVE', enabledServiceCount: null,
+    });
+  }
   openBranchSettings(row: BranchRow): void {
     if (!this.isAdmin && this.session.user()?.systemRole !== 'MANAGER') {
       this.toast.show('Bạn không có quyền chỉnh sửa chi nhánh.', 'error'); return;
@@ -270,10 +284,35 @@ export class BranchManagementPageComponent {
   closeBranchSettings(): void { if (!this.savingBranch()) this.branchSettingsOpen.set(null); }
   saveBranchSettings(value: BranchSettingsPreview): void {
     if (this.savingBranch()) return;
-    this.savingBranch.set(true);
-    this.api.updateBranch(value.id, {
+    const payload = {
       name: value.name, address: value.address, phone: value.hotline, status: value.status,
-    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    };
+    this.savingBranch.set(true);
+    if (!value.id) {
+      const serialized = JSON.stringify(payload);
+      if (serialized !== this.lastCreatePayload) {
+        this.lastCreatePayload = serialized;
+        this.lastCreateKey = crypto.randomUUID();
+      }
+      this.api.createBranch(payload, this.lastCreateKey).pipe(
+        takeUntilDestroyed(this.destroyRef),
+      ).subscribe({
+        next: (saved) => {
+          const row = this.fromApi(saved);
+          this.branchRows.update((all) => [...all, row]);
+          this.savingBranch.set(false);
+          this.branchSettingsOpen.set(null);
+          this.toast.show('Đã thêm chi nhánh trên Backend.', 'success');
+          void this.router.navigate(this.branchLink(row));
+        },
+        error: (error: unknown) => {
+          this.savingBranch.set(false);
+          this.toast.show(adminErrorMessage(error, 'Không thể thêm chi nhánh.'), 'error');
+        },
+      });
+      return;
+    }
+    this.api.updateBranch(value.id, payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (saved) => {
         const row = this.fromApi(saved);
         this.branchRows.update((all) => all.map((x) => x.id === row.id
@@ -283,9 +322,9 @@ export class BranchManagementPageComponent {
         this.branchSettingsOpen.set(null);
         this.toast.show('Đã lưu thông tin chi nhánh lên Backend.', 'success');
       },
-      error: () => {
+      error: (error: unknown) => {
         this.savingBranch.set(false);
-        this.toast.show('Không thể lưu chi nhánh. Kiểm tra quyền, dữ liệu hoặc trạng thái API.', 'error');
+        this.toast.show(adminErrorMessage(error, 'Không thể lưu thông tin chi nhánh.'), 'error');
       },
     });
   }
