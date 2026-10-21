@@ -1,14 +1,10 @@
-import { HttpParams } from '@angular/common/http';
+import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { EMPTY, expand, forkJoin, map, Observable, reduce } from 'rxjs';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
-import {
-  CatalogService, ServiceApiRecord,
-} from '../../service-catalog/models/service-catalog.model';
-import {
-  ServiceCatalogApiService, serviceFromApi,
-} from '../../service-catalog/services/service-catalog-api.service';
+import { CatalogService } from '../../service-catalog/models/service-catalog.model';
+import { ServiceCatalogApiService } from '../../service-catalog/services/service-catalog-api.service';
 
 /** Confirmed against PET_CLINIC_BACKEND feat/foundation-v6 Branch routes / DTOs. */
 export interface BranchApiRecord {
@@ -64,6 +60,13 @@ export class BranchManagementApiService {
 
   getBranch(id: string): Observable<BranchApiRecord> {
     return this.api.get<BranchApiRecord>('/branches/' + encodeURIComponent(id));
+  }
+
+  createBranch(payload: {
+    name: string; address: string; phone?: string; status: 'ACTIVE' | 'INACTIVE';
+  }, idempotencyKey: string): Observable<BranchApiRecord> {
+    const headers = new HttpHeaders({ 'Idempotency-Key': idempotencyKey });
+    return this.api.post<BranchApiRecord, typeof payload>('/branches', payload, { headers });
   }
 
   updateBranch(id: string, payload: {
