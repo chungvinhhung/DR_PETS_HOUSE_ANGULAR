@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
+import { resolveServicePricing } from './service-pricing.utils';
 import {
   CatalogBranch, CatalogListQuery, CatalogListResult, CatalogService,
   ServiceApiRecord, ServiceWrite,
@@ -22,8 +23,8 @@ interface BranchApiPage {
 interface BranchApiEnvelope { data?: BranchApiPage; items?: BranchApiPage['items']; nextCursor?: string | null; }
 
 export function serviceFromApi(raw: ServiceApiRecord, branchId = 'ALL'): CatalogService {
-  const prices = raw.priceVariants ?? [];
-  const fixed = prices.map((v) => v.price).filter((v) => Number.isFinite(v) && v > 0);
+  const pricing = resolveServicePricing(raw);
+  const fixed = [...pricing.fixedTiers.values()];
   const branch = raw.branchConfig && branchId !== 'ALL' ? [{
     branchId, capacity: raw.branchConfig.capacity, enabled: raw.branchConfig.enabled,
     availability: 'BY_SHIFT' as const,
@@ -37,10 +38,11 @@ export function serviceFromApi(raw: ServiceApiRecord, branchId = 'ALL'): Catalog
     bookingMode: raw.bookingMode,
     durationMinutes: raw.durationMinutes,
     status: raw.status,
-    // A leftover basePrice cannot prove that a service with an explicitly
-    // empty priceVariants array has a configured numeric price.
-    referencePrice: fixed.length ? null : raw.priceVariants == null && raw.basePrice > 0 ? raw.basePrice : null,
+    // Only surface amounts the edit form can actually represent.
+    // Explicit empty priceVariants + positive basePrice is ambiguous, not a confirmed fee.
+    referencePrice: pricing.confirmedBasePrice,
     minFixedTierPrice: fixed.length ? Math.min(...fixed) : null,
+    pricingDataWarning: pricing.hasUnmappedPricing,
     branchServices: branch,
     enabledBranchCount: raw.enabledBranchCount,
     totalBranchCount: raw.totalBranchCount,
