@@ -24,11 +24,11 @@ const SAMPLE_SHIFTS: ShiftTemplatePreview[] = [
     <section class="branch-management__panel branch-v2" aria-labelledby="branch-shift-heading">
       <div class="branch-v2__heading">
         <div>
-          <h2 id="branch-shift-heading">Mẫu ca tại chi nhánh</h2>
-          <p>Dùng để phân ca nhân viên. Không phải lịch phân công thực tế.</p>
+          <h2 id="branch-shift-heading">Ca làm việc tại chi nhánh</h2>
+          
         </div>
         <button class="branch-management__button branch-management__button--primary" type="button"
-          (click)="openEditor()">+ Thêm mẫu ca</button>
+          (click)="openEditor()">+ Thêm ca làm việc</button>
       </div>
       <div class="branch-v2__preview-note" role="status">
         Dữ liệu mẫu để kiểm tra giao diện. Thêm/sửa chỉ áp dụng tại trang đang mở, chưa lưu Backend.
@@ -62,7 +62,7 @@ const SAMPLE_SHIFTS: ShiftTemplatePreview[] = [
       </div>
       @if (feedback()) { <p class="branch-v2__success" role="status">{{ feedback() }}</p> }
       <div class="branch-v2__footer-actions">
-        <button type="button" class="branch-management__button branch-management__button--outline" (click)="openEditor()">+ Thêm mẫu ca</button>
+        <button type="button" class="branch-management__button branch-management__button--outline" (click)="openEditor()">+ Thêm ca làm việc</button>
       </div>
     </section>
 
@@ -72,14 +72,14 @@ const SAMPLE_SHIFTS: ShiftTemplatePreview[] = [
           (click)="$event.stopPropagation()">
           <header class="branch-v2__modal-header">
             <div>
-              <h2 id="branch-shift-modal">{{ editingId() ? 'Sửa mẫu ca' : 'Thêm mẫu ca' }}</h2>
+              <h2 id="branch-shift-modal">{{ editingId() ? 'Sửa ca làm việc' : 'Thêm ca làm việc' }}</h2>
               <p>{{ branchName }} • Chỉ lưu tạm trên giao diện</p>
             </div>
             <button type="button" aria-label="Đóng" (click)="requestClose()">×</button>
           </header>
           <form (submit)="savePreview($event)" class="branch-v2__form" novalidate>
             <label class="branch-v2__field">
-              <span>Tên mẫu ca <b>*</b></span>
+              <span>Tên ca làm việc <b>*</b></span>
               <input #nameInput type="text" maxlength="80" placeholder="Ví dụ: Ca sáng"
                 [value]="formName()" (input)="changeName(nameInput.value)" />
             </label>
@@ -120,7 +120,7 @@ const SAMPLE_SHIFTS: ShiftTemplatePreview[] = [
             }
             <footer class="branch-v2__modal-footer">
               <button class="branch-management__button branch-management__button--outline" type="button" (click)="requestClose()">Hủy</button>
-              <button class="branch-management__button branch-management__button--primary" type="submit">Lưu mẫu ca (demo)</button>
+              <button class="branch-management__button branch-management__button--primary" type="submit">Lưu ca làm việc (demo)</button>
             </footer>
           </form>
         </section>
@@ -208,7 +208,7 @@ export class BranchShiftTemplatesPreviewComponent {
     this.items.update((items) => this.editingId()
       ? items.map((item) => item.id === id ? entry : item)
       : [...items, entry]);
-    this.feedback.set('Đã cập nhật mẫu ca trên giao diện demo. Chưa lưu vào Backend; tải lại trang sẽ khôi phục dữ liệu mẫu.');
+    this.feedback.set('Đã cập nhật ca làm việc trên giao diện demo. Chưa lưu vào Backend; tải lại trang sẽ khôi phục dữ liệu mẫu.');
     this.closeEditor();
   }
 
