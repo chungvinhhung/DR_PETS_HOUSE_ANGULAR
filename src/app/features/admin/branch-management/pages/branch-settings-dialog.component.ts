@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, Output, signal, inject } from '@angular/core';
-import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, Output, signal } from '@angular/core';
 
 export interface BranchSettingsPreview {
   id: string;
@@ -10,10 +9,8 @@ export interface BranchSettingsPreview {
 }
 
 /**
- * Branch profile editor – frontend preview only.
- * Figma V2 defines the branch detail and an Edit entry but does not provide
- * a dedicated branch-profile edit frame. This dialog uses the shared Admin styling.
- * Saving updates the local page only; no network request is made.
+ * Branch editor: parent persists via PATCH /branches/:id and closes after success.
+ * The dialog never reports success or closes before the API request completes.
  */
 @Component({
   selector: 'app-branch-settings-dialog',
@@ -25,9 +22,9 @@ export interface BranchSettingsPreview {
         <header class="branch-settings__header">
           <div>
             <h2 id="branch-settings-title">Cấu hình chi nhánh</h2>
-            <p>Thông tin và trạng thái chi nhánh · bản xem trước</p>
+            <p>Thông tin và trạng thái chi nhánh</p>
           </div>
-          <button type="button" aria-label="Đóng cấu hình chi nhánh" (click)="close()">×</button>
+          <button type="button" aria-label="Đóng cấu hình chi nhánh" [disabled]="saving" (click)="close()">×</button>
         </header>
         <form (submit)="save($event)" class="branch-settings__form">
           <label>
@@ -50,10 +47,10 @@ export interface BranchSettingsPreview {
             </select>
           </label>
           @if (error()) { <p class="branch-settings__error" role="alert">{{ error() }}</p> }
-          <p class="branch-settings__disclaimer">Thao tác này chỉ cập nhật bản xem trước trên trang. Việc lưu cấu hình và kiểm tra quyền phải chờ API Backend.</p>
+          <p class="branch-settings__disclaimer">Thay đổi sẽ được gửi đến Backend. Chỉ khi lưu thành công, hộp thoại mới đóng.</p>
           <footer class="branch-settings__footer">
-            <button class="branch-settings__cancel" type="button" (click)="close()">Hủy</button>
-            <button class="branch-settings__save" type="submit">Lưu cấu hình (demo)</button>
+            <button class="branch-settings__cancel" type="button" [disabled]="saving" (click)="close()">Hủy</button>
+            <button class="branch-settings__save" type="submit" [disabled]="saving">{{ saving ? 'Đang lưu...' : 'Lưu cấu hình' }}</button>
           </footer>
         </form>
       </section>
@@ -82,7 +79,6 @@ export interface BranchSettingsPreview {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BranchSettingsDialogComponent {
-  private readonly toast = inject(AdminToastService);
   @Input({ required: true }) set branch(value: BranchSettingsPreview) {
     this.id = value.id;
     this.name.set(value.name);
@@ -91,6 +87,7 @@ export class BranchSettingsDialogComponent {
     this.status.set(value.status);
     this.error.set('');
   }
+  @Input() saving = false;
   @Output() dismiss = new EventEmitter<void>();
   @Output() previewSaved = new EventEmitter<BranchSettingsPreview>();
   private id = '';
@@ -114,9 +111,8 @@ export class BranchSettingsDialogComponent {
       return;
     }
     this.previewSaved.emit({ id: this.id, name, address, hotline, status: this.status() });
-    this.toast.show('Đã cập nhật cấu hình chi nhánh trong bản xem trước; chưa lưu lên Backend.', 'info');
-    this.dismiss.emit();
+
   }
-  close(): void { this.dismiss.emit(); }
+  close(): void { if (!this.saving) this.dismiss.emit(); }
   @HostListener('document:keydown.escape') onEscape(): void { this.close(); }
 }
