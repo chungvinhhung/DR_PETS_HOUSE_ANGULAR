@@ -112,19 +112,6 @@
           </div>
         </section>
       } @else {
-            <p class="service-editor__detail-empty">Không có vật liệu mặc định.</p>
-          }
-        </section>
-        <section class="service-editor__card service-editor__detail-card" aria-labelledby="service-detail-branches">
-          <h2 id="service-detail-branches">Áp dụng tại chi nhánh</h2>
-          <div class="service-editor__detail-grid">
-            <div><span>Chi nhánh đang bật</span><strong>{{ service.enabledBranchCount ?? '—' }} / {{ service.totalBranchCount ?? '—' }}</strong></div>
-            <div><span>Khả dụng</span><strong>{{ service.availabilityText || 'Chưa có thông tin' }}</strong></div>
-          </div>
-          <p class="service-editor__detail-empty">Cấu hình chi tiết của từng chi nhánh xem tại trang Quản lý chi nhánh.</p>
-          <a class="service-editor__btn service-editor__btn--secondary" routerLink="/admin/branches">Xem chi nhánh →</a>
-        </section>
-      } @else {
       @if (errors().length) {
         <div class="service-editor__validation-summary" role="alert">
           <strong>Vui lòng kiểm tra thông tin trước khi lưu:</strong>
