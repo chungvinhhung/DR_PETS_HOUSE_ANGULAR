@@ -378,20 +378,3 @@
 .catalog-sidebar__children a.catalog-sidebar__sub.catalog-sidebar__sub--active:hover {
   background: #d4ebf9;
 }
-
-
-/* Scoped Figma V2 dimensions: reuse main shell and toast, only adjust Branch view. */
-.catalog-shell--branch-v2 .catalog-header { height: 107px; padding: 16px 40px; }
-.catalog-shell--branch-v2 .catalog-layout { min-height: calc(100vh - 107px); }
-.catalog-shell--branch-v2 .catalog-sidebar { top:107px; height:calc(100dvh - 107px); padding:24px 16px; }
-.catalog-shell--branch-v2 .catalog-sidebar__children { background:transparent; margin:0 0 12px; padding:0; border-radius:0; }
-.catalog-shell--branch-v2 .catalog-sidebar__children .catalog-sidebar__sub { padding-left:40px; min-height:42px; }
-.catalog-shell--branch-v2 .catalog-sidebar__children .catalog-sidebar__sub--active { background:#cde7f7; color:#0d47a1; }
-.catalog-shell--branch-v2 .catalog-sidebar__group:not(.catalog-sidebar__group--active) { background:transparent; color:#1b273b; font-weight:500; }
-.catalog-shell--branch-v2 .catalog-sidebar__group:not(.catalog-sidebar__group--active) .catalog-sidebar__group-chevron { filter:none; }
-.catalog-shell--branch-v2 .catalog-sidebar__group--active { background:#0d47a1; color:#fff; }
-@media(max-width:1100px) { .catalog-shell--branch-v2 .catalog-header { padding:10px 20px; } }
-@media(max-width:800px) {
- .catalog-shell--branch-v2 .catalog-header { height:72px; padding:6px 16px; }
- .catalog-shell--branch-v2 .catalog-sidebar { top:0; height:auto; }
-}
