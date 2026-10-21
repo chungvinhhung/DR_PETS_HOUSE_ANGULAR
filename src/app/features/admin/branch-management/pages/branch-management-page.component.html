@@ -1,20 +1,23 @@
 <app-admin-catalog-shell activeItem="branches">
   <main class="branch-management branch-v2-page" [class.branch-v2-page--detail]="!!branch">
-    @if (branchId && !branch) {
+    @if (branchId && (detailLoading() || branchListLoading())) {
+      <p class="branch-v2-page__notice" role="status">Đang tải thông tin chi nhánh từ Backend...</p>
+    } @else if (branchId && !branch) {
       <nav class="branch-v2-page__breadcrumb" aria-label="Đường dẫn">
         <a routerLink="/admin/branches">Chi nhánh</a><span>›</span><strong>Không tìm thấy</strong>
       </nav>
       <div class="branch-v2-page__notice" role="alert">
-        Không tìm thấy chi nhánh trong dữ liệu xem trước hoặc chi nhánh không thuộc phạm vi đang hiển thị.
+        {{ detailError() || 'Chi nhánh không tồn tại hoặc tài khoản không có quyền truy cập.' }}
+        <button type="button" (click)="retryDetail()">Thử lại</button>
         <a routerLink="/admin/branches">Quay lại danh sách</a>
       </div>
     } @else if (!branch) {
       <header class="branch-v2-page__header branch-v2-page__header--list">
         <h1>Quản lý chi nhánh</h1>
-        <span class="branch-v2-page__preview-label">Giao diện mẫu · Chờ API Branch</span>
+        <span class="branch-v2-page__preview-label">Dữ liệu Backend Render</span>
       </header>
-      @if (!isAdmin) {
-        <p class="branch-v2-page__notice">Phạm vi chi nhánh Manager đang là dữ liệu demo; chưa có danh sách chi nhánh được BE cấp quyền.</p>
+      @if (!isAdmin && visibleBranches.length === 0 && !branchListLoading()) {
+        <p class="branch-v2-page__notice">Không tìm thấy chi nhánh được phân quyền cho tài khoản này trong phiên đăng nhập.</p>
       }
       <section class="branch-v2-page__filters" aria-label="Bộ lọc chi nhánh">
         <label class="branch-v2-page__search">
@@ -49,12 +52,19 @@
               <th scope="col">Thao tác</th>
             </tr></thead>
             <tbody>
+              @if (branchListLoading()) {
+                <tr><td colspan="6" class="branch-v2-page__empty">Đang tải danh sách chi nhánh từ Backend...</td></tr>
+              } @else if (branchListError()) {
+                <tr><td colspan="6" class="branch-v2-page__empty">
+                  {{ branchListError() }} <button type="button" (click)="refreshBranches()">Thử lại</button>
+                </td></tr>
+              } @else {
               @for (item of pagedBranches; track item.id) {
                 <tr>
                   <td>{{ item.name }}</td>
                   <td class="branch-v2-page__secondary">{{ item.address }}</td>
                   <td class="branch-v2-page__secondary">{{ item.hotline || '—' }}</td>
-                  <td class="branch-v2-page__secondary">{{ item.enabledServiceCount }} dịch vụ</td>
+                  <td class="branch-v2-page__secondary">{{ item.enabledServiceCount === null ? '—' : item.enabledServiceCount + ' dịch vụ' }}</td>
                   <td><span class="branch-v2-page__badge"
                     [class.branch-v2-page__badge--off]="item.status !== 'ACTIVE'">
                     {{ item.status === 'ACTIVE' ? 'Hoạt động' : 'Ngừng hoạt động' }}
@@ -75,6 +85,7 @@
                 </tr>
               } @empty {
                 <tr><td colspan="6" class="branch-v2-page__empty">Không có chi nhánh phù hợp. <button type="button" (click)="clearFilters()">Xóa bộ lọc</button></td></tr>
+              }
               }
             </tbody>
           </table>
@@ -187,6 +198,13 @@
               <thead><tr><th scope="col">Dịch vụ</th><th scope="col">Sức chứa đồng thời</th>
                 <th scope="col">Khả dụng</th><th scope="col">Kích hoạt tại chi nhánh</th><th scope="col">Thao tác</th></tr></thead>
               <tbody>
+                @if (servicesLoading()) {
+                  <tr><td colspan="5" class="branch-v2-page__empty">Đang tải cấu hình dịch vụ từ Backend...</td></tr>
+                } @else if (servicesError()) {
+                  <tr><td colspan="5" class="branch-v2-page__empty">
+                    {{ servicesError() }} <button type="button" (click)="retryDetail()">Thử lại</button>
+                  </td></tr>
+                } @else {
                 @for (service of branchServices; track service.id) {
                   <tr [class.branch-v2-page__focused]="service.id === focusedServiceId">
                     <td>{{ service.name }}</td>
@@ -206,7 +224,8 @@
                     </td>
                   </tr>
                 } @empty {
-                  <tr><td colspan="5" class="branch-v2-page__empty">Chưa có cấu hình dịch vụ tại chi nhánh này.</td></tr>
+                  <tr><td colspan="5" class="branch-v2-page__empty">Chưa có dịch vụ tại chi nhánh này.</td></tr>
+                }
                 }
               </tbody>
             </table>
@@ -233,14 +252,19 @@
         <button type="button" aria-label="Đóng chọn dịch vụ" (click)="closeServicePicker()">×</button>
       </header>
       <div class="branch-service-picker__list">
+        @if (servicesLoading()) {
+          <p class="branch-service-picker__empty" role="status">Đang tải dịch vụ từ Backend...</p>
+        } @else if (servicesError()) {
+          <p class="branch-service-picker__empty" role="alert">{{ servicesError() }}</p>
+        } @else {
         @for (service of pickerServices; track service.id) {
           <button type="button" class="branch-service-picker__item" (click)="configurePickedService(service)">
             <span>{{ service.name }}</span>
             <span>Cấu hình <img src="/assets/admin-branch/figma-gear.svg" alt="" width="18" height="18" /></span>
           </button>
         } @empty {
-          <p class="branch-service-picker__empty">Chi nhánh này chưa có dữ liệu cấu hình dịch vụ trong bản demo.
-            Vui lòng chọn chi nhánh Quận 1 để kiểm tra dialog Figma V2.</p>
+          <p class="branch-service-picker__empty">Backend chưa trả về dịch vụ tại chi nhánh này.</p>
+        }
         }
       </div>
       <footer class="branch-service-picker__footer">
@@ -258,6 +282,7 @@
       [branches]="[configBranch]"
       [initialBranchId]="configBranch.id"
       [initialBlockedWindows]="currentBlockedWindows"
+      [saving]="savingConfig()"
       (previewSaved)="applyServiceConfiguration($event)"
       (dismiss)="closeConfiguration()" />
   }
@@ -265,6 +290,7 @@
 
 @if (branchSettingsOpen(); as settings) {
   <app-branch-settings-dialog [branch]="settings"
+    [saving]="savingBranch()"
     (dismiss)="closeBranchSettings()"
     (previewSaved)="saveBranchSettings($event)" />
 }
