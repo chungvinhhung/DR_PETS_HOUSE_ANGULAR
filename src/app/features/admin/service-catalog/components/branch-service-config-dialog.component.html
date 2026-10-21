@@ -54,12 +54,16 @@
           @for (window of blockedWindows(); track window.id) {
             <li>
               <div class="branch-config__blocked-info">
-                <strong>{{ window.start.replace('T', ', ') }} – {{ window.end.replace('T', ', ') }}</strong>
+                <strong>{{ formatWindow(window) }}</strong>
                 <small>{{ window.reason }}</small>
               </div>
               <div class="branch-config__blocked-actions">
-                <button type="button" aria-label="Sửa khoảng tạm khóa" (click)="editBlockedWindow(window.id)">✎</button>
-                <button type="button" aria-label="Xóa khoảng tạm khóa" (click)="removeBlockedWindow(window.id)">▤</button>
+                <button type="button" [attr.aria-label]="'Sửa khoảng tạm khóa ' + formatWindow(window)" (click)="editBlockedWindow(window.id)">
+                  <img src="/assets/admin-staff/icon-edit.svg" width="18" height="18" alt="" />
+                </button>
+                <button type="button" [attr.aria-label]="'Xóa khoảng tạm khóa ' + formatWindow(window)" (click)="removeBlockedWindow(window.id)">
+                  <img src="/assets/admin-product/icon-delete.svg" width="18" height="18" alt="" />
+                </button>
               </div>
             </li>
           }
@@ -114,7 +118,7 @@
     } @else {
       <footer class="branch-config__footer">
         <button type="button" class="branch-config__button branch-config__button--outline" (click)="requestClose()">Hủy</button>
-        <button type="button" class="branch-config__button branch-config__button--primary" (click)="validatePreview()">Lưu cấu hình (demo)</button>
+        <button type="button" class="branch-config__button branch-config__button--primary" (click)="validatePreview()">Lưu cấu hình</button>
       </footer>
     }
     <p class="branch-config__demo-note">Dữ liệu tạm khóa minh họa từ Figma V2. Tất cả thay đổi chỉ để xem trước, chưa ghi lên Backend.</p>
