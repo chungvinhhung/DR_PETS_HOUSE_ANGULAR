@@ -104,6 +104,16 @@
           <a class="service-editor__btn service-editor__btn--secondary" routerLink="/admin/branches">Xem chi nhánh →</a>
         </section>
       } @else {
+      @if (errors().length) {
+        <div class="service-editor__validation-summary" role="alert">
+          <strong>Vui lòng kiểm tra thông tin trước khi lưu:</strong>
+          <ul>
+            @for (error of errors(); track error) {
+              <li>{{ error }}</li>
+            }
+          </ul>
+        </div>
+      }
       <section class="service-editor__card" aria-labelledby="service-basic-title">
         <h2 id="service-basic-title">Thông tin cơ bản</h2>
         <div class="service-editor__fields service-editor__fields--three">
