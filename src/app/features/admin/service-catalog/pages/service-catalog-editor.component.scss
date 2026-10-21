@@ -695,3 +695,17 @@ app-service-catalog-editor {
 .service-editor__detail-table td { height:52px; padding:12px; }
 @media(max-width:760px) { .service-editor__detail-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:520px) { .service-editor__detail-grid { grid-template-columns:1fr; } }
+
+.service-editor__validation-summary {
+  margin: 0 0 18px;
+  padding: 14px 18px;
+  border: 1px solid #f3c5c3;
+  border-left: 4px solid #bf3434;
+  border-radius: 8px;
+  background: #fff7f7;
+  color: #912626;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.service-editor__validation-summary strong { display:block; margin-bottom:4px; }
+.service-editor__validation-summary ul { margin:0; padding-left:20px; }
