@@ -1,0 +1,29 @@
+name: Task 3.8 public API docs discovery
+
+on:
+  push:
+    branches:
+      - chore/task-3-8-backend-discovery
+    paths:
+      - .github/workflows/task-3-8-api-discovery.yml
+      - scripts/probe-task-3-8-api.mjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check publicly exposed documentation (GET only)
+        run: node scripts/probe-task-3-8-api.mjs
