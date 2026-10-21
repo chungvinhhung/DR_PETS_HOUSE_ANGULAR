@@ -1071,15 +1071,14 @@ app-branch-management-page { display:block; font-family:Roboto,Arial,sans-serif;
   height: 40px;
   min-height: 40px;
   padding: 0;
-  border: 1px solid #e2e8f0;
+  border: 0;
   border-radius: 8px;
-  background: #fff;
+  background: transparent;
   cursor: pointer;
 }
 .branch-v2-page--detail .branch-v2-page__info-edit:hover,
 .branch-v2-page--detail .branch-v2-page__inventory-eye:hover {
-  background: #f3f8ff;
-  border-color: #b8ccec;
+  background: #eaf3ff;
 }
 .branch-v2-page--detail .branch-v2-page__info-edit img {
   display: block;
