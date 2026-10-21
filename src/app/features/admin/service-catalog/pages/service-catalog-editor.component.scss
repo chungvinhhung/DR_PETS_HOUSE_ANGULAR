@@ -828,12 +828,16 @@ app-service-catalog-editor {
 .service-editor__detail-pricing strong { color:#1b273b; font-size:15px; font-weight:500; overflow-wrap:anywhere; }
 .service-editor__detail-pricing { display:grid; grid-template-columns:1fr 1fr; gap:32px; }
 .service-editor__detail-pricing-summary { display:flex; flex-direction:column; gap:11px; }
-.service-editor__detail-branch-row { display:flex; justify-content:space-between; align-items:center; min-height:54px; gap:16px; }
-.service-editor__detail-branch-row > div { display:flex; flex-direction:column; gap:5px; }
-.service-editor__detail-branch-row strong { color:#1b273b; font-size:13px; }
-.service-editor__detail-branch-row small { color:#6e8096; font-size:12px; }
-.service-editor__detail-config-link { display:grid; place-items:center; width:32px; height:32px; color:#0d47a1; border-radius:6px; }
+/* Figma 6599:28160: all scoped branches appear as individual 54px rows. */
+.service-editor__detail-branch-list { display:flex; flex-direction:column; gap:14px; width:100%; }
+.service-editor__detail-branch-row { display:flex; justify-content:space-between; align-items:center; width:100%; min-height:54px; gap:16px; }
+.service-editor__detail-branch-info { display:flex; flex-direction:column; min-width:0; gap:5px; }
+.service-editor__detail-branch-row strong { color:#1b273b; font-size:13px; font-weight:500; overflow-wrap:anywhere; }
+.service-editor__detail-branch-row small { color:#6e8096; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+.service-editor__detail-config-link { display:grid; place-items:center; flex:0 0 32px; width:32px; height:32px; color:#0d47a1; border-radius:6px; }
+.service-editor__detail-config-link img { display:block; width:20px; height:20px; }
 .service-editor__detail-config-link:hover { background:#eef5ff; }
+.service-editor__detail-config-link:focus-visible { outline:2px solid #0d47a1; outline-offset:2px; }
 @media(max-width:760px) {
   .service-editor__detail-metadata { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .service-editor__detail-pricing { grid-template-columns:1fr; }
