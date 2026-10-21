@@ -197,3 +197,9 @@
   .schedule-primary { margin-left: 0; }
   .schedule-footer { align-items: flex-start; flex-direction: column; }
 }
+
+/* Independent filter section and table, aligned with Service Catalog. */
+.schedule-filter-panel { background:#fff; border:1px solid #dee5f0; border-radius:10px; margin-bottom:20px; }
+.schedule-panel { border-color:#dee5f0; }
+.schedule-scroller thead th { height:44px; background:#f4f6f9; color:#536783; font-size:12px; font-weight:500; text-transform:none; }
+.schedule-scroller th,.schedule-scroller td { border-bottom:1px solid #dee5f0; }
