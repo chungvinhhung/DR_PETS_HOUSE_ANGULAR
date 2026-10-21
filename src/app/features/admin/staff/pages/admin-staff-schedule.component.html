@@ -3,7 +3,7 @@
     <nav class="schedule-crumb" aria-label="Breadcrumb"><span>Vận hành</span><span aria-hidden="true">›</span><a routerLink="/admin/staff">Nhân sự</a><span aria-hidden="true">›</span><strong>Lịch làm việc</strong></nav>
     <header class="schedule-heading"><h1>Quản lý nhân sự</h1><span class="preview">Dữ liệu mẫu · Chờ API Shift</span></header>
     <nav class="schedule-tabs" aria-label="Nhân sự"><a routerLink="/admin/staff">Nhân viên</a><span aria-current="page">Lịch làm việc</span></nav>
-    <section class="schedule-panel">
+    <section class="schedule-filter-panel" aria-label="Bộ lọc lịch làm việc">
       <div class="schedule-toolbar">
         <h2 class="schedule-toolbar__title">Lịch làm việc theo tuần</h2>
         <div class="schedule-toolbar__controls">
@@ -34,6 +34,8 @@
             title="Chức năng phân ca làm việc tạm thời chưa khả dụng">+ Phân ca làm việc</button>
         </div>
       </div>
+    </section>
+    <section class="schedule-panel" aria-label="Bảng lịch làm việc">
       <div class="schedule-scroller"><table>
         <colgroup><col class="schedule-col-staff">@for (day of days(); track day.iso) { <col class="schedule-col-day"> }</colgroup>
         <thead><tr><th>Nhân viên</th>@for (day of days(); track day.iso) { <th><span class="schedule-day"><span>{{ day.weekday }}</span><small>{{ day.dayMonth }}</small></span></th> }</tr></thead>
