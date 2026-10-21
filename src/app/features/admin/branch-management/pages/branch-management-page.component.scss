@@ -227,3 +227,161 @@ app-branch-management-page {
  .branch-management__list-tools{flex-wrap:wrap;}
  .branch-management__filter{width:100%;justify-content:space-between;}
 }
+
+/* Figma V2 — lịch hoạt động và mẫu ca. Scoped to branch management. */
+.branch-management .branch-v2 { margin-top: 0; padding: 20px; }
+.branch-management .branch-v2__heading {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 16px; margin-bottom: 18px;
+}
+.branch-management .branch-v2__heading h2 {
+  margin: 0 0 7px; color: #1b273b; font-size: 18px; font-weight: 700;
+}
+.branch-management .branch-v2__heading p {
+  margin: 0; color: #708198; font-size: 12px; line-height: 1.5;
+}
+.branch-management .branch-v2__week-nav {
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+}
+.branch-management .branch-v2__week-nav button,
+.branch-management .branch-v2__date-control {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 40px; border: 1px solid #dfe7f1; border-radius: 7px;
+  background: #fff; color: #1d3551; padding: 0 12px; font-size: 12px;
+}
+.branch-management .branch-v2__week-nav button:hover { background: #eef6ff; }
+.branch-management .branch-v2__date-control input {
+  width: 148px; border: 0; outline: none; background: transparent;
+  color: inherit; font: inherit;
+}
+.branch-management .branch-v2__days {
+  display: grid; grid-template-columns: repeat(7,minmax(0,1fr));
+  gap: 8px; margin-bottom: 16px;
+}
+.branch-management .branch-v2__days button {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  border: 1px solid #e1e9f2; border-radius: 8px;
+  min-width: 0; min-height: 72px; padding: 8px 4px;
+  background: #fff; color: #61738c;
+}
+.branch-management .branch-v2__days button strong { font-size: 13px; color: #263951; }
+.branch-management .branch-v2__days button small { font-size: 12px; color: #a0aec0; }
+.branch-management .branch-v2__days .branch-v2__day--active {
+  background: #edf5ff; border-color: #0d47a1;
+  box-shadow: inset 0 0 0 1px #0d47a1;
+}
+.branch-management .branch-v2__day--active strong { color: #0d47a1 !important; }
+.branch-management .branch-v2__preview-note {
+  padding: 12px 14px; margin: 0 0 16px;
+  border: 1px solid #e3d5a3; border-radius: 8px;
+  color: #795b13; background: #fff9e8; font-size: 12px; line-height: 1.6;
+}
+.branch-management .branch-v2__slots,
+.branch-management .branch-v2__shifts { min-width: 850px; }
+.branch-management .branch-v2__slots th,
+.branch-management .branch-v2__shifts th { font-weight: 600; text-transform: uppercase; }
+.branch-management .branch-v2__slots td,
+.branch-management .branch-v2__shifts td { height: 58px; }
+.branch-management .branch-v2__muted-pill {
+  display: inline-block; padding: 5px 8px; border-radius: 99px;
+  color: #69778c; background: #eff2f5; font-size: 11px;
+}
+.branch-management .branch-v2__progress {
+  width: 100%; max-width: 195px; height: 7px;
+  border-radius: 999px; background: #edf2f7; overflow: hidden;
+}
+.branch-management .branch-v2__progress span { display: block; width: 0; height: 100%; }
+.branch-management .branch-v2__shift-summary {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 13px; margin: 0 0 16px;
+  color: #708198; font-size: 12px;
+}
+.branch-management .branch-v2__shift-summary a { color: #0d47a1; }
+.branch-management .branch-v2__shift-summary a:hover { text-decoration: underline; }
+.branch-management .branch-v2__footer-actions { margin-top: 20px; }
+.branch-management .branch-v2__success {
+  padding: 10px 14px; border-radius: 7px; background: #e8f5e9;
+  color: #2e7d32; font-size: 12px; line-height: 1.5;
+}
+.branch-management .branch-v2__overlay {
+  position: fixed; z-index: 1000; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 18px; background: rgba(15,23,42,.45);
+}
+.branch-management .branch-v2__modal {
+  width: min(100%,620px); max-height: calc(100vh - 36px);
+  overflow-y: auto; border: 1px solid #dfe7f1;
+  border-radius: 12px; padding: 24px; background: #fff;
+  box-shadow: 0 24px 60px rgba(25,46,73,.19);
+}
+.branch-management .branch-v2__modal-header {
+  display: flex; justify-content: space-between; align-items: start; gap: 10px;
+  padding-bottom: 17px; margin-bottom: 17px; border-bottom: 1px solid #e1e9f2;
+}
+.branch-management .branch-v2__modal-header h2 {
+  margin: 0 0 6px; font-size: 20px; color: #1d3551;
+}
+.branch-management .branch-v2__modal-header p,
+.branch-management .branch-v2__modal > p {
+  margin: 0 0 12px; color: #74849b; font-size: 12px; line-height: 1.55;
+}
+.branch-management .branch-v2__modal-header > button {
+  border: 0; background: transparent; color: #6e8097; font-size: 23px;
+}
+.branch-management .branch-v2__form { display: flex; flex-direction: column; gap: 16px; }
+.branch-management .branch-v2__field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.branch-management .branch-v2__field span { color: #34465e; font-size: 12px; font-weight: 600; }
+.branch-management .branch-v2__field b,
+.branch-management .branch-v2__weekday-fieldset b { color: #c72b45; }
+.branch-management .branch-v2__field input {
+  width: 100%; height: 38px; padding: 0 11px; border: 1px solid #d5dfeb;
+  border-radius: 7px; color: #2b3d53; font: inherit;
+}
+.branch-management .branch-v2__time-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.branch-management .branch-v2__weekday-fieldset { margin: 0; padding: 0; border: 0; }
+.branch-management .branch-v2__weekday-fieldset legend {
+  padding: 0; margin-bottom: 10px; color: #34465e; font-weight: 600; font-size: 12px;
+}
+.branch-management .branch-v2__weekday-picker {
+  display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 6px;
+}
+.branch-management .branch-v2__weekday-picker label {
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+  min-height: 36px; border: 1px solid #dfe7f1; border-radius: 6px;
+  font-size: 11px; color: #40536e; white-space: nowrap;
+}
+.branch-management .branch-v2__weekday-picker label:has(input:checked) {
+  border-color: #7da8e4; background: #f3f8ff;
+}
+.branch-management .branch-v2__weekday-picker input { accent-color: #0d47a1; }
+.branch-management .branch-v2__toggle-line {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding-top: 12px; border-top: 1px solid #edf1f5;
+  color: #34465e; font-size: 12px; font-weight: 600;
+}
+.branch-management .branch-v2__toggle-line small {
+  display: block; margin-top: 6px; font-weight: 400; color: #788ba1;
+}
+.branch-management .branch-v2__toggle-line input { width: 18px; height: 18px; accent-color: #0d47a1; }
+.branch-management .branch-v2__form-error {
+  color: #a9223a; font-size: 12px; margin: 0; background: #fff0f2;
+  padding: 10px 12px; border-radius: 6px;
+}
+.branch-management .branch-v2__discard {
+  padding: 13px; border-radius: 7px; background: #fff7e7; border: 1px solid #ead5a1;
+}
+.branch-management .branch-v2__discard p { margin: 0 0 9px; }
+.branch-management .branch-v2__discard button {
+  margin-right: 9px; border: 0; border-radius: 5px; padding: 7px 11px;
+  color: #0d47a1; background: #fff;
+}
+.branch-management .branch-v2__modal-footer {
+  display: flex; justify-content: flex-end; gap: 9px; padding-top: 14px;
+  border-top: 1px solid #edf1f5; margin-top: 10px;
+}
+@media (max-width: 700px) {
+  .branch-management .branch-v2__days { gap: 3px; }
+  .branch-management .branch-v2__days button { padding: 7px 2px; }
+  .branch-management .branch-v2__weekday-picker { grid-template-columns: repeat(4,minmax(0,1fr)); }
+  .branch-management .branch-v2__time-fields { grid-template-columns: 1fr; }
+  .branch-management .branch-v2__modal { padding: 18px; }
+}
