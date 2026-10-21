@@ -385,12 +385,13 @@ app-service-catalog-editor {
 }
 
 .service-editor__amount-words {
-  display: block;
-  padding: 4px 2px 0;
+  display: inline;
+  margin-left: 8px;
   color: #64748b;
   font-size: 11px;
-  line-height: 16px;
-  overflow-wrap: anywhere;
+  line-height: 34px;
+  white-space: normal;
+  vertical-align: middle;
 }
 .service-editor__price-input:focus-within {
   outline: 2px solid #0d47a1;
@@ -680,7 +681,7 @@ app-service-catalog-editor {
 /* Dedicated read-only details, not a disabled create/edit form. */
 .service-editor__detail-card { padding: 22px; }
 .service-editor__detail-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.service-editor__detail-heading h2 { margin: 0 0 18px; }
+.service-editor__detail-heading h2 { margin: 0; }
 .service-editor__detail-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px 24px; }
 .service-editor__detail-grid > div { display:flex; flex-direction:column; gap:7px; min-width:0; }
 .service-editor__detail-grid > div > span,
@@ -693,6 +694,11 @@ app-service-catalog-editor {
 .service-editor__detail-empty { margin:14px 0; color:#718098; font-size:12px; line-height:1.5; }
 .service-editor__detail-table { margin-top:20px; }
 .service-editor__detail-table td { height:52px; padding:12px; }
+.service-editor__detail-heading { margin-bottom:20px; }
+.service-editor__detail-grid > div > span { text-transform:none; }
+.service-editor__detail-table { border:1px solid #dee5f0; border-radius:8px; overflow-x:auto; }
+.service-editor__detail-table th { background:#f4f6f9; color:#536783; font-weight:500; text-transform:none; }
+.service-editor__detail-table tbody tr:not(:last-child) td { border-bottom:1px solid #dee5f0; }
 @media(max-width:760px) { .service-editor__detail-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:520px) { .service-editor__detail-grid { grid-template-columns:1fr; } }
 
