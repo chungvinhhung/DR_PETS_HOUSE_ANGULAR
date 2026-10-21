@@ -23,7 +23,7 @@ interface BranchApiEnvelope { data?: BranchApiPage; items?: BranchApiPage['items
 
 export function serviceFromApi(raw: ServiceApiRecord, branchId = 'ALL'): CatalogService {
   const prices = raw.priceVariants ?? [];
-  const fixed = prices.map((v) => v.price).filter((v) => Number.isFinite(v));
+  const fixed = prices.map((v) => v.price).filter((v) => Number.isFinite(v) && v > 0);
   const branch = raw.branchConfig && branchId !== 'ALL' ? [{
     branchId, capacity: raw.branchConfig.capacity, enabled: raw.branchConfig.enabled,
     availability: 'BY_SHIFT' as const,
@@ -37,7 +37,7 @@ export function serviceFromApi(raw: ServiceApiRecord, branchId = 'ALL'): Catalog
     bookingMode: raw.bookingMode,
     durationMinutes: raw.durationMinutes,
     status: raw.status,
-    referencePrice: fixed.length ? null : raw.basePrice,
+    referencePrice: fixed.length ? null : raw.basePrice > 0 ? raw.basePrice : null,
     minFixedTierPrice: fixed.length ? Math.min(...fixed) : null,
     branchServices: branch,
     enabledBranchCount: raw.enabledBranchCount,
