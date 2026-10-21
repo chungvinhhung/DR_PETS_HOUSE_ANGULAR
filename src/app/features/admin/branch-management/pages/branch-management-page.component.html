@@ -1,158 +1,186 @@
 <app-admin-catalog-shell activeItem="branches">
-  <main class="branch-management" [class.branch-management--detail]="!!branch">
-    <nav class="branch-management__breadcrumb" aria-label="Đường dẫn">
-      <span>Vận hành</span><span aria-hidden="true">›</span>
-      @if (branch) {
-        <a routerLink="/admin/branches">Chi nhánh</a><span aria-hidden="true">›</span>
-        <strong aria-current="page">{{ branch.name }}</strong>
-      } @else {
-        <strong aria-current="page">Chi nhánh</strong>
-      }
-    </nav>
-
-    <header class="branch-management__header">
-      <div>
-        <h1>{{ pageTitle }}</h1>
-      </div>
-      @if (branch) {
-        <a class="branch-management__button branch-management__button--outline" routerLink="/admin/branches">Tất cả chi nhánh</a>
-      } @else {
-        <a class="branch-management__button branch-management__button--outline" routerLink="/admin/services">Về danh mục dịch vụ</a>
-      }
-    </header>
-
+  <main class="branch-management branch-v2-page">
     @if (branchId && !branch) {
-      <div class="branch-management__notice" role="alert">
-        Không tìm thấy chi nhánh hoặc chi nhánh không thuộc phạm vi demo của tài khoản này.
-        <a routerLink="/admin/branches">Xem danh sách được phép</a>
+      <nav class="branch-v2-page__breadcrumb" aria-label="Đường dẫn">
+        <a routerLink="/admin/branches">Chi nhánh</a><span>›</span><strong>Không tìm thấy</strong>
+      </nav>
+      <div class="branch-v2-page__notice" role="alert">
+        Không tìm thấy chi nhánh trong dữ liệu xem trước hoặc chi nhánh không thuộc phạm vi đang hiển thị.
+        <a routerLink="/admin/branches">Quay lại danh sách</a>
       </div>
     } @else if (!branch) {
-
-      @if (hasFocusedService) {
-        <p class="branch-management__notice">
-          Bạn đang cấu hình dịch vụ <strong>{{ focusedService!.serviceCode }} – {{ focusedService!.name }}</strong>.
-          Hãy chọn chi nhánh muốn áp dụng.
-        </p>
-      }
-
-      <section class="branch-management__list-tools" aria-label="Bộ lọc chi nhánh">
-        <label class="branch-management__search">
-          <span class="branch-management__sr-only">Tìm chi nhánh</span>
-          <input #branchSearchInput type="search" placeholder="Tìm chi nhánh..." [value]="branchSearch()"
-            (input)="branchSearch.set(branchSearchInput.value)" />
-        </label>
-        <span>{{ filteredBranches.length }} chi nhánh</span>
-      </section>
-      <section class="branch-management__grid" aria-label="Danh sách chi nhánh">
-        @for (item of filteredBranches; track item.id) {
-          <article class="branch-management__branch-card">
-            <div class="branch-management__branch-icon" aria-hidden="true"><img src="/assets/admin-product/icon-operations.svg" alt=""/></div>
-            <div>
-              <h2>{{ item.name }}</h2>
-            </div>
-            <div class="branch-management__branch-meta">
-              <span>{{ getEnabledCount(item) }} dịch vụ đang bật</span>
-              <a class="branch-management__button branch-management__button--primary"
-                [routerLink]="branchLink(item)" [queryParams]="branchQueryParams()">
-                Dịch vụ &amp; Capacity <span aria-hidden="true">→</span>
-              </a>
-            </div>
-          </article>
-        } @empty {
-          <p class="branch-management__empty">Không tìm thấy chi nhánh phù hợp.</p>
+      <header class="branch-v2-page__header branch-v2-page__header--list">
+        <h1>Chi nhánh</h1>
+        @if (isAdmin) {
+          <button type="button" class="branch-v2-page__btn branch-v2-page__btn--primary"
+            (click)="showPending('Thêm chi nhánh')">+ Thêm chi nhánh</button>
         }
+      </header>
+      <section class="branch-v2-page__filters" aria-label="Bộ lọc chi nhánh">
+        <label class="branch-v2-page__search">
+          <span aria-hidden="true">⌕</span>
+          <span class="branch-v2-page__sr">Tìm chi nhánh</span>
+          <input #branchSearchInput type="search" placeholder="Tìm chi nhánh..."
+            [value]="search()" (input)="updateSearch(branchSearchInput.value)" />
+        </label>
+        <label class="branch-v2-page__status-filter">
+          <span class="branch-v2-page__sr">Trạng thái chi nhánh</span>
+          <select #branchStatusInput [value]="branchStatus()" (change)="updateBranchStatus(branchStatusInput.value)">
+            <option value="ALL">Trạng thái</option>
+            <option value="ACTIVE">Hoạt động</option>
+            <option value="INACTIVE">Ngừng hoạt động</option>
+          </select>
+        </label>
       </section>
-    } @else {
-      @if (hasFocusedService) {
-        <p class="branch-management__notice">
-          Đang chuyển từ Catalog: <strong>{{ focusedService!.name }}</strong>.
-          Chọn "Cấu hình" trong dòng dịch vụ bên dưới.
-        </p>
+
+      @if (feedback()) { <p class="branch-v2-page__notice" role="status">{{ feedback() }}</p> }
+      @if (!isAdmin) {
+        <p class="branch-v2-page__notice">Phạm vi chi nhánh Manager đang là dữ liệu demo; chưa có danh sách chi nhánh được BE cấp quyền.</p>
       }
-
-      <section class="branch-management__summary" aria-label="Tổng quan chi nhánh">
-        <div><span>Chi nhánh</span><strong>{{ branch.name }}</strong></div>
-        <div><span>Dịch vụ đang bật</span><strong>{{ getEnabledCount(branch) }}/{{ allServices.length }}</strong></div>
-        <div><span>Phân quyền</span><strong>{{ isAdmin ? 'ADMIN' : 'MANAGER' }}</strong></div>
-      </section>
-
-      <nav class="branch-management__tabs" aria-label="Nội dung chi nhánh">
-        <button type="button" [class.branch-management__tab--active]="detailTab() === 'services'"
-          [attr.aria-current]="detailTab() === 'services' ? 'page' : null"
-          (click)="setDetailTab('services')">Dịch vụ &amp; Capacity</button>
-        <button type="button" [class.branch-management__tab--active]="detailTab() === 'hours'"
-          [attr.aria-current]="detailTab() === 'hours' ? 'page' : null"
-          (click)="setDetailTab('hours')">Lịch hoạt động</button>
-        <button type="button" [class.branch-management__tab--active]="detailTab() === 'shifts'"
-          [attr.aria-current]="detailTab() === 'shifts' ? 'page' : null"
-          (click)="setDetailTab('shifts')">Mẫu ca làm việc</button>
-      </nav>
-      @if (detailTab() === 'services') {
-      <section class="branch-management__panel" aria-labelledby="branch-service-heading">
-        <div class="branch-management__panel-header">
-          <div>
-            <h2 id="branch-service-heading">Dịch vụ &amp; Capacity</h2>
-            <p>Quản lý dịch vụ theo chi nhánh. Bật/Tắt, sức chứa và khoảng tạm khóa được cấu hình tại đây.</p>
-          </div>
-          <label class="branch-management__search">
-            <span class="branch-management__sr-only">Tìm theo tên hoặc mã dịch vụ</span>
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#66758C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"></circle><path d="m16 16 4.2 4.2"></path></svg>
-            <input #branchServiceSearch type="search" placeholder="Tìm tên hoặc mã dịch vụ..."
-              [value]="search()" (input)="updateSearch(branchServiceSearch.value)" />
-          </label>
-          <label class="branch-management__filter">
-            <span>Trạng thái dịch vụ</span>
-            <select #serviceStatusSelect [value]="serviceStatus()" (change)="setServiceStatus(serviceStatusSelect.value)">
-              <option value="ALL">Tất cả</option>
-              <option value="ENABLED">Đang bật</option>
-              <option value="DISABLED">Đang tắt</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="branch-management__table-scroll">
-          <table class="branch-management__table">
+      <section class="branch-v2-page__table-card" aria-label="Danh sách chi nhánh">
+        <div class="branch-v2-page__table-scroll">
+          <table class="branch-v2-page__table branch-v2-page__table--branches">
             <thead><tr>
-              <th scope="col">Mã dịch vụ</th>
-              <th scope="col">Tên dịch vụ</th>
-              <th scope="col">Hình thức</th>
-              <th scope="col">Kích hoạt</th>
-              <th scope="col">Capacity</th>
-              <th scope="col">Khả dụng</th>
+              <th scope="col">Chi nhánh</th>
+              <th scope="col">Địa chỉ</th>
+              <th scope="col">Hotline</th>
+              <th scope="col">Dịch vụ đang bật</th>
+              <th scope="col">Trạng thái</th>
               <th scope="col">Thao tác</th>
             </tr></thead>
             <tbody>
-              @for (service of pagedServices; track service.id) {
-                <tr [class.branch-management__highlight]="focusedServiceId === service.id">
-                  <td class="branch-management__muted">{{ service.serviceCode }}</td>
-                  <td><strong>{{ service.name }}</strong><small>{{ service.category }}</small></td>
-                  <td><span class="branch-management__mode">{{ service.bookingMode }}</span></td>
-                  <td><span class="branch-management__pill"
-                    [class.branch-management__pill--off]="!isEnabled(service, branch.id)">
-                    {{ isEnabled(service, branch.id) ? 'Bật' : 'Tắt' }}</span></td>
-                  <td>{{ config(service, branch.id).capacity }}</td>
-                  <td class="branch-management__muted">BE tự tính</td>
-                  <td><button type="button" class="branch-management__button branch-management__button--outline"
-                    [attr.aria-label]="'Cấu hình ' + service.name + ' tại ' + branch.name"
-                    (click)="openConfiguration(service)">Cấu hình</button></td>
+              @for (item of pagedBranches; track item.id) {
+                <tr>
+                  <td>{{ item.name }}</td>
+                  <td class="branch-v2-page__secondary">{{ item.address }}</td>
+                  <td class="branch-v2-page__secondary">{{ item.hotline || '—' }}</td>
+                  <td class="branch-v2-page__secondary">{{ item.enabledServiceCount }} dịch vụ</td>
+                  <td><span class="branch-v2-page__badge"
+                    [class.branch-v2-page__badge--off]="item.status !== 'ACTIVE'">
+                    {{ item.status === 'ACTIVE' ? 'Hoạt động' : 'Ngừng hoạt động' }}
+                  </span></td>
+                  <td>
+                    <div class="branch-v2-page__actions">
+                      <a [routerLink]="branchLink(item)" [queryParams]="branchQueryParams()"
+                        class="branch-v2-page__icon-action" [attr.aria-label]="'Xem chi nhánh ' + item.name" title="Xem chi tiết">◉</a>
+                      <a [routerLink]="branchLink(item)" [queryParams]="branchQueryParams()"
+                        class="branch-v2-page__icon-action" [attr.aria-label]="'Cấu hình chi nhánh ' + item.name" title="Cấu hình">⚙</a>
+                    </div>
+                  </td>
                 </tr>
               } @empty {
-                <tr><td colspan="7" class="branch-management__empty">Không tìm thấy dịch vụ phù hợp.</td></tr>
+                <tr><td colspan="6" class="branch-v2-page__empty">Không có chi nhánh phù hợp với bộ lọc.</td></tr>
               }
             </tbody>
           </table>
         </div>
-        <footer class="branch-management__pagination">
-          <span>Đang hiển thị {{ pagedServices.length }} trên tổng số {{ filteredServices.length }} dịch vụ</span>
-          <nav aria-label="Phân trang dịch vụ tại chi nhánh">
-            <button type="button" aria-label="Trang trước"
-              [disabled]="page() === 1" (click)="setPage(page() - 1)">‹</button>
-            <span aria-current="page">{{ page() }}</span>
-            <button type="button" aria-label="Trang tiếp"
-              [disabled]="page() >= pageCount" (click)="setPage(page() + 1)">›</button>
+        <footer class="branch-v2-page__pagination">
+          <span>Đang hiển thị {{ pagedBranches.length }} trên tổng số {{ filteredBranches.length }} chi nhánh</span>
+          <nav aria-label="Phân trang chi nhánh">
+            <button type="button" aria-label="Trang trước" [disabled]="listPage() === 1"
+              (click)="changePage(listPage() - 1)">‹</button>
+            @for (index of [1, 2, 3, 4, 5]; track index) {
+              @if (index <= pageCount) {
+                <button type="button" [class.branch-v2-page__page--active]="index === listPage()"
+                  [attr.aria-current]="index === listPage() ? 'page' : null" (click)="changePage(index)">{{ index }}</button>
+              }
+            }
+            <button type="button" aria-label="Trang sau" [disabled]="listPage() === pageCount"
+              (click)="changePage(listPage() + 1)">›</button>
           </nav>
         </footer>
       </section>
+      <p class="branch-v2-page__footnote">Đang dùng dữ liệu minh họa từ Figma, chưa kết nối API quản lý chi nhánh.</p>
+    } @else {
+      <nav class="branch-v2-page__breadcrumb" aria-label="Đường dẫn">
+        <a routerLink="/admin/branches">Chi nhánh</a><span>›</span><strong aria-current="page">{{ branch.name }}</strong>
+      </nav>
+      <header class="branch-v2-page__header">
+        <h1>{{ branch.name }} <span aria-hidden="true">⌄</span></h1>
+        @if (isAdmin) {
+          <button class="branch-v2-page__btn branch-v2-page__btn--outline" type="button"
+            (click)="showPending('Chỉnh sửa chi nhánh')">Chỉnh sửa</button>
+        }
+      </header>
+
+      <section class="branch-v2-page__info" aria-label="Thông tin chi nhánh">
+        <div><span>ĐỊA CHỈ</span><strong>{{ branch.address }}</strong></div>
+        <div><span>HOTLINE</span><strong>{{ branch.hotline || '—' }}</strong></div>
+        <div><span>Trạng thái</span><strong class="branch-v2-page__badge">{{ branch.status === 'ACTIVE' ? 'Đang hoạt động' : 'Ngừng hoạt động' }}</strong></div>
+      </section>
+
+      <section class="branch-v2-page__inventory" aria-label="Tồn kho chi nhánh">
+        <div class="branch-v2-page__inventory-heading">
+          <strong>Tồn kho tại chi nhánh</strong><span>Theo dõi nhanh tình trạng hàng hóa</span>
+        </div>
+        <div><span>Tổng mặt hàng</span><strong>{{ branch.inventory?.total ?? '—' }}</strong></div>
+        <div><span>Sắp hết</span><strong class="branch-v2-page__warning">{{ branch.inventory?.low ?? '—' }}</strong></div>
+        <div><span>Hết hàng</span><strong class="branch-v2-page__danger">{{ branch.inventory?.out ?? '—' }}</strong></div>
+        <button type="button" class="branch-v2-page__btn branch-v2-page__btn--outline"
+          (click)="showPending('Xem tồn kho chi nhánh')">Xem tồn kho</button>
+      </section>
+
+      <nav class="branch-v2-page__tabs" aria-label="Nội dung chi nhánh">
+        <button type="button" [class.branch-v2-page__tab--active]="detailTab() === 'services'"
+          [attr.aria-current]="detailTab() === 'services' ? 'page' : null"
+          (click)="setDetailTab('services')">Dịch vụ tại chi nhánh</button>
+        <button type="button" [class.branch-v2-page__tab--active]="detailTab() === 'hours'"
+          [attr.aria-current]="detailTab() === 'hours' ? 'page' : null"
+          (click)="setDetailTab('hours')">Lịch hoạt động</button>
+        <button type="button" [class.branch-v2-page__tab--active]="detailTab() === 'shifts'"
+          [attr.aria-current]="detailTab() === 'shifts' ? 'page' : null"
+          (click)="setDetailTab('shifts')">Ca làm việc</button>
+      </nav>
+
+      @if (feedback()) { <p class="branch-v2-page__notice" role="status">{{ feedback() }}</p> }
+      @if (detailTab() === 'services') {
+        <section class="branch-v2-page__detail-card" aria-label="Dịch vụ tại chi nhánh">
+          <h2>Dịch vụ tại chi nhánh</h2>
+          <div class="branch-v2-page__service-toolbar">
+            <span>Xem lúc</span>
+            <label><span class="branch-v2-page__sr">Ngày xem khả dụng</span>
+              <input #dayInput type="date" [value]="viewDate()" (change)="changeDate(dayInput.value)" />
+            </label>
+            <label><span class="branch-v2-page__sr">Giờ xem khả dụng</span>
+              <select #timeInput [value]="viewTime()" (change)="changeTime(timeInput.value)">
+                @for (hour of ['07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00']; track hour) {
+                  <option [value]="hour">{{ hour }}</option>
+                }
+              </select>
+            </label>
+            <button type="button" class="branch-v2-page__btn branch-v2-page__btn--outline" (click)="refreshPreview()">Làm mới</button>
+          </div>
+          <div class="branch-v2-page__table-scroll">
+            <table class="branch-v2-page__table branch-v2-page__table--services">
+              <thead><tr><th scope="col">Dịch vụ</th><th scope="col">Sức chứa đồng thời</th>
+                <th scope="col">Khả dụng</th><th scope="col">Kích hoạt tại chi nhánh</th><th scope="col">Thao tác</th></tr></thead>
+              <tbody>
+                @for (service of branchServices; track service.id) {
+                  <tr [class.branch-v2-page__focused]="service.id === focusedServiceId">
+                    <td>{{ service.name }}</td>
+                    <td>{{ capacity(service) }} ca</td>
+                    <td><span class="branch-v2-page__availability">{{ previewAvailability(service) }}</span></td>
+                    <td>
+                      <button type="button" class="branch-v2-page__switch-row"
+                        [attr.aria-label]="'Kích hoạt ' + service.name"
+                        [attr.aria-pressed]="isEnabled(service)" (click)="toggleService(service)">
+                        <span class="branch-v2-page__switch" [class.branch-v2-page__switch--on]="isEnabled(service)"><i></i></span>
+                        <span>{{ isEnabled(service) ? 'Đang bật' : 'Đã tắt' }}</span>
+                      </button>
+                    </td>
+                    <td>
+                      <button type="button" class="branch-v2-page__icon-action" title="Cấu hình dịch vụ"
+                        [attr.aria-label]="'Cấu hình dịch vụ ' + service.name" (click)="openConfiguration(service)">⚙</button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="5" class="branch-v2-page__empty">Chưa có cấu hình dịch vụ tại chi nhánh này.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="branch-v2-page__footnote">Số chỗ khả dụng trong bảng là dữ liệu minh họa Figma, không phải giá trị tính từ Backend. Thay đổi trạng thái chỉ có hiệu lực trên trang đang mở.</p>
+        </section>
       } @else if (detailTab() === 'hours') {
         <app-branch-hours-preview />
       } @else {
