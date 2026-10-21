@@ -313,8 +313,8 @@ app-service-catalog-editor {
 .service-editor__table tbody tr:nth-child(even) { background: #fcfdff; }
 
 .service-editor__table tbody td {
-  height: 44px;
-  padding: 4px 10px;
+  height: 52px;
+  padding: 8px 14px;
   border-top: 1px solid #e6ebf4;
   color: #2f415c;
   vertical-align: middle;
@@ -715,3 +715,84 @@ app-service-catalog-editor {
 }
 .service-editor__validation-summary strong { display:block; margin-bottom:4px; }
 .service-editor__validation-summary ul { margin:0; padding-left:20px; }
+
+/* Keep controls comfortably inset from price-tier table borders. */
+.service-editor__table--prices tbody td { padding: 9px 15px; }
+.service-editor__table--prices tbody tr { height: 58px; }
+.service-editor__table--prices .service-editor__price-select,
+.service-editor__table--prices .service-editor__price-input { height: 40px; }
+.service-editor__table--prices .service-editor__price-input input { height: 38px; }
+
+/* Product options must show the same identifying information as Product Master. */
+.service-editor__product-combobox { position: relative; width: 100%; }
+.service-editor__product-results {
+  position: absolute;
+  z-index: 35;
+  top: calc(100% + 6px);
+  left: 0;
+  width: max(100%, 390px);
+  max-width: min(580px, calc(100vw - 48px));
+  max-height: 328px;
+  overflow: auto;
+  padding: 5px;
+  border: 1px solid #dbe5f0;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 10px 28px #14243b29;
+}
+.service-editor__product-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 68px;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: #fff;
+  color: #22334b;
+  text-align: left;
+}
+.service-editor__product-option:hover,
+.service-editor__product-option:focus-visible { background: #eef5ff; }
+.service-editor__product-thumbnail {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border: 1px solid #e3eaf3;
+  border-radius: 6px;
+  object-fit: contain;
+  background: #f7f9fc;
+}
+.service-editor__product-thumbnail--empty {
+  display: grid;
+  place-items: center;
+  color: #8798ae;
+  font-size: 11px;
+}
+.service-editor__product-description {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+.service-editor__product-description strong {
+  overflow-wrap: anywhere;
+  color: #203650;
+  font-size: 13px;
+  font-weight: 600;
+}
+.service-editor__product-description small { color: #6e8099; font-size: 11px; line-height: 1.45; }
+.service-editor__product-price {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: #0d47a1;
+  font-size: 12px;
+  font-weight: 600;
+}
+.service-editor__product-empty { padding: 12px; margin: 0; color: #6e8099; }
+@media (max-width: 700px) {
+  .service-editor__product-results { width: max(100%, 300px); }
+  .service-editor__product-price { font-size: 11px; }
+}
