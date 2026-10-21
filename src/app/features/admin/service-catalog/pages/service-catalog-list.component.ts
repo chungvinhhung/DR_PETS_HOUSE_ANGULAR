@@ -200,9 +200,11 @@ export class ServiceCatalogListComponent {
     if (service.referencePrice !== null) {
       return this.vnd(service.referencePrice);
     }
+    // Without an explicit quote mode from the API, no price must not
+    // be misrepresented as an accepted fixed price or quote arrangement.
     return service.bookingMode === 'CONTACT_ONLY'
       ? 'Báo giá sau tiếp nhận'
-      : 'Liên hệ báo giá';
+      : 'Chưa cấu hình giá';
   }
 
   private vnd(value: number): string {
