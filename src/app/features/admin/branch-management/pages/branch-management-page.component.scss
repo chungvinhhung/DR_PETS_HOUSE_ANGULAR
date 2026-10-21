@@ -350,3 +350,237 @@ app-branch-management-page { display:block; font-family:Roboto,Arial,sans-serif;
 .branch-v2-page__icon-action img { display:block; width:20px;height:20px;object-fit:contain; }
 .branch-v2-page__actions { gap:13px; }
 .branch-v2-page__table--branches tbody td { font-size:12px; }
+
+
+/*
+ * ADMIN VISUAL CONSISTENCY — match the Staff module on main.
+ * Source of metrics: admin-staff-list.component.scss (Staff)
+ * These overrides are deliberately scoped to branch-management only.
+ */
+.branch-v2-page {
+  padding:40px 32px;
+  width:100%;
+  max-width:none;
+  min-width:0;
+  font:13px Roboto,Arial,sans-serif;
+  color:#1b273b;
+}
+.branch-v2-page__breadcrumb {
+  display:flex;align-items:center;gap:0;
+  margin:0 0 16px;
+  color:#6b7a8f;
+  font-size:12px;line-height:18px;
+}
+.branch-v2-page__breadcrumb span[aria-hidden="true"] {padding:0 9px;color:#94a3b8;}
+.branch-v2-page__breadcrumb strong {font-weight:500;}
+.branch-v2-page__breadcrumb a {color:#6b7a8f;text-decoration:none;}
+.branch-v2-page__breadcrumb a:hover {color:#0d47a1;text-decoration:underline;}
+.branch-v2-page__header {
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;margin:0 0 24px;min-height:0;
+}
+.branch-v2-page__header h1 {
+  font-size:28px;line-height:34px;letter-spacing:-.28px;
+  font-weight:700;margin:0;color:#222;
+}
+.branch-v2-page__header h1 span {font-size:19px;}
+.branch-v2-page__preview-label {
+  font-size:11px;background:#fff7df;color:#815a12;
+  padding:5px 9px;border-radius:6px;white-space:nowrap;
+}
+.branch-v2-page__table-card {
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  background:#fff;
+  overflow:hidden;
+}
+.branch-v2-page__filters {
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  min-height:0;margin:0;padding:16px;
+  border:0;border-radius:0;
+}
+.branch-v2-page__search {
+  display:flex;align-items:center;gap:8px;
+  flex:1 1 240px;max-width:350px;
+  width:auto;height:40px;
+  padding:0 12px;border:1px solid #e2e8f0;border-radius:8px;
+  color:#64748b;
+}
+.branch-v2-page__search svg {
+  display:block;flex:0 0 20px;width:20px;height:20px;color:#64748b;
+}
+.branch-v2-page__search input {
+  font:14px Roboto,Arial,sans-serif;
+  color:#1b273b;border:0;outline:0;min-width:0;width:100%;
+}
+.branch-v2-page__status-filter {
+  position:relative;display:block;margin-left:auto;
+}
+.branch-v2-page__status-filter select {
+  appearance:none;-webkit-appearance:none;
+  width:100%;height:40px;min-width:160px;
+  border:1px solid #e2e8f0;border-radius:8px;
+  padding:0 40px 0 12px;background:#fff;
+  color:#1b273b;cursor:pointer;
+  font:13px Roboto,Arial,sans-serif;
+}
+.branch-v2-page__filter-chevron {
+  position:absolute;top:50%;right:12px;transform:translateY(-50%);
+  width:18px;height:18px;pointer-events:none;
+}
+.branch-v2-page__btn--primary,
+.branch-v2-page__add {
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:40px;
+  padding:0 14px;
+  background:#0d47a1;color:#fff;
+  border:0;border-radius:8px;white-space:nowrap;
+  font-weight:600;font-size:13px;text-decoration:none;
+}
+.branch-v2-page__btn--primary:hover,.branch-v2-page__add:hover {
+  background:#073984;color:#fff;
+}
+.branch-v2-page__table-scroll {overflow-x:auto;border:0;border-radius:0;}
+.branch-v2-page__table {
+  width:100%;min-width:960px;border-collapse:collapse;
+  text-align:left;table-layout:auto;
+}
+.branch-v2-page__table thead th,
+.branch-v2-page__table--branches thead th {
+  height:46px;padding:10px 12px;
+  background:#f1f5f9;
+  font-weight:500;font-size:12px;color:#475569;
+  white-space:nowrap;
+}
+.branch-v2-page__table tbody td,
+.branch-v2-page__table--branches tbody td {
+  height:76px;padding:12px;
+  border-top:0;border-bottom:1px solid #e2e8f0;
+  font-size:13px;line-height:1.5;color:#475569;
+  vertical-align:middle;
+}
+.branch-v2-page__table--branches th:first-child,
+.branch-v2-page__table--branches td:first-child {
+  padding-left:26px;color:#1b273b;
+}
+.branch-v2-page__table--branches th:last-child,
+.branch-v2-page__table--branches td:last-child {
+  min-width:102px;width:102px;text-align:center;
+  padding-left:16px;padding-right:16px;
+}
+.branch-v2-page__table--branches th:nth-child(5),
+.branch-v2-page__table--branches td:nth-child(5) {
+  text-align:center;
+}
+.branch-v2-page__table--branches th:nth-child(1){width:19%;}
+.branch-v2-page__table--branches th:nth-child(2){width:28%;}
+.branch-v2-page__table--branches th:nth-child(3){width:13%;}
+.branch-v2-page__table--branches th:nth-child(4){width:15%;}
+.branch-v2-page__table--branches th:nth-child(5){width:15%;}
+.branch-v2-page__table--branches th:nth-child(6){width:10%;}
+.branch-v2-page__badge {
+  display:inline-flex;justify-content:center;
+  padding:3px 10px;border-radius:999px;
+  white-space:nowrap;font-size:12px;font-weight:500;
+  color:#2e7d32;background:#e8f5e9;border:1px solid #c8e6c9;
+}
+.branch-v2-page__badge--off {
+  color:#93000a;background:#ffdad6;border-color:#ffcdd2;
+}
+.branch-v2-page__actions {
+  display:flex;align-items:center;justify-content:center;
+  gap:10px;min-height:20px;
+}
+.branch-v2-page__icon-action {
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;min-width:20px;min-height:20px;
+  flex:0 0 20px;padding:0;
+  background:transparent;border:0;
+  cursor:pointer;
+}
+.branch-v2-page__icon-action img {
+  display:block;width:20px;height:20px;object-fit:contain;
+}
+.branch-v2-page__icon-action:hover {
+  background:#e5f6fd;border-radius:4px;
+}
+.branch-v2-page__pagination {
+  display:flex;align-items:center;justify-content:space-between;
+  min-height:72px;padding:12px 16px;
+  gap:12px;color:#64748b;font-size:12px;
+}
+.branch-v2-page__pagination nav {
+  display:flex;align-items:center;overflow:hidden;
+  border:1px solid #e2e8f0;border-radius:8px;
+}
+.branch-v2-page__pagination button {
+  min-width:44px;height:44px;
+  border:0;border-right:1px solid #e2e8f0;
+  background:#fff;color:#0d47a1;cursor:pointer;
+}
+.branch-v2-page__pagination button:last-child{border-right:0;}
+.branch-v2-page__pagination button:disabled{color:#aab6c7;cursor:default;}
+.branch-v2-page__pagination .branch-v2-page__page--active {
+  background:#e5f6fd;outline:2px solid #0d47a1;outline-offset:-2px;
+}
+.branch-v2-page__empty {
+  text-align:center;color:#64748b!important;padding:32px 12px!important;
+}
+.branch-v2-page__empty button {
+  border:0;background:transparent;color:#0d47a1;text-decoration:underline;
+}
+/* Phase 2: the same Staff tab and panel treatment for branch details. */
+.branch-v2-page__info,.branch-v2-page__inventory,.branch-v2-page__detail-card,
+.branch-v2-page .branch-v2 {
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  background:#fff;
+}
+.branch-v2-page__tabs {
+  display:flex;gap:0;
+  border-bottom:1px solid #e2e8f0;
+  margin:0 0 24px;
+}
+.branch-v2-page__tabs button {
+  flex:1;min-height:0;
+  padding:11px 22px 14px;
+  font-size:16px;font-weight:500;color:#475569;
+  background:transparent;border:0;border-bottom:3px solid transparent;
+}
+.branch-v2-page__tabs button.branch-v2-page__tab--active {
+  color:#0d47a1;border-bottom-color:#0d47a1;
+}
+.branch-v2-page__tabs button:hover {color:#0d47a1;}
+.branch-v2-page__detail-card {padding:20px;}
+.branch-v2-page__detail-card h2 {font-size:18px;margin:0 0 20px;}
+.branch-v2-page__table--services {table-layout:auto;}
+.branch-v2-page__table--services thead th {
+  height:44px;background:#e5f6fd;color:#475569;
+}
+.branch-v2-page__table--services tbody td {height:58px;padding:13px;font-size:13px;}
+.branch-v2-page__service-toolbar {gap:12px;margin-bottom:20px;}
+.branch-v2-page__service-toolbar :is(input,select) {
+  height:40px;border-radius:8px;border-color:#e2e8f0;font-size:13px;
+}
+.branch-v2-page .branch-v2__heading h2 {font-size:18px;font-weight:700;}
+.branch-v2-page .branch-v2__shifts,
+.branch-v2-page .branch-v2__monitor {font-size:13px;}
+.branch-v2-page .branch-v2__shifts thead th,
+.branch-v2-page .branch-v2__monitor thead th {
+  height:46px;background:#e5f6fd;color:#475569;font-weight:500;font-size:12px;
+}
+.branch-v2-page .branch-v2__shifts tbody td,
+.branch-v2-page .branch-v2__monitor tbody td {
+  height:58px;border-bottom:1px solid #e2e8f0;color:#475569;
+}
+@media(max-width:1100px) {
+  .branch-v2-page {padding:25px 20px;}
+  .branch-v2-page__status-filter{margin-left:0;}
+}
+@media(max-width:700px) {
+  .branch-v2-page {padding:18px 12px;}
+  .branch-v2-page__header{align-items:flex-start;flex-direction:column;}
+  .branch-v2-page__header h1{font-size:24px;}
+  .branch-v2-page__pagination{align-items:flex-start;flex-direction:column;}
+  .branch-v2-page__tabs button{font-size:13px;padding:11px 8px;}
+}
