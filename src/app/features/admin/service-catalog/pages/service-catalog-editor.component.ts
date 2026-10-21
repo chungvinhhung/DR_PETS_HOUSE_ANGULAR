@@ -18,10 +18,11 @@ import { AdminToastService } from '../../../../shared/services/admin-toast.servi
 import { CatalogService, ServiceApiRecord, ServiceBookingMode, ServicePriceVariant, ServiceWrite } from '../models/service-catalog.model';
 import { ServiceCatalogApiService, serviceFromApi } from '../services/service-catalog-api.service';
 import { AdminProductService } from '../../products/services/admin-product.service';
+import { AdminCategoryService } from '../../categories/services/admin-category.service';
 
 type PriceMode = 'FIXED' | 'QUOTE';
 type Tier = { key: string; weight: string; mode: PriceMode; price: number | null };
-type MaterialOption = { sku: string; name: string; unit: string };
+type MaterialOption = { sku: string; name: string; unit: string; image: string | null; categoryId: string; price: number };
 type MaterialLine = { key: number; sku: string; query: string; quantity: number | null; unit: string };
 const TIER_WEIGHTS = [
   { key: 'XS', weight: '< 5 kg' },
@@ -44,6 +45,7 @@ const TIER_WEIGHTS = [
 export class ServiceCatalogEditorComponent {
   private readonly repository = inject(ServiceCatalogApiService);
   private readonly productsApi = inject(AdminProductService);
+  private readonly categoryApi = inject(AdminCategoryService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -72,6 +74,8 @@ export class ServiceCatalogEditorComponent {
   readonly isNew = this.editorMode === 'create';
   readonly title = this.editorMode === 'view' ? 'Chi tiết dịch vụ' : this.isNew ? 'Thêm dịch vụ' : 'Chỉnh sửa dịch vụ';
   productOptions: MaterialOption[] = [];
+  readonly productCategoryNames = new Map<string, string>();
+  readonly openMaterialKey = signal<number | null>(null);
   private materialsDirty = false;
 
   serviceName = '';
@@ -96,11 +100,23 @@ export class ServiceCatalogEditorComponent {
   readonly showCancelConfirmation = signal(false);
 
   constructor() {
+    this.categoryApi.listCategories({ limit: 100 }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (page) => {
+        for (const category of page.items) this.productCategoryNames.set(category.id, category.name);
+      },
+    });
     this.productsApi.listProducts({ limit: 100, status: 'ACTIVE' }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (page) => {
         this.productOptions = page.items.flatMap((product) => product.variants
           .filter((variant) => variant.status === 'ACTIVE' && !!variant.sku)
-          .map((variant) => ({ sku: variant.sku, name: product.name, unit: '' })));
+          .map((variant) => ({
+            sku: variant.sku,
+            name: product.name,
+            unit: '',
+            image: variant.image || product.images.find((item) => item.isPrimary)?.url || product.images[0]?.url || null,
+            categoryId: product.categoryId,
+            price: variant.finalPrice ?? variant.price,
+          })));
       },
       error: () => { this.productOptions = []; },
     });
@@ -284,6 +300,7 @@ export class ServiceCatalogEditorComponent {
   removeMaterial(key: number): void {
     this.materialsDirty = true;
     this.materials = this.materials.filter((line) => line.key !== key);
+    if (this.openMaterialKey() === key) this.openMaterialKey.set(null);
     this.markDirty();
   }
 
@@ -296,6 +313,29 @@ export class ServiceCatalogEditorComponent {
     line.sku = product?.sku ?? '';
     if (product && !line.unit) line.unit = product.unit;
     this.markDirty();
+  }
+
+  filteredMaterialOptions(line: MaterialLine): MaterialOption[] {
+    const term = line.query.trim().toLocaleLowerCase('vi');
+    return this.productOptions.filter((item) =>
+      !term || item.name.toLocaleLowerCase('vi').includes(term) || item.sku.toLocaleLowerCase('vi').includes(term)
+    ).slice(0, 20);
+  }
+
+  productCategoryLabel(id: string): string {
+    return this.productCategoryNames.get(id) || 'Chưa có danh mục';
+  }
+
+  chooseMaterial(line: MaterialLine, item: MaterialOption): void {
+    line.query = item.name;
+    line.sku = item.sku;
+    if (!line.unit) line.unit = item.unit;
+    this.openMaterialKey.set(null);
+    this.markMaterialDirty();
+  }
+
+  closeMaterialMenu(key: number): void {
+    if (this.openMaterialKey() === key) this.openMaterialKey.set(null);
   }
 
   toggleStatus(): void {
