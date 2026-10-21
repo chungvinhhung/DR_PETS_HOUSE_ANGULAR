@@ -43,6 +43,7 @@
             <span>Loại dịch vụ <b>*</b></span>
             <select [disabled]="!mayEdit" [ngModel]="category"
               (ngModelChange)="changeCategory($event)">
+              <option value="" disabled>Chọn loại dịch vụ</option>
               <option value="GROOMING">GROOMING</option>
               <option value="MEDICAL">MEDICAL</option>
             </select>
@@ -51,6 +52,7 @@
             <span>Hình thức đặt lịch <b>*</b></span>
             <select [disabled]="!mayEdit" [ngModel]="bookingMode"
               (ngModelChange)="changeBookingMode($event)">
+              <option value="" disabled>Chọn hình thức đặt lịch</option>
               <option value="BOOKABLE">BOOKABLE</option>
               <option value="REQUEST_ONLY">REQUEST_ONLY</option>
               <option value="CONTACT_ONLY">CONTACT_ONLY</option>
@@ -73,14 +75,15 @@
               <input type="number" min="1" max="1440" step="1"
                 [disabled]="!mayEdit"
                 [(ngModel)]="durationMinutes" (ngModelChange)="markDirty()"
-                placeholder="60"/>
+                placeholder="Nhập thời lượng"/>
             </label>
             <label class="service-editor__field">
               <span>Vai trò thực hiện <b>*</b></span>
               <select [disabled]="!mayEdit" [(ngModel)]="executorRole" (ngModelChange)="markDirty()">
-                <option value="CARE_STAFF_GROOMER">Nhân viên chăm sóc</option>
+                <option value="" disabled>Chọn vai trò thực hiện</option>
+                <option value="CARE_STAFF_GROOMER" [disabled]="category !== 'GROOMING'">Nhân viên chăm sóc</option>
                 <option value="NURSE" [disabled]="category !== 'MEDICAL'">Y tá</option>
-                <option value="VETERINARIAN">Bác sĩ thú y</option>
+                <option value="VETERINARIAN" [disabled]="category !== 'MEDICAL'">Bác sĩ thú y</option>
               </select>
             </label>
           </div>
@@ -134,12 +137,15 @@
                     </td>
                     <td>
                       <span class="service-editor__price-input">
-                        <input type="number" min="1" step="1000" [disabled]="!mayEdit || tier.mode === 'QUOTE'"
-                          [(ngModel)]="tier.price" (ngModelChange)="markPricingDirty()"
+                        <input type="text" inputmode="numeric" autocomplete="off" [disabled]="!mayEdit || tier.mode === 'QUOTE'"
+                          [value]="formatMoney(tier.price)" (input)="setTierPrice(tier, $any($event.target).value)"
                           [attr.aria-label]="'Giá cơ sở mức ' + tier.key"
                           [placeholder]="tier.mode === 'QUOTE' ? '—' : 'Nhập giá'"/>
                         @if (tier.mode === 'FIXED') { <span>đ</span> }
                       </span>
+                      @if (tier.mode === 'FIXED' && tier.price !== null) {
+                        <small class="service-editor__amount-words">{{ moneyWords(tier.price) }}</small>
+                      }
                     </td>
                   </tr>
                 }
@@ -177,9 +183,16 @@
                   <td><input type="number" min="0.01" step="0.01" [disabled]="!mayEdit"
                     [(ngModel)]="line.quantity" (ngModelChange)="markMaterialDirty()"
                     placeholder="Nhập số lượng" [attr.aria-label]="'Số lượng vật liệu dòng ' + ($index + 1)"/></td>
-                  <td><input type="text" maxlength="30" [disabled]="!mayEdit"
-                    [(ngModel)]="line.unit" (ngModelChange)="markMaterialDirty()"
-                    placeholder="Đơn vị" [attr.aria-label]="'Đơn vị vật liệu dòng ' + ($index + 1)"/></td>
+                  <td>
+                    <select [disabled]="!mayEdit" [(ngModel)]="line.unit" (ngModelChange)="markMaterialDirty()"
+                      [attr.aria-label]="'Đơn vị vật liệu dòng ' + ($index + 1)">
+                      <option value="" disabled>Chọn đơn vị</option>
+                      @if (line.unit && !materialUnits.includes($any(line.unit))) {
+                        <option [value]="line.unit">{{ line.unit }}</option>
+                      }
+                      @for (unit of materialUnits; track unit) { <option [value]="unit">{{ unit }}</option> }
+                    </select>
+                  </td>
                   <td class="service-editor__remove-cell">
                     @if (mayEdit) {
                       <button type="button" class="service-editor__remove" (click)="removeMaterial(line.key)"
