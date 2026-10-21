@@ -241,11 +241,7 @@
 
       <section class="service-editor__card" aria-labelledby="service-materials-title">
         <h2 id="service-materials-title">Vật liệu mặc định</h2>
-        <datalist id="service-product-options">
-          @for (product of productOptions; track product.sku) {
-            <option [value]="product.name">{{ product.sku }}</option>
-          }
-        </datalist>
+
         <div class="service-editor__table-scroll">
           <table class="service-editor__table service-editor__table--materials">
             <thead><tr>
@@ -260,9 +256,41 @@
                 <tr>
                   <td><input class="service-editor__readonly" [value]="line.sku" placeholder="SKU" readonly tabindex="-1" aria-label="Mã SKU đã chọn"/></td>
                   <td>
-                    <input type="text" list="service-product-options" [disabled]="!mayEdit"
-                      [ngModel]="line.query" (ngModelChange)="matchProduct(line, $event)"
-                      placeholder="Tìm SKU / tên sản phẩm..." [attr.aria-label]="'Tìm sản phẩm vật liệu dòng ' + ($index + 1)" />
+                    <div class="service-editor__product-combobox">
+                      <input type="text" role="combobox" autocomplete="off" [disabled]="!mayEdit"
+                        [attr.aria-expanded]="openMaterialKey() === line.key"
+                        [attr.aria-controls]="'service-material-results-' + line.key"
+                        [ngModel]="line.query" (focus)="openMaterialKey.set(line.key)"
+                        (input)="openMaterialKey.set(line.key)"
+                        (blur)="closeMaterialMenu(line.key)"
+                        (ngModelChange)="matchProduct(line, $event)"
+                        (keydown.escape)="openMaterialKey.set(null)"
+                        placeholder="Tìm SKU / tên sản phẩm..."
+                        [attr.aria-label]="'Tìm sản phẩm vật liệu dòng ' + ($index + 1)" />
+                      @if (mayEdit && openMaterialKey() === line.key) {
+                        <div class="service-editor__product-results" [id]="'service-material-results-' + line.key" role="listbox">
+                          @for (product of filteredMaterialOptions(line); track product.sku) {
+                            <button type="button" role="option" class="service-editor__product-option"
+                              (mousedown)="$event.preventDefault()"
+                              (click)="chooseMaterial(line, product)">
+                              @if (product.image) {
+                                <img class="service-editor__product-thumbnail" [src]="product.image"
+                                  alt="" loading="lazy" />
+                              } @else {
+                                <span class="service-editor__product-thumbnail service-editor__product-thumbnail--empty">Ảnh</span>
+                              }
+                              <span class="service-editor__product-description">
+                                <strong>{{ product.name }}</strong>
+                                <small>{{ product.sku }} · {{ productCategoryLabel(product.categoryId) }}</small>
+                              </span>
+                              <span class="service-editor__product-price">{{ formatMoney(product.price) }}đ</span>
+                            </button>
+                          } @empty {
+                            <p class="service-editor__product-empty">Không tìm thấy sản phẩm phù hợp.</p>
+                          }
+                        </div>
+                      }
+                    </div>
                   </td>
                   <td><input type="number" min="0.01" step="0.01" [disabled]="!mayEdit"
                     [(ngModel)]="line.quantity" (ngModelChange)="markMaterialDirty()"
