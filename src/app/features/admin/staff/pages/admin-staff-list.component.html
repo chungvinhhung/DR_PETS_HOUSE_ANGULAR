@@ -9,7 +9,7 @@
       <span class="staff-tab staff-tab--active" aria-current="page">Nhân viên</span>
       <a class="staff-tab" routerLink="/admin/staff/schedule">Lịch làm việc</a>
     </nav>
-    <section class="staff-panel">
+    <section class="staff-filter-panel" aria-label="Tìm kiếm và lọc nhân viên">
       <div class="staff-toolbar">
         <label class="staff-search">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.2 4.2"/></svg>
@@ -32,6 +32,8 @@
         </div>
         <a class="staff-add" routerLink="/admin/staff/new">+ Thêm nhân viên</a>
       </div>
+    </section>
+    <section class="staff-panel" aria-label="Danh sách nhân viên">
       <div class="staff-table-wrap"><table>
         <thead><tr><th>Mã nhân viên</th><th>Họ tên</th><th>Vai trò nghiệp vụ</th><th>Chi nhánh được phân công</th><th>Ca hôm nay</th><th>Trạng thái tài khoản</th><th>Thao tác</th></tr></thead>
         <tbody>
