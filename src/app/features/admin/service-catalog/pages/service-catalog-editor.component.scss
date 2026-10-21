@@ -801,3 +801,44 @@ app-service-catalog-editor {
 @media (min-width: 1101px) {
   .service-editor__table-scroll:has(.service-editor__product-combobox) { overflow: visible; }
 }
+
+/* Service detail: Figma 6599:28160 — preserve shared Admin shell. */
+.service-editor:has(.service-editor__detail-card) { padding:32px; }
+.service-editor:has(.service-editor__detail-card) .service-editor__header { margin-bottom:20px; }
+.service-editor:has(.service-editor__detail-card) .service-editor__header h1 {
+  font-size:22px; line-height:normal; letter-spacing:normal; color:#1b273b;
+}
+.service-editor__detail-card { display:flex; flex-direction:column; gap:14px; padding:22px; }
+.service-editor__detail-card h2 { margin:0; color:#1b273b; font-size:16px; font-weight:600; }
+.service-editor__detail-subtitle { margin:0; color:#66758c; font-size:13px; line-height:22px; }
+.service-editor__detail-badges { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.service-editor__detail-badge { width:max-content; border-radius:10px; padding:7px; font-weight:500; background:#e2f6eb; color:#187a52; }
+.service-editor__detail-badge--off { background:#f6f8fb; color:#66758c; }
+.service-editor__detail-mode { border-radius:10px; padding:7px; background:#fff5db; color:#965e12; font-size:12px; font-weight:500; }
+.service-editor__detail-metadata {
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:22px;
+  border-top:1px solid #dee5f0; padding-top:14px;
+}
+.service-editor__detail-metadata > div,
+.service-editor__detail-pricing-summary > div,
+.service-editor__detail-material-summary { display:flex; flex-direction:column; gap:6px; min-width:0; }
+.service-editor__detail-metadata span,
+.service-editor__detail-pricing span { color:#66758c; font-size:13px; }
+.service-editor__detail-metadata strong,
+.service-editor__detail-pricing strong { color:#1b273b; font-size:15px; font-weight:500; overflow-wrap:anywhere; }
+.service-editor__detail-pricing { display:grid; grid-template-columns:1fr 1fr; gap:32px; }
+.service-editor__detail-pricing-summary { display:flex; flex-direction:column; gap:11px; }
+.service-editor__detail-branch-row { display:flex; justify-content:space-between; align-items:center; min-height:54px; gap:16px; }
+.service-editor__detail-branch-row > div { display:flex; flex-direction:column; gap:5px; }
+.service-editor__detail-branch-row strong { color:#1b273b; font-size:13px; }
+.service-editor__detail-branch-row small { color:#6e8096; font-size:12px; }
+.service-editor__detail-config-link { display:grid; place-items:center; width:32px; height:32px; color:#0d47a1; border-radius:6px; }
+.service-editor__detail-config-link:hover { background:#eef5ff; }
+@media(max-width:760px) {
+  .service-editor__detail-metadata { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .service-editor__detail-pricing { grid-template-columns:1fr; }
+}
+@media(max-width:520px) {
+  .service-editor:has(.service-editor__detail-card) { padding:18px 12px; }
+  .service-editor__detail-metadata { grid-template-columns:1fr; }
+}
