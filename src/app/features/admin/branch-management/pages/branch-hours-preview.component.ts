@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import { AdminStaffWeekNavComponent } from '../../staff/components/admin-staff-week-nav.component';
 
 /** Slot figures are copied from the Figma illustration, not computed Backend availability. */
 interface SlotRow { label: string; booked: number; total: number; }
@@ -17,19 +18,19 @@ const DAY_TOTALS = [28,35,41,34,46,52,31];
 @Component({
   selector: 'app-branch-hours-preview',
   standalone: true,
+  imports: [AdminStaffWeekNavComponent],
   template: `
     <section class="branch-v2" aria-labelledby="branch-hours-heading">
       <div class="branch-v2__heading">
         <h2 id="branch-hours-heading">Lịch hoạt động</h2>
-        <div class="branch-v2__week-nav" aria-label="Điều hướng lịch">
-          <button type="button" aria-label="Tuần trước" (click)="moveWeek(-1)">‹</button>
-          <label class="branch-v2__date-control">
-            <span>{{ weekLabel() }}</span>
-            <input #calendarDate type="date" [value]="selectedDate()" (change)="chooseDate(calendarDate.value)" aria-label="Chọn ngày trong lịch" />
-          </label>
-          <button type="button" (click)="goToday()">Hôm nay</button>
-          <button type="button" aria-label="Tuần sau" (click)="moveWeek(1)">›</button>
-        </div>
+        <app-admin-staff-week-nav
+          [monday]="weekDays()[0].iso"
+          [label]="weekLabel()"
+          (previousWeek)="moveWeek(-1)"
+          (nextWeek)="moveWeek(1)"
+          (currentWeek)="goToday()"
+          (dateSelected)="chooseDate($event)">
+        </app-admin-staff-week-nav>
       </div>
 
       <div class="branch-v2__days" aria-label="Các ngày trong tuần">
