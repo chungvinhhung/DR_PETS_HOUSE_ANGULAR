@@ -200,8 +200,8 @@ export class ServiceCatalogListComponent {
     if (service.referencePrice !== null) {
       return this.vnd(service.referencePrice);
     }
-    // Without an explicit quote mode from the API, no price must not
-    // be misrepresented as an accepted fixed price or quote arrangement.
+    // Unmapped variants (including stale basePrice + []) are not confirmed fees.
+    if (service.pricingDataWarning) return 'Giá chưa đồng bộ';
     return service.bookingMode === 'CONTACT_ONLY'
       ? 'Báo giá sau tiếp nhận'
       : 'Chưa cấu hình giá';
