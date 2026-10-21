@@ -697,3 +697,37 @@ app-branch-management-page { display:block; font-family:Roboto,Arial,sans-serif;
 @media(max-width:650px){
   .branch-v2-page .branch-v2__heading app-admin-staff-week-nav{width:100%;}
 }
+
+
+/* Branch detail chevron and select spacing: match shared Admin controls. */
+.branch-v2-page__header h1.branch-v2-page__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.branch-v2-page__title-chevron {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  object-fit: contain;
+}
+.branch-v2-page .branch-v2-page__status-filter select {
+  padding-right: 48px;
+}
+.branch-v2-page .branch-v2-page__filter-chevron {
+  right: 16px;
+  width: 16px;
+  height: 16px;
+}
+.branch-v2-page .branch-v2-page__service-toolbar select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 42px;
+  background-color: #fff;
+  background-image: url('/assets/admin-product/icon-chevron-down.svg');
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
