@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { BranchServiceConfigDialogComponent } from '../../service-catalog/components/branch-service-config-dialog.component';
 import { CatalogBranch, CatalogService } from '../../service-catalog/models/service-catalog.model';
@@ -45,6 +46,7 @@ export class BranchManagementPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly repository = inject(ServiceCatalogMockRepository);
   private readonly session = inject(AuthSessionService);
+  private readonly toast = inject(AdminToastService);
 
   readonly isAdmin = this.session.user()?.systemRole === 'ADMIN';
   // Existing mock scope ONLY. Never use this frontend array as an authorization boundary.
@@ -106,11 +108,11 @@ export class BranchManagementPageComponent {
   }
   toggleService(service: CatalogService): void {
     if (service.status !== 'ACTIVE' || this.capacity(service) <= 0) {
-      this.feedback.set('Không thể bật dịch vụ đã ngừng hoặc sức chứa bằng 0.');
+      this.toast.show('Không thể bật dịch vụ đã ngừng hoặc sức chứa bằng 0.', 'error');
       return;
     }
     this.serviceOverrides.update((entries) => ({ ...entries, [service.id]: !this.isEnabled(service) }));
-    this.feedback.set('Đã đổi trạng thái trong bản xem trước. Chưa có API để lưu thay đổi vào Backend.');
+    this.toast.show('Đã đổi trạng thái trên giao diện thử nghiệm; chưa lưu lên hệ thống.', 'info');
   }
   openConfiguration(service: CatalogService): void {
     const updated = service.branchServices.map((row) =>
@@ -120,7 +122,7 @@ export class BranchManagementPageComponent {
   }
   closeConfiguration(): void { this.activeService.set(null); }
   showPending(action: string): void {
-    this.feedback.set(action + ' hiện chưa có API để thực hiện. Bản xem trước không lưu dữ liệu thật.');
+    this.toast.show(action + ': chưa có API, chưa thực hiện lưu dữ liệu.', 'info');
   }
   changeDate(value: string): void {
     if (/^\d{4}-\d{2}-\d{2}$/.test(value)) { this.viewDate.set(value); this.feedback.set(''); }
@@ -129,7 +131,7 @@ export class BranchManagementPageComponent {
     if (/^\d{2}:\d{2}$/.test(value)) { this.viewTime.set(value); this.feedback.set(''); }
   }
   refreshPreview(): void {
-    this.feedback.set('Thời điểm đã chọn: ' + this.viewDate() + ' ' + this.viewTime() + '. Khả dụng thực tế cần API từ Backend.');
+    this.toast.show('Đang xem ' + this.viewDate() + ' lúc ' + this.viewTime() + '. Chưa có API tính khả dụng.', 'info');
   }
   private isoLocal(d: Date): string {
     return [d.getFullYear(), String(d.getMonth()+1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
