@@ -9,6 +9,7 @@ import { CatalogBranch, CatalogService } from '../../service-catalog/models/serv
 import { ServiceCatalogMockRepository } from '../../service-catalog/services/service-catalog-mock.repository';
 import { BranchHoursPreviewComponent } from './branch-hours-preview.component';
 import { BranchShiftTemplatesPreviewComponent } from './branch-shift-templates-preview.component';
+import { BranchSettingsDialogComponent, BranchSettingsPreview } from './branch-settings-dialog.component';
 
 /**
  * Figma V2 branch screen (7353:38040 / 38072 / 38471 / 38870).
@@ -38,7 +39,7 @@ type BranchFilter = 'ALL' | 'ACTIVE' | 'INACTIVE';
 @Component({
   selector: 'app-branch-management-page',
   standalone: true,
-  imports: [RouterLink, AdminCatalogShellComponent, BranchServiceConfigDialogComponent, BranchHoursPreviewComponent, BranchShiftTemplatesPreviewComponent],
+  imports: [RouterLink, AdminCatalogShellComponent, BranchServiceConfigDialogComponent, BranchHoursPreviewComponent, BranchShiftTemplatesPreviewComponent, BranchSettingsDialogComponent],
   templateUrl: './branch-management-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -50,11 +51,21 @@ export class BranchManagementPageComponent {
 
   readonly isAdmin = this.session.user()?.systemRole === 'ADMIN';
   // Existing mock scope ONLY. Never use this frontend array as an authorization boundary.
-  readonly visibleBranches: readonly BranchRow[] = this.isAdmin
+  private readonly baseVisibleBranches: readonly BranchRow[] = this.isAdmin
     ? FIGMA_BRANCHES
     : FIGMA_BRANCHES.filter((row) => row.id === this.repository.branches[0]?.id);
+  readonly branchOverrides = signal<Record<string, BranchSettingsPreview>>({});
+  readonly branchSettingsOpen = signal<BranchRow | null>(null);
+  get visibleBranches(): readonly BranchRow[] {
+    return this.baseVisibleBranches.map((branch) => ({
+      ...branch,
+      ...this.branchOverrides()[branch.id],
+    }));
+  }
   readonly branchId = this.route.snapshot.paramMap.get('id');
-  readonly branch = this.visibleBranches.find((row) => row.id === this.branchId) ?? null;
+  get branch(): BranchRow | null {
+    return this.visibleBranches.find((row) => row.id === this.branchId) ?? null;
+  }
   readonly focusedServiceId = this.route.snapshot.queryParamMap.get('serviceId') ?? '';
   readonly search = signal('');
   readonly branchStatus = signal<BranchFilter>('ALL');
@@ -90,6 +101,17 @@ export class BranchManagementPageComponent {
   changePage(page: number): void { if (page > 0 && page <= this.pageCount) this.listPage.set(page); }
   setDetailTab(tab: Tab): void { this.detailTab.set(tab); this.feedback.set(''); }
   branchLink(item: BranchRow): string[] { return ['/admin/branches', item.id]; }
+  openBranchSettings(branch: BranchRow): void {
+    if (!this.isAdmin) {
+      this.toast.show('Chỉ Admin được chỉnh sửa thông tin chi nhánh.', 'error');
+      return;
+    }
+    this.branchSettingsOpen.set(branch);
+  }
+  closeBranchSettings(): void { this.branchSettingsOpen.set(null); }
+  saveBranchSettings(value: BranchSettingsPreview): void {
+    this.branchOverrides.update((state) => ({ ...state, [value.id]: value }));
+  }
   branchQueryParams(): Record<string, string> | null {
     return this.focusedServiceId ? { serviceId: this.focusedServiceId } : null;
   }
