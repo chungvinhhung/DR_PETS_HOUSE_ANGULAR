@@ -116,9 +116,9 @@ app-service-catalog-list {
 }
 
 .service-catalog__search {
-  flex: 0 0 335px;
-  width: 335px;
-  min-width: 335px;
+  flex: 0 0 430px;
+  width: 430px;
+  min-width: 430px;
   height: 40px;
   display: flex;
   align-items: center;
@@ -489,7 +489,7 @@ app-service-catalog-list {
 
 @media (max-width: 1200px) {
   .service-catalog__filters { flex-wrap: wrap; }
-  .service-catalog__search { flex: 0 1 335px; min-width: min(335px, 100%); }
+  .service-catalog__search { flex: 0 1 430px; min-width: min(430px, 100%); }
   .service-catalog__table-scroll { overflow-x: auto; }
 }
 .service-catalog__disclaimer {
