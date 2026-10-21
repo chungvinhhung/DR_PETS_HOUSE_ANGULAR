@@ -178,6 +178,17 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     this.errors.set([]);
   }
 
+  formatWindow(window: BlockedWindow): string {
+    const date = (stamp: string): string => stamp.slice(0, 10).split('-').reverse().join('/');
+    const startDate = date(window.start);
+    const endDate = date(window.end);
+    const startTime = window.start.slice(11, 16);
+    const endTime = window.end.slice(11, 16);
+    return startDate === endDate
+      ? startDate + ', ' + startTime + '–' + endTime
+      : startDate + ' ' + startTime + ' – ' + endDate + ' ' + endTime;
+  }
+
   private validWindow(start: string, end: string): boolean {
     const from = new Date(start).getTime();
     const to = new Date(end).getTime();
