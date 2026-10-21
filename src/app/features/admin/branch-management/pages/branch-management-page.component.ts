@@ -121,6 +121,13 @@ export class BranchManagementPageComponent {
   }
   @HostListener('document:keydown.escape')
   onEscape(): void { this.branchMenuOpen.set(false); }
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as Element | null;
+    if (this.branchMenuOpen() && !target?.closest('.branch-v2-page__branch-choice')) {
+      this.branchMenuOpen.set(false);
+    }
+  }
   openBranchSettings(branch: BranchRow): void {
     if (!this.isAdmin) {
       this.toast.show('Chỉ Admin được chỉnh sửa thông tin chi nhánh.', 'error');
