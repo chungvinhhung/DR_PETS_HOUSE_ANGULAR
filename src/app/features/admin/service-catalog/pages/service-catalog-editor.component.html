@@ -56,7 +56,7 @@
           <div class="service-editor__detail-grid">
             <div><span>Áp dụng giá theo cân nặng</span><strong>{{ weightPricing ? 'Có' : 'Không' }}</strong></div>
             <div><span>Giá cơ sở</span>
-              <strong>{{ service.minFixedTierPrice !== null ? 'Từ ' + formatMoney(service.minFixedTierPrice) + 'đ' : (service.referencePrice !== null ? formatMoney(service.referencePrice) + 'đ' : 'Chưa thiết lập giá') }}</strong>
+              <strong>{{ detailPriceLabel() }}</strong>
             </div>
           </div>
           @if (weightPricing) {
@@ -69,7 +69,7 @@
                       <td><strong>{{ tier.key }}</strong></td>
                       <td>{{ tier.weight }}</td>
                       <td>{{ tier.mode === 'QUOTE' ? 'Liên hệ báo giá' : 'Giá cố định' }}</td>
-                      <td>{{ tier.mode === 'QUOTE' ? '—' : formatMoney(tier.price) + 'đ' }}</td>
+                      <td>{{ tier.mode === 'QUOTE' || tier.price === null ? '—' : formatMoney(tier.price) + 'đ' }}</td>
                     </tr>
                   }
                 </tbody>
@@ -228,7 +228,7 @@
                         @if (tier.mode === 'FIXED') { <span>đ</span> }
                       </span>
                       @if (tier.mode === 'FIXED' && tier.price !== null) {
-                        <small class="service-editor__amount-words">{{ moneyWords(tier.price) }}</small>
+                        <span class="service-editor__amount-words">({{ moneyWords(tier.price) }})</span>
                       }
                     </td>
                   </tr>
