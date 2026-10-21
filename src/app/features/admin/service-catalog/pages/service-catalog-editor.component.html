@@ -23,10 +23,10 @@
     </header>
 
     @if (loading()) {
-      <div class="service-editor__error" role="status">Đang tải thông tin dịch vụ từ Backend...</div>
+      <div class="service-editor__error" role="status">Đang tải thông tin dịch vụ...</div>
     } @else if (missingService()) {
       <div class="service-editor__error" role="alert">
-        Không tải được dịch vụ từ Backend. Vui lòng thử lại hoặc kiểm tra quyền truy cập.
+        Không thể tải thông tin dịch vụ. Vui lòng thử lại.
         <a routerLink="/admin/services">Về danh mục</a>
       </div>
     } @else {
