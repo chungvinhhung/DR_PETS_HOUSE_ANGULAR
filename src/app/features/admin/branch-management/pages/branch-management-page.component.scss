@@ -861,3 +861,107 @@ app-branch-management-page { display:block; font-family:Roboto,Arial,sans-serif;
     font-size:23px;
   }
 }
+
+
+/*
+ * Figma V2 detail header — 7353:38078..38084
+ * Scope these rules to branch detail only; do not affect Staff or Branch List.
+ *
+ * Why this is explicit: the legacy `.branch-management button { font: inherit }`
+ * has greater specificity than the plain `.branch-v2-page__branch-choice-trigger`
+ * rule, so Chrome previously rendered the branch title as body-sized text.
+ */
+.branch-v2-page.branch-v2-page--detail {
+  padding: 32px;
+}
+.branch-v2-page--detail .branch-v2-page__breadcrumb--detail {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+  margin: 0 0 6px;
+  font: 400 12px/18px Roboto, Arial, sans-serif;
+}
+.branch-v2-page--detail .branch-v2-page__breadcrumb--detail strong {
+  font-weight: 500;
+  color: #202e45;
+}
+.branch-v2-page--detail .branch-v2-page__header--detail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  margin: 0 0 20px;
+  gap: 16px;
+}
+.branch-v2-page--detail button.branch-v2-page__branch-choice-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(0, 0, 0, .87);
+  font: 600 20px/28px Roboto, Arial, sans-serif;
+  letter-spacing: 0;
+  font-variation-settings: "wdth" 100;
+}
+.branch-v2-page--detail .branch-v2-page__branch-choice-trigger .branch-v2-page__title-chevron {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  margin-left: 0;
+  object-fit: contain;
+}
+.branch-v2-page--detail .branch-v2-page__header--detail .branch-v2-page__btn {
+  min-height: 40px;
+  font-size: 12px;
+}
+/* Figma detail tab labels use 13px Medium / 13px SemiBold (selected). */
+.branch-v2-page--detail .branch-v2-page__tabs {
+  margin-bottom: 20px;
+}
+.branch-v2-page--detail .branch-v2-page__tabs button {
+  min-height: 34px;
+  padding: 9px 12px;
+  border-bottom-width: 2px;
+  font: 500 13px/18px Roboto, Arial, sans-serif;
+}
+.branch-v2-page--detail .branch-v2-page__tabs .branch-v2-page__tab--active {
+  font-weight: 600;
+}
+/* Figma service card: 17px SemiBold heading and compact 12px controls. */
+.branch-v2-page--detail .branch-v2-page__detail-card h2 {
+  margin-bottom: 15px;
+  font: 600 17px/24px Roboto, Arial, sans-serif;
+}
+.branch-v2-page--detail .branch-v2-page__service-toolbar {
+  gap: 8px;
+  margin-bottom: 15px;
+  font-size: 12px;
+}
+.branch-v2-page--detail .branch-v2-page__service-toolbar :is(input, select) {
+  height: 36px;
+  font-size: 12px;
+}
+.branch-v2-page--detail .branch-v2-page__info span,
+.branch-v2-page--detail .branch-v2-page__inventory > div:not(.branch-v2-page__inventory-heading) span {
+  font-size: 10px;
+}
+.branch-v2-page--detail .branch-v2-page__info strong:not(.branch-v2-page__badge) {
+  font-size: 13px;
+}
+@media (max-width: 700px) {
+  .branch-v2-page.branch-v2-page--detail {
+    padding: 20px 12px;
+  }
+  .branch-v2-page--detail button.branch-v2-page__branch-choice-trigger {
+    font-size: 20px;
+    line-height: 28px;
+  }
+  .branch-v2-page--detail .branch-v2-page__header--detail {
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
