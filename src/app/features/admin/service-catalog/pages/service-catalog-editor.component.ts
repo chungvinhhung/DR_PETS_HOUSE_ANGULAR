@@ -17,6 +17,7 @@ import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-she
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { CatalogService, ServiceApiRecord, ServiceBookingMode, ServicePriceVariant, ServiceWrite } from '../models/service-catalog.model';
 import { ServiceCatalogApiService, serviceFromApi } from '../services/service-catalog-api.service';
+import { resolveServicePricing } from '../services/service-pricing.utils';
 import { AdminProductService } from '../../products/services/admin-product.service';
 import { AdminCategoryService } from '../../categories/services/admin-category.service';
 
@@ -63,6 +64,7 @@ export class ServiceCatalogEditorComponent {
   readonly missingService = signal(false);
   readonly saving = signal(false);
   private pricingDirty = false;
+  pricingDataWarning = false;
   private saveIdempotencyKey: string | null = null;
   get authSessionRole(): string | undefined {
     return this.authSession.user()?.systemRole ?? this.authSession.roles()[0];
@@ -146,22 +148,20 @@ export class ServiceCatalogEditorComponent {
     this.durationMinutes = raw.durationMinutes;
     this.executorRole = raw.requiredStaffRole;
     this.active = raw.status === 'ACTIVE';
-    const variants = raw.priceVariants ?? [];
-    this.weightPricing = variants.length > 0;
+    const pricing = resolveServicePricing(raw);
+    this.pricingDataWarning = pricing.hasUnmappedPricing;
+    this.weightPricing = pricing.weightPricing;
     this.priceTiers = TIER_WEIGHTS.map((t) => {
-      const found = variants.find((v) => v.label === t.key);
+      const price = pricing.fixedTiers.get(t.key);
       return {
         ...t,
-        mode: found ? 'FIXED' as const : 'QUOTE' as const,
-        price: found?.price ?? null,
+        mode: price !== undefined ? 'FIXED' as const : 'QUOTE' as const,
+        price: price ?? null,
       };
     });
-    if (!this.weightPricing) {
-      // An explicitly empty tier collection is not proof of a fixed fee.
-      // The current BE contract lacks the quote/fixed mode for this case.
-      const hasConfirmedBasePrice = raw.priceVariants == null && raw.basePrice > 0;
-      this.priceTiers[0].mode = hasConfirmedBasePrice ? 'FIXED' : 'QUOTE';
-      this.priceTiers[0].price = hasConfirmedBasePrice ? raw.basePrice : null;
+    if (!this.weightPricing && pricing.confirmedBasePrice !== null) {
+      this.priceTiers[0].mode = 'FIXED';
+      this.priceTiers[0].price = pricing.confirmedBasePrice;
     }
     // InventoryItem.materialId is NOT a Product SKU. Preserve existing
     // materials server-side and show them read-only until Inventory lookup is ready.
@@ -223,9 +223,11 @@ export class ServiceCatalogEditorComponent {
       .filter((tier) => tier.mode === 'FIXED' && tier.price !== null && tier.price > 0)
       .map((tier) => tier.price as number);
     if (prices.length) return (this.weightPricing ? 'Từ ' : '') + this.formatMoney(Math.min(...prices)) + 'đ';
-    return this.source?.referencePrice !== null && this.source?.referencePrice !== undefined
-      ? this.formatMoney(this.source.referencePrice) + 'đ'
-      : 'Chưa thiết lập giá';
+    if (this.source?.referencePrice !== null && this.source?.referencePrice !== undefined) {
+      return this.formatMoney(this.source.referencePrice) + 'đ';
+    }
+    if (this.pricingDataWarning) return 'Giá chưa đồng bộ';
+    return this.bookingMode === 'CONTACT_ONLY' ? 'Báo giá sau tiếp nhận' : 'Chưa cấu hình giá';
   }
 
   formatMoney(price: number | null): string {
@@ -345,6 +347,9 @@ export class ServiceCatalogEditorComponent {
 
   private validate(): string[] {
     const messages: string[] = [];
+    if (this.pricingDirty && this.pricingDataWarning) {
+      messages.push('Dữ liệu giá cũ chưa đồng bộ với các mức giá trên màn hình. Vui lòng xác nhận hợp đồng giá với Backend trước khi lưu thay đổi giá để tránh ghi đè.');
+    }
     if (this.serviceName.trim().length < 2 || this.serviceName.trim().length > 120) {
       messages.push('Tên dịch vụ phải có từ 2 đến 120 ký tự.');
     }
