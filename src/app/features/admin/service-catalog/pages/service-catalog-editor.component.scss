@@ -796,3 +796,8 @@ app-service-catalog-editor {
   .service-editor__product-results { width: max(100%, 300px); }
   .service-editor__product-price { font-size: 11px; }
 }
+
+/* Product suggestions must escape the materials table viewport on desktop. */
+@media (min-width: 1101px) {
+  .service-editor__table-scroll:has(.service-editor__product-combobox) { overflow: visible; }
+}
