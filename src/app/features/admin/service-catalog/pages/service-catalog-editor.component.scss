@@ -842,3 +842,15 @@ app-service-catalog-editor {
   .service-editor:has(.service-editor__detail-card) { padding:18px 12px; }
   .service-editor__detail-metadata { grid-template-columns:1fr; }
 }
+
+/* Price API compatibility warning: no phantom numeric price should appear. */
+.service-editor__pricing-warning {
+  margin: 0;
+  padding: 11px 14px;
+  border: 1px solid #efdcb2;
+  border-radius: 8px;
+  background: #fffbf1;
+  color: #825917;
+  font-size: 12px;
+  line-height: 1.5;
+}
