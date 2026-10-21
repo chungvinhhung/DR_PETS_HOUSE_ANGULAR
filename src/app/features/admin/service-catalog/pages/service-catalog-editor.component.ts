@@ -79,15 +79,17 @@ export class ServiceCatalogEditorComponent {
   private materialsDirty = false;
 
   serviceName = '';
-  category = 'GROOMING';
-  bookingMode: ServiceBookingMode = 'BOOKABLE';
+  // Create starts unselected; edit/view are hydrated from the API.
+  category = '';
+  bookingMode: ServiceBookingMode | '' = '';
   description = '';
-  durationMinutes: number | null = 60;
-  executorRole = 'CARE_STAFF_GROOMER';
+  durationMinutes: number | null = null;
+  executorRole = '';
   active = true;
-  weightPricing = true;
+  weightPricing = false;
+  readonly materialUnits = ['cái', 'chai', 'gói', 'hộp', 'lọ', 'viên', 'ml', 'l', 'g', 'kg'] as const;
   priceTiers: Tier[] = TIER_WEIGHTS.map((item) => ({
-    ...item, mode: 'FIXED', price: null,
+    ...item, mode: 'QUOTE', price: null,
   }));
   materials: MaterialLine[] = [];
   private nextMaterialKey = 1;
@@ -158,8 +160,6 @@ export class ServiceCatalogEditorComponent {
   }
 
   private errorLabel(error: HttpErrorResponse | AppHttpError): string {
-    const body = (error instanceof AppHttpError ? error.details : error.error) as
-      { message?: string; error?: { message?: string }; code?: string } | null;
     if (error.status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
     if (error.status === 403) return 'Tài khoản không có quyền thao tác danh mục dịch vụ.';
     if (error.status === 404) return 'Không tìm thấy dịch vụ.';
@@ -183,7 +183,8 @@ export class ServiceCatalogEditorComponent {
 
   changeCategory(category: string): void {
     this.category = category;
-    this.executorRole = category === 'GROOMING' ? 'CARE_STAFF_GROOMER' : 'VETERINARIAN';
+    // A role must be chosen explicitly and be valid for the selected service type.
+    this.executorRole = '';
     this.markDirty();
   }
 
@@ -191,6 +192,51 @@ export class ServiceCatalogEditorComponent {
     this.bookingMode = mode;
     // CONTACT_ONLY does not require a standard duration (business rule).
     this.markDirty();
+  }
+
+  formatMoney(price: number | null): string {
+    return price === null || !Number.isFinite(price) ? '' : new Intl.NumberFormat('vi-VN').format(price);
+  }
+
+  setTierPrice(tier: Tier, input: string): void {
+    const digits = input.replace(/[^0-9]/g, '');
+    tier.price = digits ? Number(digits) : null;
+    this.markPricingDirty();
+  }
+
+  moneyWords(price: number | null): string {
+    if (price === null || !Number.isSafeInteger(price) || price < 0) return '';
+    if (price === 0) return 'Không đồng';
+    const words = ['không', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+    const triple = (n: number, full: boolean): string => {
+      const h = Math.floor(n / 100), t = Math.floor(n / 10) % 10, u = n % 10;
+      const p: string[] = [];
+      if (h || full) p.push(words[h], 'trăm');
+      if (t >= 2) {
+        p.push(words[t], 'mươi');
+        if (u) p.push(u === 1 ? 'mốt' : u === 5 ? 'lăm' : words[u]);
+      } else if (t === 1) {
+        p.push('mười');
+        if (u) p.push(u === 5 ? 'lăm' : words[u]);
+      } else if (u) {
+        if (h || full) p.push('lẻ');
+        p.push(words[u]);
+      }
+      return p.join(' ');
+    };
+    const scales = ['', 'nghìn', 'triệu', 'tỷ'];
+    const chunks: number[] = [];
+    let rest = price;
+    while (rest > 0) { chunks.push(rest % 1000); rest = Math.floor(rest / 1000); }
+    if (chunks.length > scales.length) return '';
+    const out: string[] = [];
+    for (let i = chunks.length - 1; i >= 0; i--) {
+      if (!chunks[i]) continue;
+      out.push(triple(chunks[i], i < chunks.length - 1 && chunks[i] < 100));
+      if (scales[i]) out.push(scales[i]);
+    }
+    const result = out.join(' ') + ' đồng';
+    return result.charAt(0).toUpperCase() + result.slice(1);
   }
 
   setTierMode(tier: Tier, mode: PriceMode): void {
@@ -248,7 +294,8 @@ export class ServiceCatalogEditorComponent {
     if (!['BOOKABLE', 'REQUEST_ONLY', 'CONTACT_ONLY'].includes(this.bookingMode)) {
       messages.push('Vui lòng chọn hình thức đặt lịch.');
     }
-    if (!['CARE_STAFF_GROOMER', 'VETERINARIAN', 'NURSE'].includes(this.executorRole)) {
+    if ((this.category === 'GROOMING' && this.executorRole !== 'CARE_STAFF_GROOMER') ||
+      (this.category === 'MEDICAL' && !['VETERINARIAN', 'NURSE'].includes(this.executorRole))) {
       messages.push('Vai trò thực hiện không hợp lệ.');
     }
     if (this.bookingMode !== 'CONTACT_ONLY' &&
@@ -319,7 +366,7 @@ export class ServiceCatalogEditorComponent {
       serviceType: this.category as 'GROOMING' | 'MEDICAL',
       // BE category is an independent optional taxonomy field; don't overwrite it with serviceType.
       description: this.description.trim(),
-      bookingMode: this.bookingMode,
+      bookingMode: this.bookingMode as ServiceBookingMode,
       requiredStaffRole: this.executorRole as ServiceWrite['requiredStaffRole'],
       durationMinutes: this.bookingMode === 'CONTACT_ONLY' ? this.durationMinutes : this.durationMinutes!,
       status: this.active ? 'ACTIVE' : 'INACTIVE',
