@@ -25,6 +25,7 @@ type PriceMode = 'FIXED' | 'QUOTE';
 type Tier = { key: string; weight: string; mode: PriceMode; price: number | null };
 type MaterialOption = { sku: string; name: string; unit: string; image: string | null; categoryId: string; price: number };
 type MaterialLine = { key: number; sku: string; query: string; quantity: number | null; unit: string };
+type BranchDetailRow = { id: string; name: string; summary: string };
 const TIER_WEIGHTS = [
   { key: 'XS', weight: '< 5 kg' },
   { key: 'S', weight: '5 – < 10 kg' },
@@ -60,6 +61,9 @@ export class ServiceCatalogEditorComponent {
   readonly editorMode = (this.route.snapshot.data['editorMode'] ?? 'create') as 'create' | 'edit' | 'view';
   readonly serviceId = this.route.snapshot.paramMap.get('id');
   source: CatalogService | null = null;
+  readonly branchDetailRows = signal<readonly BranchDetailRow[]>([]);
+  readonly branchesLoading = signal(false);
+  readonly branchLoadError = signal('');
   readonly loading = signal(this.editorMode !== 'create');
   readonly missingService = signal(false);
   readonly saving = signal(false);
@@ -128,6 +132,7 @@ export class ServiceCatalogEditorComponent {
       ).subscribe({
         next: (raw) => {
           this.hydrate(raw);
+          if (this.editorMode === 'view') this.loadBranchDetailRows();
           this.loading.set(false);
         },
         error: (error: HttpErrorResponse | AppHttpError) => {
@@ -137,6 +142,65 @@ export class ServiceCatalogEditorComponent {
         },
       });
     }
+  }
+
+  /** Read-only branch cards: do not collapse every branch into aggregate counts.
+   * Branch names come from the BE branch scope. Individual config is displayed
+   * only if BE returns it for the selected service and branch. */
+  private loadBranchDetailRows(): void {
+    this.branchesLoading.set(true);
+    this.branchLoadError.set('');
+    this.repository.listBranchesForServiceDetail().pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: (branches) => {
+        this.branchDetailRows.set(branches.map((branch) => ({
+          id: branch.id,
+          name: branch.name,
+          summary: 'Đang tải cấu hình...',
+        })));
+        this.branchesLoading.set(false);
+        for (const branch of branches) {
+          this.repository.list({
+            search: this.serviceName,
+            branchId: branch.id,
+            mode: 'ALL',
+            status: 'ALL',
+            page: 1,
+            pageSize: 100,
+          }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+            next: (page) => {
+              const service = page.items.find((item) => item.id === this.serviceId);
+              const config = service?.branchServices.find((item) => item.branchId === branch.id);
+              if (!config) {
+                this.updateBranchSummary(branch.id, 'Chưa có dữ liệu cấu hình tại chi nhánh');
+                return;
+              }
+              const status = this.source?.status !== 'ACTIVE'
+                ? 'Chưa thể bật'
+                : config.enabled && config.capacity > 0 ? 'Đang bật' : 'Đang tắt';
+              const availability = service?.availabilityText ||
+                (this.bookingMode === 'CONTACT_ONLY' ? 'Liên hệ' : 'Khả dụng do Backend tính');
+              this.updateBranchSummary(
+                branch.id,
+                `${status} · Sức chứa ${config.capacity} · ${availability}`,
+              );
+            },
+            error: () => this.updateBranchSummary(branch.id, 'Chưa tải được cấu hình tại chi nhánh'),
+          });
+        }
+      },
+      error: () => {
+        this.branchesLoading.set(false);
+        this.branchLoadError.set('Không tải được danh sách chi nhánh. Vui lòng thử lại.');
+      },
+    });
+  }
+
+  private updateBranchSummary(id: string, summary: string): void {
+    this.branchDetailRows.update((rows) => rows.map((row) =>
+      row.id === id ? { ...row, summary } : row,
+    ));
   }
 
   private hydrate(raw: ServiceApiRecord): void {
