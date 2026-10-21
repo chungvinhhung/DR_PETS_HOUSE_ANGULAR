@@ -193,6 +193,7 @@
             </label>
             <button type="button" class="branch-v2-page__btn branch-v2-page__btn--outline" (click)="refreshPreview()">Làm mới</button>
           </div>
+          <p class="branch-v2-page__api-note">Cấu hình dịch vụ lấy từ Backend. Ngày/giờ đang chọn chưa dùng để tính slot thực tế; cần tích hợp thêm API /availability.</p>
           <div class="branch-v2-page__table-scroll branch-v2-page__table-scroll--services">
             <table class="branch-v2-page__table branch-v2-page__table--services">
               <thead><tr><th scope="col">Dịch vụ</th><th scope="col">Sức chứa đồng thời</th>
@@ -232,8 +233,10 @@
           </div>
         </section>
       } @else if (detailTab() === 'hours') {
+        <p class="branch-v2-page__api-note" role="status">Tab Lịch hoạt động hiện chỉ dùng dữ liệu minh họa từ Figma, chưa lấy dữ liệu khả dụng theo từng khung giờ từ Backend.</p>
         <app-branch-hours-preview />
       } @else {
+        <p class="branch-v2-page__api-note" role="status">Tab Ca làm việc hiện là dữ liệu mẫu Figma. Backend có /shifts để phân công nhân viên, nhưng chưa có API quản lý mẫu ca như giao diện này.</p>
         <app-branch-shift-templates-preview [branchName]="branch.name" />
       }
     }
