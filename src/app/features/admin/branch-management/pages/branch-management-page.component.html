@@ -89,7 +89,6 @@
           </nav>
         </footer>
       </section>
-      <p class="branch-v2-page__footnote">Đang dùng dữ liệu minh họa từ Figma, chưa kết nối API quản lý chi nhánh.</p>
     } @else {
       <nav class="branch-v2-page__breadcrumb" aria-label="Đường dẫn">
         <a routerLink="/admin/branches">Chi nhánh</a><span>›</span><strong aria-current="page">{{ branch.name }}</strong>
@@ -177,7 +176,6 @@
               </tbody>
             </table>
           </div>
-          <p class="branch-v2-page__footnote">Số chỗ khả dụng trong bảng là dữ liệu minh họa Figma, không phải giá trị tính từ Backend. Thay đổi trạng thái chỉ có hiệu lực trên trang đang mở.</p>
         </section>
       } @else if (detailTab() === 'hours') {
         <app-branch-hours-preview />
