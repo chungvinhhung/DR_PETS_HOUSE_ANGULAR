@@ -540,12 +540,12 @@ export class ServiceCatalogEditorComponent {
     if (this.dirty() && this.mayEdit) {
       this.showCancelConfirmation.set(true);
     } else {
-      void this.router.navigateByUrl('/admin/services');
+      this.back();
     }
   }
 
   confirmCancel(): void {
     this.showCancelConfirmation.set(false);
-    void this.router.navigateByUrl('/admin/services');
+    this.back();
   }
 }
