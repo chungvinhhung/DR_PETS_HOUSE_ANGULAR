@@ -56,6 +56,11 @@ export class BranchManagementPageComponent {
     : FIGMA_BRANCHES.filter((row) => row.id === this.repository.branches[0]?.id);
   readonly branchOverrides = signal<Record<string, BranchSettingsPreview>>({});
   readonly branchSettingsOpen = signal<BranchRow | null>(null);
+  readonly servicePickerBranch = signal<BranchRow | null>(null);
+  readonly configuredServiceBranch = signal<BranchRow | null>(null);
+  get pickerServices(): readonly CatalogService[] {
+    return this.loadBranchServices(this.servicePickerBranch());
+  }
   get visibleBranches(): readonly BranchRow[] {
     return this.baseVisibleBranches.map((branch) => ({
       ...branch,
@@ -109,6 +114,15 @@ export class BranchManagementPageComponent {
     this.branchSettingsOpen.set(branch);
   }
   closeBranchSettings(): void { this.branchSettingsOpen.set(null); }
+  openServicePicker(branch: BranchRow): void { this.servicePickerBranch.set(branch); }
+  closeServicePicker(): void { this.servicePickerBranch.set(null); }
+  configurePickedService(service: CatalogService): void {
+    const branch = this.servicePickerBranch();
+    if (!branch) return;
+    this.configuredServiceBranch.set(branch);
+    this.activeService.set(service);
+    this.servicePickerBranch.set(null);
+  }
   saveBranchSettings(value: BranchSettingsPreview): void {
     this.branchOverrides.update((state) => ({ ...state, [value.id]: value }));
   }
@@ -141,9 +155,13 @@ export class BranchManagementPageComponent {
     const updated = service.branchServices.map((row) =>
       row.branchId === this.branch?.id ? { ...row, enabled: this.isEnabled(service) } : row,
     );
+    if (this.branch) this.configuredServiceBranch.set(this.branch);
     this.activeService.set({ ...service, branchServices: updated });
   }
-  closeConfiguration(): void { this.activeService.set(null); }
+  closeConfiguration(): void {
+    this.activeService.set(null);
+    this.configuredServiceBranch.set(null);
+  }
   showPending(action: string): void {
     this.toast.show(action + ': chưa có API, chưa thực hiện lưu dữ liệu.', 'info');
   }
@@ -159,9 +177,9 @@ export class BranchManagementPageComponent {
   private isoLocal(d: Date): string {
     return [d.getFullYear(), String(d.getMonth()+1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
   }
-  private loadBranchServices(): readonly CatalogService[] {
-    if (!this.branch) return [];
-    if (this.branch.id === 'demo-q1') {
+  private loadBranchServices(branch: BranchRow | null = this.branch): readonly CatalogService[] {
+    if (!branch) return [];
+    if (branch.id === 'demo-q1') {
       const configurations = [
         { id: 'demo-1', capacity: 5, enabled: true },
         { id: 'demo-3', capacity: 2, enabled: true },
@@ -175,14 +193,14 @@ export class BranchManagementPageComponent {
           ...service,
           name: id === 'demo-3' ? 'Khám tổng quát' : service.name,
           branchServices: [
-            ...service.branchServices.filter((item) => item.branchId !== this.branch!.id),
-            { branchId: this.branch!.id, capacity, enabled, availability: 'BY_SHIFT' as const },
+            ...service.branchServices.filter((item) => item.branchId !== branch.id),
+            { branchId: branch.id, capacity, enabled, availability: 'BY_SHIFT' as const },
           ],
         }];
       });
     }
     return this.repository.getAll().filter((service) =>
-      service.branchServices.some((row) => row.branchId === this.branch!.id),
+      service.branchServices.some((row) => row.branchId === branch.id),
     );
   }
 }
