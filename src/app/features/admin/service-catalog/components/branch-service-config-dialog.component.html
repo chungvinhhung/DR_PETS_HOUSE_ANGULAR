@@ -9,7 +9,7 @@
           {{ service.name }} @if (selectedBranch) { · {{ selectedBranch.name }} }
         </p>
       </div>
-      <button type="button" class="branch-config__close" aria-label="Đóng cấu hình"
+      <button type="button" class="branch-config__close" [disabled]="saving" aria-label="Đóng cấu hình"
         (click)="requestClose()">×</button>
     </header>
 
@@ -117,10 +117,10 @@
       </div>
     } @else {
       <footer class="branch-config__footer">
-        <button type="button" class="branch-config__button branch-config__button--outline" (click)="requestClose()">Hủy</button>
-        <button type="button" class="branch-config__button branch-config__button--primary" (click)="validatePreview()">Lưu cấu hình</button>
+        <button type="button" class="branch-config__button branch-config__button--outline" [disabled]="saving" (click)="requestClose()">Hủy</button>
+        <button type="button" class="branch-config__button branch-config__button--primary" [disabled]="saving" (click)="validatePreview()">{{ saving ? 'Đang lưu...' : 'Lưu cấu hình' }}</button>
       </footer>
     }
-    <p class="branch-config__demo-note">Dữ liệu tạm khóa minh họa từ Figma V2. Tất cả thay đổi chỉ để xem trước, chưa ghi lên Backend.</p>
+    <p class="branch-config__demo-note">Bật/tắt dịch vụ và sức chứa sẽ được lưu lên Backend. BE chưa hỗ trợ tạm khóa theo ngày giờ; nếu thêm khoảng tạm khóa, hệ thống sẽ từ chối lưu và thông báo lý do.</p>
   </section>
 </div>
