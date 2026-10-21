@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, HostListener, Input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { inject } from '@angular/core';
+import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 
 interface ShiftTemplatePreview {
   id: string;
@@ -130,6 +132,7 @@ const SAMPLE_SHIFTS: ShiftTemplatePreview[] = [
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BranchShiftTemplatesPreviewComponent {
+  private readonly toast = inject(AdminToastService);
   @Input() branchName = 'Chi nhánh';
 
   readonly weekdays = [
@@ -208,7 +211,7 @@ export class BranchShiftTemplatesPreviewComponent {
     this.items.update((items) => this.editingId()
       ? items.map((item) => item.id === id ? entry : item)
       : [...items, entry]);
-    this.feedback.set('Đã cập nhật ca làm việc trên giao diện demo. Chưa lưu vào Backend; tải lại trang sẽ khôi phục dữ liệu mẫu.');
+    this.toast.show('Đã sửa ca trên giao diện demo. Chưa lưu vào Backend.', 'info');
     this.closeEditor();
   }
 
