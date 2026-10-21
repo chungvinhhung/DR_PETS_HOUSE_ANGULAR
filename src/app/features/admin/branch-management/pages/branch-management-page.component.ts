@@ -81,6 +81,7 @@ export class BranchManagementPageComponent {
     return this.filteredBranches.slice((this.listPage() - 1) * this.pageSize, this.listPage() * this.pageSize);
   }
   updateSearch(value: string): void { this.search.set(value); this.listPage.set(1); }
+  clearFilters(): void { this.search.set(''); this.branchStatus.set('ALL'); this.listPage.set(1); }
   updateBranchStatus(value: string): void {
     if (value !== 'ALL' && value !== 'ACTIVE' && value !== 'INACTIVE') return;
     this.branchStatus.set(value);
