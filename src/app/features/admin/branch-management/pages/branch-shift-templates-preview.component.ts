@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, HostListener, Input, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 interface ShiftTemplatePreview {
   id: string;
@@ -18,6 +19,7 @@ const SAMPLE_SHIFTS: ShiftTemplatePreview[] = [
 @Component({
   selector: 'app-branch-shift-templates-preview',
   standalone: true,
+  imports: [RouterLink],
   template: `
     <section class="branch-management__panel branch-v2" aria-labelledby="branch-shift-heading">
       <div class="branch-v2__heading">
