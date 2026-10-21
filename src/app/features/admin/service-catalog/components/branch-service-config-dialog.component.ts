@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { CatalogBranch, CatalogService } from '../models/service-catalog.model';
 
 interface BlockedWindow {
@@ -35,6 +36,7 @@ interface BlockedWindow {
 })
 export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit {
   private readonly session = inject(AuthSessionService);
+  private readonly toast = inject(AdminToastService);
 
   @Input({ required: true }) service!: CatalogService;
   @Input({ required: true }) branches: readonly CatalogBranch[] = [];
@@ -175,10 +177,12 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     const reason = this.blockReason().trim();
     if (!reason) {
       this.errors.set(['Vui lòng nhập lý do tạm khóa.']);
+      this.toast.show('Vui lòng nhập lý do tạm khóa.', 'error');
       return;
     }
     if (!this.validWindow(start, end)) {
       this.errors.set(['Khoảng tạm khóa phải có ngày/giờ kết thúc sau ngày/giờ bắt đầu.']);
+      this.toast.show('Ngày/giờ tạm khóa không hợp lệ.', 'error');
       return;
     }
     const first = new Date(start).getTime();
@@ -235,12 +239,11 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     }
     this.errors.set(errors);
     if (errors.length) {
+      this.toast.show(errors[0], 'error');
       this.feedback.set('');
       return;
     }
-    this.feedback.set(
-      'Dữ liệu hợp lệ (bản xem trước). Không có thay đổi nào được lưu vào Backend.',
-    );
+    this.toast.show('Cấu hình đã được kiểm tra; chưa kết nối API lưu.', 'info');
   }
 
   requestClose(): void {
