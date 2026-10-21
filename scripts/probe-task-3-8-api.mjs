@@ -6,6 +6,7 @@
  *
  * No authorization credentials, POST/PATCH/DELETE requests, or resource writes.
  * Only lists Swagger/OpenAPI route names if a public spec is available.
+ * Checks a small number of Staff/Shift GET route candidates; no private data is logged.
  */
 const base = (process.env.API_BASE_URL || 'https://pet-clinic-backend-a4lj.onrender.com/api/v1')
   .replace(/\/+$/, '');
@@ -20,6 +21,18 @@ const candidates = [
   { label: 'API OpenAPI JSON', url: base + '/openapi.json' },
   { label: 'API docs', url: base + '/docs' },
   { label: 'API health', url: base + '/health' },
+  // Route existence checks (GET, unauthenticated, no response data logged).
+  // 401/403 suggests authentication gates, NOT proof of a valid endpoint.
+  { label: 'Known account users control', url: base + '/admin/users' },
+  { label: 'Staff list candidate', url: base + '/admin/staff' },
+  { label: 'Staff alternate candidate', url: base + '/staff' },
+  { label: 'Staff plural candidate', url: base + '/staffs' },
+  { label: 'Employees candidate', url: base + '/admin/employees' },
+  { label: 'Shift list candidate', url: base + '/admin/shifts' },
+  { label: 'Shift alternate candidate', url: base + '/shifts' },
+  { label: 'Schedule candidate', url: base + '/admin/schedules' },
+  { label: 'Shift template candidate', url: base + '/admin/shift-templates' },
+  { label: 'Shift templates alternate', url: base + '/shift-templates' },
 ];
 
 function isStaffPath(path) {
