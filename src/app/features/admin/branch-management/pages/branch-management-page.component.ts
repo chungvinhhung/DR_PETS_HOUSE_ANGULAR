@@ -130,7 +130,7 @@ export class BranchManagementPageComponent {
   }
   get pickerServices(): readonly CatalogService[] {
     const branchId = this.servicePickerBranch()?.id;
-    return branchId && branchId === this.branchId ? this.branchServices : [];
+    return branchId ? this.branchServices : [];
   }
   get branchServices(): readonly CatalogService[] {
     return this.serviceViews().map((row) => row.service);
@@ -165,7 +165,7 @@ export class BranchManagementPageComponent {
       next: (rows) => {
         this.branchRows.set(rows.map((row) => this.fromApi(row)));
         this.branchListLoading.set(false);
-        // Counts are not returned by GET /branches; do not invent them.
+        this.fetchEnabledCountsForVisibleBranches();
       },
       error: () => {
         this.branchListLoading.set(false);
@@ -173,6 +173,22 @@ export class BranchManagementPageComponent {
       },
     });
   }
+  private fetchEnabledCountsForVisibleBranches(): void {
+    // BE GET /branches does not include enabledServiceCount.
+    // Only actual GET service-configs results may populate this column.
+    for (const row of this.visibleBranches) {
+      this.api.listServiceConfigs(row.id).pipe(
+        catchError(() => of(null)),
+        takeUntilDestroyed(this.destroyRef),
+      ).subscribe((configs) => {
+        if (!configs) return;
+        const enabledCount = configs.filter((config) => config.enabled).length;
+        this.branchRows.update((all) => all.map((branch) =>
+          branch.id === row.id ? { ...branch, enabledServiceCount: enabledCount } : branch));
+      });
+    }
+  }
+
   private fetchDetail(id: string): void {
     this.detailLoading.set(true);
     this.detailError.set('');
@@ -375,6 +391,10 @@ export class BranchManagementPageComponent {
         } : row));
         this.savingConfig.set(false);
         this.closeConfiguration();
+        this.branchRows.update((all) => all.map((branch) => branch.id === branchId ? {
+          ...branch,
+          enabledServiceCount: this.serviceViews().filter((row) => row.config?.enabled).length,
+        } : branch));
         this.toast.show('Cấu hình dịch vụ đã lưu vào Backend.', 'success');
       },
       error: () => {
