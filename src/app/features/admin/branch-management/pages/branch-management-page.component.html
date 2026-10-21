@@ -35,8 +35,16 @@
         </p>
       }
 
+      <section class="branch-management__list-tools" aria-label="Bộ lọc chi nhánh">
+        <label class="branch-management__search">
+          <span class="branch-management__sr-only">Tìm chi nhánh</span>
+          <input #branchSearchInput type="search" placeholder="Tìm chi nhánh..." [value]="branchSearch()"
+            (input)="branchSearch.set(branchSearchInput.value)" />
+        </label>
+        <span>{{ filteredBranches.length }} chi nhánh</span>
+      </section>
       <section class="branch-management__grid" aria-label="Danh sách chi nhánh">
-        @for (item of visibleBranches; track item.id) {
+        @for (item of filteredBranches; track item.id) {
           <article class="branch-management__branch-card">
             <div class="branch-management__branch-icon" aria-hidden="true"><img src="/assets/admin-product/icon-operations.svg" alt=""/></div>
             <div>
@@ -50,6 +58,8 @@
               </a>
             </div>
           </article>
+        } @empty {
+          <p class="branch-management__empty">Không tìm thấy chi nhánh phù hợp.</p>
         }
       </section>
     } @else {
@@ -66,6 +76,18 @@
         <div><span>Phân quyền</span><strong>{{ isAdmin ? 'ADMIN' : 'MANAGER' }}</strong></div>
       </section>
 
+      <nav class="branch-management__tabs" aria-label="Nội dung chi nhánh">
+        <button type="button" [class.branch-management__tab--active]="detailTab() === 'services'"
+          [attr.aria-current]="detailTab() === 'services' ? 'page' : null"
+          (click)="setDetailTab('services')">Dịch vụ &amp; Capacity</button>
+        <button type="button" [class.branch-management__tab--active]="detailTab() === 'hours'"
+          [attr.aria-current]="detailTab() === 'hours' ? 'page' : null"
+          (click)="setDetailTab('hours')">Lịch hoạt động</button>
+        <button type="button" [class.branch-management__tab--active]="detailTab() === 'shifts'"
+          [attr.aria-current]="detailTab() === 'shifts' ? 'page' : null"
+          (click)="setDetailTab('shifts')">Ca làm việc</button>
+      </nav>
+      @if (detailTab() === 'services') {
       <section class="branch-management__panel" aria-labelledby="branch-service-heading">
         <div class="branch-management__panel-header">
           <div>
@@ -77,6 +99,14 @@
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#66758C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"></circle><path d="m16 16 4.2 4.2"></path></svg>
             <input #branchServiceSearch type="search" placeholder="Tìm tên hoặc mã dịch vụ..."
               [value]="search()" (input)="updateSearch(branchServiceSearch.value)" />
+          </label>
+          <label class="branch-management__filter">
+            <span>Trạng thái dịch vụ</span>
+            <select #serviceStatusSelect [value]="serviceStatus()" (change)="setServiceStatus(serviceStatusSelect.value)">
+              <option value="ALL">Tất cả</option>
+              <option value="ENABLED">Đang bật</option>
+              <option value="DISABLED">Đang tắt</option>
+            </select>
           </label>
         </div>
 
@@ -123,6 +153,20 @@
           </nav>
         </footer>
       </section>
+      } @else if (detailTab() === 'hours') {
+        <section class="branch-management__panel branch-management__placeholder" aria-labelledby="branch-hours-heading">
+          <h2 id="branch-hours-heading">Lịch hoạt động &amp; sức chứa</h2>
+          <p>Lịch hoạt động và số chỗ trống phải được Backend tính từ giờ mở cửa, ca nhân viên, thời lượng dịch vụ, capacity, lịch hẹn và các khoảng tạm khóa.</p>
+          <p class="branch-management__notice">Chưa có API khả dụng theo ngày/khung giờ. Màn này chưa thể hiển thị lịch hoặc cho phép điều chỉnh slot thủ công.</p>
+        </section>
+      } @else {
+        <section class="branch-management__panel branch-management__placeholder" aria-labelledby="branch-shift-heading">
+          <h2 id="branch-shift-heading">Ca làm việc tại chi nhánh</h2>
+          <p>Ca làm việc phải gắn với chi nhánh và nhân viên được phân công, đồng thời kiểm tra lịch trùng trên toàn bộ chi nhánh.</p>
+          <p class="branch-management__notice">Chưa có API quản lý mẫu ca và phân công ca theo chi nhánh. Không thể lưu hoặc sửa ca tại màn này.</p>
+          <a class="branch-management__button branch-management__button--outline" routerLink="/admin/staff/schedule">Xem lịch làm việc nhân viên</a>
+        </section>
+      }
     }
   </main>
 </app-admin-catalog-shell>
