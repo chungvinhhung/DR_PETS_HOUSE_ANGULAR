@@ -20,7 +20,7 @@
         <tr><td>{{ day }}</td><td>@for (shift of otherShifts(day); track $index) { <div class="assign-existing">{{ shift.shiftName }} · {{ shift.time }} · {{ shift.branch }}</div> } @empty { — }</td>
         <td>@for (shift of shiftsFor(day); track shift) { <div class="assign-draft">{{ shift.template }} · {{ shift.start }}–{{ shift.end }} · {{ shift.branch }} <button type="button" (click)="remove(shift)" aria-label="Bỏ ca trong bản nháp">×</button></div> } @empty { — }</td>
         <td><div class="assign-controls"><select #branch [attr.aria-label]="'Chi nhánh ngày '+day"><option value="">Chi nhánh</option>@for (item of branches(); track item) { <option [value]="item">{{ item }}</option> }</select>
-        <select #template [attr.aria-label]="'Mẫu ca ngày '+day"><option value="">Mẫu ca</option>@for (item of options(branch.value); track item.name) { <option [value]="item.name">{{ item.name }} · {{ item.start }}–{{ item.end }}</option> }</select>
+        <select #template [attr.aria-label]="'Ca làm ngày '+day"><option value="">Ca làm</option>@for (item of options(branch.value); track item.name) { <option [value]="item.name">{{ item.name }} · {{ item.start }}–{{ item.end }}</option> }</select>
         <button type="button" (click)="add(day,branch.value,template.value)">+ Thêm</button></div></td></tr>
       }</tbody></table></div>
     }
