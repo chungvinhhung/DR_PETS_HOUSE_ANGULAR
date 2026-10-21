@@ -251,6 +251,7 @@
       [service]="service"
       [branches]="[configBranch]"
       [initialBranchId]="configBranch.id"
+      [initialBlockedWindows]="currentBlockedWindows"
       (previewSaved)="applyServiceConfiguration($event)"
       (dismiss)="closeConfiguration()" />
   }
