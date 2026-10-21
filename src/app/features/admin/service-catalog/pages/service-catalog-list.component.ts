@@ -238,10 +238,11 @@ export class ServiceCatalogListComponent {
       return;
     }
     if (action === 'edit' && !this.isAdmin()) return;
-    void this.router.navigateByUrl(
+    void this.router.navigate(
       action === 'edit'
-        ? '/admin/services/' + encodeURIComponent(service.id) + '/edit'
-        : '/admin/services/' + encodeURIComponent(service.id),
+        ? ['/admin/services', service.id, 'edit']
+        : ['/admin/services', service.id],
+      { queryParams: { returnTo: '/admin/services' } },
     );
   }
 
