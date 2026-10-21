@@ -37,7 +37,9 @@ export function serviceFromApi(raw: ServiceApiRecord, branchId = 'ALL'): Catalog
     bookingMode: raw.bookingMode,
     durationMinutes: raw.durationMinutes,
     status: raw.status,
-    referencePrice: fixed.length ? null : raw.basePrice > 0 ? raw.basePrice : null,
+    // A leftover basePrice cannot prove that a service with an explicitly
+    // empty priceVariants array has a configured numeric price.
+    referencePrice: fixed.length ? null : raw.priceVariants == null && raw.basePrice > 0 ? raw.basePrice : null,
     minFixedTierPrice: fixed.length ? Math.min(...fixed) : null,
     branchServices: branch,
     enabledBranchCount: raw.enabledBranchCount,
