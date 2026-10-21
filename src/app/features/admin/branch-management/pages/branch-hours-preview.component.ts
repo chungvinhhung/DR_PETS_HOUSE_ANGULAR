@@ -42,9 +42,7 @@ const DAY_TOTALS = [28,35,41,34,46,52,31];
         }
       </div>
 
-      <div class="branch-v2__preview-note" role="status">
-        Bảng ngày 01/10/2026 là dữ liệu mẫu từ Figma để kiểm tra giao diện, không phải số liệu đặt lịch thật. Những ngày khác cần API khả dụng của Backend.
-      </div>
+      
 
       <div class="branch-v2__table-scroll">
         <table class="branch-v2__monitor">
@@ -73,12 +71,13 @@ const DAY_TOTALS = [28,35,41,34,46,52,31];
                   </div>
                 </td>
                 <td><button type="button" class="branch-v2__eye"
-                  (click)="showSlotInfo(slot)" [attr.aria-label]="'Xem khung giờ ' + slot.label" title="Xem chi tiết">◉</button></td>
+                  (click)="showSlotInfo(slot)" [attr.aria-label]="'Xem khung giờ ' + slot.label" title="Xem chi tiết"><img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="" /></button></td>
               </tr>
             }
           </tbody>
         </table>
       </div>
+      <p class="branch-v2__demo-caption">Dữ liệu tháng 10/2026 minh họa theo Figma; số chỗ thực tế phải do Backend tính.</p>
       @if (selectedSlot(); as slot) {
         <div class="branch-v2__overlay" role="presentation" (click)="closeSlot()">
           <section class="branch-v2__modal branch-v2__slot-modal" role="dialog" aria-modal="true" aria-labelledby="branch-slot-modal"
