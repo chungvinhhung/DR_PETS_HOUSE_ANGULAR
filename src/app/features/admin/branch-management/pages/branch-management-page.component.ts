@@ -43,6 +43,26 @@ export class BranchManagementPageComponent {
       service.id === this.focusedServiceId) / this.pageSize) + 1,
   ));
   readonly search = signal('');
+  readonly branchSearch = signal('');
+  readonly serviceStatus = signal<'ALL' | 'ENABLED' | 'DISABLED'>('ALL');
+  readonly detailTab = signal<'services' | 'hours' | 'shifts'>('services');
+
+  get filteredBranches(): readonly CatalogBranch[] {
+    const q = this.branchSearch().trim().toLocaleLowerCase('vi');
+    return this.visibleBranches.filter((branch) =>
+      !q || branch.name.toLocaleLowerCase('vi').includes(q),
+    );
+  }
+
+  setServiceStatus(value: string): void {
+    if (value !== 'ALL' && value !== 'ENABLED' && value !== 'DISABLED') return;
+    this.serviceStatus.set(value);
+    this.page.set(1);
+  }
+
+  setDetailTab(tab: 'services' | 'hours' | 'shifts'): void {
+    this.detailTab.set(tab);
+  }
   readonly activeService = signal<CatalogService | null>(null);
 
   get pageTitle(): string {
@@ -51,11 +71,16 @@ export class BranchManagementPageComponent {
 
   get filteredServices(): readonly CatalogService[] {
     const q = this.search().trim().toLocaleLowerCase('vi');
-    if (!q) return this.allServices;
-    return this.allServices.filter((service) =>
-      service.name.toLocaleLowerCase('vi').includes(q) ||
-      service.serviceCode.toLocaleLowerCase('vi').includes(q),
-    );
+    return this.allServices.filter((service) => {
+      const matchesText = !q ||
+        service.name.toLocaleLowerCase('vi').includes(q) ||
+        service.serviceCode.toLocaleLowerCase('vi').includes(q);
+      const enabled = this.branch ? this.isEnabled(service, this.branch.id) : false;
+      const matchesStatus = this.serviceStatus() === 'ALL' ||
+        (this.serviceStatus() === 'ENABLED' && enabled) ||
+        (this.serviceStatus() === 'DISABLED' && !enabled);
+      return matchesText && matchesStatus;
+    });
   }
 
   get pagedServices(): readonly CatalogService[] {
