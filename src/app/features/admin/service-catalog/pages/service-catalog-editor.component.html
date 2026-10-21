@@ -31,32 +31,36 @@
       </div>
     } @else {
       @if (editorMode === 'view' && source; as service) {
-        <section class="service-editor__card service-editor__detail-card" aria-labelledby="service-detail-general">
-          <div class="service-editor__detail-heading">
-            <h2 id="service-detail-general">Cấu hình dịch vụ</h2>
+        <section class="service-editor__card service-editor__detail-card service-editor__detail-card--summary" aria-labelledby="service-detail-general">
+          <h2 id="service-detail-general">{{ serviceName }}</h2>
+          <p class="service-editor__detail-subtitle">{{ service.serviceCode || '—' }} · Dịch vụ {{ category }} · {{ description || 'Chưa có mô tả' }}</p>
+          <div class="service-editor__detail-badges">
             <span class="service-editor__detail-badge" [class.service-editor__detail-badge--off]="!active">
               {{ active ? 'Đang hoạt động' : 'Tạm ngưng' }}
             </span>
+            <span class="service-editor__detail-mode">{{ bookingMode }}</span>
           </div>
-          <div class="service-editor__detail-grid">
-            <div><span>Mã dịch vụ</span><strong>{{ service.serviceCode || '—' }}</strong></div>
-            <div><span>Tên dịch vụ</span><strong>{{ serviceName }}</strong></div>
+          <div class="service-editor__detail-metadata">
             <div><span>Loại dịch vụ</span><strong>{{ category }}</strong></div>
-            <div><span>Hình thức đặt lịch</span><strong>{{ bookingMode }}</strong></div>
-            <div><span>Thời lượng</span><strong>{{ durationMinutes === null ? '—' : durationMinutes + ' phút' }}</strong></div>
+            <div><span>Booking mode</span><strong>{{ bookingMode }}</strong></div>
+            <div><span>Thời lượng chuẩn</span><strong>{{ durationMinutes === null ? '—' : durationMinutes + ' phút' }}</strong></div>
             <div><span>Vai trò thực hiện</span><strong>{{ executorRoleLabel() }}</strong></div>
-          </div>
-          <div class="service-editor__detail-description">
-            <span>Mô tả dịch vụ</span>
-            <p>{{ description || 'Chưa có mô tả.' }}</p>
           </div>
         </section>
         <section class="service-editor__card service-editor__detail-card" aria-labelledby="service-detail-pricing">
-          <h2 id="service-detail-pricing">Giá &amp; cấu hình thu phí</h2>
-          <div class="service-editor__detail-grid">
-            <div><span>Áp dụng giá theo cân nặng</span><strong>{{ weightPricing ? 'Có' : 'Không' }}</strong></div>
-            <div><span>Giá cơ sở</span>
-              <strong>{{ detailPriceLabel() }}</strong>
+          <h2 id="service-detail-pricing">Giá &amp; vật liệu mặc định</h2>
+          <div class="service-editor__detail-pricing">
+            <div class="service-editor__detail-pricing-summary">
+              <div><span>Giá tham khảo</span><strong>{{ detailPriceLabel() }}</strong></div>
+              <div><span>Định giá theo cân nặng</span><strong>{{ weightPricing ? 'Có áp dụng' : 'Không áp dụng' }}</strong></div>
+            </div>
+            <div class="service-editor__detail-material-summary">
+              <span>Vật liệu mặc định</span>
+              @if (materials.length) {
+                <strong>{{ materials.length }} vật liệu trong cấu hình</strong>
+              } @else {
+                <strong>Không có template vật tư cố định</strong>
+              }
             </div>
           </div>
           @if (weightPricing) {
@@ -65,20 +69,14 @@
                 <thead><tr><th>Mức</th><th>Cân nặng</th><th>Hình thức thu phí</th><th>Giá cơ sở (VNĐ)</th></tr></thead>
                 <tbody>
                   @for (tier of priceTiers; track tier.key) {
-                    <tr>
-                      <td><strong>{{ tier.key }}</strong></td>
-                      <td>{{ tier.weight }}</td>
+                    <tr><td><strong>{{ tier.key }}</strong></td><td>{{ tier.weight }}</td>
                       <td>{{ tier.mode === 'QUOTE' ? 'Liên hệ báo giá' : 'Giá cố định' }}</td>
-                      <td>{{ tier.mode === 'QUOTE' || tier.price === null ? '—' : formatMoney(tier.price) + 'đ' }}</td>
-                    </tr>
+                      <td>{{ tier.mode === 'QUOTE' || tier.price === null ? '—' : formatMoney(tier.price) + 'đ' }}</td></tr>
                   }
                 </tbody>
               </table>
             </div>
           }
-        </section>
-        <section class="service-editor__card service-editor__detail-card" aria-labelledby="service-detail-materials">
-          <h2 id="service-detail-materials">Vật liệu mặc định</h2>
           @if (materials.length) {
             <div class="service-editor__table-scroll service-editor__detail-table">
               <table class="service-editor__table service-editor__table--materials">
@@ -90,7 +88,27 @@
                 </tbody>
               </table>
             </div>
-          } @else {
+          }
+        </section>
+        <section class="service-editor__card service-editor__detail-card" aria-labelledby="service-detail-branches">
+          <h2 id="service-detail-branches">Áp dụng tại chi nhánh</h2>
+          @if (!active) {
+            <p class="service-editor__detail-empty">Dịch vụ đang tạm ngưng nên chưa thể kích hoạt tại các chi nhánh.</p>
+          }
+          <div class="service-editor__detail-branch-row">
+            <div>
+              <strong>Chi nhánh áp dụng</strong>
+              <small>{{ service.enabledBranchCount ?? '—' }} / {{ service.totalBranchCount ?? '—' }} chi nhánh đang bật · {{ service.availabilityText || 'Khả dụng do Backend tính' }}</small>
+            </div>
+            <a routerLink="/admin/branches" class="service-editor__detail-config-link" aria-label="Cấu hình dịch vụ theo chi nhánh" title="Cấu hình tại chi nhánh">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3.5 14 4.1l1.2 1.8 2.1.2 1.5 1.6-.2 2.1 1.7 1.3v2l-1.7 1.3.2 2.1-1.5 1.6-2.1.2-1.2 1.8-2 .6-2-.6-1.2-1.8-2.1-.2-1.5-1.6.2-2.1L3.7 13v-2l1.7-1.3-.2-2.1 1.5-1.6 2.1-.2L10 4.1Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </a>
+          </div>
+        </section>
+      } @else {
             <p class="service-editor__detail-empty">Không có vật liệu mặc định.</p>
           }
         </section>
@@ -227,9 +245,7 @@
                           [placeholder]="tier.mode === 'QUOTE' ? '—' : 'Nhập giá'"/>
                         @if (tier.mode === 'FIXED') { <span>đ</span> }
                       </span>
-                      @if (tier.mode === 'FIXED' && tier.price !== null) {
-                        <span class="service-editor__amount-words">({{ moneyWords(tier.price) }})</span>
-                      }
+
                     </td>
                   </tr>
                 }
