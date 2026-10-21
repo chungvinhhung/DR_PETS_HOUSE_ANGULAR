@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
@@ -8,12 +8,32 @@ import { CatalogBranch, CatalogService } from '../../service-catalog/models/serv
 import { ServiceCatalogMockRepository } from '../../service-catalog/services/service-catalog-mock.repository';
 import { BranchHoursPreviewComponent } from './branch-hours-preview.component';
 import { BranchShiftTemplatesPreviewComponent } from './branch-shift-templates-preview.component';
-import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagination';
 
 /**
- * WBS 3.7: branch-scoped Service & Capacity UI preview.
- * All branches and services are illustrative; BE must enforce real assignedBranches.
+ * Figma V2 branch screen (7353:38040 / 38072 / 38471 / 38870).
+ * Records below reproduce the Figma prototype and are NOT Backend data.
+ * TODO(BE): replace fixtures + Manager scope with branch-management APIs.
  */
+interface BranchRow extends CatalogBranch {
+  address: string;
+  hotline: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  enabledServiceCount: number;
+  inventory?: { total: number; low: number; out: number };
+}
+const FIGMA_BRANCHES: readonly BranchRow[] = [
+  { id: 'preview-q10', name: 'Chi nhánh Quận 10', address: '123 Đường Ba Tháng Hai, P.11, Q.10', hotline: '', status: 'ACTIVE', enabledServiceCount: 12 },
+  { id: 'preview-binhthanh', name: 'Chi nhánh Bình Thạnh', address: '456 Điện Biên Phủ, P.25, Bình Thạnh', hotline: '', status: 'ACTIVE', enabledServiceCount: 10 },
+  { id: 'demo-q1', name: 'Chi nhánh Quận 1', address: '15 Lê Duẩn, Bến Nghé, Quận 1, TP. Hồ Chí Minh', hotline: '0281111222', status: 'ACTIVE', enabledServiceCount: 9, inventory: { total: 245, low: 8, out: 3 } },
+  { id: 'demo-q7', name: 'Chi nhánh Quận 7', address: '105 Nguyễn Văn Linh, Tân Phú, Q.7', hotline: '', status: 'ACTIVE', enabledServiceCount: 8 },
+  { id: 'preview-govap', name: 'Chi nhánh Gò Vấp', address: '800 Quang Trung, P.8, Gò Vấp', hotline: '', status: 'ACTIVE', enabledServiceCount: 11 },
+  { id: 'preview-tanbinh', name: 'Chi nhánh Tân Bình', address: '300 Cộng Hòa, P.13, Tân Bình', hotline: '', status: 'ACTIVE', enabledServiceCount: 7 },
+  { id: 'preview-thuduc', name: 'Chi nhánh Thủ Đức', address: '50 Võ Văn Ngân, Bình Thọ, Thủ Đức', hotline: '', status: 'ACTIVE', enabledServiceCount: 6 },
+  { id: 'demo-q3', name: 'Chi nhánh Quận 3', address: 'Chưa có thông tin địa chỉ (demo)', hotline: '', status: 'ACTIVE', enabledServiceCount: 0 },
+];
+type Tab = 'services' | 'hours' | 'shifts';
+type BranchFilter = 'ALL' | 'ACTIVE' | 'INACTIVE';
+
 @Component({
   selector: 'app-branch-management-page',
   standalone: true,
@@ -23,129 +43,120 @@ import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagi
 })
 export class BranchManagementPageComponent {
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly repository = inject(ServiceCatalogMockRepository);
   private readonly session = inject(AuthSessionService);
 
   readonly isAdmin = this.session.user()?.systemRole === 'ADMIN';
-  readonly visibleBranches: readonly CatalogBranch[] = this.isAdmin
-    ? this.repository.branches
-    : this.repository.branches.slice(0, 1); // Demo only; use BE scope in production.
-
+  // Existing mock scope ONLY. Never use this frontend array as an authorization boundary.
+  readonly visibleBranches: readonly BranchRow[] = this.isAdmin
+    ? FIGMA_BRANCHES
+    : FIGMA_BRANCHES.filter((row) => row.id === this.repository.branches[0]?.id);
   readonly branchId = this.route.snapshot.paramMap.get('id');
-  readonly branch = this.visibleBranches.find((item) => item.id === this.branchId) ?? null;
-  readonly focusedServiceId = this.route.snapshot.queryParamMap.get('serviceId') || '';
-  readonly focusedService = this.repository.getById(this.focusedServiceId);
-  readonly allServices = this.repository.getAll();
-  readonly pageSize = ADMIN_TABLE_PAGE_SIZE;
-  // Preserve the service selected from Catalog, including when it is on page 2+.
-  readonly page = signal(Math.max(
-    1,
-    Math.floor(this.allServices.findIndex((service) =>
-      service.id === this.focusedServiceId) / this.pageSize) + 1,
-  ));
+  readonly branch = this.visibleBranches.find((row) => row.id === this.branchId) ?? null;
+  readonly focusedServiceId = this.route.snapshot.queryParamMap.get('serviceId') ?? '';
   readonly search = signal('');
-  readonly branchSearch = signal('');
-  readonly serviceStatus = signal<'ALL' | 'ENABLED' | 'DISABLED'>('ALL');
-  readonly detailTab = signal<'services' | 'hours' | 'shifts'>('services');
+  readonly branchStatus = signal<BranchFilter>('ALL');
+  readonly listPage = signal(1);
+  readonly pageSize = 7;
+  readonly detailTab = signal<Tab>('services');
+  readonly viewDate = signal(this.isoLocal(new Date()));
+  readonly viewTime = signal('10:00');
+  readonly feedback = signal('');
+  readonly activeService = signal<CatalogService | null>(null);
+  readonly serviceOverrides = signal<Record<string, boolean>>({});
 
-  get filteredBranches(): readonly CatalogBranch[] {
-    const q = this.branchSearch().trim().toLocaleLowerCase('vi');
-    return this.visibleBranches.filter((branch) =>
-      !q || branch.name.toLocaleLowerCase('vi').includes(q),
+  readonly branchServices: readonly CatalogService[] = this.loadBranchServices();
+
+  get filteredBranches(): readonly BranchRow[] {
+    const q = this.search().trim().toLocaleLowerCase('vi');
+    return this.visibleBranches.filter((row) =>
+      (this.branchStatus() === 'ALL' || row.status === this.branchStatus()) &&
+      (!q || [row.name, row.address, row.hotline].some((text) => text.toLocaleLowerCase('vi').includes(q))),
     );
   }
-
-  setServiceStatus(value: string): void {
-    if (value !== 'ALL' && value !== 'ENABLED' && value !== 'DISABLED') return;
-    this.serviceStatus.set(value);
-    this.page.set(1);
+  get pageCount(): number { return Math.max(1, Math.ceil(this.filteredBranches.length / this.pageSize)); }
+  get pagedBranches(): readonly BranchRow[] {
+    return this.filteredBranches.slice((this.listPage() - 1) * this.pageSize, this.listPage() * this.pageSize);
   }
-
-  setDetailTab(tab: 'services' | 'hours' | 'shifts'): void {
-    this.detailTab.set(tab);
+  updateSearch(value: string): void { this.search.set(value); this.listPage.set(1); }
+  updateBranchStatus(value: string): void {
+    if (value !== 'ALL' && value !== 'ACTIVE' && value !== 'INACTIVE') return;
+    this.branchStatus.set(value);
+    this.listPage.set(1);
   }
-  readonly activeService = signal<CatalogService | null>(null);
-
-  get pageTitle(): string {
-    return this.branch?.name ?? 'Chi nhánh';
-  }
-
-  get filteredServices(): readonly CatalogService[] {
-    const q = this.search().trim().toLocaleLowerCase('vi');
-    return this.allServices.filter((service) => {
-      const matchesText = !q ||
-        service.name.toLocaleLowerCase('vi').includes(q) ||
-        service.serviceCode.toLocaleLowerCase('vi').includes(q);
-      const enabled = this.branch ? this.isEnabled(service, this.branch.id) : false;
-      const matchesStatus = this.serviceStatus() === 'ALL' ||
-        (this.serviceStatus() === 'ENABLED' && enabled) ||
-        (this.serviceStatus() === 'DISABLED' && !enabled);
-      return matchesText && matchesStatus;
-    });
-  }
-
-  get pagedServices(): readonly CatalogService[] {
-    const start = (this.page() - 1) * this.pageSize;
-    return this.filteredServices.slice(start, start + this.pageSize);
-  }
-
-  get pageCount(): number {
-    return Math.max(1, Math.ceil(this.filteredServices.length / this.pageSize));
-  }
-
-  updateSearch(value: string): void {
-    this.search.set(value);
-    this.page.set(1);
-  }
-
-  setPage(page: number): void {
-    if (page >= 1 && page <= this.pageCount) this.page.set(page);
-  }
-
-  get hasFocusedService(): boolean {
-    return !!this.focusedService;
-  }
-
-  canNavigateToBranch(item: CatalogBranch): boolean {
-    return this.visibleBranches.some((branch) => branch.id === item.id);
-  }
-
-  branchLink(branch: CatalogBranch): string[] {
-    return ['/admin/branches', branch.id];
-  }
-
+  changePage(page: number): void { if (page > 0 && page <= this.pageCount) this.listPage.set(page); }
+  setDetailTab(tab: Tab): void { this.detailTab.set(tab); this.feedback.set(''); }
+  branchLink(item: BranchRow): string[] { return ['/admin/branches', item.id]; }
   branchQueryParams(): Record<string, string> | null {
     return this.focusedServiceId ? { serviceId: this.focusedServiceId } : null;
   }
-
-  getEnabledCount(branch: CatalogBranch): number {
-    return this.allServices.filter((service) => this.isEnabled(service, branch.id)).length;
+  isEnabled(service: CatalogService): boolean {
+    const fallback = service.branchServices.find((row) => row.branchId === this.branch?.id)?.enabled ?? false;
+    return service.status === 'ACTIVE' && (this.serviceOverrides()[service.id] ?? fallback);
   }
-
-  config(service: CatalogService, branchId: string): { capacity: number; enabled: boolean } {
-    const entry = service.branchServices.find((item) => item.branchId === branchId);
-    return {
-      capacity: entry?.capacity ?? 0,
-      enabled: !!entry?.enabled,
-    };
+  capacity(service: CatalogService): number {
+    return service.branchServices.find((row) => row.branchId === this.branch?.id)?.capacity ?? 0;
   }
-
-  isEnabled(service: CatalogService, branchId: string): boolean {
-    const config = this.config(service, branchId);
-    return service.status === 'ACTIVE' && config.enabled && config.capacity > 0;
+  previewAvailability(service: CatalogService): string {
+    if (!this.isEnabled(service)) return '0 (đã tắt)';
+    if (this.branch?.id !== 'demo-q1') return '—';
+    const values: Record<string, number> = { 'demo-1': 2, 'demo-3': 1, 'demo-7': 0 };
+    const value = values[service.id];
+    return value === undefined ? '—' : 'Còn ' + value + ' ca';
   }
-
+  toggleService(service: CatalogService): void {
+    if (service.status !== 'ACTIVE' || this.capacity(service) <= 0) {
+      this.feedback.set('Không thể bật dịch vụ đã ngừng hoặc sức chứa bằng 0.');
+      return;
+    }
+    this.serviceOverrides.update((entries) => ({ ...entries, [service.id]: !this.isEnabled(service) }));
+    this.feedback.set('Đã đổi trạng thái trong bản xem trước. Chưa có API để lưu thay đổi vào Backend.');
+  }
   openConfiguration(service: CatalogService): void {
-    if (!this.branch) return;
-    this.activeService.set(service);
+    const updated = service.branchServices.map((row) =>
+      row.branchId === this.branch?.id ? { ...row, enabled: this.isEnabled(service) } : row,
+    );
+    this.activeService.set({ ...service, branchServices: updated });
   }
-
-  closeConfiguration(): void {
-    this.activeService.set(null);
+  closeConfiguration(): void { this.activeService.set(null); }
+  showPending(action: string): void {
+    this.feedback.set(action + ' hiện chưa có API để thực hiện. Bản xem trước không lưu dữ liệu thật.');
   }
-
-  returnToCatalog(): void {
-    void this.router.navigateByUrl('/admin/services');
+  changeDate(value: string): void {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) { this.viewDate.set(value); this.feedback.set(''); }
+  }
+  changeTime(value: string): void {
+    if (/^\d{2}:\d{2}$/.test(value)) { this.viewTime.set(value); this.feedback.set(''); }
+  }
+  refreshPreview(): void {
+    this.feedback.set('Thời điểm đã chọn: ' + this.viewDate() + ' ' + this.viewTime() + '. Khả dụng thực tế cần API từ Backend.');
+  }
+  private isoLocal(d: Date): string {
+    return [d.getFullYear(), String(d.getMonth()+1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+  }
+  private loadBranchServices(): readonly CatalogService[] {
+    if (!this.branch) return [];
+    if (this.branch.id === 'demo-q1') {
+      const configurations = [
+        { id: 'demo-1', capacity: 5, enabled: true },
+        { id: 'demo-3', capacity: 2, enabled: true },
+        { id: 'demo-7', capacity: 3, enabled: true },
+        { id: 'demo-4', capacity: 2, enabled: false },
+      ];
+      return configurations.flatMap(({ id, capacity, enabled }) => {
+        const service = this.repository.getById(id);
+        if (!service) return [];
+        return [{
+          ...service,
+          branchServices: [
+            ...service.branchServices.filter((item) => item.branchId !== this.branch!.id),
+            { branchId: this.branch!.id, capacity, enabled, availability: 'BY_SHIFT' as const },
+          ],
+        }];
+      });
+    }
+    return this.repository.getAll().filter((service) =>
+      service.branchServices.some((row) => row.branchId === this.branch!.id),
+    );
   }
 }
