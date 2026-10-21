@@ -131,8 +131,11 @@
         <div><span>Hotline</span><strong>{{ branch.hotline || '—' }}</strong></div>
         <div><span>Trạng thái</span><strong class="branch-v2-page__badge">{{ branch.status === 'ACTIVE' ? 'Đang hoạt động' : 'Ngừng hoạt động' }}</strong></div>
         @if (isAdmin) {
-          <button class="branch-v2-page__btn branch-v2-page__btn--outline branch-v2-page__info-edit" type="button"
-            (click)="openBranchSettings(branch)">Chỉnh sửa</button>
+          <button type="button" class="branch-v2-page__icon-action branch-v2-page__info-edit"
+            [attr.aria-label]="'Chỉnh sửa ' + branch.name" title="Chỉnh sửa chi nhánh"
+            (click)="openBranchSettings(branch)">
+            <img src="/assets/admin-staff/icon-edit.svg" width="20" height="20" alt="" />
+          </button>
         }
       </section>
 
@@ -143,8 +146,11 @@
         <div><span>Tổng mặt hàng</span><strong>{{ branch.inventory?.total ?? '—' }}</strong></div>
         <div><span>Sắp hết</span><strong class="branch-v2-page__warning">{{ branch.inventory?.low ?? '—' }}</strong></div>
         <div><span>Hết hàng</span><strong class="branch-v2-page__danger">{{ branch.inventory?.out ?? '—' }}</strong></div>
-        <button type="button" class="branch-v2-page__btn branch-v2-page__btn--outline"
-          (click)="showPending('Xem tồn kho chi nhánh')">Xem tồn kho</button>
+        <button type="button" class="branch-v2-page__icon-action branch-v2-page__inventory-eye"
+          [attr.aria-label]="'Xem tồn kho tại ' + branch.name" title="Xem tồn kho"
+          (click)="showPending('Xem tồn kho chi nhánh')">
+          <img src="/assets/admin-branch/figma-eye.svg" width="24" height="24" alt="" />
+        </button>
       </section>
 
       <nav class="branch-v2-page__tabs" aria-label="Nội dung chi nhánh">
