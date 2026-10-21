@@ -30,6 +30,80 @@
         <a routerLink="/admin/services">Về danh mục</a>
       </div>
     } @else {
+      @if (editorMode === 'view' && source; as service) {
+        <section class="service-editor__card service-editor__detail-card" aria-labelledby="service-detail-general">
+          <div class="service-editor__detail-heading">
+            <h2 id="service-detail-general">Cấu hình dịch vụ</h2>
+            <span class="service-editor__detail-badge" [class.service-editor__detail-badge--off]="!active">
+              {{ active ? 'Đang hoạt động' : 'Tạm ngưng' }}
+            </span>
+          </div>
+          <div class="service-editor__detail-grid">
+            <div><span>Mã dịch vụ</span><strong>{{ service.serviceCode || '—' }}</strong></div>
+            <div><span>Tên dịch vụ</span><strong>{{ serviceName }}</strong></div>
+            <div><span>Loại dịch vụ</span><strong>{{ category }}</strong></div>
+            <div><span>Hình thức đặt lịch</span><strong>{{ bookingMode }}</strong></div>
+            <div><span>Thời lượng</span><strong>{{ durationMinutes === null ? '—' : durationMinutes + ' phút' }}</strong></div>
+            <div><span>Vai trò thực hiện</span><strong>{{ executorRoleLabel() }}</strong></div>
+          </div>
+          <div class="service-editor__detail-description">
+            <span>Mô tả dịch vụ</span>
+            <p>{{ description || 'Chưa có mô tả.' }}</p>
+          </div>
+        </section>
+        <section class="service-editor__card service-editor__detail-card" aria-labelledby="service-detail-pricing">
+          <h2 id="service-detail-pricing">Giá &amp; cấu hình thu phí</h2>
+          <div class="service-editor__detail-grid">
+            <div><span>Áp dụng giá theo cân nặng</span><strong>{{ weightPricing ? 'Có' : 'Không' }}</strong></div>
+            <div><span>Giá cơ sở</span>
+              <strong>{{ service.minFixedTierPrice !== null ? 'Từ ' + formatMoney(service.minFixedTierPrice) + 'đ' : (service.referencePrice !== null ? formatMoney(service.referencePrice) + 'đ' : 'Chưa thiết lập giá') }}</strong>
+            </div>
+          </div>
+          @if (weightPricing) {
+            <div class="service-editor__table-scroll service-editor__detail-table">
+              <table class="service-editor__table service-editor__table--prices">
+                <thead><tr><th>Mức</th><th>Cân nặng</th><th>Hình thức thu phí</th><th>Giá cơ sở (VNĐ)</th></tr></thead>
+                <tbody>
+                  @for (tier of priceTiers; track tier.key) {
+                    <tr>
+                      <td><strong>{{ tier.key }}</strong></td>
+                      <td>{{ tier.weight }}</td>
+                      <td>{{ tier.mode === 'QUOTE' ? 'Liên hệ báo giá' : 'Giá cố định' }}</td>
+                      <td>{{ tier.mode === 'QUOTE' ? '—' : formatMoney(tier.price) + 'đ' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+        <section class="service-editor__card service-editor__detail-card" aria-labelledby="service-detail-materials">
+          <h2 id="service-detail-materials">Vật liệu mặc định</h2>
+          @if (materials.length) {
+            <div class="service-editor__table-scroll service-editor__detail-table">
+              <table class="service-editor__table service-editor__table--materials">
+                <thead><tr><th>Mã vật liệu</th><th>Tên vật liệu</th><th>Số lượng mặc định</th><th>Đơn vị</th></tr></thead>
+                <tbody>
+                  @for (line of materials; track line.key) {
+                    <tr><td>{{ line.sku }}</td><td>{{ line.query }}</td><td>{{ line.quantity ?? '—' }}</td><td>{{ line.unit || '—' }}</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <p class="service-editor__detail-empty">Không có vật liệu mặc định.</p>
+          }
+        </section>
+        <section class="service-editor__card service-editor__detail-card" aria-labelledby="service-detail-branches">
+          <h2 id="service-detail-branches">Áp dụng tại chi nhánh</h2>
+          <div class="service-editor__detail-grid">
+            <div><span>Chi nhánh đang bật</span><strong>{{ service.enabledBranchCount ?? '—' }} / {{ service.totalBranchCount ?? '—' }}</strong></div>
+            <div><span>Khả dụng</span><strong>{{ service.availabilityText || 'Chưa có thông tin' }}</strong></div>
+          </div>
+          <p class="service-editor__detail-empty">Cấu hình chi tiết của từng chi nhánh xem tại trang Quản lý chi nhánh.</p>
+          <a class="service-editor__btn service-editor__btn--secondary" routerLink="/admin/branches">Xem chi nhánh →</a>
+        </section>
+      } @else {
       <section class="service-editor__card" aria-labelledby="service-basic-title">
         <h2 id="service-basic-title">Thông tin cơ bản</h2>
         <div class="service-editor__fields service-editor__fields--three">
@@ -220,7 +294,7 @@
         <a class="service-editor__btn service-editor__btn--secondary"
           routerLink="/admin/branches">Đi đến quản lý chi nhánh →</a>
       </section>
-
+      }
     }
   </main>
 </app-admin-catalog-shell>
