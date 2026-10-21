@@ -625,3 +625,19 @@ app-branch-management-page { display:block; font-family:Roboto,Arial,sans-serif;
 .branch-v2-page__info span {font-size:12px;}
 .branch-v2-page__inventory strong:not(.branch-v2-page__warning,.branch-v2-page__danger){color:#1b273b;}
 .branch-v2-page__switch-row {font-size:13px;}
+
+
+/* Phase 2 panels use the same table header treatment as Staff list. */
+.branch-v2-page__table--services thead th,
+.branch-v2-page .branch-v2__monitor thead th,
+.branch-v2-page .branch-v2__shifts thead th {
+  background:#f1f5f9;
+  color:#475569;
+  font-weight:500;
+  font-size:12px;
+}
+.branch-v2-page .branch-v2__shifts tbody td,
+.branch-v2-page .branch-v2__monitor tbody td,
+.branch-v2-page__table--services tbody td {
+  border-bottom:1px solid #e2e8f0;
+}
