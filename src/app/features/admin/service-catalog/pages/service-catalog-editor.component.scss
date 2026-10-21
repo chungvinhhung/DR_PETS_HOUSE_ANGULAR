@@ -322,8 +322,8 @@ app-service-catalog-editor {
 
 .service-editor__table--prices th:nth-child(1) { width: 18%; }
 .service-editor__table--prices th:nth-child(2) { width: 20%; }
-.service-editor__table--prices th:nth-child(3) { width: 30%; }
-.service-editor__table--prices th:nth-child(4) { width: 32%; }
+.service-editor__table--prices th:nth-child(3) { width: 24%; }
+.service-editor__table--prices th:nth-child(4) { width: 38%; }
 
 .service-editor__table input,
 .service-editor__table select {
@@ -384,6 +384,14 @@ app-service-catalog-editor {
   white-space: nowrap;
 }
 
+.service-editor__amount-words {
+  display: block;
+  padding: 4px 2px 0;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 16px;
+  overflow-wrap: anywhere;
+}
 .service-editor__price-input:focus-within {
   outline: 2px solid #0d47a1;
   outline-offset: 1px;
