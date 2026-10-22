@@ -28,10 +28,12 @@
       </div>
     </header>
 
-    @if (isEdit && !staff) {
+    @if (staffApi.loading()) { <p role="status">Đang tải hồ sơ nhân viên từ Backend...</p> }
+    @if (staffApi.error()) { <p role="alert">{{ staffApi.error() }}</p> }
+    @if (isEdit && !staff && !staffApi.loading()) {
       <section class="panel" role="alert">
         <h2>Không tìm thấy nhân viên</h2>
-        <p>Không có mã {{ staffId }} trong dữ liệu mẫu. <a routerLink="/admin/staff">Quay lại danh sách nhân viên</a>.</p>
+        <p>Chưa tìm thấy mã {{ staffId }} trong dữ liệu Backend. <a routerLink="/admin/staff">Quay lại danh sách nhân viên</a>.</p>
       </section>
     } @else {
       <form [formGroup]="form" (ngSubmit)="submit('save')" novalidate>
