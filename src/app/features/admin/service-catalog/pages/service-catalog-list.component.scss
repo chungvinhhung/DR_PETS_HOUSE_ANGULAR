@@ -51,9 +51,9 @@ app-service-catalog-list {
 .service-catalog__heading h1 {
   margin: 0;
   color: #1d2a42;
-  font-size: 20px;
+  font-size: 28px;
   font-weight: 700;
-  line-height: 28px;
+  line-height: 34px;
 }
 
 .service-catalog__demo-label {
@@ -66,7 +66,7 @@ app-service-catalog-list {
 }
 
 .service-catalog__create {
-  min-height: 36px;
+  min-height: 40px;
   padding: 0 15px;
   border: 1px solid var(--catalog-blue);
   border-radius: 7px;
@@ -116,8 +116,9 @@ app-service-catalog-list {
 }
 
 .service-catalog__search {
-  width: 335px;
-  min-width: 180px;
+  flex: 0 0 430px;
+  width: 430px;
+  min-width: 430px;
   height: 40px;
   display: flex;
   align-items: center;
@@ -195,7 +196,8 @@ app-service-catalog-list {
 }
 
 .service-catalog__table-scroll {
-  overflow-x: auto;
+  /* Popup menus must not be clipped by overflow:auto on desktop. */
+  overflow: visible;
 }
 
 .service-catalog__table {
@@ -206,15 +208,6 @@ app-service-catalog-list {
   border-collapse: separate;
 }
 
-.service-catalog__table th:nth-child(1) { width: 7%; }
-.service-catalog__table th:nth-child(2) { width: 17%; }
-.service-catalog__table th:nth-child(3) { width: 12%; }
-.service-catalog__table th:nth-child(4) { width: 12.5%; }
-.service-catalog__table th:nth-child(5) { width: 10%; }
-.service-catalog__table th:nth-child(6) { width: 10%; }
-.service-catalog__table th:nth-child(7) { width: 11%; }
-.service-catalog__table th:nth-child(8) { width: 12.5%; }
-.service-catalog__table th:nth-child(9) { width: 8%; }
 
 .service-catalog__table th {
   height: 44px;
@@ -352,7 +345,8 @@ app-service-catalog-list {
   height: 24px;
 }
 
-.service-catalog__action-menu {
+ .service-catalog__action-menu {
+  /* This panel sits above following rows and the footer. */
   position: absolute;
   top: 36px;
   right: 0;
@@ -484,6 +478,11 @@ app-service-catalog-list {
   color: #0d47a1;
 }
 
+@media (max-width: 1200px) {
+  .service-catalog__filters { flex-wrap: wrap; }
+  .service-catalog__search { flex: 0 1 430px; min-width: min(430px, 100%); }
+  .service-catalog__table-scroll { overflow-x: auto; }
+}
 .service-catalog__disclaimer {
   margin: 13px 0 0;
   color: #76869c;
@@ -530,5 +529,260 @@ app-service-catalog-list {
   .service-catalog__pagination {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+
+/* Distribute all eight visible columns across the full table width.
+   The ninth capacity column exists only after a branch is selected. */
+.service-catalog__table.service-catalog__table--all-branches {
+  table-layout: fixed;
+}
+.service-catalog__table--all-branches td:nth-child(7) { text-align: center; }
+.service-catalog__capacity {
+  display: inline-block;
+  font-size: 12px;
+  color: #475569;
+  white-space: nowrap;
+}
+
+
+/*
+ * Admin table design parity — Product List is the reference:
+ * 12px content, 44px header, 76px rows, 16px horizontal cell insets,
+ * #f8fafc heading surface, #e2e8f0 dividers, 12px corner radius.
+ * Keep the service action-menu's visible overflow on desktop.
+ */
+.service-catalog__table-panel {
+  border-color: #e2e8f0;
+  border-radius: 12px;
+  overflow: visible;
+}
+.service-catalog__table {
+  min-width: 1034px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  color: #243045;
+  font-size: 12px;
+}
+.service-catalog__table thead th {
+  height: 44px;
+  box-sizing: border-box;
+  padding: 0 16px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #243045;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  vertical-align: middle;
+  text-align: left;
+}
+.service-catalog__table tbody td {
+  height: 76px;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  border-top: 0;
+  border-bottom: 1px solid #e2e8f0;
+  color: #243045;
+  font-size: 12px;
+  line-height: 1.5;
+  vertical-align: middle;
+}
+.service-catalog__table tbody tr:last-child td { border-bottom: 0; }
+.service-catalog__table tbody tr:hover td { background: #fbfdff; }
+/* All-branches mode retains its own eight-column width split above. */
+/* Align the entire activation and simultaneous-capacity columns. */
+.service-catalog__table thead th.service-catalog__activation-col,
+.service-catalog__table tbody td.service-catalog__activation-cell,
+.service-catalog__table thead th.service-catalog__capacity-col,
+.service-catalog__table tbody td.service-catalog__capacity-cell,
+.service-catalog__table thead th.service-catalog__actions-col,
+.service-catalog__table tbody td.service-catalog__actions-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+.service-catalog__table .service-catalog__capacity { font-size: 12px; }
+.service-catalog__pagination {
+  min-height: 60px;
+  padding: 8px 12px;
+  border-top-color: #e2e8f0;
+  font-size: 12px;
+}
+.service-catalog__pagination p { font-size: 12px; }
+
+
+/*
+ * Service list table: reserve the right-side columns inside the actual panel.
+ * Widths below sum to 100%; never force the nine-column table beyond its
+ * parent on desktop. Preserve visible action menus in the desktop layout.
+ */
+.service-catalog {
+  min-width: 0;
+  max-width: 100%;
+}
+.service-catalog__table-panel,
+.service-catalog__table-scroll {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+.service-catalog__table {
+  width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
+}
+.service-catalog__table.service-catalog__table--all-branches,
+.service-catalog__table:not(.service-catalog__table--all-branches) {
+  min-width: 0;
+}
+
+/* All branches: 8 visible columns (total 100%). */
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(1) { width: 9%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(2) { width: 16%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(3) { width: 14%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(4) { width: 16%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(5) { width: 14%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(6) { width: 12%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(7) { width: 11%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(8) { width: 8%; }
+
+/* One branch: 9 visible columns (total 100%). */
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(1) { width: 9%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(2) { width: 13%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(3) { width: 14%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(4) { width: 15%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(5) { width: 11%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(6) { width: 11%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(7) { width: 13%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(8) { width: 7%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(9) { width: 7%; }
+
+/* Keep the right three columns orderly and away from the outer border. */
+.service-catalog__table thead th:nth-child(n+6),
+.service-catalog__table tbody td:nth-child(n+6) {
+  padding-right: 12px;
+  padding-left: 12px;
+}
+.service-catalog__table th.service-catalog__actions-col,
+.service-catalog__table td.service-catalog__actions-cell {
+  padding-left: 8px;
+  padding-right: 8px;
+  text-align: center;
+  vertical-align: middle;
+}
+.service-catalog__actions-cell .service-catalog__row-action {
+  width: 32px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+.service-catalog__table th.service-catalog__actions-col,
+.service-catalog__table th:first-child,
+.service-catalog__table thead th:nth-child(3),
+.service-catalog__table thead th:nth-child(4),
+.service-catalog__table thead th:nth-child(5) {
+  white-space: nowrap;
+}
+
+/* Role follows Giá cơ sở: left aligned heading and values.
+ * Booking mode and duration stay centered beneath their own headings. */
+.service-catalog__table thead th:nth-child(3),
+.service-catalog__table tbody td:nth-child(3) {
+  text-align: left;
+  vertical-align: middle;
+}
+.service-catalog__table thead th:nth-child(4),
+.service-catalog__table tbody td:nth-child(4),
+.service-catalog__table thead th:nth-child(5),
+.service-catalog__table tbody td:nth-child(5) {
+  text-align: center;
+  vertical-align: middle;
+}
+.service-catalog__table th:nth-child(4),
+.service-catalog__table td:nth-child(4) {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.service-catalog__table th:nth-child(5),
+.service-catalog__table td:nth-child(5) {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* On smaller viewports, keep the table bounded in a horizontal scroll area
+ * rather than letting the action cell protrude outside its card. */
+@media (max-width: 1200px) {
+  .service-catalog__table-scroll {
+    overflow-x: auto;
+  }
+  .service-catalog__table.service-catalog__table--all-branches {
+    min-width: 1080px;
+  }
+  .service-catalog__table:not(.service-catalog__table--all-branches) {
+    min-width: 1160px;
+  }
+}
+
+
+/*
+ * Keep the 430px service search field unchanged. The three filters absorb
+ * available width, while the add-service button stays inside the border.
+ * On narrower screens the filter group wraps below the fixed-size search.
+ */
+.service-catalog__filters {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 12px;
+}
+.service-catalog__filters .service-catalog__search {
+  flex: 0 0 430px;
+  width: 430px;
+  min-width: 430px;
+  max-width: 430px;
+}
+.service-catalog__filters .service-catalog__filter-selects {
+  display: grid;
+  flex: 1 1 600px;
+  grid-template-columns: minmax(0, 1.04fr) minmax(0, 1.1fr) minmax(0, .96fr) max-content;
+  align-items: center;
+  column-gap: 8px;
+  width: auto;
+  min-width: min(100%, 600px);
+  max-width: 100%;
+}
+.service-catalog__filters .service-catalog__filter-selects > .service-catalog__select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+.service-catalog__filters .service-catalog__filter-selects > .service-catalog__create {
+  width: auto;
+  min-width: max-content;
+  justify-self: end;
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .service-catalog__filters .service-catalog__filter-selects {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 10px;
+    flex-basis: 100%;
+    min-width: 0;
+    width: 100%;
+  }
+  .service-catalog__filters .service-catalog__filter-selects > .service-catalog__create {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+/* The search is intentionally fixed at 430px, including on small screens. */
+@media (max-width: 510px) {
+  .service-catalog__filters {
+    overflow-x: auto;
+  }
+  .service-catalog__filters .service-catalog__filter-selects {
+    min-width: 430px;
   }
 }

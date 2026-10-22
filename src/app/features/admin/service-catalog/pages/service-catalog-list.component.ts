@@ -28,6 +28,7 @@ import {
   CatalogService,
 } from '../models/service-catalog.model';
 import { ServiceCatalogApiService } from '../services/service-catalog-api.service';
+import { ServiceBranchConfigFlowComponent } from '../components/service-branch-config-flow.component';
 
 type ListFilters = Omit<CatalogListQuery, 'search'>;
 type CatalogAction = 'view' | 'edit' | 'configure';
@@ -35,7 +36,7 @@ type CatalogAction = 'view' | 'edit' | 'configure';
 @Component({
   selector: 'app-service-catalog-list',
   standalone: true,
-  imports: [AdminCatalogShellComponent],
+  imports: [AdminCatalogShellComponent, ServiceBranchConfigFlowComponent],
   templateUrl: './service-catalog-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -49,9 +50,7 @@ export class ServiceCatalogListComponent {
   readonly role = computed(() => this.authSession.user()?.systemRole ?? 'STAFF');
   readonly isAdmin = computed(() => this.role() === 'ADMIN');
   readonly canConfigure = computed(() => this.role() === 'ADMIN' || this.role() === 'MANAGER');
-  readonly scopedBranches = computed<readonly CatalogBranch[]>(() =>
-    this.isAdmin() ? this.allBranches() : [],
-  );
+  readonly scopedBranches = computed<readonly CatalogBranch[]>(() => this.allBranches());
 
   readonly pageSize = 6;
   readonly rows = signal<readonly CatalogService[]>([]);
@@ -60,6 +59,7 @@ export class ServiceCatalogListComponent {
   readonly error = signal<string | null>(null);
   readonly notice = signal<string | null>(null);
   readonly openMenuId = signal<string | null>(null);
+  readonly configuringService = signal<CatalogService | null>(null);
   readonly searchText = signal('');
 
   readonly filters = signal<ListFilters>({
@@ -86,7 +86,7 @@ export class ServiceCatalogListComponent {
   });
 
   constructor() {
-    if (this.authSession.user()?.systemRole === 'ADMIN') {
+    if (this.canConfigure()) {
       this.repository.listBranches().pipe(takeUntilDestroyed()).subscribe({
         next: (branches) => this.allBranches.set(branches),
         error: () => this.notice.set('Không tải được bộ lọc chi nhánh. Danh sách dịch vụ vẫn khả dụng.'),
@@ -183,12 +183,25 @@ export class ServiceCatalogListComponent {
     return this.isEffectiveEnabled(service, this.filters().branchId);
   }
 
+  capacityAtSelectedBranch(service: CatalogService): number | null {
+    const config = service.branchServices.find((item) => item.branchId === this.filters().branchId);
+    return config?.capacity ?? null;
+  }
+
+  closeBranchConfig(): void { this.configuringService.set(null); }
+  onBranchConfigSaved(): void {
+    // Refresh counts and the selected branch's enabled/capacity from the Backend.
+    this.filterSubject.next({ ...this.filters() });
+  }
+
   executorLabel(value: string): string {
     return value === 'CARE_STAFF_GROOMER' || value === 'CARE_STAFF'
-      ? 'CARE STAFF'
+      ? 'Nhân viên chăm sóc'
       : value === 'VETERINARIAN'
-        ? 'VETERINARIAN'
-        : value.replaceAll('_', ' ');
+        ? 'Bác sĩ thú y'
+        : value === 'NURSE'
+          ? 'Y tá'
+          : value.replaceAll('_', ' ');
   }
 
   priceLabel(service: CatalogService): string {
@@ -198,9 +211,11 @@ export class ServiceCatalogListComponent {
     if (service.referencePrice !== null) {
       return this.vnd(service.referencePrice);
     }
+    // Unmapped variants (including stale basePrice + []) are not confirmed fees.
+    if (service.pricingDataWarning) return 'Giá chưa đồng bộ';
     return service.bookingMode === 'CONTACT_ONLY'
       ? 'Báo giá sau tiếp nhận'
-      : 'Liên hệ báo giá';
+      : 'Chưa cấu hình giá';
   }
 
   private vnd(value: number): string {
@@ -226,18 +241,15 @@ export class ServiceCatalogListComponent {
     this.openMenuId.set(null);
     if (action === 'configure') {
       if (!this.canConfigure()) return;
-      const selected = this.filters().branchId;
-      const path = selected === 'ALL'
-        ? '/admin/branches'
-        : '/admin/branches/' + encodeURIComponent(selected);
-      void this.router.navigate([path], { queryParams: { serviceId: service.id } });
+      this.configuringService.set(service);
       return;
     }
     if (action === 'edit' && !this.isAdmin()) return;
-    void this.router.navigateByUrl(
+    void this.router.navigate(
       action === 'edit'
-        ? '/admin/services/' + encodeURIComponent(service.id) + '/edit'
-        : '/admin/services/' + encodeURIComponent(service.id),
+        ? ['/admin/services', service.id, 'edit']
+        : ['/admin/services', service.id],
+      { queryParams: { returnTo: '/admin/services' } },
     );
   }
 

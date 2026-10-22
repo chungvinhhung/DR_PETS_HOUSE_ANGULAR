@@ -14,12 +14,21 @@ import {
 } from '@angular/core';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { CatalogBranch, CatalogService } from '../models/service-catalog.model';
 
-interface BlockedWindow {
+export interface BlockedWindow {
   id: number;
   start: string;
   end: string;
+  reason: string;
+}
+export interface BranchServiceConfigPreview {
+  serviceId: string;
+  branchId: string;
+  capacity: number;
+  enabled: boolean;
+  blockedWindows: readonly BlockedWindow[];
 }
 
 /**
@@ -34,12 +43,17 @@ interface BlockedWindow {
 })
 export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit {
   private readonly session = inject(AuthSessionService);
+  private readonly toast = inject(AdminToastService);
 
   @Input({ required: true }) service!: CatalogService;
   @Input({ required: true }) branches: readonly CatalogBranch[] = [];
   @Input({ required: true }) initialBranchId = '';
 
   @Output() readonly dismiss = new EventEmitter<void>();
+  @Output() readonly previewSaved = new EventEmitter<BranchServiceConfigPreview>();
+  @Input() initialBlockedWindows: readonly BlockedWindow[] | null = null;
+  @Input() saving = false;
+  @Input() branchActive = true;
   @ViewChild('dialog') private dialogRef?: ElementRef<HTMLElement>;
 
   readonly selectedBranchId = signal('');
@@ -48,6 +62,9 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
   readonly blockedWindows = signal<readonly BlockedWindow[]>([]);
   readonly blockStart = signal('');
   readonly blockEnd = signal('');
+  readonly blockReason = signal('');
+  readonly showBlockForm = signal(false);
+  readonly editingBlockedId = signal<number | null>(null);
   readonly dirty = signal(false);
   readonly feedback = signal('');
   readonly errors = signal<string[]>([]);
@@ -64,7 +81,7 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
   }
 
   get canEnable(): boolean {
-    return this.isServiceActive && this.capacity() > 0;
+    return this.isServiceActive && this.branchActive && this.capacity() > 0;
   }
 
   ngOnInit(): void {
@@ -79,7 +96,19 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     this.capacity.set(Math.max(0, count));
     this.enabled.set(this.isServiceActive && count > 0 && (current?.enabled ?? false));
     // Empty until the BE exposes per-service blocked windows. Do not invent existing periods.
-    this.blockedWindows.set([]);
+    if (this.initialBlockedWindows) {
+      this.blockedWindows.set(this.initialBlockedWindows.map((window) => ({ ...window })));
+      this.nextBlockedId = Math.max(0, ...this.initialBlockedWindows.map((window) => window.id)) + 1;
+      this.showBlockForm.set(false);
+    } else if (branch.id === 'demo-q1') {
+      // Figma V2 illustrations only, not fetched or persisted.
+      this.blockedWindows.set([
+        { id: 1, start: '2026-10-22T13:00', end: '2026-10-22T15:00', reason: 'Bảo trì khu tắm' },
+        { id: 2, start: '2026-10-24T08:00', end: '2026-10-24T12:00', reason: 'Vệ sinh thiết bị' },
+      ]);
+      this.nextBlockedId = 3;
+      this.showBlockForm.set(true);
+    } else this.blockedWindows.set([]);
   }
 
   ngAfterViewInit(): void {
@@ -102,7 +131,7 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
   }
 
   toggleEnabled(): void {
-    if (!this.canEnable) return;
+    if (!this.enabled() && !this.canEnable) return;
     this.enabled.update((old) => !old);
     this.markChanged();
   }
@@ -117,6 +146,51 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     this.markChanged();
   }
 
+  updateReason(value: string): void {
+    this.blockReason.set(value);
+    this.markChanged();
+  }
+
+  startAddingBlockedWindow(): void {
+    this.showBlockForm.set(true);
+    this.editingBlockedId.set(null);
+    this.blockStart.set('');
+    this.blockEnd.set('');
+    this.blockReason.set('');
+    this.errors.set([]);
+  }
+
+  editBlockedWindow(id: number): void {
+    const selected = this.blockedWindows().find((item) => item.id === id);
+    if (!selected) return;
+    this.blockStart.set(selected.start);
+    this.blockEnd.set(selected.end);
+    this.blockReason.set(selected.reason);
+    this.editingBlockedId.set(id);
+    this.showBlockForm.set(true);
+    this.errors.set([]);
+  }
+
+  cancelBlockedWindow(): void {
+    this.showBlockForm.set(false);
+    this.editingBlockedId.set(null);
+    this.blockStart.set('');
+    this.blockEnd.set('');
+    this.blockReason.set('');
+    this.errors.set([]);
+  }
+
+  formatWindow(window: BlockedWindow): string {
+    const date = (stamp: string): string => stamp.slice(0, 10).split('-').reverse().join('/');
+    const startDate = date(window.start);
+    const endDate = date(window.end);
+    const startTime = window.start.slice(11, 16);
+    const endTime = window.end.slice(11, 16);
+    return startDate === endDate
+      ? startDate + ', ' + startTime + '–' + endTime
+      : startDate + ' ' + startTime + ' – ' + endDate + ' ' + endTime;
+  }
+
   private validWindow(start: string, end: string): boolean {
     const from = new Date(start).getTime();
     const to = new Date(end).getTime();
@@ -126,26 +200,36 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
   addBlockedWindow(): void {
     const start = this.blockStart();
     const end = this.blockEnd();
+    const reason = this.blockReason().trim();
+    if (!reason) {
+      this.errors.set(['Vui lòng nhập lý do tạm khóa.']);
+      this.toast.show('Vui lòng nhập lý do tạm khóa.', 'error');
+      return;
+    }
     if (!this.validWindow(start, end)) {
       this.errors.set(['Khoảng tạm khóa phải có ngày/giờ kết thúc sau ngày/giờ bắt đầu.']);
+      this.toast.show('Ngày/giờ tạm khóa không hợp lệ.', 'error');
       return;
     }
     const first = new Date(start).getTime();
     const last = new Date(end).getTime();
     const overlaps = this.blockedWindows().some((window) =>
-      first < new Date(window.end).getTime() && last > new Date(window.start).getTime(),
+      window.id !== this.editingBlockedId() && first < new Date(window.end).getTime() && last > new Date(window.start).getTime(),
     );
     if (overlaps) {
       this.errors.set(['Khoảng tạm khóa mới bị trùng với khoảng đã nhập.']);
       return;
     }
-    this.blockedWindows.update((windows) => [...windows, {
-      id: this.nextBlockedId++,
-      start,
-      end,
-    }].sort((a, b) => a.start.localeCompare(b.start)));
+    const id = this.editingBlockedId() ?? this.nextBlockedId++;
+    this.blockedWindows.update((windows) => [
+      ...windows.filter((window) => window.id !== id),
+      { id, start, end, reason },
+    ].sort((a, b) => a.start.localeCompare(b.start)));
     this.blockStart.set('');
     this.blockEnd.set('');
+    this.blockReason.set('');
+    this.editingBlockedId.set(null);
+    this.showBlockForm.set(false);
     this.markChanged();
   }
 
@@ -165,13 +249,13 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     if (!this.selectedBranch) {
       errors.push('Không tìm thấy chi nhánh hợp lệ.');
     }
-    if (!Number.isInteger(this.capacity()) || this.capacity() < 0) {
-      errors.push('Sức chứa phải là số nguyên không âm.');
+    if (!Number.isInteger(this.capacity()) || this.capacity() < 1) {
+      errors.push('Sức chứa đồng thời phải là số nguyên từ 1 trở lên.');
     }
     if (this.enabled() && !this.canEnable) {
-      errors.push('Không thể bật khi capacity bằng 0 hoặc dịch vụ tạm ngưng.');
+      errors.push('Không thể bật dịch vụ khi chi nhánh ngừng hoạt động, dịch vụ tạm ngưng hoặc sức chứa bằng 0.');
     }
-    if (this.blockStart() || this.blockEnd()) {
+    if (this.blockStart() || this.blockEnd() || this.blockReason()) {
       errors.push('Bạn còn khoảng tạm khóa đang nhập dở. Hãy thêm hoặc xóa dữ liệu vừa nhập.');
     }
     for (const window of this.blockedWindows()) {
@@ -181,15 +265,21 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     }
     this.errors.set(errors);
     if (errors.length) {
+      this.toast.show(errors[0], 'error');
       this.feedback.set('');
       return;
     }
-    this.feedback.set(
-      'Dữ liệu hợp lệ (bản xem trước). Không có thay đổi nào được lưu vào Backend.',
-    );
+    this.previewSaved.emit({
+      serviceId: this.service.id,
+      branchId: this.selectedBranchId(),
+      enabled: this.enabled(),
+      capacity: this.capacity(),
+      blockedWindows: this.blockedWindows().map((window) => ({ ...window })),
+    });
   }
 
   requestClose(): void {
+    if (this.saving) return;
     if (this.dirty()) {
       this.confirmDiscard.set(true);
     } else {

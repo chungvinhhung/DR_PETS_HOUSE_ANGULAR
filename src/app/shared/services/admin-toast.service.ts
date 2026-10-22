@@ -26,18 +26,22 @@ export class AdminToastService {
 /** Keep transport errors out of user-visible messages. */
 export function adminErrorMessage(error: unknown, fallback = 'Thao tác chưa thành công. Vui lòng thử lại.'): string {
   if (error instanceof AppHttpError) {
-    if (error.kind === 'network') return 'Không thể kết nối máy chủ. Vui lòng kiểm tra kết nối và thử lại.';
+    if (error.kind === 'network') return 'Không thể kết nối đến máy chủ.';
     if (error.status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
     if (error.status === 403) return 'Tài khoản không có quyền thực hiện thao tác này.';
-    if (error.status >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.';
-    return error.message && !/unauthoriz|failed to fetch|http failure/i.test(error.message)
-      ? error.message : fallback;
+    if (error.status >= 500) return 'Không thể kết nối đến máy chủ.';
+    // Transport-layer and backend validation text must never leak into the FE toast.
+    if (error.status === 400 || error.status === 422) return 'Dữ liệu không hợp lệ. Vui lòng kiểm tra thông tin đã nhập.';
+    if (error.status === 409) return 'Dữ liệu đã thay đổi hoặc đã tồn tại. Vui lòng kiểm tra và thử lại.';
+    return fallback;
   }
   if (error instanceof HttpErrorResponse) {
     if (error.status === 0) return 'Không thể kết nối máy chủ. Vui lòng kiểm tra kết nối và thử lại.';
     if (error.status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
     if (error.status === 403) return 'Tài khoản không có quyền thực hiện thao tác này.';
-    if (error.status >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.';
+    if (error.status >= 500) return 'Không thể kết nối đến máy chủ.';
+    if (error.status === 400 || error.status === 422) return 'Dữ liệu không hợp lệ. Vui lòng kiểm tra thông tin đã nhập.';
+    if (error.status === 409) return 'Dữ liệu đã thay đổi hoặc đã tồn tại. Vui lòng kiểm tra và thử lại.';
     return fallback;
   }
   if (error instanceof Error && error.name === 'TimeoutError') {

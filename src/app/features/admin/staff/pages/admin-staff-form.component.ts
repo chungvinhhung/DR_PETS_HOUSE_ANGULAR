@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -7,13 +7,13 @@ import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.c
 import { formatStaffWeekRange } from '../utils/staff-week-range';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { AdminStaffApiService, staffTodayISO, staffWeekMonday } from '../services/admin-staff-api.service';
 import {
-  JOB_LABELS, JOB_PREFIX, JobRole, STAFF_PREVIEW, STAFF_SHIFTS_PREVIEW,
+  JOB_LABELS, JOB_PREFIX, JobRole, STAFF_SHIFTS_PREVIEW,
   StaffPreview, StaffShiftPreview,
 } from '../models/staff-preview.model';
 
-const JOB_ROLES = Object.keys(JOB_LABELS) as JobRole[];
-const BRANCHES = ['Quận 1', 'Quận 3', 'Quận 10', 'Bình Thạnh', 'Thủ Đức'];
+const JOB_ROLES = (Object.keys(JOB_LABELS) as JobRole[]).filter(role => role !== 'UNKNOWN');
 const STRONG_PASSWORD = /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
 const PHONE = /^0[0-9]{9}$/;
 const WEEK_MS = 7 * 86400000;
@@ -44,13 +44,15 @@ export class AdminStaffFormComponent {
   private readonly toast = inject(AdminToastService);
   private readonly session = inject(AuthSessionService);
   private readonly cdr = inject(ChangeDetectorRef);
+  readonly staffApi = inject(AdminStaffApiService);
+  private hydrated = false;
 
   readonly isEdit = this.route.snapshot.data['mode'] === 'edit';
   readonly staffId = this.route.snapshot.paramMap.get('id') ?? '';
-  readonly staff: StaffPreview | undefined = STAFF_PREVIEW.find(s => s.id === this.staffId);
+  get staff(): StaffPreview | undefined { return this.staffApi.staff().find(s => s.id === this.staffId); }
   readonly roles = JOB_ROLES;
   readonly labels = JOB_LABELS;
-  readonly branches = BRANCHES;
+  get branches(): string[] { return this.staffApi.branches().map(b => b.name); }
   readonly form = this.fb.nonNullable.group({
     fullName: [this.staff?.fullName ?? '', [Validators.required, Validators.maxLength(120)]],
     jobRole: [this.staff?.jobRole ?? 'VETERINARIAN' as JobRole, Validators.required],
@@ -125,16 +127,41 @@ export class AdminStaffFormComponent {
   private allowNavigation = false;
 
   // Figma edit page uses a 7-day table. This is a local preview, not a BE shift write.
-  weekMonday = '2026-10-19';
+  weekMonday = staffWeekMonday(staffTodayISO());
   shifts: Record<string, { branch: string; template: string }> = {};
   shiftDraftDirty = false;
 
   constructor() {
     this.form.controls.loginIdentifier.disable({ emitEvent: false });
     if (!this.isEdit) this.form.controls.loginIdentifier.enable({ emitEvent: false });
-    for (const shift of STAFF_SHIFTS_PREVIEW.filter(s => s.staffId === this.staffId)) {
-      this.shifts[shift.isoDate] = { branch: shift.branch, template: shift.shiftName };
-    }
+    this.staffApi.loadRoster();
+    effect(() => {
+      const staff = this.staff;
+      if (this.isEdit && staff && !this.hydrated && !this.form.dirty) {
+        this.form.patchValue({
+          fullName: staff.fullName === 'Chưa cập nhật họ tên' ? '' : staff.fullName,
+          jobRole: staff.jobRole === 'UNKNOWN' ? 'VETERINARIAN' : staff.jobRole,
+          phone: (staff.phone ?? '').replace(/\\s/g, ''),
+          email: staff.email ?? '',
+          homeBranch: staff.homeBranch ?? '',
+          assignedBranches: staff.branches.join(','),
+          loginIdentifier: staff.loginUsername ?? '',
+        }, { emitEvent: false });
+        this.selectedBranches = new Set(staff.branches);
+        this.form.markAsPristine();
+        this.hydrated = true;
+        this.cdr.markForCheck();
+      }
+      if (this.staffApi.loaded()) this.staffApi.loadWeek(this.weekMonday);
+    });
+    effect(() => {
+      const shifts = this.staffApi.shifts();
+      if (!this.shiftDraftDirty && this.staffApi.loadedMonday() === this.weekMonday && this.isEdit) {
+        this.shifts = Object.fromEntries(shifts.filter(s => s.staffId === this.staffId)
+          .map(s => [s.isoDate, { branch: s.branch, template: s.shiftName }]));
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   get hasStaff(): boolean { return !this.isEdit || !!this.staff; }
@@ -171,12 +198,14 @@ export class AdminStaffFormComponent {
   }
   changeWeek(delta: number): void {
     this.weekMonday = new Date(new Date(this.weekMonday + 'T00:00:00Z').getTime() + delta * WEEK_MS).toISOString().slice(0, 10);
+    this.staffApi.loadWeek(this.weekMonday);
   }
   goToday(): void {
     const today = new Date();
     const dayOffset = (today.getDay() + 6) % 7;
     today.setDate(today.getDate() - dayOffset);
     this.weekMonday = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
+    this.staffApi.loadWeek(this.weekMonday);
   }
   selectWeekDate(value: string): void {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return;
@@ -184,6 +213,7 @@ export class AdminStaffFormComponent {
     if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) return;
     date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 6) % 7);
     this.weekMonday = date.toISOString().slice(0, 10);
+    this.staffApi.loadWeek(this.weekMonday);
   }
   setShift(iso: string, field: 'branch' | 'template', value: string): void {
     const previous = this.shifts[iso] ?? { branch: '', template: '' };
@@ -222,7 +252,7 @@ export class AdminStaffFormComponent {
     this.submitted = true;
     this.form.markAllAsTouched();
     if (!this.hasStaff) {
-      this.toast.show('Không tìm thấy nhân viên trong dữ liệu mẫu.', 'error');
+      this.toast.show('Không tìm thấy hồ sơ nhân viên từ Backend.', 'error');
       return;
     }
     if (!this.selectedBranches.size || !this.form.controls.homeBranch.value || !this.selectedBranches.has(this.form.controls.homeBranch.value)) {
@@ -234,8 +264,8 @@ export class AdminStaffFormComponent {
       return;
     }
     this.toast.show(intent === 'assign'
-      ? 'Chưa có API tạo nhân viên. Không thể phân ca khi chưa nhận staffId thật.'
-      : 'Đây là giao diện mẫu. Chưa kết nối API nên chưa thể lưu thay đổi.', 'info');
+      ? 'Backend chưa xác nhận API tạo đồng thời tài khoản và hồ sơ nhân viên. Chưa phân ca.'
+      : 'Đã kết nối API đọc, nhưng chưa có hợp đồng ghi Staff tương thích với form. Chưa lưu thay đổi.', 'info');
   }
   notAvailable(action: string): void {
     this.toast.show(`${action} đang chờ API Backend và phân quyền Admin.`, 'info');

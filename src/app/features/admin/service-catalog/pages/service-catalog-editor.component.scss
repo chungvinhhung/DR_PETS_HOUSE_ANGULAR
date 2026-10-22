@@ -313,8 +313,8 @@ app-service-catalog-editor {
 .service-editor__table tbody tr:nth-child(even) { background: #fcfdff; }
 
 .service-editor__table tbody td {
-  height: 44px;
-  padding: 4px 10px;
+  height: 52px;
+  padding: 8px 14px;
   border-top: 1px solid #e6ebf4;
   color: #2f415c;
   vertical-align: middle;
@@ -322,8 +322,8 @@ app-service-catalog-editor {
 
 .service-editor__table--prices th:nth-child(1) { width: 18%; }
 .service-editor__table--prices th:nth-child(2) { width: 20%; }
-.service-editor__table--prices th:nth-child(3) { width: 30%; }
-.service-editor__table--prices th:nth-child(4) { width: 32%; }
+.service-editor__table--prices th:nth-child(3) { width: 24%; }
+.service-editor__table--prices th:nth-child(4) { width: 38%; }
 
 .service-editor__table input,
 .service-editor__table select {
@@ -384,6 +384,15 @@ app-service-catalog-editor {
   white-space: nowrap;
 }
 
+.service-editor__amount-words {
+  display: inline;
+  margin-left: 8px;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 34px;
+  white-space: normal;
+  vertical-align: middle;
+}
 .service-editor__price-input:focus-within {
   outline: 2px solid #0d47a1;
   outline-offset: 1px;
@@ -667,4 +676,305 @@ app-service-catalog-editor {
   .service-editor__fields--two,
   .service-editor__branch-row { grid-template-columns: 1fr; }
   .service-editor__demo-badge { display: flex; width: max-content; margin: 8px 0 0; }
+}
+
+/* Dedicated read-only details, not a disabled create/edit form. */
+.service-editor__detail-card { padding: 22px; }
+.service-editor__detail-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.service-editor__detail-heading h2 { margin: 0; }
+.service-editor__detail-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px 24px; }
+.service-editor__detail-grid > div { display:flex; flex-direction:column; gap:7px; min-width:0; }
+.service-editor__detail-grid > div > span,
+.service-editor__detail-description > span { font-size:12px; color:#6a7a91; }
+.service-editor__detail-grid strong { font-size:13px; color:#243045; font-weight:600; overflow-wrap:anywhere; }
+.service-editor__detail-description { margin-top:22px; display:flex; flex-direction:column; gap:8px; }
+.service-editor__detail-description p { margin:0; font-size:13px; color:#243045; white-space:pre-line; }
+.service-editor__detail-badge { padding:5px 12px; border-radius:999px; background:#e2f6eb; color:#187a52; font-size:12px; font-weight:500; white-space:nowrap; }
+.service-editor__detail-badge--off { background:#fff0d4; color:#9b5a00; }
+.service-editor__detail-empty { margin:14px 0; color:#718098; font-size:12px; line-height:1.5; }
+.service-editor__detail-table { margin-top:20px; }
+.service-editor__detail-table td { height:52px; padding:12px; }
+.service-editor__detail-heading { margin-bottom:20px; }
+.service-editor__detail-grid > div > span { text-transform:none; }
+.service-editor__detail-table { border:1px solid #dee5f0; border-radius:8px; overflow-x:auto; }
+.service-editor__detail-table th { background:#f4f6f9; color:#536783; font-weight:500; text-transform:none; }
+.service-editor__detail-table tbody tr:not(:last-child) td { border-bottom:1px solid #dee5f0; }
+@media(max-width:760px) { .service-editor__detail-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:520px) { .service-editor__detail-grid { grid-template-columns:1fr; } }
+
+.service-editor__validation-summary {
+  margin: 0 0 18px;
+  padding: 14px 18px;
+  border: 1px solid #f3c5c3;
+  border-left: 4px solid #bf3434;
+  border-radius: 8px;
+  background: #fff7f7;
+  color: #912626;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.service-editor__validation-summary strong { display:block; margin-bottom:4px; }
+.service-editor__validation-summary ul { margin:0; padding-left:20px; }
+
+/* Keep controls comfortably inset from price-tier table borders. */
+.service-editor__table--prices tbody td { padding: 9px 15px; }
+.service-editor__table--prices tbody tr { height: 58px; }
+.service-editor__table--prices .service-editor__price-select,
+.service-editor__table--prices .service-editor__price-input { height: 40px; }
+.service-editor__table--prices .service-editor__price-input input { height: 38px; }
+
+/* Product options must show the same identifying information as Product Master. */
+.service-editor__product-combobox { position: relative; width: 100%; }
+.service-editor__product-results {
+  position: absolute;
+  z-index: 35;
+  top: calc(100% + 6px);
+  left: 0;
+  width: max(100%, 390px);
+  max-width: min(580px, calc(100vw - 48px));
+  max-height: 328px;
+  overflow: auto;
+  padding: 5px;
+  border: 1px solid #dbe5f0;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 10px 28px #14243b29;
+}
+.service-editor__product-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 68px;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: #fff;
+  color: #22334b;
+  text-align: left;
+}
+.service-editor__product-option:hover,
+.service-editor__product-option:focus-visible { background: #eef5ff; }
+.service-editor__product-thumbnail {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border: 1px solid #e3eaf3;
+  border-radius: 6px;
+  object-fit: contain;
+  background: #f7f9fc;
+}
+.service-editor__product-thumbnail--empty {
+  display: grid;
+  place-items: center;
+  color: #8798ae;
+  font-size: 11px;
+}
+.service-editor__product-description {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+.service-editor__product-description strong {
+  overflow-wrap: anywhere;
+  color: #203650;
+  font-size: 13px;
+  font-weight: 600;
+}
+.service-editor__product-description small { color: #6e8099; font-size: 11px; line-height: 1.45; }
+.service-editor__product-price {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: #0d47a1;
+  font-size: 12px;
+  font-weight: 600;
+}
+.service-editor__product-empty { padding: 12px; margin: 0; color: #6e8099; }
+@media (max-width: 700px) {
+  .service-editor__product-results { width: max(100%, 300px); }
+  .service-editor__product-price { font-size: 11px; }
+}
+
+/* Product suggestions must escape the materials table viewport on desktop. */
+@media (min-width: 1101px) {
+  .service-editor__table-scroll:has(.service-editor__product-combobox) { overflow: visible; }
+}
+
+/* Service detail: Figma 6599:28160 — preserve shared Admin shell. */
+.service-editor:has(.service-editor__detail-card) { padding:32px; }
+.service-editor:has(.service-editor__detail-card) .service-editor__header { margin-bottom:20px; }
+.service-editor:has(.service-editor__detail-card) .service-editor__header h1 {
+  font-size:22px; line-height:normal; letter-spacing:normal; color:#1b273b;
+}
+.service-editor__detail-card { display:flex; flex-direction:column; gap:14px; padding:22px; }
+.service-editor__detail-card h2 { margin:0; color:#1b273b; font-size:16px; font-weight:600; }
+.service-editor__detail-subtitle { margin:0; color:#66758c; font-size:13px; line-height:22px; }
+.service-editor__detail-badges { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.service-editor__detail-badge { width:max-content; border-radius:10px; padding:7px; font-weight:500; background:#e2f6eb; color:#187a52; }
+.service-editor__detail-badge--off { background:#f6f8fb; color:#66758c; }
+.service-editor__detail-mode { border-radius:10px; padding:7px; background:#fff5db; color:#965e12; font-size:12px; font-weight:500; }
+.service-editor__detail-metadata {
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:22px;
+  border-top:1px solid #dee5f0; padding-top:14px;
+}
+.service-editor__detail-metadata > div,
+.service-editor__detail-pricing-summary > div,
+.service-editor__detail-material-summary { display:flex; flex-direction:column; gap:6px; min-width:0; }
+.service-editor__detail-metadata span,
+.service-editor__detail-pricing span { color:#66758c; font-size:13px; }
+.service-editor__detail-metadata strong,
+.service-editor__detail-pricing strong { color:#1b273b; font-size:15px; font-weight:500; overflow-wrap:anywhere; }
+.service-editor__detail-pricing { display:grid; grid-template-columns:1fr 1fr; gap:32px; }
+.service-editor__detail-pricing-summary { display:flex; flex-direction:column; gap:11px; }
+/* Figma 6599:28160: all scoped branches appear as individual 54px rows. */
+.service-editor__detail-branch-list { display:flex; flex-direction:column; gap:14px; width:100%; }
+.service-editor__detail-branch-row { display:flex; justify-content:space-between; align-items:center; width:100%; min-height:54px; gap:16px; }
+.service-editor__detail-branch-info { display:flex; flex-direction:column; min-width:0; gap:5px; }
+.service-editor__detail-branch-row strong { color:#1b273b; font-size:13px; font-weight:500; overflow-wrap:anywhere; }
+.service-editor__detail-branch-row small { color:#6e8096; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+.service-editor__detail-config-link { display:grid; place-items:center; flex:0 0 32px; width:32px; height:32px; color:#0d47a1; border-radius:6px; }
+.service-editor__detail-config-link img { display:block; width:20px; height:20px; }
+.service-editor__detail-config-link:hover { background:#eef5ff; }
+.service-editor__detail-config-link:focus-visible { outline:2px solid #0d47a1; outline-offset:2px; }
+@media(max-width:760px) {
+  .service-editor__detail-metadata { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .service-editor__detail-pricing { grid-template-columns:1fr; }
+}
+@media(max-width:520px) {
+  .service-editor:has(.service-editor__detail-card) { padding:18px 12px; }
+  .service-editor__detail-metadata { grid-template-columns:1fr; }
+}
+
+/* Price API compatibility warning: no phantom numeric price should appear. */
+.service-editor__pricing-warning {
+  margin: 0;
+  padding: 11px 14px;
+  border: 1px solid #efdcb2;
+  border-radius: 8px;
+  background: #fffbf1;
+  color: #825917;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+
+/* FB #14: compact money cell; the amount in words lives directly under
+   its input, avoiding a large blank strip to the right on wide screens. */
+.service-editor__table--prices { min-width: 760px; }
+.service-editor__table--prices th:nth-child(1) { width: 16%; }
+.service-editor__table--prices th:nth-child(2) { width: 22%; }
+.service-editor__table--prices th:nth-child(3) { width: 27%; }
+.service-editor__table--prices th:nth-child(4) { width: 35%; }
+.service-editor__table--prices .service-editor__price-select {
+  width: 100%;
+  max-width: 225px;
+}
+.service-editor__money-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+}
+.service-editor__money-group .service-editor__price-input {
+  flex: 0 0 auto;
+  width: min(100%, 210px);
+  min-width: 0;
+}
+.service-editor__money-group .service-editor__amount-words,
+.service-editor__money-group .service-editor__amount-unset {
+  display: block;
+  margin: 0;
+  max-width: 100%;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.35;
+  overflow-wrap: break-word;
+}
+.service-editor__money-group .service-editor__amount-unset {
+  font-size: 12px;
+  font-style: normal;
+}
+.service-editor__activation-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  border: 1px solid #f6d89d;
+  border-radius: 8px;
+  background: #fff9ec;
+  color: #805616;
+  font-size: 13px;
+}
+.service-editor__activation-notice button { flex: 0 0 auto; }
+@media (max-width: 570px) {
+  .service-editor__activation-notice {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+
+/* Existing services: optional one-time reconciliation for missing branch configs. */
+.service-editor__branch-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.service-editor__branch-section-heading h2 { margin: 0; }
+.service-editor__branch-section-heading .service-editor__btn {
+  min-height: 36px;
+  font-size: 12px;
+}
+
+
+/* Five-column pricing: separate numeric price from words, keep compact spacing. */
+.service-editor__table--prices {
+  width: 100%;
+  min-width: 900px;
+  table-layout: fixed;
+}
+.service-editor__table--prices th:nth-child(1) { width: 10%; }
+.service-editor__table--prices th:nth-child(2) { width: 17%; }
+.service-editor__table--prices th:nth-child(3) { width: 21%; }
+.service-editor__table--prices th:nth-child(4) { width: 22%; }
+.service-editor__table--prices th:nth-child(5) { width: 30%; }
+.service-editor__table--prices th,
+.service-editor__table--prices td {
+  padding: 11px 14px;
+  vertical-align: middle;
+}
+.service-editor__table--prices .service-editor__price-select {
+  width: 100%;
+  max-width: none;
+}
+.service-editor__table--prices .service-editor__price-input {
+  width: 100%;
+  max-width: 235px;
+}
+.service-editor__table--prices .service-editor__amount-words-cell {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+}
+/* Inline gear buttons keep the same appearance in view, edit and create. */
+.service-editor__detail-config-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.service-editor__detail-config-link:disabled { opacity: .45; cursor: not-allowed; }
+.service-editor__detail-branch-list {
+  gap: 12px;
 }
