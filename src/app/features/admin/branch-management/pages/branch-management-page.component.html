@@ -1,7 +1,7 @@
 <app-admin-catalog-shell activeItem="branches">
   <main class="branch-management branch-v2-page" [class.branch-v2-page--detail]="!!branch">
     @if (branchId && (detailLoading() || branchListLoading())) {
-      <p class="branch-v2-page__notice" role="status">Đang tải thông tin chi nhánh từ Backend...</p>
+      <p class="branch-v2-page__notice" role="status">Đang tải thông tin chi nhánh...</p>
     } @else if (branchId && !branch) {
       <nav class="branch-v2-page__breadcrumb" aria-label="Đường dẫn">
         <a routerLink="/admin/branches">Chi nhánh</a><span>›</span><strong>Không tìm thấy</strong>
@@ -14,7 +14,6 @@
     } @else if (!branch) {
       <header class="branch-v2-page__header branch-v2-page__header--list">
         <h1>Quản lý chi nhánh</h1>
-        <span class="branch-v2-page__preview-label">Dữ liệu Backend Render</span>
       </header>
       @if (!isAdmin && visibleBranches.length === 0 && !branchListLoading()) {
         <p class="branch-v2-page__notice">Không tìm thấy chi nhánh được phân quyền cho tài khoản này trong phiên đăng nhập.</p>
@@ -49,11 +48,11 @@
               <th scope="col">Hotline</th>
               <th scope="col">Dịch vụ đang bật</th>
               <th scope="col">Trạng thái</th>
-              <th scope="col">Thao tác</th>
+              <th scope="col" class="branch-v2-page__actions-heading">Thao tác</th>
             </tr></thead>
             <tbody>
               @if (branchListLoading()) {
-                <tr><td colspan="6" class="branch-v2-page__empty">Đang tải danh sách chi nhánh từ Backend...</td></tr>
+                <tr><td colspan="6" class="branch-v2-page__empty">Đang tải danh sách chi nhánh...</td></tr>
               } @else if (branchListError()) {
                 <tr><td colspan="6" class="branch-v2-page__empty">
                   {{ branchListError() }} <button type="button" (click)="refreshBranches()">Thử lại</button>
@@ -193,14 +192,14 @@
             </label>
             <button type="button" class="branch-v2-page__btn branch-v2-page__btn--outline" (click)="refreshPreview()">Làm mới</button>
           </div>
-          <p class="branch-v2-page__api-note">Cấu hình dịch vụ lấy từ Backend. Ngày/giờ đang chọn chưa dùng để tính slot thực tế; cần tích hợp thêm API /availability.</p>
+          <p class="branch-v2-page__api-note">Số chỗ còn trống theo giờ hiện chưa thể cập nhật tự động.</p>
           <div class="branch-v2-page__table-scroll branch-v2-page__table-scroll--services">
             <table class="branch-v2-page__table branch-v2-page__table--services">
               <thead><tr><th scope="col">Dịch vụ</th><th scope="col">Sức chứa đồng thời</th>
-                <th scope="col">Khả dụng</th><th scope="col">Kích hoạt tại chi nhánh</th><th scope="col">Thao tác</th></tr></thead>
+                <th scope="col">Khả dụng</th><th scope="col">Kích hoạt tại chi nhánh</th><th scope="col" class="branch-v2-page__actions-heading">Thao tác</th></tr></thead>
               <tbody>
                 @if (servicesLoading()) {
-                  <tr><td colspan="5" class="branch-v2-page__empty">Đang tải cấu hình dịch vụ từ Backend...</td></tr>
+                  <tr><td colspan="5" class="branch-v2-page__empty">Đang tải danh sách dịch vụ...</td></tr>
                 } @else if (servicesError()) {
                   <tr><td colspan="5" class="branch-v2-page__empty">
                     {{ servicesError() }} <button type="button" (click)="retryDetail()">Thử lại</button>
@@ -233,10 +232,10 @@
           </div>
         </section>
       } @else if (detailTab() === 'hours') {
-        <p class="branch-v2-page__api-note" role="status">Tab Lịch hoạt động hiện chỉ dùng dữ liệu minh họa từ Figma, chưa lấy dữ liệu khả dụng theo từng khung giờ từ Backend.</p>
+        <p class="branch-v2-page__api-note" role="status">Lịch hoạt động đang hiển thị dữ liệu minh họa. Chức năng xem lịch thực tế chưa khả dụng.</p>
         <app-branch-hours-preview />
       } @else {
-        <p class="branch-v2-page__api-note" role="status">Tab Ca làm việc hiện là dữ liệu mẫu Figma. Backend có /shifts để phân công nhân viên, nhưng chưa có API quản lý mẫu ca như giao diện này.</p>
+        <p class="branch-v2-page__api-note" role="status">Ca làm việc hiện chỉ hiển thị dữ liệu mẫu. Chức năng lưu thay đổi chưa khả dụng.</p>
         <app-branch-shift-templates-preview [branchName]="branch.name" />
       }
     }
@@ -256,7 +255,7 @@
       </header>
       <div class="branch-service-picker__list">
         @if (servicesLoading()) {
-          <p class="branch-service-picker__empty" role="status">Đang tải dịch vụ từ Backend...</p>
+          <p class="branch-service-picker__empty" role="status">Đang tải dịch vụ...</p>
         } @else if (servicesError()) {
           <p class="branch-service-picker__empty" role="alert">{{ servicesError() }}</p>
         } @else {
@@ -266,7 +265,7 @@
             <span>Cấu hình <img src="/assets/admin-branch/figma-gear.svg" alt="" width="18" height="18" /></span>
           </button>
         } @empty {
-          <p class="branch-service-picker__empty">Backend chưa trả về dịch vụ tại chi nhánh này.</p>
+          <p class="branch-service-picker__empty">Chi nhánh này chưa có dịch vụ.</p>
         }
         }
       </div>
