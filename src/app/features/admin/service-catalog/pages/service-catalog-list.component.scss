@@ -639,24 +639,24 @@ app-service-catalog-list {
 
 /* All branches: 8 visible columns (total 100%). */
 .service-catalog__table.service-catalog__table--all-branches th:nth-child(1) { width: 9%; }
-.service-catalog__table.service-catalog__table--all-branches th:nth-child(2) { width: 19%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(2) { width: 16%; }
 .service-catalog__table.service-catalog__table--all-branches th:nth-child(3) { width: 18%; }
-.service-catalog__table.service-catalog__table--all-branches th:nth-child(4) { width: 14%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(4) { width: 15%; }
 .service-catalog__table.service-catalog__table--all-branches th:nth-child(5) { width: 10%; }
-.service-catalog__table.service-catalog__table--all-branches th:nth-child(6) { width: 10%; }
-.service-catalog__table.service-catalog__table--all-branches th:nth-child(7) { width: 12%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(6) { width: 13%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(7) { width: 11%; }
 .service-catalog__table.service-catalog__table--all-branches th:nth-child(8) { width: 8%; }
 
 /* One branch: 9 visible columns (total 100%). */
 .service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(1) { width: 9%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(2) { width: 15%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(3) { width: 15%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(4) { width: 13%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(2) { width: 13%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(3) { width: 16%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(4) { width: 14%; }
 .service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(5) { width: 9%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(6) { width: 10%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(6) { width: 11%; }
 .service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(7) { width: 13%; }
 .service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(8) { width: 8%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(9) { width: 8%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(9) { width: 7%; }
 
 /* Keep the right three columns orderly and away from the outer border. */
 .service-catalog__table thead th:nth-child(n+6),
@@ -684,9 +684,13 @@ app-service-catalog-list {
   white-space: nowrap;
 }
 
-/* Keep role, booking mode and duration headings/values on the same axes. */
+/* Role follows Giá cơ sở: left aligned heading and values.
+ * Booking mode and duration stay centered beneath their own headings. */
 .service-catalog__table thead th:nth-child(3),
-.service-catalog__table tbody td:nth-child(3),
+.service-catalog__table tbody td:nth-child(3) {
+  text-align: left;
+  vertical-align: middle;
+}
 .service-catalog__table thead th:nth-child(4),
 .service-catalog__table tbody td:nth-child(4),
 .service-catalog__table thead th:nth-child(5),
