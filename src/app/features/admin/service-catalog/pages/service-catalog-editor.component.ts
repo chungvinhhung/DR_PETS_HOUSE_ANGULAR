@@ -11,6 +11,7 @@ import { AppHttpError } from '../../../../core/models/app-http-error.model';
 import { DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { catchError, firstValueFrom, from, map, mergeMap, of, toArray } from 'rxjs';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
@@ -20,6 +21,7 @@ import { ServiceCatalogApiService, serviceFromApi } from '../services/service-ca
 import { resolveServicePricing } from '../services/service-pricing.utils';
 import { AdminProductService } from '../../products/services/admin-product.service';
 import { AdminCategoryService } from '../../categories/services/admin-category.service';
+import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
 
 type PriceMode = 'FIXED' | 'QUOTE';
 type Tier = { key: string; weight: string; mode: PriceMode; price: number | null };
@@ -46,6 +48,7 @@ const TIER_WEIGHTS = [
 })
 export class ServiceCatalogEditorComponent {
   private readonly repository = inject(ServiceCatalogApiService);
+  private readonly branchesApi = inject(BranchManagementApiService);
   private readonly productsApi = inject(AdminProductService);
   private readonly categoryApi = inject(AdminCategoryService);
   private readonly destroyRef = inject(DestroyRef);
@@ -120,6 +123,9 @@ export class ServiceCatalogEditorComponent {
   readonly notice = signal('');
   readonly dirty = signal(false);
   readonly showCancelConfirmation = signal(false);
+  readonly pendingActivationServiceId = signal<string | null>(null);
+  readonly activationNotice = signal('');
+  private savedServiceStatus: 'ACTIVE' | 'INACTIVE' | null = null;
 
   constructor() {
     this.categoryApi.listCategories({ limit: 100 }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -428,7 +434,7 @@ export class ServiceCatalogEditorComponent {
   private validate(): string[] {
     const messages: string[] = [];
     if (this.pricingDirty && this.pricingDataWarning) {
-      messages.push('Dữ liệu giá cũ chưa đồng bộ với các mức giá trên màn hình. Vui lòng xác nhận hợp đồng giá với Backend trước khi lưu thay đổi giá để tránh ghi đè.');
+      messages.push('Giá hiện tại chưa khớp với các mức giá. Vui lòng liên hệ quản trị viên trước khi thay đổi.');
     }
     if (this.serviceName.trim().length < 2 || this.serviceName.trim().length > 120) {
       messages.push('Tên dịch vụ phải có từ 2 đến 120 ký tự.');
@@ -439,34 +445,34 @@ export class ServiceCatalogEditorComponent {
     }
     if ((this.category === 'GROOMING' && this.executorRole !== 'CARE_STAFF_GROOMER') ||
       (this.category === 'MEDICAL' && !['VETERINARIAN', 'NURSE'].includes(this.executorRole))) {
-      messages.push('Vai trò thực hiện không hợp lệ.');
+      messages.push('Vui lòng chọn vai trò phù hợp với loại dịch vụ.');
     }
     if (this.bookingMode !== 'CONTACT_ONLY' &&
       (!Number.isSafeInteger(this.durationMinutes) || (this.durationMinutes ?? 0) <= 0)) {
-      messages.push('Thời lượng phải là số nguyên dương đối với dịch vụ đặt lịch hoặc yêu cầu.');
+      messages.push('Vui lòng nhập thời lượng lớn hơn 0 phút, không dùng số thập phân.');
     }
     if (this.bookingMode === 'CONTACT_ONLY' && this.durationMinutes !== null &&
       (!Number.isSafeInteger(this.durationMinutes) || this.durationMinutes <= 0)) {
-      messages.push('Thời lượng nếu nhập phải là số nguyên dương.');
+      messages.push('Thời lượng phải lớn hơn 0 phút, không dùng số thập phân.');
     }
     if (/phẫu thuật|triệt sản|mổ/i.test(this.serviceName) && this.bookingMode !== 'REQUEST_ONLY') {
-      messages.push('Phẫu thuật chỉ được tiếp nhận theo yêu cầu (REQUEST_ONLY).');
+      messages.push('Dịch vụ phẫu thuật cần chọn hình thức “Yêu cầu đặt lịch”.');
     }
     if (/cấp cứu/i.test(this.serviceName) && this.bookingMode !== 'CONTACT_ONLY') {
-      messages.push('Cấp cứu chỉ cho liên hệ (CONTACT_ONLY).');
+      messages.push('Dịch vụ cấp cứu cần chọn hình thức “Liên hệ trực tiếp”.');
     }
 
     if (this.weightPricing) {
       for (const tier of this.priceTiers) {
         if (tier.mode === 'FIXED' && (tier.price === null ||
           !Number.isSafeInteger(tier.price) || tier.price <= 0)) {
-          messages.push('Mức ' + tier.key + ': giá cố định phải là số nguyên dương.');
+          messages.push('Giá mức ' + tier.key + ' phải lớn hơn 0 đồng và không có phần thập phân.');
         }
       }
     } else if (this.priceTiers[0].mode === 'FIXED' &&
       (this.priceTiers[0].price === null || !Number.isSafeInteger(this.priceTiers[0].price) ||
       this.priceTiers[0].price <= 0)) {
-      messages.push('Giá dịch vụ phải là số nguyên dương hoặc chọn Liên hệ báo giá.');
+      messages.push('Vui lòng nhập giá lớn hơn 0 đồng hoặc chọn “Liên hệ báo giá”.');
     }
 
     return [...new Set(messages)];
@@ -493,6 +499,10 @@ export class ServiceCatalogEditorComponent {
 
   validateDraft(): void {
     if (!this.mayEdit) return;
+    if (this.pendingActivationServiceId()) {
+      void this.enableUnconfiguredBranches(this.pendingActivationServiceId()!);
+      return;
+    }
     const errors = this.validate();
     this.errors.set(errors);
     if (errors.length) {
@@ -500,7 +510,7 @@ export class ServiceCatalogEditorComponent {
       return;
     }
     if (this.materialsDirty) {
-      this.errors.set(['Chưa thể lưu thay đổi vật liệu. Vui lòng bỏ các thay đổi vật liệu và thử lại.']);
+      this.errors.set(['Hiện chưa thể lưu thay đổi vật liệu. Vui lòng giữ nguyên phần vật liệu để tiếp tục.']);
       return;
     }
     const prices = this.pricePayload();
@@ -523,9 +533,17 @@ export class ServiceCatalogEditorComponent {
       : this.repository.update(this.serviceId!, this.pricingDirty
         ? body : (({ basePrice: _price, priceVariants: _variants, ...rest }) => rest)(body));
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.saving.set(false);
+      next: (saved) => {
         this.dirty.set(false);
+        if (this.isNew && saved.id) {
+          // A successful POST must never be retried when branch provisioning fails.
+          this.pendingActivationServiceId.set(saved.id);
+        }
+        if (this.active && saved.id) {
+          void this.enableUnconfiguredBranches(saved.id);
+          return;
+        }
+        this.saving.set(false);
         this.notice.set(this.isNew ? 'Đã thêm dịch vụ thành công.' : 'Đã cập nhật dịch vụ thành công.');
         this.back();
       },
@@ -534,6 +552,68 @@ export class ServiceCatalogEditorComponent {
         this.errors.set([this.errorLabel(error)]);
       },
     });
+  }
+
+  /**
+   * FB #16: A newly created active Service defaults to being offered at all
+   * currently active branches. Persist this, never fake branch status in UI.
+   * Existing explicit branch settings always win: only missing configs are seeded.
+   *
+   * The current BE has no atomic "enable at all branches" operation. This
+   * retryable reconciliation is idempotent but does not cover branches created
+   * in the future. BE must enforce that long-term business rule.
+   */
+  async enableUnconfiguredBranches(serviceId: string): Promise<void> {
+    if (!serviceId || this.saving() && !this.pendingActivationServiceId()) return;
+    this.saving.set(true);
+    this.activationNotice.set('');
+    this.errors.set([]);
+    try {
+      const branches = (await firstValueFrom(this.branchesApi.listBranches()))
+        .filter((branch) => branch.status === 'ACTIVE');
+      const results = await firstValueFrom(from(branches).pipe(
+        mergeMap((branch) => this.branchesApi.listServiceConfigs(branch.id).pipe(
+          mergeMap((configs) => {
+            if (configs.some((row) => row.serviceId === serviceId)) {
+              return of({ failed: false, unchanged: true });
+            }
+            return this.branchesApi.updateServiceConfig(branch.id, serviceId, {
+              enabled: true, capacity: 1, availability: [],
+            }).pipe(map(() => ({ failed: false, unchanged: false })));
+          }),
+          catchError(() => of({ failed: true, unchanged: false })),
+        ), 4),
+        toArray(),
+      ));
+      const failures = results.filter((result) => result.failed).length;
+      if (failures) {
+        this.pendingActivationServiceId.set(serviceId);
+        this.activationNotice.set(
+          'Dịch vụ đã được lưu, nhưng chưa thể bật tại ' + failures +
+          ' chi nhánh. Vui lòng chọn “Thử lại” để hoàn tất.',
+        );
+        return;
+      }
+      this.pendingActivationServiceId.set(null);
+      this.dirty.set(false);
+      this.notice.set(this.isNew
+        ? 'Thêm dịch vụ thành công. Đã bật tại các chi nhánh đang hoạt động.'
+        : 'Cập nhật dịch vụ thành công.');
+      this.back();
+    } catch {
+      this.pendingActivationServiceId.set(serviceId);
+      this.activationNotice.set(
+        'Dịch vụ đã được lưu, nhưng chưa thể cập nhật các chi nhánh. Vui lòng thử lại.',
+      );
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  retryBranchActivation(): void {
+    const serviceId = this.pendingActivationServiceId();
+    if (!serviceId || this.saving()) return;
+    void this.enableUnconfiguredBranches(serviceId);
   }
 
   cancel(): void {
