@@ -125,7 +125,6 @@ export class ServiceCatalogEditorComponent {
   readonly showCancelConfirmation = signal(false);
   readonly pendingActivationServiceId = signal<string | null>(null);
   readonly activationNotice = signal('');
-  private savedServiceStatus: 'ACTIVE' | 'INACTIVE' | null = null;
 
   constructor() {
     this.categoryApi.listCategories({ limit: 100 }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -564,7 +563,7 @@ export class ServiceCatalogEditorComponent {
    * in the future. BE must enforce that long-term business rule.
    */
   async enableUnconfiguredBranches(serviceId: string): Promise<void> {
-    if (!serviceId || this.saving() && !this.pendingActivationServiceId()) return;
+    if (!serviceId) return;
     this.saving.set(true);
     this.activationNotice.set('');
     this.errors.set([]);
