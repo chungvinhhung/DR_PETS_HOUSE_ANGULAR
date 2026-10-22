@@ -3,7 +3,7 @@
     <nav class="staff-breadcrumb" aria-label="Breadcrumb"><span>Vận hành</span><span aria-hidden="true">›</span><strong>Nhân sự</strong></nav>
     <header class="staff-heading">
       <div><h1>Quản lý nhân sự</h1></div>
-      <span class="staff-preview-label">Giao diện mẫu · Chờ API Staff/Shift</span>
+      <span class="staff-preview-label">Dữ liệu từ Backend Render</span>
     </header>
     <nav class="staff-tabs" aria-label="Nhân sự">
       <span class="staff-tab staff-tab--active" aria-current="page">Nhân viên</span>
@@ -22,7 +22,7 @@
           </select><img class="staff-filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" width="20" height="20" alt="" aria-hidden="true"></label>
           <label><span class="sr-only">Chi nhánh</span><select aria-label="Lọc chi nhánh" [ngModel]="branchFilter()" (ngModelChange)="updateBranch($event)">
             <option value="ALL">Tất cả chi nhánh</option>
-            @for (branch of branches; track branch) { <option [value]="branch">{{ branch }}</option> }
+            @for (branch of branches(); track branch) { <option [value]="branch">{{ branch }}</option> }
           </select><img class="staff-filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" width="20" height="20" alt="" aria-hidden="true"></label>
           <label><span class="sr-only">Trạng thái</span><select aria-label="Lọc trạng thái tài khoản" [ngModel]="statusFilter()" (ngModelChange)="updateStatus($event)">
             <option value="ALL">Tất cả trạng thái</option>
@@ -30,19 +30,22 @@
             <option value="BLOCKED">Đã chặn</option>
           </select><img class="staff-filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" width="20" height="20" alt="" aria-hidden="true"></label>
         </div>
-        <a class="staff-add" routerLink="/admin/staff/new">+ Thêm nhân viên</a>
+        <a class="staff-add" routerLink="/admin/staff/new" title="API tạo tài khoản và hồ sơ nhân viên chưa được xác minh">+ Thêm nhân viên</a>
       </div>
     </section>
+    @if (loading()) { <p role="status">Đang tải danh sách nhân sự từ Backend...</p> }
+    @if (error()) { <p role="alert">{{ error() }} <button type="button" (click)="retry()">Thử lại</button></p> }
+    @if (shiftError()) { <p role="alert">{{ shiftError() }}</p> }
     <section class="staff-panel" aria-label="Danh sách nhân viên">
       <div class="staff-table-wrap"><table>
         <thead><tr><th>Mã nhân viên</th><th>Họ tên</th><th>Vai trò nghiệp vụ</th><th>Chi nhánh được phân công</th><th>Ca hôm nay</th><th>Trạng thái tài khoản</th><th>Thao tác</th></tr></thead>
         <tbody>
           @for (staff of rows(); track staff.id) {
             <tr>
-              <td>{{ staff.id }}</td><td class="staff-name">{{ displayName(staff) }}</td>
+              <td>{{ staffCode(staff) }}</td><td class="staff-name">{{ displayName(staff) }}</td>
               <td>{{ roleName(staff.jobRole) }}</td><td>{{ staff.branches.join(' | ') }}</td>
-              <td>{{ displayShift(staff.todayShift) }}</td>
-              <td><span class="staff-status" [class.staff-status--blocked]="staff.accountStatus === 'BLOCKED'">{{ staff.accountStatus === 'ACTIVE' ? 'Đang hoạt động' : 'Đã chặn' }}</span></td>
+              <td>{{ todayShift(staff) }}</td>
+              <td><span class="staff-status" [class.staff-status--blocked]="staff.accountStatus === 'BLOCKED'">{{ accountLabel(staff) }}</span></td>
               <td class="staff-actions">
                 <div class="staff-action-group" role="group" [attr.aria-label]="'Thao tác ' + displayName(staff)">
                   <a class="staff-action-button" [routerLink]="['/admin/staff', staff.id]"
@@ -60,7 +63,7 @@
               </td>
             </tr>
           } @empty {
-            <tr><td colspan="7" class="staff-empty"><p>Không tìm thấy nhân viên phù hợp.</p><button type="button" (click)="clearFilters()">Xóa bộ lọc</button></td></tr>
+            <tr><td colspan="7" class="staff-empty"><p>{{ loading() ? 'Đang tải nhân viên...' : error() ? 'Không thể tải nhân viên.' : 'Không có nhân viên phù hợp.' }}</p><button type="button" (click)="clearFilters()">Xóa bộ lọc</button></td></tr>
           }
         </tbody>
       </table></div>
@@ -77,6 +80,6 @@
         </nav>
       </footer>
     </section>
-    <p class="staff-disclaimer">Dữ liệu minh họa để kiểm thử FE; ca hôm nay và trạng thái thực tế sẽ được lấy từ API Staff/Shift có phân quyền.</p>
+    <p class="staff-disclaimer">Nguồn: API Staff/Shift trên Render. Trạng thái tài khoản chỉ hiển thị khi Backend trả trường accountStatus; không suy đoán từ trạng thái hồ sơ nhân sự. Tạo/sửa tài khoản cần BE xác nhận hợp đồng ghi.</p>
   </main>
 </app-admin-catalog-shell>
