@@ -24,6 +24,16 @@
       </div>
     </header>
 
+    @if (activationNotice()) {
+      <div class="service-editor__activation-notice" role="alert">
+        <span>{{ activationNotice() }}</span>
+        <button type="button" class="service-editor__btn service-editor__btn--secondary"
+          [disabled]="saving()" (click)="retryBranchActivation()">
+          {{ saving() ? 'Đang cập nhật...' : 'Thử lại' }}
+        </button>
+      </div>
+    }
+
     @if (loading()) {
       <div class="service-editor__error" role="status">Đang tải thông tin dịch vụ...</div>
     } @else if (missingService()) {
@@ -53,7 +63,7 @@
           <h2 id="service-detail-pricing">Giá &amp; vật liệu mặc định</h2>
           @if (pricingDataWarning) {
             <p class="service-editor__pricing-warning" role="status">
-              Thông tin giá từ Backend chưa khớp các mức giá đang hỗ trợ. Các số tiền chưa được xác nhận sẽ không hiển thị là giá cơ sở.
+              Giá hiện tại chưa khớp với các mức giá. Vui lòng kiểm tra lại trước khi thay đổi.
             </p>
           }
           <div class="service-editor__detail-pricing">
@@ -256,7 +266,9 @@
                           [placeholder]="tier.mode === 'QUOTE' ? '—' : 'Nhập giá'"/>
                         @if (tier.mode === 'FIXED') { <span>đ</span> }
                       </span>
-
+                      @if (tier.mode === 'FIXED' && tier.price !== null && tier.price > 0) {
+                        <span class="service-editor__amount-words" aria-live="polite">{{ moneyWords(tier.price) }}</span>
+                      }
                     </td>
                   </tr>
                 }
