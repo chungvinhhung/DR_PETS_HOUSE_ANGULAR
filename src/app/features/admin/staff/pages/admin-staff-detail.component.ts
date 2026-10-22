@@ -8,6 +8,7 @@ import { AuthSessionService } from '../../../../core/services/auth-session.servi
 import { AdminStaffApiService, staffTodayISO, staffWeekMonday } from '../services/admin-staff-api.service';
 import {
   JOB_LABELS,
+  StaffPreview,
   StaffShiftPreview,
   displayStaffName,
   displayStaffShift,
