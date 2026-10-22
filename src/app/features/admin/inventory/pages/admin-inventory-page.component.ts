@@ -2,7 +2,8 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, Observable, finalize, switchMap, tap } from 'rxjs';
+import { catchError, forkJoin, Observable, of, finalize, switchMap, tap } from 'rxjs';
+import { AdminProduct } from '../../products/models/admin-product.model';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
@@ -67,6 +68,22 @@ export class AdminInventoryPageComponent implements OnInit {
   readonly stock = signal<StockItem[]>([]);
   readonly history = signal<StockHistory[]>([]);
   readonly inventoryItems = signal<InventoryItemDto[]>([]);
+  readonly catalogProducts = signal<AdminProduct[]>([]);
+  readonly catalogBySku = computed(() => {
+    const bySku = new Map<string, { name: string; label: string; usage: StockKind; variantCount: number }>();
+    for (const product of this.catalogProducts()) {
+      for (const variant of product.variants) {
+        bySku.set(variant.sku.trim().toLowerCase(), {
+          name: product.name,
+          label: variant.label,
+          usage: product.usageType === 'SHARED' ? 'Dùng chung'
+            : product.usageType === 'SERVICE_SUPPLY' ? 'Vật tư dịch vụ' : 'Hàng bán',
+          variantCount: product.variants.length,
+        });
+      }
+    }
+    return bySku;
+  });
   readonly branchesData = signal<InventoryBranchDto[]>([]);
   readonly search = signal('');
   readonly branch = signal('');
@@ -156,13 +173,15 @@ export class AdminInventoryPageComponent implements OnInit {
       branches: this.inventoryApi.listBranches(),
       items: this.inventoryApi.listItems(),
       stocks: this.inventoryApi.listStocks(),
+      products: this.inventoryApi.listCatalogProducts().pipe(catchError(() => of([] as AdminProduct[]))),
     }).pipe(
       takeUntilDestroyed(this.destroyRef),
       finalize(() => this.loading.set(false)),
     ).subscribe({
-      next: ({ branches, items, stocks }) => {
+      next: ({ branches, items, stocks, products }) => {
         this.branchesData.set(branches);
         this.inventoryItems.set(items);
+        this.catalogProducts.set(products);
         this.stock.set(this.makeStockRows(stocks, items, branches));
         this.page.set(1);
         this.loadHistory();
@@ -170,6 +189,7 @@ export class AdminInventoryPageComponent implements OnInit {
       error: (error: unknown) => {
         this.stock.set([]);
         this.inventoryItems.set([]);
+        this.catalogProducts.set([]);
         this.branchesData.set([]);
         this.loadError.set(adminErrorMessage(error, 'Không tải được dữ liệu kho. Vui lòng thử lại.'));
       },
@@ -194,18 +214,21 @@ export class AdminInventoryPageComponent implements OnInit {
   private makeStockRows(stocks: InventoryStockDto[], items: InventoryItemDto[], branches: InventoryBranchDto[]): StockItem[] {
     const itemById = new Map(items.map(item => [item.id, item]));
     const branchById = new Map(branches.map(b => [b.id, b.name]));
+    const catalogBySku = this.catalogBySku();
     return stocks.flatMap(row => {
       const item = itemById.get(row.inventoryItemId);
       if (!item) return [];
+      const product = catalogBySku.get(item.sku.trim().toLowerCase());
       return [{
         id: `${row.branchId}:${row.inventoryItemId}`,
         itemId: item.id,
         branchId: row.branchId,
         version: row.version,
-        name: item.name,
-        variant: item.unit || '—',
+        name: product?.name ?? item.name,
+        variant: product && product.variantCount > 1 && product.label.toLowerCase() !== 'mặc định'
+          ? product.label : '—',
         sku: item.sku,
-        kind: item.kind === 'PRODUCT' ? 'Hàng bán' as const : 'Vật tư dịch vụ' as const,
+        kind: product?.usage ?? (item.kind === 'PRODUCT' ? 'Hàng bán' as const : 'Vật tư dịch vụ' as const),
         branch: branchById.get(row.branchId) ?? row.branchId,
         quantity: row.quantity,
         threshold: row.version === 0 ? null : row.lowStockThreshold,
@@ -216,6 +239,7 @@ export class AdminInventoryPageComponent implements OnInit {
   private makeHistoryRows(transactions: InventoryTransactionDto[]): StockHistory[] {
     const items = new Map(this.inventoryItems().map(item => [item.id, item]));
     const branches = new Map(this.branchesData().map(branch => [branch.id, branch.name]));
+    const catalog = this.catalogBySku();
     const actions: Record<string, string> = { RECEIPT: 'Nhập kho', ISSUE: 'Xuất kho', ADJUSTMENT: 'Điều chỉnh', TRANSFER: 'Chuyển kho' };
     return transactions.map(tx => {
       const date = new Date(tx.createdAt);
@@ -224,7 +248,8 @@ export class AdminInventoryPageComponent implements OnInit {
       return {
       id: tx.id,
       date: formatted,
-      item: items.get(tx.inventoryItemId)?.name || tx.inventoryItemId,
+      item: catalog.get((items.get(tx.inventoryItemId)?.sku || '').trim().toLowerCase())?.name
+        || items.get(tx.inventoryItemId)?.name || tx.inventoryItemId,
       sku: items.get(tx.inventoryItemId)?.sku || '—',
       branch: branches.get(tx.branchId) || tx.branchId,
       branchId: tx.branchId,
@@ -242,6 +267,10 @@ export class AdminInventoryPageComponent implements OnInit {
   branchId(name: string): string { return this.branchesData().find(b => b.name === name)?.id || ''; }
   productLabel(item: StockItem): string {
     return item.variant === '—' ? item.name : `${item.name} · ${item.variant}`;
+  }
+  inventoryItemLabel(item: InventoryItemDto): string {
+    const product = this.catalogBySku().get(item.sku.trim().toLowerCase());
+    return product ? `${product.name}${product.variantCount > 1 ? ' · ' + product.label : ''}` : item.name;
   }
   stockStatus(item: StockItem): string {
     if (item.quantity === 0) return 'Hết hàng';
@@ -283,10 +312,15 @@ export class AdminInventoryPageComponent implements OnInit {
           itemId: product.id,
           branchId: this.branchId(this.receiptBranch()),
           version: 0,
-          name: product.name,
+          name: this.catalogBySku().get(product.sku.toLowerCase())?.name ?? product.name,
           sku: product.sku,
-          variant: product.unit || '—',
-          kind: product.kind === 'PRODUCT' ? 'Hàng bán' as const : 'Vật tư dịch vụ' as const,
+          variant: (() => {
+            const match = this.catalogBySku().get(product.sku.toLowerCase());
+            return match && match.variantCount > 1 && match.label.toLowerCase() !== 'mặc định'
+              ? match.label : '—';
+          })(),
+          kind: this.catalogBySku().get(product.sku.toLowerCase())?.usage ??
+            (product.kind === 'PRODUCT' ? 'Hàng bán' as const : 'Vật tư dịch vụ' as const),
           branch: this.receiptBranch(),
           quantity: 0,
           threshold: null,
