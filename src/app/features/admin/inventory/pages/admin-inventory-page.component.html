@@ -53,7 +53,7 @@
           @for (item of currentRows(); track item.id) {
             <tr>
               <td class="product">{{item.name}}</td>
-              <td class="sku-inline" [title]="item.variant === '—' ? item.sku : item.variant + ' | ' + item.sku">@if (item.variant !== '—') {<span>{{item.variant}} <span aria-hidden="true">|</span> </span>}{{item.sku}}</td>
+              <td class="sku-inline" [title]="formatVariantSku(item.variant, item.sku)">{{formatVariantSku(item.variant, item.sku)}}</td>
               <td>{{item.kind}}</td><td [title]="item.branch">{{ item.branch === 'Chi nhánh Quận 1' ? 'Q1' : item.branch === 'Chi nhánh Quận 3' ? 'Q3' : item.branch }}</td>
               <td class="number">{{item.quantity}}</td><td class="number">{{item.threshold === null ? 'Chưa cài' : item.threshold}}</td>
               <td><span class="stock-badge" [class.ok]="stockStatus(item)==='Đủ hàng'" [class.low]="stockStatus(item)==='Sắp hết hàng'" [class.out]="stockStatus(item)==='Hết hàng'" [class.unset]="stockStatus(item)==='Chưa cài ngưỡng'">{{stockStatus(item)}}</span></td>
@@ -83,7 +83,7 @@
           <th>Thời gian</th><th>Sản phẩm / SKU</th><th>Chi nhánh / Tuyến</th><th>Giao dịch & lý do</th><th>Thay đổi</th><th>Tồn sau</th><th>Tham chiếu</th><th>Người thao tác</th>
         </tr></thead><tbody>
           @for (record of currentHistory();track record.reference) {
-            <tr><td>{{record.date}}</td><td><div class="product">{{record.item}}</div><small>{{record.sku}}</small></td><td>{{record.branch}}</td><td><strong>{{record.action}}</strong><small>{{record.reason}}</small></td><td class="number" [class.positive]="record.delta.startsWith('+')">{{record.delta}}</td><td>{{record.after}}</td><td>{{record.reference}}</td><td>{{record.actor}}</td></tr>
+            <tr><td>{{record.date}}</td><td><div class="product">{{record.item}}</div><small>{{formatVariantSku(record.variant, record.sku)}}</small></td><td>{{record.branch}}</td><td><strong>{{record.action}}</strong><small>{{record.reason}}</small></td><td class="number" [class.positive]="record.delta.startsWith('+')">{{record.delta}}</td><td>{{record.after}}</td><td>{{record.reference}}</td><td>{{record.actor}}</td></tr>
           } @empty {<tr><td colspan="8" class="empty">Không có lịch sử kho phù hợp.</td></tr>}
         </tbody></table>
       }
