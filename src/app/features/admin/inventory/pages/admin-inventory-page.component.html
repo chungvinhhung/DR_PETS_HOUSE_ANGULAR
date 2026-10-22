@@ -80,7 +80,7 @@
             <col style="width:10%"/><col style="width:9%"/><col style="width:11%"/><col style="width:13%"/>
           </colgroup>
           <thead><tr>
-          <th>Thời gian</th><th>Sản phẩm / SKU</th><th>Chi nhánh / Tuyến</th><th>Giao dịch & lý do</th><th>Thay đổi</th><th>Tồn sau</th><th>Tham chiếu</th><th>Người thao tác</th>
+          <th>Thời gian</th><th>Sản phẩm | Biến thể | SKU</th><th>Chi nhánh / Tuyến</th><th>Giao dịch & Lý do</th><th>Thay đổi</th><th>Tồn sau</th><th>Tham chiếu</th><th>Người thao tác</th>
         </tr></thead><tbody>
           @for (record of currentHistory();track record.reference) {
             <tr><td>{{record.date}}</td><td><div class="product">{{record.item}}</div><small>{{formatVariantSku(record.variant, record.sku)}}</small></td><td>{{record.branch}}</td><td><strong>{{record.action}}</strong><small>{{record.reason}}</small></td><td class="number" [class.positive]="record.delta.startsWith('+')">{{record.delta}}</td><td>{{record.after}}</td><td>{{record.reference}}</td><td>{{record.actor}}</td></tr>
