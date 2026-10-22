@@ -373,105 +373,128 @@ small {
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgb(16 29 50 / 35%);
+  background: rgba(0, 0, 0, .72);
 }
-
 .stock-dialog {
+  box-sizing: border-box;
   width: min(488px, calc(100vw - 32px));
-  max-height: calc(100vh - 40px);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-radius: 12px;
-  background: white;
-}
-
-.dialog-header {
-  height: 64px;
-  flex: 0 0 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.dialog-header h2 { margin: 0; font-size: 20px; color: #152b4a; }
-
-.dialog-header button {
-  width: 32px;
-  height: 32px;
-  border: 0;
-  background: none;
-  color: #475569;
-  font-size: 26px;
-  cursor: pointer;
-}
-
-.dialog-body {
-  display: grid;
-  gap: 14px;
+  max-height: calc(100dvh - 32px);
+  padding: 22px 24px 22px;
   overflow-y: auto;
-  padding: 20px 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  color: #1c2531;
 }
-
-.field-label {
-  display: grid;
-  gap: 6px;
-  color: #334155;
-  font-size: 13px;
+.stock-dialog--compact { width: min(420px, calc(100vw - 32px)); }
+.stock-dialog h2 {
+  margin: 0 0 14px;
+  font-size: 18px;
+  line-height: 22px;
   font-weight: 600;
 }
-
+.dialog-body { display: flex; flex-direction: column; gap: 14px; }
+.context-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-height: 82px;
+  padding: 12px 14px;
+  border: 1px solid #dce5ef;
+  border-radius: 7px;
+  background: #f5f8fc;
+  font-size: 12px;
+}
+.context-card strong { font-size: 13px; font-weight: 600; }
+.context-card span { color: #62718a; }
+.context-card b { font-size: 12px; font-weight: 600; }
+.dialog-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.dialog-columns--product { grid-template-columns: minmax(0, 266fr) minmax(0, 158fr); }
+.field-label {
+  box-sizing: border-box;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+  color: #475569;
+  font-size: 12px;
+  line-height: 13px;
+  font-weight: 500;
+}
+.field-caption { display: inline-flex; align-items: baseline; gap: 3px; }
 .field-label input,
-.field-label select,
-.field-label textarea {
+.field-label select {
   box-sizing: border-box;
   width: 100%;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background: white;
-  color: #27374a;
-  font: inherit;
+  height: 40px;
+  min-width: 0;
+  padding: 0 12px;
+  border: 1px solid #dce5ef;
+  border-radius: 7px;
+  background-color: #fff;
+  color: #1c2531;
+  font: 13px Roboto, Arial, sans-serif;
 }
-
-.field-label input, .field-label select { height: 40px; padding: 0 12px; }
-.field-label textarea { min-height: 70px; padding: 12px; resize: vertical; }
-.field-label input[readonly] { background: #f8fafc; color: #64748b; }
+.field-label input:focus-visible,
+.field-label select:focus-visible {
+  border-color: #0d47a1;
+  outline: 2px solid #d5e6ff;
+}
+.field-label select {
+  appearance: none;
+  padding-right: 36px;
+  background: white url("/assets/admin-inventory/chevron-down.svg") right 12px center / 18px 18px no-repeat;
+}
+.field-label input[readonly] { background: #eff6ff; color: #52647d; }
+.field-label .computed-input { background: #eff6ff; }
+.sku-input-wrap { position: relative; display: block; }
+.sku-input-wrap input { padding-left: 40px; }
+.sku-input-wrap img { position: absolute; left: 13px; top: 13px; width: 15px; height: 15px; pointer-events: none; }
 .required { color: #c62828; }
-
-.preview {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 14px;
-  border-radius: 8px;
-  background: #e5f6fd;
-  color: #325273;
-  font-size: 13px;
+.transaction-preview {
+  box-sizing: border-box;
+  min-height: 36px;
+  padding: 10px 12px;
+  border: 1px solid #dce5ef;
+  border-radius: 7px;
+  background: #eff6ff;
+  color: #26364a;
+  font-size: 12px;
+  line-height: 15px;
 }
-.preview strong { color: #0d47a1; font-size: 18px; }
-.muted-row { font-size: 13px; color: #475569; }
-
+.transaction-preview strong { margin-left: 4px; font-weight: 600; }
+.transaction-preview:has(>span) { display: flex; flex-direction: column; gap: 4px; min-height: 62px; }
+.transaction-preview:has(>span) strong { margin: 0; }
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  padding: 16px 24px;
-  border-top: 1px solid #e2e8f0;
+  margin-top: 14px;
 }
-
-.secondary {
-  min-height: 40px;
-  padding: 0 18px;
-  border: 1px solid #cbd5e1;
+.dialog-footer .secondary,
+.dialog-footer .primary {
+  box-sizing: border-box;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 12px;
   border-radius: 6px;
-  background: white;
-  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+}
+.dialog-footer .secondary {
+  width: 95px;
+  border: 1px solid #0d47a1;
+  background: #fff;
+  color: #0d47a1;
   cursor: pointer;
 }
-
+.dialog-footer .primary { width: 140px; }
+@media (max-width: 520px) {
+  .stock-dialog { padding: 20px 16px; }
+  .dialog-columns--product { grid-template-columns: minmax(0, 1fr) 120px; }
+}
 .history-table { min-width: 1130px; }
 .history-table th, .history-table td { padding: 0 12px; }
 .positive { color: #188038; }
