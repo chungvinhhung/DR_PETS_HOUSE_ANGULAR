@@ -76,6 +76,8 @@ export class AdminInventoryPageComponent {
   shortBranch(value: string): string { return value.replace('Chi nhánh Quận ', 'Q'); }
   productLabel(item: StockItem): string { return item.variant === '—' ? item.name : `${item.name} · ${item.variant}`; }
   readonly pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+  readonly visibleCount = computed(() => this.tab() === 'stock' ? this.currentRows().length : this.currentHistory().length);
+  readonly totalCount = computed(() => this.tab() === 'stock' ? this.stockFiltered().length : this.historyFiltered().length);
   readonly stockFiltered = computed(() => this.stock().filter(row => {
     const text = this.search().trim().toLocaleLowerCase('vi');
     const matched = !text || `${row.name} ${row.variant} ${row.sku}`.toLocaleLowerCase('vi').includes(text);
@@ -115,12 +117,12 @@ export class AdminInventoryPageComponent {
   onFilter(): void {this.page.set(1);}
   openDialog(kind: DialogKind, item?: StockItem): void {
     this.menuId.set(null);
-    const selected = item ?? this.stock()[0] ?? null;
+    const selected = kind === 'receipt' ? null : (item ?? null);
     this.activeItem.set(selected);
     this.modal.set(kind);
     this.quantity.set(null);
-    this.receiptBranch.set(selected?.branch ?? this.branches[0]);
-    this.receiptSku.set(selected?.sku ?? '');
+    this.receiptBranch.set(this.branch() || item?.branch || this.branches[0]);
+    this.receiptSku.set('');
     this.threshold.set(selected?.threshold ?? null);
     this.destination.set('');
     this.note.set('');
@@ -130,14 +132,12 @@ export class AdminInventoryPageComponent {
     this.receiptSku.set(sku);
     const selected = this.stock().find(item => item.sku === sku && item.branch === this.receiptBranch())
       ?? this.stock().find(item => item.sku === sku);
-    if (selected) {
-      this.activeItem.set(selected);
-      this.threshold.set(this.receiptStock()?.threshold ?? null);
-    }
+    this.activeItem.set(selected ?? null);
+    this.threshold.set(selected ? (this.receiptStock()?.threshold ?? null) : null);
   }
   changeReceiptBranch(value: string): void {
     this.receiptBranch.set(value);
-    this.threshold.set(this.receiptStock()?.threshold ?? null);
+    this.threshold.set(this.activeItem() ? (this.receiptStock()?.threshold ?? null) : null);
   }
   changeDestination(value: string): void {
     this.destination.set(value);
