@@ -268,15 +268,21 @@
                     </td>
                     <td>
                       <div class="service-editor__money-group">
-                        <span class="service-editor__price-input">
-                          <input type="text" inputmode="numeric" autocomplete="off" [disabled]="!mayEdit || tier.mode === 'QUOTE'"
-                            [value]="formatMoney(tier.price)" (input)="setTierPrice(tier, $any($event.target).value)"
-                            [attr.aria-label]="'Giá cơ sở mức ' + tier.key"
-                            [placeholder]="tier.mode === 'QUOTE' ? '—' : 'Nhập giá'"/>
-                          @if (tier.mode === 'FIXED') { <span>đ</span> }
-                        </span>
-                        @if (tier.mode === 'FIXED' && tier.price !== null && tier.price > 0) {
-                          <span class="service-editor__amount-words" aria-live="polite">{{ moneyWords(tier.price) }}</span>
+                        @if (tier.mode === 'QUOTE') {
+                          <span class="service-editor__amount-unset">Chưa xác định giá</span>
+                        } @else {
+                          <span class="service-editor__price-input">
+                            <input type="text" inputmode="numeric" autocomplete="off" [disabled]="!mayEdit"
+                              [value]="formatMoney(tier.price)" (input)="setTierPrice(tier, $any($event.target).value)"
+                              [attr.aria-label]="'Giá cơ sở mức ' + tier.key"
+                              placeholder="Nhập giá"/>
+                            <span>đ</span>
+                          </span>
+                          @if (tier.price !== null && tier.price > 0) {
+                            <span class="service-editor__amount-words" aria-live="polite">{{ moneyWords(tier.price) }}</span>
+                          } @else {
+                            <span class="service-editor__amount-unset">Chưa xác định giá</span>
+                          }
                         }
                       </div>
                     </td>
