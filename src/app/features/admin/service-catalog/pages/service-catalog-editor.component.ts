@@ -626,14 +626,22 @@ export class ServiceCatalogEditorComponent {
       const results = await firstValueFrom(from(branches).pipe(
         mergeMap((branch) => this.branchesApi.listServiceConfigs(branch.id).pipe(
           mergeMap((configs) => {
-            if (configs.some((row) => row.serviceId === serviceId)) {
+            const existing = configs.find((row) => row.serviceId === serviceId);
+            const draft = this.stagedBranchConfigs().find((item) => item.branchId === branch.id);
+            // After creation, the chosen settings override server-side defaults.
+            // For older services, an explicit existing config is never overwritten.
+            if (existing && (!this.isNew || !draft)) {
               return of({ failed: false, unchanged: true });
             }
-            const draft = this.stagedBranchConfigs().find((item) => item.branchId === branch.id);
+            const enabled = draft
+              ? draft.enabled && this.active && branch.status === 'ACTIVE'
+              : this.active;
+            const capacity = draft?.capacity ?? 1;
+            if (existing && existing.enabled === enabled && existing.capacity === capacity) {
+              return of({ failed: false, unchanged: true });
+            }
             return this.branchesApi.updateServiceConfig(branch.id, serviceId, {
-              enabled: draft ? (draft.enabled && this.active && branch.status === 'ACTIVE') : this.active,
-              capacity: draft?.capacity ?? 1,
-              availability: [],
+              enabled, capacity, availability: existing?.availability ?? [],
             }).pipe(map(() => ({ failed: false, unchanged: false })));
           }),
           catchError(() => of({ failed: true, unchanged: false })),
