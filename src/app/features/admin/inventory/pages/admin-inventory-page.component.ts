@@ -250,10 +250,27 @@ export class AdminInventoryPageComponent implements OnInit {
 
   private makeHistoryRows(transactions: InventoryTransactionDto[]): StockHistory[] {
     const items = new Map(this.inventoryItems().map(item => [item.id, item]));
-    const branches = new Map(this.branchesData().map(branch => [branch.id, branch.name]));
     const catalog = this.catalogBySku();
     const actions: Record<string, string> = { RECEIPT: 'Nhập kho', ISSUE: 'Xuất kho', ADJUSTMENT: 'Điều chỉnh', TRANSFER: 'Chuyển kho' };
+    const transferGroups = new Map<string, InventoryTransactionDto[]>();
+    for (const tx of transactions) {
+      if (tx.transactionType !== 'TRANSFER' || tx.sourceType !== 'TRANSFER' || !tx.sourceId) continue;
+      const group = transferGroups.get(tx.sourceId) ?? [];
+      group.push(tx);
+      transferGroups.set(tx.sourceId, group);
+    }
+    const branchLabel = (id: string): string => {
+      const branch = this.branchesData().find(value => value.id.toLowerCase() === id.toLowerCase());
+      if (!branch) return 'Chi nhánh chưa xác định';
+      return branch.code && /^Q\\d+$/i.test(branch.code) ? branch.code.toUpperCase() : this.shortBranch(branch.name);
+    };
     return transactions.map(tx => {
+      const transfer = tx.sourceId && tx.sourceType === 'TRANSFER' ? transferGroups.get(tx.sourceId) ?? [] : [];
+      const origin = transfer.find(value => value.changeQty < 0);
+      const destination = transfer.find(value => value.changeQty > 0);
+      const route = tx.transactionType === 'TRANSFER' && origin && destination
+        ? `${branchLabel(origin.branchId)} → ${branchLabel(destination.branchId)}`
+        : branchLabel(tx.branchId);
       const date = new Date(tx.createdAt);
       const two = (n: number) => String(n).padStart(2, '0');
       const formatted = `${two(date.getDate())}/${two(date.getMonth() + 1)}/${date.getFullYear()} ${two(date.getHours())}:${two(date.getMinutes())}`;
@@ -268,7 +285,7 @@ export class AdminInventoryPageComponent implements OnInit {
         const product = catalog.get(sku.trim().toLowerCase());
         return product?.hasVariant ? this.normalizedVariant(product.label) : '—';
       })(),
-      branch: branches.get(tx.branchId) || tx.branchId,
+      branch: route,
       branchId: tx.branchId,
       action: actions[tx.transactionType] || tx.transactionType,
       reason: tx.reason,
