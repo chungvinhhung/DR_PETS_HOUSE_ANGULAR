@@ -5,29 +5,27 @@
     <img class="art-layer" src="/assets/admin-login/corner-curves.svg" alt="" aria-hidden="true" />
     <img class="art-layer" src="/assets/admin-login/sun.svg" alt="" aria-hidden="true" />
 
-    <!-- The source mascot is the intact artwork; do not use the cropped
-         Figma export or separate paw images (they create duplicate hands). -->
     <div class="mascot-frame" aria-hidden="true">
       <img
         class="mascot-art"
-        src="/assets/admin-login/mascot-isolated.svg"
+        src="/assets/admin-login/mascot-main-source.svg"
         alt=""
       />
     </div>
 
     <img class="art-layer art-layer--foreground" src="/assets/admin-login/foreground-wave.svg" alt="" aria-hidden="true" />
 
-    <!-- Show only the original mascot paws above the foreground wave.
-         Both overlays share the base image's exact geometry and transform. -->
-    <div class="mascot-frame mascot-frame--foreground" aria-hidden="true">
+    <div class="paw-frame paw-frame--left" aria-hidden="true">
       <img
-        class="mascot-art mascot-art--paw-left"
-        src="/assets/admin-login/mascot-isolated.svg"
+        class="paw-art"
+        src="/assets/admin-login/paw-left-main-source.svg"
         alt=""
       />
+    </div>
+    <div class="paw-frame paw-frame--right" aria-hidden="true">
       <img
-        class="mascot-art mascot-art--paw-right"
-        src="/assets/admin-login/mascot-isolated.svg"
+        class="paw-art"
+        src="/assets/admin-login/paw-right-main-source.svg"
         alt=""
       />
     </div>
@@ -58,7 +56,7 @@
     <section class="brand-identity" aria-label="Dr. Pet's House">
       <img
         class="brand-logo"
-        src="/assets/admin-login/logo-original-transparent.svg"
+        src="/assets/admin-login/logo-main-source.svg"
         alt="Dr. Pet's House"
       />
       <div class="brand-accent" aria-hidden="true"></div>
