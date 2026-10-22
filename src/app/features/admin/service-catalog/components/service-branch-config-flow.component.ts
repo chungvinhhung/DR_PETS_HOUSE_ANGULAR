@@ -59,14 +59,6 @@ interface BranchOption {
             <button type="button" class="branch-flow__close"
               (click)="dismiss.emit()" aria-label="Đóng">×</button>
           </header>
-          <label class="branch-flow__search">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
-              stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-              <circle cx="10.8" cy="10.8" r="6.5"></circle><path d="m16 16 4.2 4.2"></path>
-            </svg>
-            <input #searchBox type="search" placeholder="Tìm chi nhánh..."
-              aria-label="Tìm chi nhánh" [value]="search()" (input)="search.set(searchBox.value)" />
-          </label>
           @if (loading()) {
             <p class="branch-flow__message" role="status">Đang tải chi nhánh...</p>
           } @else if (error()) {
@@ -75,6 +67,14 @@ interface BranchOption {
               <button type="button" (click)="load()">Thử lại</button>
             </div>
           } @else {
+          <label class="branch-flow__search">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+              stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <circle cx="10.8" cy="10.8" r="6.5"></circle><path d="m16 16 4.2 4.2"></path>
+            </svg>
+            <input #searchBox type="search" placeholder="Tìm chi nhánh..."
+              aria-label="Tìm chi nhánh" [value]="search()" (input)="search.set(searchBox.value)" />
+          </label>
             <div class="branch-flow__table-wrap">
               <table class="branch-flow__table">
                 <thead><tr>
