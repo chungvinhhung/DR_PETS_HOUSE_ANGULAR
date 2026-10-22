@@ -103,12 +103,6 @@ export const routes: Routes = [
         .then((component) => component.ServiceCatalogEditorComponent),
   },
   {
-    path: 'admin/inventory',
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['ADMIN', 'MANAGER'] },
-    loadComponent: () => import('./features/admin/inventory/pages/admin-inventory-page.component').then(c => c.AdminInventoryPageComponent),
-  },
-  {
     path: 'admin/services',
     canActivate: [authGuard, roleGuard],
     data: { roles: BACKOFFICE_ROLES },
@@ -194,6 +188,12 @@ export const routes: Routes = [
         path: '',
         pathMatch: 'full',
         redirectTo: 'dashboard',
+      },
+      {
+        path: 'inventory',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'MANAGER'] },
+        loadComponent: () => import('./features/admin/inventory/pages/admin-inventory-page.component').then(c => c.AdminInventoryPageComponent),
       },
       {
         path: 'dashboard',
