@@ -542,10 +542,20 @@ app-service-catalog-list {
 }
 
 
-/* Context-sensitive columns: all branches shows enabled count, a selected
-   branch shows activation plus configured simultaneous capacity (not live slots). */
-.service-catalog__table--all-branches th:nth-child(7) { width: 19.5%; }
-.service-catalog__table--all-branches th:nth-child(8) { width: 12%; }
+/* Distribute all eight visible columns across the full table width.
+   The ninth capacity column exists only after a branch is selected. */
+.service-catalog__table.service-catalog__table--all-branches {
+  table-layout: fixed;
+}
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(1) { width: 7%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(2) { width: 23%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(3) { width: 17%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(4) { width: 13%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(5) { width: 10%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(6) { width: 13%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(7) { width: 10%; text-align: center; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(8) { width: 7%; text-align: center; }
+.service-catalog__table--all-branches td:nth-child(7) { text-align: center; }
 .service-catalog__capacity {
   display: inline-block;
   font-size: 12px;
