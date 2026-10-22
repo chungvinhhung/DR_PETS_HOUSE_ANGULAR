@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, Observable, finalize, switchMap } from 'rxjs';
+import { forkJoin, Observable, finalize, switchMap, tap } from 'rxjs';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
@@ -365,6 +365,7 @@ export class AdminInventoryPageComponent implements OnInit {
     const threshold = this.threshold() ?? 0;
 
     let request: Observable<unknown>;
+    let preliminaryThresholdSaved = false;
     if (kind === 'threshold') {
       request = this.inventoryApi.setThreshold(branchId, item.itemId, threshold, item.version, key);
     } else if (kind === 'receipt') {
@@ -372,7 +373,10 @@ export class AdminInventoryPageComponent implements OnInit {
       request = this.inventoryApi.receive(movement, key + '-movement');
       if (!existing || existing.threshold !== threshold) {
         request = this.inventoryApi.setThreshold(branchId, item.itemId, threshold, existing?.version ?? 0, key + '-threshold')
-          .pipe(switchMap(() => this.inventoryApi.receive(movement, key + '-movement')));
+          .pipe(
+            tap(() => { preliminaryThresholdSaved = true; }),
+            switchMap(() => this.inventoryApi.receive(movement, key + '-movement')),
+          );
       }
     } else if (kind === 'issue') {
       request = this.inventoryApi.issue(movement, key);
@@ -391,7 +395,10 @@ export class AdminInventoryPageComponent implements OnInit {
       if (this.destinationNeedsThreshold()) {
         request = this.inventoryApi.setThreshold(
           destinationId, item.itemId, threshold, this.destinationItem()?.version ?? 0, key + '-threshold',
-        ).pipe(switchMap(() => this.inventoryApi.transfer(transferBody, key + '-transfer')));
+        ).pipe(
+          tap(() => { preliminaryThresholdSaved = true; }),
+          switchMap(() => this.inventoryApi.transfer(transferBody, key + '-transfer')),
+        );
       }
     }
 
@@ -412,7 +419,12 @@ export class AdminInventoryPageComponent implements OnInit {
         this.loadAll();
       },
       error: (error: unknown) => {
-        this.notify(adminErrorMessage(error, 'Thao tác chưa thành công. Vui lòng kiểm tra tồn kho rồi thử lại.'), 'error');
+        this.notify(
+          preliminaryThresholdSaved
+            ? 'Ngưỡng cảnh báo đã được lưu, nhưng giao dịch chưa hoàn tất. Vui lòng kiểm tra tồn kho trước khi thử lại.'
+            : adminErrorMessage(error, 'Thao tác chưa thành công. Vui lòng kiểm tra tồn kho rồi thử lại.'),
+          'error',
+        );
         this.loadAll();
       },
     });
