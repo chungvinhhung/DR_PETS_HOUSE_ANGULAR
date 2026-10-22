@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 
 type StockKind = 'Hàng bán' | 'Vật tư dịch vụ' | 'Dùng chung';
 type DialogKind = 'receipt' | 'issue' | 'adjustment' | 'transfer' | 'threshold';
@@ -30,12 +32,13 @@ const SAMPLE_HISTORY: StockHistory[] = [
 @Component({
   selector: 'app-admin-inventory-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminCatalogShellComponent],
   templateUrl: './admin-inventory-page.component.html',
   styleUrl: './admin-inventory-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminInventoryPageComponent {
+  private readonly adminToast = inject(AdminToastService);
   readonly tab = signal<'stock' | 'history'>('stock');
   readonly stock = signal<StockItem[]>(SAMPLE_STOCK);
   readonly history = signal<StockHistory[]>(SAMPLE_HISTORY);
@@ -49,7 +52,6 @@ export class AdminInventoryPageComponent {
   readonly modal = signal<DialogKind | null>(null);
   readonly activeItem = signal<StockItem | null>(null);
   readonly menuId = signal<string | null>(null);
-  readonly toast = signal<{message: string; tone: 'success' | 'error' | 'info'} | null>(null);
   readonly sending = signal(false);
   readonly quantity = signal<number | null>(null);
   readonly threshold = signal<number | null>(null);
@@ -121,7 +123,7 @@ export class AdminInventoryPageComponent {
     if (this.modal()==='receipt' && (!Number.isInteger(this.threshold() ?? NaN) || (this.threshold()??-1)<0)) return 'Vui lòng nhập ngưỡng cảnh báo hợp lệ.';
     return null;
   }
-  notify(message: string, tone: 'success'|'error'|'info'='info'): void {this.toast.set({message,tone});}
+  notify(message: string, tone: 'success'|'error'|'info'='info'): void {this.adminToast.show(message,tone);}
   submit(): void {
     const err=this.valid();
     if(err){this.notify(err,'error');return;}
