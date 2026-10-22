@@ -185,22 +185,20 @@
 
 .primary:hover:not(:disabled) { background: #103b7c; }
 .primary:disabled { cursor: not-allowed; opacity: .6; }
-.plus { font-size: 19px; line-height: 1; }
+.inventory-create { padding: 0 15px; border-radius: 7px; font-size: 13px; }
+.plus { font-size: 14px; font-weight: 600; line-height: 1; }
 
 .table-shell {
   width: 100%;
   min-width: 0;
-  height: 660px;
   box-sizing: border-box;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   background: white;
 }
 
-.table-scroll {
-  height: 577px;
-  overflow: visible;
-}
+.table-scroll { width: 100%; }
+.table-scroll--history { overflow-x: auto; }
 
 table {
   width: 100%;
@@ -257,7 +255,8 @@ td {
 .stock-table td:nth-child(8),
 .stock-table th:nth-child(8) { text-align: center; padding: 0 10px; }
 
- .product { font-weight: 400; color: #1e293b; }
+.product { font-weight: 400; color: #1e293b; }
+.sku-inline { color: #64748b; font-size: 12px; white-space: nowrap; }
 
 small {
   display: block;
@@ -331,9 +330,9 @@ small {
 
 .table-footer {
   box-sizing: border-box;
-  height: 81px;
-  min-height: 81px;
-  padding: 12px 16px;
+  min-height: 60px;
+  padding: 8px 16px;
+  border-top: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -377,8 +376,10 @@ small {
 .pagination-buttons button:disabled { color: #cbd5e1; cursor: not-allowed; }
 .pagination-buttons button:focus-visible { outline: 2px solid #0d47a1; outline-offset: -3px; }
 
-.history-table { min-width: 1130px; }
+.history-table { min-width: 1000px; }
 .history-table th, .history-table td { padding: 0 12px; }
+.history-table th:nth-child(5), .history-table td:nth-child(5),
+.history-table th:nth-child(6), .history-table td:nth-child(6) { text-align: center; }
 .positive { color: #188038; }
 
 @media (max-width: 1290px) {
@@ -395,5 +396,5 @@ small {
   .toolbar { padding: 12px; }
   .toolbar-selects { width: 100%; }
   .toolbar select { width: calc(50% - 4px); }
-  .table-footer { height: auto; min-height: 81px; flex-direction: column; align-items: flex-start; }
+  .table-footer { flex-direction: column; align-items: flex-start; }
 }
