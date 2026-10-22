@@ -124,7 +124,7 @@
           </div>
         }
         @if (modal() === 'transfer') {
-          <label class="field-label">Chi nhánh đích <span class="required">*</span>
+          <label class="field-label"><span class="field-caption">Chi nhánh đích <span class="required">*</span></span>
             <select [ngModel]="destination()" (ngModelChange)="changeDestination($event)">
               <option value="">Chọn chi nhánh nhận</option>
               @for (b of branches; track b) {
@@ -140,7 +140,7 @@
             </div>
             @if (destinationNeedsThreshold()) {
               <label class="field-label">
-                Ngưỡng cảnh báo tại chi nhánh đích <span class="required">*</span>
+                <span class="field-caption">Ngưỡng cảnh báo tại chi nhánh đích <span class="required">*</span></span>
                 <input type="number" min="0" step="1" placeholder="Nhập ngưỡng cảnh báo"
                   [ngModel]="threshold()" (ngModelChange)="setThreshold($event)" />
               </label>
@@ -151,7 +151,7 @@
           <label class="field-label">Ngưỡng hiện tại
             <input [value]="activeItem()?.threshold == null ? 'Chưa cài' : activeItem()?.threshold" readonly />
           </label>
-          <label class="field-label">Ngưỡng mới <span class="required">*</span>
+          <label class="field-label"><span class="field-caption">Ngưỡng mới <span class="required">*</span></span>
             <input type="number" min="0" step="1" [ngModel]="threshold()"
               (ngModelChange)="setThreshold($event)" placeholder="Nhập ngưỡng mới"/>
           </label>
@@ -172,13 +172,13 @@
           </label>
         }
         <label class="field-label">
-          {{modal() === 'receipt' ? 'Lý do / ghi chú' : 'Lý do'}}
-          @if (modal() !== 'receipt') {<span class="required">*</span>}
+          <span class="field-caption">{{modal() === 'receipt' ? 'Lý do / ghi chú' : 'Lý do'}}
+          @if (modal() !== 'receipt') {<span class="required">*</span>}</span>
           <input type="text" [ngModel]="note()" (ngModelChange)="note.set($event)"
             placeholder="Nhập lý do" />
         </label>
         @if (modal() === 'receipt') {
-          <label class="field-label">Ngưỡng cảnh báo <span class="required">*</span>
+          <label class="field-label"><span class="field-caption">Ngưỡng cảnh báo <span class="required">*</span></span>
             <input type="number" min="0" step="1" [ngModel]="threshold()"
               (ngModelChange)="setThreshold($event)" placeholder="Nhập ngưỡng cảnh báo"/>
           </label>
