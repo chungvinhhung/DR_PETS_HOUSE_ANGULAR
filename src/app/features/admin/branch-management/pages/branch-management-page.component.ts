@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, signal } from '@angular/core';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { catchError, of } from 'rxjs';
+import { catchError, from, map, mergeMap, of, toArray } from 'rxjs';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
@@ -27,6 +27,10 @@ interface BranchRow extends CatalogBranch {
 }
 type Tab = 'services' | 'hours' | 'shifts';
 type BranchFilter = 'ALL' | 'ACTIVE' | 'INACTIVE';
+interface OccupancySnapshot {
+  bookedCount: number;
+  totalCount: number;
+}
 
 @Component({
   selector: 'app-branch-management-page',
@@ -56,6 +60,9 @@ export class BranchManagementPageComponent {
   readonly servicesLoading = signal(false);
   readonly servicesError = signal('');
   readonly serviceViews = signal<readonly BranchServiceView[]>([]);
+  readonly occupancyByService = signal<Readonly<Record<string, OccupancySnapshot>>>({});
+  readonly occupancyLoading = signal(false);
+  private occupancyRequestVersion = 0;
   readonly branchSettingsOpen = signal<BranchRow | null>(null);
   readonly servicePickerBranch = signal<BranchRow | null>(null);
   readonly configuredServiceBranch = signal<BranchRow | null>(null);
@@ -88,6 +95,9 @@ export class BranchManagementPageComponent {
       this.detailTab.set('services');
       this.branchMenuOpen.set(false);
       this.serviceViews.set([]);
+      this.occupancyRequestVersion++;
+      this.occupancyByService.set({});
+      this.occupancyLoading.set(false);
       this.servicesError.set('');
       if (id) {
         this.fetchDetail(id);
@@ -217,6 +227,7 @@ export class BranchManagementPageComponent {
         if (this.branchId !== id) return;
         this.serviceViews.set(rows);
         this.servicesLoading.set(false);
+        this.fetchOccupancy();
         const count = rows.filter((row) => row.config?.enabled && row.service.status === 'ACTIVE').length;
         this.branchRows.update((all) => all.map((branch) =>
           branch.id === id ? { ...branch, enabledServiceCount: count } : branch));
@@ -363,8 +374,79 @@ export class BranchManagementPageComponent {
   }
   capacity(service: CatalogService): number { return this.getConfig(service)?.capacity ?? 0; }
   previewAvailability(service: CatalogService): string {
-    if (!this.isEnabled(service)) return '0 (đã tắt)';
-    return service.availabilityText ?? 'Chưa có dữ liệu';
+    if (!this.isEnabled(service)) return 'Đã tắt';
+    if (service.bookingMode !== 'BOOKABLE') return 'Không đặt lịch';
+    if (this.occupancyLoading()) return 'Đang tải...';
+    const occupancy = this.occupancyByService()[service.id];
+    return occupancy ? `${occupancy.bookedCount}/${occupancy.totalCount}` : 'Chưa có dữ liệu';
+  }
+
+  /**
+   * BE currently returns slots[].remaining, but NOT bookedCount/totalCount.
+   * Render the requested occupied/total ratio only when BE returns both.
+   * A fully booked start time must also be present in the BE response.
+   */
+  private fetchOccupancy(): void {
+    const requestVersion = ++this.occupancyRequestVersion;
+    const branchId = this.branchId;
+    const date = this.viewDate();
+    const time = this.viewTime();
+    this.occupancyByService.set({});
+
+    if (!branchId) {
+      this.occupancyLoading.set(false);
+      return;
+    }
+    const services = this.serviceViews().filter((row) =>
+      row.service.status === 'ACTIVE' &&
+      row.service.bookingMode === 'BOOKABLE' &&
+      row.config?.enabled,
+    );
+    if (!services.length) {
+      this.occupancyLoading.set(false);
+      return;
+    }
+
+    this.occupancyLoading.set(true);
+    from(services).pipe(
+      mergeMap((row) =>
+        this.api.getServiceAvailability(branchId, row.service.id, date).pipe(
+          map((result): { serviceId: string; data: OccupancySnapshot } | null => {
+            const slot = result.slots?.find((candidate) =>
+              typeof candidate.start === 'string' && candidate.start.slice(11, 16) === time,
+            );
+            if (!slot ||
+                !Number.isInteger(slot.bookedCount) ||
+                !Number.isInteger(slot.totalCount) ||
+                (slot.bookedCount ?? -1) < 0 ||
+                (slot.totalCount ?? -1) < (slot.bookedCount ?? 0)) {
+              return null;
+            }
+            return {
+              serviceId: row.service.id,
+              data: { bookedCount: slot.bookedCount!, totalCount: slot.totalCount! },
+            };
+          }),
+          catchError(() => of(null)),
+        ), 4),
+      toArray(),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: (data) => {
+        if (requestVersion !== this.occupancyRequestVersion ||
+            this.branchId !== branchId ||
+            this.viewDate() !== date ||
+            this.viewTime() !== time) return;
+        this.occupancyByService.set(Object.fromEntries(
+          data.filter((entry): entry is { serviceId: string; data: OccupancySnapshot } =>
+            entry !== null).map((entry) => [entry.serviceId, entry.data]),
+        ));
+        this.occupancyLoading.set(false);
+      },
+      error: () => {
+        if (requestVersion === this.occupancyRequestVersion) this.occupancyLoading.set(false);
+      },
+    });
   }
   get currentBlockedWindows(): BranchServiceConfigPreview['blockedWindows'] | null { return []; }
 
@@ -430,6 +512,7 @@ export class BranchManagementPageComponent {
         } : row));
         this.savingConfig.set(false);
         this.closeConfiguration();
+        this.fetchOccupancy();
         this.branchRows.update((all) => all.map((branch) => branch.id === branchId ? {
           ...branch,
           enabledServiceCount: this.serviceViews().filter((row) => row.config?.enabled).length,
@@ -446,14 +529,18 @@ export class BranchManagementPageComponent {
     this.toast.show(action + ' hiện chưa khả dụng.', 'info');
   }
   changeDate(value: string): void {
-    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) this.viewDate.set(value);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      this.viewDate.set(value);
+      this.fetchOccupancy();
+    }
   }
   changeTime(value: string): void {
-    if (/^\d{2}:\d{2}$/.test(value)) this.viewTime.set(value);
+    if (/^\d{2}:\d{2}$/.test(value)) {
+      this.viewTime.set(value);
+      this.fetchOccupancy();
+    }
   }
-  refreshPreview(): void {
-    this.toast.show('Số chỗ còn trống theo giờ chưa thể cập nhật. Vui lòng thử lại sau.', 'info');
-  }
+  refreshPreview(): void { this.fetchOccupancy(); }
   private isoLocal(d: Date): string {
     return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'),
       String(d.getDate()).padStart(2, '0')].join('-');
