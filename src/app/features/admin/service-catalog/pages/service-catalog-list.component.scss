@@ -636,3 +636,30 @@ app-service-catalog-list {
   font-size: 12px;
 }
 .service-catalog__pagination p { font-size: 12px; }
+
+
+/* Keep service-code and action headings on one line at Product-style 16px insets.
+   Distinct width allocations because selected branch adds a ninth column. */
+.service-catalog__table.service-catalog__table--all-branches { min-width: 1050px; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(1) { width: 10%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(2) { width: 23%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(3) { width: 16%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(4) { width: 12%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(5) { width: 9%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(6) { width: 11%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(7) { width: 11%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(8) { width: 8%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) { min-width: 1120px; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(1) { width: 10%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(2) { width: 16%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(3) { width: 12%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(4) { width: 9%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(5) { width: 8%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(6) { width: 9%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(7) { width: 17%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(8) { width: 10%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(9) { width: 9%; }
+.service-catalog__table thead th:first-child,
+.service-catalog__table thead th.service-catalog__actions-col {
+  white-space: nowrap;
+}
