@@ -1173,3 +1173,86 @@ app-branch-management-page { display:block; font-family:Roboto,Arial,sans-serif;
   font-size: 12px;
   line-height: 1.55;
 }
+
+
+/*
+ * Product List table parity for Branch List / Branch Service List.
+ * Isolated to Branch V2 table classes; does not affect forms or time-slot grid.
+ */
+.branch-v2-page > .branch-v2-page__table-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+.branch-v2-page .branch-v2-page__table--branches,
+.branch-v2-page .branch-v2-page__table--services {
+  min-width: 1034px;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  color: #243045;
+  font-size: 12px;
+}
+.branch-v2-page .branch-v2-page__table--branches thead th,
+.branch-v2-page .branch-v2-page__table--services thead th {
+  height: 44px;
+  box-sizing: border-box;
+  padding: 0 16px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #243045;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  vertical-align: middle;
+  text-align: left;
+}
+.branch-v2-page .branch-v2-page__table--branches tbody td,
+.branch-v2-page .branch-v2-page__table--services tbody td {
+  height: 76px;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  border-top: 0;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fff;
+  color: #243045;
+  font-size: 12px;
+  line-height: 1.5;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+.branch-v2-page .branch-v2-page__table--branches tbody tr:last-child td,
+.branch-v2-page .branch-v2-page__table--services tbody tr:last-child td {
+  border-bottom: 0;
+}
+.branch-v2-page .branch-v2-page__table--branches tbody tr:hover td,
+.branch-v2-page .branch-v2-page__table--services tbody tr:hover td {
+  background: #fbfdff;
+}
+.branch-v2-page .branch-v2-page__table--branches thead th:nth-child(5),
+.branch-v2-page .branch-v2-page__table--branches tbody td:nth-child(5),
+.branch-v2-page .branch-v2-page__table--branches thead th:last-child,
+.branch-v2-page .branch-v2-page__table--branches tbody td:last-child,
+.branch-v2-page .branch-v2-page__table--services thead th:nth-child(2),
+.branch-v2-page .branch-v2-page__table--services tbody td:nth-child(2),
+.branch-v2-page .branch-v2-page__table--services thead th:last-child,
+.branch-v2-page .branch-v2-page__table--services tbody td:last-child {
+  text-align: center;
+}
+.branch-v2-page--detail .branch-v2-page__table-scroll--services {
+  border-color: #e2e8f0;
+  border-radius: 12px;
+}
+.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(1) { width: 28%; }
+.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(2) { width: 21%; }
+.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(3) { width: 17%; }
+.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(4) { width: 24%; }
+.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(5) { width: 10%; }
+.branch-v2-page .branch-v2-page__pagination {
+  min-height: 60px;
+  padding: 8px 12px;
+  border-top: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 12px;
+}
