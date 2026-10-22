@@ -540,3 +540,15 @@ app-service-catalog-list {
     flex-direction: column;
   }
 }
+
+
+/* Context-sensitive columns: all branches shows enabled count, a selected
+   branch shows activation plus configured simultaneous capacity (not live slots). */
+.service-catalog__table--all-branches th:nth-child(7) { width: 19.5%; }
+.service-catalog__table--all-branches th:nth-child(8) { width: 12%; }
+.service-catalog__capacity {
+  display: inline-block;
+  font-size: 12px;
+  color: #475569;
+  white-space: nowrap;
+}
