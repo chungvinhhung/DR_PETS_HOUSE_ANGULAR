@@ -95,10 +95,19 @@ interface BranchOption {
                       </td>
                       <td>
                         <div class="branch-flow__actions">
-                          <button type="button" [disabled]="option.failed"
-                            (click)="configure(option)">Cấu hình</button>
-                          <button type="button" class="branch-flow__link"
-                            (click)="openBranch(option)">Xem chi tiết</button>
+                          <button type="button" class="branch-flow__icon-action"
+                            [disabled]="option.failed"
+                            [attr.aria-label]="'Cấu hình dịch vụ tại ' + option.branch.name"
+                            title="Cấu hình dịch vụ" (click)="configure(option)">
+                            <img src="/assets/service-catalog/icon-settings.svg" width="20" height="20" alt="" />
+                          </button>
+                          @if (!draftMode) {
+                            <button type="button" class="branch-flow__icon-action"
+                              [attr.aria-label]="'Xem chi tiết ' + option.branch.name"
+                              title="Xem chi tiết chi nhánh" (click)="openBranch(option)">
+                              <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="" />
+                            </button>
+                          }
                         </div>
                       </td>
                     </tr>
@@ -109,9 +118,6 @@ interface BranchOption {
               </table>
             </div>
           }
-          <footer class="branch-flow__footer">
-            <button type="button" (click)="dismiss.emit()">Đóng</button>
-          </footer>
         </section>
       </div>
     }
@@ -134,29 +140,30 @@ interface BranchOption {
       background:transparent;color:#1b273b;font:400 13px Roboto,Arial,sans-serif;}
     .branch-flow__table-wrap{max-height:340px;overflow:auto;border:1px solid #dce4ee;border-radius:8px;}
     .branch-flow__table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px;}
-    .branch-flow__table th,.branch-flow__table td{padding:13px 12px;text-align:left;}
+    .branch-flow__table th,.branch-flow__table td{padding:13px 14px;text-align:left;
+      vertical-align:middle;box-sizing:border-box;}
     .branch-flow__table th{background:#f1f5f9;font-weight:500;color:#475569;font-size:12px;}
-    .branch-flow__table th:nth-child(1){width:35%;}
-    .branch-flow__table th:nth-child(2){width:26%;}
-    .branch-flow__table th:nth-child(3){width:39%;}
+    .branch-flow__table th:nth-child(1){width:44%;}
+    .branch-flow__table th:nth-child(2){width:27%;text-align:center;}
+    .branch-flow__table th:nth-child(3){width:29%;text-align:center;}
+    .branch-flow__table td:nth-child(2),.branch-flow__table td:nth-child(3){text-align:center;}
     .branch-flow__table td{border-top:1px solid #e2e8f0;}
     .branch-flow__preferred td{background:#f7fbff;}
     .branch-flow__status{display:inline-block;border-radius:99px;background:#e8f5e9;
       color:#2e7d32;padding:5px 10px;font-size:11px;white-space:nowrap;}
     .branch-flow__status--off{background:#eef1f4;color:#64748b;}
     .branch-flow__status--neutral{background:#fff4df;color:#96621b;}
-    .branch-flow__actions{display:flex;align-items:center;gap:12px;white-space:nowrap;}
-    .branch-flow__actions button{background:transparent;border:0;padding:5px 0;
-      color:#0d47a1;cursor:pointer;font:600 12px Roboto,Arial,sans-serif;}
-    .branch-flow__actions button:disabled{opacity:.5;cursor:not-allowed;}
-    .branch-flow__actions .branch-flow__link{font-weight:400;}
+    .branch-flow__actions{display:flex;align-items:center;justify-content:center;gap:14px;}
+    .branch-flow__actions .branch-flow__icon-action{display:inline-flex;align-items:center;
+      justify-content:center;width:36px;height:36px;padding:6px;border:0;border-radius:7px;
+      background:transparent;cursor:pointer;}
+    .branch-flow__icon-action img{display:block;width:20px;height:20px;object-fit:contain;}
+    .branch-flow__actions .branch-flow__icon-action:hover{background:#eaf3ff;}
+    .branch-flow__actions .branch-flow__icon-action:focus-visible{outline:2px solid #0d47a1;outline-offset:2px;}
+    .branch-flow__actions button:disabled{opacity:.35;cursor:not-allowed;}
     .branch-flow__message{padding:20px;text-align:center;color:#536783;font-size:13px;}
     .branch-flow__message button{margin-left:8px;border:0;background:none;color:#0d47a1;cursor:pointer;}
     .branch-flow__empty{text-align:center;color:#64748b;}
-    .branch-flow__footer{display:flex;justify-content:flex-end;
-      margin-top:18px;padding-top:14px;border-top:1px solid #e2e8f0;}
-    .branch-flow__footer button{border:1px solid #dce4ee;border-radius:8px;
-      background:white;color:#0d47a1;padding:9px 18px;cursor:pointer;}
     @media(max-width:620px){.branch-flow__dialog{padding:16px;}
       .branch-flow__actions{flex-wrap:wrap;gap:4px 12px;}
       .branch-flow__table{min-width:530px;}}
