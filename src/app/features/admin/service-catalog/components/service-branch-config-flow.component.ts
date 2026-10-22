@@ -15,6 +15,12 @@ import {
   BranchServiceConfigDialogComponent, BranchServiceConfigPreview,
 } from './branch-service-config-dialog.component';
 
+export interface DraftBranchSelection {
+  branchId: string;
+  branchName: string;
+  enabled: boolean;
+  capacity: number;
+}
 interface BranchOption {
   branch: BranchApiRecord;
   config: BranchServiceApiRecord | null;
@@ -178,6 +184,10 @@ export class ServiceBranchConfigFlowComponent implements OnInit {
 
   @Input({ required: true }) service!: CatalogService;
   @Input() preferredBranchId = 'ALL';
+  @Input() directBranchId: string | null = null;
+  @Input() draftMode = false;
+  @Input() draftConfigs: readonly DraftBranchSelection[] = [];
+  @Output() readonly draftSaved = new EventEmitter<DraftBranchSelection>();
   @Output() readonly dismiss = new EventEmitter<void>();
   @Output() readonly saved = new EventEmitter<void>();
 
@@ -212,7 +222,22 @@ export class ServiceBranchConfigFlowComponent implements OnInit {
     this.loading.set(true);
     this.error.set('');
     this.api.listBranches().pipe(
-      mergeMap((branches) => from(branches).pipe(
+      mergeMap((branches) => this.draftMode
+        ? of(branches.map((branch): BranchOption => {
+            const draft = this.draftConfigs.find((config) => config.branchId === branch.id);
+            return {
+              branch,
+              config: draft ? {
+                branchId: branch.id,
+                serviceId: this.service.id,
+                enabled: draft.enabled,
+                capacity: draft.capacity,
+                availability: [],
+              } : null,
+              failed: false,
+            };
+          }))
+        : from(branches).pipe(
         mergeMap((branch) => this.api.listServiceConfigs(branch.id).pipe(
           map((configs): BranchOption => ({
             branch,
@@ -232,6 +257,10 @@ export class ServiceBranchConfigFlowComponent implements OnInit {
           return a.branch.name.localeCompare(b.branch.name, 'vi');
         }));
         this.loading.set(false);
+        if (this.directBranchId) {
+          const requested = this.branches().find((entry) => entry.branch.id === this.directBranchId);
+          if (requested && !requested.failed) this.configure(requested);
+        }
       },
       error: () => {
         this.error.set('Không tải được danh sách chi nhánh. Vui lòng thử lại.');
@@ -246,7 +275,9 @@ export class ServiceBranchConfigFlowComponent implements OnInit {
   }
 
   closeEditor(): void {
-    if (!this.saving()) this.selectedBranch.set(null);
+    if (this.saving()) return;
+    if (this.directBranchId) this.dismiss.emit();
+    else this.selectedBranch.set(null);
   }
 
   openBranch(option: BranchOption): void {
@@ -270,6 +301,18 @@ export class ServiceBranchConfigFlowComponent implements OnInit {
     if (!choice || choice.branch.id !== payload.branchId || payload.serviceId !== this.service.id) return;
     if (choice.branch.status !== 'ACTIVE' && payload.enabled) {
       this.toast.show('Không thể bật dịch vụ khi chi nhánh ngừng hoạt động.', 'error');
+      return;
+    }
+    if (this.draftMode) {
+      // Creating a Service Master requires a real server-side ID. Keep these
+      // branch settings in the form until POST /services succeeds.
+      this.draftSaved.emit({
+        branchId: choice.branch.id,
+        branchName: choice.branch.name,
+        enabled: payload.enabled,
+        capacity: payload.capacity,
+      });
+      this.dismiss.emit();
       return;
     }
     this.saving.set(true);
