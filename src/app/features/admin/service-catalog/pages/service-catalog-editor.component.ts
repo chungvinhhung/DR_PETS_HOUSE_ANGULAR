@@ -22,6 +22,7 @@ import { resolveServicePricing } from '../services/service-pricing.utils';
 import { AdminProductService } from '../../products/services/admin-product.service';
 import { AdminCategoryService } from '../../categories/services/admin-category.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
+import { DraftBranchSelection, ServiceBranchConfigFlowComponent } from '../components/service-branch-config-flow.component';
 
 type PriceMode = 'FIXED' | 'QUOTE';
 type Tier = { key: string; weight: string; mode: PriceMode; price: number | null };
@@ -42,7 +43,7 @@ const TIER_WEIGHTS = [
 @Component({
   selector: 'app-service-catalog-editor',
   standalone: true,
-  imports: [FormsModule, RouterLink, AdminCatalogShellComponent],
+  imports: [FormsModule, RouterLink, AdminCatalogShellComponent, ServiceBranchConfigFlowComponent],
   templateUrl: './service-catalog-editor.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -81,6 +82,57 @@ export class ServiceCatalogEditorComponent {
   }
   source: CatalogService | null = null;
   readonly branchDetailRows = signal<readonly BranchDetailRow[]>([]);
+  readonly stagedBranchConfigs = signal<readonly DraftBranchSelection[]>([]);
+  readonly branchConfigFlowOpen = signal(false);
+  readonly branchConfigTargetId = signal<string | null>(null);
+  get displayedBranchRows(): readonly BranchDetailRow[] {
+    if (!this.isNew) return this.branchDetailRows();
+    return this.stagedBranchConfigs().map((item) => ({
+      id: item.branchId,
+      name: item.branchName,
+      summary: (item.enabled ? 'Đang bật' : 'Đang tắt') + ' · Sức chứa ' + item.capacity +
+        (item.enabled ? ' · Khả dụng theo lịch' : ' · Tắt tại chi nhánh'),
+    }));
+  }
+  get branchConfigService(): CatalogService {
+    if (this.source) return this.source;
+    return {
+      id: '__unsaved_service__',
+      serviceCode: '',
+      name: this.serviceName.trim() || 'Dịch vụ mới',
+      category: this.category || 'GROOMING',
+      executorRole: this.executorRole || 'CARE_STAFF_GROOMER',
+      bookingMode: this.bookingMode || 'BOOKABLE',
+      durationMinutes: this.durationMinutes,
+      status: this.active ? 'ACTIVE' : 'INACTIVE',
+      referencePrice: null,
+      minFixedTierPrice: null,
+      branchServices: [],
+    };
+  }
+  openBranchConfiguration(branchId: string | null = null): void {
+    if (this.isNew && !this.active) {
+      this.toast.show('Vui lòng bật trạng thái dịch vụ trước khi chọn chi nhánh.', 'info');
+      return;
+    }
+    this.branchConfigTargetId.set(branchId);
+    this.branchConfigFlowOpen.set(true);
+  }
+  closeBranchConfiguration(): void {
+    this.branchConfigFlowOpen.set(false);
+    this.branchConfigTargetId.set(null);
+  }
+  stageBranchConfig(selection: DraftBranchSelection): void {
+    this.stagedBranchConfigs.update((items) => [
+      ...items.filter((item) => item.branchId !== selection.branchId), selection,
+    ]);
+    this.markDirty();
+    this.closeBranchConfiguration();
+  }
+  refreshBranchConfigs(): void {
+    this.loadBranchDetailRows();
+    this.closeBranchConfiguration();
+  }
   readonly branchesLoading = signal(false);
   readonly branchLoadError = signal('');
   readonly loading = signal(this.editorMode !== 'create');
@@ -153,7 +205,7 @@ export class ServiceCatalogEditorComponent {
       ).subscribe({
         next: (raw) => {
           this.hydrate(raw);
-          if (this.editorMode === 'view') this.loadBranchDetailRows();
+          this.loadBranchDetailRows();
           this.loading.set(false);
         },
         error: (error: HttpErrorResponse | AppHttpError) => {
@@ -538,7 +590,7 @@ export class ServiceCatalogEditorComponent {
           // A successful POST must never be retried when branch provisioning fails.
           this.pendingActivationServiceId.set(saved.id);
         }
-        if (this.active && saved.id) {
+        if ((this.active || this.stagedBranchConfigs().length > 0) && saved.id) {
           void this.enableUnconfiguredBranches(saved.id);
           return;
         }
@@ -569,15 +621,19 @@ export class ServiceCatalogEditorComponent {
     this.errors.set([]);
     try {
       const branches = (await firstValueFrom(this.branchesApi.listBranches()))
-        .filter((branch) => branch.status === 'ACTIVE');
+        .filter((branch) => branch.status === 'ACTIVE' ||
+          this.stagedBranchConfigs().some((draft) => draft.branchId === branch.id));
       const results = await firstValueFrom(from(branches).pipe(
         mergeMap((branch) => this.branchesApi.listServiceConfigs(branch.id).pipe(
           mergeMap((configs) => {
             if (configs.some((row) => row.serviceId === serviceId)) {
               return of({ failed: false, unchanged: true });
             }
+            const draft = this.stagedBranchConfigs().find((item) => item.branchId === branch.id);
             return this.branchesApi.updateServiceConfig(branch.id, serviceId, {
-              enabled: true, capacity: 1, availability: [],
+              enabled: draft ? (draft.enabled && this.active && branch.status === 'ACTIVE') : this.active,
+              capacity: draft?.capacity ?? 1,
+              availability: [],
             }).pipe(map(() => ({ failed: false, unchanged: false })));
           }),
           catchError(() => of({ failed: true, unchanged: false })),
