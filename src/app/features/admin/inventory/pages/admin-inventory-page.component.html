@@ -1,6 +1,8 @@
 <app-admin-catalog-shell activeItem="inventory">
 <section class="inventory-page">
-  <div class="page-title"><h1>Kho hàng</h1><span class="demo-note">Dữ liệu minh họa · Chưa kết nối hệ thống kho</span></div>
+  <div class="page-title"><h1>Kho hàng</h1></div>
+  @if (loading()) { <div class="inventory-state" role="status">Đang tải tồn kho...</div> }
+  @if (loadError()) { <div class="inventory-state inventory-state--error" role="alert">{{loadError()}} <button type="button" (click)="loadAll()">Thử lại</button></div> }
   <div class="inventory-tabs" role="tablist" aria-label="Kho">
     <button type="button" role="tab" [attr.aria-selected]="tab()==='stock'" [class.active]="tab()==='stock'" (click)="switchTab('stock')">Tồn kho</button>
     <button type="button" role="tab" [attr.aria-selected]="tab()==='history'" [class.active]="tab()==='history'" (click)="switchTab('history')">Lịch sử kho</button>
@@ -17,7 +19,7 @@
       }
       <select aria-label="Chi nhánh" [ngModel]="branch()" (ngModelChange)="branch.set($event);onFilter()">
         <option value="">Tất cả chi nhánh</option>
-        @for (b of branches; track b) {<option [value]="b">{{b}}</option>}
+        @for (b of branches(); track b) {<option [value]="b">{{b}}</option>}
       </select>
       @if (tab()==='stock') {
         <select aria-label="Loại hàng" [ngModel]="type()" (ngModelChange)="type.set($event);onFilter()">
@@ -35,6 +37,8 @@
     </div>
   </div>
 
+  @if (tab()==='history' && historyLoading()) { <div class="inventory-state" role="status">Đang tải lịch sử kho...</div> }
+  @if (tab()==='history' && historyError()) { <div class="inventory-state inventory-state--error" role="alert">{{historyError()}} <button type="button" (click)="loadHistory()">Thử lại</button></div> }
   <div class="table-shell" [class.table-shell--history]="tab()==='history'">
     <div class="table-scroll" [class.table-scroll--history]="tab()==='history'">
       @if (tab()==='stock') {
@@ -116,13 +120,13 @@
               </span>
               <datalist id="inventory-sku-options">
                 @for (product of productOptions(); track product.sku) {
-                  <option [value]="product.sku">{{productLabel(product)}}</option>
+                  <option [value]="product.sku">{{product.name}} · {{product.unit}}</option>
                 }
               </datalist>
             </label>
             <label class="field-label">Chi nhánh
               <select [ngModel]="receiptBranch()" (ngModelChange)="changeReceiptBranch($event)">
-                @for (b of branches; track b) {<option [value]="b">{{shortBranch(b)}}</option>}
+                @for (b of branches(); track b) {<option [value]="b">{{shortBranch(b)}}</option>}
               </select>
             </label>
           </div>
@@ -138,7 +142,7 @@
           <label class="field-label"><span class="field-caption">Chi nhánh đích <span class="required">*</span></span>
             <select [ngModel]="destination()" (ngModelChange)="changeDestination($event)">
               <option value="">Chọn chi nhánh nhận</option>
-              @for (b of branches; track b) {
+              @for (b of branches(); track b) {
                 @if (b !== activeItem()?.branch) {<option [value]="b">{{shortBranch(b)}}</option>}
               }
             </select>
@@ -185,7 +189,7 @@
         <label class="field-label">
           <span class="field-caption">{{modal() === 'receipt' ? 'Lý do / ghi chú' : 'Lý do'}}
           @if (modal() !== 'receipt') {<span class="required">*</span>}</span>
-          <input type="text" [ngModel]="note()" (ngModelChange)="note.set($event)"
+          <input type="text" [ngModel]="note()" (ngModelChange)="updateNote($event)"
             placeholder="Nhập lý do" />
         </label>
         @if (modal() === 'receipt') {
