@@ -1150,3 +1150,26 @@ app-branch-management-page { display:block; font-family:Roboto,Arial,sans-serif;
     justify-self: end;
   }
 }
+
+
+/* Center the action-column heading on the same axis as the icon controls. */
+.branch-v2-page .branch-v2-page__table--branches thead th.branch-v2-page__actions-heading,
+.branch-v2-page .branch-v2-page__table--branches tbody td:last-child,
+.branch-v2-page .branch-v2-page__table--services thead th.branch-v2-page__actions-heading,
+.branch-v2-page .branch-v2-page__table--services tbody td:last-child {
+  text-align: center;
+}
+.branch-v2-page .branch-v2-page__table--services thead th:last-child,
+.branch-v2-page .branch-v2-page__table--services tbody td:last-child {
+  width: 110px;
+  min-width: 110px;
+}
+.branch-v2-page .branch-v2-page__table--services tbody td:last-child .branch-v2-page__icon-action {
+  margin-inline: auto;
+}
+/* A disabled backend feature needs a clear message, not implementation terminology. */
+.branch-v2-page__api-note {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.55;
+}
