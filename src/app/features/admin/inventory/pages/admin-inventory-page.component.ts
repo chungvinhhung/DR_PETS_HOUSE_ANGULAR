@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { catchError, forkJoin, Observable, of, finalize, switchMap, tap } from 'rxjs';
+import { forkJoin, Observable, finalize, switchMap, tap } from 'rxjs';
 import { AdminProduct } from '../../products/models/admin-product.model';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
@@ -69,6 +69,7 @@ export class AdminInventoryPageComponent implements OnInit {
   readonly history = signal<StockHistory[]>([]);
   readonly inventoryItems = signal<InventoryItemDto[]>([]);
   readonly catalogProducts = signal<AdminProduct[]>([]);
+  readonly scopedBranchIds = signal<string[]>([]);
   readonly catalogBySku = computed(() => {
     const bySku = new Map<string, { name: string; label: string; usage: StockKind; variantCount: number }>();
     for (const product of this.catalogProducts()) {
@@ -105,14 +106,19 @@ export class AdminInventoryPageComponent implements OnInit {
   private writeKey = '';
 
   readonly branches = computed(() => {
-    const accessibleIds = new Set(this.stock().map(item => item.branchId));
+    const accessibleIds = new Set(this.scopedBranchIds());
     const isAdmin = this.auth.hasAnyRole(['ADMIN']);
     return this.branchesData()
       .filter(b => b.status === 'ACTIVE' && (isAdmin || accessibleIds.has(b.id)))
       .map(b => b.name);
   });
   readonly pageSize = 7;
-  readonly productOptions = computed(() => this.inventoryItems().filter(item => item.status === 'ACTIVE'));
+  readonly productOptions = computed(() => {
+    const catalog = this.catalogBySku();
+    return this.inventoryItems().filter(item =>
+      item.status === 'ACTIVE' && (item.kind === 'MATERIAL' || catalog.has(item.sku.trim().toLowerCase())),
+    );
+  });
   readonly receiptStock = computed(() => {
     const selected = this.activeItem();
     return selected ? this.stock().find(item => item.itemId === selected.itemId && item.branch === this.receiptBranch()) ?? null : null;
@@ -173,7 +179,7 @@ export class AdminInventoryPageComponent implements OnInit {
       branches: this.inventoryApi.listBranches(),
       items: this.inventoryApi.listItems(),
       stocks: this.inventoryApi.listStocks(),
-      products: this.inventoryApi.listCatalogProducts().pipe(catchError(() => of([] as AdminProduct[]))),
+      products: this.inventoryApi.listCatalogProducts(),
     }).pipe(
       takeUntilDestroyed(this.destroyRef),
       finalize(() => this.loading.set(false)),
@@ -182,6 +188,7 @@ export class AdminInventoryPageComponent implements OnInit {
         this.branchesData.set(branches);
         this.inventoryItems.set(items);
         this.catalogProducts.set(products);
+        this.scopedBranchIds.set([...new Set(stocks.map(stock => stock.branchId))]);
         this.stock.set(this.makeStockRows(stocks, items, branches));
         this.page.set(1);
         this.loadHistory();
@@ -190,6 +197,7 @@ export class AdminInventoryPageComponent implements OnInit {
         this.stock.set([]);
         this.inventoryItems.set([]);
         this.catalogProducts.set([]);
+        this.scopedBranchIds.set([]);
         this.branchesData.set([]);
         this.loadError.set(adminErrorMessage(error, 'Không tải được dữ liệu kho. Vui lòng thử lại.'));
       },
@@ -219,6 +227,10 @@ export class AdminInventoryPageComponent implements OnInit {
       const item = itemById.get(row.inventoryItemId);
       if (!item) return [];
       const product = catalogBySku.get(item.sku.trim().toLowerCase());
+      // Product rows must belong to the active Product Master. Retired/orphan
+      // InventoryItem records remain in BE for audit but are not saleable goods.
+      // MATERIAL is a separate inventory type and remains visible.
+      if (item.kind === 'PRODUCT' && !product) return [];
       return [{
         id: `${row.branchId}:${row.inventoryItemId}`,
         itemId: item.id,
