@@ -186,12 +186,13 @@
               (ngModelChange)="setQuantity($event)" placeholder="Nhập số lượng" />
           </label>
         }
-        <label class="field-label">
-          <span class="field-caption">{{modal() === 'receipt' ? 'Lý do / ghi chú' : 'Lý do'}}
-          @if (modal() !== 'receipt') {<span class="required">*</span>}</span>
-          <input type="text" [ngModel]="note()" (ngModelChange)="updateNote($event)"
-            placeholder="Nhập lý do" />
-        </label>
+        @if (modal() !== 'threshold') {
+          <label class="field-label">
+            <span class="field-caption">{{modal() === 'receipt' ? 'Lý do / ghi chú' : 'Lý do'}} <span class="required">*</span></span>
+            <input type="text" [ngModel]="note()" (ngModelChange)="updateNote($event)"
+              placeholder="Nhập lý do" />
+          </label>
+        }
         @if (modal() === 'receipt') {
           <label class="field-label"><span class="field-caption">Ngưỡng cảnh báo <span class="required">*</span></span>
             <input type="number" min="0" step="1" [ngModel]="threshold()"
