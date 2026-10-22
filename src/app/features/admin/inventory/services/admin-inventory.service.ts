@@ -2,6 +2,8 @@ import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { EMPTY, expand, map, Observable, reduce } from 'rxjs';
 import { ApiClientService } from '../../../../core/services/api-client.service';
+import { AdminProductService } from '../../products/services/admin-product.service';
+import { AdminProduct } from '../../products/models/admin-product.model';
 
 export interface InventoryItemDto {
   id: string;
@@ -66,6 +68,7 @@ export interface InventoryTransferWrite {
 @Injectable({ providedIn: 'root' })
 export class AdminInventoryService {
   private readonly api = inject(ApiClientService);
+  private readonly productsApi = inject(AdminProductService);
 
   // The API uses cursor pagination, while the approved UI uses numbered pages.
   // Read bounded result sets and paginate/filter them in the view.
@@ -79,6 +82,10 @@ export class AdminInventoryService {
       ),
       reduce((items, { page }) => items.concat(page.items), [] as T[]),
     );
+  }
+
+  listCatalogProducts(): Observable<AdminProduct[]> {
+    return this.allPages(cursor => this.productsApi.listProducts({ limit: 100, cursor }));
   }
 
   listBranches(): Observable<InventoryBranchDto[]> {
