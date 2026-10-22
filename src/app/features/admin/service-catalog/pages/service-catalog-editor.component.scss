@@ -935,3 +935,46 @@ app-service-catalog-editor {
   min-height: 36px;
   font-size: 12px;
 }
+
+
+/* Five-column pricing: separate numeric price from words, keep compact spacing. */
+.service-editor__table--prices {
+  width: 100%;
+  min-width: 900px;
+  table-layout: fixed;
+}
+.service-editor__table--prices th:nth-child(1) { width: 10%; }
+.service-editor__table--prices th:nth-child(2) { width: 17%; }
+.service-editor__table--prices th:nth-child(3) { width: 21%; }
+.service-editor__table--prices th:nth-child(4) { width: 22%; }
+.service-editor__table--prices th:nth-child(5) { width: 30%; }
+.service-editor__table--prices th,
+.service-editor__table--prices td {
+  padding: 11px 14px;
+  vertical-align: middle;
+}
+.service-editor__table--prices .service-editor__price-select {
+  width: 100%;
+  max-width: none;
+}
+.service-editor__table--prices .service-editor__price-input {
+  width: 100%;
+  max-width: 235px;
+}
+.service-editor__table--prices .service-editor__amount-words-cell {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+}
+/* Inline gear buttons keep the same appearance in view, edit and create. */
+.service-editor__detail-config-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.service-editor__detail-config-link:disabled { opacity: .45; cursor: not-allowed; }
+.service-editor__detail-branch-list {
+  gap: 12px;
+}
