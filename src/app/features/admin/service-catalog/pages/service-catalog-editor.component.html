@@ -108,7 +108,15 @@
           }
         </section>
         <section class="service-editor__card service-editor__detail-card" aria-labelledby="service-detail-branches">
-          <h2 id="service-detail-branches">Áp dụng tại chi nhánh</h2>
+          <div class="service-editor__branch-section-heading">
+            <h2 id="service-detail-branches">Áp dụng tại chi nhánh</h2>
+            @if (authSessionRole === 'ADMIN' && active) {
+              <button type="button" class="service-editor__btn service-editor__btn--secondary"
+                [disabled]="saving()" (click)="applyDefaultAtMissingBranches()">
+                {{ saving() ? 'Đang cập nhật...' : 'Bật tại chi nhánh chưa cấu hình' }}
+              </button>
+            }
+          </div>
           @if (!active) {
             <p class="service-editor__detail-empty">Dịch vụ đang tạm ngưng nên chưa thể kích hoạt tại các chi nhánh.</p>
           }
