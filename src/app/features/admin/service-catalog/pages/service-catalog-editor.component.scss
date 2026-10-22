@@ -860,39 +860,44 @@ app-service-catalog-editor {
 }
 
 
-/* Feedback 14: shorter billing-mode controls; readable amount in Vietnamese
-   beside the formatted input, without stretching the form on desktop. */
-.service-editor__table--prices {
-  min-width: 860px;
-}
-.service-editor__table--prices th:nth-child(1) { width: 14%; }
-.service-editor__table--prices th:nth-child(2) { width: 18%; }
-.service-editor__table--prices th:nth-child(3) { width: 22%; }
-.service-editor__table--prices th:nth-child(4) { width: 46%; }
+/* FB #14: compact money cell; the amount in words lives directly under
+   its input, avoiding a large blank strip to the right on wide screens. */
+.service-editor__table--prices { min-width: 760px; }
+.service-editor__table--prices th:nth-child(1) { width: 16%; }
+.service-editor__table--prices th:nth-child(2) { width: 22%; }
+.service-editor__table--prices th:nth-child(3) { width: 27%; }
+.service-editor__table--prices th:nth-child(4) { width: 35%; }
 .service-editor__table--prices .service-editor__price-select {
   width: 100%;
-  max-width: 180px;
+  max-width: 225px;
 }
 .service-editor__money-group {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
   width: 100%;
-  align-items: center;
-  gap: 12px;
   min-width: 0;
 }
 .service-editor__money-group .service-editor__price-input {
-  flex: 0 1 168px;
-  width: 168px;
-  min-width: 125px;
-}
-.service-editor__money-group .service-editor__amount-words {
-  display: block;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
+  width: min(100%, 210px);
   min-width: 0;
+}
+.service-editor__money-group .service-editor__amount-words,
+.service-editor__money-group .service-editor__amount-unset {
+  display: block;
   margin: 0;
-  line-height: 1.45;
+  max-width: 100%;
   color: #64748b;
-  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 1.35;
+  overflow-wrap: break-word;
+}
+.service-editor__money-group .service-editor__amount-unset {
+  font-size: 12px;
+  font-style: normal;
 }
 .service-editor__activation-notice {
   display: flex;
@@ -908,12 +913,6 @@ app-service-catalog-editor {
   font-size: 13px;
 }
 .service-editor__activation-notice button { flex: 0 0 auto; }
-@media (max-width: 900px) {
-  .service-editor__money-group .service-editor__price-input {
-    width: 150px;
-    flex-basis: 150px;
-  }
-}
 @media (max-width: 570px) {
   .service-editor__activation-notice {
     align-items: stretch;
