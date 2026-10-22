@@ -75,11 +75,11 @@
             <th scope="col">Hình thức</th>
             <th scope="col">Thời lượng</th>
             <th scope="col">Giá cơ sở</th>
-            <th scope="col">
-              {{ filters().branchId === 'ALL' ? 'CN đang bật' : 'Kích hoạt' }}
+            <th scope="col" class="service-catalog__activation-col">
+              {{ filters().branchId === 'ALL' ? 'CN đang bật' : 'Kích hoạt tại chi nhánh' }}
             </th>
             @if (filters().branchId !== 'ALL') {
-              <th scope="col">Sức chứa đồng thời</th>
+              <th scope="col" class="service-catalog__capacity-col">Sức chứa đồng thời</th>
             }
             <th scope="col" class="service-catalog__actions-col">Thao tác</th>
           </tr>
@@ -141,7 +141,7 @@
                   {{ service.durationMinutes !== null ? service.durationMinutes + ' phút' : '—' }}
                 </td>
                 <td class="service-catalog__price">{{ priceLabel(service) }}</td>
-                <td>
+                <td class="service-catalog__activation-cell">
                   @if (filters().branchId === 'ALL') {
                     <span class="service-catalog__activation"
                       [class.service-catalog__activation--off]="enabledCount(service) === 0">
@@ -155,7 +155,7 @@
                   }
                 </td>
                 @if (filters().branchId !== 'ALL') {
-                  <td>
+                  <td class="service-catalog__capacity-cell">
                     <span class="service-catalog__capacity">
                       {{ capacityAtSelectedBranch(service) === null ? 'Chưa cấu hình' : capacityAtSelectedBranch(service) + ' ca' }}
                     </span>
