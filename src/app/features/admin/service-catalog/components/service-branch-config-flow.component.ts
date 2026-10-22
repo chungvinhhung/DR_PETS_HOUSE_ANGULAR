@@ -33,7 +33,7 @@ interface BranchOption {
   template: `
     @if (selectedBranch(); as choice) {
       <app-branch-service-config-dialog
-        [service]="configuredService()"
+        [service]="configuredService"
         [branches]="[{ id: choice.branch.id, name: choice.branch.name }]"
         [initialBranchId]="choice.branch.id"
         [branchActive]="choice.branch.status === 'ACTIVE'"
