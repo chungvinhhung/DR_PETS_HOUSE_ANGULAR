@@ -1,6 +1,5 @@
 <section class="inventory-page">
-  <div class="page-title"><h1>Kho</h1></div>
-  <p class="demo-note">Dữ liệu mẫu · Chưa kết nối hệ thống kho</p>
+  <div class="page-title"><h1>Kho</h1><span class="demo-note">Dữ liệu minh họa · Chưa kết nối hệ thống kho</span></div>
   <div class="inventory-tabs" role="tablist" aria-label="Kho">
     <button type="button" role="tab" [attr.aria-selected]="tab()==='stock'" [class.active]="tab()==='stock'" (click)="switchTab('stock')">Tồn kho</button>
     <button type="button" role="tab" [attr.aria-selected]="tab()==='history'" [class.active]="tab()==='history'" (click)="switchTab('history')">Lịch sử kho</button>
@@ -23,7 +22,7 @@
         <select aria-label="Trạng thái tồn kho" [ngModel]="status()" (ngModelChange)="status.set($event);onFilter()">
           <option value="">Tất cả trạng thái</option><option>Còn hàng</option><option>Sắp hết hàng</option><option>Hết hàng</option>
         </select>
-        <button type="button" class="primary" (click)="openDialog('receipt')"><span class="plus">+</span> Nhập kho</button>
+        <button type="button" class="primary" (click)="openDialog('receipt')"><span class="plus" aria-hidden="true">+</span> Nhập kho</button>
       } @else {
         <select aria-label="Loại biến động" [ngModel]="changeType()" (ngModelChange)="changeType.set($event);onFilter()">
           <option value="">Tất cả biến động</option><option>Nhập kho</option><option>Xuất kho</option><option>Điều chỉnh</option><option>Chuyển kho</option><option>Hoàn stock</option>
@@ -36,7 +35,12 @@
   <div class="table-shell">
     <div class="table-scroll">
       @if (tab()==='stock') {
-        <table><thead><tr>
+        <table class="stock-table">
+          <colgroup>
+            <col style="width:180px"/><col style="width:165px"/><col style="width:130px"/><col style="width:90px"/>
+            <col style="width:100px"/><col style="width:140px"/><col style="width:159px"/><col style="width:70px"/>
+          </colgroup>
+          <thead><tr>
           <th>Sản phẩm</th><th>Biến thể / SKU</th><th>Loại</th><th>Chi nhánh</th><th>Tồn hiện tại</th><th>Ngưỡng cảnh báo</th><th>Trạng thái</th><th class="center">Thao tác</th>
         </tr></thead><tbody>
           @for (item of currentRows(); track item.id) {
