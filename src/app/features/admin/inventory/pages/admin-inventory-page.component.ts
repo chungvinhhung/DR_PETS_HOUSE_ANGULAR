@@ -8,20 +8,20 @@ type StockKind = 'Hàng bán' | 'Vật tư dịch vụ' | 'Dùng chung';
 type DialogKind = 'receipt' | 'issue' | 'adjustment' | 'transfer' | 'threshold';
 interface StockItem {
   id: string; name: string; variant: string; sku: string; kind: StockKind;
-  branch: string; quantity: number; threshold: number;
+  branch: string; quantity: number; threshold: number | null;
 }
 interface StockHistory {
   date: string; item: string; sku: string; branch: string; action: string;
   reason: string; delta: string; after: string; reference: string; actor: string;
 }
 const SAMPLE_STOCK: StockItem[] = [
-  {id:'1',name:'Thức ăn Royal Canin Mini Adult',variant:'Gói 2 kg',sku:'RC-MINI-2KG',kind:'Hàng bán',branch:'Chi nhánh Quận 1',quantity:46,threshold:10},
-  {id:'2',name:'Thức ăn Royal Canin Mini Adult',variant:'Gói 2 kg',sku:'RC-MINI-2KG',kind:'Hàng bán',branch:'Chi nhánh Quận 3',quantity:5,threshold:8},
-  {id:'3',name:'Sữa tắm thú cưng',variant:'Chai 500 ml',sku:'ST-500ML',kind:'Hàng bán',branch:'Chi nhánh Quận 1',quantity:23,threshold:10},
-  {id:'4',name:'Vaccine phòng bệnh',variant:'Liều',sku:'VC-001',kind:'Vật tư dịch vụ',branch:'Chi nhánh Quận 1',quantity:18,threshold:5},
-  {id:'5',name:'Băng gạc y tế',variant:'Gói',sku:'BG-001',kind:'Vật tư dịch vụ',branch:'Chi nhánh Quận 3',quantity:0,threshold:8},
-  {id:'6',name:'Vòng cổ thú cưng',variant:'Size M',sku:'VC-M',kind:'Hàng bán',branch:'Chi nhánh Quận 3',quantity:6,threshold:5},
-  {id:'7',name:'Găng tay y tế',variant:'Hộp 100 chiếc',sku:'GT-100',kind:'Dùng chung',branch:'Chi nhánh Quận 1',quantity:32,threshold:10},
+  { id:'1', name:'Royal Canin Poodle', variant:'500g', sku:'RCP-500G', kind:'Hàng bán', branch:'Chi nhánh Quận 1', quantity:3, threshold:5 },
+  { id:'2', name:'Royal Canin Poodle', variant:'1.5kg', sku:'RCP-15KG', kind:'Hàng bán', branch:'Chi nhánh Quận 3', quantity:0, threshold:10 },
+  { id:'3', name:'Cotton Pad', variant:'—', sku:'CP-010', kind:'Vật tư dịch vụ', branch:'Chi nhánh Quận 1', quantity:18, threshold:20 },
+  { id:'4', name:'Dental Chews', variant:'—', sku:'DC-021', kind:'Hàng bán', branch:'Chi nhánh Quận 3', quantity:4, threshold:5 },
+  { id:'5', name:'Ear Cleaner 120ml', variant:'—', sku:'EC-120', kind:'Dùng chung', branch:'Chi nhánh Quận 1', quantity:32, threshold:10 },
+  { id:'6', name:'Syringe 5ml', variant:'—', sku:'SY-005', kind:'Vật tư dịch vụ', branch:'Chi nhánh Quận 1', quantity:11, threshold:15 },
+  { id:'7', name:'Premium Dog Food 2kg', variant:'—', sku:'PDF-2KG', kind:'Hàng bán', branch:'Chi nhánh Quận 3', quantity:46, threshold:10 },
 ];
 const SAMPLE_HISTORY: StockHistory[] = [
   {date:'20/10/2026 09:30',item:'Thức ăn Royal Canin Mini Adult',sku:'RC-MINI-2KG',branch:'Chi nhánh Quận 1',action:'Nhập kho',reason:'Nhận hàng từ nhà cung cấp',delta:'+20',after:'46',reference:'NK-0001',actor:'Quản trị viên'},
@@ -56,9 +56,24 @@ export class AdminInventoryPageComponent {
   readonly quantity = signal<number | null>(null);
   readonly threshold = signal<number | null>(null);
   readonly destination = signal('');
+  readonly receiptBranch = signal('');
   readonly note = signal('');
   readonly branches = ['Chi nhánh Quận 1', 'Chi nhánh Quận 3'];
   readonly pageSize = 7;
+  readonly productOptions = computed(() => Array.from(new Map(this.stock().map(item => [item.sku, item])).values()));
+  readonly receiptStock = computed(() => {
+    const selected = this.activeItem();
+    return selected ? this.stock().find(item => item.sku === selected.sku && item.branch === this.receiptBranch()) ?? null : null;
+  });
+  readonly destinationItem = computed(() => {
+    const selected = this.activeItem();
+    return selected ? this.stock().find(item => item.sku === selected.sku && item.branch === this.destination()) ?? null : null;
+  });
+  readonly destinationNeedsThreshold = computed(() => !!this.destination() && this.destinationItem()?.threshold == null);
+  readonly destinationLabel = computed(() => this.shortBranch(this.destination()));
+  readonly effectiveThreshold = computed(() => this.modal() === 'receipt' ? this.receiptStock()?.threshold ?? null : this.activeItem()?.threshold ?? null);
+  shortBranch(value: string): string { return value.replace('Chi nhánh Quận ', 'Q'); }
+  productLabel(item: StockItem): string { return item.variant === '—' ? item.name : `${item.name} · ${item.variant}`; }
   readonly pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
   readonly stockFiltered = computed(() => this.stock().filter(row => {
     const text = this.search().trim().toLocaleLowerCase('vi');
@@ -77,7 +92,7 @@ export class AdminInventoryPageComponent {
   readonly currentRows = computed(() => this.stockFiltered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
   readonly currentHistory = computed(() => this.historyFiltered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
   readonly totalPages = computed(() => Math.max(1, Math.ceil((this.tab()==='stock' ? this.stockFiltered().length : this.historyFiltered().length) / this.pageSize)));
-  readonly currentQuantity = computed(() => this.activeItem()?.quantity ?? 0);
+  readonly currentQuantity = computed(() => this.modal() === 'receipt' ? this.receiptStock()?.quantity ?? 0 : this.activeItem()?.quantity ?? 0);
   readonly preview = computed(() => {
     const amount = this.quantity() ?? 0;
     if (this.modal() === 'receipt') return this.currentQuantity() + amount;
@@ -86,41 +101,66 @@ export class AdminInventoryPageComponent {
     if (this.modal() === 'transfer') return this.currentQuantity() - amount;
     return this.currentQuantity();
   });
-  readonly destinationStock = computed(() => {
-    const item = this.activeItem();
-    return item ? (this.stock().find(row => row.sku === item.sku && row.branch === this.destination())?.quantity ?? 0) : 0;
-  });
+  readonly destinationStock = computed(() => this.destinationItem()?.quantity ?? 0);
   readonly dialogTitle = computed(() => ({
     receipt:'Nhập kho',issue:'Xuất kho',adjustment:'Điều chỉnh tồn kho',transfer:'Chuyển kho',threshold:'Cài ngưỡng'
   }[this.modal() ?? 'receipt']));
   switchTab(tab: 'stock' | 'history'): void {this.tab.set(tab);this.page.set(1);this.search.set('');this.branch.set('');this.status.set('');this.type.set('');this.changeType.set('');this.menuId.set(null);}
-  stockStatus(item: StockItem): string {return item.quantity === 0 ? 'Hết hàng' : item.quantity <= item.threshold ? 'Sắp hết hàng' : 'Còn hàng';}
+  stockStatus(item: StockItem): string {
+    if (item.quantity === 0) return 'Hết hàng';
+    if (item.threshold === null) return 'Chưa cài ngưỡng';
+    return item.quantity <= item.threshold ? 'Sắp hết hàng' : 'Đủ hàng';
+  }
   onFilter(): void {this.page.set(1);}
   openDialog(kind: DialogKind, item?: StockItem): void {
     this.menuId.set(null);
-    this.activeItem.set(item ?? this.stock()[0] ?? null);
+    const selected = item ?? this.stock()[0] ?? null;
+    this.activeItem.set(selected);
     this.modal.set(kind);
     this.quantity.set(null);
-    this.threshold.set(item?.threshold ?? null);
+    this.receiptBranch.set(selected?.branch ?? this.branches[0]);
+    this.threshold.set(selected?.threshold ?? null);
     this.destination.set('');
     this.note.set('');
   }
   closeDialog(): void {this.modal.set(null);}
-  selectItem(id: string): void {const item=this.stock().find(x=>x.id===id);if(item){this.activeItem.set(item);this.threshold.set(item.threshold);}}
+  selectProduct(sku: string): void {
+    const selected = this.stock().find(item => item.sku === sku && item.branch === this.receiptBranch())
+      ?? this.stock().find(item => item.sku === sku);
+    if (selected) {
+      this.activeItem.set(selected);
+      this.threshold.set(this.receiptStock()?.threshold ?? null);
+    }
+  }
+  changeReceiptBranch(value: string): void {
+    this.receiptBranch.set(value);
+    this.threshold.set(this.receiptStock()?.threshold ?? null);
+  }
+  changeDestination(value: string): void {
+    this.destination.set(value);
+    this.threshold.set(this.destinationItem()?.threshold ?? null);
+  }
   setQuantity(value: string): void {this.quantity.set(value === '' ? null : Number(value));}
   setThreshold(value: string): void {this.threshold.set(value === '' ? null : Number(value));}
   valid(): string | null {
     if (!this.activeItem()) return 'Vui lòng chọn sản phẩm.';
+    const validThreshold = () => Number.isInteger(this.threshold() ?? NaN) && (this.threshold() ?? -1) >= 0;
     if (this.modal() === 'threshold') {
-      if (!Number.isInteger(this.threshold() ?? NaN) || (this.threshold() ?? -1)<0) return 'Vui lòng nhập ngưỡng cảnh báo hợp lệ.';
-      if (this.threshold()===this.activeItem()?.threshold) return 'Ngưỡng mới phải khác ngưỡng hiện tại.';
+      if (!validThreshold()) return 'Vui lòng nhập ngưỡng cảnh báo hợp lệ.';
+      if (this.threshold() === this.activeItem()?.threshold) return 'Ngưỡng mới phải khác ngưỡng hiện tại.';
     } else {
-      if (!Number.isInteger(this.quantity() ?? NaN) || (this.quantity() ?? -1) < (this.modal()==='adjustment'?0:1)) return 'Vui lòng nhập số lượng hợp lệ.';
-      if (['issue','transfer'].includes(this.modal()??'') && (this.quantity()??0)>this.currentQuantity()) return 'Số lượng vượt quá tồn kho hiện tại.';
-      if (this.modal()==='transfer' && (!this.destination() || this.destination()===this.activeItem()?.branch)) return 'Vui lòng chọn chi nhánh nhận khác chi nhánh xuất.';
+      if (!Number.isInteger(this.quantity() ?? NaN) || (this.quantity() ?? -1) < (this.modal() === 'adjustment' ? 0 : 1))
+        return 'Vui lòng nhập số lượng hợp lệ.';
+      if (['issue', 'transfer'].includes(this.modal() ?? '') && (this.quantity() ?? 0) > this.currentQuantity())
+        return 'Số lượng vượt quá tồn kho hiện tại.';
+      if (this.modal() === 'transfer' && (!this.destination() || this.destination() === this.activeItem()?.branch))
+        return 'Vui lòng chọn chi nhánh nhận khác chi nhánh xuất.';
+      if (this.modal() === 'receipt' && !validThreshold())
+        return 'Vui lòng nhập ngưỡng cảnh báo cho sản phẩm tại chi nhánh này.';
+      if (this.modal() === 'transfer' && this.destinationNeedsThreshold() && !validThreshold())
+        return 'Vui lòng cài ngưỡng cảnh báo cho sản phẩm tại chi nhánh nhận.';
     }
-    if (this.modal()!=='receipt' && !this.note().trim()) return 'Vui lòng nhập lý do.';
-    if (this.modal()==='receipt' && (!Number.isInteger(this.threshold() ?? NaN) || (this.threshold()??-1)<0)) return 'Vui lòng nhập ngưỡng cảnh báo hợp lệ.';
+    if (this.modal() !== 'receipt' && !this.note().trim()) return 'Vui lòng nhập lý do.';
     return null;
   }
   notify(message: string, tone: 'success'|'error'|'info'='info'): void {this.adminToast.show(message,tone);}
