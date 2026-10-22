@@ -920,3 +920,19 @@ app-service-catalog-editor {
     flex-direction: column;
   }
 }
+
+
+/* Existing services: optional one-time reconciliation for missing branch configs. */
+.service-editor__branch-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.service-editor__branch-section-heading h2 { margin: 0; }
+.service-editor__branch-section-heading .service-editor__btn {
+  min-height: 36px;
+  font-size: 12px;
+}
