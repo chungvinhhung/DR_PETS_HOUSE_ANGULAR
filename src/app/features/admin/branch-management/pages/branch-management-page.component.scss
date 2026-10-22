@@ -1161,8 +1161,7 @@ app-branch-management-page { display:block; font-family:Roboto,Arial,sans-serif;
 }
 .branch-v2-page .branch-v2-page__table--services thead th:last-child,
 .branch-v2-page .branch-v2-page__table--services tbody td:last-child {
-  width: 110px;
-  min-width: 110px;
+  min-width: 0;
 }
 .branch-v2-page .branch-v2-page__table--services tbody td:last-child .branch-v2-page__icon-action {
   margin-inline: auto;
@@ -1244,11 +1243,39 @@ app-branch-management-page { display:block; font-family:Roboto,Arial,sans-serif;
   border-color: #e2e8f0;
   border-radius: 12px;
 }
-.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(1) { width: 28%; }
-.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(2) { width: 21%; }
-.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(3) { width: 17%; }
-.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(4) { width: 24%; }
-.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(5) { width: 10%; }
+/* Even visual spacing for the five Branch Detail service columns.
+ * Keep the service name left aligned; numeric/status/action columns share
+ * centered header and value axes. Avoid fixed 110px action-column override. */
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services {
+  width: 100%;
+  min-width: 950px;
+  table-layout: fixed;
+}
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(1) { width: 24%; }
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(2) { width: 19%; }
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(3) { width: 19%; }
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(4) { width: 26%; }
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(5) { width: 12%; }
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services thead th:first-child,
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services tbody td:first-child {
+  text-align: left;
+}
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(n+2),
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services tbody td:nth-child(n+2) {
+  text-align: center;
+  vertical-align: middle;
+  padding-inline: 12px;
+}
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services tbody td:nth-child(4) .branch-v2-page__switch-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-inline: auto;
+}
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services tbody td:last-child .branch-v2-page__icon-action {
+  margin-inline: auto;
+}
 .branch-v2-page .branch-v2-page__pagination {
   min-height: 60px;
   padding: 8px 12px;
