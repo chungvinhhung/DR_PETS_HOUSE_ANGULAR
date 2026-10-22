@@ -78,14 +78,13 @@ const DAY_TOTALS = [28,35,41,34,46,52,31];
           </tbody>
         </table>
       </div>
-      <p class="branch-v2__demo-caption">Dữ liệu tháng 10/2026 minh họa theo Figma; số chỗ thực tế phải do Backend tính.</p>
       @if (selectedSlot(); as slot) {
         <div class="branch-v2__overlay" role="presentation" (click)="closeSlot()">
           <section class="branch-v2__modal branch-v2__slot-modal" role="dialog" aria-modal="true" aria-labelledby="branch-slot-modal"
             (click)="$event.stopPropagation()">
             <header class="branch-v2__modal-header">
               <div><h2 id="branch-slot-modal">Chi tiết khung giờ</h2>
-                <p>{{ displayDate() }} · {{ slot.label }} · Chi nhánh Quận 1 (demo)</p>
+                <p>{{ displayDate() }} · {{ slot.label }}</p>
               </div>
               <button type="button" aria-label="Đóng" (click)="closeSlot()">×</button>
             </header>
@@ -96,7 +95,6 @@ const DAY_TOTALS = [28,35,41,34,46,52,31];
               <div><span>Lấp đầy</span><strong>{{ isFigmaDay() ? slotPercent(slot) + '%' : '—' }}</strong></div>
             </div>
             <h3>Dịch vụ trong khung giờ</h3>
-            <p class="branch-v2__preview-note">Các con số dưới đây chỉ minh họa đúng màn Figma, không được sử dụng để nhận lịch hoặc tính sức chứa thực tế.</p>
             <table class="branch-v2__modal-table">
               <thead><tr><th>Dịch vụ</th><th>Đã đặt / Tổng</th><th>Còn trống</th><th>Trạng thái</th></tr></thead>
               <tbody>
@@ -175,6 +173,6 @@ export class BranchHoursPreviewComponent {
   showSlotInfo(row: SlotRow): void { this.selectedSlot.set(row); this.actionNotice.set(''); }
   closeSlot(): void { this.selectedSlot.set(null); this.actionNotice.set(''); }
   showLockUnavailable(): void {
-    this.toast.show('Chưa có API khóa khung giờ. Chưa thay đổi lịch đặt.', 'info');
+    this.toast.show('Chức năng khóa khung giờ hiện chưa khả dụng.', 'info');
   }
 }
