@@ -78,12 +78,16 @@
       }
     </div>
     <div class="table-footer">
-      <span>Đang hiển thị {{tab()==='stock'?currentRows().length:currentHistory().length}} trên tổng số {{tab()==='stock'?stockFiltered().length:historyFiltered().length}} bản ghi</span>
-      <div class="pagination">
+      <span>Đang hiển thị {{visibleCount()}} trên tổng số {{totalCount()}} {{tab() === 'stock' ? 'sản phẩm' : 'giao dịch'}}</span>
+      <nav class="pagination-buttons" aria-label="Phân trang danh sách kho">
         <button type="button" aria-label="Trang trước" (click)="setPage(page()-1)" [disabled]="page()===1">‹</button>
-        @for (n of pageNumbers();track n) {<button type="button" [class.selected]="page()===n" (click)="setPage(n)">{{n}}</button>}
+        @for (n of pageNumbers();track n) {
+          <button type="button" class="pagination-page" [class.pagination-page--active]="page()===n"
+            [attr.aria-current]="page() === n ? 'page' : null" [attr.aria-label]="'Đến trang ' + n"
+            (click)="setPage(n)">{{n}}</button>
+        }
         <button type="button" aria-label="Trang sau" (click)="setPage(page()+1)" [disabled]="page()===totalPages()">›</button>
-      </div>
+      </nav>
     </div>
   </div>
 </section>
@@ -199,7 +203,7 @@
       <footer class="dialog-footer">
         <button type="button" class="secondary" (click)="closeDialog()">Hủy bỏ</button>
         <button type="button" class="primary" [disabled]="sending()" (click)="submit()">
-          {{modal()==='receipt'?'Xác nhận nhập':modal()==='issue'?'Xác nhận xuất':modal()==='adjustment'?'Lưu điều chỉnh':modal()==='transfer'?'Xác nhận chuyển':'Lưu ngưỡng'}}
+          {{modal()==='receipt'?'Xác nhận':modal()==='issue'?'Xác nhận xuất':modal()==='adjustment'?'Lưu điều chỉnh':modal()==='transfer'?'Xác nhận chuyển':'Lưu ngưỡng'}}
         </button>
       </footer>
     </section>
