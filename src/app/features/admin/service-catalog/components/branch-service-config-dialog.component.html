@@ -21,7 +21,7 @@
           <button type="button" class="branch-config__switch"
             [class.branch-config__switch--active]="enabled()"
             [attr.aria-pressed]="enabled()"
-            [disabled]="!canEnable"
+            [disabled]="!canEnable && !enabled()"
             [attr.aria-label]="'Kích hoạt ' + service.name"
             (click)="toggleEnabled()"><span></span></button>
         </div>
