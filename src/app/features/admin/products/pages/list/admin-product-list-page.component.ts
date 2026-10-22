@@ -453,8 +453,7 @@ export class AdminProductListPageComponent implements OnInit {
       },
       error: (error: unknown) => {
         this.restoreError.set(
-          adminErrorMessage(error, 'Không thể khôi phục sản phẩm.') +
-          ' Nếu chưa rõ kết quả, hãy kiểm tra tab Sản phẩm hiện tại trước khi thử lại.',
+          adminErrorMessage(error, 'Không thể khôi phục sản phẩm.'),
         );
       },
     });

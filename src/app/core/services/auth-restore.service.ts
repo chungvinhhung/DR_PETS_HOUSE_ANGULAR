@@ -1,5 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { catchError, map, Observable, of, switchMap, tap, timeout } from 'rxjs';
+import { catchError, map, Observable, of, retry, switchMap, tap, throwError, timer, timeout } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { AppHttpError } from '../models/app-http-error.model';
 
 import { AuthUser, CurrentUserResponse } from '../models/auth.model';
 import { ApiClientService } from './api-client.service';
@@ -30,13 +32,29 @@ export class AuthRestoreService {
         });
       }),
       map(() => true),
-      // Cover both refresh and /auth/me with a bounded total wait.
-      timeout({ first: 18000 }),
-      catchError(() => {
-        this.authSession.clearSession();
+      // A temporarily sleeping server must not be confused with an expired account.
+      retry({
+        count: 1,
+        delay: (error: unknown) => this.isTransient(error)
+          ? timer(900)
+          : throwError(() => error),
+      }),
+      timeout({ first: 22000 }),
+      catchError((error: unknown) => {
+        // A failed refresh due to 401/403 is a true unauthenticated state.
+        // Never destroy a still-recoverable session on a timeout or 502/503.
+        if (!this.isTransient(error)) this.authSession.clearSession();
         return of(false);
       }),
     );
+  }
+
+  private isTransient(error: unknown): boolean {
+    if (error instanceof AppHttpError || error instanceof HttpErrorResponse) {
+      return error.status === 0 || error.status === 502 ||
+        error.status === 503 || error.status === 504;
+    }
+    return error instanceof Error && error.name === 'TimeoutError';
   }
 
   private normalizeUser(response: CurrentUserResponse): AuthUser {

@@ -66,7 +66,7 @@
 
   <section class="service-catalog__table-panel" aria-label="Bảng danh mục dịch vụ">
     <div class="service-catalog__table-scroll">
-      <table class="service-catalog__table">
+      <table class="service-catalog__table" [class.service-catalog__table--all-branches]="filters().branchId === 'ALL'">
         <thead>
           <tr>
             <th scope="col">Mã dịch vụ</th>
@@ -75,10 +75,12 @@
             <th scope="col">Hình thức</th>
             <th scope="col">Thời lượng</th>
             <th scope="col">Giá cơ sở</th>
-            <th scope="col">
-              {{ filters().branchId === 'ALL' ? 'CN đang bật' : 'Kích hoạt' }}
+            <th scope="col" class="service-catalog__activation-col">
+              {{ filters().branchId === 'ALL' ? 'CN đang bật' : 'Kích hoạt tại CN' }}
             </th>
-            <th scope="col">Khả dụng</th>
+            @if (filters().branchId !== 'ALL') {
+              <th scope="col" class="service-catalog__capacity-col">Sức chứa đồng thời</th>
+            }
             <th scope="col" class="service-catalog__actions-col">Thao tác</th>
           </tr>
         </thead>
@@ -86,14 +88,14 @@
           @if (loading()) {
             @for (row of [1, 2, 3, 4, 5, 6]; track row) {
               <tr aria-hidden="true">
-                @for (column of [1, 2, 3, 4, 5, 6, 7, 8, 9]; track column) {
+                @for (column of (filters().branchId === 'ALL' ? [1,2,3,4,5,6,7,8] : [1,2,3,4,5,6,7,8,9]); track column) {
                   <td><span class="service-catalog__skeleton"></span></td>
                 }
               </tr>
             }
           } @else if (error()) {
             <tr>
-              <td colspan="9" class="service-catalog__empty-cell">
+              <td [attr.colspan]="filters().branchId === 'ALL' ? 8 : 9" class="service-catalog__empty-cell">
                 <div class="service-catalog__state" role="alert">
                   <strong>Không tải được danh sách</strong>
                   <p>{{ error() }}</p>
@@ -103,7 +105,7 @@
             </tr>
           } @else if (!rows().length) {
             <tr>
-              <td colspan="9" class="service-catalog__empty-cell">
+              <td [attr.colspan]="filters().branchId === 'ALL' ? 8 : 9" class="service-catalog__empty-cell">
                 <div class="service-catalog__state">
                   @if (searchText().trim() || filters().mode !== 'ALL' || filters().status !== 'ALL' || filters().branchId !== 'ALL') {
                     <strong>Không tìm thấy dịch vụ nào</strong>
@@ -139,7 +141,7 @@
                   {{ service.durationMinutes !== null ? service.durationMinutes + ' phút' : '—' }}
                 </td>
                 <td class="service-catalog__price">{{ priceLabel(service) }}</td>
-                <td>
+                <td class="service-catalog__activation-cell">
                   @if (filters().branchId === 'ALL') {
                     <span class="service-catalog__activation"
                       [class.service-catalog__activation--off]="enabledCount(service) === 0">
@@ -148,13 +150,17 @@
                   } @else {
                     <span class="service-catalog__activation"
                       [class.service-catalog__activation--off]="!isEnabledAtSelectedBranch(service)">
-                      {{ service.branchServices.length ? (isEnabledAtSelectedBranch(service) ? 'Bật' : 'Tắt') : 'Chờ BE' }}
+                      {{ service.branchServices.length ? (isEnabledAtSelectedBranch(service) ? 'Đang bật' : 'Đã tắt') : 'Chưa cấu hình' }}
                     </span>
                   }
                 </td>
-                <td>
-                  <span class="service-catalog__availability" [class.service-catalog__availability--inactive]="enabledCount(service) === 0">{{ enabledCount(service) === 0 ? 'Chưa có CN bật' : (service.availabilityText ?? '—') }}</span>
-                </td>
+                @if (filters().branchId !== 'ALL') {
+                  <td class="service-catalog__capacity-cell">
+                    <span class="service-catalog__capacity">
+                      {{ capacityAtSelectedBranch(service) === null ? 'Chưa cấu hình' : capacityAtSelectedBranch(service) + ' ca' }}
+                    </span>
+                  </td>
+                }
                 <td class="service-catalog__actions-cell">
                   <div class="service-catalog__row-action">
                     <button
@@ -231,4 +237,11 @@
     </footer>
   </section>
 </section>
+@if (configuringService(); as chosenService) {
+  <app-service-branch-config-flow
+    [service]="chosenService"
+    [preferredBranchId]="filters().branchId"
+    (saved)="onBranchConfigSaved()"
+    (dismiss)="closeBranchConfig()" />
+}
 </app-admin-catalog-shell>

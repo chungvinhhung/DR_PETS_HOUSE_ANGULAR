@@ -16,8 +16,8 @@
           <label class="form-field" [class.field-invalid]="nameInvalid"><span>Tên sản phẩm <b>*</b></span><input [(ngModel)]="name" [attr.aria-invalid]="nameInvalid" placeholder="Nhập tên sản phẩm">@if (nameInvalid) {<small class="field-help-error">Vui lòng nhập tên sản phẩm.</small>}</label>
           <div class="two-fields product-type-usage-row">
             <div class="form-field"><span>Loại sản phẩm <b>*</b></span><div class="radios">
-              <label><input type="radio" name="editVariantMode" [checked]="!hasVariants" [disabled]="true"> Không có biến thể</label>
-              <label><input type="radio" name="editVariantMode" [checked]="hasVariants" [disabled]="true"> Có biến thể</label>
+              <label title="Loại sản phẩm không thay đổi sau khi tạo để bảo toàn SKU hiện có."><input type="radio" name="editVariantMode" [checked]="!hasVariants" [disabled]="true"> Không có biến thể</label>
+              <label title="Loại sản phẩm không thay đổi sau khi tạo để bảo toàn SKU hiện có."><input type="radio" name="editVariantMode" [checked]="hasVariants" [disabled]="true"> Có biến thể</label>
             </div></div>
             <label class="form-field" [class.field-invalid]="usageInvalid"><span>Loại sử dụng <b>*</b></span><select [(ngModel)]="usageType" [attr.aria-invalid]="usageInvalid" aria-label="Loại sử dụng"><option value="SALE">Hàng bán</option><option value="SHARED">Dùng chung</option><option value="SERVICE_SUPPLY">Vật tư dịch vụ</option></select>@if (usageInvalid) {<small class="field-help-error">Vui lòng chọn loại sử dụng.</small>}</label>
           </div>

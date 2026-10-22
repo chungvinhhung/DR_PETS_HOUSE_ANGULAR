@@ -62,6 +62,8 @@ export interface CatalogService {
   status: ServiceMasterStatus;
   referencePrice: number | null;
   minFixedTierPrice: number | null;
+  /** BE pricing values are ambiguous or cannot be mapped to the current editor. */
+  pricingDataWarning?: boolean;
   branchServices: BranchServicePreview[];
   enabledBranchCount?: number;
   totalBranchCount?: number;

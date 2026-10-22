@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { RouterLink } from '@angular/router';
-import { STAFF_PREVIEW, JOB_LABELS, StaffPreview, JobRole, StaffStatus, displayStaffName, displayStaffShift } from '../models/staff-preview.model';
+import { JOB_LABELS, StaffPreview, JobRole, StaffStatus, displayStaffName, displayStaffShift } from '../models/staff-preview.model';
+import { AdminStaffApiService, staffTodayISO, staffWeekMonday } from '../services/admin-staff-api.service';
 
 @Component({
   selector: 'app-admin-staff-list',
@@ -13,10 +14,21 @@ import { STAFF_PREVIEW, JOB_LABELS, StaffPreview, JobRole, StaffStatus, displayS
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminStaffListComponent {
+  readonly staffApi = inject(AdminStaffApiService);
+  readonly loading = this.staffApi.loading;
+  readonly error = this.staffApi.error;
+  readonly shiftError = this.staffApi.shiftError;
+  constructor() {
+    this.staffApi.loadRoster();
+    effect(() => {
+      if (this.staffApi.loaded()) this.staffApi.loadWeek(staffWeekMonday(staffTodayISO()));
+    });
+  }
+  retry(): void { this.staffApi.loadRoster(true); }
   readonly pageSize = 6;
   readonly roles = JOB_LABELS;
   readonly roleChoices = Object.keys(JOB_LABELS) as JobRole[];
-  readonly branches = [...new Set(STAFF_PREVIEW.flatMap(s => s.branches))].sort();
+  readonly branches = computed(() => [...new Set(this.staffApi.staff().flatMap(s => s.branches))].sort());
   readonly query = signal('');
   readonly roleFilter = signal<JobRole | 'ALL'>('ALL');
   readonly branchFilter = signal('ALL');
@@ -24,7 +36,7 @@ export class AdminStaffListComponent {
   readonly page = signal(1);
   readonly filtered = computed(() => {
     const q = this.query().trim().toLocaleLowerCase('vi');
-    return STAFF_PREVIEW.filter(s =>
+    return this.staffApi.staff().filter(s =>
       (!q || [s.id, s.fullName, this.displayName(s)].some(v => v.toLocaleLowerCase('vi').includes(q))) &&
       (this.roleFilter() === 'ALL' || s.jobRole === this.roleFilter()) &&
       (this.branchFilter() === 'ALL' || s.branches.includes(this.branchFilter())) &&
@@ -39,6 +51,17 @@ export class AdminStaffListComponent {
     return displayStaffName(staff);
   }
   roleName(role: JobRole): string { return JOB_LABELS[role]; }
+  staffCode(staff: StaffPreview): string { return staff.staffCode || staff.id; }
+  accountLabel(staff: StaffPreview): string {
+    return staff.accountStatus === 'ACTIVE' ? 'Đang hoạt động' :
+      staff.accountStatus === 'BLOCKED' ? 'Đã chặn' : 'Chưa có dữ liệu';
+  }
+  todayShift(staff: StaffPreview): string {
+    if (this.staffApi.shiftError()) return 'Không tải được';
+    if (this.staffApi.loadedMonday() !== staffWeekMonday(staffTodayISO())) return 'Đang tải...';
+    const shifts = this.staffApi.shifts().filter(shift => shift.staffId === staff.id && shift.isoDate === staffTodayISO());
+    return shifts.length ? shifts.map(shift => this.displayShift(shift.time)).join('; ') : '—';
+  }
 
   // Display-only formatting; preserve the original Shift start/end values.
   displayShift(value: string): string {

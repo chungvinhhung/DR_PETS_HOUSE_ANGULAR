@@ -2,11 +2,14 @@
 <main class="assign-page">
   <nav class="assign-crumb" aria-label="Breadcrumb"><span>Vận hành</span> › <a routerLink="/admin/staff">Nhân sự</a> › <a routerLink="/admin/staff/schedule">Lịch làm việc</a> › <strong>Phân ca</strong></nav>
   <header class="assign-header"><h1>Phân ca theo tuần</h1><div><button type="button" class="assign-cancel" (click)="requestClose()">Hủy</button><button type="button" class="assign-save" (click)="validatePreview()">Kiểm tra phân ca</button></div></header>
-  <p class="assign-note">Giao diện mẫu Phase 5 · Ca làm việc chưa được lưu vào Backend.</p>
+  <p class="assign-note">Danh sách nhân viên và ca hiện có lấy từ API Render. Thêm ca vẫn là bản nháp, chưa ghi Backend.</p>
+  @if (staffApi.loading() || staffApi.shiftLoading()) { <p role="status">Đang tải nhân sự và ca làm...</p> }
+  @if (staffApi.error()) { <p role="alert">{{ staffApi.error() }}</p> }
+  @if (staffApi.shiftError()) { <p role="alert">{{ staffApi.shiftError() }}</p> }
   <section class="assign-panel">
     <div class="assign-row"><label>Nhân viên <select [value]="chosenId()" (change)="setStaff($any($event.target).value)">
       <option value="">Chọn nhân viên</option>
-      @for (item of staff; track item.id) { <option [value]="item.id">{{ displayName(item) }}</option> }
+      @for (item of staff(); track item.id) { <option [value]="item.id">{{ displayName(item) }}</option> }
     </select></label>
     <app-admin-staff-week-nav
       [monday]="monday()" [label]="weekLabel()"
@@ -15,12 +18,12 @@
     </app-admin-staff-week-nav></div>
     @if (!selectedStaff()) { <p class="assign-empty">Chọn nhân viên để bắt đầu phân ca.</p> }
     @else {
-      <div class="assign-table"><table><thead><tr><th>Ngày</th><th>Ca đã phân công (mẫu)</th><th>Ca thêm trong bản nháp</th><th>Thêm ca</th></tr></thead>
+      <div class="assign-table"><table><thead><tr><th>Ngày</th><th>Ca đã phân công (Backend)</th><th>Ca thêm trong bản nháp</th><th>Thêm ca</th></tr></thead>
       <tbody>@for (day of days(); track day) {
         <tr><td>{{ day }}</td><td>@for (shift of otherShifts(day); track $index) { <div class="assign-existing">{{ shift.shiftName }} · {{ shift.time }} · {{ shift.branch }}</div> } @empty { — }</td>
         <td>@for (shift of shiftsFor(day); track shift) { <div class="assign-draft">{{ shift.template }} · {{ shift.start }}–{{ shift.end }} · {{ shift.branch }} <button type="button" (click)="remove(shift)" aria-label="Bỏ ca trong bản nháp">×</button></div> } @empty { — }</td>
         <td><div class="assign-controls"><select #branch [attr.aria-label]="'Chi nhánh ngày '+day"><option value="">Chi nhánh</option>@for (item of branches(); track item) { <option [value]="item">{{ item }}</option> }</select>
-        <select #template [attr.aria-label]="'Mẫu ca ngày '+day"><option value="">Mẫu ca</option>@for (item of options(branch.value); track item.name) { <option [value]="item.name">{{ item.name }} · {{ item.start }}–{{ item.end }}</option> }</select>
+        <select #template [attr.aria-label]="'Ca làm ngày '+day"><option value="">Ca làm</option>@for (item of options(branch.value); track item.name) { <option [value]="item.name">{{ item.name }} · {{ item.start }}–{{ item.end }}</option> }</select>
         <button type="button" (click)="add(day,branch.value,template.value)">+ Thêm</button></div></td></tr>
       }</tbody></table></div>
     }

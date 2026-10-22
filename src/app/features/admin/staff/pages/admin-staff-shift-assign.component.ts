@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.component';
 import { formatStaffWeekRange } from '../utils/staff-week-range';
-import { JOB_LABELS, STAFF_PREVIEW, STAFF_SHIFTS_PREVIEW, displayStaffName } from '../models/staff-preview.model';
+import { JOB_LABELS, displayStaffName } from '../models/staff-preview.model';
+import { AdminStaffApiService, staffTodayISO } from '../services/admin-staff-api.service';
 
 interface ShiftDraft { date: string; branch: string; template: string; start: string; end: string; }
 const TEMPLATES: Record<string, { name: string; start: string; end: string }[]> = {
@@ -28,9 +29,16 @@ const plusDays = (date: string, n: number) => new Date(Date.parse(date + 'T00:00
 export class AdminStaffShiftAssignComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  readonly staff = STAFF_PREVIEW;
+  readonly staffApi = inject(AdminStaffApiService);
+  readonly staff = this.staffApi.staff;
+  constructor() {
+    this.staffApi.loadRoster();
+    effect(() => {
+      if (this.staffApi.loaded()) this.staffApi.loadWeek(this.monday());
+    });
+  }
   readonly chosenId = signal(this.route.snapshot.queryParamMap.get('staffId') ?? '');
-  readonly monday = signal(monday('2026-10-19'));
+  readonly monday = signal(monday(staffTodayISO()));
   readonly weekLabel = computed(() => formatStaffWeekRange(this.monday()));
   readonly draft = signal<readonly ShiftDraft[]>([]);
   readonly errors = signal<readonly string[]>([]);
@@ -41,11 +49,11 @@ export class AdminStaffShiftAssignComponent {
   readonly displayName = displayStaffName;
   readonly roles = JOB_LABELS;
   readonly templates = TEMPLATES;
-  readonly selectedStaff = () => this.staff.find(s => s.id === this.chosenId());
+  readonly selectedStaff = () => this.staff().find(s => s.id === this.chosenId());
   readonly branches = () => this.selectedStaff()?.branches ?? [];
   readonly options = (branch: string) => this.templates[branch] ?? [];
   readonly shiftsFor = (date: string) => this.draft().filter(s => s.date === date);
-  readonly otherShifts = (date: string) => STAFF_SHIFTS_PREVIEW.filter(s => s.staffId === this.chosenId() && s.isoDate === date);
+  readonly otherShifts = (date: string) => this.staffApi.shifts().filter(s => s.staffId === this.chosenId() && s.isoDate === date);
 
   setStaff(id: string) { this.chosenId.set(id); this.draft.set([]); this.errors.set([]); this.hasChanges.set(false); }
   changeWeek(week: number): void {
@@ -54,6 +62,7 @@ export class AdminStaffShiftAssignComponent {
       return;
     }
     this.monday.set(plusDays(this.monday(), week * 7));
+    this.staffApi.loadWeek(this.monday());
     this.errors.set([]);
   }
   goToday(): void {
@@ -68,6 +77,7 @@ export class AdminStaffShiftAssignComponent {
       String(today.getMonth() + 1).padStart(2, '0'),
       String(today.getDate()).padStart(2, '0'),
     ].join('-'));
+    this.staffApi.loadWeek(this.monday());
     this.errors.set([]);
   }
   selectWeekDate(value: string): void {
@@ -79,6 +89,7 @@ export class AdminStaffShiftAssignComponent {
       return;
     }
     this.monday.set(monday(value));
+    this.staffApi.loadWeek(this.monday());
     this.errors.set([]);
   }
 
@@ -86,7 +97,7 @@ export class AdminStaffShiftAssignComponent {
     this.errors.set([]); this.success.set('');
     const staff = this.selectedStaff();
     const template = this.options(branch).find(t => t.name === templateName);
-    if (!staff || !staff.branches.includes(branch) || !template) { this.errors.set(['Chọn nhân viên, chi nhánh được giao và mẫu ca hợp lệ.']); return; }
+    if (!staff || !staff.branches.includes(branch) || !template) { this.errors.set(['Chọn nhân viên, chi nhánh được giao và ca làm hợp lệ.']); return; }
     const existing = [...this.shiftsFor(date), ...this.otherShifts(date).map(s => {
       const [start,end] = s.time.split(/[–—-]/).map(x => x.trim());
       return { start, end };
@@ -102,7 +113,7 @@ export class AdminStaffShiftAssignComponent {
     this.errors.set([]);
     if (!this.selectedStaff()) { this.errors.set(['Vui lòng chọn nhân viên.']); return; }
     if (!this.draft().length) { this.errors.set(['Chưa có ca mới trong bản nháp.']); return; }
-    this.success.set('Các ca trong bản nháp hợp lệ. Chưa có API Shift nên chưa lưu lên máy chủ.');
+    this.success.set('Đã kiểm tra bản nháp cục bộ. API Shift có tạo ca, nhưng FE chưa xác nhận hợp đồng mẫu ca/chi nhánh để ghi an toàn; chưa lưu lên Backend.');
   }
   requestClose() { if (this.hasChanges()) this.confirmLeave.set(true); else void this.router.navigateByUrl('/admin/staff/schedule'); }
   discard() { this.draft.set([]); this.hasChanges.set(false); this.confirmLeave.set(false); this.errors.set([]); void this.router.navigateByUrl('/admin/staff/schedule'); }
