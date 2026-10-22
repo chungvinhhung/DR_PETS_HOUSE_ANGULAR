@@ -34,6 +34,27 @@ export interface BranchServiceView {
   config: BranchServiceApiRecord | null;
 }
 
+/**
+ * The live BE /availability currently only populates start/end/remaining.
+ * bookedCount and totalCount are REQUIRED additions to the API contract
+ * before the admin UI can display the requested "booked / total" ratio.
+ * Never calculate totalCount from configured concurrent capacity: staff
+ * availability and sequential segments may reduce real bookable places.
+ */
+export interface ServiceAvailabilitySlot {
+  start: string;
+  end: string;
+  remaining: number;
+  bookedCount?: number;
+  totalCount?: number;
+}
+export interface ServiceAvailabilityResponse {
+  branchId: string;
+  serviceIds: readonly string[];
+  date: string;
+  slots: readonly ServiceAvailabilitySlot[];
+}
+
 /** No Figma demo fallback: errors propagate to the page and display retry. */
 @Injectable({ providedIn: 'root' })
 export class BranchManagementApiService {
@@ -78,6 +99,17 @@ export class BranchManagementApiService {
     return this.api.patch<BranchApiRecord, typeof payload>(
       '/branches/' + encodeURIComponent(id), payload,
     );
+  }
+
+  /** Data for one service and a chosen branch/day; not the configured capacity. */
+  getServiceAvailability(
+    branchId: string, serviceId: string, date: string,
+  ): Observable<ServiceAvailabilityResponse> {
+    const params = new HttpParams()
+      .set('branchId', branchId)
+      .set('serviceIds', serviceId)
+      .set('date', date);
+    return this.api.get<ServiceAvailabilityResponse>('/availability', { params });
   }
 
   listServiceConfigs(branchId: string): Observable<BranchServiceApiRecord[]> {
