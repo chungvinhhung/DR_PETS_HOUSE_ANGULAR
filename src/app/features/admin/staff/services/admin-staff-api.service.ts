@@ -126,6 +126,22 @@ export class AdminStaffApiService {
     );
   }
 
+  private listAccounts(): Observable<UserWire[]> {
+    // Existing P0 Auth/RBAC API returns account names and statuses that
+    // StaffProfile does not populate. Only ADMIN can query this directory.
+    interface AccountPage { users: UserWire[]; pagination?: { page: number; totalPages: number }; }
+    const fetch = (page: number) => this.api.get<AccountPage>('/admin/users', {
+      params: new HttpParams().set('page', String(page)).set('limit', '100'),
+    });
+    return fetch(1).pipe(
+      map(res => ({ ...res, index: 0 })),
+      expand(res => res.pagination && res.pagination.page < res.pagination.totalPages && res.index < 19
+        ? fetch(res.pagination.page + 1).pipe(map(page => ({ ...page, index: res.index + 1 })))
+        : of()),
+      reduce((rows, res) => [...rows, ...(res.users ?? [])], [] as UserWire[]),
+    );
+  }
+
   private listBranches(): Observable<StaffBranchOption[]> {
     return this.getAll<BranchWire>('/branches').pipe(
       map(rows => rows.map(b => ({ id: idOf(b.id ?? b._id), name: b.name ?? b.branchName ?? '' }))
@@ -133,10 +149,12 @@ export class AdminStaffApiService {
     );
   }
 
-  private staffFromWire(input: StaffWire, branchNames: ReadonlyMap<string, string>): StaffPreview | null {
+  private staffFromWire(input: StaffWire, branchNames: ReadonlyMap<string, string>,
+    accountMap: ReadonlyMap<string, UserWire>): StaffPreview | null {
     const id = idOf(input.id ?? input._id);
     if (!id) return null;
-    const account = typeof input.userId === 'object' ? input.userId : undefined;
+    const account = accountMap.get(idOf(input.userId)) ??
+      (typeof input.userId === 'object' ? input.userId : undefined);
     const ids = (input.authorizedBranchIds ?? []).map(idOf).filter(Boolean);
     const homeId = idOf(input.homeBranchId);
     const rawStatus = input.accountStatus ?? account?.accountStatus ?? account?.status ?? '';
@@ -154,7 +172,7 @@ export class AdminStaffApiService {
       homeBranch: homeId ? (branchNames.get(homeId) ?? homeId) : undefined,
       phone: input.phone ?? account?.phone,
       email: input.email ?? account?.email,
-      loginUsername: account?.username,
+      loginUsername: account?.username ?? account?.phone,
       todayShift: '—',
       accountStatus,
     };
@@ -176,11 +194,14 @@ export class AdminStaffApiService {
     forkJoin({
       profiles: this.getAll<StaffWire>('/staff'),
       branches: this.listBranches().pipe(catchError(() => of([] as StaffBranchOption[]))),
+      accounts: this.listAccounts().pipe(catchError(() => of([] as UserWire[]))),
     }).subscribe({
-      next: ({ profiles, branches }) => {
+      next: ({ profiles, branches, accounts }) => {
         this.branches.set(branches);
         const byId = new Map(branches.map(b => [b.id, b.name]));
-        this.staff.set(profiles.map(p => this.staffFromWire(p, byId)).filter((s): s is StaffPreview => s !== null));
+        const byAccount = new Map(accounts.map(a => [idOf(a.id ?? a._id), a]));
+        this.staff.set(profiles.map(p => this.staffFromWire(p, byId, byAccount))
+          .filter((s): s is StaffPreview => s !== null));
         this.loaded.set(true);
         this.loading.set(false);
       },
