@@ -391,10 +391,17 @@ small {
 .history-table thead th { white-space: nowrap; }
 .history-table th, .history-table td { padding: 0 8px; overflow-wrap: anywhere; }
 .history-table td:first-child { white-space: nowrap; }
-.history-table th:nth-child(2), .history-table td:nth-child(2) { padding-left: 8px; padding-right: 4px; }
-.history-table th:nth-child(3), .history-table td:nth-child(3) { padding-left: 4px; padding-right: 8px; }
+.history-table th:nth-child(2), .history-table td:nth-child(2),
+.history-table th:nth-child(3), .history-table td:nth-child(3) {
+  padding-left: 10px;
+  padding-right: 10px;
+}
 .history-table th:nth-child(5), .history-table td:nth-child(5),
-.history-table th:nth-child(6), .history-table td:nth-child(6) { text-align: center; padding: 0 3px; }
+.history-table th:nth-child(6), .history-table td:nth-child(6),
+.history-table th:nth-child(7), .history-table td:nth-child(7) {
+  text-align: center;
+  padding: 0 6px;
+}
 .history-table td:nth-child(3), .history-table td:nth-child(4) { line-height: 20px; }
 .positive { color: #188038; }
 
