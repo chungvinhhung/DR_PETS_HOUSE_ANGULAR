@@ -12,13 +12,13 @@
       <input [ngModel]="search()" (ngModelChange)="search.set($event);onFilter()" aria-label="Tìm kiếm sản phẩm hoặc SKU" placeholder="Tìm sản phẩm / SKU..." />
     </div>
     <div class="toolbar-selects">
+      @if (tab()==='history') {
+        <label class="date-filter"><span>Từ ngày</span><input type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event);onFilter()" aria-label="Lọc lịch sử từ ngày"/></label>
+      }
       <select aria-label="Chi nhánh" [ngModel]="branch()" (ngModelChange)="branch.set($event);onFilter()">
         <option value="">Tất cả chi nhánh</option>
         @for (b of branches; track b) {<option [value]="b">{{b}}</option>}
       </select>
-      @if (tab()==='history') {
-        <label class="date-filter"><span>Từ ngày</span><input type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event);onFilter()" aria-label="Lọc lịch sử từ ngày"/></label>
-      }
       @if (tab()==='stock') {
         <select aria-label="Loại hàng" [ngModel]="type()" (ngModelChange)="type.set($event);onFilter()">
           <option value="">Tất cả loại</option><option>Hàng bán</option><option>Vật tư dịch vụ</option><option>Dùng chung</option>
