@@ -1,0 +1,144 @@
+<section class="inventory-page">
+  <div class="page-title"><h1>Kho</h1></div>
+  <div class="inventory-tabs" role="tablist" aria-label="Kho">
+    <button type="button" role="tab" [attr.aria-selected]="tab()==='stock'" [class.active]="tab()==='stock'" (click)="switchTab('stock')">Tồn kho</button>
+    <button type="button" role="tab" [attr.aria-selected]="tab()==='history'" [class.active]="tab()==='history'" (click)="switchTab('history')">Lịch sử kho</button>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-field">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.7"/><path d="m16 16 5 5"/></svg>
+      <input [ngModel]="search()" (ngModelChange)="search.set($event);onFilter()" aria-label="Tìm kiếm sản phẩm hoặc SKU" placeholder="Tìm sản phẩm / SKU..." />
+    </div>
+    <div class="toolbar-selects">
+      <select aria-label="Chi nhánh" [ngModel]="branch()" (ngModelChange)="branch.set($event);onFilter()">
+        <option value="">Tất cả chi nhánh</option>
+        @for (b of branches; track b) {<option [value]="b">{{b}}</option>}
+      </select>
+      @if (tab()==='stock') {
+        <select aria-label="Loại hàng" [ngModel]="type()" (ngModelChange)="type.set($event);onFilter()">
+          <option value="">Tất cả loại</option><option>Hàng bán</option><option>Vật tư dịch vụ</option><option>Dùng chung</option>
+        </select>
+        <select aria-label="Trạng thái tồn kho" [ngModel]="status()" (ngModelChange)="status.set($event);onFilter()">
+          <option value="">Tất cả trạng thái</option><option>Còn hàng</option><option>Sắp hết hàng</option><option>Hết hàng</option>
+        </select>
+        <button type="button" class="primary" (click)="openDialog('receipt')"><span class="plus">+</span> Nhập kho</button>
+      } @else {
+        <select aria-label="Loại biến động" [ngModel]="changeType()" (ngModelChange)="changeType.set($event);onFilter()">
+          <option value="">Tất cả biến động</option><option>Nhập kho</option><option>Xuất kho</option><option>Điều chỉnh</option><option>Chuyển kho</option><option>Hoàn stock</option>
+        </select>
+        <label class="date-filter"><span>Từ ngày</span><input type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event);onFilter()"/></label>
+      }
+    </div>
+  </div>
+
+  <div class="table-shell">
+    <div class="table-scroll">
+      @if (tab()==='stock') {
+        <table><thead><tr>
+          <th>Sản phẩm</th><th>Biến thể / SKU</th><th>Loại</th><th>Chi nhánh</th><th>Tồn hiện tại</th><th>Ngưỡng cảnh báo</th><th>Trạng thái</th><th class="center">Thao tác</th>
+        </tr></thead><tbody>
+          @for (item of currentRows(); track item.id) {
+            <tr>
+              <td class="product">{{item.name}}</td>
+              <td><div>{{item.variant}}</div><small>{{item.sku}}</small></td>
+              <td>{{item.kind}}</td><td>{{item.branch}}</td>
+              <td class="number">{{item.quantity}}</td><td class="number">{{item.threshold}}</td>
+              <td><span class="stock-badge" [class.ok]="stockStatus(item)==='Còn hàng'" [class.low]="stockStatus(item)==='Sắp hết hàng'" [class.out]="stockStatus(item)==='Hết hàng'">{{stockStatus(item)}}</span></td>
+              <td class="center">
+                <div class="row-action">
+                  <button class="dots" type="button" [attr.aria-label]="'Thao tác cho ' + item.name" (click)="menuId.set(menuId()===item.id?null:item.id)">⋯</button>
+                  @if (menuId()===item.id) {
+                    <div class="action-menu">
+                      <button type="button" (click)="openDialog('receipt',item)">Nhập kho</button>
+                      <button type="button" (click)="openDialog('issue',item)">Xuất kho</button>
+                      <button type="button" (click)="openDialog('adjustment',item)">Điều chỉnh tồn kho</button>
+                      <button type="button" (click)="openDialog('transfer',item)">Chuyển kho</button>
+                      <button type="button" (click)="openDialog('threshold',item)">Cài ngưỡng</button>
+                    </div>
+                  }
+                </div>
+              </td>
+            </tr>
+          } @empty {<tr><td colspan="8" class="empty">Không tìm thấy sản phẩm phù hợp.</td></tr>}
+        </tbody></table>
+      } @else {
+        <table class="history-table"><thead><tr>
+          <th>Thời gian</th><th>Sản phẩm / SKU</th><th>Chi nhánh / Tuyến</th><th>Giao dịch & lý do</th><th>Thay đổi</th><th>Tồn sau</th><th>Tham chiếu</th><th>Người thao tác</th>
+        </tr></thead><tbody>
+          @for (record of currentHistory();track record.reference) {
+            <tr><td>{{record.date}}</td><td><div class="product">{{record.item}}</div><small>{{record.sku}}</small></td><td>{{record.branch}}</td><td><strong>{{record.action}}</strong><small>{{record.reason}}</small></td><td class="number" [class.positive]="record.delta.startsWith('+')">{{record.delta}}</td><td>{{record.after}}</td><td>{{record.reference}}</td><td>{{record.actor}}</td></tr>
+          } @empty {<tr><td colspan="8" class="empty">Không có lịch sử kho phù hợp.</td></tr>}
+        </tbody></table>
+      }
+    </div>
+    <div class="table-footer">
+      <span>Đang hiển thị {{tab()==='stock'?currentRows().length:currentHistory().length}} trên tổng số {{tab()==='stock'?stockFiltered().length:historyFiltered().length}} bản ghi</span>
+      <div class="pagination">
+        <button type="button" aria-label="Trang trước" (click)="setPage(page()-1)" [disabled]="page()===1">‹</button>
+        @for (n of [].constructor(totalPages());track $index) {<button type="button" [class.selected]="page()===$index+1" (click)="setPage($index+1)">{{$index+1}}</button>}
+        <button type="button" aria-label="Trang sau" (click)="setPage(page()+1)" [disabled]="page()===totalPages()">›</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+@if (modal()) {
+  <div class="modal-backdrop" (click)="closeDialog()" role="presentation">
+    <section class="stock-dialog" role="dialog" aria-modal="true" [attr.aria-label]="dialogTitle()" (click)="$event.stopPropagation()">
+      <header class="dialog-header"><h2>{{dialogTitle()}}</h2><button type="button" aria-label="Đóng" (click)="closeDialog()">×</button></header>
+      <div class="dialog-body">
+        <label class="field-label">Sản phẩm / SKU
+          <select [ngModel]="activeItem()?.id" (ngModelChange)="selectItem($event)">
+            @for (row of stock();track row.id) {<option [value]="row.id">{{row.name}} – {{row.sku}} ({{row.branch}})</option>}
+          </select>
+        </label>
+        <label class="field-label">{{modal()==='transfer'?'Chi nhánh nguồn':'Chi nhánh'}}
+          <input [value]="activeItem()?.branch || ''" readonly />
+        </label>
+        <label class="field-label">Tồn hiện tại
+          <input [value]="currentQuantity()" readonly />
+        </label>
+        @if (modal()==='transfer') {
+          <label class="field-label">Chi nhánh đích <span class="required">*</span>
+            <select [ngModel]="destination()" (ngModelChange)="destination.set($event)">
+              <option value="">Chọn chi nhánh nhận</option>
+              @for (b of branches;track b) { @if (b!==activeItem()?.branch) {<option [value]="b">{{b}}</option>} }
+            </select>
+          </label>
+          <div class="muted-row">Tồn kho đích: <strong>{{destinationStock()}}</strong></div>
+        }
+        @if (modal()==='threshold') {
+          <label class="field-label">Ngưỡng hiện tại<input [value]="activeItem()?.threshold" readonly /></label>
+          <label class="field-label">Ngưỡng mới <span class="required">*</span><input type="number" min="0" step="1" [ngModel]="threshold()" (ngModelChange)="setThreshold($event)" /></label>
+        } @else {
+          <label class="field-label">{{modal()==='receipt'?'Số lượng nhập':modal()==='issue'?'Số lượng xuất':modal()==='adjustment'?'Tồn thực tế sau kiểm kê':'Số lượng chuyển'}} <span class="required">*</span>
+            <input type="number" [min]="modal()==='adjustment'?0:1" step="1" [ngModel]="quantity()" (ngModelChange)="setQuantity($event)" placeholder="Nhập số lượng" />
+          </label>
+          @if (modal()==='receipt') {
+            <label class="field-label">Ngưỡng cảnh báo <span class="required">*</span><input type="number" min="0" step="1" [ngModel]="threshold()" (ngModelChange)="setThreshold($event)"/></label>
+          }
+        }
+        <label class="field-label">Lý do / Ghi chú @if (modal()!=='receipt') {<span class="required">*</span>}
+          <textarea rows="3" [ngModel]="note()" (ngModelChange)="note.set($event)" placeholder="Nhập lý do"></textarea>
+        </label>
+        @if (modal()!=='threshold') {
+          <div class="preview">
+            @if (modal()==='adjustment') {<span>Chênh lệch</span><strong>{{(quantity()??currentQuantity())-currentQuantity()}}</strong>}
+            @else {<span>Tồn dự kiến sau giao dịch</span><strong>{{preview()}}</strong>}
+            @if (modal()==='transfer') {<span>Chi nhánh nhận dự kiến</span><strong>{{destinationStock()+(quantity()??0)}}</strong>}
+          </div>
+        }
+      </div>
+      <footer class="dialog-footer">
+        <button type="button" class="secondary" (click)="closeDialog()">Huỷ bỏ</button>
+        <button type="button" class="primary" [disabled]="sending()" (click)="submit()">{{modal()==='receipt'?'Xác nhận nhập':modal()==='issue'?'Xác nhận xuất':modal()==='adjustment'?'Lưu điều chỉnh':modal()==='transfer'?'Xác nhận chuyển':'Lưu ngưỡng'}}</button>
+      </footer>
+    </section>
+  </div>
+}
+@if (toast();as message) {
+  <div class="stock-toast" [class.error]="message.tone==='error'" role="status">
+    <span>{{message.message}}</span><button type="button" aria-label="Đóng thông báo" (click)="toast.set(null)">×</button>
+  </div>
+}
