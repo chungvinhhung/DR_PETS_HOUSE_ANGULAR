@@ -1,15 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.component';
 import { formatStaffWeekRange } from '../utils/staff-week-range';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { AdminStaffApiService, staffTodayISO, staffWeekMonday } from '../services/admin-staff-api.service';
 import {
   JOB_LABELS,
-  STAFF_PREVIEW,
-  STAFF_SHIFTS_PREVIEW,
-  StaffPreview,
   StaffShiftPreview,
   displayStaffName,
   displayStaffShift,
@@ -24,7 +22,6 @@ interface WeekDayRow {
 }
 
 const DAY_IN_MS = 86_400_000;
-const FIGMA_SAMPLE_MONDAY = '2026-10-19';
 
 function dateFromISO(date: string): Date {
   return new Date(`${date}T00:00:00Z`);
@@ -54,9 +51,16 @@ export class AdminStaffDetailComponent {
   private readonly session = inject(AuthSessionService);
   blockDialogOpen = false;
 
+  readonly staffApi = inject(AdminStaffApiService);
   readonly staffId = this.route.snapshot.paramMap.get('id') ?? '';
-  readonly staff: StaffPreview | undefined = STAFF_PREVIEW.find(item => item.id === this.staffId);
-  readonly weekMonday = signal(FIGMA_SAMPLE_MONDAY);
+  readonly staff = computed(() => this.staffApi.staff().find(item => item.id === this.staffId));
+  readonly weekMonday = signal(staffWeekMonday(staffTodayISO()));
+  constructor() {
+    this.staffApi.loadRoster();
+    effect(() => {
+      if (this.staffApi.loaded()) this.staffApi.loadWeek(this.weekMonday());
+    });
+  }
   readonly weeks = computed<readonly WeekDayRow[]>(() => {
     const startMs = dateFromISO(this.weekMonday()).getTime();
     return Array.from({ length: 7 }, (_, i) => {
@@ -67,7 +71,7 @@ export class AdminStaffDetailComponent {
         label: `${dayLabel(i)} · ${shortDate(date)}`,
         weekday: dayLabel(i),
         dayMonth: shortDate(date),
-        shifts: STAFF_SHIFTS_PREVIEW.filter(s => s.staffId === this.staffId && s.isoDate === key),
+        shifts: this.staffApi.shifts().filter(s => s.staffId === this.staffId && s.isoDate === key),
       };
     });
   });
@@ -99,7 +103,7 @@ export class AdminStaffDetailComponent {
     this.weekMonday.set(isoDate(monday));
   }
 
-  get canBlockAccount(): boolean { return this.session.hasAnyRole(['ADMIN']); }
+  get canBlockAccount(): boolean { return false; /* No verified Staff account-block API. */ }
   openBlockConfirmation(): void {
     if (!this.canBlockAccount) {
       this.toast.show('Tài khoản không có quyền chặn hoặc bỏ chặn nhân viên.', 'error');
@@ -112,7 +116,7 @@ export class AdminStaffDetailComponent {
   }
   confirmBlockPreview(): void {
     this.blockDialogOpen = false;
-    this.toast.show('Chưa có API Staff/Account. Chưa thay đổi trạng thái tài khoản.', 'info');
+    this.toast.show('Chưa xác minh API quản lý tài khoản nhân sự. Không thay đổi trạng thái.', 'info');
   }
   goBack(): void {
     void this.router.navigateByUrl('/admin/staff');
