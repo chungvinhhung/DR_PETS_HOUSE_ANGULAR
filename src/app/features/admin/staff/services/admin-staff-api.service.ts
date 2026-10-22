@@ -113,6 +113,7 @@ export class AdminStaffApiService {
   readonly shiftLoading = signal(false);
   readonly shiftError = signal('');
   readonly loadedMonday = signal('');
+  private weekRequest = 0;
 
   private getAll<T>(path: string, params = new HttpParams()): Observable<T[]> {
     return this.api.get<unknown>(path, { params: params.set('limit', '100') }).pipe(
@@ -191,13 +192,15 @@ export class AdminStaffApiService {
   }
 
   loadWeek(monday: string): void {
-    if (this.shiftLoading() || (this.loadedMonday() === monday && !this.shiftError())) return;
+    if (this.loadedMonday() === monday && !this.shiftError()) return;
+    const request = ++this.weekRequest;
     this.shiftLoading.set(true); this.shiftError.set(''); this.shifts.set([]);
     this.loadedMonday.set('');
     const from = changeDay(monday, -1);
     const until = changeDay(monday, 7);
     this.getAll<ShiftWire>('/shifts', new HttpParams().set('dateFrom', from).set('dateTo', until)).subscribe({
       next: rows => {
+        if (request !== this.weekRequest) return;
         const map = new Map(this.branches().map(b => [b.id, b.name]));
         const end = changeDay(monday, 7);
         this.shifts.set(rows.filter(s => s.status !== 'CANCELLED' && s.startAt && s.endAt)
@@ -215,6 +218,7 @@ export class AdminStaffApiService {
         this.shiftLoading.set(false);
       },
       error: err => {
+        if (request !== this.weekRequest) return;
         this.shiftLoading.set(false); this.shiftError.set(errorText(err, 'Shift'));
       },
     });
