@@ -172,7 +172,7 @@ export class BranchManagementPageComponent {
       },
       error: () => {
         this.branchListLoading.set(false);
-        this.branchListError.set('Không thể tải danh sách chi nhánh từ Backend. Kiểm tra API, đăng nhập hoặc mạng rồi thử lại.');
+        this.branchListError.set('Không tải được danh sách chi nhánh. Vui lòng thử lại.');
       },
     });
   }
@@ -224,7 +224,7 @@ export class BranchManagementPageComponent {
       error: () => {
         if (this.branchId !== id) return;
         this.servicesLoading.set(false);
-        this.servicesError.set('Không thể tải danh sách dịch vụ/capacity từ Backend hoặc tài khoản không có quyền.');
+        this.servicesError.set('Không tải được dịch vụ tại chi nhánh. Vui lòng thử lại.');
       },
     });
   }
@@ -266,7 +266,7 @@ export class BranchManagementPageComponent {
 
   openCreateBranch(): void {
     if (!this.isAdmin) {
-      this.toast.show('Chỉ Admin được thêm chi nhánh.', 'error');
+      this.toast.show('Bạn không có quyền thêm chi nhánh.', 'error');
       return;
     }
     this.lastCreatePayload = '';
@@ -302,7 +302,7 @@ export class BranchManagementPageComponent {
           this.branchRows.update((all) => [...all, row]);
           this.savingBranch.set(false);
           this.branchSettingsOpen.set(null);
-          this.toast.show('Đã thêm chi nhánh trên Backend.', 'success');
+          this.toast.show('Thêm chi nhánh thành công.', 'success');
           void this.router.navigate(this.branchLink(row));
         },
         error: (error: unknown) => {
@@ -320,7 +320,7 @@ export class BranchManagementPageComponent {
         this.detailRecord.set(row);
         this.savingBranch.set(false);
         this.branchSettingsOpen.set(null);
-        this.toast.show('Đã lưu thông tin chi nhánh lên Backend.', 'success');
+        this.toast.show('Cập nhật chi nhánh thành công.', 'success');
       },
       error: (error: unknown) => {
         this.savingBranch.set(false);
@@ -364,7 +364,7 @@ export class BranchManagementPageComponent {
   capacity(service: CatalogService): number { return this.getConfig(service)?.capacity ?? 0; }
   previewAvailability(service: CatalogService): string {
     if (!this.isEnabled(service)) return '0 (đã tắt)';
-    return service.availabilityText ?? 'Chờ BE tính khả dụng';
+    return service.availabilityText ?? 'Chưa có dữ liệu';
   }
   get currentBlockedWindows(): BranchServiceConfigPreview['blockedWindows'] | null { return []; }
 
@@ -393,7 +393,7 @@ export class BranchManagementPageComponent {
   }
   applyServiceConfiguration(value: BranchServiceConfigPreview): void {
     if (value.blockedWindows.length > 0) {
-      this.toast.show('BE chưa có API lưu khoảng tạm khóa. Hãy bỏ khoảng tạm khóa để lưu bật/tắt và capacity.', 'error');
+      this.toast.show('Chưa thể lưu khoảng tạm khóa. Vui lòng xóa các khoảng đã thêm để tiếp tục.', 'error');
       return;
     }
     const existing = this.serviceViews().find((row) => row.service.id === value.serviceId)?.config;
@@ -407,7 +407,7 @@ export class BranchManagementPageComponent {
     availability: BranchServiceApiRecord['availability'],
   ): void {
     if (!Number.isInteger(capacity) || capacity < 1) {
-      this.toast.show('Capacity phải là số nguyên lớn hơn hoặc bằng 1 theo Backend.', 'error'); return;
+      this.toast.show('Sức chứa đồng thời phải là số nguyên từ 1 trở lên.', 'error'); return;
     }
     if (this.savingConfig()) return;
     this.savingConfig.set(true);
@@ -434,16 +434,16 @@ export class BranchManagementPageComponent {
           ...branch,
           enabledServiceCount: this.serviceViews().filter((row) => row.config?.enabled).length,
         } : branch));
-        this.toast.show('Cấu hình dịch vụ đã lưu vào Backend.', 'success');
+        this.toast.show('Lưu cấu hình dịch vụ thành công.', 'success');
       },
       error: () => {
         this.savingConfig.set(false);
-        this.toast.show('Không lưu được cấu hình dịch vụ. Kiểm tra quyền/API và thử lại.', 'error');
+        this.toast.show('Không lưu được cấu hình dịch vụ. Vui lòng thử lại.', 'error');
       },
     });
   }
   showPending(action: string): void {
-    this.toast.show(action + ': chưa kết nối API phù hợp, dữ liệu không thay đổi.', 'info');
+    this.toast.show(action + ' hiện chưa khả dụng.', 'info');
   }
   changeDate(value: string): void {
     if (/^\d{4}-\d{2}-\d{2}$/.test(value)) this.viewDate.set(value);
@@ -452,7 +452,7 @@ export class BranchManagementPageComponent {
     if (/^\d{2}:\d{2}$/.test(value)) this.viewTime.set(value);
   }
   refreshPreview(): void {
-    this.toast.show('Khả dụng theo giờ phải dùng API /availability với serviceIds và ngày; không có số liệu khung giờ giả.', 'info');
+    this.toast.show('Số chỗ còn trống theo giờ chưa thể cập nhật. Vui lòng thử lại sau.', 'info');
   }
   private isoLocal(d: Date): string {
     return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'),
