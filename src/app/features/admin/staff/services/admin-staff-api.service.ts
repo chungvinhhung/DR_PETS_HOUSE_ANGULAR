@@ -84,7 +84,7 @@ function safeRole(role: string | undefined): JobRole {
     case 'NURSE': case 'RECEPTIONIST': case 'VETERINARIAN': case 'MANAGER':
       return role;
     case 'CARE_STAFF_GROOMER': case 'CARE_STAFF': return 'CARE_STAFF';
-    default: return 'CARE_STAFF';
+    default: return 'UNKNOWN';
   }
 }
 function errorText(error: unknown, resource: string): string {
