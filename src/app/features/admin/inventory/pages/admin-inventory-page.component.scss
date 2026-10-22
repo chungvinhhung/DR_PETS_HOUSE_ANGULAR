@@ -388,7 +388,8 @@ small {
 .pagination-buttons button:focus-visible { outline: 2px solid #0d47a1; outline-offset: -3px; }
 
 .history-table { min-width: 1000px; }
-.history-table th, .history-table td { padding: 0 12px; }
+.history-table th, .history-table td { padding: 0 12px; overflow-wrap: anywhere; }
+.history-table td:nth-child(3), .history-table td:nth-child(4) { line-height: 20px; }
 .history-table th:nth-child(5), .history-table td:nth-child(5),
 .history-table th:nth-child(6), .history-table td:nth-child(6) { text-align: center; }
 .positive { color: #188038; }
