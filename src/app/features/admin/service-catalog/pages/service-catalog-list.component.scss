@@ -613,11 +613,31 @@ app-service-catalog-list {
 
 
 /*
- * Final service table widths: one authoritative allocation per filter mode.
- * Give "Vai trò thực hiện" sufficient room to remain on one line; keep
- * booking-mode badges close to the duration and centered under their headers.
+ * Service list table: reserve the right-side columns inside the actual panel.
+ * Widths below sum to 100%; never force the nine-column table beyond its
+ * parent on desktop. Preserve visible action menus in the desktop layout.
  */
-.service-catalog__table.service-catalog__table--all-branches { min-width: 1080px; }
+.service-catalog {
+  min-width: 0;
+  max-width: 100%;
+}
+.service-catalog__table-panel,
+.service-catalog__table-scroll {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+.service-catalog__table {
+  width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
+}
+.service-catalog__table.service-catalog__table--all-branches,
+.service-catalog__table:not(.service-catalog__table--all-branches) {
+  min-width: 0;
+}
+
+/* All branches: 8 visible columns (total 100%). */
 .service-catalog__table.service-catalog__table--all-branches th:nth-child(1) { width: 9%; }
 .service-catalog__table.service-catalog__table--all-branches th:nth-child(2) { width: 19%; }
 .service-catalog__table.service-catalog__table--all-branches th:nth-child(3) { width: 18%; }
@@ -627,18 +647,44 @@ app-service-catalog-list {
 .service-catalog__table.service-catalog__table--all-branches th:nth-child(7) { width: 12%; }
 .service-catalog__table.service-catalog__table--all-branches th:nth-child(8) { width: 8%; }
 
-.service-catalog__table:not(.service-catalog__table--all-branches) { min-width: 1160px; }
+/* One branch: 9 visible columns (total 100%). */
 .service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(1) { width: 9%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(2) { width: 13%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(3) { width: 18%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(4) { width: 14%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(2) { width: 15%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(3) { width: 15%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(4) { width: 13%; }
 .service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(5) { width: 9%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(6) { width: 8%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(7) { width: 12%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(8) { width: 9%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(6) { width: 10%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(7) { width: 13%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(8) { width: 8%; }
 .service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(9) { width: 8%; }
 
-/* Headings and values in these three neighboring columns share one axis. */
+/* Keep the right three columns orderly and away from the outer border. */
+.service-catalog__table thead th:nth-child(n+6),
+.service-catalog__table tbody td:nth-child(n+6) {
+  padding-right: 12px;
+  padding-left: 12px;
+}
+.service-catalog__table th.service-catalog__actions-col,
+.service-catalog__table td.service-catalog__actions-cell {
+  padding-left: 8px;
+  padding-right: 8px;
+  text-align: center;
+  vertical-align: middle;
+}
+.service-catalog__actions-cell .service-catalog__row-action {
+  width: 32px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+.service-catalog__table th.service-catalog__actions-col,
+.service-catalog__table th:first-child,
+.service-catalog__table thead th:nth-child(3),
+.service-catalog__table thead th:nth-child(4),
+.service-catalog__table thead th:nth-child(5) {
+  white-space: nowrap;
+}
+
+/* Keep role, booking mode and duration headings/values on the same axes. */
 .service-catalog__table thead th:nth-child(3),
 .service-catalog__table tbody td:nth-child(3),
 .service-catalog__table thead th:nth-child(4),
@@ -648,25 +694,27 @@ app-service-catalog-list {
   text-align: center;
   vertical-align: middle;
 }
-.service-catalog__table thead th:nth-child(3),
-.service-catalog__table thead th:nth-child(4),
-.service-catalog__table thead th:nth-child(5),
-.service-catalog__table thead th:first-child,
-.service-catalog__table thead th.service-catalog__actions-col,
-.service-catalog__table thead th.service-catalog__activation-col {
-  white-space: nowrap;
-}
-/* A deliberate, small space between booking-mode badges and duration values. */
-.service-catalog__table thead th:nth-child(4),
-.service-catalog__table tbody td:nth-child(4) {
+.service-catalog__table th:nth-child(4),
+.service-catalog__table td:nth-child(4) {
   padding-left: 10px;
   padding-right: 10px;
 }
-.service-catalog__table thead th:nth-child(5),
-.service-catalog__table tbody td:nth-child(5) {
+.service-catalog__table th:nth-child(5),
+.service-catalog__table td:nth-child(5) {
   padding-left: 12px;
   padding-right: 12px;
 }
-.service-catalog__table td:nth-child(4) .service-catalog__pill {
-  max-width: 100%;
+
+/* On smaller viewports, keep the table bounded in a horizontal scroll area
+ * rather than letting the action cell protrude outside its card. */
+@media (max-width: 1200px) {
+  .service-catalog__table-scroll {
+    overflow-x: auto;
+  }
+  .service-catalog__table.service-catalog__table--all-branches {
+    min-width: 1080px;
+  }
+  .service-catalog__table:not(.service-catalog__table--all-branches) {
+    min-width: 1160px;
+  }
 }
