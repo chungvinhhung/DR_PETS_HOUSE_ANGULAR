@@ -1,15 +1,15 @@
 <app-admin-catalog-shell activeItem="staff">
   <main class="staff-detail">
-    @if (staff; as employee) {
+    @if (staff(); as employee) {
       <header class="staff-detail__heading">
         <div class="staff-detail__identity">
           <nav class="staff-detail__breadcrumb" aria-label="Đường dẫn">
             <a routerLink="/admin/staff">Nhân sự</a>
             <span aria-hidden="true">›</span>
-            <strong aria-current="page">Xem chi tiết {{ employee.id }}</strong>
+            <strong aria-current="page">Chi tiết nhân viên</strong>
           </nav>
           <h1>{{ displayName(employee) }}</h1>
-          <p>{{ employee.id }} · {{ roleName(employee) }}</p>
+          <p>{{ employee.staffCode || employee.id }} · {{ roleName(employee) }}</p>
         </div>
         <div class="staff-detail__actions">
           <button type="button" class="staff-detail__button staff-detail__button--outline" (click)="goBack()">Hủy</button>
@@ -17,7 +17,7 @@
             [routerLink]="['/admin/staff', employee.id, 'edit']" [queryParams]="{ from: 'detail' }">Chỉnh sửa nhân viên</a>
           <button type="button" class="staff-detail__button staff-detail__button--danger"
             [disabled]="!canBlockAccount"
-            [title]="canBlockAccount ? 'Quản lý trạng thái tài khoản' : 'Chỉ Admin được chặn/bỏ chặn tài khoản'"
+            [title]="canBlockAccount ? 'Quản lý trạng thái tài khoản' : 'Chưa có API chặn/bỏ chặn tài khoản được xác minh'"
             (click)="openBlockConfirmation()">{{ employee.accountStatus === 'BLOCKED' ? 'Bỏ chặn tài khoản' : 'Chặn tài khoản' }}</button>
         </div>
       </header>
@@ -26,7 +26,7 @@
         <h2 id="staff-info-title">Thông tin nhân viên</h2>
         <div class="staff-detail__info-grid">
           <div class="staff-detail__info-column">
-            <div class="staff-detail__field"><span>Mã nhân viên</span><strong>{{ employee.id }}</strong></div>
+            <div class="staff-detail__field"><span>Mã nhân viên</span><strong>{{ employee.staffCode || employee.id }}</strong></div>
             <div class="staff-detail__field"><span>Họ và tên</span><strong>{{ displayName(employee) }}</strong></div>
           </div>
           <div class="staff-detail__info-column">
@@ -55,13 +55,15 @@
             <div class="staff-detail__field">
               <span>Trạng thái tài khoản</span>
               <span class="staff-detail__badge" [class.staff-detail__badge--blocked]="employee.accountStatus === 'BLOCKED'">
-                {{ employee.accountStatus === 'ACTIVE' ? 'Đang hoạt động' : 'Đã chặn' }}
+                {{ employee.accountStatus === 'ACTIVE' ? 'Đang hoạt động' : employee.accountStatus === 'BLOCKED' ? 'Đã chặn' : 'Chưa có dữ liệu' }}
               </span>
             </div>
           </div>
         </section>
       </div>
 
+      @if (staffApi.shiftLoading()) { <p role="status">Đang tải ca làm việc...</p> }
+      @if (staffApi.shiftError()) { <p role="alert">{{ staffApi.shiftError() }}</p> }
       <section class="staff-detail__card staff-detail__schedule" aria-labelledby="staff-weekly-heading">
         <header class="staff-detail__schedule-top">
           <h2 id="staff-weekly-heading">Lịch làm việc theo tuần</h2>
@@ -96,9 +98,9 @@
                   <tr>
                     <td>{{ day.label }}</td>
                     <td>—</td>
-                    <td>Chưa phân ca</td>
+                    <td>{{ staffApi.shiftLoading() || staffApi.shiftError() ? '—' : 'Chưa phân ca' }}</td>
                     <td>—</td>
-                    <td>Chưa xếp</td>
+                    <td>{{ staffApi.shiftLoading() || staffApi.shiftError() ? 'Chưa xác định' : 'Chưa xếp' }}</td>
                   </tr>
                 }
               }
@@ -107,22 +109,24 @@
         </div>
       </section>
       <p class="staff-detail__disclaimer">
-        Dữ liệu mẫu từ Figma — chỉ xem, chưa kết nối API Staff/Shift. Lịch các tuần không có mẫu chưa phản ánh dữ liệu thực tế.
+        Dữ liệu nhân viên và ca làm được lấy từ API Staff/Shift trên Render. Các trường Backend chưa cung cấp sẽ hiển thị dấu gạch ngang.
       </p>
     } @else {
+      @if (staffApi.loading()) { <p role="status">Đang tải hồ sơ nhân viên...</p> }
+      @if (staffApi.error()) { <p role="alert">{{ staffApi.error() }}</p> }
       <nav class="staff-detail__breadcrumb" aria-label="Đường dẫn">
         <a routerLink="/admin/staff">Nhân sự</a><span aria-hidden="true">›</span><strong>Không tìm thấy</strong>
       </nav>
       <section class="staff-detail__card" role="alert">
         <h1>Không tìm thấy nhân viên</h1>
-        <p>Mã {{ staffId }} không tồn tại trong dữ liệu mẫu của Task 3.8.</p>
+        <p>{{ staffApi.loading() ? 'Đang tải dữ liệu...' : staffApi.error() ? 'Chưa thể xác minh hồ sơ do lỗi API.' : 'Không tìm thấy mã ' + staffId + ' trong dữ liệu trả về từ Backend.' }}</p>
         <a class="staff-detail__button staff-detail__button--outline" routerLink="/admin/staff">Về danh sách nhân viên</a>
       </section>
     }
   </main>
 </app-admin-catalog-shell>
 
-@if (blockDialogOpen && staff; as employee) {
+@if (blockDialogOpen && staff(); as employee) {
   <div class="staff-detail__confirm-overlay" (keydown.escape)="closeBlockConfirmation()">
     <section class="staff-detail__confirm" role="alertdialog" aria-modal="true"
       aria-labelledby="staff-block-title" aria-describedby="staff-block-description" tabindex="-1">
