@@ -2,11 +2,15 @@
  * Task 3.8 FE-only preview data. Do not treat these values as real Staff/Shift records,
  * authentication credentials, BE role assignments, or an available API contract.
  */
-export type JobRole = 'VETERINARIAN' | 'NURSE' | 'RECEPTIONIST' | 'CARE_STAFF' | 'MANAGER';
-export type StaffStatus = 'ACTIVE' | 'BLOCKED';
+export type JobRole = 'VETERINARIAN' | 'NURSE' | 'RECEPTIONIST' | 'CARE_STAFF' | 'MANAGER' | 'UNKNOWN';
+export type StaffStatus = 'ACTIVE' | 'BLOCKED' | 'UNKNOWN';
 
 export interface StaffPreview {
   id: string;
+  /** Server ID; distinct from optional human-facing employee code. */
+  staffCode?: string;
+  branchIds?: readonly string[];
+  homeBranchId?: string;
   fullName: string;
   jobRole: JobRole;
   branches: readonly string[];
@@ -25,6 +29,8 @@ export interface StaffShiftPreview {
   branch: string;
   shiftName: string;
   time: string;
+  shiftId?: string;
+  branchId?: string;
 }
 
 export const JOB_LABELS: Record<JobRole, string> = {
@@ -33,6 +39,7 @@ export const JOB_LABELS: Record<JobRole, string> = {
   RECEPTIONIST: 'Lễ tân',
   CARE_STAFF: 'Nhân viên chăm sóc',
   MANAGER: 'Quản lý',
+  UNKNOWN: 'Chưa xác định',
 };
 
 export const JOB_PREFIX: Record<JobRole, string> = {
@@ -41,6 +48,7 @@ export const JOB_PREFIX: Record<JobRole, string> = {
   RECEPTIONIST: 'LT.',
   CARE_STAFF: 'CS.',
   MANAGER: 'QL.',
+  UNKNOWN: '',
 };
 
 /** Existing Staff List sample rows; retained unchanged to avoid breaking accepted UI. */
@@ -71,7 +79,8 @@ export const STAFF_SHIFTS_PREVIEW: readonly StaffShiftPreview[] = [
 ];
 
 export function displayStaffName(staff: StaffPreview): string {
-  return `${JOB_PREFIX[staff.jobRole]} ${staff.fullName}`;
+  const prefix = JOB_PREFIX[staff.jobRole];
+  return prefix ? `${prefix} ${staff.fullName}` : staff.fullName;
 }
 
 export function displayStaffShift(value: string): string {

@@ -45,7 +45,7 @@
   position: absolute;
   z-index: 3;
   left: 18.8%;
-  top: 41.4%;
+  top: 40.6%;
   width: 31.7664%;
   height: 47.8677%;
   pointer-events: none;
@@ -72,14 +72,15 @@
 /* Updated directly from the latest Figma hand nodes. */
 .paw-frame--left {
   left: 20.6034%;
-  top: 66.9%;
+  top: 66.1%;
   width: 6.6652%;
   height: 7.6788%;
 }
 
 .paw-frame--right {
   left: 35.3609%;
-  top: 74.8%;
+  top: 75.3%;
+  overflow: visible;
   width: 5.9162%;
   height: 7.8267%;
 }

@@ -95,3 +95,10 @@
   .schedule-header { align-items: flex-start; flex-direction: column; }
 }
 
+
+/* Use the same table treatment as the common management pages. */
+.schedule-scroll { border:1px solid #dee5f0; border-radius:10px; }
+.schedule-table { border-collapse:separate; border-spacing:0; }
+.schedule-table th { height:44px; padding:9px 12px; background:#f4f6f9; color:#536783; font-size:12px; font-weight:500; text-transform:none; }
+.schedule-table td { min-height:77px; padding:12px; border-top:1px solid #dee5f0; color:#243045; font-size:12px; line-height:1.45; }
+.schedule-table tbody tr:first-child td { border-top:0; }

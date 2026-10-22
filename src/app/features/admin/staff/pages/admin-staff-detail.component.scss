@@ -98,3 +98,11 @@
 .staff-detail__day { display:inline-flex; flex-direction:column; gap:3px; line-height:16px; white-space:nowrap; }
 .staff-detail__day > span { font-size:12px; color:#1b273b; font-weight:500; }
 .staff-detail__day > small { font-size:10px; line-height:13px; color:#7b8ca2; }
+
+/* Match the common Service Catalog management table. */
+.staff-detail__schedule-scroll { border:1px solid #dee5f0; border-radius:10px; overflow-x:auto; }
+.staff-detail__schedule-table { border-collapse:separate; border-spacing:0; }
+.staff-detail__schedule-table th { height:44px; padding:9px 12px; background:#f4f6f9; color:#536783; font-size:12px; font-weight:500; line-height:1.35; text-transform:none; }
+.staff-detail__schedule-table td { height:77px; padding:12px; border-top:1px solid #dee5f0; color:#243045; font-size:12px; line-height:1.45; vertical-align:middle; }
+.staff-detail__schedule-table tbody tr:first-child td { border-top:0; }
+.staff-detail__schedule-table tbody tr:hover td { background:#fbfdff; }

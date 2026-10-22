@@ -33,8 +33,12 @@ export const refreshTokenInterceptor: HttpInterceptorFn = (request, next) => {
           ),
         ),
         catchError((refreshError: unknown) => {
-          authSession.clearSession();
-          void router.navigateByUrl('/admin/login');
+          // A temporary network/server outage is not an invalid refresh cookie.
+          // Preserve the session so a later request can retry authentication.
+          if (!isTransientRefreshError(refreshError)) {
+            authSession.clearSession();
+            void router.navigateByUrl('/admin/login');
+          }
           return throwError(() => refreshError);
         }),
       );
@@ -72,4 +76,11 @@ function backendErrorCode(details: unknown): string | null {
   }
 
   return null;
+}
+
+function isTransientRefreshError(error: unknown): boolean {
+  if (error instanceof AppHttpError || error instanceof HttpErrorResponse) {
+    return error.status === 0 || [502, 503, 504].includes(error.status);
+  }
+  return error instanceof Error && error.name === 'TimeoutError';
 }

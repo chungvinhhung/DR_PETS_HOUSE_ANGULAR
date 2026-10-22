@@ -28,10 +28,12 @@
       </div>
     </header>
 
-    @if (isEdit && !staff) {
+    @if (staffApi.loading()) { <p role="status">Đang tải hồ sơ nhân viên từ Backend...</p> }
+    @if (staffApi.error()) { <p role="alert">{{ staffApi.error() }}</p> }
+    @if (isEdit && !staff && !staffApi.loading()) {
       <section class="panel" role="alert">
         <h2>Không tìm thấy nhân viên</h2>
-        <p>Không có mã {{ staffId }} trong dữ liệu mẫu. <a routerLink="/admin/staff">Quay lại danh sách nhân viên</a>.</p>
+        <p>Chưa tìm thấy mã {{ staffId }} trong dữ liệu Backend. <a routerLink="/admin/staff">Quay lại danh sách nhân viên</a>.</p>
       </section>
     } @else {
       <form [formGroup]="form" (ngSubmit)="submit('save')" novalidate>
@@ -164,7 +166,7 @@
             <div class="schedule-scroll">
               <table class="schedule-table">
                 <thead><tr>
-                  <th>NGÀY</th><th>CHI NHÁNH</th><th>MẪU CA</th><th>KHUNG GIỜ</th><th>TRẠNG THÁI</th>
+                  <th>NGÀY</th><th>CHI NHÁNH</th><th>CA LÀM</th><th>KHUNG GIỜ</th><th>TRẠNG THÁI</th>
                 </tr></thead>
                 <tbody>
                   @for (day of weekDays; track day.key) {
@@ -183,7 +185,7 @@
                       </td>
                       <td>
                         <span class="select-wrap">
-                          <select aria-label="Mẫu ca của {{ day.label }}" [value]="day.template"
+                          <select aria-label="Ca làm của {{ day.label }}" [value]="day.template"
                             (change)="setShift(day.key, 'template', $any($event.target).value)">
                             <option value="">Chưa phân ca</option>
                             <option value="Ca sáng">Ca sáng</option>
