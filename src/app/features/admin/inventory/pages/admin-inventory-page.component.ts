@@ -165,6 +165,7 @@ export class AdminInventoryPageComponent implements OnInit {
         this.inventoryItems.set(items);
         this.stock.set(this.makeStockRows(stocks, items, branches));
         this.page.set(1);
+        this.loadHistory();
       },
       error: (error: unknown) => {
         this.stock.set([]);
@@ -173,7 +174,6 @@ export class AdminInventoryPageComponent implements OnInit {
         this.loadError.set(adminErrorMessage(error, 'Không tải được dữ liệu kho. Vui lòng thử lại.'));
       },
     });
-    this.loadHistory();
   }
 
   loadHistory(): void {
@@ -217,9 +217,13 @@ export class AdminInventoryPageComponent implements OnInit {
     const items = new Map(this.inventoryItems().map(item => [item.id, item]));
     const branches = new Map(this.branchesData().map(branch => [branch.id, branch.name]));
     const actions: Record<string, string> = { RECEIPT: 'Nhập kho', ISSUE: 'Xuất kho', ADJUSTMENT: 'Điều chỉnh', TRANSFER: 'Chuyển kho' };
-    return transactions.map(tx => ({
+    return transactions.map(tx => {
+      const date = new Date(tx.createdAt);
+      const two = (n: number) => String(n).padStart(2, '0');
+      const formatted = `${two(date.getDate())}/${two(date.getMonth() + 1)}/${date.getFullYear()} ${two(date.getHours())}:${two(date.getMinutes())}`;
+      return {
       id: tx.id,
-      date: new Date(tx.createdAt).toLocaleString('vi-VN', { hour12: false }),
+      date: formatted,
       item: items.get(tx.inventoryItemId)?.name || tx.inventoryItemId,
       sku: items.get(tx.inventoryItemId)?.sku || '—',
       branch: branches.get(tx.branchId) || tx.branchId,
@@ -230,7 +234,8 @@ export class AdminInventoryPageComponent implements OnInit {
       after: String(tx.afterQty),
       reference: tx.id.slice(-8).toUpperCase(),
       actor: '—',
-    }));
+    };
+    });
   }
 
   shortBranch(value: string): string { return value.replace('Chi nhánh Quận ', 'Q'); }
