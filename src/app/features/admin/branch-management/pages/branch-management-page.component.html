@@ -283,6 +283,7 @@
       [service]="service"
       [branches]="[configBranch]"
       [initialBranchId]="configBranch.id"
+      [branchActive]="configBranch.status === 'ACTIVE'"
       [initialBlockedWindows]="currentBlockedWindows"
       [saving]="savingConfig()"
       (previewSaved)="applyServiceConfiguration($event)"
