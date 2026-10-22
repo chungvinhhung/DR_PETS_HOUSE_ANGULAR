@@ -16,6 +16,9 @@
         <option value="">Tất cả chi nhánh</option>
         @for (b of branches; track b) {<option [value]="b">{{b}}</option>}
       </select>
+      @if (tab()==='history') {
+        <label class="date-filter"><span>Từ ngày</span><input type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event);onFilter()" aria-label="Lọc lịch sử từ ngày"/></label>
+      }
       @if (tab()==='stock') {
         <select aria-label="Loại hàng" [ngModel]="type()" (ngModelChange)="type.set($event);onFilter()">
           <option value="">Tất cả loại</option><option>Hàng bán</option><option>Vật tư dịch vụ</option><option>Dùng chung</option>
@@ -23,18 +26,17 @@
         <select aria-label="Trạng thái tồn kho" [ngModel]="status()" (ngModelChange)="status.set($event);onFilter()">
           <option value="">Tất cả trạng thái</option><option>Đủ hàng</option><option>Sắp hết hàng</option><option>Hết hàng</option><option>Chưa cài ngưỡng</option>
         </select>
-        <button type="button" class="primary" (click)="openDialog('receipt')"><span class="plus" aria-hidden="true">+</span> Nhập kho</button>
+        <button type="button" class="primary inventory-create" (click)="openDialog('receipt')"><span class="plus" aria-hidden="true">+</span><span>Nhập kho</span></button>
       } @else {
         <select aria-label="Loại biến động" [ngModel]="changeType()" (ngModelChange)="changeType.set($event);onFilter()">
           <option value="">Tất cả biến động</option><option>Nhập kho</option><option>Xuất kho</option><option>Điều chỉnh</option><option>Chuyển kho</option><option>Hoàn stock</option>
         </select>
-        <label class="date-filter"><span>Từ ngày</span><input type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event);onFilter()"/></label>
       }
     </div>
   </div>
 
-  <div class="table-shell">
-    <div class="table-scroll">
+  <div class="table-shell" [class.table-shell--history]="tab()==='history'">
+    <div class="table-scroll" [class.table-scroll--history]="tab()==='history'">
       @if (tab()==='stock') {
         <table class="stock-table">
           <colgroup>
@@ -47,7 +49,7 @@
           @for (item of currentRows(); track item.id) {
             <tr>
               <td class="product">{{item.name}}</td>
-              <td><div>{{item.variant}}</div><small>{{item.sku}}</small></td>
+              <td class="sku-inline">{{item.variant}} <span aria-hidden="true">|</span> {{item.sku}}</td>
               <td>{{item.kind}}</td><td [title]="item.branch">{{ item.branch === 'Chi nhánh Quận 1' ? 'Q1' : item.branch === 'Chi nhánh Quận 3' ? 'Q3' : item.branch }}</td>
               <td class="number">{{item.quantity}}</td><td class="number">{{item.threshold === null ? 'Chưa cài' : item.threshold}}</td>
               <td><span class="stock-badge" [class.ok]="stockStatus(item)==='Đủ hàng'" [class.low]="stockStatus(item)==='Sắp hết hàng'" [class.out]="stockStatus(item)==='Hết hàng'" [class.unset]="stockStatus(item)==='Chưa cài ngưỡng'">{{stockStatus(item)}}</span></td>
@@ -68,7 +70,12 @@
           } @empty {<tr><td colspan="8" class="empty">Không tìm thấy sản phẩm phù hợp.</td></tr>}
         </tbody></table>
       } @else {
-        <table class="history-table"><thead><tr>
+        <table class="history-table">
+          <colgroup>
+            <col style="width:13%"/><col style="width:15%"/><col style="width:13%"/><col style="width:16%"/>
+            <col style="width:10%"/><col style="width:9%"/><col style="width:11%"/><col style="width:13%"/>
+          </colgroup>
+          <thead><tr>
           <th>Thời gian</th><th>Sản phẩm / SKU</th><th>Chi nhánh / Tuyến</th><th>Giao dịch & lý do</th><th>Thay đổi</th><th>Tồn sau</th><th>Tham chiếu</th><th>Người thao tác</th>
         </tr></thead><tbody>
           @for (record of currentHistory();track record.reference) {
