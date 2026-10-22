@@ -595,6 +595,11 @@ export class ServiceCatalogEditorComponent {
       }
       this.pendingActivationServiceId.set(null);
       this.dirty.set(false);
+      if (this.editorMode === 'view') {
+        this.loadBranchDetailRows();
+        this.toast.show('Đã cập nhật các chi nhánh chưa cấu hình.', 'success');
+        return;
+      }
       this.notice.set(this.isNew
         ? 'Thêm dịch vụ thành công. Đã bật tại các chi nhánh đang hoạt động.'
         : 'Cập nhật dịch vụ thành công.');
@@ -607,6 +612,11 @@ export class ServiceCatalogEditorComponent {
     } finally {
       this.saving.set(false);
     }
+  }
+
+  applyDefaultAtMissingBranches(): void {
+    if (this.authSessionRole !== 'ADMIN' || !this.serviceId || !this.active || this.saving()) return;
+    void this.enableUnconfiguredBranches(this.serviceId);
   }
 
   retryBranchActivation(): void {
