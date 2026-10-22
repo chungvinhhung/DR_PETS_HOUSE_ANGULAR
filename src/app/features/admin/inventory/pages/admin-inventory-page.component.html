@@ -1,6 +1,6 @@
 <app-admin-catalog-shell activeItem="inventory">
 <section class="inventory-page">
-  <div class="page-title"><h1>Kho</h1><span class="demo-note">Dữ liệu minh họa · Chưa kết nối hệ thống kho</span></div>
+  <div class="page-title"><h1>Kho hàng</h1><span class="demo-note">Dữ liệu minh họa · Chưa kết nối hệ thống kho</span></div>
   <div class="inventory-tabs" role="tablist" aria-label="Kho">
     <button type="button" role="tab" [attr.aria-selected]="tab()==='stock'" [class.active]="tab()==='stock'" (click)="switchTab('stock')">Tồn kho</button>
     <button type="button" role="tab" [attr.aria-selected]="tab()==='history'" [class.active]="tab()==='history'" (click)="switchTab('history')">Lịch sử kho</button>
@@ -38,8 +38,8 @@
       @if (tab()==='stock') {
         <table class="stock-table">
           <colgroup>
-            <col style="width:180px"/><col style="width:165px"/><col style="width:130px"/><col style="width:90px"/>
-            <col style="width:100px"/><col style="width:140px"/><col style="width:159px"/><col style="width:70px"/>
+            <col style="width:17.5%"/><col style="width:16%"/><col style="width:12.5%"/><col style="width:9%"/>
+            <col style="width:10%"/><col style="width:13.5%"/><col style="width:14.5%"/><col style="width:7%"/>
           </colgroup>
           <thead><tr>
           <th>Sản phẩm</th><th>Biến thể / SKU</th><th>Loại</th><th>Chi nhánh</th><th>Tồn hiện tại</th><th>Ngưỡng cảnh báo</th><th>Trạng thái</th><th class="center">Thao tác</th>
@@ -48,7 +48,7 @@
             <tr>
               <td class="product">{{item.name}}</td>
               <td><div>{{item.variant}}</div><small>{{item.sku}}</small></td>
-              <td>{{item.kind}}</td><td>{{item.branch}}</td>
+              <td>{{item.kind}}</td><td [title]="item.branch">{{ item.branch === 'Chi nhánh Quận 1' ? 'Q1' : item.branch === 'Chi nhánh Quận 3' ? 'Q3' : item.branch }}</td>
               <td class="number">{{item.quantity}}</td><td class="number">{{item.threshold}}</td>
               <td><span class="stock-badge" [class.ok]="stockStatus(item)==='Còn hàng'" [class.low]="stockStatus(item)==='Sắp hết hàng'" [class.out]="stockStatus(item)==='Hết hàng'">{{stockStatus(item)}}</span></td>
               <td class="center">
