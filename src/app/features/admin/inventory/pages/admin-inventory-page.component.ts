@@ -57,6 +57,7 @@ export class AdminInventoryPageComponent {
   readonly note = signal('');
   readonly branches = ['Chi nhánh Quận 1', 'Chi nhánh Quận 3'];
   readonly pageSize = 7;
+  readonly pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
   readonly stockFiltered = computed(() => this.stock().filter(row => {
     const text = this.search().trim().toLocaleLowerCase('vi');
     const matched = !text || `${row.name} ${row.variant} ${row.sku}`.toLocaleLowerCase('vi').includes(text);
@@ -108,15 +109,15 @@ export class AdminInventoryPageComponent {
   valid(): string | null {
     if (!this.activeItem()) return 'Vui lòng chọn sản phẩm.';
     if (this.modal() === 'threshold') {
-      if (!Number.isInteger(this.threshold()) || (this.threshold() ?? -1)<0) return 'Vui lòng nhập ngưỡng cảnh báo hợp lệ.';
+      if (!Number.isInteger(this.threshold() ?? NaN) || (this.threshold() ?? -1)<0) return 'Vui lòng nhập ngưỡng cảnh báo hợp lệ.';
       if (this.threshold()===this.activeItem()?.threshold) return 'Ngưỡng mới phải khác ngưỡng hiện tại.';
     } else {
-      if (!Number.isInteger(this.quantity()) || (this.quantity() ?? -1) < (this.modal()==='adjustment'?0:1)) return 'Vui lòng nhập số lượng hợp lệ.';
+      if (!Number.isInteger(this.quantity() ?? NaN) || (this.quantity() ?? -1) < (this.modal()==='adjustment'?0:1)) return 'Vui lòng nhập số lượng hợp lệ.';
       if (['issue','transfer'].includes(this.modal()??'') && (this.quantity()??0)>this.currentQuantity()) return 'Số lượng vượt quá tồn kho hiện tại.';
       if (this.modal()==='transfer' && (!this.destination() || this.destination()===this.activeItem()?.branch)) return 'Vui lòng chọn chi nhánh nhận khác chi nhánh xuất.';
     }
     if (this.modal()!=='receipt' && !this.note().trim()) return 'Vui lòng nhập lý do.';
-    if (this.modal()==='receipt' && (!Number.isInteger(this.threshold()) || (this.threshold()??-1)<0)) return 'Vui lòng nhập ngưỡng cảnh báo hợp lệ.';
+    if (this.modal()==='receipt' && (!Number.isInteger(this.threshold() ?? NaN) || (this.threshold()??-1)<0)) return 'Vui lòng nhập ngưỡng cảnh báo hợp lệ.';
     return null;
   }
   notify(message: string, tone: 'success'|'error'|'info'='info'): void {this.toast.set({message,tone});}
