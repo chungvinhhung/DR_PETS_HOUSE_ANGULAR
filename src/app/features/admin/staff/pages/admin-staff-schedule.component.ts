@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.component';
 import { formatStaffWeekRange } from '../utils/staff-week-range';
-import { JOB_LABELS, JobRole, STAFF_PREVIEW, STAFF_SHIFTS_PREVIEW, displayStaffName } from '../models/staff-preview.model';
+import { AdminStaffApiService, staffTodayISO } from '../services/admin-staff-api.service';
+import { JOB_LABELS, JobRole, displayStaffName } from '../models/staff-preview.model';
 
 const DAY = 86_400_000;
 const mondayOf = (iso: string): string => {
@@ -30,13 +31,20 @@ const readable = (iso: string): string => iso.slice(8, 10) + '/' + iso.slice(5, 
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminStaffScheduleComponent {
-  readonly monday = signal(mondayOf(todayIso()));
+  readonly staffApi = inject(AdminStaffApiService);
+  readonly monday = signal(mondayOf(staffTodayISO()));
+  constructor() {
+    this.staffApi.loadRoster();
+    effect(() => {
+      if (this.staffApi.loaded()) this.staffApi.loadWeek(this.monday());
+    });
+  }
   readonly branch = signal('ALL');
   readonly role = signal('ALL');
   readonly page = signal(1);
   readonly pageSize = 6;
   readonly roles = Object.entries(JOB_LABELS) as [JobRole, string][];
-  readonly branches = [...new Set(STAFF_PREVIEW.flatMap(staff => staff.branches))];
+  readonly branches = computed(() => [...new Set(this.staffApi.staff().flatMap(staff => staff.branches))]);
   readonly days = computed(() => Array.from({ length: 7 }, (_, index) => {
     const iso = dateFor(this.monday(), index);
     return {
@@ -46,16 +54,15 @@ export class AdminStaffScheduleComponent {
     };
   }));
   readonly weekLabel = computed(() => formatStaffWeekRange(this.monday()));
-  readonly filtered = computed(() => STAFF_PREVIEW.filter(staff =>
+  readonly filtered = computed(() => this.staffApi.staff().filter(staff =>
     (this.role() === 'ALL' || staff.jobRole === this.role()) &&
     (this.branch() === 'ALL' || staff.branches.includes(this.branch()))));
   readonly pageCount = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.pageSize)));
   readonly rows = computed(() => this.filtered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
-  readonly isSampleWeek = computed(() => this.monday() === '2026-10-19');
 
   displayName = displayStaffName;
   shifts(staffId: string, iso: string) {
-    return STAFF_SHIFTS_PREVIEW.filter(shift =>
+    return this.staffApi.shifts().filter(shift =>
       shift.staffId === staffId && shift.isoDate === iso &&
       (this.branch() === 'ALL' || shift.branch === this.branch()));
   }

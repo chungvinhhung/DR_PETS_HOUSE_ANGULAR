@@ -200,9 +200,11 @@ export class ServiceCatalogListComponent {
     if (service.referencePrice !== null) {
       return this.vnd(service.referencePrice);
     }
+    // Unmapped variants (including stale basePrice + []) are not confirmed fees.
+    if (service.pricingDataWarning) return 'Giá chưa đồng bộ';
     return service.bookingMode === 'CONTACT_ONLY'
       ? 'Báo giá sau tiếp nhận'
-      : 'Liên hệ báo giá';
+      : 'Chưa cấu hình giá';
   }
 
   private vnd(value: number): string {
@@ -236,10 +238,11 @@ export class ServiceCatalogListComponent {
       return;
     }
     if (action === 'edit' && !this.isAdmin()) return;
-    void this.router.navigateByUrl(
+    void this.router.navigate(
       action === 'edit'
-        ? '/admin/services/' + encodeURIComponent(service.id) + '/edit'
-        : '/admin/services/' + encodeURIComponent(service.id),
+        ? ['/admin/services', service.id, 'edit']
+        : ['/admin/services', service.id],
+      { queryParams: { returnTo: '/admin/services' } },
     );
   }
 
