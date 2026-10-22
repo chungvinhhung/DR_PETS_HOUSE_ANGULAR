@@ -208,15 +208,6 @@ app-service-catalog-list {
   border-collapse: separate;
 }
 
-.service-catalog__table th:nth-child(1) { width: 7%; }
-.service-catalog__table th:nth-child(2) { width: 17%; }
-.service-catalog__table th:nth-child(3) { width: 12%; }
-.service-catalog__table th:nth-child(4) { width: 12.5%; }
-.service-catalog__table th:nth-child(5) { width: 10%; }
-.service-catalog__table th:nth-child(6) { width: 10%; }
-.service-catalog__table th:nth-child(7) { width: 11%; }
-.service-catalog__table th:nth-child(8) { width: 12.5%; }
-.service-catalog__table th:nth-child(9) { width: 8%; }
 
 .service-catalog__table th {
   height: 44px;
@@ -547,14 +538,6 @@ app-service-catalog-list {
 .service-catalog__table.service-catalog__table--all-branches {
   table-layout: fixed;
 }
-.service-catalog__table.service-catalog__table--all-branches th:nth-child(1) { width: 7%; }
-.service-catalog__table.service-catalog__table--all-branches th:nth-child(2) { width: 23%; }
-.service-catalog__table.service-catalog__table--all-branches th:nth-child(3) { width: 17%; }
-.service-catalog__table.service-catalog__table--all-branches th:nth-child(4) { width: 13%; }
-.service-catalog__table.service-catalog__table--all-branches th:nth-child(5) { width: 10%; }
-.service-catalog__table.service-catalog__table--all-branches th:nth-child(6) { width: 13%; }
-.service-catalog__table.service-catalog__table--all-branches th:nth-child(7) { width: 10%; text-align: center; }
-.service-catalog__table.service-catalog__table--all-branches th:nth-child(8) { width: 7%; text-align: center; }
 .service-catalog__table--all-branches td:nth-child(7) { text-align: center; }
 .service-catalog__capacity {
   display: inline-block;
@@ -609,15 +592,6 @@ app-service-catalog-list {
 .service-catalog__table tbody tr:last-child td { border-bottom: 0; }
 .service-catalog__table tbody tr:hover td { background: #fbfdff; }
 /* All-branches mode retains its own eight-column width split above. */
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(1) { width: 7%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(2) { width: 17%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(3) { width: 12%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(4) { width: 11%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(5) { width: 9%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(6) { width: 10%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(7) { width: 16%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(8) { width: 10%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(9) { width: 8%; }
 /* Align the entire activation and simultaneous-capacity columns. */
 .service-catalog__table thead th.service-catalog__activation-col,
 .service-catalog__table tbody td.service-catalog__activation-cell,
@@ -639,48 +613,60 @@ app-service-catalog-list {
 
 
 /*
- * Responsive service-table sizing, split for eight-column (all branches)
- * and nine-column (one branch) views. Booking-mode badges now fit inside
- * their own cells without encroaching on the Duration column.
- *
- * Keep horizontal scrolling on genuinely narrow viewports; never compress
- * REQUEST_ONLY / CONTACT_ONLY badges into the adjacent cell.
+ * Final service table widths: one authoritative allocation per filter mode.
+ * Give "Vai trò thực hiện" sufficient room to remain on one line; keep
+ * booking-mode badges close to the duration and centered under their headers.
  */
-.service-catalog__table.service-catalog__table--all-branches { min-width: 1050px; }
+.service-catalog__table.service-catalog__table--all-branches { min-width: 1080px; }
 .service-catalog__table.service-catalog__table--all-branches th:nth-child(1) { width: 9%; }
-.service-catalog__table.service-catalog__table--all-branches th:nth-child(2) { width: 20%; }
-.service-catalog__table.service-catalog__table--all-branches th:nth-child(3) { width: 14%; }
-.service-catalog__table.service-catalog__table--all-branches th:nth-child(4) { width: 17%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(2) { width: 19%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(3) { width: 18%; }
+.service-catalog__table.service-catalog__table--all-branches th:nth-child(4) { width: 14%; }
 .service-catalog__table.service-catalog__table--all-branches th:nth-child(5) { width: 10%; }
 .service-catalog__table.service-catalog__table--all-branches th:nth-child(6) { width: 10%; }
 .service-catalog__table.service-catalog__table--all-branches th:nth-child(7) { width: 12%; }
 .service-catalog__table.service-catalog__table--all-branches th:nth-child(8) { width: 8%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) { min-width: 1120px; }
+
+.service-catalog__table:not(.service-catalog__table--all-branches) { min-width: 1160px; }
 .service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(1) { width: 9%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(2) { width: 15%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(3) { width: 11%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(4) { width: 16%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(5) { width: 10%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(6) { width: 9%; }
-.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(7) { width: 13%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(2) { width: 13%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(3) { width: 18%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(4) { width: 14%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(5) { width: 9%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(6) { width: 8%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(7) { width: 12%; }
 .service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(8) { width: 9%; }
 .service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(9) { width: 8%; }
-.service-catalog__table thead th:first-child,
-.service-catalog__table thead th.service-catalog__actions-col,
-.service-catalog__table thead th.service-catalog__activation-col,
+
+/* Headings and values in these three neighboring columns share one axis. */
+.service-catalog__table thead th:nth-child(3),
+.service-catalog__table tbody td:nth-child(3),
 .service-catalog__table thead th:nth-child(4),
-.service-catalog__table thead th:nth-child(5) {
-  white-space: nowrap;
-}
-.service-catalog__table td:nth-child(4),
-.service-catalog__table td:nth-child(5) {
-  white-space: nowrap;
-}
-.service-catalog__table td:nth-child(4) .service-catalog__pill {
-  max-width: none;
-}
-/* A clear gap between Hình thức and Thời lượng, matching Product table cells. */
+.service-catalog__table tbody td:nth-child(4),
 .service-catalog__table thead th:nth-child(5),
 .service-catalog__table tbody td:nth-child(5) {
-  padding-left: 18px;
+  text-align: center;
+  vertical-align: middle;
+}
+.service-catalog__table thead th:nth-child(3),
+.service-catalog__table thead th:nth-child(4),
+.service-catalog__table thead th:nth-child(5),
+.service-catalog__table thead th:first-child,
+.service-catalog__table thead th.service-catalog__actions-col,
+.service-catalog__table thead th.service-catalog__activation-col {
+  white-space: nowrap;
+}
+/* A deliberate, small space between booking-mode badges and duration values. */
+.service-catalog__table thead th:nth-child(4),
+.service-catalog__table tbody td:nth-child(4) {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.service-catalog__table thead th:nth-child(5),
+.service-catalog__table tbody td:nth-child(5) {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+.service-catalog__table td:nth-child(4) .service-catalog__pill {
+  max-width: 100%;
 }
