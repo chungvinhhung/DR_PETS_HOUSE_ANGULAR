@@ -718,3 +718,67 @@ app-service-catalog-list {
     min-width: 1160px;
   }
 }
+
+
+/*
+ * Keep the 430px service search field unchanged. The three filters absorb
+ * available width, while the add-service button stays inside the border.
+ * On narrower screens the filter group wraps below the fixed-size search.
+ */
+.service-catalog__filters {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 12px;
+}
+.service-catalog__filters .service-catalog__search {
+  flex: 0 0 430px;
+  width: 430px;
+  min-width: 430px;
+  max-width: 430px;
+}
+.service-catalog__filters .service-catalog__filter-selects {
+  display: grid;
+  flex: 1 1 600px;
+  grid-template-columns: minmax(0, 1.04fr) minmax(0, 1.1fr) minmax(0, .96fr) max-content;
+  align-items: center;
+  column-gap: 8px;
+  width: auto;
+  min-width: min(100%, 600px);
+  max-width: 100%;
+}
+.service-catalog__filters .service-catalog__filter-selects > .service-catalog__select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+.service-catalog__filters .service-catalog__filter-selects > .service-catalog__create {
+  width: auto;
+  min-width: max-content;
+  justify-self: end;
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .service-catalog__filters .service-catalog__filter-selects {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 10px;
+    flex-basis: 100%;
+    min-width: 0;
+    width: 100%;
+  }
+  .service-catalog__filters .service-catalog__filter-selects > .service-catalog__create {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+/* The search is intentionally fixed at 430px, including on small screens. */
+@media (max-width: 510px) {
+  .service-catalog__filters {
+    overflow-x: auto;
+  }
+  .service-catalog__filters .service-catalog__filter-selects {
+    min-width: 430px;
+  }
+}
