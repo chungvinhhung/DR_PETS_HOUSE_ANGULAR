@@ -83,12 +83,12 @@
           @if (weightPricing) {
             <div class="service-editor__table-scroll service-editor__detail-table">
               <table class="service-editor__table service-editor__table--prices">
-                <thead><tr><th>Mức</th><th>Cân nặng</th><th>Hình thức thu phí</th><th>Giá cơ sở (VNĐ)</th></tr></thead>
+                <thead><tr><th>Mức</th><th>Cân nặng</th><th>Hình thức thu phí</th><th>Giá cơ sở (VNĐ)</th><th>Số tiền bằng chữ</th></tr></thead>
                 <tbody>
                   @for (tier of priceTiers; track tier.key) {
                     <tr><td><strong>{{ tier.key }}</strong></td><td>{{ tier.weight }}</td>
                       <td>{{ tier.mode === 'QUOTE' ? 'Liên hệ báo giá' : 'Giá cố định' }}</td>
-                      <td>{{ tier.mode === 'QUOTE' || tier.price === null ? '—' : formatMoney(tier.price) + 'đ' }}</td></tr>
+                      <td>{{ tier.mode === 'QUOTE' || tier.price === null ? 'Chưa xác định giá' : formatMoney(tier.price) + 'đ' }}</td><td class="service-editor__amount-words-cell">{{ tier.mode === 'FIXED' && tier.price !== null && tier.price > 0 ? moneyWords(tier.price) : 'Chưa xác định giá' }}</td></tr>
                   }
                 </tbody>
               </table>
@@ -108,15 +108,7 @@
           }
         </section>
         <section class="service-editor__card service-editor__detail-card" aria-labelledby="service-detail-branches">
-          <div class="service-editor__branch-section-heading">
-            <h2 id="service-detail-branches">Áp dụng tại chi nhánh</h2>
-            @if (authSessionRole === 'ADMIN' && active) {
-              <button type="button" class="service-editor__btn service-editor__btn--secondary"
-                [disabled]="saving()" (click)="applyDefaultAtMissingBranches()">
-                {{ saving() ? 'Đang cập nhật...' : 'Bật tại chi nhánh chưa cấu hình' }}
-              </button>
-            }
-          </div>
+          <h2 id="service-detail-branches">Áp dụng tại chi nhánh</h2>
           @if (!active) {
             <p class="service-editor__detail-empty">Dịch vụ đang tạm ngưng nên chưa thể kích hoạt tại các chi nhánh.</p>
           }
@@ -134,12 +126,13 @@
                     <strong>{{ branch.name }}</strong>
                     <small>{{ branch.summary }}</small>
                   </div>
-                  <a routerLink="/admin/branches" class="service-editor__detail-config-link"
-                    [attr.aria-label]="'Đi đến quản lý chi nhánh: ' + branch.name"
-                    [title]="'Quản lý cấu hình dịch vụ tại ' + branch.name">
+                  <button type="button" class="service-editor__detail-config-link"
+                    [disabled]="saving()" [attr.aria-label]="'Cấu hình dịch vụ tại ' + branch.name"
+                    [title]="'Cấu hình dịch vụ tại ' + branch.name"
+                    (click)="openBranchConfiguration(branch.id)">
                     <img src="/assets/service-catalog/icon-settings.svg"
                       width="20" height="20" alt="" aria-hidden="true"/>
-                  </a>
+                  </button>
                 </div>
               }
             </div>
@@ -250,6 +243,7 @@
                 <th scope="col">Cân nặng</th>
                 <th scope="col">Hình thức thu phí</th>
                 <th scope="col">Giá cơ sở (VNĐ)</th>
+                <th scope="col">Số tiền bằng chữ</th>
               </tr>
             </thead>
             <tbody>
@@ -267,24 +261,20 @@
                       </select>
                     </td>
                     <td>
-                      <div class="service-editor__money-group">
-                        @if (tier.mode === 'QUOTE') {
-                          <span class="service-editor__amount-unset">Chưa xác định giá</span>
-                        } @else {
-                          <span class="service-editor__price-input">
-                            <input type="text" inputmode="numeric" autocomplete="off" [disabled]="!mayEdit"
-                              [value]="formatMoney(tier.price)" (input)="setTierPrice(tier, $any($event.target).value)"
-                              [attr.aria-label]="'Giá cơ sở mức ' + tier.key"
-                              placeholder="Nhập giá"/>
-                            <span>đ</span>
-                          </span>
-                          @if (tier.price !== null && tier.price > 0) {
-                            <span class="service-editor__amount-words" aria-live="polite">{{ moneyWords(tier.price) }}</span>
-                          } @else {
-                            <span class="service-editor__amount-unset">Chưa xác định giá</span>
-                          }
-                        }
-                      </div>
+                      @if (tier.mode === 'QUOTE') {
+                        <span class="service-editor__amount-unset">Chưa xác định giá</span>
+                      } @else {
+                        <span class="service-editor__price-input">
+                          <input type="text" inputmode="numeric" autocomplete="off" [disabled]="!mayEdit"
+                            [value]="formatMoney(tier.price)" (input)="setTierPrice(tier, $any($event.target).value)"
+                            [attr.aria-label]="'Giá cơ sở mức ' + tier.key"
+                            placeholder="Nhập giá"/>
+                          <span>đ</span>
+                        </span>
+                      }
+                    </td>
+                    <td class="service-editor__amount-words-cell" aria-live="polite">
+                      {{ tier.mode === 'FIXED' && tier.price !== null && tier.price > 0 ? moneyWords(tier.price) : 'Chưa xác định giá' }}
                     </td>
                   </tr>
                 }
@@ -383,14 +373,54 @@
       </section>
 
       <section class="service-editor__card" aria-labelledby="service-branches-title">
-        <h2 id="service-branches-title">Cấu hình theo chi nhánh</h2>
-        <a class="service-editor__btn service-editor__btn--secondary"
-          routerLink="/admin/branches">Đi đến quản lý chi nhánh →</a>
+        <div class="service-editor__branch-section-heading">
+          <h2 id="service-branches-title">Áp dụng tại chi nhánh</h2>
+          @if (isNew) {
+            <button type="button" class="service-editor__btn service-editor__btn--secondary"
+              [disabled]="saving()" (click)="openBranchConfiguration()">
+              Chọn chi nhánh để cấu hình
+            </button>
+          }
+        </div>
+        @if (!isNew && branchesLoading()) {
+          <p class="service-editor__detail-empty" role="status">Đang tải chi nhánh...</p>
+        } @else if (!isNew && branchLoadError()) {
+          <p class="service-editor__detail-empty" role="alert">{{ branchLoadError() }}</p>
+        } @else if (displayedBranchRows.length) {
+          <div class="service-editor__detail-branch-list">
+            @for (branch of displayedBranchRows; track branch.id) {
+              <div class="service-editor__detail-branch-row">
+                <div class="service-editor__detail-branch-info">
+                  <strong>{{ branch.name }}</strong>
+                  <small>{{ branch.summary }}</small>
+                </div>
+                <button type="button" class="service-editor__detail-config-link"
+                  [disabled]="saving()" [attr.aria-label]="'Cấu hình dịch vụ tại ' + branch.name"
+                  [title]="'Cấu hình dịch vụ tại ' + branch.name"
+                  (click)="openBranchConfiguration(branch.id)">
+                  <img src="/assets/service-catalog/icon-settings.svg" width="20" height="20" alt="" />
+                </button>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="service-editor__detail-empty">{{ isNew ? 'Chưa chọn chi nhánh nào.' : 'Không có chi nhánh nào trong phạm vi được phép.' }}</p>
+        }
       </section>
       }
     }
   </main>
 </app-admin-catalog-shell>
+@if (branchConfigFlowOpen()) {
+  <app-service-branch-config-flow
+    [service]="branchConfigService"
+    [draftMode]="isNew"
+    [draftConfigs]="stagedBranchConfigs()"
+    [directBranchId]="branchConfigTargetId()"
+    (draftSaved)="stageBranchConfig($event)"
+    (saved)="refreshBranchConfigs()"
+    (dismiss)="closeBranchConfiguration()" />
+}
 
 @if (showCancelConfirmation()) {
   <div class="service-editor__overlay" role="presentation">
