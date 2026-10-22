@@ -62,48 +62,19 @@
   transform-origin: center;
 }
 
-.paw-frame {
-  position: absolute;
+/* The original mascot already includes both hands.
+   Draw the same image above the wave, clipped to each paw, so there
+   can be no offset or duplicated outlines from separate paw assets. */
+.mascot-frame--foreground {
   z-index: 5;
-  overflow: hidden;
-  pointer-events: none;
 }
 
-/* Updated directly from the latest Figma hand nodes. */
-.paw-frame--left {
-  left: 20.6034%;
-  top: 66.9%;
-  width: 6.6652%;
-  height: 7.6788%;
+.mascot-art--paw-left {
+  clip-path: inset(53% 76% 24% 0%);
 }
 
-.paw-frame--right {
-  left: 35.3609%;
-  top: 74.8%;
-  width: 5.9162%;
-  height: 7.8267%;
-}
-
-.paw-art {
-  position: absolute;
-  display: block;
-  object-fit: fill;
-  transform: rotate(5deg);
-  transform-origin: center;
-}
-
-.paw-frame--left .paw-art {
-  left: 0;
-  top: 0.45%;
-  width: 99.81%;
-  height: 99.3%;
-}
-
-.paw-frame--right .paw-art {
-  left: 0.5%;
-  top: 0;
-  width: 122.4%;
-  height: 98.31%;
+.mascot-art--paw-right {
+  clip-path: inset(72% 23% 2% 44%);
 }
 
 .botanical-art {
@@ -402,7 +373,6 @@
 
   .art-layer,
   .mascot-frame,
-  .paw-frame,
   .botanical-art,
   .leaf-frame,
   .brand-identity {
