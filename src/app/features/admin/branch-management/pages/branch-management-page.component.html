@@ -192,11 +192,11 @@
             </label>
             <button type="button" class="branch-v2-page__btn branch-v2-page__btn--outline" (click)="refreshPreview()">Làm mới</button>
           </div>
-          <p class="branch-v2-page__api-note">Số chỗ còn trống theo giờ hiện chưa thể cập nhật tự động.</p>
+          <p class="branch-v2-page__api-note">Tỷ lệ đã đặt / tổng chỗ tại giờ đang xem chỉ hiển thị khi có đủ dữ liệu. Các chỗ đã kín lịch cũng được tính vào tỷ lệ.</p>
           <div class="branch-v2-page__table-scroll branch-v2-page__table-scroll--services">
             <table class="branch-v2-page__table branch-v2-page__table--services">
               <thead><tr><th scope="col">Dịch vụ</th><th scope="col">Sức chứa đồng thời</th>
-                <th scope="col">Khả dụng</th><th scope="col">Kích hoạt tại chi nhánh</th><th scope="col" class="branch-v2-page__actions-heading">Thao tác</th></tr></thead>
+                <th scope="col">Đã đặt / Tổng</th><th scope="col">Kích hoạt tại chi nhánh</th><th scope="col" class="branch-v2-page__actions-heading">Thao tác</th></tr></thead>
               <tbody>
                 @if (servicesLoading()) {
                   <tr><td colspan="5" class="branch-v2-page__empty">Đang tải danh sách dịch vụ...</td></tr>
@@ -209,7 +209,10 @@
                   <tr [class.branch-v2-page__focused]="service.id === focusedServiceId">
                     <td>{{ service.name }}</td>
                     <td>{{ capacity(service) }} ca</td>
-                    <td><span class="branch-v2-page__availability">{{ previewAvailability(service) }}</span></td>
+                    <td><span class="branch-v2-page__availability"
+                       [attr.title]="'Số lịch đã đặt / tổng chỗ theo ngày giờ đã chọn'">
+                       {{ previewAvailability(service) }}
+                     </span></td>
                     <td>
                       <button type="button" class="branch-v2-page__switch-row"
                         [attr.aria-label]="'Kích hoạt ' + service.name"
