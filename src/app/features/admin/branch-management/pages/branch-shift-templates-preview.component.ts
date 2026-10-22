@@ -71,7 +71,7 @@ const SAMPLE_SHIFTS: ShiftTemplatePreview[] = [
           <header class="branch-v2__modal-header">
             <div>
               <h2 id="branch-shift-modal">{{ editingId() ? 'Sửa ca làm việc' : 'Thêm ca làm việc' }}</h2>
-              <p>{{ branchName }} • Chỉ lưu tạm trên giao diện</p>
+              <p>{{ branchName }}</p>
             </div>
             <button type="button" aria-label="Đóng" (click)="requestClose()">×</button>
           </header>
@@ -118,7 +118,7 @@ const SAMPLE_SHIFTS: ShiftTemplatePreview[] = [
             }
             <footer class="branch-v2__modal-footer">
               <button class="branch-management__button branch-management__button--outline" type="button" (click)="requestClose()">Hủy</button>
-              <button class="branch-management__button branch-management__button--primary" type="submit">Lưu ca làm việc (demo)</button>
+              <button class="branch-management__button branch-management__button--primary" type="submit">Lưu ca làm việc</button>
             </footer>
           </form>
         </section>
@@ -283,7 +283,7 @@ export class BranchShiftTemplatesPreviewComponent {
     this.items.update((items) => this.editingId()
       ? items.map((item) => item.id === id ? entry : item)
       : [...items, entry]);
-    this.toast.show('Đã sửa ca trên giao diện demo. Chưa lưu vào Backend.', 'info');
+    this.toast.show('Đã cập nhật bản xem trước. Chức năng lưu ca làm việc chưa khả dụng.', 'info');
     this.closeEditor();
   }
 
