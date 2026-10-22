@@ -1,3 +1,4 @@
+<app-admin-catalog-shell activeItem="inventory">
 <section class="inventory-page">
   <div class="page-title"><h1>Kho</h1><span class="demo-note">Dữ liệu minh họa · Chưa kết nối hệ thống kho</span></div>
   <div class="inventory-tabs" role="tablist" aria-label="Kho">
@@ -142,8 +143,4 @@
     </section>
   </div>
 }
-@if (toast();as message) {
-  <div class="stock-toast" [class.error]="message.tone==='error'" role="status">
-    <span>{{message.message}}</span><button type="button" aria-label="Đóng thông báo" (click)="toast.set(null)">×</button>
-  </div>
-}
+</app-admin-catalog-shell>
