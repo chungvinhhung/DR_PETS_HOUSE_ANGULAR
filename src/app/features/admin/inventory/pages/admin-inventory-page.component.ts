@@ -44,7 +44,7 @@ export class AdminInventoryPageComponent {
   readonly type = signal('');
   readonly status = signal('');
   readonly changeType = signal('');
-  readonly fromDate = signal('');
+  readonly fromDate = signal(new Date(Date.now()-30*86400000).toISOString().slice(0,10));
   readonly page = signal(1);
   readonly modal = signal<DialogKind | null>(null);
   readonly activeItem = signal<StockItem | null>(null);
@@ -69,7 +69,8 @@ export class AdminInventoryPageComponent {
     const text = this.search().trim().toLocaleLowerCase('vi');
     return (!text || `${row.item} ${row.sku}`.toLocaleLowerCase('vi').includes(text)) &&
       (!this.branch() || row.branch.includes(this.branch().replace('Chi nhánh ',''))) &&
-      (!this.changeType() || row.action === this.changeType());
+      (!this.changeType() || row.action === this.changeType()) &&
+      (!this.fromDate() || new Date(row.date.slice(6,10)+'-'+row.date.slice(3,5)+'-'+row.date.slice(0,2)) >= new Date(this.fromDate()));
   }));
   readonly currentRows = computed(() => this.stockFiltered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
   readonly currentHistory = computed(() => this.historyFiltered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
