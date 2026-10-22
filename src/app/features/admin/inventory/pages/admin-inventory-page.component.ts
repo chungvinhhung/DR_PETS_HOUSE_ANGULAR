@@ -36,6 +36,7 @@ interface StockHistory {
   date: string;
   item: string;
   sku: string;
+  variant: string;
   branch: string;
   branchId: string;
   action: string;
@@ -71,7 +72,7 @@ export class AdminInventoryPageComponent implements OnInit {
   readonly catalogProducts = signal<AdminProduct[]>([]);
   readonly scopedBranchIds = signal<string[]>([]);
   readonly catalogBySku = computed(() => {
-    const bySku = new Map<string, { name: string; label: string; usage: StockKind; variantCount: number }>();
+    const bySku = new Map<string, { name: string; label: string; usage: StockKind; hasVariant: boolean }>();
     for (const product of this.catalogProducts()) {
       for (const variant of product.variants) {
         bySku.set(variant.sku.trim().toLowerCase(), {
@@ -79,7 +80,7 @@ export class AdminInventoryPageComponent implements OnInit {
           label: variant.label,
           usage: product.usageType === 'SHARED' ? 'Dùng chung'
             : product.usageType === 'SERVICE_SUPPLY' ? 'Vật tư dịch vụ' : 'Hàng bán',
-          variantCount: product.variants.length,
+          hasVariant: product.productType === 'VARIANT',
         });
       }
     }
@@ -237,8 +238,7 @@ export class AdminInventoryPageComponent implements OnInit {
         branchId: row.branchId,
         version: row.version,
         name: product?.name ?? item.name,
-        variant: product && product.variantCount > 1 && product.label.toLowerCase() !== 'mặc định'
-          ? product.label : '—',
+        variant: product?.hasVariant ? this.normalizedVariant(product.label) : '—',
         sku: item.sku,
         kind: product?.usage ?? (item.kind === 'PRODUCT' ? 'Hàng bán' as const : 'Vật tư dịch vụ' as const),
         branch: branchById.get(row.branchId) ?? row.branchId,
@@ -263,6 +263,11 @@ export class AdminInventoryPageComponent implements OnInit {
       item: catalog.get((items.get(tx.inventoryItemId)?.sku || '').trim().toLowerCase())?.name
         || items.get(tx.inventoryItemId)?.name || tx.inventoryItemId,
       sku: items.get(tx.inventoryItemId)?.sku || '—',
+      variant: (() => {
+        const sku = items.get(tx.inventoryItemId)?.sku || '';
+        const product = catalog.get(sku.trim().toLowerCase());
+        return product?.hasVariant ? this.normalizedVariant(product.label) : '—';
+      })(),
       branch: branches.get(tx.branchId) || tx.branchId,
       branchId: tx.branchId,
       action: actions[tx.transactionType] || tx.transactionType,
@@ -277,12 +282,23 @@ export class AdminInventoryPageComponent implements OnInit {
 
   shortBranch(value: string): string { return value.replace('Chi nhánh Quận ', 'Q'); }
   branchId(name: string): string { return this.branchesData().find(b => b.name === name)?.id || ''; }
+  private normalizedVariant(label: string | null | undefined): string {
+    const value = label?.trim() || '';
+    return !value || ['mặc định', 'default', '-', '—'].includes(value.toLowerCase())
+      ? '—' : value;
+  }
+  formatVariantSku(variant: string | null | undefined, sku: string | null | undefined): string {
+    const normalized = this.normalizedVariant(variant);
+    return `${normalized === '—' ? '-' : normalized} | ${sku?.trim() || '-'}`;
+  }
   productLabel(item: StockItem): string {
     return item.variant === '—' ? item.name : `${item.name} · ${item.variant}`;
   }
   inventoryItemLabel(item: InventoryItemDto): string {
     const product = this.catalogBySku().get(item.sku.trim().toLowerCase());
-    return product ? `${product.name}${product.variantCount > 1 ? ' · ' + product.label : ''}` : item.name;
+    if (!product) return item.name;
+    const variant = product.hasVariant ? this.normalizedVariant(product.label) : '—';
+    return variant === '—' ? product.name : `${product.name} · ${variant}`;
   }
   stockStatus(item: StockItem): string {
     if (item.quantity === 0) return 'Hết hàng';
@@ -327,9 +343,8 @@ export class AdminInventoryPageComponent implements OnInit {
           name: this.catalogBySku().get(product.sku.toLowerCase())?.name ?? product.name,
           sku: product.sku,
           variant: (() => {
-            const match = this.catalogBySku().get(product.sku.toLowerCase());
-            return match && match.variantCount > 1 && match.label.toLowerCase() !== 'mặc định'
-              ? match.label : '—';
+            const match = this.catalogBySku().get(product.sku.trim().toLowerCase());
+            return match?.hasVariant ? this.normalizedVariant(match.label) : '—';
           })(),
           kind: this.catalogBySku().get(product.sku.toLowerCase())?.usage ??
             (product.kind === 'PRODUCT' ? 'Hàng bán' as const : 'Vật tư dịch vụ' as const),
