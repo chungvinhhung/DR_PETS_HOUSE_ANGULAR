@@ -57,6 +57,7 @@ export class AdminInventoryPageComponent {
   readonly threshold = signal<number | null>(null);
   readonly destination = signal('');
   readonly receiptBranch = signal('');
+  readonly receiptSku = signal('');
   readonly note = signal('');
   readonly branches = ['Chi nhánh Quận 1', 'Chi nhánh Quận 3'];
   readonly pageSize = 7;
@@ -119,12 +120,14 @@ export class AdminInventoryPageComponent {
     this.modal.set(kind);
     this.quantity.set(null);
     this.receiptBranch.set(selected?.branch ?? this.branches[0]);
+    this.receiptSku.set(selected?.sku ?? '');
     this.threshold.set(selected?.threshold ?? null);
     this.destination.set('');
     this.note.set('');
   }
   closeDialog(): void {this.modal.set(null);}
   selectProduct(sku: string): void {
+    this.receiptSku.set(sku);
     const selected = this.stock().find(item => item.sku === sku && item.branch === this.receiptBranch())
       ?? this.stock().find(item => item.sku === sku);
     if (selected) {
@@ -144,6 +147,7 @@ export class AdminInventoryPageComponent {
   setThreshold(value: string): void {this.threshold.set(value === '' ? null : Number(value));}
   valid(): string | null {
     if (!this.activeItem()) return 'Vui lòng chọn sản phẩm.';
+    if (this.modal() === 'receipt' && this.receiptSku() !== this.activeItem()?.sku) return 'Vui lòng chọn mã sản phẩm có trong danh sách.';
     const validThreshold = () => Number.isInteger(this.threshold() ?? NaN) && (this.threshold() ?? -1) >= 0;
     if (this.modal() === 'threshold') {
       if (!validThreshold()) return 'Vui lòng nhập ngưỡng cảnh báo hợp lệ.';
