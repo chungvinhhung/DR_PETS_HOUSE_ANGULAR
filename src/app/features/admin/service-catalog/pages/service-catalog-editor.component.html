@@ -375,7 +375,7 @@
       <section class="service-editor__card" aria-labelledby="service-branches-title">
         <div class="service-editor__branch-section-heading">
           <h2 id="service-branches-title">Áp dụng tại chi nhánh</h2>
-          @if (isNew) {
+          @if (mayEdit) {
             <button type="button" class="service-editor__btn service-editor__btn--secondary"
               [disabled]="saving()" (click)="openBranchConfiguration()">
               Chọn chi nhánh để cấu hình
