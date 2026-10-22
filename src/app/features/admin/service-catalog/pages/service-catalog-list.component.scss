@@ -562,3 +562,77 @@ app-service-catalog-list {
   color: #475569;
   white-space: nowrap;
 }
+
+
+/*
+ * Admin table design parity — Product List is the reference:
+ * 12px content, 44px header, 76px rows, 16px horizontal cell insets,
+ * #f8fafc heading surface, #e2e8f0 dividers, 12px corner radius.
+ * Keep the service action-menu's visible overflow on desktop.
+ */
+.service-catalog__table-panel {
+  border-color: #e2e8f0;
+  border-radius: 12px;
+  overflow: visible;
+}
+.service-catalog__table {
+  min-width: 1034px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  color: #243045;
+  font-size: 12px;
+}
+.service-catalog__table thead th {
+  height: 44px;
+  box-sizing: border-box;
+  padding: 0 16px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #243045;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  vertical-align: middle;
+  text-align: left;
+}
+.service-catalog__table tbody td {
+  height: 76px;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  border-top: 0;
+  border-bottom: 1px solid #e2e8f0;
+  color: #243045;
+  font-size: 12px;
+  line-height: 1.5;
+  vertical-align: middle;
+}
+.service-catalog__table tbody tr:last-child td { border-bottom: 0; }
+.service-catalog__table tbody tr:hover td { background: #fbfdff; }
+/* All-branches mode retains its own eight-column width split above. */
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(1) { width: 7%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(2) { width: 17%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(3) { width: 12%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(4) { width: 11%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(5) { width: 9%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(6) { width: 10%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(7) { width: 16%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(8) { width: 10%; }
+.service-catalog__table:not(.service-catalog__table--all-branches) th:nth-child(9) { width: 8%; }
+/* Align the entire activation and simultaneous-capacity columns. */
+.service-catalog__table thead th.service-catalog__activation-col,
+.service-catalog__table tbody td.service-catalog__activation-cell,
+.service-catalog__table thead th.service-catalog__capacity-col,
+.service-catalog__table tbody td.service-catalog__capacity-cell,
+.service-catalog__table thead th.service-catalog__actions-col,
+.service-catalog__table tbody td.service-catalog__actions-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+.service-catalog__table .service-catalog__capacity { font-size: 12px; }
+.service-catalog__pagination {
+  min-height: 60px;
+  padding: 8px 12px;
+  border-top-color: #e2e8f0;
+  font-size: 12px;
+}
+.service-catalog__pagination p { font-size: 12px; }
