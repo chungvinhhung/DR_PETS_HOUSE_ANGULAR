@@ -53,6 +53,7 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
   @Output() readonly previewSaved = new EventEmitter<BranchServiceConfigPreview>();
   @Input() initialBlockedWindows: readonly BlockedWindow[] | null = null;
   @Input() saving = false;
+  @Input() branchActive = true;
   @ViewChild('dialog') private dialogRef?: ElementRef<HTMLElement>;
 
   readonly selectedBranchId = signal('');
@@ -80,7 +81,7 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
   }
 
   get canEnable(): boolean {
-    return this.isServiceActive && this.capacity() > 0;
+    return this.isServiceActive && this.branchActive && this.capacity() > 0;
   }
 
   ngOnInit(): void {
@@ -130,7 +131,7 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
   }
 
   toggleEnabled(): void {
-    if (!this.canEnable) return;
+    if (!this.enabled() && !this.canEnable) return;
     this.enabled.update((old) => !old);
     this.markChanged();
   }
@@ -249,10 +250,10 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
       errors.push('Không tìm thấy chi nhánh hợp lệ.');
     }
     if (!Number.isInteger(this.capacity()) || this.capacity() < 1) {
-      errors.push('BE yêu cầu sức chứa là số nguyên lớn hơn hoặc bằng 1.');
+      errors.push('Sức chứa đồng thời phải là số nguyên từ 1 trở lên.');
     }
     if (this.enabled() && !this.canEnable) {
-      errors.push('Không thể bật khi capacity bằng 0 hoặc dịch vụ tạm ngưng.');
+      errors.push('Không thể bật dịch vụ khi chi nhánh ngừng hoạt động, dịch vụ tạm ngưng hoặc sức chứa bằng 0.');
     }
     if (this.blockStart() || this.blockEnd() || this.blockReason()) {
       errors.push('Bạn còn khoảng tạm khóa đang nhập dở. Hãy thêm hoặc xóa dữ liệu vừa nhập.');
