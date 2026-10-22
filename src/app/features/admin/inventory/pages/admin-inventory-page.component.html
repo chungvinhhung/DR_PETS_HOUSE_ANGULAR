@@ -48,12 +48,12 @@
             <col style="width:10%"/><col style="width:13.5%"/><col style="width:14.5%"/><col style="width:7%"/>
           </colgroup>
           <thead><tr>
-          <th>Sản phẩm</th><th>Biến thể / SKU</th><th>Loại</th><th>Chi nhánh</th><th>Tồn hiện tại</th><th>Ngưỡng cảnh báo</th><th>Trạng thái</th><th class="center">Thao tác</th>
+          <th>Tên sản phẩm</th><th>SKU / Biến thể</th><th>Loại</th><th>Chi nhánh</th><th>Tồn hiện tại</th><th>Ngưỡng cảnh báo</th><th>Trạng thái</th><th class="center">Thao tác</th>
         </tr></thead><tbody>
           @for (item of currentRows(); track item.id) {
             <tr>
               <td class="product">{{item.name}}</td>
-              <td class="sku-inline">{{item.variant}} <span aria-hidden="true">|</span> {{item.sku}}</td>
+              <td class="sku-inline" [title]="item.variant === '—' ? item.sku : item.variant + ' | ' + item.sku">@if (item.variant !== '—') {<span>{{item.variant}} <span aria-hidden="true">|</span> </span>}{{item.sku}}</td>
               <td>{{item.kind}}</td><td [title]="item.branch">{{ item.branch === 'Chi nhánh Quận 1' ? 'Q1' : item.branch === 'Chi nhánh Quận 3' ? 'Q3' : item.branch }}</td>
               <td class="number">{{item.quantity}}</td><td class="number">{{item.threshold === null ? 'Chưa cài' : item.threshold}}</td>
               <td><span class="stock-badge" [class.ok]="stockStatus(item)==='Đủ hàng'" [class.low]="stockStatus(item)==='Sắp hết hàng'" [class.out]="stockStatus(item)==='Hết hàng'" [class.unset]="stockStatus(item)==='Chưa cài ngưỡng'">{{stockStatus(item)}}</span></td>
@@ -120,7 +120,7 @@
               </span>
               <datalist id="inventory-sku-options">
                 @for (product of productOptions(); track product.sku) {
-                  <option [value]="product.sku">{{product.name}} · {{product.unit}}</option>
+                  <option [value]="product.sku">{{inventoryItemLabel(product)}}</option>
                 }
               </datalist>
             </label>
