@@ -39,7 +39,7 @@
     @if (!isServiceActive) {
       <p class="branch-config__hint" role="status">Dịch vụ đang tạm ngưng toàn hệ thống. Không thể bật tại chi nhánh.</p>
     } @else if (capacity() === 0) {
-      <p class="branch-config__hint" role="status">Capacity bằng 0 nên không thể bật dịch vụ tại chi nhánh.</p>
+      <p class="branch-config__hint" role="status">Vui lòng đặt sức chứa ít nhất là 1 để bật dịch vụ.</p>
     }
 
     <section class="branch-config__blocked" aria-labelledby="branch-blocked-title">
@@ -48,9 +48,10 @@
         <button type="button" class="branch-config__button branch-config__button--outline"
           (click)="startAddingBlockedWindow()">+ Thêm khoảng tạm khóa</button>
       </div>
+      <p class="branch-config__demo-note">Chức năng lưu khoảng tạm khóa hiện chưa khả dụng.</p>
 
       @if (blockedWindows().length) {
-        <ul class="branch-config__blocked-list" aria-label="Khoảng tạm khóa trong bản xem trước">
+        <ul class="branch-config__blocked-list" aria-label="Danh sách khoảng tạm khóa">
           @for (window of blockedWindows(); track window.id) {
             <li>
               <div class="branch-config__blocked-info">
@@ -121,6 +122,5 @@
         <button type="button" class="branch-config__button branch-config__button--primary" [disabled]="saving" (click)="validatePreview()">{{ saving ? 'Đang lưu...' : 'Lưu cấu hình' }}</button>
       </footer>
     }
-    <p class="branch-config__demo-note">Bật/tắt dịch vụ và sức chứa sẽ được lưu lên Backend. BE chưa hỗ trợ tạm khóa theo ngày giờ; nếu thêm khoảng tạm khóa, hệ thống sẽ từ chối lưu và thông báo lý do.</p>
   </section>
 </div>
