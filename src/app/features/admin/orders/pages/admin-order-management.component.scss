@@ -1,0 +1,123 @@
+:host { display:block; min-width:0; }
+.order-admin {
+  --ink:#1d2a42;--soft:#60748d;--line:#dce5f0;--brand:#0d47a1;
+  box-sizing:border-box;width:100%;min-width:0;padding:32px;
+  font:13px/1.5 Roboto,Arial,sans-serif;color:var(--ink);background:#fff;
+}
+.order-admin * {box-sizing:border-box}
+.order-admin button,.order-admin input,.order-admin select,.order-admin textarea {font:inherit}
+.order-admin button {cursor:pointer}
+.order-admin button:disabled {cursor:not-allowed;opacity:.52}
+.order-admin a {text-decoration:none}
+.order-admin :is(button,a,input,select,textarea):focus-visible {outline:2px solid #367dcd;outline-offset:2px}
+.order-admin__crumb {display:flex;align-items:center;gap:12px;color:var(--soft);margin:0 0 22px;font-size:13px}
+.order-admin__crumb a {color:var(--soft)}
+.order-admin__heading {display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:40px;margin-bottom:22px}
+.order-admin__heading h1 {font-size:28px;line-height:1.3;margin:0;color:var(--ink);font-weight:700}
+.order-admin__heading-actions {display:flex;gap:10px;flex-wrap:wrap}
+.order-admin__btn {display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:8px;border:1px solid var(--brand);white-space:nowrap;font-weight:500}
+.order-admin__btn--outline {color:var(--brand);background:#fff}
+.order-admin__btn--primary {color:#fff;background:var(--brand)}
+.order-admin__btn--danger {color:#fff;background:#b72b36;border-color:#b72b36}
+.order-admin__btn--primary:not(:disabled):hover {background:#093875}
+.order-admin__filters {display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px;margin-bottom:20px;border:1px solid var(--line);border-radius:12px;min-height:76px}
+.order-admin__search {display:flex;align-items:center;gap:10px;width:430px;min-width:430px;height:44px;border:1px solid var(--line);border-radius:8px;padding:0 14px;color:#60748d}
+.order-admin__search input {border:0;outline:0;min-width:0;flex:1;color:var(--ink);width:100%;background:transparent}
+.order-admin__filter-controls {display:flex;flex:1 1 460px;gap:12px;align-items:center;justify-content:flex-end;flex-wrap:wrap;min-width:0}
+.order-admin__filter-controls label {min-width:158px;flex:1 1 158px}
+.order-admin__filter-controls select {width:100%;min-height:44px;padding:0 35px 0 12px;border:1px solid var(--line);border-radius:8px;appearance:none;background:#fff url('/assets/admin-product/expand_more.svg') no-repeat right 10px center;background-size:20px;color:var(--ink)}
+.order-admin__filter-controls button {flex:0 0 auto}
+.order-admin__table-panel,.order-admin__card {background:#fff;border:1px solid var(--line);border-radius:12px}
+.order-admin__table-scroll {overflow-x:auto;border-radius:12px 12px 0 0}
+.order-admin__table {width:100%;min-width:890px;table-layout:fixed;border-collapse:separate;border-spacing:0;text-align:left}
+.order-admin__table thead th {background:#f2f6fa;color:#344c67;padding:13px 16px;font-weight:500;font-size:12px;height:52px;vertical-align:middle;white-space:nowrap}
+.order-admin__table tbody td {padding:15px 16px;height:73px;border-top:1px solid var(--line);font-size:13px;vertical-align:middle;color:#344760;overflow-wrap:anywhere}
+.order-admin__table tbody tr:hover td {background:#f8fbff}
+.order-admin__table td strong {font-weight:600;color:var(--ink)}
+.order-admin__table td small {display:block;color:#60748d;font-size:11px;margin-top:3px}
+.order-admin__table tbody td:first-child {font-weight:500}
+.order-admin__table th:nth-child(1) {width:13%}
+.order-admin__table th:nth-child(2) {width:20%}
+.order-admin__table th:nth-child(3) {width:15%}
+.order-admin__table th:nth-child(4) {width:19%}
+.order-admin__table th:nth-child(5) {width:14%}
+.order-admin__table th:nth-child(6) {width:13%}
+.order-admin__table th:nth-child(7) {width:6%}
+.order-admin__link {color:var(--brand)}
+.order-admin__link:hover {text-decoration:underline}
+.order-admin__action-head {text-align:center}
+.order-admin__icon-link {display:inline-flex;width:32px;height:32px;border-radius:8px;align-items:center;justify-content:center;color:#1f3348}
+.order-admin__icon-link:hover {background:#e9f3ff}
+.order-admin__badge {display:inline-block;border-radius:99px;padding:4px 10px;white-space:nowrap;background:#eef3fb;color:#48658c;font-size:11px;font-weight:500}
+.order-admin__badge[data-status="PENDING"] {background:#fff3de;color:#a1660a}
+.order-admin__badge[data-status="CONFIRMED"],.order-admin__badge[data-status="PROCESSING"] {background:#eaf2ff;color:#1359a4}
+.order-admin__badge[data-status="SHIPPED"] {background:#e8f0ff;color:#284ab0}
+.order-admin__badge[data-status="COMPLETED"] {background:#e3f5e9;color:#237a3e}
+.order-admin__badge[data-status="CANCELLED"] {background:#f4ebeb;color:#aa454a}
+.order-admin__empty {text-align:center !important;padding:48px 16px !important;color:var(--soft) !important}
+.order-admin__empty p {margin:6px 0 16px}
+.order-admin__pagination {display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;min-height:72px;padding:12px 18px;color:#617894;font-size:12px;border-top:1px solid var(--line)}
+.order-admin__pagination > div {display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.order-admin__pagination button {height:40px;width:42px;color:var(--brand);background:white;border:0;font-size:22px}
+.order-admin__pagination strong {min-width:68px;height:40px;padding:10px;text-align:center;background:#eaf6fd;border-inline:1px solid var(--line)}
+.order-admin__data-note {font-size:12px;color:#6b7e92;margin:12px 0}
+.order-admin__feedback {border:1px solid var(--line);border-radius:12px;padding:34px 20px;text-align:center;color:var(--soft)}
+.order-admin__feedback p {margin:0 0 14px}
+.order-admin__card {padding:20px;margin-bottom:16px;min-width:0}
+.order-admin__card h2 {font-size:17px;color:var(--ink);line-height:1.3;margin:0 0 18px;font-weight:700}
+.order-admin__information {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 16px}
+.order-admin__information>div {min-width:0}
+.order-admin__information>div span:first-child:not(.order-admin__badge) {display:block;color:#70839c;font-size:12px;margin-bottom:5px}
+.order-admin__information>div strong {font-weight:500;overflow-wrap:anywhere}
+.order-admin__information--wide {grid-column:1/-1}
+.order-admin__progress {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.order-admin__progress-step {min-width:0;color:#90a0b5}
+.order-admin__progress-title {display:flex;align-items:center;gap:9px;font-size:13px;white-space:nowrap}
+.order-admin__dot {height:12px;width:12px;display:inline-block;border-radius:50%;background:#cbd5e1;flex:none}
+.order-admin__progress-line {height:4px;background:#e5eef8;margin:9px 0 8px;border-radius:4px}
+.order-admin__progress-step--done {color:#21658f}
+.order-admin__progress-step--done .order-admin__dot,.order-admin__progress-step--done .order-admin__progress-line {background:#3a9662}
+.order-admin__progress-step--cancelled {color:#a4aaba}
+.order-admin__progress-step small {display:block;font-size:11px;color:#7c90a8}
+.order-admin__number {text-align:right !important;white-space:nowrap}
+.order-admin__item-name {font-weight:600}
+.order-admin__grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.order-admin__totals {margin:0}
+.order-admin__totals div {display:flex;align-items:start;justify-content:space-between;gap:16px;margin-bottom:13px}
+.order-admin__totals dt {color:#5d7189}
+.order-admin__totals dd {text-align:right;margin:0;font-weight:500}
+.order-admin__totals .order-admin__grand {border-top:1px solid var(--line);padding-top:12px;font-size:16px;font-weight:700}
+.order-admin__history {padding-left:20px;margin:0}
+.order-admin__history li {padding:0 0 18px 4px}
+.order-admin__history li strong,.order-admin__history li small {display:block}
+.order-admin__history li small,.order-admin__history li p {font-size:12px;color:#73859b;margin:3px 0}
+.order-admin__muted {color:#697f97}
+.order-admin__backdrop {position:fixed;inset:0;z-index:220;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(21,36,56,.52)}
+.order-admin__modal {max-height:92vh;overflow-y:auto;width:min(100%,540px);padding:24px;border-radius:14px;background:white;box-shadow:0 14px 45px #0003}
+.order-admin__modal-head {display:flex;justify-content:space-between;align-items:start;border-bottom:1px solid var(--line);padding-bottom:18px;gap:10px}
+.order-admin__modal-head h2 {font-size:22px;margin:0}
+.order-admin__modal-head p {color:var(--soft);margin:4px 0 0}
+.order-admin__modal>p {margin:18px 0;color:#526880}
+.order-admin__modal-close {border:0;background:none;font-size:27px;color:#61738a;line-height:1;min-width:32px}
+.order-admin__field {display:block;font-weight:500;margin:14px 0}
+.order-admin__field input,.order-admin__field textarea {display:block;width:100%;margin-top:8px;padding:11px 12px;border:1px solid var(--line);border-radius:8px;resize:vertical}
+.order-admin__field span,.order-admin__invalid {color:#b32b3e}
+.order-admin__invalid {font-size:12px}
+.order-admin__modal-actions {display:flex;justify-content:flex-end;gap:12px;border-top:1px solid var(--line);padding-top:18px;margin-top:24px}
+@media (max-width:1120px) {
+  .order-admin__grid {grid-template-columns:1fr}
+  .order-admin__information {grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:800px) {
+  .order-admin {padding:20px 14px}
+  .order-admin__heading {align-items:flex-start;flex-direction:column}
+  .order-admin__heading h1 {font-size:24px}
+  .order-admin__filter-controls {justify-content:stretch;flex:1 1 100%}
+  .order-admin__search {max-width:none}
+  .order-admin__progress {overflow-x:auto;grid-template-columns:repeat(4,minmax(150px,1fr))}
+}
+@media (max-width:490px) {
+  .order-admin__filters {overflow-x:auto}
+  .order-admin__information {grid-template-columns:1fr}
+  .order-admin__modal-actions {flex-wrap:wrap}
+}
