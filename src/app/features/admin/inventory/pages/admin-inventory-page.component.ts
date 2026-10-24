@@ -292,7 +292,7 @@ export class AdminInventoryPageComponent implements OnInit {
       delta: tx.changeQty > 0 ? `+${tx.changeQty}` : String(tx.changeQty),
       after: String(tx.afterQty),
       reference: tx.id.slice(-8).toUpperCase(),
-      actor: '—',
+      actor: tx.actorName || (tx.isSystemActor ? 'Hệ thống' : 'Không rõ người thao tác'),
     };
     });
   }
