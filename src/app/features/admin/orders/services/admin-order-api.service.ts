@@ -47,6 +47,20 @@ export interface OrderListResponse {
   nextCursor?: string | null;
 }
 
+export type ReturnStatus = 'REQUESTED' | 'PROCESSING' | 'RECEIVED' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
+export interface OrderReturnSummary {
+  id: string;
+  orderId: string;
+  status: ReturnStatus;
+  items: { orderItemId: string; productName: string; requestedQty: number; refundAmount: number }[];
+  refundBreakdown: { merchandiseNet: number; shippingRefunded: number; total: number };
+  history?: { status: string; at: string }[];
+}
+export interface OrderReturnListResponse {
+  items: OrderReturnSummary[];
+  nextCursor?: string | null;
+}
+
 export type OrderWriteAction = 'confirm' | 'process' | 'ship' | 'mark-delivered';
 @Injectable({ providedIn: 'root' })
 export class AdminOrderApiService {
@@ -58,6 +72,12 @@ export class AdminOrderApiService {
       params: new HttpParams().set('limit', '100'),
     });
   }
+  listReturns(): Observable<OrderReturnListResponse> {
+    return this.api.get<OrderReturnListResponse>('/order-returns', {
+      params: new HttpParams().set('limit', '100'),
+    });
+  }
+
   get(id: string): Observable<OrderRecord> {
     return this.api.get<OrderRecord>('/orders/' + encodeURIComponent(id));
   }
