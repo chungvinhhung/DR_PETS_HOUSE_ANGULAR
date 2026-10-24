@@ -6,7 +6,7 @@ import { ApiClientService } from '../../../../core/services/api-client.service';
 import { resolveServicePricing } from './service-pricing.utils';
 import {
   CatalogBranch, CatalogListQuery, CatalogListResult, CatalogService,
-  ServiceApiRecord, ServiceWrite,
+  ServiceApiRecord, ServiceWrite, ServiceCreateWrite, ServiceBranchConfigsResponse,
 } from '../models/service-catalog.model';
 
 interface ServiceApiPage {
@@ -82,14 +82,21 @@ export class ServiceCatalogApiService {
     return this.api.get<ServiceApiRecord>('/services/' + encodeURIComponent(id));
   }
 
-  create(body: ServiceWrite, idempotencyKey: string): Observable<ServiceApiRecord> {
+  create(body: ServiceCreateWrite, idempotencyKey: string): Observable<ServiceApiRecord> {
     const headers = new HttpHeaders({ 'Idempotency-Key': idempotencyKey });
-    return this.api.post<ServiceApiRecord, ServiceWrite>('/services', body, { headers });
+    return this.api.post<ServiceApiRecord, ServiceCreateWrite>('/services', body, { headers });
   }
 
   update(id: string, body: Partial<ServiceWrite>): Observable<ServiceApiRecord> {
     return this.api.patch<ServiceApiRecord, Partial<ServiceWrite>>(
       '/services/' + encodeURIComponent(id), body,
+    );
+  }
+
+  /** Confirmed BE v7 returns { serviceId, serviceName, configs }, not a bare array. */
+  getBranchConfigs(serviceId: string): Observable<ServiceBranchConfigsResponse> {
+    return this.api.get<ServiceBranchConfigsResponse>(
+      '/services/' + encodeURIComponent(serviceId) + '/branch-configs',
     );
   }
 
