@@ -1,4 +1,4 @@
-import { HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { catchError, expand, forkJoin, map, Observable, of, reduce, throwError } from 'rxjs';
 
@@ -9,6 +9,19 @@ import { JobRole, StaffPreview, StaffShiftPreview } from '../models/staff-previe
 type Page<T> = T[] | { items: T[]; nextCursor?: string | null; data?: never } |
   { data: T[] | { items: T[]; nextCursor?: string | null } };
 
+/** BE StaffCreate generates credentials once; never put the password in a toast. */
+export interface StaffCreateRequest {
+  fullName: string;
+  email?: string;
+  phone?: string;
+  staffSubRole: 'VETERINARIAN' | 'NURSE' | 'RECEPTIONIST' | 'CARE_STAFF_GROOMER';
+  authorizedBranchIds: string[];
+  homeBranchId?: string;
+}
+export interface CreatedStaffResponse {
+  id: string;
+  credentials?: { username: string; password: string };
+}
 interface UserWire {
   _id?: string;
   id?: string;
@@ -104,6 +117,24 @@ function errorText(error: unknown, resource: string): string {
 export class AdminStaffApiService {
   private readonly api = inject(ApiClientService);
   private readonly session = inject(AuthSessionService);
+  createStaff(data: StaffCreateRequest, key: string): Observable<CreatedStaffResponse> {
+    return this.api.post<CreatedStaffResponse, StaffCreateRequest>(
+      '/staff', data, { headers: new HttpHeaders({ 'Idempotency-Key': key }) },
+    );
+  }
+
+  updateStaffRole(id: string, role: StaffCreateRequest['staffSubRole']): Observable<unknown> {
+    return this.api.patch('/staff/' + encodeURIComponent(id), { staffSubRole: role });
+  }
+
+  setStaffBranches(
+    id: string, authorizedBranchIds: string[], homeBranchId: string,
+  ): Observable<unknown> {
+    return this.api.put('/staff/' + encodeURIComponent(id) + '/branches', {
+      authorizedBranchIds, homeBranchId,
+    });
+  }
+
   readonly staff = signal<readonly StaffPreview[]>([]);
   readonly branches = signal<readonly StaffBranchOption[]>([]);
   readonly shifts = signal<readonly StaffShiftPreview[]>([]);
@@ -183,18 +214,13 @@ export class AdminStaffApiService {
     this.error.set('');
     this.loading.set(true);
     this.loaded.set(false);
-    // The foundation-v6 /staff route does not enforce Manager branch scope.
-    // Do not expose its unscoped records to MANAGER through this UI.
-    if (!this.session.hasAnyRole(['ADMIN'])) {
-      this.staff.set([]);
-      this.loading.set(false);
-      this.error.set('API Staff hiện chưa xác minh phân quyền chi nhánh cho Manager. Cần Backend cập nhật trước khi hiển thị dữ liệu.');
-      return;
-    }
+    // BE v7 /staff enforces MANAGER assigned-branch scoping server-side.
     forkJoin({
       profiles: this.getAll<StaffWire>('/staff'),
       branches: this.listBranches().pipe(catchError(() => of([] as StaffBranchOption[]))),
-      accounts: this.listAccounts().pipe(catchError(() => of([] as UserWire[]))),
+      accounts: this.session.hasAnyRole(['ADMIN'])
+        ? this.listAccounts().pipe(catchError(() => of([] as UserWire[])))
+        : of([] as UserWire[]),
     }).subscribe({
       next: ({ profiles, branches, accounts }) => {
         this.branches.set(branches);
