@@ -119,91 +119,185 @@
         </div>
       }
     } @else {
-      <header class="order-admin__heading">
+      <header class="order-admin__heading order-admin__heading--list">
         <h1>Quản lý đơn hàng</h1>
       </header>
 
-      <div class="order-admin__filters" role="search" aria-label="Tìm kiếm và lọc đơn hàng">
+      <section class="order-admin__kpis" aria-label="Thống kê đơn hàng đã tải">
+        <div class="order-admin__kpi">
+          <span>Tổng đơn hàng</span>
+          <strong>{{ loading() ? '—' : totalLoaded() }}</strong>
+          <small>Tổng số đơn trong dữ liệu đã tải</small>
+        </div>
+        <div class="order-admin__kpi">
+          <span>Chờ xác nhận</span>
+          <strong class="order-admin__kpi-number--blue">{{ loading() ? '—' : awaitingCount() }}</strong>
+          <small>Trong {{ totalLoaded() }} đơn đã tải</small>
+        </div>
+        <div class="order-admin__kpi">
+          <span>Đang giao</span>
+          <strong>{{ loading() ? '—' : shippingCount() }}</strong>
+          <small>Trong {{ totalLoaded() }} đơn đã tải</small>
+        </div>
+      </section>
+
+      <nav class="order-admin__tabs" aria-label="Loại nghiệp vụ bán hàng">
+        <button type="button" [class.order-admin__tabs--active]="activeTab() === 'orders'"
+          [attr.aria-current]="activeTab() === 'orders' ? 'page' : null" (click)="setTab('orders')">
+          Đơn hàng
+        </button>
+        <button type="button" [class.order-admin__tabs--active]="activeTab() === 'returns'"
+          [attr.aria-current]="activeTab() === 'returns' ? 'page' : null" (click)="setTab('returns')">
+          Trả hàng &amp; hoàn tiền
+          @if (returnPendingCount()) { <span class="order-admin__tabs-count">{{ returnPendingCount() }}</span> }
+        </button>
+      </nav>
+
+      <div class="order-admin__filters order-admin__filters--figma" role="search" aria-label="Tìm kiếm và lọc đơn hàng">
         <label class="order-admin__search">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.2 4.2"/></svg>
-          <input #searchBox type="search" placeholder="Tìm mã đơn, khách hàng hoặc số điện thoại..."
-            aria-label="Tìm kiếm đơn hàng" [value]="search()" (input)="setSearch(searchBox.value)">
+          <input #searchBox type="search" [placeholder]="activeTab() === 'orders' ? 'Tìm kiếm mã đơn hoặc tên KH...' : 'Tìm mã yêu cầu hoặc sản phẩm...'"
+            aria-label="Tìm kiếm" [value]="search()" (input)="setSearch(searchBox.value)">
         </label>
         <div class="order-admin__filter-controls">
-          <label><span class="sr-only">Chi nhánh</span>
-            <select #branchField [value]="branchId()" (change)="setBranch(branchField.value)">
-              <option value="ALL">Tất cả chi nhánh</option>
-              @for (branch of branches(); track branch.id) { <option [value]="branch.id">{{ branch.name }}</option> }
-            </select>
-          </label>
-          <label><span class="sr-only">Trạng thái đơn</span>
+          <label><span class="sr-only">Trạng thái</span>
             <select #statusField [value]="status()" (change)="setStatus(statusField.value)">
               <option value="ALL">Tất cả trạng thái</option>
-              <option value="PENDING">Chờ xác nhận</option>
-              <option value="CONFIRMED">Đã xác nhận</option>
-              <option value="PROCESSING">Đang chuẩn bị</option>
-              <option value="SHIPPED">Đang giao</option>
-              <option value="COMPLETED">Đã giao</option>
-              <option value="CANCELLED">Đã hủy</option>
+              @if (activeTab() === 'orders') {
+                <option value="PENDING">Chờ xác nhận</option>
+                <option value="CONFIRMED">Đã xác nhận</option>
+                <option value="PROCESSING">Đang chuẩn bị</option>
+                <option value="SHIPPED">Đang giao</option>
+                <option value="COMPLETED">Đã giao</option>
+                <option value="CANCELLED">Đã hủy</option>
+              } @else {
+                <option value="REQUESTED">Mới yêu cầu</option>
+                <option value="PROCESSING">Đang xử lý</option>
+                <option value="RECEIVED">Đã nhận hàng</option>
+                <option value="APPROVED">Đã duyệt</option>
+                <option value="COMPLETED">Hoàn tất</option>
+                <option value="REJECTED">Đã từ chối</option>
+                <option value="CANCELLED">Đã hủy</option>
+              }
             </select>
           </label>
-          <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="refresh()">Làm mới</button>
+          <label><span class="sr-only">Khoảng thời gian</span>
+            <select #dateField [value]="dateRange()" (change)="setDateRange(dateField.value)">
+              <option value="30">30 ngày qua</option>
+              <option value="7">7 ngày qua</option>
+              <option value="90">90 ngày qua</option>
+              <option value="0">Tất cả thời gian</option>
+            </select>
+          </label>
+          <button class="order-admin__btn order-admin__btn--export" type="button" (click)="exportFile()">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5"/><path d="M4 17v3h16v-3"/></svg>
+            Xuất file
+          </button>
+          <button class="order-admin__btn order-admin__btn--new" type="button" (click)="newOrder()">
+            <span aria-hidden="true">＋</span> Đơn hàng mới
+          </button>
         </div>
       </div>
 
-      <section class="order-admin__table-panel" aria-label="Danh sách đơn hàng">
+      <section class="order-admin__table-panel order-admin__table-panel--figma" [attr.aria-label]="activeTab() === 'orders' ? 'Danh sách đơn hàng' : 'Danh sách trả hàng'">
         <div class="order-admin__table-scroll">
-          <table class="order-admin__table">
-            <thead><tr>
-              <th scope="col">Mã đơn</th>
-              <th scope="col">Khách hàng</th>
-              <th scope="col">Ngày đặt</th>
-              <th scope="col">Chi nhánh</th>
-              <th scope="col">Tổng thanh toán</th>
-              <th scope="col">Trạng thái</th>
-              <th scope="col" class="order-admin__action-head">Thao tác</th>
-            </tr></thead>
-            <tbody>
-              @if (loading()) {
-                <tr><td colspan="7" class="order-admin__empty">Đang tải danh sách đơn hàng...</td></tr>
-              } @else if (error()) {
-                <tr><td colspan="7" class="order-admin__empty" role="alert">
-                  {{ error() }} <button type="button" (click)="refresh()">Thử lại</button>
-                </td></tr>
-              } @else {
-                @for (order of pageRows(); track order.id) {
-                  <tr>
-                    <td><a class="order-admin__link" [routerLink]="['/admin/orders',order.id]">{{ order.code }}</a></td>
-                    <td><strong>{{ customerName(order) }}</strong><small>{{ contact(order) }}</small></td>
-                    <td>{{ when(order.createdAt) }}</td>
-                    <td>{{ branchName(order.fulfillmentBranchId) }}</td>
-                    <td>{{ price(order.pricing.totalAmount) }}</td>
-                    <td><span class="order-admin__badge" [attr.data-status]="order.status">{{ statusLabel(order.status) }}</span></td>
-                    <td class="order-admin__action-head"><a class="order-admin__icon-link" [routerLink]="['/admin/orders',order.id]" [attr.aria-label]="'Xem chi tiết đơn ' + order.code" title="Xem chi tiết">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg>
-                    </a></td>
-                  </tr>
-                } @empty {
-                  <tr><td colspan="7" class="order-admin__empty">
-                    <strong>Không có đơn hàng phù hợp.</strong>
-                    <p>Thử thay đổi từ khóa hoặc bộ lọc.</p>
-                    <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="clearFilters()">Xóa bộ lọc</button>
+          @if (activeTab() === 'orders') {
+            <table class="order-admin__table order-admin__table--figma">
+              <thead><tr>
+                <th scope="col">Mã đơn</th>
+                <th scope="col">Ngày tạo</th>
+                <th scope="col">Giờ tạo</th>
+                <th scope="col">Khách hàng</th>
+                <th scope="col">Tổng tiền</th>
+                <th scope="col">Thanh toán</th>
+                <th scope="col">Trạng thái</th>
+                <th scope="col" class="order-admin__action-head">Thao tác</th>
+              </tr></thead>
+              <tbody>
+                @if (loading()) {
+                  <tr><td colspan="8" class="order-admin__empty" role="status">Đang tải danh sách đơn hàng...</td></tr>
+                } @else if (error()) {
+                  <tr><td colspan="8" class="order-admin__empty" role="alert">{{ error() }}
+                    <button type="button" class="order-admin__btn order-admin__btn--outline" (click)="refresh()">Thử lại</button>
                   </td></tr>
+                } @else {
+                  @for (order of pageRows(); track order.id) {
+                    <tr>
+                      <td><a class="order-admin__link" [routerLink]="['/admin/orders',order.id]">{{ order.code }}</a></td>
+                      <td>{{ datePart(order.createdAt) }}</td>
+                      <td>{{ timePart(order.createdAt) }}</td>
+                      <td class="order-admin__customer">{{ customerName(order) }}</td>
+                      <td>{{ price(order.pricing.totalAmount) }}</td>
+                      <td>{{ paymentLabel(order) === 'Thanh toán khi nhận hàng (COD)' ? 'COD' : paymentStatus(order) }}</td>
+                      <td><span class="order-admin__badge" [attr.data-status]="order.status">{{ statusLabel(order.status) }}</span></td>
+                      <td class="order-admin__action-head">
+                        <a class="order-admin__icon-link" [routerLink]="['/admin/orders',order.id]"
+                          [attr.aria-label]="'Xem chi tiết đơn ' + order.code" title="Xem chi tiết">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </a>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="8" class="order-admin__empty">
+                      <strong>{{ totalLoaded() ? 'Không có đơn hàng phù hợp.' : 'Chưa có đơn hàng nào.' }}</strong>
+                      <p>{{ totalLoaded() ? 'Thử thay đổi từ khóa hoặc bộ lọc.' : 'Hệ thống chưa trả dữ liệu đơn hàng.' }}</p>
+                      @if (totalLoaded()) { <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="clearFilters()">Xóa bộ lọc</button> }
+                    </td></tr>
+                  }
                 }
-              }
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          } @else {
+            <table class="order-admin__table order-admin__table--returns">
+              <thead><tr>
+                <th scope="col">Mã yêu cầu</th><th scope="col">Ngày tạo</th>
+                <th scope="col">Đơn hàng</th><th scope="col">Sản phẩm trả</th>
+                <th scope="col">Tiền dự kiến hoàn</th><th scope="col">Trạng thái</th>
+                <th scope="col">Thao tác</th>
+              </tr></thead>
+              <tbody>
+                @if (returnsLoading()) {
+                  <tr><td colspan="7" class="order-admin__empty" role="status">Đang tải yêu cầu trả hàng...</td></tr>
+                } @else if (returnsError()) {
+                  <tr><td colspan="7" class="order-admin__empty" role="alert">{{ returnsError() }}
+                    <button type="button" class="order-admin__btn order-admin__btn--outline" (click)="refresh()">Thử lại</button>
+                  </td></tr>
+                } @else {
+                  @for (ret of returnPageRows(); track ret.id) {
+                    <tr>
+                      <td>{{ ret.id.slice(-8) }}</td><td>{{ datePart(ret.history?.[0]?.at) }}</td>
+                      <td>{{ ret.orderId.slice(-8) }}</td>
+                      <td>{{ ret.items[0]?.productName || '—' }} @if (ret.items.length > 1) { (+{{ ret.items.length - 1 }}) }</td>
+                      <td>{{ price(ret.refundBreakdown.total) }}</td>
+                      <td><span class="order-admin__badge" [attr.data-status]="ret.status">{{ returnStatusLabel(ret.status) }}</span></td>
+                      <td class="order-admin__action-head">
+                        <a [routerLink]="['/admin/orders',ret.orderId]" class="order-admin__icon-link"
+                          [attr.aria-label]="'Xem đơn gốc của yêu cầu ' + ret.id" title="Xem đơn hàng gốc">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </a>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="7" class="order-admin__empty">
+                      <strong>Không có yêu cầu trả hàng phù hợp.</strong>
+                      <p>Hãy thử thay đổi bộ lọc hoặc tìm kiếm.</p>
+                    </td></tr>
+                  }
+                }
+              </tbody>
+            </table>
+          }
         </div>
         <footer class="order-admin__pagination">
-          <span>Hiển thị {{ pageRows().length }} trên {{ rows().length }} đơn hàng đã tải</span>
+          <span>Đang hiển thị {{ activeTab() === 'orders' ? pageRows().length : returnPageRows().length }} trên {{ activeRowCount() }} bản ghi đã tải</span>
           <div>
             <button type="button" [disabled]="page() <= 1" (click)="changePage(page()-1)" aria-label="Trang trước">‹</button>
-            <strong aria-label="Trang hiện tại">{{ page() }} / {{ totalPages() }}</strong>
+            <strong aria-label="Trang hiện tại">{{ page() }}</strong>
             <button type="button" [disabled]="page() >= totalPages()" (click)="changePage(page()+1)" aria-label="Trang sau">›</button>
           </div>
         </footer>
       </section>
-      <p class="order-admin__data-note">Danh sách hiển thị tối đa 100 đơn hàng mới nhất từ hệ thống. Các bộ lọc hiện áp dụng trên những đơn đã tải.</p>
+      <p class="order-admin__data-note">Dữ liệu lấy trực tiếp từ BE; API hiện trả tối đa 100 bản ghi mới nhất. KPI, bộ lọc và file xuất chỉ tính trên dữ liệu đã tải, không đại diện toàn hệ thống.</p>
     }
 
     @if (dialog(); as action) {
