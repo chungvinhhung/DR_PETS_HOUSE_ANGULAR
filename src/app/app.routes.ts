@@ -112,6 +112,20 @@ export const routes: Routes = [
       ).then((component) => component.ServiceCatalogListComponent),
   },
   {
+    path: 'admin/orders/:id',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+    loadComponent: () => import('./features/admin/orders/pages/admin-order-management.component')
+      .then(component => component.AdminOrderManagementComponent),
+  },
+  {
+    path: 'admin/orders',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+    loadComponent: () => import('./features/admin/orders/pages/admin-order-management.component')
+      .then(component => component.AdminOrderManagementComponent),
+  },
+  {
     path: 'admin',
     pathMatch: 'full',
     canActivate: [adminLoginEntryGuard],
@@ -195,13 +209,6 @@ export const routes: Routes = [
           import(
             './features/admin/pages/dashboard/admin-dashboard-page.component'
           ).then((component) => component.AdminDashboardPageComponent),
-      },
-      {
-        path: 'orders',
-        loadComponent: () =>
-          import('./features/admin/pages/orders/admin-orders-page.component').then(
-            (component) => component.AdminOrdersPageComponent,
-          ),
       },
       {
         path: 'appointments',
