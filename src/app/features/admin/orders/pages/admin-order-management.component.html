@@ -1,0 +1,247 @@
+<app-admin-catalog-shell activeItem="orders">
+  <main class="order-admin">
+    @if (isDetail()) {
+      <nav class="order-admin__crumb" aria-label="Đường dẫn">
+        <a routerLink="/admin/orders">Đơn hàng</a><span aria-hidden="true">›</span>
+        <span>Chi tiết đơn hàng</span>
+      </nav>
+      <header class="order-admin__heading">
+        <h1>Chi tiết đơn hàng {{ selected()?.code || '' }}</h1>
+        @if (selected(); as order) {
+          <div class="order-admin__heading-actions">
+            @if (canCancel()) {
+              <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="openAction('cancel')">Hủy đơn</button>
+            }
+            @if (availableAction(); as action) {
+              <button class="order-admin__btn order-admin__btn--primary" type="button" (click)="openAction(action)">{{ actionLabel(action) }}</button>
+            }
+          </div>
+        }
+      </header>
+
+      @if (loading()) {
+        <div class="order-admin__feedback" role="status">Đang tải chi tiết đơn hàng...</div>
+      } @else if (error()) {
+        <div class="order-admin__feedback" role="alert"><p>{{ error() }}</p>
+          <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="refresh()">Thử lại</button>
+        </div>
+      } @else if (selected(); as order) {
+        <section class="order-admin__card" aria-label="Thông tin đơn hàng">
+          <h2>Thông tin đơn hàng</h2>
+          <div class="order-admin__information">
+            <div><span>Khách hàng</span><strong>{{ customerName(order) }}</strong></div>
+            <div><span>Liên hệ</span><strong>{{ contact(order) }}</strong></div>
+            <div><span>Thanh toán</span><strong>{{ paymentStatus(order) }}</strong></div>
+            <div><span>Chi nhánh giao</span><strong>{{ branchName(order.fulfillmentBranchId) }}</strong></div>
+            <div><span>Trạng thái đơn hàng</span><strong><span class="order-admin__badge" [attr.data-status]="order.status">{{ statusLabel(order.status) }}</span></strong></div>
+            <div><span>Ngày giao thành công</span><strong>{{ when(order.deliveredAt) }}</strong></div>
+            <div class="order-admin__information--wide"><span>Địa chỉ giao hàng</span><strong>{{ shipping(order) }}</strong></div>
+          </div>
+        </section>
+
+        <section class="order-admin__card" aria-label="Tiến trình xử lý đơn hàng">
+          <h2>Tiến trình xử lý đơn hàng</h2>
+          <div class="order-admin__progress">
+            @for (step of milestones; track step; let i = $index) {
+              <div class="order-admin__progress-step"
+                [class.order-admin__progress-step--done]="milestones.indexOf(order.status) >= i"
+                [class.order-admin__progress-step--cancelled]="order.status === 'CANCELLED'">
+                <div class="order-admin__progress-title"><span class="order-admin__dot"></span>{{ statusLabel(step) }}</div>
+                <div class="order-admin__progress-line"></div>
+                <small>
+                  @if (step === 'COMPLETED' && order.deliveredAt) { {{ when(order.deliveredAt) }} }
+                  @else if (order.status === 'CANCELLED') { Đã hủy }
+                  @else { {{ milestones.indexOf(order.status) >= i ? 'Đã chuyển bước' : 'Chưa bắt đầu' }} }
+                </small>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="order-admin__card" aria-label="Sản phẩm trong đơn">
+          <h2>Sản phẩm trong đơn</h2>
+          <div class="order-admin__table-scroll">
+            <table class="order-admin__table">
+              <thead><tr>
+                <th scope="col">Sản phẩm</th>
+                <th scope="col">SKU</th>
+                <th scope="col" class="order-admin__number">SL</th>
+                <th scope="col" class="order-admin__number">Đơn giá tại đặt</th>
+                <th scope="col" class="order-admin__number">Giảm</th>
+                <th scope="col" class="order-admin__number">Thành tiền</th>
+              </tr></thead>
+              <tbody>
+                @for (item of order.items; track item.orderItemId) {
+                  <tr>
+                    <td class="order-admin__item-name">{{ item.name }}</td>
+                    <td>{{ item.skuSnapshot || '—' }}</td>
+                    <td class="order-admin__number">{{ item.quantity }}</td>
+                    <td class="order-admin__number">{{ price(item.unitPrice) }}</td>
+                    <td class="order-admin__number">{{ price(item.allocatedDiscount) }}</td>
+                    <td class="order-admin__number">{{ price(item.lineNet) }}</td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="6" class="order-admin__empty">Không có sản phẩm trong đơn.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <div class="order-admin__grid">
+          <section class="order-admin__card" aria-label="Thanh toán">
+            <h2>Thanh toán</h2>
+            <dl class="order-admin__totals">
+              <div><dt>Tạm tính</dt><dd>{{ price(order.pricing.merchandiseSubtotal) }}</dd></div>
+              <div><dt>Giảm giá @if (order.voucherCode) { ({{ order.voucherCode }}) }</dt><dd>−{{ price(order.pricing.voucherDiscount) }}</dd></div>
+              <div><dt>Phí giao hàng</dt><dd>{{ price(order.pricing.shippingFee) }}</dd></div>
+              <div class="order-admin__grand"><dt>Tổng thanh toán</dt><dd>{{ price(order.pricing.totalAmount) }}</dd></div>
+              <div><dt>Phương thức</dt><dd>{{ paymentLabel(order) }}</dd></div>
+              <div><dt>Trạng thái</dt><dd>{{ paymentStatus(order) }}</dd></div>
+            </dl>
+          </section>
+          <section class="order-admin__card" aria-label="Lịch sử xử lý">
+            <h2>Lịch sử xử lý</h2>
+            @if (order.statusHistory?.length) {
+              <ol class="order-admin__history">
+                @for (event of order.statusHistory; track $index) {
+                  <li><strong>{{ statusLabel(event.status) }}</strong><small>{{ when(event.at) }}</small>
+                    @if (event.note) { <p>{{ event.note }}</p> }
+                  </li>
+                }
+              </ol>
+            } @else {
+              <div class="order-admin__muted">
+                Hệ thống chưa cung cấp lịch sử xử lý chi tiết. Trạng thái hiện tại: <strong>{{ statusLabel(order.status) }}</strong>.
+              </div>
+            }
+          </section>
+        </div>
+      }
+    } @else {
+      <header class="order-admin__heading">
+        <h1>Quản lý đơn hàng</h1>
+      </header>
+
+      <div class="order-admin__filters" role="search" aria-label="Tìm kiếm và lọc đơn hàng">
+        <label class="order-admin__search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.2 4.2"/></svg>
+          <input #searchBox type="search" placeholder="Tìm mã đơn, khách hàng hoặc số điện thoại..."
+            aria-label="Tìm kiếm đơn hàng" [value]="search()" (input)="setSearch(searchBox.value)">
+        </label>
+        <div class="order-admin__filter-controls">
+          <label><span class="sr-only">Chi nhánh</span>
+            <select #branchField [value]="branchId()" (change)="setBranch(branchField.value)">
+              <option value="ALL">Tất cả chi nhánh</option>
+              @for (branch of branches(); track branch.id) { <option [value]="branch.id">{{ branch.name }}</option> }
+            </select>
+          </label>
+          <label><span class="sr-only">Trạng thái đơn</span>
+            <select #statusField [value]="status()" (change)="setStatus(statusField.value)">
+              <option value="ALL">Tất cả trạng thái</option>
+              <option value="PENDING">Chờ xác nhận</option>
+              <option value="CONFIRMED">Đã xác nhận</option>
+              <option value="PROCESSING">Đang chuẩn bị</option>
+              <option value="SHIPPED">Đang giao</option>
+              <option value="COMPLETED">Đã giao</option>
+              <option value="CANCELLED">Đã hủy</option>
+            </select>
+          </label>
+          <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="refresh()">Làm mới</button>
+        </div>
+      </div>
+
+      <section class="order-admin__table-panel" aria-label="Danh sách đơn hàng">
+        <div class="order-admin__table-scroll">
+          <table class="order-admin__table">
+            <thead><tr>
+              <th scope="col">Mã đơn</th>
+              <th scope="col">Khách hàng</th>
+              <th scope="col">Ngày đặt</th>
+              <th scope="col">Chi nhánh</th>
+              <th scope="col">Tổng thanh toán</th>
+              <th scope="col">Trạng thái</th>
+              <th scope="col" class="order-admin__action-head">Thao tác</th>
+            </tr></thead>
+            <tbody>
+              @if (loading()) {
+                <tr><td colspan="7" class="order-admin__empty">Đang tải danh sách đơn hàng...</td></tr>
+              } @else if (error()) {
+                <tr><td colspan="7" class="order-admin__empty" role="alert">
+                  {{ error() }} <button type="button" (click)="refresh()">Thử lại</button>
+                </td></tr>
+              } @else {
+                @for (order of pageRows(); track order.id) {
+                  <tr>
+                    <td><a class="order-admin__link" [routerLink]="['/admin/orders',order.id]">{{ order.code }}</a></td>
+                    <td><strong>{{ customerName(order) }}</strong><small>{{ contact(order) }}</small></td>
+                    <td>{{ when(order.createdAt) }}</td>
+                    <td>{{ branchName(order.fulfillmentBranchId) }}</td>
+                    <td>{{ price(order.pricing.totalAmount) }}</td>
+                    <td><span class="order-admin__badge" [attr.data-status]="order.status">{{ statusLabel(order.status) }}</span></td>
+                    <td class="order-admin__action-head"><a class="order-admin__icon-link" [routerLink]="['/admin/orders',order.id]" [attr.aria-label]="'Xem chi tiết đơn ' + order.code" title="Xem chi tiết">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </a></td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="7" class="order-admin__empty">
+                    <strong>Không có đơn hàng phù hợp.</strong>
+                    <p>Thử thay đổi từ khóa hoặc bộ lọc.</p>
+                    <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="clearFilters()">Xóa bộ lọc</button>
+                  </td></tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+        <footer class="order-admin__pagination">
+          <span>Hiển thị {{ pageRows().length }} trên {{ rows().length }} đơn hàng đã tải</span>
+          <div>
+            <button type="button" [disabled]="page() <= 1" (click)="changePage(page()-1)" aria-label="Trang trước">‹</button>
+            <strong aria-label="Trang hiện tại">{{ page() }} / {{ totalPages() }}</strong>
+            <button type="button" [disabled]="page() >= totalPages()" (click)="changePage(page()+1)" aria-label="Trang sau">›</button>
+          </div>
+        </footer>
+      </section>
+      <p class="order-admin__data-note">Danh sách hiển thị tối đa 100 đơn hàng mới nhất từ hệ thống. Các bộ lọc hiện áp dụng trên những đơn đã tải.</p>
+    }
+
+    @if (dialog(); as action) {
+      <div class="order-admin__backdrop" (click)="closeDialog()">
+        <section class="order-admin__modal" role="dialog" aria-modal="true" aria-label="Xác nhận thao tác với đơn hàng" (click)="$event.stopPropagation()">
+          <div class="order-admin__modal-head">
+            <div><h2>{{ action === 'cancel' ? 'Hủy đơn hàng' : 'Cập nhật trạng thái đơn hàng' }}</h2>
+              <p>Đơn hàng {{ selected()?.code }}</p></div>
+            <button class="order-admin__modal-close" type="button" (click)="closeDialog()" [disabled]="dialogBusy()" aria-label="Đóng">×</button>
+          </div>
+          @if (action === 'cancel') {
+            <p>Đơn hàng sẽ bị hủy. Việc hoàn kho và điều chỉnh thanh toán do hệ thống xử lý.</p>
+            <label class="order-admin__field">Lý do hủy <span aria-hidden="true">*</span>
+              <textarea #cancelReason rows="3" maxlength="500" [value]="reason()" (input)="reason.set(cancelReason.value)" placeholder="Nhập lý do hủy đơn hàng..."></textarea>
+            </label>
+            @if (reason().trim().length > 0 && reason().trim().length < 5) {
+              <p class="order-admin__invalid">Vui lòng nhập lý do ít nhất 5 ký tự.</p>
+            }
+          } @else {
+            <p>{{ actionDescription(action) }}</p>
+            @if (action === 'ship') {
+              <label class="order-admin__field">Đơn vị vận chuyển
+                <input #carrierInput type="text" maxlength="120" placeholder="Tên đơn vị vận chuyển" [value]="carrier()" (input)="carrier.set(carrierInput.value)">
+              </label>
+              <label class="order-admin__field">Mã vận đơn
+                <input #trackingInput type="text" maxlength="120" placeholder="Nhập mã vận đơn (nếu có)" [value]="tracking()" (input)="tracking.set(trackingInput.value)">
+              </label>
+            }
+          }
+          <div class="order-admin__modal-actions">
+            <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="closeDialog()" [disabled]="dialogBusy()">Quay lại</button>
+            <button class="order-admin__btn" [class.order-admin__btn--danger]="action === 'cancel'" [class.order-admin__btn--primary]="action !== 'cancel'"
+              type="button" [disabled]="dialogBusy() || (action === 'cancel' && reason().trim().length < 5)" (click)="confirmDialog()">
+              {{ dialogBusy() ? 'Đang xử lý...' : action === 'cancel' ? 'Xác nhận hủy đơn' : 'Xác nhận cập nhật' }}
+            </button>
+          </div>
+        </section>
+      </div>
+    }
+  </main>
+</app-admin-catalog-shell>
