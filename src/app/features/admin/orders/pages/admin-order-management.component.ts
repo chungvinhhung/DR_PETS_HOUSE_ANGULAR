@@ -6,7 +6,7 @@ import { AdminToastService, adminErrorMessage } from '../../../../shared/service
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
 import {
-  AdminOrderApiService, OrderRecord, OrderStatus, OrderWriteAction,
+  AdminOrderApiService, OrderRecord, OrderStatus, OrderWriteAction, OrderReturnSummary, ReturnStatus,
 } from '../services/admin-order-api.service';
 
 type OrderFilter = OrderStatus | 'ALL';
@@ -41,6 +41,16 @@ export class AdminOrderManagementComponent {
   readonly orderId = signal('');
   readonly isDetail = computed(() => Boolean(this.orderId()));
   readonly allOrders = signal<OrderRecord[]>([]);
+  readonly returns = signal<OrderReturnSummary[]>([]);
+  readonly activeTab = signal<'orders' | 'returns'>('orders');
+  readonly dateRange = signal('30');
+  readonly returnsLoading = signal(false);
+  readonly returnsError = signal('');
+  readonly hasLoadedReturns = signal(false);
+  readonly returnPendingCount = computed(() => this.returns().filter(item => item.status === 'REQUESTED').length);
+  readonly totalLoaded = computed(() => this.allOrders().length);
+  readonly awaitingCount = computed(() => this.allOrders().filter(item => item.status === 'PENDING').length);
+  readonly shippingCount = computed(() => this.allOrders().filter(item => item.status === 'SHIPPED').length);
   readonly selected = signal<OrderRecord | null>(null);
   readonly branches = signal<{ id: string; name: string }[]>([]);
   readonly loading = signal(false);
@@ -57,17 +67,37 @@ export class AdminOrderManagementComponent {
   readonly tracking = signal('');
   readonly detailInfo = computed(() => this.selected());
 
+  readonly dateFilteredOrders = computed(() => {
+    const range = Number(this.dateRange());
+    if (!range) return this.allOrders();
+    const cutoff = Date.now() - range * 86400000;
+    return this.allOrders().filter(order => Boolean(order.createdAt) && new Date(order.createdAt!).getTime() >= cutoff);
+  });
   readonly rows = computed(() => {
     const query = this.search().trim().toLocaleLowerCase('vi');
-    return this.allOrders().filter((row) => {
+    return this.dateFilteredOrders().filter((row) => {
       const customer = this.customerName(row).toLocaleLowerCase('vi');
       return (!query || [row.code, customer, row.contactSnapshot?.phone ?? ''].some((v) => v.toLocaleLowerCase('vi').includes(query))) &&
         (this.status() === 'ALL' || row.status === this.status()) &&
         (this.branchId() === 'ALL' || row.fulfillmentBranchId === this.branchId());
     });
   });
-  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.rows().length / this.pageSize)));
+  readonly filteredReturns = computed(() => {
+    const q = this.search().trim().toLocaleLowerCase('vi');
+    const status = this.status();
+    const days = Number(this.dateRange());
+    const cutoff = Date.now() - days * 86400000;
+    return this.returns().filter(row => {
+      const createdAt = row.history?.[0]?.at;
+      return (!q || [row.id, row.orderId, ...row.items.map(item => item.productName)].some(v => v.toLocaleLowerCase('vi').includes(q))) &&
+        (status === 'ALL' || row.status === status) &&
+        (!days || (!!createdAt && new Date(createdAt).getTime() >= cutoff));
+    });
+  });
+  readonly activeRowCount = computed(() => this.activeTab() === 'orders' ? this.rows().length : this.filteredReturns().length);
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.activeRowCount() / this.pageSize)));
   readonly pageRows = computed(() => this.rows().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
+  readonly returnPageRows = computed(() => this.filteredReturns().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
   readonly canManage = computed(() => {
     const user = this.session.user();
     return user?.systemRole === 'ADMIN' || user?.systemRole === 'MANAGER' ||
@@ -99,9 +129,76 @@ export class AdminOrderManagementComponent {
     });
   }
 
+  setTab(tab: 'orders' | 'returns'): void {
+    if (tab === this.activeTab()) return;
+    this.activeTab.set(tab);
+    this.search.set('');
+    this.status.set('ALL');
+    this.dateRange.set('30');
+    this.page.set(1);
+    if (tab === 'returns' && !this.hasLoadedReturns()) this.loadReturns();
+  }
+  setDateRange(value: string): void {
+    if (['0', '7', '30', '90'].includes(value)) { this.dateRange.set(value); this.page.set(1); }
+  }
+  private loadReturns(): void {
+    this.returnsLoading.set(true); this.returnsError.set('');
+    this.api.listReturns().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: page => {
+        this.returns.set(Array.isArray(page.items) ? page.items : []);
+        this.hasLoadedReturns.set(true);
+        this.returnsLoading.set(false);
+      },
+      error: (error: unknown) => {
+        this.returns.set([]);
+        this.returnsError.set(adminErrorMessage(error, 'Không tải được yêu cầu trả hàng.'));
+        this.returnsLoading.set(false);
+      },
+    });
+  }
+  returnStatusLabel(status: ReturnStatus): string {
+    return ({
+      REQUESTED: 'Mới yêu cầu', PROCESSING: 'Đang xử lý', RECEIVED: 'Đã nhận hàng',
+      APPROVED: 'Đã duyệt', REJECTED: 'Đã từ chối', COMPLETED: 'Hoàn tất',
+      CANCELLED: 'Đã hủy',
+    })[status] ?? 'Chưa xác định';
+  }
+  datePart(value?: string | null): string {
+    if (!value) return '—';
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? '—' : new Intl.DateTimeFormat('vi-VN',
+      { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', year: 'numeric' }).format(d);
+  }
+  timePart(value?: string | null): string {
+    if (!value) return '—';
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? '—' : new Intl.DateTimeFormat('vi-VN',
+      { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(d);
+  }
+  exportFile(): void {
+    if (this.activeTab() === 'returns') {
+      this.toast.show('Chức năng xuất file trả hàng sẽ được bổ sung ở Phase 2.', 'info'); return;
+    }
+    const current = this.rows();
+    if (!current.length) { this.toast.show('Không có đơn hàng để xuất file.', 'info'); return; }
+    const cells = [
+      ['Mã đơn','Ngày tạo','Giờ tạo','Khách hàng','Tổng tiền','Thanh toán','Trạng thái'],
+      ...current.map(row => [row.code, this.datePart(row.createdAt), this.timePart(row.createdAt),
+        this.customerName(row), String(row.pricing.totalAmount), this.paymentStatus(row), this.statusLabel(row.status)]),
+    ];
+    const csv = '\uFEFF' + cells.map(line => line.map(value => '"' + String(value).replace(/"/g, '""') + '"').join(',')).join('\r\n');
+    const objectUrl = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = objectUrl; link.download = 'don-hang-da-tai.csv'; link.click();
+    URL.revokeObjectURL(objectUrl);
+    this.toast.show('Đã xuất danh sách đơn hàng đang hiển thị theo bộ lọc.', 'success');
+  }
+  newOrder(): void {
+    this.toast.show('BE hiện chỉ hỗ trợ tạo đơn qua giỏ hàng/checkout. Chưa có chức năng tạo đơn trực tiếp từ Admin.', 'info');
+  }
   setSearch(value: string): void { this.search.set(value); this.page.set(1); }
   setStatus(value: string): void {
-    if (value === 'ALL' || value in STATUS_LABELS) {
+    if (value === 'ALL' || value in STATUS_LABELS || ['REQUESTED','RECEIVED','APPROVED','REJECTED'].includes(value)) {
       this.status.set(value as OrderFilter); this.page.set(1);
     }
   }
@@ -110,9 +207,9 @@ export class AdminOrderManagementComponent {
     if (next >= 1 && next <= this.totalPages()) this.page.set(next);
   }
   clearFilters(): void {
-    this.search.set(''); this.status.set('ALL'); this.branchId.set('ALL'); this.page.set(1);
+    this.search.set(''); this.status.set('ALL'); this.branchId.set('ALL'); this.dateRange.set('30'); this.page.set(1);
   }
-  refresh(): void { if (this.isDetail()) this.loadDetail(); else this.loadOrders(); }
+  refresh(): void { if (this.isDetail()) this.loadDetail(); else if (this.activeTab() === 'returns') this.loadReturns(); else this.loadOrders(); }
 
   private loadOrders(): void {
     this.loading.set(true); this.error.set('');
