@@ -107,6 +107,9 @@ export class AdminOrdersPageComponent implements OnInit {
     this.returnable.set(null); this.quote.set(null);
     this.refund.set(null); this.confirmMockRefund.set(false);
   }
+  returnableQuantity(itemId: string): number {
+    return this.returnable()?.items.find(item => item.orderItemId === itemId)?.returnableQty ?? 0;
+  }
   setQuantity(itemId: string, raw: string): void {
     const requested = raw.trim() ? Number(raw) : 0;
     const max = this.returnable()?.items.find(item => item.orderItemId === itemId)?.returnableQty ?? 0;
@@ -165,7 +168,9 @@ export class AdminOrdersPageComponent implements OnInit {
     ).subscribe({
       next: () => {
         this.toast.show('Đã tiếp nhận yêu cầu trả hàng.', 'success');
-        this.closeModal();
+        this.selectedOrder.set(null);
+        this.returnable.set(null);
+        this.quote.set(null);
         this.tab.set('returns');
         this.load();
       },
