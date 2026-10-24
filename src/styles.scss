@@ -1437,3 +1437,70 @@ app-admin-staff-detail .staff-detail__calendar-button:focus-visible {
   .order-admin__information {grid-template-columns:1fr}
   .order-admin__modal-actions {flex-wrap:wrap}
 }
+
+/* WEB2 Order Management Figma 7544:42404 - scoped only to the Order admin page */
+app-admin-order-management .catalog-header {height:107px}
+app-admin-order-management .catalog-layout {min-height:calc(100vh - 107px)}
+app-admin-order-management .catalog-sidebar {top:107px;height:calc(100dvh - 107px)}
+app-admin-order-management .order-admin {padding:36px 40px 28px;max-width:1480px;margin-inline:auto;background:#fff}
+app-admin-order-management .order-admin__heading--list {margin-bottom:24px}
+app-admin-order-management .order-admin__heading--list h1 {font-size:24px;font-weight:600}
+app-admin-order-management .order-admin__kpis {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0 0 23px}
+app-admin-order-management .order-admin__kpi {display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-width:0;min-height:112px;padding:13px 18px 14px;border:1px solid #e2e8f0;border-radius:9px;background:white}
+app-admin-order-management .order-admin__kpi>span {color:#475569;font-size:12px;font-weight:500}
+app-admin-order-management .order-admin__kpi>strong {color:#202e45;font-size:25px;line-height:33px;font-weight:600}
+app-admin-order-management .order-admin__kpi>strong.order-admin__kpi-number--blue {color:#0d47a1}
+app-admin-order-management .order-admin__kpi>small {color:#64748b;font-size:11px}
+app-admin-order-management .order-admin__tabs {display:flex;align-items:flex-end;height:43px;gap:26px;margin:0 0 17px;border-bottom:1px solid #d9e2ed}
+app-admin-order-management .order-admin__tabs button {display:inline-flex;align-items:center;justify-content:center;gap:7px;height:42px;padding:0 12px;border:0;border-bottom:2px solid transparent;background:transparent;color:#475569;font-size:13px;white-space:nowrap;cursor:pointer}
+app-admin-order-management .order-admin__tabs button.order-admin__tabs--active {color:#0d47a1;border-bottom-color:#0d47a1;font-weight:500}
+app-admin-order-management .order-admin__tabs-count {display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 5px;border-radius:10px;background:#0d47a1;color:white;font-size:11px}
+app-admin-order-management .order-admin__filters--figma {display:flex;flex-wrap:nowrap;align-items:center;gap:12px;margin-bottom:16px;padding:15px 16px;border-radius:9px;min-height:76px}
+app-admin-order-management .order-admin__filters--figma .order-admin__search {flex:1 1 240px;width:auto;min-width:145px;max-width:none;height:40px;padding-inline:12px}
+app-admin-order-management .order-admin__filters--figma .order-admin__search input {font-size:12px;text-overflow:ellipsis}
+app-admin-order-management .order-admin__filters--figma .order-admin__filter-controls {display:flex;flex:0 1 auto;justify-content:flex-end;flex-wrap:nowrap;gap:8px;min-width:0}
+app-admin-order-management .order-admin__filters--figma .order-admin__filter-controls label {min-width:0;flex:0 0 132px}
+app-admin-order-management .order-admin__filters--figma .order-admin__filter-controls label:nth-child(2) {flex-basis:130px}
+app-admin-order-management .order-admin__filters--figma select {min-height:40px;padding:0 26px 0 10px;font-size:12px}
+app-admin-order-management .order-admin__filters--figma .order-admin__btn {display:inline-flex;align-items:center;gap:5px;height:40px;min-height:40px;padding:0 11px;font-size:12px}
+app-admin-order-management .order-admin__btn--export {background:white;color:#0d47a1;border-color:#0d47a1}
+app-admin-order-management .order-admin__btn--new {background:#003178;color:white;border-color:#003178}
+app-admin-order-management .order-admin__btn--new:hover {background:#0d47a1}
+app-admin-order-management .order-admin__table-panel--figma {border-radius:9px;overflow:hidden}
+app-admin-order-management .order-admin__table--figma {min-width:860px}
+app-admin-order-management .order-admin__table--figma thead th {height:44px;padding:10px 12px;color:#111827;background:#f4f6f9;font-size:12px;font-weight:600}
+app-admin-order-management .order-admin__table--figma tbody td {height:76px;padding:12px;font-size:13px;color:#475569}
+app-admin-order-management .order-admin__table--figma th:nth-child(1) {width:13%}
+app-admin-order-management .order-admin__table--figma th:nth-child(2) {width:12%}
+app-admin-order-management .order-admin__table--figma th:nth-child(3) {width:11%}
+app-admin-order-management .order-admin__table--figma th:nth-child(4) {width:17%}
+app-admin-order-management .order-admin__table--figma th:nth-child(5) {width:13%}
+app-admin-order-management .order-admin__table--figma th:nth-child(6) {width:13%}
+app-admin-order-management .order-admin__table--figma th:nth-child(7) {width:13%}
+app-admin-order-management .order-admin__table--figma th:nth-child(8) {width:8%}
+app-admin-order-management .order-admin__customer {font-weight:500}
+app-admin-order-management .order-admin__badge[data-status="REQUESTED"] {color:#985a06;background:#fff4dc}
+app-admin-order-management .order-admin__badge[data-status="RECEIVED"] {color:#145a9e;background:#dceeff}
+app-admin-order-management .order-admin__badge[data-status="APPROVED"] {color:#267349;background:#e1f6e9}
+app-admin-order-management .order-admin__badge[data-status="REJECTED"] {color:#a43c47;background:#f9e1e3}
+app-admin-order-management .order-admin__pagination {height:60px;min-height:60px;padding:8px 12px}
+app-admin-order-management .order-admin__pagination button {height:42px;width:38px}
+app-admin-order-management .order-admin__pagination strong {height:42px;min-width:46px;background:#e5f6fd;color:#0d47a1}
+app-admin-order-management .order-admin__data-note {font-size:11px;margin-top:8px}
+@media(max-width:1350px){
+ app-admin-order-management .order-admin {padding:32px 24px}
+ app-admin-order-management .order-admin__filters--figma {flex-wrap:wrap}
+ app-admin-order-management .order-admin__filters--figma .order-admin__search {flex:1 1 330px;max-width:430px}
+ app-admin-order-management .order-admin__filters--figma .order-admin__filter-controls {flex:1 1 510px;justify-content:flex-end}
+}
+@media(max-width:950px){
+ app-admin-order-management .order-admin__kpis {grid-template-columns:1fr;gap:10px}
+ app-admin-order-management .order-admin__kpi {min-height:95px}
+ app-admin-order-management .order-admin__filters--figma .order-admin__filter-controls {flex-wrap:wrap;justify-content:flex-start}
+}
+@media(max-width:800px){
+ app-admin-order-management .catalog-header {height:72px}
+ app-admin-order-management .catalog-layout {min-height:calc(100vh - 72px)}
+ app-admin-order-management .order-admin {padding:18px 14px}
+ app-admin-order-management .order-admin__tabs {overflow-x:auto}
+}
