@@ -47,12 +47,39 @@ export interface ServiceAvailabilitySlot {
   remaining: number;
   bookedCount?: number;
   totalCount?: number;
+  heldCount?: number;
+  status?: 'AVAILABLE' | 'FULL' | 'BLOCKED';
 }
 export interface ServiceAvailabilityResponse {
   branchId: string;
   serviceIds: readonly string[];
   date: string;
   slots: readonly ServiceAvailabilitySlot[];
+}
+
+export interface ServiceTemporaryBlock {
+  id: string;
+  startAt: string;
+  endAt: string;
+  reason: string;
+  createdAt?: string;
+}
+export interface ServiceTemporaryBlocksResponse {
+  branchId: string;
+  serviceId: string;
+  blockedWindows: ServiceTemporaryBlock[];
+}
+export interface BranchOperationSlotsResponse {
+  branchId: string;
+  date: string;
+  servicesCount: number;
+  servicesAvailability: ServiceAvailabilityResponse[];
+}
+export interface BranchInventorySummary {
+  branchId: string;
+  totalItems: number;
+  lowStockItems: number;
+  outOfStockItems: number;
 }
 
 /** No Figma demo fallback: errors propagate to the page and display retry. */
@@ -108,8 +135,57 @@ export class BranchManagementApiService {
     const params = new HttpParams()
       .set('branchId', branchId)
       .set('serviceIds', serviceId)
-      .set('date', date);
+      .set('date', date)
+      .set('includeFull', 'true');
     return this.api.get<ServiceAvailabilityResponse>('/availability', { params });
+  }
+
+  getServiceOccupancy(
+    branchId: string, serviceId: string, date: string,
+  ): Observable<ServiceAvailabilityResponse> {
+    return this.api.get<ServiceAvailabilityResponse>(
+      '/branches/' + encodeURIComponent(branchId) + '/services/' +
+      encodeURIComponent(serviceId) + '/occupancy',
+      { params: new HttpParams().set('date', date) },
+    );
+  }
+
+  getOperationSlots(branchId: string, date: string): Observable<BranchOperationSlotsResponse> {
+    return this.api.get<BranchOperationSlotsResponse>(
+      '/branches/' + encodeURIComponent(branchId) + '/operation-slots',
+      { params: new HttpParams().set('date', date) },
+    );
+  }
+
+  getInventorySummary(branchId: string): Observable<BranchInventorySummary> {
+    return this.api.get<BranchInventorySummary>(
+      '/branches/' + encodeURIComponent(branchId) + '/inventory-summary',
+    );
+  }
+
+  /** BE v7 uses /blocks, not /temporary-blocks from the draft handoff. */
+  listTemporaryBlocks(branchId: string, serviceId: string): Observable<ServiceTemporaryBlocksResponse> {
+    return this.api.get<ServiceTemporaryBlocksResponse>(this.blocksPath(branchId, serviceId));
+  }
+
+  createTemporaryBlock(
+    branchId: string, serviceId: string,
+    payload: { startAt: string; endAt: string; reason: string },
+  ): Observable<ServiceTemporaryBlock> {
+    return this.api.post<ServiceTemporaryBlock, typeof payload>(
+      this.blocksPath(branchId, serviceId), payload,
+    );
+  }
+
+  deleteTemporaryBlock(branchId: string, serviceId: string, blockId: string): Observable<unknown> {
+    return this.api.delete(
+      this.blocksPath(branchId, serviceId) + '/' + encodeURIComponent(blockId),
+    );
+  }
+
+  private blocksPath(branchId: string, serviceId: string): string {
+    return '/branches/' + encodeURIComponent(branchId) + '/service-configs/' +
+      encodeURIComponent(serviceId) + '/blocks';
   }
 
   listServiceConfigs(branchId: string): Observable<BranchServiceApiRecord[]> {
