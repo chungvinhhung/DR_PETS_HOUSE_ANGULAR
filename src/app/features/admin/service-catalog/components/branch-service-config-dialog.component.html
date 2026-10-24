@@ -46,9 +46,18 @@
       <div class="branch-config__blocked-heading">
         <h3 id="branch-blocked-title">Tạm khóa dịch vụ</h3>
         <button type="button" class="branch-config__button branch-config__button--outline"
+          [disabled]="draftMode || blocksLoading() || !!blocksError() || blocksSaving()"
           (click)="startAddingBlockedWindow()">+ Thêm khoảng tạm khóa</button>
       </div>
-      <p class="branch-config__demo-note">Chức năng lưu khoảng tạm khóa hiện chưa khả dụng.</p>
+      @if (blocksLoading()) { <p class="branch-config__blocked-empty" role="status">Đang tải các khoảng tạm khóa...</p> }
+      @if (blocksError()) {
+        <p class="branch-config__blocked-empty" role="alert">{{ blocksError() }}
+          <button type="button" (click)="loadBlocks()">Thử lại</button>
+        </p>
+      }
+      @if (draftMode) {
+        <p class="branch-config__blocked-empty">Lưu dịch vụ trước khi tạo khoảng tạm khóa.</p>
+      }
 
       @if (blockedWindows().length) {
         <ul class="branch-config__blocked-list" aria-label="Danh sách khoảng tạm khóa">
@@ -62,7 +71,7 @@
                 <button type="button" [attr.aria-label]="'Sửa khoảng tạm khóa ' + formatWindow(window)" (click)="editBlockedWindow(window.id)">
                   <img src="/assets/admin-staff/icon-edit.svg" width="18" height="18" alt="" />
                 </button>
-                <button type="button" [attr.aria-label]="'Xóa khoảng tạm khóa ' + formatWindow(window)" (click)="removeBlockedWindow(window.id)">
+                <button type="button" [attr.aria-label]="'Xóa khoảng tạm khóa ' + formatWindow(window)" [disabled]="blocksSaving()" (click)="removeBlockedWindow(window.id)">
                   <img src="/assets/admin-product/icon-delete.svg" width="18" height="18" alt="" />
                 </button>
               </div>
@@ -79,7 +88,7 @@
             <strong>{{ editingBlockedId() ? 'Sửa khoảng tạm khóa' : 'Thêm khoảng tạm khóa' }}</strong>
             <div>
               <button type="button" (click)="cancelBlockedWindow()">Hủy thêm</button>
-              <button type="button" class="branch-config__button--primary" (click)="addBlockedWindow()">Lưu khoảng</button>
+              <button type="button" class="branch-config__button--primary" [disabled]="blocksSaving()" (click)="addBlockedWindow()">{{ blocksSaving() ? 'Đang lưu...' : 'Lưu khoảng' }}</button>
             </div>
           </div>
           <div class="branch-config__blocked-fields">

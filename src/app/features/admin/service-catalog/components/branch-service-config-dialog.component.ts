@@ -13,12 +13,14 @@ import {
   signal,
 } from '@angular/core';
 
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { CatalogBranch, CatalogService } from '../models/service-catalog.model';
 
 export interface BlockedWindow {
-  id: number;
+  id: string | number;
   start: string;
   end: string;
   reason: string;
@@ -43,6 +45,7 @@ export interface BranchServiceConfigPreview {
 })
 export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit {
   private readonly session = inject(AuthSessionService);
+  private readonly api = inject(BranchManagementApiService);
   private readonly toast = inject(AdminToastService);
 
   @Input({ required: true }) service!: CatalogService;
@@ -53,6 +56,7 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
   @Output() readonly previewSaved = new EventEmitter<BranchServiceConfigPreview>();
   @Input() initialBlockedWindows: readonly BlockedWindow[] | null = null;
   @Input() saving = false;
+  @Input() draftMode = false;
   @Input() branchActive = true;
   @ViewChild('dialog') private dialogRef?: ElementRef<HTMLElement>;
 
@@ -64,7 +68,10 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
   readonly blockEnd = signal('');
   readonly blockReason = signal('');
   readonly showBlockForm = signal(false);
-  readonly editingBlockedId = signal<number | null>(null);
+  readonly blocksLoading = signal(false);
+  readonly blocksSaving = signal(false);
+  readonly blocksError = signal('');
+  readonly editingBlockedId = signal<string | number | null>(null);
   readonly dirty = signal(false);
   readonly feedback = signal('');
   readonly errors = signal<string[]>([]);
@@ -95,20 +102,36 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     this.selectedBranchId.set(branch.id);
     this.capacity.set(Math.max(0, count));
     this.enabled.set(this.isServiceActive && count > 0 && (current?.enabled ?? false));
-    // Empty until the BE exposes per-service blocked windows. Do not invent existing periods.
-    if (this.initialBlockedWindows) {
-      this.blockedWindows.set(this.initialBlockedWindows.map((window) => ({ ...window })));
-      this.nextBlockedId = Math.max(0, ...this.initialBlockedWindows.map((window) => window.id)) + 1;
-      this.showBlockForm.set(false);
-    } else if (branch.id === 'demo-q1') {
-      // Figma V2 illustrations only, not fetched or persisted.
-      this.blockedWindows.set([
-        { id: 1, start: '2026-10-22T13:00', end: '2026-10-22T15:00', reason: 'Bảo trì khu tắm' },
-        { id: 2, start: '2026-10-24T08:00', end: '2026-10-24T12:00', reason: 'Vệ sinh thiết bị' },
-      ]);
-      this.nextBlockedId = 3;
-      this.showBlockForm.set(true);
-    } else this.blockedWindows.set([]);
+    // Draft services have no server ID. Their blocks can only be configured after creation.
+    if (!this.draftMode && this.service.id !== '__unsaved_service__') this.loadBlocks();
+    else this.blockedWindows.set([]);
+
+  }
+
+  private localDateTime(iso: string): string {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return '';
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+      .toISOString().slice(0, 16);
+  }
+
+  loadBlocks(): void {
+    if (this.draftMode) return;
+    this.blocksLoading.set(true);
+    this.blocksError.set('');
+    this.api.listTemporaryBlocks(this.initialBranchId, this.service.id).subscribe({
+      next: (result) => {
+        this.blockedWindows.set(result.blockedWindows.map((b) => ({
+          id: b.id, start: this.localDateTime(b.startAt),
+          end: this.localDateTime(b.endAt), reason: b.reason,
+        })));
+        this.blocksLoading.set(false);
+      },
+      error: () => {
+        this.blocksLoading.set(false);
+        this.blocksError.set('Không tải được các khoảng tạm khóa. Vui lòng thử lại.');
+      },
+    });
   }
 
   ngAfterViewInit(): void {
@@ -160,7 +183,11 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     this.errors.set([]);
   }
 
-  editBlockedWindow(id: number): void {
+  editBlockedWindow(id: string | number): void {
+    if (typeof id === 'string') {
+      this.toast.show('Để thay đổi khoảng đã lưu, hãy xóa khoảng cũ rồi thêm khoảng mới.', 'info');
+      return;
+    }
     const selected = this.blockedWindows().find((item) => item.id === id);
     if (!selected) return;
     this.blockStart.set(selected.start);
@@ -220,22 +247,54 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
       this.errors.set(['Khoảng tạm khóa mới bị trùng với khoảng đã nhập.']);
       return;
     }
-    const id = this.editingBlockedId() ?? this.nextBlockedId++;
-    this.blockedWindows.update((windows) => [
-      ...windows.filter((window) => window.id !== id),
-      { id, start, end, reason },
-    ].sort((a, b) => a.start.localeCompare(b.start)));
-    this.blockStart.set('');
-    this.blockEnd.set('');
-    this.blockReason.set('');
-    this.editingBlockedId.set(null);
-    this.showBlockForm.set(false);
-    this.markChanged();
+    if (this.draftMode || this.service.id === '__unsaved_service__') {
+      this.toast.show('Vui lòng lưu dịch vụ trước khi tạo khoảng tạm khóa.', 'info');
+      return;
+    }
+    if (this.blocksSaving()) return;
+    this.blocksSaving.set(true);
+    this.api.createTemporaryBlock(this.initialBranchId, this.service.id, {
+      startAt: new Date(start).toISOString(),
+      endAt: new Date(end).toISOString(),
+      reason,
+    }).subscribe({
+      next: (created) => {
+        this.blockedWindows.update((windows) => [...windows, {
+          id: created.id, start: this.localDateTime(created.startAt),
+          end: this.localDateTime(created.endAt), reason: created.reason,
+        }].sort((x, y) => x.start.localeCompare(y.start)));
+        this.blockStart.set('');
+        this.blockEnd.set('');
+        this.blockReason.set('');
+        this.editingBlockedId.set(null);
+        this.showBlockForm.set(false);
+        this.blocksSaving.set(false);
+        this.toast.show('Đã thêm khoảng tạm khóa.', 'success');
+      },
+      error: (error: unknown) => {
+        this.blocksSaving.set(false);
+        const status = (error as { status?: number })?.status;
+        this.toast.show(status === 409
+          ? 'Không thể tạm khóa vì có lịch hẹn đã xác nhận trong khoảng giờ này.'
+          : 'Không thêm được khoảng tạm khóa. Vui lòng thử lại.', 'error');
+      },
+    });
   }
 
-  removeBlockedWindow(id: number): void {
-    this.blockedWindows.update((windows) => windows.filter((window) => window.id !== id));
-    this.markChanged();
+  removeBlockedWindow(id: string | number): void {
+    if (typeof id !== 'string' || this.blocksSaving()) return;
+    this.blocksSaving.set(true);
+    this.api.deleteTemporaryBlock(this.initialBranchId, this.service.id, id).subscribe({
+      next: () => {
+        this.blockedWindows.update((windows) => windows.filter((window) => window.id !== id));
+        this.blocksSaving.set(false);
+        this.toast.show('Đã gỡ khoảng tạm khóa.', 'success');
+      },
+      error: () => {
+        this.blocksSaving.set(false);
+        this.toast.show('Không gỡ được khoảng tạm khóa. Vui lòng thử lại.', 'error');
+      },
+    });
   }
 
   private markChanged(): void {
@@ -279,7 +338,7 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
   }
 
   requestClose(): void {
-    if (this.saving) return;
+    if (this.saving || this.blocksSaving()) return;
     if (this.dirty()) {
       this.confirmDiscard.set(true);
     } else {

@@ -11,13 +11,7 @@
       </div>
       <div class="head-actions">
         <button type="button" class="secondary" (click)="cancel()">Hủy bỏ</button>
-        @if (!isEdit) {
-          <button type="button" class="secondary icon-button" (click)="submit('assign')">
-            <img src="/assets/admin-staff/calendar-today.svg" width="16" height="16" alt="" aria-hidden="true">
-            Tạo và phân ca
-          </button>
-        }
-        <button type="button" class="primary" (click)="submit('save')">{{ isEdit ? 'Lưu thay đổi' : 'Tạo nhân viên' }}</button>
+        <button type="button" class="primary" [disabled]="savingStaff" (click)="submit('save')">{{ savingStaff ? 'Đang lưu...' : isEdit ? 'Lưu thay đổi' : 'Tạo nhân viên' }}</button>
         @if (isEdit) {
           @if (canManageAccount && staff) {
             <button type="button" class="danger-outline" (click)="openAccountStatusDialog()">
@@ -39,6 +33,9 @@
       <form [formGroup]="form" (ngSubmit)="submit('save')" novalidate>
         <section class="panel">
           <h2>{{ isEdit ? 'Hồ sơ nhân viên' : 'Thông tin nhân viên' }}</h2>
+          @if (isEdit) {
+            <p class="schedule-note">Họ tên, số điện thoại và email hiện chỉ có thể xem. Có thể thay đổi vai trò và chi nhánh làm việc.</p>
+          }
           <div class="fields basic-fields">
             <label>
               <span class="field-label">Họ và tên <em>*</em></span>
@@ -54,7 +51,7 @@
               <span class="field-label">Vai trò nghiệp vụ <em>*</em></span>
               <span class="select-wrap">
                 <select formControlName="jobRole">
-                  @for (role of roles; track role) { <option [value]="role">{{ labels[role] }}</option> }
+                  @for (role of roles; track role) { <option [value]="role" [disabled]="!isEdit && role === 'MANAGER'">{{ labels[role] }}</option> }
                 </select>
                 <img src="/assets/admin-product/expand_more.svg" width="16" height="16" alt="" aria-hidden="true">
               </span>
@@ -129,26 +126,7 @@
                 }
               </div>
             } @else {
-              <div class="fields stacked">
-                <label>
-                  <span class="field-label">Tài khoản đăng nhập <em>*</em></span>
-                  <input formControlName="loginIdentifier" type="text" autocomplete="off" placeholder="Nhập tài khoản đăng nhập">
-                  @if (fieldError('loginIdentifier')) { <small class="error">{{ fieldError('loginIdentifier') }}</small> }
-                </label>
-                <label>
-                  <span class="field-label">Mật khẩu <em>*</em></span>
-                  <span class="password-wrap">
-                    <input formControlName="password" [type]="showPassword ? 'text' : 'password'"
-                      autocomplete="new-password" placeholder="Nhập mật khẩu">
-                    <button type="button" (click)="showPassword = !showPassword"
-                      [attr.aria-label]="showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'">
-                      <img [src]="showPassword ? '/assets/admin-login/visibility-off-outlined.svg' : '/assets/admin-login/visibility-outlined.svg'"
-                        width="20" height="20" alt="" aria-hidden="true">
-                    </button>
-                  </span>
-                  @if (fieldError('password')) { <small class="error">{{ fieldError('password') }}</small> }
-                </label>
-              </div>
+              <p class="schedule-note">Tài khoản và mật khẩu an toàn sẽ được hệ thống tự tạo khi thêm nhân viên. Thông tin đăng nhập chỉ xuất hiện một lần sau khi tạo thành công.</p>
             }
           </section>
         </div>
@@ -278,6 +256,21 @@
       <div class="staff-leave-actions">
         <button type="button" class="secondary" (click)="closeAccountStatusDialog()">Hủy</button>
         <button type="button" class="danger-outline" (click)="confirmAccountStatusPreview()">Xác nhận</button>
+      </div>
+    </section>
+  </div>
+}
+
+@if (createdCredentials(); as credentials) {
+  <div class="staff-leave-overlay">
+    <section class="staff-leave-dialog" role="dialog" aria-modal="true"
+      aria-labelledby="staff-credentials-title" tabindex="-1">
+      <h2 id="staff-credentials-title">Tạo nhân viên thành công</h2>
+      <p>Vui lòng lưu và chuyển thông tin đăng nhập qua kênh bảo mật. Mật khẩu sẽ không hiển thị lại sau khi đóng.</p>
+      <p><strong>Tài khoản:</strong> <code>{{ credentials.username }}</code></p>
+      <p><strong>Mật khẩu tạm:</strong> <code>{{ credentials.password }}</code></p>
+      <div class="staff-leave-actions">
+        <button type="button" class="primary" (click)="closeCredentials()">Tôi đã lưu thông tin</button>
       </div>
     </section>
   </div>

@@ -217,55 +217,33 @@ export class ServiceCatalogEditorComponent {
     }
   }
 
-  /** Read-only branch cards: do not collapse every branch into aggregate counts.
-   * Branch names come from the BE branch scope. Individual config is displayed
-   * only if BE returns it for the selected service and branch. */
+  /** One BE request returns all configured and unconfigured branches.
+   * No N+1 per-branch filtered Service search; preserve the existing cards. */
   private loadBranchDetailRows(): void {
+    if (!this.serviceId) return;
     this.branchesLoading.set(true);
     this.branchLoadError.set('');
-    this.repository.listBranchesForServiceDetail().pipe(
+    this.repository.getBranchConfigs(this.serviceId).pipe(
       takeUntilDestroyed(this.destroyRef),
     ).subscribe({
-      next: (branches) => {
-        this.branchDetailRows.set(branches.map((branch) => ({
-          id: branch.id,
-          name: branch.name,
-          summary: 'Đang tải cấu hình...',
-        })));
+      next: (result) => {
+        const rows = result.configs.map((cfg) => {
+          const status = this.source?.status !== 'ACTIVE' ? 'Chưa thể bật'
+            : cfg.enabled ? 'Đang bật' : 'Đang tắt';
+          const availability = this.bookingMode === 'CONTACT_ONLY'
+            ? 'Liên hệ' : 'Khả dụng theo lịch';
+          return {
+            id: cfg.branchId,
+            name: cfg.branchName,
+            summary: `${status} · Sức chứa ${cfg.capacity} · ${availability}`,
+          };
+        });
+        this.branchDetailRows.set(rows);
         this.branchesLoading.set(false);
-        for (const branch of branches) {
-          this.repository.list({
-            search: this.serviceName,
-            branchId: branch.id,
-            mode: 'ALL',
-            status: 'ALL',
-            page: 1,
-            pageSize: 100,
-          }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-            next: (page) => {
-              const service = page.items.find((item) => item.id === this.serviceId);
-              const config = service?.branchServices.find((item) => item.branchId === branch.id);
-              if (!config) {
-                this.updateBranchSummary(branch.id, 'Chưa có dữ liệu cấu hình tại chi nhánh');
-                return;
-              }
-              const status = this.source?.status !== 'ACTIVE'
-                ? 'Chưa thể bật'
-                : config.enabled && config.capacity > 0 ? 'Đang bật' : 'Đang tắt';
-              const availability = service?.availabilityText ||
-                (this.bookingMode === 'CONTACT_ONLY' ? 'Liên hệ' : 'Khả dụng do Backend tính');
-              this.updateBranchSummary(
-                branch.id,
-                `${status} · Sức chứa ${config.capacity} · ${availability}`,
-              );
-            },
-            error: () => this.updateBranchSummary(branch.id, 'Chưa tải được cấu hình tại chi nhánh'),
-          });
-        }
       },
       error: () => {
         this.branchesLoading.set(false);
-        this.branchLoadError.set('Không tải được danh sách chi nhánh. Vui lòng thử lại.');
+        this.branchLoadError.set('Không tải được cấu hình chi nhánh. Vui lòng thử lại.');
       },
     });
   }
@@ -550,10 +528,6 @@ export class ServiceCatalogEditorComponent {
 
   validateDraft(): void {
     if (!this.mayEdit) return;
-    if (this.pendingActivationServiceId()) {
-      void this.enableUnconfiguredBranches(this.pendingActivationServiceId()!);
-      return;
-    }
     const errors = this.validate();
     this.errors.set(errors);
     if (errors.length) {
@@ -580,20 +554,22 @@ export class ServiceCatalogEditorComponent {
     // On EDIT, leave existing defaultMaterials untouched in Backend.
     this.saving.set(true);
     const request = this.isNew
-      ? this.repository.create(body, this.saveIdempotencyKey ??= crypto.randomUUID())
+      ? this.repository.create({
+          ...body,
+          autoEnableActiveBranches: this.active,
+          branchConfigs: this.stagedBranchConfigs().map((cfg) => ({
+            branchId: cfg.branchId,
+            enabled: this.active && cfg.enabled,
+            capacity: cfg.capacity,
+          })),
+        }, this.saveIdempotencyKey ??= crypto.randomUUID())
       : this.repository.update(this.serviceId!, this.pricingDirty
         ? body : (({ basePrice: _price, priceVariants: _variants, ...rest }) => rest)(body));
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (saved) => {
         this.dirty.set(false);
-        if (this.isNew && saved.id) {
-          // A successful POST must never be retried when branch provisioning fails.
-          this.pendingActivationServiceId.set(saved.id);
-        }
-        if ((this.active || this.stagedBranchConfigs().length > 0) && saved.id) {
-          void this.enableUnconfiguredBranches(saved.id);
-          return;
-        }
+        // BE v7 performs the initial branch provisioning atomically in POST /services.
+        // PATCH /services does not alter branch-specific activation/capacity.
         this.saving.set(false);
         this.notice.set(this.isNew ? 'Đã thêm dịch vụ thành công.' : 'Đã cập nhật dịch vụ thành công.');
         this.back();

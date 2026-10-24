@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -7,7 +7,8 @@ import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.c
 import { formatStaffWeekRange } from '../utils/staff-week-range';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
-import { AdminStaffApiService, staffTodayISO, staffWeekMonday } from '../services/admin-staff-api.service';
+import { AdminStaffApiService, StaffCreateRequest, staffTodayISO, staffWeekMonday } from '../services/admin-staff-api.service';
+import { switchMap } from 'rxjs';
 import {
   JOB_LABELS, JOB_PREFIX, JobRole, STAFF_SHIFTS_PREVIEW,
   StaffPreview, StaffShiftPreview,
@@ -60,10 +61,14 @@ export class AdminStaffFormComponent {
     email: [this.staff?.email ?? '', Validators.email],
     homeBranch: [this.staff?.homeBranch ?? this.staff?.branches[0] ?? '', Validators.required],
     assignedBranches: [this.staff?.branches.join(',') ?? '', Validators.required],
-    loginIdentifier: [this.staff?.loginUsername ?? '', Validators.required],
-    password: ['', this.isEdit ? [] : [Validators.required, Validators.pattern(STRONG_PASSWORD)]],
+    loginIdentifier: [this.staff?.loginUsername ?? ''],
+    password: [''],
   });
 
+  readonly createdCredentials = signal<{ username: string; password: string } | null>(null);
+  savingStaff = false;
+  private lastCreatePayload = '';
+  private createKey = '';
   submitted = false;
   showPassword = false;
   resetPasswordOpen = false;
@@ -132,8 +137,16 @@ export class AdminStaffFormComponent {
   shiftDraftDirty = false;
 
   constructor() {
+    // BE generates login and password atomically with the Staff profile.
     this.form.controls.loginIdentifier.disable({ emitEvent: false });
-    if (!this.isEdit) this.form.controls.loginIdentifier.enable({ emitEvent: false });
+    this.form.controls.password.disable({ emitEvent: false });
+    // BE v7 PATCH /staff/:id updates role/status, not name/phone/email.
+    // Do not offer editable controls that silently discard user changes.
+    if (this.isEdit) {
+      this.form.controls.fullName.disable({ emitEvent: false });
+      this.form.controls.phone.disable({ emitEvent: false });
+      this.form.controls.email.disable({ emitEvent: false });
+    }
     this.staffApi.loadRoster();
     effect(() => {
       const staff = this.staff;
@@ -251,22 +264,95 @@ export class AdminStaffFormComponent {
   submit(intent: 'save' | 'assign'): void {
     this.submitted = true;
     this.form.markAllAsTouched();
+    if (this.savingStaff) return;
     if (!this.hasStaff) {
-      this.toast.show('Không tìm thấy hồ sơ nhân viên từ Backend.', 'error');
-      return;
+      this.toast.show('Không tìm thấy hồ sơ nhân viên từ hệ thống.', 'error'); return;
     }
-    if (!this.selectedBranches.size || !this.form.controls.homeBranch.value || !this.selectedBranches.has(this.form.controls.homeBranch.value)) {
-      this.toast.show('Vui lòng chọn chi nhánh làm việc phù hợp với chi nhánh chính.', 'error');
+    const availableBranches = this.staffApi.branches();
+    const selected = availableBranches.filter(b => this.selectedBranches.has(b.name)).map(b => b.id);
+    const homeId = availableBranches.find(b => b.name === this.form.controls.homeBranch.value)?.id ?? '';
+    if (!selected.length || !homeId || !selected.includes(homeId) ||
+        selected.length !== this.selectedBranches.size) {
+      this.toast.show('Vui lòng chọn chi nhánh chính và các chi nhánh làm việc hợp lệ.', 'error');
       return;
     }
     if (this.form.invalid) {
       this.toast.show('Vui lòng kiểm tra các trường được đánh dấu lỗi.', 'error');
       return;
     }
-    this.toast.show(intent === 'assign'
-      ? 'Backend chưa xác nhận API tạo đồng thời tài khoản và hồ sơ nhân viên. Chưa phân ca.'
-      : 'Đã kết nối API đọc, nhưng chưa có hợp đồng ghi Staff tương thích với form. Chưa lưu thay đổi.', 'info');
+    const role = this.form.controls.jobRole.value;
+    if (role === 'MANAGER' || role === 'UNKNOWN') {
+      this.toast.show('Vai trò này cần được quản lý trong tài khoản quản trị riêng.', 'error');
+      return;
+    }
+    const staffSubRole: StaffCreateRequest['staffSubRole'] =
+      role === 'CARE_STAFF' ? 'CARE_STAFF_GROOMER' : role;
+    if (!this.isEdit) {
+      const payload: StaffCreateRequest = {
+        fullName: this.form.controls.fullName.value.trim(),
+        staffSubRole,
+        authorizedBranchIds: selected,
+        homeBranchId: homeId,
+        ...(this.form.controls.phone.value.trim()
+          ? { phone: this.form.controls.phone.value.trim() } : {}),
+        ...(this.form.controls.email.value.trim()
+          ? { email: this.form.controls.email.value.trim() } : {}),
+      };
+      const signature = JSON.stringify(payload);
+      if (signature !== this.lastCreatePayload) {
+        this.lastCreatePayload = signature;
+        this.createKey = crypto.randomUUID();
+      }
+      this.savingStaff = true;
+      this.staffApi.createStaff(payload, this.createKey).subscribe({
+        next: result => {
+          this.savingStaff = false;
+          this.form.markAsPristine();
+          this.allowNavigation = true;
+          this.staffApi.loadRoster(true);
+          if (result.credentials) this.createdCredentials.set(result.credentials);
+          else {
+            this.toast.show('Đã thêm nhân viên.', 'success');
+            void this.router.navigateByUrl('/admin/staff');
+          }
+          this.cdr.markForCheck();
+        },
+        error: error => {
+          this.savingStaff = false;
+          this.toast.show('Không thêm được nhân viên. Vui lòng kiểm tra thông tin và thử lại.', 'error');
+          this.cdr.markForCheck();
+        },
+      });
+      return;
+    }
+    // BE persists branch scope separately from professional role; name and
+    // contact are read-only until BE actually supports those updates.
+    this.savingStaff = true;
+    this.staffApi.setStaffBranches(this.staffId, selected, homeId).pipe(
+      switchMap(() => this.staffApi.updateStaffRole(this.staffId, staffSubRole)),
+    ).subscribe({
+      next: () => {
+        this.savingStaff = false;
+        this.form.markAsPristine();
+        this.allowNavigation = true;
+        this.staffApi.loadRoster(true);
+        this.toast.show('Đã cập nhật vai trò và chi nhánh làm việc.', 'success');
+        void this.router.navigateByUrl('/admin/staff');
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.savingStaff = false;
+        this.toast.show('Chưa hoàn tất cập nhật. Một số thay đổi có thể đã lưu, vui lòng tải lại để kiểm tra.', 'error');
+        this.cdr.markForCheck();
+      },
+    });
   }
+
+  closeCredentials(): void {
+    this.createdCredentials.set(null);
+    void this.router.navigateByUrl('/admin/staff');
+  }
+
   notAvailable(action: string): void {
     this.toast.show(`${action} đang chờ API Backend và phân quyền Admin.`, 'info');
   }
