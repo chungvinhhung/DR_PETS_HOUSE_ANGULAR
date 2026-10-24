@@ -1,0 +1,190 @@
+<app-admin-catalog-shell activeItem="orders">
+  <main class="order-page">
+    <header class="order-page__title">
+      <h1>Đơn hàng &amp; Trả hàng</h1>
+      <button type="button" class="order-page__outline" (click)="load()" [disabled]="loading()">Làm mới</button>
+    </header>
+    <nav class="order-page__tabs" aria-label="Quản lý đơn hàng">
+      <button type="button" [class.active]="tab() === 'orders'" (click)="switchTab('orders')">Đơn hàng</button>
+      <button type="button" [class.active]="tab() === 'returns'" (click)="switchTab('returns')">Yêu cầu trả hàng</button>
+    </nav>
+    @if (loading()) { <p class="order-page__message" role="status">Đang tải dữ liệu...</p> }
+    @if (error()) {
+      <p class="order-page__message" role="alert">{{ error() }}
+        <button type="button" (click)="load()">Thử lại</button>
+      </p>
+    }
+    @if (!loading() && !error()) {
+      <section class="order-page__table-wrap">
+        <table class="order-page__table">
+          @if (tab() === 'orders') {
+            <thead><tr><th>Mã đơn hàng</th><th>Ngày tạo</th><th>Trạng thái</th>
+              <th>Giá trị đơn</th><th>Voucher</th><th>Thao tác</th></tr></thead>
+            <tbody>
+              @for (order of orders(); track order.id) {
+                <tr>
+                  <td>{{ order.code }}</td>
+                  <td>{{ date(order.createdAt) }}</td>
+                  <td><span class="order-page__badge">{{ statusLabel(order.status) }}</span></td>
+                  <td>{{ money(order.pricing.totalAmount) }}</td>
+                  <td>{{ order.voucherCode || '—' }}</td>
+                  <td class="order-page__action">
+                    @if (order.status === 'COMPLETED') {
+                      <button type="button" class="order-page__outline" (click)="openReturn(order)">
+                        Yêu cầu trả hàng
+                      </button>
+                    } @else { <span>—</span> }
+                  </td>
+                </tr>
+              } @empty { <tr><td colspan="6" class="order-page__empty">Chưa có đơn hàng.</td></tr> }
+            </tbody>
+          } @else {
+            <thead><tr><th>Mã yêu cầu</th><th>Mã đơn liên quan</th><th>Trạng thái</th>
+              <th>Số tiền hoàn dự kiến</th><th>Lý do</th><th>Thao tác</th></tr></thead>
+            <tbody>
+              @for (returnRow of returns(); track returnRow.id) {
+                <tr>
+                  <td>{{ returnRow.id.slice(-8).toUpperCase() }}</td>
+                  <td>{{ returnRow.orderId.slice(-8).toUpperCase() }}</td>
+                  <td><span class="order-page__badge">{{ statusLabel(returnRow.status) }}</span></td>
+                  <td>{{ money(returnRow.refundBreakdown.total) }}</td>
+                  <td>{{ returnRow.reason }}</td>
+                  <td class="order-page__action">
+                    <button type="button" class="order-page__outline" (click)="openReturnDetails(returnRow)">Xem &amp; xử lý</button>
+                  </td>
+                </tr>
+              } @empty { <tr><td colspan="6" class="order-page__empty">Chưa có yêu cầu trả hàng.</td></tr> }
+            </tbody>
+          }
+        </table>
+      </section>
+      <p class="order-page__hint">Danh sách hiện hiển thị tối đa 100 bản ghi mới nhất do giới hạn phân trang API hiện tại.</p>
+    }
+  </main>
+</app-admin-catalog-shell>
+
+@if (selectedOrder(); as order) {
+  <div class="order-page__backdrop" role="presentation">
+    <section class="order-page__dialog" role="dialog" aria-modal="true" aria-labelledby="return-title">
+      <header class="order-page__dialog-title">
+        <div><h2 id="return-title">Tạo yêu cầu trả hàng</h2><p>Đơn hàng {{ order.code }}</p></div>
+        <button type="button" class="order-page__close" aria-label="Đóng" [disabled]="saving()" (click)="closeModal()">×</button>
+      </header>
+      @if (previewLoading()) { <p class="order-page__message" role="status">Đang kiểm tra điều kiện và số tiền hoàn...</p> }
+      @if (returnable(); as available) {
+        @if (!available.eligible) {
+          <p class="order-page__message" role="alert">Đơn hàng không còn đủ điều kiện trả hàng theo quy định.</p>
+        } @else {
+          <p class="order-page__hint">Hạn trả hàng: {{ date(available.returnWindowEndsAt) }}</p>
+          <div class="order-page__table-wrap">
+            <table class="order-page__table order-page__table--compact">
+              <thead><tr><th>Sản phẩm</th><th>Đã mua</th><th>Còn được trả</th><th>Số lượng trả</th></tr></thead>
+              <tbody>
+                @for (item of order.items; track item.orderItemId) {
+                  <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ returnableQuantity(item.orderItemId) }}</td>
+                    <td>
+                      <input type="number" min="0" step="1"
+                        [max]="returnableQuantity(item.orderItemId)"
+                        [value]="quantities()[item.orderItemId] || 0"
+                        [disabled]="returnableQuantity(item.orderItemId) === 0 || saving()"
+                        [attr.aria-label]="'Số lượng trả ' + item.name"
+                        (input)="setQuantity(item.orderItemId, $any($event.target).value)">
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <label class="order-page__field">Lý do trả hàng <span>*</span>
+            <textarea rows="2" maxlength="500" placeholder="Nhập lý do trả hàng"
+              [value]="reason()" (input)="setReason($any($event.target).value)"></textarea>
+          </label>
+          @if (quote(); as result) {
+            <div class="order-page__summary">
+              <p>Tiền hàng được hoàn (đã trừ voucher): <strong>{{ money(result.refundBreakdown.merchandiseNet) }}</strong></p>
+              <p>Phí vận chuyển hoàn: <strong>{{ money(result.refundBreakdown.shippingRefunded) }}</strong></p>
+              <p>Tổng hoàn dự kiến: <strong>{{ money(result.refundBreakdown.total) }}</strong></p>
+            </div>
+          } @else {
+            <p class="order-page__hint">Số tiền hoàn sẽ do Backend tính theo giá thực trả sau voucher.</p>
+          }
+        }
+      }
+      <footer class="order-page__dialog-actions">
+        <button type="button" class="order-page__outline" (click)="closeModal()">Hủy</button>
+        <button type="button" class="order-page__outline" [disabled]="previewLoading() || !returnable()?.eligible || saving()"
+          (click)="requestQuote()">Xem báo giá hoàn</button>
+        <button type="button" class="order-page__primary"
+          [disabled]="!quote() || previewLoading() || saving()"
+          (click)="createReturn()">{{ saving() ? 'Đang gửi...' : 'Gửi yêu cầu' }}</button>
+      </footer>
+    </section>
+  </div>
+}
+
+@if (selectedReturn(); as current) {
+  <div class="order-page__backdrop" role="presentation">
+    <section class="order-page__dialog" role="dialog" aria-modal="true" aria-labelledby="return-detail-title">
+      <header class="order-page__dialog-title">
+        <div><h2 id="return-detail-title">Chi tiết yêu cầu trả hàng</h2>
+          <p>{{ current.id.slice(-8).toUpperCase() }} · {{ statusLabel(current.status) }}</p></div>
+        <button type="button" class="order-page__close" aria-label="Đóng" [disabled]="saving()" (click)="closeModal()">×</button>
+      </header>
+      <p><strong>Lý do:</strong> {{ current.reason }}</p>
+      <p><strong>Tiền hàng hoàn dự kiến:</strong> {{ money(current.refundBreakdown.total) }}</p>
+      <p class="order-page__hint">Đã trừ khuyến mãi, không hoàn phí vận chuyển.</p>
+      <div class="order-page__table-wrap">
+        <table class="order-page__table order-page__table--compact">
+          <thead><tr><th>Sản phẩm</th><th>Số lượng trả</th><th>Số tiền</th></tr></thead>
+          <tbody>
+            @for (item of current.items; track item.orderItemId) {
+              <tr><td>{{ item.productName }}</td><td>{{ item.requestedQty }}</td><td>{{ money(item.refundAmount) }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (current.status === 'RECEIVED' && canApprove) {
+        <label class="order-page__field">Lý do từ chối (khi cần)
+          <textarea rows="2" maxlength="500" [value]="rejectionReason()"
+            (input)="rejectionReason.set($any($event.target).value)"></textarea>
+        </label>
+      }
+      @if (refund(); as refundData) {
+        <div class="order-page__summary">
+          <p><strong>Hoàn tiền:</strong> {{ statusLabel(refundData.status) }} · {{ money(refundData.amount) }}</p>
+          <p class="order-page__hint">Đơn vị xử lý: MOCK. Chưa có chuyển tiền thật.</p>
+          @if (refundData.status === 'PENDING' && canApprove) {
+            <label class="order-page__confirm">
+              <input type="checkbox" [checked]="confirmMockRefund()"
+                (change)="confirmMockRefund.set($any($event.target).checked)">
+              Tôi hiểu đây là thao tác hoàn tiền mô phỏng.
+            </label>
+            <button type="button" class="order-page__primary"
+              [disabled]="!confirmMockRefund() || saving()"
+              (click)="processRefund()">Xử lý hoàn tiền mô phỏng</button>
+          }
+        </div>
+      }
+      <footer class="order-page__dialog-actions">
+        <button type="button" class="order-page__outline" (click)="closeModal()">Đóng</button>
+        @if (current.status === 'REQUESTED') {
+          <button type="button" class="order-page__primary" [disabled]="saving()"
+            (click)="doReturnAction('process')">Tiếp nhận xử lý</button>
+        }
+        @if (current.status === 'PROCESSING') {
+          <button type="button" class="order-page__primary" [disabled]="saving()"
+            (click)="doReturnAction('receive')">Đã nhận hàng trả</button>
+        }
+        @if (current.status === 'RECEIVED' && canApprove) {
+          <button type="button" class="order-page__outline" [disabled]="saving()"
+            (click)="doReturnAction('reject')">Từ chối</button>
+          <button type="button" class="order-page__primary" [disabled]="saving()"
+            (click)="doReturnAction('approve')">Duyệt trả hàng</button>
+        }
+      </footer>
+    </section>
+  </div>
+}
