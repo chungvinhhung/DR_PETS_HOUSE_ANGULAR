@@ -145,6 +145,9 @@ export class BranchManagementPageComponent {
     const branchId = this.servicePickerBranch()?.id;
     return branchId ? this.branchServices : [];
   }
+  get operationServiceNames(): Readonly<Record<string, string>> {
+    return Object.fromEntries(this.serviceViews().map(row => [row.service.id, row.service.name]));
+  }
   get branchServices(): readonly CatalogService[] {
     return this.serviceViews().map((row) => row.service);
   }
