@@ -221,33 +221,36 @@ export class ServiceBranchConfigFlowComponent implements OnInit {
   load(): void {
     this.loading.set(true);
     this.error.set('');
-    this.api.listBranches().pipe(
-      mergeMap((branches) => this.draftMode
-        ? of(branches.map((branch): BranchOption => {
-            const draft = this.draftConfigs.find((config) => config.branchId === branch.id);
-            return {
-              branch,
-              config: draft ? {
-                branchId: branch.id,
-                serviceId: this.service.id,
-                enabled: draft.enabled,
-                capacity: draft.capacity,
-                availability: [],
-              } : null,
-              failed: false,
-            };
-          }))
-        : from(branches).pipe(
-        mergeMap((branch) => this.api.listServiceConfigs(branch.id).pipe(
-          map((configs): BranchOption => ({
+    (this.draftMode
+      ? this.api.listBranches().pipe(map((branches) => branches.map((branch): BranchOption => {
+          const draft = this.draftConfigs.find((config) => config.branchId === branch.id);
+          return {
             branch,
-            config: configs.find((item) => item.serviceId === this.service.id) ?? null,
+            config: draft ? {
+              branchId: branch.id, serviceId: this.service.id,
+              enabled: draft.enabled, capacity: draft.capacity, availability: [],
+            } : null,
             failed: false,
-          })),
-          catchError(() => of({branch, config:null, failed:true} as BranchOption)),
-        ), 4),
-        toArray(),
-      )),
+          };
+        })))
+      : this.api.listServiceBranchConfigs(this.service.id).pipe(
+          map((response) => response.configs.map((config): BranchOption => ({
+            branch: {
+              id: config.branchId,
+              code: config.branchCode,
+              name: config.branchName,
+              address: '',
+              status: config.branchStatus,
+            },
+            config: {
+              branchId: config.branchId, serviceId: this.service.id,
+              enabled: config.enabled, capacity: config.capacity,
+              availability: config.availability ?? [],
+            },
+            failed: false,
+          }))),
+        )
+    ).pipe(
       takeUntilDestroyed(this.destroyRef),
     ).subscribe({
       next: (rows) => {
