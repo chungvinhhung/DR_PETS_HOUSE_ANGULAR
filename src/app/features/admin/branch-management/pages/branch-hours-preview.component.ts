@@ -121,6 +121,7 @@ export class BranchHoursPreviewComponent implements OnChanges {
   private readonly api = inject(BranchManagementApiService);
   private readonly destroyRef = inject(DestroyRef);
   @Input({ required: true }) branchId = '';
+  @Input() serviceNames: Readonly<Record<string, string>> = {};
   readonly loading = signal(false);
   readonly error = signal('');
   readonly selectedDate = signal(this.toLocalIso(new Date()));
@@ -146,7 +147,8 @@ export class BranchHoursPreviewComponent implements OnChanges {
         const slots = new Map<string, SlotRow>();
         const byTime = new Map<string, SlotServiceRow[]>();
         for (const service of result.servicesAvailability ?? []) {
-          const name = service.serviceIds?.[0] ?? 'Dịch vụ';
+          const serviceId = service.serviceIds?.[0] ?? '';
+          const name = this.serviceNames[serviceId] || 'Dịch vụ';
           for (const segment of service.slots ?? []) {
             const clock = segment.start.slice(11, 16);
             const end = segment.end.slice(11, 16);
