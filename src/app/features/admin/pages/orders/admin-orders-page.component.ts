@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Observable, finalize } from 'rxjs';
+import { Observable, finalize, map } from 'rxjs';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
@@ -71,12 +71,15 @@ export class AdminOrdersPageComponent implements OnInit {
   load(): void {
     this.loading.set(true);
     this.error.set('');
-    const request = this.tab() === 'orders' ? this.api.listOrders() : this.api.listReturns();
+    const request: Observable<{ kind: 'orders'; items: AdminOrder[] } | { kind: 'returns'; items: AdminReturn[] }> =
+      this.tab() === 'orders'
+        ? this.api.listOrders().pipe(map(data => ({ kind: 'orders' as const, items: data.items })))
+        : this.api.listReturns().pipe(map(data => ({ kind: 'returns' as const, items: data.items })));
     request.pipe(takeUntilDestroyed(this.destroyRef),
       finalize(() => this.loading.set(false))).subscribe({
       next: (data) => {
-        if (this.tab() === 'orders') this.orders.set(data.items as AdminOrder[]);
-        else this.returns.set(data.items as AdminReturn[]);
+        if (data.kind === 'orders') this.orders.set(data.items);
+        else this.returns.set(data.items);
       },
       error: (error: unknown) => {
         this.error.set(adminErrorMessage(error, 'Không tải được dữ liệu. Vui lòng thử lại.'));
