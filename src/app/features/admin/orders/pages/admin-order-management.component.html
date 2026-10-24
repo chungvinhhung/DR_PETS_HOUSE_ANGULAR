@@ -194,7 +194,7 @@
             Xuất file
           </button>
           <button class="order-admin__btn order-admin__btn--new" type="button" (click)="newOrder()">
-            <span aria-hidden="true">＋</span> Đơn hàng mới
+            <img src="/assets/admin-product/icon-add.svg" alt="" width="16" height="16"> Đơn hàng mới
           </button>
         </div>
       </div>
@@ -233,7 +233,7 @@
                       <td class="order-admin__action-head">
                         <a class="order-admin__icon-link" [routerLink]="['/admin/orders',order.id]"
                           [attr.aria-label]="'Xem chi tiết đơn ' + order.code" title="Xem chi tiết">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg>
+                          <img src="/assets/admin-branch/figma-eye.svg" alt="" width="20" height="20">
                         </a>
                       </td>
                     </tr>
@@ -273,7 +273,7 @@
                       <td class="order-admin__action-head">
                         <a [routerLink]="['/admin/orders',ret.orderId]" class="order-admin__icon-link"
                           [attr.aria-label]="'Xem đơn gốc của yêu cầu ' + ret.id" title="Xem đơn hàng gốc">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg>
+                          <img src="/assets/admin-branch/figma-eye.svg" alt="" width="20" height="20">
                         </a>
                       </td>
                     </tr>
