@@ -20,6 +20,7 @@ export interface InventoryStockDto {
   quantity: number;
   lowStock: boolean;
   lowStockThreshold: number;
+  thresholdConfigured?: boolean;
   version: number;
 }
 
