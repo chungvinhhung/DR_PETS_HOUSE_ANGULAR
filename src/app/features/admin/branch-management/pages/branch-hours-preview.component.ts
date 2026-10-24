@@ -88,9 +88,9 @@ interface SlotServiceRow { time: string; name: string; booked: number; total: nu
             </header>
             <div class="branch-v2__slot-stats">
               <div><span>Trạng thái</span><strong>{{ slotStatus(slot) }}</strong></div>
-              <div><span>Đã đặt / Tổng</span><strong>{{ isFigmaDay() ? slot.booked + ' / ' + slot.total : '—' }}</strong></div>
-              <div><span>Còn trống</span><strong>{{ isFigmaDay() ? slot.total - slot.booked : '—' }}</strong></div>
-              <div><span>Lấp đầy</span><strong>{{ isFigmaDay() ? slotPercent(slot) + '%' : '—' }}</strong></div>
+              <div><span>Đã đặt / Tổng</span><strong>{{ slot.booked + ' / ' + slot.total }}</strong></div>
+              <div><span>Còn trống</span><strong>{{ slot.remaining }}</strong></div>
+              <div><span>Lấp đầy</span><strong>{{ slotPercent(slot) + '%' }}</strong></div>
             </div>
             <h3>Dịch vụ trong khung giờ</h3>
             <table class="branch-v2__modal-table">
