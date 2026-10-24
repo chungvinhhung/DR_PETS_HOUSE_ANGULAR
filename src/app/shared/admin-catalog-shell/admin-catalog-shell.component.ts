@@ -17,7 +17,7 @@ import { RouterLink } from '@angular/router';
 })
 export class AdminCatalogShellComponent {
   readonly toast = inject(AdminToastService);
-  @Input({ required: true }) activeItem!: 'categories' | 'products' | 'services' | 'branches' | 'staff';
+  @Input({ required: true }) activeItem!: 'categories' | 'products' | 'orders' | 'services' | 'branches' | 'staff';
 
   salesExpanded = false;
   servicesExpanded = false;
@@ -26,7 +26,7 @@ export class AdminCatalogShellComponent {
   feedbackExpanded = false;
 
   ngOnInit(): void {
-    this.salesExpanded = this.activeItem === 'categories' || this.activeItem === 'products';
+    this.salesExpanded = this.activeItem === 'categories' || this.activeItem === 'products' || this.activeItem === 'orders';
     this.servicesExpanded = this.activeItem === 'services';
     this.operationsExpanded = this.activeItem === 'branches' || this.activeItem === 'staff';
   }
