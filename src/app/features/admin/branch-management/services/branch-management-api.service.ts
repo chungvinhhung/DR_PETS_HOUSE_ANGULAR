@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { EMPTY, expand, forkJoin, map, Observable, reduce } from 'rxjs';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
-import { CatalogService } from '../../service-catalog/models/service-catalog.model';
+import { CatalogService, ServiceBranchConfigsResponse } from '../../service-catalog/models/service-catalog.model';
 import { ServiceCatalogApiService } from '../../service-catalog/services/service-catalog-api.service';
 
 /** Confirmed against PET_CLINIC_BACKEND feat/foundation-v6 Branch routes / DTOs. */
@@ -178,7 +178,7 @@ export class BranchManagementApiService {
   }
 
   deleteTemporaryBlock(branchId: string, serviceId: string, blockId: string): Observable<unknown> {
-    return this.api.delete(
+    return this.api.delete<unknown>(
       this.blocksPath(branchId, serviceId) + '/' + encodeURIComponent(blockId),
     );
   }
@@ -186,6 +186,10 @@ export class BranchManagementApiService {
   private blocksPath(branchId: string, serviceId: string): string {
     return '/branches/' + encodeURIComponent(branchId) + '/service-configs/' +
       encodeURIComponent(serviceId) + '/blocks';
+  }
+
+  listServiceBranchConfigs(serviceId: string): Observable<ServiceBranchConfigsResponse> {
+    return this.catalog.getBranchConfigs(serviceId);
   }
 
   listServiceConfigs(branchId: string): Observable<BranchServiceApiRecord[]> {
