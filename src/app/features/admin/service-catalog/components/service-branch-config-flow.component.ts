@@ -44,6 +44,7 @@ interface BranchOption {
         [initialBranchId]="choice.branch.id"
         [branchActive]="choice.branch.status === 'ACTIVE'"
         [initialBlockedWindows]="[]"
+        [draftMode]="draftMode"
         [saving]="saving()"
         (previewSaved)="save($event)"
         (dismiss)="closeEditor()" />
@@ -292,10 +293,6 @@ export class ServiceBranchConfigFlowComponent implements OnInit {
 
   save(payload: BranchServiceConfigPreview): void {
     if (this.saving()) return;
-    if (payload.blockedWindows.length > 0) {
-      this.toast.show('Chức năng lưu khoảng tạm khóa hiện chưa khả dụng.', 'info');
-      return;
-    }
     if (!Number.isInteger(payload.capacity) || payload.capacity < 1) {
       this.toast.show('Sức chứa đồng thời phải từ 1 trở lên.', 'error');
       return;
