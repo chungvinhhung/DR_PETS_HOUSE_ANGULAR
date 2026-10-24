@@ -1,0 +1,52 @@
+:host { display: block; font-family: Roboto, Arial, sans-serif; color: #172b4b; }
+.order-page { min-width: 0; padding: 32px; display: flex; flex-direction: column; gap: 20px; }
+.order-page__title { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.order-page__title h1 { margin: 0; font-size: 28px; line-height: 1.3; }
+.order-page__tabs { display: flex; border-bottom: 1px solid #dce4ef; gap: 24px; }
+.order-page__tabs button { border: 0; border-bottom: 3px solid transparent; color: #334155;
+  background: transparent; min-height: 48px; padding: 8px 20px; cursor: pointer; font-size: 15px; }
+.order-page__tabs button.active { color: #0d47a1; border-color: #0d47a1; font-weight: 600; }
+.order-page__table-wrap { width: 100%; min-width: 0; overflow-x: auto; border: 1px solid #dce4ef; border-radius: 12px; background: #fff; }
+.order-page__table { width: 100%; min-width: 780px; border-collapse: collapse; table-layout: fixed; font-size: 13px; }
+.order-page__table th, .order-page__table td { padding: 12px 16px; border-bottom: 1px solid #dce4ef;
+  text-align: left; vertical-align: middle; overflow-wrap: anywhere; }
+.order-page__table th { height: 44px; font-size: 12px; background: #f8fafc; color: #334155; white-space: nowrap; }
+.order-page__table td { min-height: 64px; height: 64px; }
+.order-page__table tbody tr:last-child td { border-bottom: none; }
+.order-page__table th:last-child, .order-page__table td:last-child { width: 145px; text-align: center; }
+.order-page__table--compact { min-width: 540px; }
+.order-page__badge { display: inline-flex; padding: 4px 10px; color: #0d47a1;
+  background: #edf4ff; border-radius: 999px; font-size: 12px; }
+.order-page__empty { text-align: center !important; padding: 30px !important; color: #64748b; }
+.order-page__hint { margin: 0; color: #64748b; font-size: 12px; line-height: 1.5; }
+.order-page__message { margin: 0; color: #475569; font-size: 13px; padding: 16px;
+  border: 1px solid #dce4ef; border-radius: 8px; }
+.order-page__message[role="alert"] { color: #a52a2a; }
+.order-page__message button { margin-left: 14px; }
+.order-page__primary, .order-page__outline { box-sizing: border-box; display: inline-flex;
+  align-items: center; justify-content: center; height: 40px; min-width: 90px; padding: 0 14px;
+  white-space: nowrap; border-radius: 8px; cursor: pointer; font: 500 13px Roboto, Arial, sans-serif; }
+.order-page__primary { color: #fff; background: #0d47a1; border: 1px solid #0d47a1; }
+.order-page__outline { color: #0d47a1; background: #fff; border: 1px solid #cbd5e1; }
+button:disabled { cursor: not-allowed; opacity: .48; }
+.order-page__backdrop { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center;
+  padding: 18px; background: rgb(15 23 42 / 62%); }
+.order-page__dialog { box-sizing: border-box; width: min(780px, 100%); max-height: calc(100dvh - 36px);
+  overflow: auto; padding: 22px; background: #fff; border-radius: 12px; border: 1px solid #dce4ef;
+  display: flex; flex-direction: column; gap: 16px; }
+.order-page__dialog-title { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+  padding-bottom: 12px; border-bottom: 1px solid #dce4ef; }
+.order-page__dialog-title h2 { margin: 0 0 4px; font-size: 20px; }
+.order-page__dialog-title p { margin: 0; color: #64748b; font-size: 13px; }
+.order-page__close { border: 0; background: transparent; cursor: pointer; font-size: 26px; color: #64748b; }
+.order-page__dialog-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; padding-top: 8px; }
+.order-page__field { display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; }
+.order-page__field textarea, .order-page__table input { box-sizing: border-box; width: 100%; max-width: 100%;
+  min-height: 38px; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff;
+  font: 400 13px Roboto, Arial, sans-serif; }
+.order-page__field span { color: #c62828; }
+.order-page__summary { background: #f5f9ff; padding: 12px 16px; border: 1px solid #dce4ef;
+  border-radius: 8px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+.order-page__summary p { margin: 0; }
+.order-page__confirm { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+@media(max-width:720px) { .order-page { padding: 20px 14px; } .order-page__dialog { padding: 16px; } }
