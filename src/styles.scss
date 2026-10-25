@@ -1460,33 +1460,71 @@ app-admin-order-management .order-admin__btn--export {background:white;color:#0d
 app-admin-order-management .order-admin__btn--new {background:#003178;color:white;border-color:#003178}
 app-admin-order-management .order-admin__btn--new:hover {background:#0d47a1}
 app-admin-order-management .order-admin__table-panel--figma {border-radius:9px;overflow:hidden}
-app-admin-order-management .order-admin__table--figma {
-  width:100%;min-width:1000px;table-layout:fixed;border-spacing:0
+/* Order and Return/Refund: balanced column widths and symmetric outer gutters. */
+app-admin-order-management .order-admin__table--figma,
+app-admin-order-management .order-admin__table--returns {
+  width:100%;
+  min-width:1000px;
+  table-layout:fixed;
+  border-spacing:0
 }
-app-admin-order-management .order-admin__table--figma thead th {
-  height:44px;padding:10px 14px;color:#111827;background:#f4f6f9;
-  font-size:12px;font-weight:600;white-space:nowrap
+app-admin-order-management .order-admin__table--figma thead th,
+app-admin-order-management .order-admin__table--returns thead th {
+  height:44px;
+  padding:10px 16px;
+  color:#111827;
+  background:#f4f6f9;
+  font-size:12px;
+  font-weight:600;
+  white-space:nowrap
 }
-app-admin-order-management .order-admin__table--figma tbody td {
-  height:76px;padding:12px 14px;font-size:13px;color:#475569
+app-admin-order-management .order-admin__table--figma tbody td,
+app-admin-order-management .order-admin__table--returns tbody td {
+  height:76px;
+  padding:12px 16px;
+  font-size:13px;
+  color:#475569
 }
-app-admin-order-management .order-admin__table--figma th:nth-child(1) {width:12%}
+/* Order: ID, date, time, customer, price, payment, status, action = 100%. */
+app-admin-order-management .order-admin__table--figma th:nth-child(1) {width:13%}
 app-admin-order-management .order-admin__table--figma th:nth-child(2) {width:12%}
 app-admin-order-management .order-admin__table--figma th:nth-child(3) {width:10%}
-app-admin-order-management .order-admin__table--figma th:nth-child(4) {width:18%}
-app-admin-order-management .order-admin__table--figma th:nth-child(5) {width:12%}
+app-admin-order-management .order-admin__table--figma th:nth-child(4) {width:17%}
+app-admin-order-management .order-admin__table--figma th:nth-child(5) {width:13%}
 app-admin-order-management .order-admin__table--figma th:nth-child(6) {width:12%}
-app-admin-order-management .order-admin__table--figma th:nth-child(7) {width:14%}
-app-admin-order-management .order-admin__table--figma th:nth-child(8) {width:10%}
-app-admin-order-management .order-admin__table--figma :is(th,td):nth-child(7) {
-  padding-right:19px;text-align:center
+app-admin-order-management .order-admin__table--figma th:nth-child(7) {width:12%}
+app-admin-order-management .order-admin__table--figma th:nth-child(8) {width:11%}
+/* Returns: request ID, date, order ID, items, refund, status, action = 100%. */
+app-admin-order-management .order-admin__table--returns th:nth-child(1) {width:13%}
+app-admin-order-management .order-admin__table--returns th:nth-child(2) {width:13%}
+app-admin-order-management .order-admin__table--returns th:nth-child(3) {width:13%}
+app-admin-order-management .order-admin__table--returns th:nth-child(4) {width:19%}
+app-admin-order-management .order-admin__table--returns th:nth-child(5) {width:17%}
+app-admin-order-management .order-admin__table--returns th:nth-child(6) {width:13%}
+app-admin-order-management .order-admin__table--returns th:nth-child(7) {width:12%}
+/* First and last content start/end exactly 20px from the table's inner edges. */
+app-admin-order-management .order-admin__table--figma :is(th,td):first-child,
+app-admin-order-management .order-admin__table--returns :is(th,td):first-child {
+  padding-left:20px;
+  text-align:left
 }
-app-admin-order-management .order-admin__table--figma :is(th,td):nth-child(8) {
-  padding-left:19px;text-align:center
+app-admin-order-management .order-admin__table--figma :is(th,td):last-child,
+app-admin-order-management .order-admin__table--returns :is(th,td):last-child {
+  padding-right:20px;
+  text-align:right
 }
-app-admin-order-management .order-admin__table--figma .order-admin__badge {
-  display:inline-flex;align-items:center;justify-content:center;
-  min-width:92px;max-width:100%
+app-admin-order-management .order-admin__table--figma :is(th,td):nth-child(7),
+app-admin-order-management .order-admin__table--returns :is(th,td):nth-child(6) {
+  text-align:center;
+  padding-inline:12px
+}
+app-admin-order-management .order-admin__table--figma .order-admin__badge,
+app-admin-order-management .order-admin__table--returns .order-admin__badge {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  max-width:100%;
+  min-width:90px
 }
 app-admin-order-management .order-admin__customer {font-weight:500}
 app-admin-order-management .order-admin__badge[data-status="REQUESTED"] {color:#985a06;background:#fff4dc}
