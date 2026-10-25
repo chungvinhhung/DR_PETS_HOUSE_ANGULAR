@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, from, map, mergeMap, of, toArray } from 'rxjs';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
@@ -9,7 +10,9 @@ import {
   AdminOrderApiService, OrderRecord, OrderStatus, OrderWriteAction, OrderReturnSummary, ReturnStatus,
 } from '../services/admin-order-api.service';
 
-type OrderFilter = OrderStatus | 'ALL';
+type OrderFilter = OrderStatus | ReturnStatus | 'ALL';
+const localDate = (day: Date): string => [day.getFullYear(), String(day.getMonth() + 1).padStart(2, '0'), String(day.getDate()).padStart(2, '0')].join('-');
+const defaultReturnStart = (): string => { const day = new Date(); day.setDate(day.getDate() - 6); return localDate(day); };
 type ActionDialog = OrderWriteAction | 'cancel' | null;
 const STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING: 'Chờ xác nhận',
@@ -44,6 +47,11 @@ export class AdminOrderManagementComponent {
   readonly returns = signal<OrderReturnSummary[]>([]);
   readonly activeTab = signal<'orders' | 'returns'>('orders');
   readonly dateRange = signal('30');
+  readonly returnDateFrom = signal(defaultReturnStart());
+  readonly returnDateTo = signal(localDate(new Date()));
+  readonly returnBranchLookup = signal<Record<string,string|null>>({});
+  readonly returnBranchResolving = signal(false);
+  readonly invalidReturnDates = computed(() => Boolean(this.returnDateFrom() && this.returnDateTo() && this.returnDateFrom() > this.returnDateTo()));
   readonly returnsLoading = signal(false);
   readonly returnsError = signal('');
   readonly hasLoadedReturns = signal(false);
@@ -85,13 +93,21 @@ export class AdminOrderManagementComponent {
   readonly filteredReturns = computed(() => {
     const q = this.search().trim().toLocaleLowerCase('vi');
     const status = this.status();
-    const days = Number(this.dateRange());
-    const cutoff = Date.now() - days * 86400000;
+    const branch = this.branchId();
+    const from = this.returnDateFrom();
+    const to = this.returnDateTo();
+    if (this.invalidReturnDates()) return [];
     return this.returns().filter(row => {
-      const createdAt = row.history?.[0]?.at;
+      // BE OrderReturn does not yet expose branchId/createdAt; resolve branch from parent order.
+      const branchOfOrder = this.allOrders().find(order => order.id === row.orderId)?.fulfillmentBranchId
+        ?? this.returnBranchLookup()[row.orderId];
+      const created = row.history?.find(event => event.status === 'REQUESTED')?.at ?? row.history?.[0]?.at;
+      const day = this.localReturnDay(created);
       return (!q || [row.id, row.orderId, ...row.items.map(item => item.productName)].some(v => v.toLocaleLowerCase('vi').includes(q))) &&
         (status === 'ALL' || row.status === status) &&
-        (!days || (!!createdAt && new Date(createdAt).getTime() >= cutoff));
+        (branch === 'ALL' || branchOfOrder === branch) &&
+        (!from || (!!day && day >= from)) &&
+        (!to || (!!day && day <= to));
     });
   });
   readonly activeRowCount = computed(() => this.activeTab() === 'orders' ? this.rows().length : this.filteredReturns().length);
@@ -138,12 +154,57 @@ export class AdminOrderManagementComponent {
     this.search.set('');
     this.status.set('ALL');
     this.dateRange.set('30');
+    this.branchId.set('ALL');
+    this.returnDateFrom.set(defaultReturnStart());
+    this.returnDateTo.set(localDate(new Date()));
     this.page.set(1);
     if (tab === 'returns' && !this.hasLoadedReturns()) this.loadReturns();
   }
   setDateRange(value: string): void {
     if (['0', '7', '30', '90'].includes(value)) { this.dateRange.set(value); this.page.set(1); }
   }
+  setReturnDateFrom(value: string): void { this.returnDateFrom.set(value); this.page.set(1); }
+  setReturnDateTo(value: string): void { this.returnDateTo.set(value); this.page.set(1); }
+  private localReturnDay(value?: string): string {
+    if (!value) return '';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '';
+    const pieces = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit',
+    }).formatToParts(d);
+    const p = (kind: Intl.DateTimeFormatPartTypes): string => pieces.find(part => part.type === kind)?.value ?? '';
+    return [p('year'), p('month'), p('day')].join('-');
+  }
+  private resolveReturnBranches(): void {
+    if (this.returnBranchResolving() || this.branchId() === 'ALL') return;
+    const known = this.returnBranchLookup();
+    const fromOrders = new Set(this.allOrders().map(order => order.id));
+    const missing = [...new Set(this.returns().map(ret => ret.orderId))]
+      .filter(id => !fromOrders.has(id) && !(id in known));
+    if (!missing.length) return;
+    this.returnBranchResolving.set(true);
+    from(missing).pipe(
+      mergeMap(id => this.api.get(id).pipe(
+        map(order => ({ id, branch: order.fulfillmentBranchId as string | null })),
+        catchError(() => of({ id, branch: null })),
+      ), 4),
+      toArray(),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: rows => {
+        this.returnBranchLookup.update(current => Object.assign({}, current,
+          ...rows.map(row => ({[row.id]:row.branch}))));
+        this.returnBranchResolving.set(false);
+      },
+      error: () => this.returnBranchResolving.set(false),
+    });
+  }
+  readonly unresolvedReturnBranchCount = computed(() => {
+    if (this.branchId() === 'ALL') return 0;
+    const ids = new Set(this.allOrders().map(order => order.id));
+    const lookup = this.returnBranchLookup();
+    return this.returns().filter(row => !ids.has(row.orderId) && !lookup[row.orderId]).length;
+  });
   private loadReturns(): void {
     this.returnsLoading.set(true); this.returnsError.set('');
     this.api.listReturns().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -151,6 +212,7 @@ export class AdminOrderManagementComponent {
         this.returns.set(Array.isArray(page.items) ? page.items : []);
         this.hasLoadedReturns.set(true);
         this.returnsLoading.set(false);
+        this.resolveReturnBranches();
       },
       error: (error: unknown) => {
         this.returns.set([]);
@@ -223,12 +285,13 @@ export class AdminOrderManagementComponent {
       this.status.set(value as OrderFilter); this.page.set(1);
     }
   }
-  setBranch(value: string): void { this.branchId.set(value); this.page.set(1); }
+  setBranch(value: string): void { this.branchId.set(value); this.page.set(1); if (this.activeTab() === 'returns') this.resolveReturnBranches(); }
   changePage(next: number): void {
     if (next >= 1 && next <= this.totalPages()) this.page.set(next);
   }
   clearFilters(): void {
-    this.search.set(''); this.status.set('ALL'); this.branchId.set('ALL'); this.dateRange.set('30'); this.page.set(1);
+    this.search.set(''); this.status.set('ALL'); this.branchId.set('ALL'); this.dateRange.set('30');
+    this.returnDateFrom.set(defaultReturnStart()); this.returnDateTo.set(localDate(new Date())); this.page.set(1);
   }
   refresh(): void { if (this.isDetail()) this.loadDetail(); else if (this.activeTab() === 'returns') this.loadReturns(); else this.loadOrders(); }
 
