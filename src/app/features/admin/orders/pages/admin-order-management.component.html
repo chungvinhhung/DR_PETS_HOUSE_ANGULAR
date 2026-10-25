@@ -159,8 +159,8 @@
           <input #searchBox type="search" [placeholder]="activeTab() === 'orders' ? 'Tìm kiếm mã đơn hoặc tên KH...' : 'Tìm mã yêu cầu hoặc sản phẩm...'"
             aria-label="Tìm kiếm" [value]="search()" (input)="setSearch(searchBox.value)">
         </label>
-        <div class="order-admin__filter-controls">
-          <label><span class="sr-only">Trạng thái</span>
+        <!-- All five controls are direct grid children to prevent nested flex wrapping. -->
+          <label class="order-admin__status-filter"><span class="sr-only">Trạng thái</span>
             <select #statusField [value]="status()" (change)="setStatus(statusField.value)">
               <option value="ALL">Tất cả trạng thái</option>
               @if (activeTab() === 'orders') {
@@ -181,7 +181,7 @@
               }
             </select>
           </label>
-          <label><span class="sr-only">Khoảng thời gian</span>
+          <label class="order-admin__date-filter"><span class="sr-only">Khoảng thời gian</span>
             <select #dateField [value]="dateRange()" (change)="setDateRange(dateField.value)">
               <option value="30">30 ngày qua</option>
               <option value="7">7 ngày qua</option>
@@ -196,7 +196,6 @@
           <button class="order-admin__btn order-admin__btn--new" type="button" (click)="newOrder()">
             <img src="/assets/admin-product/icon-add.svg" alt="" width="16" height="16"> Đơn hàng mới
           </button>
-        </div>
       </div>
 
       <section class="order-admin__table-panel order-admin__table-panel--figma" [attr.aria-label]="activeTab() === 'orders' ? 'Danh sách đơn hàng' : 'Danh sách trả hàng'">
