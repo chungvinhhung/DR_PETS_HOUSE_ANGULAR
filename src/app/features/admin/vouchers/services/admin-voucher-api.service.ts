@@ -95,7 +95,7 @@ export function voucherOffer(voucher: AdminVoucher): string {
 }
 export function voucherAvailability(v: AdminVoucher): string {
   const now = Date.now();
-  if (v.status === 'INACTIVE') return 'Đã tắt';
+  // Eligibility is independent of the admin on/off status; use the Status filter for INACTIVE.
   if (v.usedCount >= v.quota) return 'Hết lượt';
   if (new Date(v.effectiveFrom).getTime() > now) return 'Chưa bắt đầu';
   if (new Date(v.effectiveTo).getTime() < now) return 'Hết hạn';
