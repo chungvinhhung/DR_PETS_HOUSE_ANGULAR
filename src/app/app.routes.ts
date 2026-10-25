@@ -3,6 +3,7 @@ import { CanDeactivateFn, Routes } from '@angular/router';
 import { adminLoginEntryGuard } from './core/guards/admin-login-entry.guard';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
+import { orderOperatorGuard } from './core/guards/order-operator.guard';
 
 const BACKOFFICE_ROLES = ['ADMIN', 'MANAGER', 'STAFF'];
 
@@ -144,21 +145,21 @@ export const routes: Routes = [
   },
   {
     path: 'admin/order-returns/:id',
-    canActivate: [authGuard, roleGuard],
+    canActivate: [authGuard, roleGuard, orderOperatorGuard],
     data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
     loadComponent: () => import('./features/admin/orders/pages/admin-order-return-detail.component')
       .then(component => component.AdminOrderReturnDetailComponent),
   },
   {
     path: 'admin/orders/:id',
-    canActivate: [authGuard, roleGuard],
+    canActivate: [authGuard, roleGuard, orderOperatorGuard],
     data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
     loadComponent: () => import('./features/admin/orders/pages/admin-order-management.component')
       .then(component => component.AdminOrderManagementComponent),
   },
   {
     path: 'admin/orders',
-    canActivate: [authGuard, roleGuard],
+    canActivate: [authGuard, roleGuard, orderOperatorGuard],
     data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
     loadComponent: () => import('./features/admin/orders/pages/admin-order-management.component')
       .then(component => component.AdminOrderManagementComponent),
