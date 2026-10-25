@@ -1,0 +1,49 @@
+:host{display:block;min-width:0}
+.voucher-editor{box-sizing:border-box;max-width:1480px;width:100%;margin:auto;padding:30px 40px 58px;font:13px/1.5 Roboto,Arial,sans-serif;color:#203047}
+.voucher-editor *{box-sizing:border-box}
+.voucher-editor__crumb{display:flex;gap:10px;margin-bottom:22px;font-size:12px;color:#64748b}
+.voucher-editor__crumb a{text-decoration:none;color:#0d47a1}
+.voucher-editor__heading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:21px}
+.voucher-editor__heading h1{font-size:26px;font-weight:650;margin:0}
+.voucher-editor__heading-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.voucher-editor__button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 17px;border-radius:8px;border:1px solid #dce5f0;text-decoration:none;white-space:nowrap;background:white;color:#213d63;font:500 13px Roboto,Arial,sans-serif;cursor:pointer}
+.voucher-editor__button--primary{color:white;background:#0d47a1;border-color:#0d47a1}
+.voucher-editor__button--outline{color:#0d47a1;border-color:#0d47a1;background:white}
+.voucher-editor__button:disabled{opacity:.5;cursor:not-allowed}
+.voucher-editor__panel{padding:22px 24px;margin-bottom:16px;border:1px solid #e2e8f0;border-radius:12px;background:white;min-width:0}
+.voucher-editor__panel h2{font-size:17px;margin:0 0 22px;font-weight:650}
+.voucher-editor__fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 16px}
+.voucher-editor__fields--full{grid-column:1/-1}
+.voucher-editor__fields label{display:block;min-width:0;color:#475569;font-size:12px;font-weight:550}
+.voucher-editor__fields input,.voucher-editor__fields select,.voucher-editor__fields textarea,.voucher-editor__dialog textarea{display:block;width:100%;min-width:0;min-height:44px;margin-top:8px;padding:10px 12px;border:1px solid #dce5f0;border-radius:8px;background:white;color:#203047;font:13px Roboto,Arial,sans-serif}
+.voucher-editor__fields input:disabled,.voucher-editor__fields textarea:disabled{background:#f7f9fc;color:#708198}
+.voucher-editor__fields small,.voucher-editor__dialog small{display:block;margin-top:6px;font-size:11px;font-weight:400;color:#73849b;line-height:1.5}
+.voucher-editor__fields textarea{min-height:74px;resize:vertical}
+.voucher-editor__required{color:#ba3446}
+.voucher-editor__input-suffix{position:relative}
+.voucher-editor__input-suffix input{padding-right:52px}
+.voucher-editor__input-suffix>span{position:absolute;right:13px;top:50%;transform:translateY(-32%);color:#64748b;font-weight:400}
+.voucher-editor__summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 20px}
+.voucher-editor__summary>div{min-width:0}
+.voucher-editor__summary>div>span{display:block;margin-bottom:5px;color:#708198;font-size:12px}
+.voucher-editor__summary strong{display:block;overflow-wrap:anywhere;font-size:13px;font-weight:550;color:#223451}
+.voucher-editor__summary--usage strong{font-size:20px;font-weight:650}
+.voucher-editor__badge{display:inline-flex;border-radius:99px;padding:4px 10px;background:#e1f3e9;color:#23744b;font-size:11px}
+.voucher-editor__badge[data-status="INACTIVE"]{background:#edf1f4;color:#687a8c}
+.voucher-editor__progress{height:9px;border-radius:99px;background:#e7edf7;overflow:hidden;margin-top:19px}
+.voucher-editor__progress span{height:100%;display:block;background:#0d47a1;border-radius:99px}
+.voucher-editor__muted{font-size:12px;color:#657993;margin:11px 0 0}
+.voucher-editor__validation{background:#ffeff1;border:1px solid #f7ccd3;color:#a62640;border-radius:8px;padding:13px;margin:16px 0}
+.voucher-editor__error p{color:#ad354a}
+.voucher-editor__overlay{position:fixed;inset:0;z-index:260;background:rgba(15,31,56,.52);display:flex;align-items:center;justify-content:center;padding:18px}
+.voucher-editor__dialog{width:min(100%,636px);max-height:90vh;overflow-y:auto;background:white;border:1px solid #e2e8f0;border-radius:12px;padding:25px;box-shadow:0 15px 45px #0002}
+.voucher-editor__dialog h2{font-size:20px;margin:0 0 10px}
+.voucher-editor__dialog>p{color:#64748b;font-size:12px;margin:0 0 17px}
+.voucher-editor__dialog label{display:block;color:#475569;font-size:12px;font-weight:550;margin:15px 0}
+.voucher-editor__dialog textarea{min-height:70px;resize:vertical}
+.voucher-editor__notice{background:#fff3e0;border-radius:9px;padding:13px;color:#314055}
+.voucher-editor__notice strong{font-size:12px}
+.voucher-editor__notice p{margin:5px 0 0;font-size:12px}
+.voucher-editor__dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:15px;border-top:1px solid #e2e8f0}
+@media(max-width:1000px){.voucher-editor{padding:25px 20px}.voucher-editor__fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.voucher-editor{padding:18px 12px}.voucher-editor__fields,.voucher-editor__summary{grid-template-columns:1fr}.voucher-editor__heading h1{font-size:22px}}
