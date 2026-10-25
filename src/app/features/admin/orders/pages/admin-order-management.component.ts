@@ -38,6 +38,9 @@ export class AdminOrderManagementComponent {
   private readonly session = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
   private readonly destroyRef = inject(DestroyRef);
+  private ordersRequestVersion = 0;
+  private returnsRequestVersion = 0;
+  private detailRequestVersion = 0;
 
   readonly statuses = STATUS_LABELS;
   readonly milestones: OrderStatus[] = ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'COMPLETED'];
@@ -281,15 +284,18 @@ export class AdminOrderManagementComponent {
     return this.returns().filter(row => !ids.has(row.orderId) && !lookup[row.orderId]).length;
   });
   private loadReturns(): void {
+    const version = ++this.returnsRequestVersion;
     this.returnsLoading.set(true); this.returnsError.set('');
     this.api.listReturns().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: page => {
+        if (version !== this.returnsRequestVersion) return;
         this.returns.set(Array.isArray(page.items) ? page.items : []);
         this.hasLoadedReturns.set(true);
         this.returnsLoading.set(false);
         this.resolveReturnBranches();
       },
       error: (error: unknown) => {
+        if (version !== this.returnsRequestVersion) return;
         this.returns.set([]);
         this.returnsError.set(adminErrorMessage(error, 'Không tải được yêu cầu trả hàng.'));
         this.returnsLoading.set(false);
@@ -371,13 +377,16 @@ export class AdminOrderManagementComponent {
   refresh(): void { if (this.isDetail()) this.loadDetail(); else if (this.activeTab() === 'returns') this.loadReturns(); else this.loadOrders(); }
 
   private loadOrders(): void {
+    const version = ++this.ordersRequestVersion;
     this.loading.set(true); this.error.set('');
     this.api.list().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (page) => {
+        if (version !== this.ordersRequestVersion) return;
         this.allOrders.set(Array.isArray(page.items) ? page.items : []);
         this.page.set(1); this.loading.set(false);
       },
       error: (error: unknown) => {
+        if (version !== this.ordersRequestVersion) return;
         this.loading.set(false); this.allOrders.set([]);
         this.error.set(adminErrorMessage(error, 'Không tải được danh sách đơn hàng.'));
       },
@@ -385,16 +394,17 @@ export class AdminOrderManagementComponent {
   }
   private loadDetail(): void {
     const id = this.orderId();
+    const version = ++this.detailRequestVersion;
     if (!id) return;
     this.loading.set(true); this.error.set('');
     this.selected.set(null);
     this.api.get(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (order) => {
-        if (this.orderId() !== id) return;
+        if (this.orderId() !== id || version !== this.detailRequestVersion) return;
         this.selected.set(order); this.loading.set(false);
       },
       error: (error: unknown) => {
-        if (this.orderId() !== id) return;
+        if (this.orderId() !== id || version !== this.detailRequestVersion) return;
         this.error.set(adminErrorMessage(error, 'Không tải được chi tiết đơn hàng.'));
         this.loading.set(false);
       },
