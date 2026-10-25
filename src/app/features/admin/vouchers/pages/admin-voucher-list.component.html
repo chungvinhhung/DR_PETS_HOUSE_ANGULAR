@@ -13,9 +13,9 @@
         <span class="sr-only">Phạm vi</span>
         <select #scopeField aria-label="Phạm vi áp dụng" [value]="scope()" (change)="setScope(scopeField.value)">
           <option value="ALL">Tất cả phạm vi</option>
-          <option value="ORDER">Tất cả đơn / giao dịch</option>
+          <option value="ORDER">Tất cả giao dịch</option>
           <option value="PRODUCT">Đơn mua hàng</option>
-          <option value="SERVICE">Dịch vụ</option>
+          <option value="SERVICE">Đơn dịch vụ</option>
         </select>
       </label>
       <label class="voucher-list__control">
@@ -26,28 +26,23 @@
           <option value="INACTIVE">Đã tắt</option>
         </select>
       </label>
-      <button type="button" class="voucher-list__button voucher-list__button--plain"
-        [attr.aria-expanded]="extraFilter()" (click)="toggleExtra()">Bộ lọc khác</button>
+      <label class="voucher-list__control">
+        <span class="sr-only">Khả dụng</span>
+        <select #availabilityField aria-label="Khả dụng" [value]="availabilityFilter()" (change)="setAvailability(availabilityField.value)">
+          <option value="ALL">Tất cả khả dụng</option>
+          <option value="Còn lượt">Còn lượt</option>
+          <option value="Hết lượt">Hết lượt</option>
+          <option value="Chưa bắt đầu">Chưa bắt đầu</option>
+          <option value="Hết hạn">Hết hạn</option>
+          <option value="Đã tắt">Đã tắt</option>
+        </select>
+      </label>
       @if (canEdit()) {
         <a routerLink="/admin/vouchers/new" class="voucher-list__button voucher-list__button--primary">
           <img src="/assets/admin-product/icon-add.svg" alt="" width="16" height="16">Tạo voucher
         </a>
       }
     </section>
-    @if (extraFilter()) {
-      <div class="voucher-list__extras">
-        <label>Khả dụng
-          <select #availabilityField [value]="availabilityFilter()" (change)="setAvailability(availabilityField.value)">
-            <option value="ALL">Tất cả</option>
-            <option value="Còn lượt">Còn lượt</option>
-            <option value="Hết lượt">Hết lượt</option>
-            <option value="Chưa bắt đầu">Chưa bắt đầu</option>
-            <option value="Hết hạn">Hết hạn</option>
-            <option value="Đã tắt">Đã tắt</option>
-          </select>
-        </label>
-      </div>
-    }
     <section class="voucher-list__panel" aria-label="Danh sách voucher">
       <div class="voucher-list__scroll">
         <table class="voucher-list__table">
