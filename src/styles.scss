@@ -1550,3 +1550,61 @@ app-admin-order-management .order-admin__data-note {font-size:11px;margin-top:8p
   app-admin-order-management .order-admin__tabs {overflow-x:auto}
 }
 app-admin-order-management .order-admin__btn--new img {filter:brightness(0) invert(1);width:14px;height:14px;flex:none}
+
+/* Return/Refund toolbar: Figma separate Search / Status / Branch / Date range. */
+app-admin-order-management .order-admin__filters--returns {
+  display:grid;
+  grid-template-columns:minmax(235px,1fr) minmax(154px,200px) minmax(154px,190px) minmax(268px,310px);
+  grid-template-rows:44px;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:16px;
+  margin-bottom:16px;
+  border:1px solid #dce5f0;
+  border-radius:10px;
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__search {
+  grid-column:1;grid-row:1;
+  min-width:0;width:100%;max-width:none;height:44px;margin:0
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__status-filter {
+  grid-column:2;grid-row:1;display:block;width:100%;height:44px;min-width:0
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__branch-filter {
+  grid-column:3;grid-row:1;display:block;width:100%;height:44px;min-width:0
+}
+app-admin-order-management .order-admin__filters--returns select {
+  display:block;width:100%;height:44px;min-height:44px;
+  margin:0;padding:0 34px 0 12px;
+  border:1px solid #dce5f0;border-radius:8px;
+  appearance:none;
+  background:#fff url('/assets/admin-product/expand_more.svg') no-repeat right 10px center;
+  background-size:18px;font-size:12px;color:#21334d
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__range-filter {
+  grid-column:4;grid-row:1;
+  display:flex;align-items:center;gap:5px;
+  height:44px;min-width:0;width:100%;
+  padding:0 10px;border:1px solid #dce5f0;border-radius:8px;color:#21334d
+}
+app-admin-order-management .order-admin__range-filter label {
+  flex:1 1 0;min-width:0;overflow:hidden
+}
+app-admin-order-management .order-admin__range-filter input[type="date"] {
+  box-sizing:border-box;width:100%;min-width:0;
+  height:40px;margin:0;padding:0 2px;
+  border:0;background:transparent;
+  color:#21334d;font:12px Roboto,Arial,sans-serif;
+}
+app-admin-order-management .order-admin__range-filter .order-admin__range-separator {
+  flex:none;color:#8191a8
+}
+app-admin-order-management .order-admin__range-filter>svg {flex:none;color:#536781}
+app-admin-order-management .order-admin__filter-warning,
+app-admin-order-management .order-admin__filter-hint {
+  margin:-5px 0 13px;font-size:12px;color:#65758e
+}
+app-admin-order-management .order-admin__filter-warning {color:#ad394a}
