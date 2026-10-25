@@ -36,6 +36,9 @@ export class AdminVoucherListComponent {
   readonly previous = signal<(string | null)[]>([]);
   readonly page = computed(() => this.previous().length + 1);
   readonly canEdit = computed(() => this.session.user()?.systemRole === 'ADMIN');
+  readonly hasActiveFilters = computed(() =>
+    Boolean(this.search().trim()) || this.scope() !== 'ALL' || this.status() !== 'ALL' ||
+    this.availabilityFilter() !== 'ALL' || this.cursor() !== null);
   readonly filtered = computed(() => {
     const q = this.search().trim().toLocaleLowerCase('vi');
     return this.all().filter(item =>
@@ -105,6 +108,15 @@ export class AdminVoucherListComponent {
   availability(value: AdminVoucher): string { return voucherAvailability(value); }
   availablePct(value: AdminVoucher): number {
     return value.quota > 0 ? Math.min(100, Math.max(0, Math.round(value.usedCount / value.quota * 100))) : 0;
+  }
+  clearFilters(): void {
+    this.search.set('');
+    this.scope.set('ALL');
+    this.status.set('ALL');
+    this.availabilityFilter.set('ALL');
+    this.previous.set([]);
+    this.cursor.set(null);
+    this.fetch();
   }
   refresh(): void { this.fetch(); }
 }
