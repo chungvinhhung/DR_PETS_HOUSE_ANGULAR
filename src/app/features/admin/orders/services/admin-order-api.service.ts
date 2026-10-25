@@ -52,7 +52,7 @@ export interface OrderReturnSummary {
   id: string;
   orderId: string;
   status: ReturnStatus;
-  items: { orderItemId: string; productName: string; requestedQty: number; refundAmount: number }[];
+  items: { orderItemId: string; productName: string; orderedQty: number; alreadyReturnedQty: number; requestedQty: number; refundAmount: number }[];
   refundBreakdown: { merchandiseNet: number; shippingRefunded: number; total: number };
   reason?: string;
   refundId?: string | null;
