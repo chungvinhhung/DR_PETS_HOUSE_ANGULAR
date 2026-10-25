@@ -57,7 +57,9 @@ export class AdminOrderManagementComponent {
     const [year, month] = this.returnCalendarMonth().split('-').map(Number);
     const first = new Date(year, month - 1, 1);
     const offset = (first.getDay() + 6) % 7;
-    return Array.from({length: 42}, (_, i) => {
+    // Render only the weeks needed by this month (4–6, instead of always 6).
+    const weeks = Math.ceil((offset + new Date(year, month, 0).getDate()) / 7);
+    return Array.from({length: weeks * 7}, (_, i) => {
       const day = new Date(year, month - 1, 1 - offset + i);
       return {key: localDate(day), number: day.getDate(), currentMonth: day.getMonth() === month - 1};
     });
@@ -197,6 +199,12 @@ export class AdminOrderManagementComponent {
   closeReturnCalendar(): void {
     this.returnCalendarOpen.set(false);
     this.returnCalendarStart.set(null);
+  }
+  clearReturnDateRange(): void {
+    this.returnDateFrom.set('');
+    this.returnDateTo.set('');
+    this.page.set(1);
+    this.closeReturnCalendar();
   }
   changeReturnCalendarMonth(amount: number): void {
     const [year, month] = this.returnCalendarMonth().split('-').map(Number);
