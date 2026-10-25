@@ -70,9 +70,9 @@ export class AdminVoucherApiService {
 }
 
 export const VOUCHER_SCOPE_LABELS: Record<VoucherScope, string> = {
-  ORDER: 'Tất cả đơn / giao dịch',
+  ORDER: 'Tất cả giao dịch',
   PRODUCT: 'Đơn mua hàng',
-  SERVICE: 'Dịch vụ',
+  SERVICE: 'Đơn dịch vụ',
 };
 export const VOUCHER_STATUS_LABELS: Record<VoucherStatus, string> = {
   ACTIVE: 'Đang bật',
