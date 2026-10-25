@@ -13,6 +13,7 @@ interface ProductLeaveAware {
 const confirmProductLeave: CanDeactivateFn<ProductLeaveAware> = (component) => component.canLeavePage();
 
 const confirmStaffLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
+const confirmVoucherLeave: CanDeactivateFn<{ canLeavePage(): boolean }> = component => component.canLeavePage();
 
 export const routes: Routes = [
   {
@@ -110,6 +111,36 @@ export const routes: Routes = [
       import(
         './features/admin/service-catalog/pages/service-catalog-list.component'
       ).then((component) => component.ServiceCatalogListComponent),
+  },
+  {
+    path: 'admin/vouchers/new',
+    canActivate: [authGuard, roleGuard],
+    canDeactivate: [confirmVoucherLeave],
+    data: { roles: ['ADMIN'], mode: 'create' },
+    loadComponent: () => import('./features/admin/vouchers/pages/admin-voucher-editor.component')
+      .then(c => c.AdminVoucherEditorComponent),
+  },
+  {
+    path: 'admin/vouchers/:id/edit',
+    canActivate: [authGuard, roleGuard],
+    canDeactivate: [confirmVoucherLeave],
+    data: { roles: ['ADMIN'], mode: 'edit' },
+    loadComponent: () => import('./features/admin/vouchers/pages/admin-voucher-editor.component')
+      .then(c => c.AdminVoucherEditorComponent),
+  },
+  {
+    path: 'admin/vouchers/:id',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'], mode: 'view' },
+    loadComponent: () => import('./features/admin/vouchers/pages/admin-voucher-editor.component')
+      .then(c => c.AdminVoucherEditorComponent),
+  },
+  {
+    path: 'admin/vouchers',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () => import('./features/admin/vouchers/pages/admin-voucher-list.component')
+      .then(c => c.AdminVoucherListComponent),
   },
   {
     path: 'admin/order-returns/:id',
