@@ -190,6 +190,7 @@
       </div>
 
       } @else {
+      <div class="order-admin__returns-toolbar">
       <div class="order-admin__filters order-admin__filters--returns" role="search" aria-label="Tìm kiếm và lọc yêu cầu trả hàng">
         <label class="order-admin__search">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.2 4.2"/></svg>
@@ -218,21 +219,52 @@
             }
           </select>
         </label>
-        <div class="order-admin__range-filter" role="group" aria-label="Khoảng ngày yêu cầu">
-          <label>
-            <span class="sr-only">Từ ngày</span>
-            <input #returnFrom type="date" aria-label="Từ ngày"
-              [value]="returnDateFrom()" [max]="returnDateTo() || null"
-              (change)="setReturnDateFrom(returnFrom.value)">
-          </label>
-          <span class="order-admin__range-separator" aria-hidden="true">–</span>
-          <label>
-            <span class="sr-only">Đến ngày</span>
-            <input #returnTo type="date" aria-label="Đến ngày"
-              [value]="returnDateTo()" [min]="returnDateFrom() || null"
-              (change)="setReturnDateTo(returnTo.value)">
-          </label>
-        </div>
+        <button type="button" class="order-admin__range-trigger"
+          [attr.aria-expanded]="returnCalendarOpen()" aria-haspopup="dialog"
+          aria-label="Chọn khoảng ngày yêu cầu trả hàng"
+          (click)="toggleReturnCalendar()">
+          <span class="order-admin__range-values">
+            <span>{{ formatReturnPickerDay(returnDateFrom()) }}</span>
+            <span class="order-admin__range-dash" aria-hidden="true">–</span>
+            <span>{{ formatReturnPickerDay(returnDateTo()) }}</span>
+          </span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="2"/>
+            <path d="M7 3v4m10-4v4M3 10h18"/>
+          </svg>
+        </button>
+      </div>
+      @if (returnCalendarOpen()) {
+        <section class="order-admin__calendar-panel" role="dialog" aria-label="Chọn khoảng ngày">
+          <header class="order-admin__calendar-header">
+            <button type="button" aria-label="Tháng trước" (click)="changeReturnCalendarMonth(-1)">‹</button>
+            <strong>{{ returnCalendarLabel() }}</strong>
+            <button type="button" aria-label="Tháng sau" (click)="changeReturnCalendarMonth(1)">›</button>
+          </header>
+          <p class="order-admin__calendar-instruction" role="status">
+            {{ returnCalendarStart() ? 'Chọn ngày kết thúc' : 'Chọn ngày bắt đầu' }}
+          </p>
+          <div class="order-admin__calendar-days" role="group" aria-label="Ngày trong tháng">
+            @for (weekday of returnWeekdays; track weekday) {
+              <span class="order-admin__calendar-weekday">{{ weekday }}</span>
+            }
+            @for (day of returnCalendarDays(); track day.key) {
+              <button type="button"
+                [class.order-admin__calendar-day--muted]="!day.currentMonth"
+                [class.order-admin__calendar-day--start]="isReturnCalendarStart(day.key)"
+                [class.order-admin__calendar-day--end]="isReturnCalendarEnd(day.key)"
+                [class.order-admin__calendar-day--between]="isReturnCalendarBetween(day.key)"
+                [attr.aria-label]="formatReturnPickerDay(day.key)"
+                [attr.aria-pressed]="isReturnCalendarStart(day.key) || isReturnCalendarEnd(day.key)"
+                (click)="selectReturnCalendarDay(day.key)">{{ day.number }}</button>
+            }
+          </div>
+          <footer class="order-admin__calendar-footer">
+            <span>{{ returnCalendarStart() ? 'Đã chọn ngày bắt đầu: ' + formatReturnPickerDay(returnCalendarStart()!) : 'Chọn lần lượt 2 ngày để lọc' }}</span>
+            <button type="button" (click)="closeReturnCalendar()">Đóng</button>
+          </footer>
+        </section>
+      }
       </div>
       @if (invalidReturnDates()) {
         <p class="order-admin__filter-warning" role="alert">Ngày bắt đầu không thể sau ngày kết thúc.</p>
