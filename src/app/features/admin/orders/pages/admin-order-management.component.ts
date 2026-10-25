@@ -117,6 +117,9 @@ export class AdminOrderManagementComponent {
     (this.selected()?.status === 'PENDING' || this.selected()?.status === 'CONFIRMED' || this.selected()?.status === 'PROCESSING'));
 
   constructor() {
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((query) => {
+      if (!this.isDetail() && query.get('tab') === 'returns') this.setTab('returns');
+    });
     this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       this.orderId.set(params.get('id') ?? '');
       this.dialog.set(null);
@@ -177,7 +180,17 @@ export class AdminOrderManagementComponent {
   }
   exportFile(): void {
     if (this.activeTab() === 'returns') {
-      this.toast.show('Chức năng xuất file trả hàng sẽ được bổ sung ở Phase 2.', 'info'); return;
+      const current = this.filteredReturns();
+      if (!current.length) { this.toast.show('Không có yêu cầu trả hàng để xuất file.', 'info'); return; }
+      const cells = [
+        ['Mã yêu cầu','Mã đơn hàng','Ngày yêu cầu','Sản phẩm','Số lượng trả','Tiền dự kiến hoàn','Trạng thái'],
+        ...current.map(row => [row.id, row.orderId, this.datePart(row.history?.[0]?.at),
+          row.items.map(item => item.productName).join('; '),
+          String(row.items.reduce((sum, item) => sum + item.requestedQty, 0)),
+          String(row.refundBreakdown.total), this.returnStatusLabel(row.status)]),
+      ];
+      this.downloadCsv('yeu-cau-tra-hang-da-tai.csv', cells);
+      return;
     }
     const current = this.rows();
     if (!current.length) { this.toast.show('Không có đơn hàng để xuất file.', 'info'); return; }
@@ -192,6 +205,14 @@ export class AdminOrderManagementComponent {
     link.href = objectUrl; link.download = 'don-hang-da-tai.csv'; link.click();
     URL.revokeObjectURL(objectUrl);
     this.toast.show('Đã xuất danh sách đơn hàng đang hiển thị theo bộ lọc.', 'success');
+  }
+  private downloadCsv(filename: string, cells: string[][]): void {
+    const csv = '\uFEFF' + cells.map(row => row.map(value => '"' + String(value).replace(/"/g, '""') + '"').join(',')).join('\r\n');
+    const objectUrl = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = objectUrl; link.download = filename; link.click();
+    URL.revokeObjectURL(objectUrl);
+    this.toast.show('Đã xuất những bản ghi hiện có theo bộ lọc.', 'success');
   }
   newOrder(): void {
     this.toast.show('BE hiện chỉ hỗ trợ tạo đơn qua giỏ hàng/checkout. Chưa có chức năng tạo đơn trực tiếp từ Admin.', 'info');
