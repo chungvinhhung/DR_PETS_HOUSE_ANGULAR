@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Observable } from 'rxjs';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
@@ -148,7 +149,7 @@ export class AdminOrderReturnDetailComponent {
     if (!action || !data || this.busy() || !this.availableActions().includes(action)) return;
     if (action === 'reject' && this.note().trim().length < 5) return;
     this.busy.set(true);
-    const request = action === 'refund'
+    const request: Observable<unknown> = action === 'refund'
       ? this.api.processRefund(data.refundId!, 'order-refund-' + data.refundId)
       : action === 'approve' || action === 'reject'
         ? this.api.returnManagerAction(data.id, action as ReturnManagerAction,
@@ -160,7 +161,7 @@ export class AdminOrderReturnDetailComponent {
         this.toast.show('Đã cập nhật yêu cầu trả hàng theo kết quả Backend.', 'success');
         this.load();
       },
-      error: err => {
+      error: (err: unknown) => {
         this.busy.set(false);
         this.toast.show(adminErrorMessage(err, 'Không thể xử lý yêu cầu. Vui lòng kiểm tra trạng thái mới nhất.'), 'error');
         this.load();
