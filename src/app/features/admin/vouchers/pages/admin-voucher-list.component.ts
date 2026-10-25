@@ -28,6 +28,8 @@ export class AdminVoucherListComponent {
   readonly scope = signal<VoucherScope | 'ALL'>('ALL');
   readonly status = signal<VoucherStatus | 'ALL'>('ALL');
   readonly loading = signal(false);
+  readonly extraFilter = signal(false);
+  readonly availabilityFilter = signal('ALL');
   readonly error = signal('');
   readonly cursor = signal<string | null>(null);
   readonly nextCursor = signal<string | null>(null);
@@ -36,8 +38,9 @@ export class AdminVoucherListComponent {
   readonly canEdit = computed(() => this.session.user()?.systemRole === 'ADMIN');
   readonly filtered = computed(() => {
     const q = this.search().trim().toLocaleLowerCase('vi');
-    return this.all().filter(item => !q ||
-      [item.code, item.name].some(v => v.toLocaleLowerCase('vi').includes(q)));
+    return this.all().filter(item =>
+      (this.availabilityFilter() === 'ALL' || voucherAvailability(item) === this.availabilityFilter()) &&
+      (!q || [item.code, item.name].some(v => v.toLocaleLowerCase('vi').includes(q))));
   });
   readonly scopeLabels = VOUCHER_SCOPE_LABELS;
 
@@ -67,6 +70,8 @@ export class AdminVoucherListComponent {
     });
   }
   setSearch(value: string): void { this.search.set(value); }
+  setAvailability(value: string): void { this.availabilityFilter.set(value); }
+  toggleExtra(): void { this.extraFilter.update(v => !v); }
   setScope(value: string): void {
     if (value !== 'ALL' && !['ORDER','PRODUCT','SERVICE'].includes(value)) return;
     this.scope.set(value as VoucherScope | 'ALL'); this.resetAndFetch();
@@ -79,6 +84,7 @@ export class AdminVoucherListComponent {
     this.previous.set([]);
     this.cursor.set(null);
     this.search.set('');
+    this.availabilityFilter.set('ALL');
     this.fetch();
   }
   next(): void {
