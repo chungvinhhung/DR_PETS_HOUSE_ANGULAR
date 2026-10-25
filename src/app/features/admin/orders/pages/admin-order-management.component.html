@@ -270,8 +270,8 @@
                       <td>{{ price(ret.refundBreakdown.total) }}</td>
                       <td><span class="order-admin__badge" [attr.data-status]="ret.status">{{ returnStatusLabel(ret.status) }}</span></td>
                       <td class="order-admin__action-head">
-                        <a [routerLink]="['/admin/orders',ret.orderId]" class="order-admin__icon-link"
-                          [attr.aria-label]="'Xem đơn gốc của yêu cầu ' + ret.id" title="Xem đơn hàng gốc">
+                        <a [routerLink]="['/admin/order-returns',ret.id]" class="order-admin__icon-link"
+                          [attr.aria-label]="'Xem chi tiết yêu cầu ' + ret.id" title="Xem yêu cầu trả hàng">
                           <img src="/assets/admin-branch/figma-eye.svg" alt="" width="20" height="20">
                         </a>
                       </td>
