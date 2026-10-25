@@ -95,9 +95,9 @@
         <div class="voucher-editor__fields">
           <label>Phạm vi áp dụng <span class="voucher-editor__required">*</span>
             <select #scopeField [value]="form().scope" (change)="change('scope',scopeField.value === 'PRODUCT' ? 'PRODUCT' : scopeField.value === 'SERVICE' ? 'SERVICE' : 'ORDER')" [disabled]="!allowEditing()">
-              <option value="ORDER">Tất cả đơn / giao dịch</option>
+              <option value="ORDER">Tất cả giao dịch</option>
               <option value="PRODUCT">Đơn mua hàng</option>
-              <option value="SERVICE">Dịch vụ</option>
+              <option value="SERVICE">Đơn dịch vụ</option>
             </select>
           </label>
           <label>Loại ưu đãi <span class="voucher-editor__required">*</span>
