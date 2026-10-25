@@ -174,10 +174,10 @@
           </label>
           <label class="order-admin__date-filter"><span class="sr-only">Khoảng thời gian</span>
             <select #dateField [value]="dateRange()" (change)="setDateRange(dateField.value)">
-              <option value="30">30 ngày qua</option>
-              <option value="7">7 ngày qua</option>
-              <option value="90">90 ngày qua</option>
               <option value="0">Tất cả thời gian</option>
+              <option value="7">7 ngày qua</option>
+              <option value="30">30 ngày qua</option>
+              <option value="90">90 ngày qua</option>
             </select>
           </label>
           <button class="order-admin__btn order-admin__btn--export" type="button" (click)="exportFile()">
@@ -326,7 +326,7 @@
                   } @empty {
                     <tr><td colspan="8" class="order-admin__empty">
                       <strong>{{ totalLoaded() ? 'Không có đơn hàng phù hợp.' : 'Chưa có đơn hàng nào.' }}</strong>
-                      <p>{{ totalLoaded() ? 'Thử thay đổi từ khóa hoặc bộ lọc.' : 'Hệ thống chưa trả dữ liệu đơn hàng.' }}</p>
+                      <p>{{ totalLoaded() ? 'Thử thay đổi từ khóa hoặc bộ lọc.' : 'Chưa có đơn hàng nào được ghi nhận. Đơn hàng sẽ xuất hiện sau khi khách đặt hàng thành công.' }}</p>
                       @if (totalLoaded()) { <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="clearFilters()">Xóa bộ lọc</button> }
                     </td></tr>
                   }
