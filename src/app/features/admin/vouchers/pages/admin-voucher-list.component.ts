@@ -22,6 +22,7 @@ export class AdminVoucherListComponent {
   private readonly toast = inject(AdminToastService);
   private readonly session = inject(AuthSessionService);
   private readonly destroyRef = inject(DestroyRef);
+  private requestVersion = 0;
 
   readonly all = signal<AdminVoucher[]>([]);
   readonly search = signal('');
@@ -45,6 +46,7 @@ export class AdminVoucherListComponent {
 
   constructor() { this.fetch(); }
   fetch(): void {
+    const request = ++this.requestVersion;
     const current = this.cursor();
     const filters = {
       ...(this.scope() !== 'ALL' ? {scope: this.scope() as VoucherScope} : {}),
@@ -55,13 +57,15 @@ export class AdminVoucherListComponent {
     this.error.set('');
     this.api.list(filters).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: result => {
-        if (this.cursor() !== current) return;
+        // A response from an older filter/page selection must never overwrite the latest data.
+        if (request !== this.requestVersion) return;
         this.all.set(Array.isArray(result.items) ? result.items : []);
         this.nextCursor.set(result.nextCursor || null);
         this.loading.set(false);
       },
       error: err => {
-        if (this.cursor() !== current) return;
+        // A response from an older filter/page selection must never overwrite the latest data.
+        if (request !== this.requestVersion) return;
         this.loading.set(false); this.all.set([]);
         this.nextCursor.set(null);
         this.error.set(adminErrorMessage(err, 'Không tải được danh sách voucher.'));
