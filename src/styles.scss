@@ -1560,7 +1560,7 @@ app-admin-order-management .order-admin__returns-toolbar {
 }
 app-admin-order-management .order-admin__filters--returns {
   display:grid;
-  grid-template-columns:minmax(235px,1fr) minmax(148px,196px) minmax(148px,190px) minmax(240px,270px);
+  grid-template-columns:minmax(235px,1fr) minmax(148px,196px) minmax(148px,190px) 222px;
   grid-template-rows:44px;
   align-items:center;
   gap:12px;
@@ -1615,8 +1615,8 @@ app-admin-order-management .order-admin__filters--returns select {
 app-admin-order-management .order-admin__filters--returns .order-admin__range-trigger {
   grid-column:4;grid-row:1;
   box-sizing:border-box;
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
-  width:100%;min-width:0;height:44px;margin:0;padding:0 12px;
+  display:flex;align-items:center;justify-content:space-between;gap:7px;
+  width:100%;min-width:0;height:44px;margin:0;padding:0 10px;
   border:1px solid #dce5f0;border-radius:8px;
   background:white;color:#21334d;
   font:12px Roboto,Arial,sans-serif;
@@ -1630,14 +1630,14 @@ app-admin-order-management .order-admin__filters--returns .order-admin__range-tr
 }
 app-admin-order-management .order-admin__range-trigger .order-admin__range-values {
   display:inline-flex;align-items:center;justify-content:flex-start;
-  flex:none;gap:7px;
+  flex:none;gap:5px;
 }
 app-admin-order-management .order-admin__range-trigger .order-admin__range-dash {color:#8694a8}
 app-admin-order-management .order-admin__range-trigger svg {display:block;flex:none;margin:0;color:#536781}
 app-admin-order-management .order-admin__calendar-panel {
   position:absolute;top:calc(100% + 6px);right:0;z-index:120;
   box-sizing:border-box;
-  width:292px;max-width:calc(100vw - 36px);
+  width:270px;max-width:calc(100vw - 36px);
   padding:10px 12px 9px;
   border:1px solid #dce5f0;border-radius:12px;
   background:#fff;box-shadow:0 14px 38px rgba(24,47,80,.17);
