@@ -80,13 +80,8 @@
 .order-admin__table td strong {font-weight:600;color:var(--ink)}
 .order-admin__table td small {display:block;color:#60748d;font-size:11px;margin-top:3px}
 .order-admin__table tbody td:first-child {font-weight:500}
-.order-admin__table th:nth-child(1) {width:13%}
-.order-admin__table th:nth-child(2) {width:20%}
-.order-admin__table th:nth-child(3) {width:15%}
-.order-admin__table th:nth-child(4) {width:19%}
-.order-admin__table th:nth-child(5) {width:14%}
-.order-admin__table th:nth-child(6) {width:13%}
-.order-admin__table th:nth-child(7) {width:6%}
+/* Column widths are defined per list table in styles.scss.
+   Detail tables must not inherit widths for unrelated columns. */
 .order-admin__link {color:var(--brand)}
 .order-admin__link:hover {text-decoration:underline}
 .order-admin__action-head {text-align:center}
