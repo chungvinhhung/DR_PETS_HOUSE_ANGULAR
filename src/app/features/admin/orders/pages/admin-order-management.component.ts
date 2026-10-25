@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, from, map, mergeMap, of, toArray } from 'rxjs';
 import { RouterLink, ActivatedRoute } from '@angular/router';
@@ -49,6 +49,23 @@ export class AdminOrderManagementComponent {
   readonly dateRange = signal('30');
   readonly returnDateFrom = signal(defaultReturnStart());
   readonly returnDateTo = signal(localDate(new Date()));
+  readonly returnCalendarOpen = signal(false);
+  readonly returnCalendarStart = signal<string | null>(null);
+  readonly returnCalendarMonth = signal(localDate(new Date()).slice(0, 7));
+  readonly returnWeekdays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+  readonly returnCalendarDays = computed(() => {
+    const [year, month] = this.returnCalendarMonth().split('-').map(Number);
+    const first = new Date(year, month - 1, 1);
+    const offset = (first.getDay() + 6) % 7;
+    return Array.from({length: 42}, (_, i) => {
+      const day = new Date(year, month - 1, 1 - offset + i);
+      return {key: localDate(day), number: day.getDate(), currentMonth: day.getMonth() === month - 1};
+    });
+  });
+  readonly returnCalendarLabel = computed(() => {
+    const [year, month] = this.returnCalendarMonth().split('-').map(Number);
+    return 'Tháng ' + month + '/' + year;
+  });
   readonly returnBranchLookup = signal<Record<string,string|null>>({});
   readonly returnBranchResolving = signal(false);
   readonly invalidReturnDates = computed(() => Boolean(this.returnDateFrom() && this.returnDateTo() && this.returnDateFrom() > this.returnDateTo()));
@@ -157,14 +174,64 @@ export class AdminOrderManagementComponent {
     this.branchId.set('ALL');
     this.returnDateFrom.set(defaultReturnStart());
     this.returnDateTo.set(localDate(new Date()));
+    this.closeReturnCalendar();
     this.page.set(1);
     if (tab === 'returns' && !this.hasLoadedReturns()) this.loadReturns();
   }
   setDateRange(value: string): void {
     if (['0', '7', '30', '90'].includes(value)) { this.dateRange.set(value); this.page.set(1); }
   }
-  setReturnDateFrom(value: string): void { this.returnDateFrom.set(value); this.page.set(1); }
-  setReturnDateTo(value: string): void { this.returnDateTo.set(value); this.page.set(1); }
+  formatReturnPickerDay(value: string): string {
+    const parts = value.split('-');
+    return parts.length === 3 ? [parts[2], parts[1], parts[0]].join('/') : '—';
+  }
+  toggleReturnCalendar(): void {
+    if (this.returnCalendarOpen()) {
+      this.closeReturnCalendar();
+      return;
+    }
+    this.returnCalendarMonth.set((this.returnDateTo() || localDate(new Date())).slice(0, 7));
+    this.returnCalendarStart.set(null);
+    this.returnCalendarOpen.set(true);
+  }
+  closeReturnCalendar(): void {
+    this.returnCalendarOpen.set(false);
+    this.returnCalendarStart.set(null);
+  }
+  changeReturnCalendarMonth(amount: number): void {
+    const [year, month] = this.returnCalendarMonth().split('-').map(Number);
+    this.returnCalendarMonth.set(localDate(new Date(year, month - 1 + amount, 1)).slice(0, 7));
+  }
+  selectReturnCalendarDay(value: string): void {
+    const start = this.returnCalendarStart();
+    if (!start) {
+      // First click: only draft a start; do not filter until the second click.
+      this.returnCalendarStart.set(value);
+      return;
+    }
+    // Second click: commit the inclusive range, even when the dates were clicked backwards.
+    this.returnDateFrom.set(start <= value ? start : value);
+    this.returnDateTo.set(start <= value ? value : start);
+    this.page.set(1);
+    this.closeReturnCalendar();
+  }
+  isReturnCalendarStart(value: string): boolean {
+    return value === (this.returnCalendarStart() || this.returnDateFrom());
+  }
+  isReturnCalendarEnd(value: string): boolean {
+    return !this.returnCalendarStart() && value === this.returnDateTo();
+  }
+  isReturnCalendarBetween(value: string): boolean {
+    if (this.returnCalendarStart()) return false;
+    return value > this.returnDateFrom() && value < this.returnDateTo();
+  }
+  @HostListener('document:click', ['$event'])
+  handleCalendarOutsideClick(event: MouseEvent): void {
+    if (this.returnCalendarOpen() && event.target instanceof Element &&
+        !event.target.closest('.order-admin__returns-toolbar')) this.closeReturnCalendar();
+  }
+  @HostListener('document:keydown.escape')
+  handleCalendarEscape(): void { this.closeReturnCalendar(); }
   private localReturnDay(value?: string): string {
     if (!value) return '';
     const d = new Date(value);
