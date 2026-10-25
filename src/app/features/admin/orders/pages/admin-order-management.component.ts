@@ -49,7 +49,7 @@ export class AdminOrderManagementComponent {
   readonly allOrders = signal<OrderRecord[]>([]);
   readonly returns = signal<OrderReturnSummary[]>([]);
   readonly activeTab = signal<'orders' | 'returns'>('orders');
-  readonly dateRange = signal('30');
+  readonly dateRange = signal('0');
   readonly returnDateFrom = signal(defaultReturnStart());
   readonly returnDateTo = signal(localDate(new Date()));
   readonly returnCalendarOpen = signal(false);
@@ -175,7 +175,7 @@ export class AdminOrderManagementComponent {
     this.activeTab.set(tab);
     this.search.set('');
     this.status.set('ALL');
-    this.dateRange.set('30');
+    this.dateRange.set('0');
     this.branchId.set('ALL');
     this.returnDateFrom.set(defaultReturnStart());
     this.returnDateTo.set(localDate(new Date()));
@@ -371,7 +371,7 @@ export class AdminOrderManagementComponent {
     if (next >= 1 && next <= this.totalPages()) this.page.set(next);
   }
   clearFilters(): void {
-    this.search.set(''); this.status.set('ALL'); this.branchId.set('ALL'); this.dateRange.set('30');
+    this.search.set(''); this.status.set('ALL'); this.branchId.set('ALL'); this.dateRange.set('0');
     this.returnDateFrom.set(defaultReturnStart()); this.returnDateTo.set(localDate(new Date())); this.page.set(1);
   }
   refresh(): void { if (this.isDetail()) this.loadDetail(); else if (this.activeTab() === 'returns') this.loadReturns(); else this.loadOrders(); }
