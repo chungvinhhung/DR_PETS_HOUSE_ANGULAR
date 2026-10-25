@@ -87,8 +87,13 @@
                 </tr>
               } @empty {
                 <tr><td colspan="7" class="voucher-list__empty">
-                  <strong>Không có voucher phù hợp.</strong>
-                  <p>Thử thay đổi từ khóa hoặc bộ lọc.</p>
+                  <strong>{{ hasActiveFilters() ? 'Không có voucher phù hợp.' : 'Chưa có voucher nào.' }}</strong>
+                  <p>{{ hasActiveFilters() ? 'Thử thay đổi từ khóa hoặc bộ lọc.' : 'Chưa có chương trình khuyến mãi nào được tạo trên hệ thống.' }}</p>
+                  @if (hasActiveFilters()) {
+                    <button class="voucher-list__button voucher-list__button--plain" type="button" (click)="clearFilters()">Xóa bộ lọc</button>
+                  } @else if (canEdit()) {
+                    <a class="voucher-list__button voucher-list__button--primary" routerLink="/admin/vouchers/new">Tạo voucher</a>
+                  }
                 </td></tr>
               }
             }
