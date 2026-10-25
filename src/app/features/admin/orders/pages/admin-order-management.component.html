@@ -224,9 +224,13 @@
           aria-label="Chọn khoảng ngày yêu cầu trả hàng"
           (click)="toggleReturnCalendar()">
           <span class="order-admin__range-values">
-            <span>{{ formatReturnPickerDay(returnDateFrom()) }}</span>
-            <span class="order-admin__range-dash" aria-hidden="true">–</span>
-            <span>{{ formatReturnPickerDay(returnDateTo()) }}</span>
+            @if (returnDateFrom() && returnDateTo()) {
+              <span>{{ formatReturnPickerDay(returnDateFrom()) }}</span>
+              <span class="order-admin__range-dash" aria-hidden="true">–</span>
+              <span>{{ formatReturnPickerDay(returnDateTo()) }}</span>
+            } @else {
+              <span>Chọn khoảng ngày</span>
+            }
           </span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
             <rect x="3" y="5" width="18" height="16" rx="2"/>
@@ -260,8 +264,11 @@
             }
           </div>
           <footer class="order-admin__calendar-footer">
-            <span>{{ returnCalendarStart() ? 'Đã chọn ngày bắt đầu: ' + formatReturnPickerDay(returnCalendarStart()!) : 'Chọn lần lượt 2 ngày để lọc' }}</span>
-            <button type="button" (click)="closeReturnCalendar()">Đóng</button>
+            <span class="order-admin__calendar-footer-note">{{ returnCalendarStart() ? 'Bắt đầu: ' + formatReturnPickerDay(returnCalendarStart()!) : 'Chọn 2 ngày để lọc' }}</span>
+            <div class="order-admin__calendar-footer-actions">
+              <button type="button" (click)="clearReturnDateRange()" [disabled]="!returnDateFrom() && !returnDateTo() && !returnCalendarStart()">Xóa</button>
+              <button type="button" (click)="closeReturnCalendar()">Đóng</button>
+            </div>
           </footer>
         </section>
       }
