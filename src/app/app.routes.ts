@@ -112,6 +112,13 @@ export const routes: Routes = [
       ).then((component) => component.ServiceCatalogListComponent),
   },
   {
+    path: 'admin/order-returns/:id',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+    loadComponent: () => import('./features/admin/orders/pages/admin-order-return-detail.component')
+      .then(component => component.AdminOrderReturnDetailComponent),
+  },
+  {
     path: 'admin/orders/:id',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
