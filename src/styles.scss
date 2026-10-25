@@ -1455,44 +1455,7 @@ app-admin-order-management .order-admin__tabs {display:flex;align-items:flex-end
 app-admin-order-management .order-admin__tabs button {display:inline-flex;align-items:center;justify-content:center;gap:7px;height:42px;padding:0 12px;border:0;border-bottom:2px solid transparent;background:transparent;color:#475569;font-size:13px;white-space:nowrap;cursor:pointer}
 app-admin-order-management .order-admin__tabs button.order-admin__tabs--active {color:#0d47a1;border-bottom-color:#0d47a1;font-weight:500}
 app-admin-order-management .order-admin__tabs-count {display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 5px;border-radius:10px;background:#0d47a1;color:white;font-size:11px}
-/* The original Figma filters have no visible captions; keep native labels accessible. */
-app-admin-order-management .order-admin__filters--figma .sr-only {
-  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
-  clip:rect(0,0,0,0);white-space:nowrap;border:0
-}
-app-admin-order-management .order-admin__filters--figma {
-  display:grid;
-  grid-template-columns:minmax(220px,1fr) 160px 150px 112px 160px;
-  align-items:center;
-  gap:10px;
-  margin-bottom:16px;
-  padding:16px 16px;
-  min-height:80px;
-  min-width:0;
-  overflow-x:auto;
-  overflow-y:hidden;
-  border-radius:9px
-}
-app-admin-order-management .order-admin__filters--figma .order-admin__search {
-  width:100%;height:44px;min-width:0;max-width:none;margin:0;flex:none;padding-inline:12px
-}
-app-admin-order-management .order-admin__filters--figma .order-admin__search input {
-  font-size:12px;text-overflow:ellipsis
-}
-app-admin-order-management .order-admin__filters--figma .order-admin__filter-controls {
-  display:contents
-}
-app-admin-order-management .order-admin__filters--figma .order-admin__filter-controls label {
-  display:block;min-width:0;width:100%;height:44px;margin:0
-}
-app-admin-order-management .order-admin__filters--figma select {
-  display:block;width:100%;height:44px;min-height:44px;margin:0;
-  padding:0 30px 0 12px;font-size:12px
-}
-app-admin-order-management .order-admin__filters--figma .order-admin__btn {
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  min-height:44px;height:44px;margin:0;padding:0 12px;font-size:12px;white-space:nowrap
-}
+/* Filter toolbar layout lives only in admin-order-management.component.scss. */
 app-admin-order-management .order-admin__btn--export {background:white;color:#0d47a1;border-color:#0d47a1}
 app-admin-order-management .order-admin__btn--new {background:#003178;color:white;border-color:#003178}
 app-admin-order-management .order-admin__btn--new:hover {background:#0d47a1}
