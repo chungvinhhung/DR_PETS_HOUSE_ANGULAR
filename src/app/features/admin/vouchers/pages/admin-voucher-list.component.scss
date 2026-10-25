@@ -36,7 +36,6 @@
 .voucher-list__badge{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;border-radius:99px;padding:4px 8px;background:#e6f5ea;color:#197a43;font-size:11px}
 .voucher-list__badge[data-status="Hết lượt"],.voucher-list__badge[data-status="Hết hạn"]{background:#ffebeb;color:#a63b47}
 .voucher-list__badge[data-status="Chưa bắt đầu"]{background:#fff2dd;color:#98600c}
-.voucher-list__badge[data-status="Đã tắt"]{background:#eef2f5;color:#65758c}
 .voucher-list__action a{display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:32px}
 .voucher-list__empty{text-align:center!important;padding:45px 20px!important;color:#64748b}
 .voucher-list__empty p{margin:5px 0 14px}
