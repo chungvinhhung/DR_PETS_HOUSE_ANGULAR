@@ -54,13 +54,28 @@ export interface OrderReturnSummary {
   status: ReturnStatus;
   items: { orderItemId: string; productName: string; requestedQty: number; refundAmount: number }[];
   refundBreakdown: { merchandiseNet: number; shippingRefunded: number; total: number };
-  history?: { status: string; at: string }[];
+  reason?: string;
+  refundId?: string | null;
+  evidenceUrls?: string[];
+  history?: { status: string; at: string; actorId?: string; note?: string }[];
 }
 export interface OrderReturnListResponse {
   items: OrderReturnSummary[];
   nextCursor?: string | null;
 }
 
+export interface OrderRefundRecord {
+  id: string;
+  orderId: string;
+  orderReturnId: string | null;
+  amount: number;
+  status: 'PENDING' | 'REFUNDED';
+  provider: 'MOCK';
+  refundedAt?: string | null;
+}
+
+export type ReturnStaffAction = 'process' | 'receive';
+export type ReturnManagerAction = 'approve' | 'reject';
 export type OrderWriteAction = 'confirm' | 'process' | 'ship' | 'mark-delivered';
 @Injectable({ providedIn: 'root' })
 export class AdminOrderApiService {
@@ -76,6 +91,26 @@ export class AdminOrderApiService {
     return this.api.get<OrderReturnListResponse>('/order-returns', {
       params: new HttpParams().set('limit', '100'),
     });
+  }
+
+  getReturn(id: string): Observable<OrderReturnSummary> {
+    return this.api.get<OrderReturnSummary>('/order-returns/' + encodeURIComponent(id));
+  }
+  returnStaffAction(id: string, action: ReturnStaffAction): Observable<OrderReturnSummary> {
+    return this.api.post<OrderReturnSummary, Record<string, never>>(
+      '/order-returns/' + encodeURIComponent(id) + '/' + action, {});
+  }
+  returnManagerAction(id: string, action: ReturnManagerAction, body: { note?: string; reason?: string }): Observable<OrderReturnSummary> {
+    return this.api.post<OrderReturnSummary, { note?: string; reason?: string }>(
+      '/order-returns/' + encodeURIComponent(id) + '/' + action, body);
+  }
+  getRefund(id: string): Observable<OrderRefundRecord> {
+    return this.api.get<OrderRefundRecord>('/order-refunds/' + encodeURIComponent(id));
+  }
+  processRefund(id: string, key: string): Observable<OrderRefundRecord> {
+    return this.api.post<OrderRefundRecord, Record<string, never>>(
+      '/order-refunds/' + encodeURIComponent(id) + '/process', {},
+      { headers: new HttpHeaders({ 'Idempotency-Key': key }) });
   }
 
   get(id: string): Observable<OrderRecord> {
