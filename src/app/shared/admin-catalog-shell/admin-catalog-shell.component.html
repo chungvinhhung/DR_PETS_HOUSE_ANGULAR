@@ -24,7 +24,7 @@
         </a>
 
         <button type="button" class="catalog-sidebar__group"
-          [class.catalog-sidebar__group--active]="activeItem === 'categories' || activeItem === 'products' || activeItem === 'orders'"
+          [class.catalog-sidebar__group--active]="activeItem === 'categories' || activeItem === 'products' || activeItem === 'orders' || activeItem === 'vouchers'"
           [attr.aria-expanded]="salesExpanded" aria-controls="admin-sales-submenu"
           (click)="toggleSales()">
           <img src="/assets/admin-product/icon-sales.svg" alt="" width="20" height="20">
@@ -49,7 +49,9 @@
           <a class="catalog-sidebar__sub" routerLink="/admin/orders"
             [class.catalog-sidebar__sub--active]="activeItem === 'orders'"
             [attr.aria-current]="activeItem === 'orders' ? 'page' : null">Đơn hàng</a>
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Voucher / Khuyến mãi</span>
+          <a class="catalog-sidebar__sub" routerLink="/admin/vouchers"
+            [class.catalog-sidebar__sub--active]="activeItem === 'vouchers'"
+            [attr.aria-current]="activeItem === 'vouchers' ? 'page' : null">Voucher / Khuyến mãi</a>
         </div>
 
         <button type="button" class="catalog-sidebar__group"
