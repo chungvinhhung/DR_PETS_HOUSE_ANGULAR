@@ -81,8 +81,6 @@ export class AdminVoucherListComponent {
   resetAndFetch(): void {
     this.previous.set([]);
     this.cursor.set(null);
-    this.search.set('');
-    this.availabilityFilter.set('ALL');
     this.fetch();
   }
   next(): void {
