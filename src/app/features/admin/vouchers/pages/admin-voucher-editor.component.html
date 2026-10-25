@@ -175,9 +175,8 @@
             <p>Thao tác này chỉ cập nhật trạng thái quản lý; không thay đổi số lượt đã sử dụng hoặc hoàn quota.</p>
           </div>
           <label>Ghi chú
-            <textarea #note rows="2" [value]="disableNote()" (input)="disableNote.set(note.value)"
-              placeholder="Lý do thay đổi trạng thái (chỉ hiển thị tại FE)"></textarea>
-            <small>BE chưa hỗ trợ lưu ghi chú bật/tắt voucher.</small>
+            <textarea rows="2" disabled placeholder="Chưa hỗ trợ ghi chú trên Backend"></textarea>
+            <small>Trường này được khóa để tránh nhập lý do mà hệ thống không lưu được.</small>
           </label>
           <div class="voucher-editor__dialog-actions">
             <button class="voucher-editor__button voucher-editor__button--outline" type="button" [disabled]="saving()" (click)="closeDisableDialog()">Quay lại</button>
