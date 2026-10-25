@@ -20,26 +20,37 @@
 .order-admin__btn--primary {color:#fff;background:var(--brand)}
 .order-admin__btn--danger {color:#fff;background:#b72b36;border-color:#b72b36}
 .order-admin__btn--primary:not(:disabled):hover {background:#093875}
-.order-admin__filters:not(.order-admin__filters--figma) {display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px;margin-bottom:20px;border:1px solid var(--line);border-radius:12px;min-height:76px}
-/* Figma 7544:42414: override Angular's component-scoped flex layout.
-   Both search and every control must occupy one grid row. */
+/* Single-row Figma toolbar: five direct grid children, never nested flex. */
 .order-admin__filters.order-admin__filters--figma {
   display:grid;
-  grid-template-columns:minmax(240px,1fr) 160px 150px 112px 160px;
+  grid-template-columns:minmax(230px,1fr) 160px 150px 112px 160px;
   grid-template-rows:44px;
   align-items:center;
   gap:10px;
-  flex-wrap:nowrap;
   min-width:0;
-  overflow-x:auto;
-  overflow-y:hidden;
   padding:16px;
   margin-bottom:16px;
+  overflow-x:auto;
+  overflow-y:hidden;
   border:1px solid var(--line);
   border-radius:12px;
 }
-.order-admin__filters--figma .order-admin__filter-controls {display:contents}
 .order-admin__filters--figma .order-admin__search {
+  grid-column:1;grid-row:1;width:100%;min-width:0;max-width:none;height:44px;margin:0
+}
+.order-admin__filters--figma .order-admin__status-filter,
+.order-admin__filters--figma .order-admin__date-filter {
+  display:block;min-width:0;width:100%;height:44px;margin:0
+}
+.order-admin__filters--figma .order-admin__status-filter {grid-column:2;grid-row:1}
+.order-admin__filters--figma .order-admin__date-filter {grid-column:3;grid-row:1}
+.order-admin__filters--figma .order-admin__btn--export {grid-column:4;grid-row:1}
+.order-admin__filters--figma .order-admin__btn--new {grid-column:5;grid-row:1}
+.order-admin__filters--figma select {display:block;height:44px;min-height:44px;width:100%;margin:0}
+.order-admin__filters--figma .order-admin__btn {
+  height:44px;min-height:44px;margin:0;padding:0 12px;white-space:nowrap
+}
+.order-admin__search {
   grid-column:1;
   grid-row:1;
   min-width:0;
