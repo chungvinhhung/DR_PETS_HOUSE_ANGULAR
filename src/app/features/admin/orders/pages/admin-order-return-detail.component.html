@@ -113,6 +113,7 @@
           <div><span>Tiền hàng được hoàn</span><strong>{{ money(ret.refundBreakdown.merchandiseNet) }}</strong></div>
           <div><span>Phí giao hàng hoàn lại</span><strong>{{ money(ret.refundBreakdown.shippingRefunded) }}</strong></div>
           <div><span>Tổng tiền dự kiến</span><strong class="return-detail__highlight">{{ money(ret.refundBreakdown.total) }}</strong></div>
+          <div><span>Hoàn cuối cùng</span><strong class="return-detail__highlight">{{ money(finalRefundAmount()) }}</strong></div>
           <div><span>Trạng thái hoàn tiền</span><strong>
             @if (refund(); as paid) {
               {{ paid.status === 'REFUNDED' ? 'Đã hoàn tất (MOCK)' : 'Đang chờ xử lý (MOCK)' }}
@@ -140,7 +141,6 @@
             <div class="return-detail__summary">
               <div><span>Số lượng duyệt</span><strong>{{ totalQuantity() }}</strong></div>
               <div><span>Tiền hoàn dự kiến</span><strong>{{ money(data()?.refundBreakdown?.total) }}</strong></div>
-              <div><span>Tiền hoàn cuối cùng</span><strong>{{ money(data()?.refundBreakdown?.total) }}</strong></div>
             </div>
             <p class="return-detail__muted">Số lượng và số tiền được BE cố định theo yêu cầu. Chưa có API điều chỉnh số lượng/tiền hoàn khi phê duyệt.</p>
           }
