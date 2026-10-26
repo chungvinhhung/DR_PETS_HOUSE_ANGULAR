@@ -226,41 +226,78 @@
               (click)="togglePayment('ONLINE_MOCK')">Trực tuyến</button>
           </div>
           @if (paymentMethod() === 'ONLINE_MOCK') {
-            <p class="create-order__helper">Thanh toán trực tuyến hiện dùng môi trường mô phỏng; chưa phát sinh giao dịch thật.</p>
+            <fieldset class="create-order__online-methods">
+              <legend class="create-order__sr-only">Chọn hình thức thanh toán trực tuyến</legend>
+              @for (method of onlineProviderChoices; track method.key) {
+                <label class="create-order__online-method"
+                  [class.is-selected]="onlineProvider() === method.key">
+                  <input type="radio" name="order-online-provider" [checked]="onlineProvider() === method.key"
+                    [value]="method.key" (change)="chooseOnlineProvider(method.key)">
+                  <span class="create-order__online-provider-label">{{ method.label }}</span>
+                </label>
+              }
+            </fieldset>
+            <p class="create-order__helper">Đơn chưa được thanh toán. Việc thanh toán trực tuyến sẽ cần xác nhận ở bước xử lý đơn.</p>
           }
           <label class="create-order__label" for="order-voucher-code">Thẻ quà tặng / Mã giảm giá</label>
           <div class="create-order__voucher-row">
             <input id="order-voucher-code" placeholder="Nhập mã" [value]="voucherCode()"
-              (input)="updateVoucher($any($event.target).value)">
-            <button type="button" class="create-order__button create-order__button--outline"
+              (input)="updateVoucher($any($event.target).value)" autocomplete="off">
+            @if (voucherCode()) {
+              <button class="create-order__voucher-clear" type="button"
+                aria-label="Xóa mã giảm giá" (click)="clearVoucher()">×</button>
+            }
+            <button type="button" class="create-order__button create-order__button--primary"
               (click)="explainVoucher()">Áp dụng</button>
           </div>
+          @if (voucherPreviewState() === 'unverified') {
+            <p class="create-order__voucher-status" role="status">
+              Mã {{ voucherCode() }} đã được ghi nhận trong bản nháp nhưng chưa được xác nhận đủ điều kiện;
+              số tiền giảm sẽ do hệ thống tính trước khi tạo đơn.
+            </p>
+          }
           <label class="create-order__label" for="order-note">Ghi chú đơn hàng</label>
           <textarea id="order-note" rows="2" placeholder="Ghi chú giao hàng (nếu có)..."
             [value]="note()" (input)="updateNote($any($event.target).value)"></textarea>
         </div>
         <div class="create-order__summary">
           <dl class="create-order__breakdown">
-            <div><dt>Tạm tính</dt><dd>{{ price(subtotal()) }}</dd></div>
-            <div><dt>Phí vận chuyển</dt><dd>Chờ tính</dd></div>
-            <div><dt>Giảm giá</dt><dd>Chưa áp dụng</dd></div>
+            <div><dt>Tạm tính <small>(Giá sản phẩm hiện tại)</small></dt><dd>{{ price(subtotal()) }}</dd></div>
+            <div><dt>Phí vận chuyển</dt><dd>—</dd></div>
+            <div><dt>Giảm giá <small>(Voucher)</small></dt><dd>—</dd></div>
           </dl>
           <div class="create-order__total">
-            <div><strong>Tổng cộng</strong><small>(Theo kết quả xác nhận từ hệ thống)</small></div>
-            <strong>Chờ báo giá</strong>
+            <div><strong>Tổng cộng</strong><small>(Cần xác nhận phí vận chuyển và giảm giá)</small></div>
+            <strong>Chờ xác nhận</strong>
           </div>
         </div>
       </div>
     </section>
 
+    @if (reviewAttempted()) {
+      <section class="create-order__review" [class.create-order__review--ready]="isDraftValid()"
+        aria-labelledby="order-review-title" role="status">
+        <strong id="order-review-title">
+          {{ isDraftValid() ? 'Thông tin bản nháp đã đầy đủ' : 'Cần kiểm tra lại thông tin đơn hàng' }}
+        </strong>
+        @if (reviewIssues().length > 0) {
+          <ul>
+            @for (issue of reviewIssues(); track issue) { <li>{{ issue }}</li> }
+          </ul>
+        } @else {
+          <p>Hệ thống sẽ xác nhận tình trạng hàng hóa, voucher và tổng thanh toán trước khi tạo đơn.</p>
+        }
+      </section>
+    }
     <p class="create-order__pending">
-      Chưa thể xác nhận tạo đơn: cần API tạo đơn hộ khách và báo giá chính thức từ hệ thống.
-      Hồ sơ khách vãng lai sẽ được xử lý theo luồng chờ kích hoạt, không tự tạo mật khẩu.
+      Chưa thể xác nhận tạo đơn cho đến khi hệ thống hỗ trợ tính tổng và lưu đơn hộ khách.
     </p>
     <div class="create-order__footer">
       <a routerLink="/admin/orders" class="create-order__button create-order__button--outline">Hủy</a>
+      <button type="button" class="create-order__button create-order__button--outline"
+        (click)="reviewDraft()">Kiểm tra thông tin</button>
       <button type="button" class="create-order__button create-order__button--primary" disabled
-        title="Chờ API Admin tạo đơn hàng hộ khách">Xác nhận tạo đơn</button>
+        title="Chưa thể xác nhận tạo đơn">Xác nhận tạo đơn</button>
     </div>
   </main>
   @if (addressDialog(); as mode) {
