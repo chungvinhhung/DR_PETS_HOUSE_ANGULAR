@@ -31,6 +31,7 @@ interface StaffWire {
   staffSubRole?: string;
   jobRole?: string;
   userId?: string | UserWire;
+  username?: string;
   authorizedBranchIds?: (string | { _id?: string; id?: string })[];
   homeBranchId?: string | { _id?: string; id?: string };
   accountStatus?: string;
@@ -172,7 +173,7 @@ export class AdminStaffApiService {
       homeBranch: homeId ? (branchNames.get(homeId) ?? homeId) : undefined,
       phone: input.phone ?? account?.phone,
       email: input.email ?? account?.email,
-      loginUsername: account?.username ?? account?.phone,
+      loginUsername: input.username ?? account?.username ?? account?.phone,
       todayShift: '—',
       accountStatus,
     };
@@ -183,18 +184,21 @@ export class AdminStaffApiService {
     this.error.set('');
     this.loading.set(true);
     this.loaded.set(false);
-    // The foundation-v6 /staff route does not enforce Manager branch scope.
-    // Do not expose its unscoped records to MANAGER through this UI.
-    if (!this.session.hasAnyRole(['ADMIN'])) {
+    // Staff endpoint enforces server-side assigned-branch scope for managers.
+    // Non-manager STAFF does not have access to the organization-wide roster.
+    if (!this.session.hasAnyRole(['ADMIN', 'MANAGER'])) {
       this.staff.set([]);
       this.loading.set(false);
-      this.error.set('API Staff hiện chưa xác minh phân quyền chi nhánh cho Manager. Cần Backend cập nhật trước khi hiển thị dữ liệu.');
+      this.error.set('Tài khoản không có quyền xem danh sách nhân sự.');
       return;
     }
     forkJoin({
       profiles: this.getAll<StaffWire>('/staff'),
       branches: this.listBranches().pipe(catchError(() => of([] as StaffBranchOption[]))),
-      accounts: this.listAccounts().pipe(catchError(() => of([] as UserWire[]))),
+      // Account directory is ADMIN-only; the /staff DTO supplies manager-visible names.
+      accounts: this.session.hasAnyRole(['ADMIN'])
+        ? this.listAccounts().pipe(catchError(() => of([] as UserWire[])))
+        : of([] as UserWire[]),
     }).subscribe({
       next: ({ profiles, branches, accounts }) => {
         this.branches.set(branches);
