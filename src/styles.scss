@@ -1703,3 +1703,42 @@ app-admin-order-management .order-admin__filter-hint {
   margin:-5px 0 13px;font-size:12px;color:#65758e;
 }
 app-admin-order-management .order-admin__filter-warning {color:#ad394a}
+
+/* Order creation page-only layout extracted to respect the Angular component CSS budget. */
+.create-order__address {padding:14px;border:1px solid var(--border);border-radius:8px}
+.create-order__address-actions {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.create-order__address-actions strong {font-size:13px;font-weight:500}
+.create-order__address > small {display:block;color:var(--muted);margin:7px 0 0}
+.create-order__address-fields {display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px;margin-top:15px}
+.create-order__payment-grid {display:grid;grid-template-columns:1.15fr .85fr;gap:32px}
+.create-order__payment-fields {min-width:0}
+.create-order__payment-toggle {display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-bottom:16px;background:#f3f6fa;border-radius:8px}
+.create-order__payment-toggle button {height:37px;border:1px solid transparent;border-radius:7px;background:transparent;color:#617694}
+.create-order__payment-toggle button.is-active {background:#fff;color:var(--blue);border-color:var(--border);font-weight:500}
+.create-order__voucher-row {display:flex;gap:8px;margin-bottom:14px}
+.create-order__voucher-row input {flex:1;width:100%;min-width:0;height:42px;padding:0 12px}
+.create-order__payment-fields textarea {display:block;width:100%;padding:10px 12px;resize:vertical;min-height:62px}
+.create-order__summary {min-width:0}
+.create-order__breakdown,.create-order__total {margin:0;padding:15px;border-radius:8px;background:#f5f7fb}
+.create-order__breakdown div {display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.create-order__breakdown div:last-child {margin-bottom:0}
+.create-order__breakdown dt {color:var(--muted)}
+.create-order__breakdown dd {margin:0;font-weight:500;white-space:nowrap}
+.create-order__total {display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;background:#eaf2ff;color:var(--blue)}
+.create-order__total strong {font-size:15px}
+.create-order__total small {display:block;font-size:11px;font-weight:400}
+.create-order__pending {padding:11px 14px;margin:0 0 16px;border:1px solid #f0d6a1;border-radius:8px;background:#fffaf0;color:#825c26;font-size:12px}
+.create-order__footer {display:flex;justify-content:flex-end;align-items:center;gap:10px}
+@media (max-width:1100px) {
+ .create-order {padding:24px}
+ .create-order__fields {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .create-order__payment-grid {gap:16px}
+}
+@media (max-width:750px) {
+ .create-order {padding:16px}
+ .create-order__fields,.create-order__payment-grid,.create-order__address-fields {grid-template-columns:1fr}
+ .create-order__panel {padding:16px}
+ .create-order__product-results {width:min(520px,calc(100vw - 48px));min-width:0}
+ .create-order__voucher-row {flex-wrap:wrap}
+ .create-order__voucher-row button {flex:0 0 auto}
+}
