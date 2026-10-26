@@ -158,37 +158,60 @@
 
     <section class="create-order__panel" aria-labelledby="shipping-title">
       <h2 id="shipping-title">Thông tin nhận hàng</h2>
-      <p class="create-order__label">Địa chỉ nhận hàng</p>
-      @if (showAddressContractWarning()) {
-        <p class="create-order__helper" role="status">
-          Chưa thể tải địa chỉ mặc định từ hồ sơ khách hàng. API Customer hiện chưa cung cấp danh sách địa chỉ;
-          bạn có thể nhập thông tin giao hàng cho bản nháp.
-        </p>
-      }
-      <div class="create-order__address">
-        <div class="create-order__address-actions">
-          <strong>{{ shippingLine1() ? shippingLine1() : 'Chưa có địa chỉ nhận hàng' }}</strong>
-          <button type="button" class="create-order__button create-order__button--outline"
-            (click)="addressEditorOpen.set(!addressEditorOpen())">{{ addressEditorOpen() ? 'Thu gọn' : 'Sửa / Thêm địa chỉ' }}</button>
-        </div>
-        @if (shippingLine1() || shippingCity()) {
-          <small>{{ shippingCity() }} · {{ customerName() || 'Khách hàng' }} · {{ customerPhone() }}</small>
-        }
-        @if (addressEditorOpen()) {
-          <div class="create-order__address-fields">
-            <div class="create-order__field">
-              <label for="order-address-line">Địa chỉ giao hàng <span aria-hidden="true">*</span></label>
-              <input id="order-address-line" type="text" placeholder="Số nhà, đường, phường/xã, quận/huyện"
-                [value]="shippingLine1()" (input)="updateShippingLine1($any($event.target).value)">
+      @if (selectedCustomer()) {
+        <p class="create-order__label">Địa chỉ nhận hàng</p>
+        <div class="create-order__address-card">
+          <div class="create-order__address-top">
+            <div class="create-order__address-preview">
+              @if (addressWasConfirmed()) {
+                <span class="create-order__address-tag">Đang sử dụng</span>
+                <strong>{{ shippingAddressDescription() }}</strong>
+                <small>{{ shippingRecipientName() }} · {{ shippingRecipientPhone() }}</small>
+              } @else {
+                <strong>Chưa chọn địa chỉ nhận hàng</strong>
+                <small>Chưa thể tải địa chỉ đã lưu. Có thể nhập địa chỉ giao hàng cho đơn này.</small>
+              }
             </div>
-            <div class="create-order__field">
-              <label for="order-address-city">Tỉnh / Thành phố <span aria-hidden="true">*</span></label>
-              <input id="order-address-city" type="text" placeholder="Nhập tỉnh hoặc thành phố"
-                [value]="shippingCity()" (input)="updateShippingCity($any($event.target).value)">
+            <div class="create-order__address-buttons">
+              @if (addressWasConfirmed()) {
+                <button type="button" class="create-order__button create-order__button--outline"
+                  (click)="openAddressDialog('edit')">Sửa</button>
+              }
+              <button type="button" class="create-order__button create-order__button--outline"
+                (click)="openAddressDialog('choose')">Đổi địa chỉ</button>
+              <button type="button" class="create-order__button create-order__button--outline"
+                (click)="openAddressDialog('add')">+ Thêm địa chỉ</button>
             </div>
           </div>
-        }
-      </div>
+        </div>
+      } @else {
+        <div class="create-order__region-fields">
+          <div class="create-order__field">
+            <label for="order-address-city">Tỉnh/Thành phố <span aria-hidden="true">*</span></label>
+            <input id="order-address-city" type="text" autocomplete="off"
+              placeholder="Nhập tỉnh/thành phố" [value]="shippingCity()"
+              (input)="updateShippingCity($any($event.target).value)">
+          </div>
+          <div class="create-order__field">
+            <label for="order-address-district">Quận/Huyện <span aria-hidden="true">*</span></label>
+            <input id="order-address-district" type="text" autocomplete="off"
+              placeholder="Nhập quận/huyện" [value]="shippingDistrict()"
+              (input)="updateShippingDistrict($any($event.target).value)">
+          </div>
+          <div class="create-order__field">
+            <label for="order-address-ward">Phường/Xã</label>
+            <input id="order-address-ward" type="text" autocomplete="off"
+              placeholder="Nhập phường/xã" [value]="shippingWard()"
+              (input)="updateShippingWard($any($event.target).value)">
+          </div>
+        </div>
+        <div class="create-order__field create-order__address-line">
+          <label for="order-address-line">Địa chỉ cụ thể <span aria-hidden="true">*</span></label>
+          <input id="order-address-line" type="text" autocomplete="off"
+            placeholder="Số nhà, tên đường..." [value]="shippingLine1()"
+            (input)="updateShippingLine1($any($event.target).value)">
+        </div>
+      }
     </section>
 
     <section class="create-order__panel" aria-labelledby="payment-title">
@@ -240,4 +263,88 @@
         title="Chờ API Admin tạo đơn hàng hộ khách">Xác nhận tạo đơn</button>
     </div>
   </main>
+  @if (addressDialog(); as mode) {
+    <div class="create-order__overlay">
+      <section class="create-order__dialog" role="dialog" aria-modal="true" aria-labelledby="order-address-dialog-title">
+        <div class="create-order__dialog-head">
+          <div>
+            <h2 id="order-address-dialog-title">
+              {{ mode === 'choose' ? 'Đổi địa chỉ nhận hàng' : mode === 'edit' ? 'Sửa địa chỉ nhận hàng' : 'Thêm địa chỉ nhận hàng' }}
+            </h2>
+            @if (mode === 'choose') {
+              <p>Chọn địa chỉ giao hàng cho đơn hàng hiện tại</p>
+            } @else {
+              <p>{{ customerName() }} · {{ customerPhone() }}</p>
+            }
+          </div>
+          <button type="button" class="create-order__dialog-close" aria-label="Đóng"
+            (click)="closeAddressDialog()">×</button>
+        </div>
+
+        @if (mode === 'choose') {
+          <div class="create-order__address-choices">
+            @for (address of savedAddresses(); track $index) {
+              <button type="button" class="create-order__address-choice" (click)="chooseAddress(address)">
+                <strong>{{ address.recipientName }} · {{ address.recipientPhone }}</strong>
+                <small>{{ address.line1 }}, {{ address.ward }}, {{ address.district }}, {{ address.city }}</small>
+              </button>
+            } @empty {
+              <p>Hiện chưa có địa chỉ đã lưu để lựa chọn. Bạn có thể thêm địa chỉ nhận hàng cho đơn này.</p>
+              <button type="button" class="create-order__button create-order__button--outline"
+                (click)="openAddressDialog('add')">+ Thêm địa chỉ</button>
+            }
+          </div>
+        } @else {
+          <div class="create-order__dialog-form">
+            <div class="create-order__region-fields create-order__region-fields--two">
+              <div class="create-order__field">
+                <label for="order-dialog-recipient">Người nhận <span aria-hidden="true">*</span></label>
+                <input id="order-dialog-recipient" type="text" [value]="addressDraft().recipientName"
+                  (input)="editAddressField('recipientName', $any($event.target).value)">
+              </div>
+              <div class="create-order__field">
+                <label for="order-dialog-phone">SĐT nhận hàng <span aria-hidden="true">*</span></label>
+                <input id="order-dialog-phone" type="tel" [value]="addressDraft().recipientPhone"
+                  (input)="editAddressField('recipientPhone', $any($event.target).value)">
+              </div>
+            </div>
+            <div class="create-order__region-fields">
+              <div class="create-order__field">
+                <label for="order-dialog-city">Tỉnh/Thành phố <span aria-hidden="true">*</span></label>
+                <input id="order-dialog-city" type="text" placeholder="Nhập tỉnh/thành phố"
+                  [value]="addressDraft().city" (input)="editAddressField('city', $any($event.target).value)">
+              </div>
+              <div class="create-order__field">
+                <label for="order-dialog-district">Quận/Huyện <span aria-hidden="true">*</span></label>
+                <input id="order-dialog-district" type="text" placeholder="Nhập quận/huyện"
+                  [value]="addressDraft().district" (input)="editAddressField('district', $any($event.target).value)">
+              </div>
+              <div class="create-order__field">
+                <label for="order-dialog-ward">Phường/Xã</label>
+                <input id="order-dialog-ward" type="text" placeholder="Nhập phường/xã"
+                  [value]="addressDraft().ward" (input)="editAddressField('ward', $any($event.target).value)">
+              </div>
+            </div>
+            <div class="create-order__field">
+              <label for="order-dialog-line1">Địa chỉ cụ thể <span aria-hidden="true">*</span></label>
+              <input id="order-dialog-line1" type="text" placeholder="Nhập số nhà, tên đường..."
+                [value]="addressDraft().line1" (input)="editAddressField('line1', $any($event.target).value)">
+            </div>
+            @if (addressDialogError()) {
+              <p class="create-order__dialog-error" role="alert">{{ addressDialogError() }}</p>
+            }
+          </div>
+        }
+
+        <div class="create-order__dialog-actions">
+          <button type="button" class="create-order__button create-order__button--outline"
+            (click)="closeAddressDialog()">Hủy</button>
+          @if (mode !== 'choose') {
+            <button type="button" class="create-order__button create-order__button--primary"
+              (click)="saveAddressDraft()">{{ mode === 'edit' ? 'Lưu thay đổi' : 'Lưu và sử dụng' }}</button>
+          }
+        </div>
+      </section>
+    </div>
+  }
 </app-admin-catalog-shell>
