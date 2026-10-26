@@ -26,6 +26,8 @@ interface ShippingAddressDraft {
   line1: string;
 }
 type AddressDialogMode = 'add' | 'edit' | 'choose';
+type OnlineProvider = 'MOMO' | 'ZALOPAY' | 'VNPAY' | 'BANK_TRANSFER' | 'ATM' | 'CARD';
+type VoucherPreviewState = 'idle' | 'unverified';
 type LookupState = 'idle' | 'loading' | 'found' | 'not-found' | 'error';
 
 const normalizePhone = (value: string): string => {
@@ -76,9 +78,47 @@ export class AdminOrderCreateComponent {
   readonly productResults = signal<OrderVariantChoice[]>([]);
   readonly lines = signal<OrderDraftLine[]>([]);
   readonly paymentMethod = signal<'COD' | 'ONLINE_MOCK'>('COD');
+  readonly onlineProvider = signal<OnlineProvider | null>(null);
+  readonly onlineProviderChoices: ReadonlyArray<{ key: OnlineProvider; label: string }> = [
+    { key: 'MOMO', label: 'MoMo' },
+    { key: 'ZALOPAY', label: 'ZaloPay' },
+    { key: 'VNPAY', label: 'VNPay' },
+    { key: 'BANK_TRANSFER', label: 'Chuyển khoản ngân hàng' },
+    { key: 'ATM', label: 'Thẻ ATM' },
+    { key: 'CARD', label: 'Thẻ tín dụng/ghi nợ' },
+  ];
   readonly voucherCode = signal('');
+  readonly voucherPreviewState = signal<VoucherPreviewState>('idle');
+  readonly reviewAttempted = signal(false);
   readonly note = signal('');
-  readonly subtotal = computed(() => this.lines().reduce((sum, line) => sum + line.price * line.quantity, 0));
+  // Listing finalPrice includes the product's own discount; BE remains the source
+  // of truth for voucher allocation, stock/branch availability and order total.
+  readonly subtotal = computed(() => this.lines().reduce((sum, line) =>
+    sum + (Number.isSafeInteger(line.quantity) && line.quantity > 0
+      ? line.price * line.quantity : 0), 0));
+  readonly reviewIssues = computed((): string[] => {
+    const issues: string[] = [];
+    const phone = normalizePhone(this.lookupPhone());
+    if (phone.length < 9 || phone.length > 15) issues.push('Nhập số điện thoại khách hàng hợp lệ.');
+    else if (!['found','not-found'].includes(this.lookupState()))
+      issues.push('Tra cứu số điện thoại khách hàng trước khi tiếp tục.');
+    if (this.lookupState() === 'found' && !this.selectedCustomer())
+      issues.push('Chọn khách hàng từ kết quả tra cứu.');
+    if (this.selectedCustomer()?.accountStatus === 'BLOCKED')
+      issues.push('Tài khoản khách hàng đang bị khóa.');
+    if (!this.customerName().trim()) issues.push('Nhập họ và tên khách hàng.');
+    if (this.customerEmail().trim() && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(this.customerEmail().trim()))
+      issues.push('Địa chỉ email chưa hợp lệ.');
+    if (this.lines().length === 0) issues.push('Thêm ít nhất một sản phẩm vào đơn hàng.');
+    if (this.hasInvalidQuantities()) issues.push('Kiểm tra lại số lượng sản phẩm trong đơn.');
+    if (this.missingShippingAddress()) issues.push('Nhập đầy đủ địa chỉ giao hàng.');
+    if (this.selectedCustomer() && !this.addressWasConfirmed())
+      issues.push('Chọn hoặc xác nhận địa chỉ nhận hàng.');
+    if (this.paymentMethod() === 'ONLINE_MOCK' && !this.onlineProvider())
+      issues.push('Chọn một hình thức thanh toán trực tuyến.');
+    return issues;
+  });
+  readonly isDraftValid = computed(() => this.reviewIssues().length === 0);
   readonly hasInvalidQuantities = computed(() => this.lines().some(item =>
     !Number.isSafeInteger(item.quantity) || item.quantity < 1 ||
     (item.availableStock !== undefined && item.quantity > item.availableStock)));
@@ -232,7 +272,6 @@ export class AdminOrderCreateComponent {
     this.addressDraft.set(draft);
     this.saveAddressDraft();
   }
-  updateVoucher(value: string): void { this.voucherCode.set(value); }
   updateNote(value: string): void { this.note.set(value); }
 
   editProductQuery(value: string): void {
@@ -279,6 +318,7 @@ export class AdminOrderCreateComponent {
 
   addProduct(choice: OrderVariantChoice): void {
     const current = this.lines();
+    this.invalidateDraftPricing();
     const existing = current.find(line => line.variantId === choice.variantId && line.productId === choice.productId);
     if (existing) {
       this.changeQuantity(existing, existing.quantity + 1);
@@ -293,6 +333,7 @@ export class AdminOrderCreateComponent {
   }
 
   changeQuantity(line: OrderDraftLine, quantity: number): void {
+    this.invalidateDraftPricing();
     // Preserve an invalid attempted quantity so the user sees the validation.
     const parsed = Number.isFinite(quantity) ? quantity : 0;
     this.lines.update(items => items.map(item =>
@@ -303,20 +344,54 @@ export class AdminOrderCreateComponent {
   }
 
   removeProduct(line: OrderDraftLine): void {
+    this.invalidateDraftPricing();
     this.lines.update(items => items.filter(item =>
       !(item.productId === line.productId && item.variantId === line.variantId)));
   }
 
   togglePayment(method: 'COD' | 'ONLINE_MOCK'): void {
     this.paymentMethod.set(method);
+    if (method === 'COD') this.onlineProvider.set(null);
+  }
+
+  chooseOnlineProvider(method: OnlineProvider): void {
+    this.paymentMethod.set('ONLINE_MOCK');
+    this.onlineProvider.set(method);
+  }
+
+  updateVoucher(value: string): void {
+    this.voucherCode.set(value.toUpperCase().trimStart());
+    this.voucherPreviewState.set('idle');
+  }
+
+  clearVoucher(): void {
+    this.voucherCode.set('');
+    this.voucherPreviewState.set('idle');
+  }
+
+  private invalidateDraftPricing(): void {
+    this.voucherPreviewState.set('idle');
   }
 
   explainVoucher(): void {
-    this.toast.show('Chưa thể áp dụng mã khi tạo đơn hộ khách. Chức năng sẽ khả dụng sau khi kết nối tính giá từ hệ thống.', 'info');
+    if (!this.voucherCode().trim()) {
+      this.toast.show('Vui lòng nhập mã giảm giá.');
+      return;
+    }
+    if (!this.lines().length || this.hasInvalidQuantities()) {
+      this.toast.show('Vui lòng chọn sản phẩm và kiểm tra số lượng trước khi áp dụng mã.');
+      return;
+    }
+    // The current /vouchers/validate evaluates the authenticated Customer's cart.
+    // Never call it using the Admin session as that could validate the wrong cart.
+    this.voucherPreviewState.set('unverified');
   }
 
-  explainSave(): void {
-    this.toast.show('Chưa thể lưu đơn hàng. Hệ thống đang chờ chức năng tạo đơn hộ khách.', 'info');
+  reviewDraft(): void {
+    this.reviewAttempted.set(true);
+    if (this.isDraftValid()) {
+      this.toast.show('Thông tin bản nháp đã đầy đủ. Tổng tiền cuối cùng sẽ được xác nhận khi hệ thống hỗ trợ tạo đơn.', 'info');
+    }
   }
 
   readonly missingShippingAddress = computed(() =>
