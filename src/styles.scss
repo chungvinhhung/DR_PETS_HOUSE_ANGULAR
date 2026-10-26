@@ -1742,3 +1742,99 @@ app-admin-order-management .order-admin__filter-warning {color:#ad394a}
  .create-order__voucher-row {flex-wrap:wrap}
  .create-order__voucher-row button {flex:0 0 auto}
 }
+
+/* WEB2 Admin Create Order Phase 2 — delivery-address variants from Figma. */
+app-admin-order-create .create-order__region-fields {
+  display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px;
+  align-items:start; margin:12px 0 18px;
+}
+app-admin-order-create .create-order__region-fields--two {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+app-admin-order-create .create-order__address-line { margin-top:15px; }
+app-admin-order-create .create-order__address-line input,
+app-admin-order-create .create-order__dialog-form .create-order__field input {
+  width:100%; height:42px; padding:0 12px; border:1px solid #d9e3f2;
+  border-radius:8px; color:#202d44; background:#fff;
+}
+app-admin-order-create .create-order__address-card {
+  border:1px solid #d9e3f2; border-radius:8px; padding:16px; min-height:85px;
+}
+app-admin-order-create .create-order__address-top {
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+  gap:14px;
+}
+app-admin-order-create .create-order__address-preview {
+  display:flex; flex-direction:column; align-items:flex-start; gap:6px;
+  flex:1 1 250px; min-width:0;
+}
+app-admin-order-create .create-order__address-preview strong {
+  font-size:13px; line-height:20px; font-weight:500; overflow-wrap:anywhere;
+}
+app-admin-order-create .create-order__address-preview small {
+  font-size:12px; color:#697f9d;
+}
+app-admin-order-create .create-order__address-tag {
+  color:#4672a4; background:#edf4ff; padding:3px 8px; border-radius:4px;
+  font-size:11px;
+}
+app-admin-order-create .create-order__address-buttons {
+  display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;
+}
+app-admin-order-create .create-order__overlay {
+  position:fixed; inset:0; z-index:1150; display:flex;
+  align-items:center; justify-content:center; padding:20px;
+  overflow-y:auto; background:#14233d86;
+}
+app-admin-order-create .create-order__dialog {
+  width:min(100%,730px); max-height:calc(100dvh - 40px); overflow-y:auto;
+  background:#fff; color:#202d44; border-radius:14px;
+  box-shadow:0 18px 60px #14274047; padding:24px;
+}
+app-admin-order-create .create-order__dialog-head {
+  display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
+  margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #d9e3f2;
+}
+app-admin-order-create .create-order__dialog-head h2 {
+  font-size:20px; line-height:28px; font-weight:700; margin:0;
+}
+app-admin-order-create .create-order__dialog-head p {
+  color:#657b97; margin:4px 0 0; font-size:13px;
+}
+app-admin-order-create .create-order__dialog-close {
+  display:flex; align-items:center; justify-content:center;
+  flex:none; width:32px; height:32px; border:0; border-radius:8px;
+  background:transparent; color:#57708d; font-size:25px; line-height:1;
+}
+app-admin-order-create .create-order__dialog-close:hover { background:#eef3f9; }
+app-admin-order-create .create-order__dialog-form .create-order__region-fields { margin-bottom:12px; }
+app-admin-order-create .create-order__dialog-error {
+  color:#bd2739; font-size:12px; margin:12px 0 0;
+}
+app-admin-order-create .create-order__address-choices {
+  padding:8px 0 22px; display:flex; flex-direction:column; gap:12px;
+}
+app-admin-order-create .create-order__address-choices p {
+  margin:0; font-size:13px; line-height:1.65; color:#697e96;
+}
+app-admin-order-create .create-order__address-choice {
+  display:flex; flex-direction:column; gap:6px; width:100%;
+  align-items:flex-start; padding:12px 14px; background:#fff;
+  border:1px solid #d9e3f2; border-radius:8px; text-align:left;
+}
+app-admin-order-create .create-order__address-choice:hover {
+  border-color:#0e48a3; background:#f6f9fe;
+}
+app-admin-order-create .create-order__address-choice strong {font-size:13px;}
+app-admin-order-create .create-order__address-choice small {font-size:12px;color:#627690;}
+app-admin-order-create .create-order__dialog-actions {
+  display:flex; align-items:center; justify-content:flex-end;
+  gap:10px; margin-top:20px; padding-top:16px; border-top:1px solid #d9e3f2;
+}
+@media (max-width:860px) {
+  app-admin-order-create .create-order__region-fields {grid-template-columns:1fr;}
+  app-admin-order-create .create-order__region-fields--two {grid-template-columns:1fr;}
+  app-admin-order-create .create-order__address-buttons {justify-content:flex-start;}
+  app-admin-order-create .create-order__address-top {align-items:stretch;}
+  app-admin-order-create .create-order__dialog {padding:16px;}
+}
