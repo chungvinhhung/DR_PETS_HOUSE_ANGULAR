@@ -305,6 +305,18 @@ export class AdminOrderManagementComponent {
       },
     });
   }
+  /**
+   * The existing BE finalizes Return only after the associated refund reaches
+   * REFUNDED. In that contract the settled refund.amount equals the stored
+   * refundBreakdown.total (set on approval). Prefer a separate settled value
+   * when BE exposes one for adjustments; never show a final value before COMPLETED.
+   */
+  finalRefundAmount(row: OrderReturnSummary): number | null {
+    if (row.status !== 'COMPLETED') return null;
+    const amount = row.finalRefundAmount ?? row.refundBreakdown?.total;
+    return typeof amount === 'number' && Number.isFinite(amount) && amount >= 0
+      ? amount : null;
+  }
   returnStatusLabel(status: ReturnStatus): string {
     return ({
       REQUESTED: 'Mới yêu cầu', PROCESSING: 'Đang xử lý', RECEIVED: 'Đã nhận hàng',
@@ -329,11 +341,12 @@ export class AdminOrderManagementComponent {
       const current = this.filteredReturns();
       if (!current.length) { this.toast.show('Không có yêu cầu trả hàng để xuất file.', 'info'); return; }
       const cells = [
-        ['Mã yêu cầu','Mã đơn hàng','Ngày yêu cầu','Sản phẩm','Số lượng trả','Tiền dự kiến hoàn','Trạng thái'],
+        ['Mã yêu cầu','Mã đơn hàng','Ngày yêu cầu','Sản phẩm','Số lượng trả','Tiền dự kiến hoàn','Hoàn cuối cùng','Trạng thái'],
         ...current.map(row => [row.id, row.orderId, this.datePart(row.history?.[0]?.at),
           row.items.map(item => item.productName).join('; '),
           String(row.items.reduce((sum, item) => sum + item.requestedQty, 0)),
-          String(row.refundBreakdown.total), this.returnStatusLabel(row.status)]),
+          String(row.refundBreakdown.total), this.finalRefundAmount(row) === null ? '' : String(this.finalRefundAmount(row)),
+           this.returnStatusLabel(row.status)]),
       ];
       this.downloadCsv('yeu-cau-tra-hang-da-tai.csv', cells);
       return;
