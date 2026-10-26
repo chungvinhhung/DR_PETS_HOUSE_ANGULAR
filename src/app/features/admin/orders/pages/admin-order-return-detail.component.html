@@ -116,7 +116,7 @@
           <div><span>Hoàn cuối cùng</span><strong class="return-detail__highlight">{{ money(finalRefundAmount()) }}</strong></div>
           <div><span>Trạng thái hoàn tiền</span><strong>
             @if (refund(); as paid) {
-              {{ paid.status === 'REFUNDED' ? 'Đã hoàn tất (MOCK)' : 'Đang chờ xử lý (MOCK)' }}
+              {{ paid.status === 'REFUNDED' ? 'Đã hoàn tất (MOCK)' : paid.status === 'FAILED' ? 'Hoàn tiền thất bại' : 'Đang chờ xử lý (MOCK)' }}
             } @else if (refundLoading()) { Đang kiểm tra... }
             @else if (ret.status === 'COMPLETED') { Hoàn tất theo trạng thái yêu cầu }
             @else if (ret.refundId && !isManager()) { Chỉ quản lý được xem giao dịch hoàn tiền }
