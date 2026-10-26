@@ -1,0 +1,243 @@
+<app-admin-catalog-shell activeItem="orders">
+  <main class="create-order">
+    <nav class="create-order__breadcrumb" aria-label="Đường dẫn">
+      <a routerLink="/admin/orders">Đơn hàng</a><span aria-hidden="true">›</span><strong>Tạo đơn hàng</strong>
+    </nav>
+    <h1>Tạo đơn hàng</h1>
+
+    <section class="create-order__panel" aria-labelledby="lookup-title">
+      <h2 id="lookup-title">Tra cứu khách hàng</h2>
+      <label class="create-order__label" for="order-phone-lookup">Số điện thoại khách hàng <span aria-hidden="true">*</span></label>
+      <div class="create-order__lookup-row">
+        <div class="create-order__search-field">
+          <img src="/assets/admin-product/icon-search.svg" alt="" width="18" height="18">
+          <input id="order-phone-lookup" type="tel" autocomplete="off"
+            placeholder="Nhập số điện thoại..." [value]="lookupPhone()"
+            (input)="editLookupPhone($any($event.target).value)"
+            (keydown.enter)="lookupCustomer()">
+        </div>
+        <button class="create-order__button create-order__button--primary" type="button"
+          [disabled]="lookupState() === 'loading'" (click)="lookupCustomer()">
+          {{ lookupState() === 'loading' ? 'Đang tra cứu...' : 'Tra cứu' }}
+        </button>
+      </div>
+      @if (lookupState() === 'not-found') {
+        <p class="create-order__helper create-order__helper--warning" role="status">
+          Không tìm thấy hồ sơ trùng số điện thoại trong kết quả tra cứu. Vui lòng nhập thông tin khách bên dưới.
+          Tài khoản đăng nhập sẽ được kích hoạt theo quy trình dành cho khách vãng lai.
+        </p>
+      }
+      @if (lookupState() === 'error') {
+        <p class="create-order__helper create-order__helper--warning" role="status">
+          Chưa tra cứu được khách hàng. Vui lòng thử lại trước khi tạo đơn.
+        </p>
+      }
+      @if (lookupResults().length > 0 && !selectedCustomer()) {
+        <div class="create-order__suggestions" aria-label="Kết quả tra cứu khách hàng">
+          @for (customer of lookupResults(); track customer.id) {
+            <button type="button" class="create-order__suggestion"
+              (click)="selectCustomer(customer)">
+              <strong>{{ customer.fullName || 'Khách hàng' }}</strong>
+              <span>{{ customer.phone }}</span>
+              <small>{{ customer.email || 'Chưa có email' }}</small>
+            </button>
+          }
+        </div>
+      }
+      @if (selectedCustomer(); as customer) {
+        <div class="create-order__found" role="status">
+          <strong>Đã chọn: {{ customer.fullName || customer.phone }}</strong>
+          <span>{{ customer.activationStatus === 'ACTIVATED' ? 'Đã kích hoạt tài khoản' :
+            customer.activationStatus === 'PENDING_ACTIVATION' ? 'Đang chờ kích hoạt' : 'Chưa có tài khoản đăng nhập' }}</span>
+          @if (customer.accountStatus === 'BLOCKED') {
+            <span class="create-order__warning-text">Tài khoản bị khóa — không thể tạo đơn.</span>
+          }
+          <button type="button" class="create-order__text-button" (click)="editLookupPhone('')">Đổi khách hàng</button>
+        </div>
+      }
+    </section>
+
+    <section class="create-order__panel" aria-labelledby="customer-title">
+      <h2 id="customer-title">Thông tin khách hàng</h2>
+      <div class="create-order__fields">
+        <div class="create-order__field">
+          <label for="order-customer-name">Họ và tên <span aria-hidden="true">*</span></label>
+          <input id="order-customer-name" type="text" autocomplete="off" placeholder="Nhập họ và tên"
+            [readOnly]="!!selectedCustomer()" [value]="customerName()"
+            (input)="updateCustomerName($any($event.target).value)">
+        </div>
+        <div class="create-order__field">
+          <label for="order-customer-phone">Số điện thoại <span aria-hidden="true">*</span></label>
+          <input id="order-customer-phone" type="tel" autocomplete="off" readonly
+            placeholder="Số điện thoại từ tra cứu" [value]="customerPhone()">
+        </div>
+        <div class="create-order__field">
+          <label for="order-customer-email">Email</label>
+          <input id="order-customer-email" type="email" autocomplete="off" placeholder="Nhập email (nếu có)"
+            [readOnly]="!!selectedCustomer()" [value]="customerEmail()"
+            (input)="updateCustomerEmail($any($event.target).value)">
+        </div>
+      </div>
+    </section>
+
+    <section class="create-order__panel" aria-labelledby="products-title">
+      <h2 id="products-title">Sản phẩm trong đơn hàng</h2>
+      <div class="create-order__products-lookup">
+        <div class="create-order__search-field create-order__search-field--product">
+          <img src="/assets/admin-product/icon-search.svg" alt="" width="18" height="18">
+          <input aria-label="Tìm sản phẩm theo tên hoặc SKU" placeholder="Tìm sản phẩm theo tên hoặc SKU..."
+            [value]="productQuery()" (input)="editProductQuery($any($event.target).value)">
+        </div>
+        @if (productQuery().trim()) {
+          <div class="create-order__product-results" aria-label="Kết quả tìm kiếm sản phẩm">
+            @if (productLoading()) {
+              <p>Đang tìm sản phẩm...</p>
+            } @else if (productResults().length === 0) {
+              <p>Không có sản phẩm hoặc biến thể đang bán phù hợp.</p>
+            } @else {
+              @for (option of productResults(); track option.productId + ':' + option.variantId) {
+                <button type="button" class="create-order__product-result" (click)="addProduct(option)">
+                  <span class="create-order__product-text"><strong>{{ option.productName }}</strong>
+                    <small>{{ option.label }} · {{ option.sku }}</small></span>
+                  <span class="create-order__product-price">{{ price(option.price) }}</span>
+                  <span class="create-order__product-add">+ Thêm</span>
+                </button>
+              }
+            }
+          </div>
+        }
+      </div>
+      <div class="create-order__table-scroll">
+        <table class="create-order__table">
+          <thead><tr>
+            <th scope="col">Sản phẩm / SKU</th>
+            <th scope="col">Đơn giá</th>
+            <th scope="col">Số lượng</th>
+            <th scope="col">Thành tiền</th>
+            <th scope="col" class="create-order__actions">Thao tác</th>
+          </tr></thead>
+          <tbody>
+            @for (item of lines(); track item.productId + ':' + item.variantId) {
+              <tr>
+                <td><strong>{{ item.productName }}</strong><small>{{ item.label }} · {{ item.sku }}</small></td>
+                <td>{{ price(item.price) }}</td>
+                <td>
+                  <div class="create-order__qty">
+                    <button type="button" aria-label="Giảm số lượng {{ item.productName }}"
+                      (click)="changeQuantity(item, item.quantity - 1)">−</button>
+                    <input type="number" min="1" step="1" [max]="item.availableStock ?? null"
+                      [attr.aria-label]="'Số lượng ' + item.productName"
+                      [value]="item.quantity" (input)="changeQuantity(item, $any($event.target).valueAsNumber)">
+                    <button type="button" aria-label="Tăng số lượng {{ item.productName }}"
+                      (click)="changeQuantity(item, item.quantity + 1)">+</button>
+                  </div>
+                  @if (item.availableStock !== undefined && item.quantity > item.availableStock) {
+                    <small class="create-order__error">Vượt số lượng khả dụng ({{ item.availableStock }})</small>
+                  } @else if (item.quantity < 1 || !item.quantity) {
+                    <small class="create-order__error">Số lượng phải lớn hơn 0</small>
+                  }
+                </td>
+                <td class="create-order__line-price">{{ price(item.quantity * item.price) }}</td>
+                <td class="create-order__actions">
+                  <button type="button" class="create-order__trash" [attr.aria-label]="'Xóa ' + item.productName"
+                    (click)="removeProduct(item)">
+                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none"
+                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m5 4v7m4-7v7"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="create-order__empty">Chưa có sản phẩm trong đơn hàng</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="create-order__panel" aria-labelledby="shipping-title">
+      <h2 id="shipping-title">Thông tin nhận hàng</h2>
+      <p class="create-order__label">Địa chỉ nhận hàng</p>
+      @if (showAddressContractWarning()) {
+        <p class="create-order__helper" role="status">
+          Chưa thể tải địa chỉ mặc định từ hồ sơ khách hàng. API Customer hiện chưa cung cấp danh sách địa chỉ;
+          bạn có thể nhập thông tin giao hàng cho bản nháp.
+        </p>
+      }
+      <div class="create-order__address">
+        <div class="create-order__address-actions">
+          <strong>{{ shippingLine1() ? shippingLine1() : 'Chưa có địa chỉ nhận hàng' }}</strong>
+          <button type="button" class="create-order__button create-order__button--outline"
+            (click)="addressEditorOpen.set(!addressEditorOpen())">{{ addressEditorOpen() ? 'Thu gọn' : 'Sửa / Thêm địa chỉ' }}</button>
+        </div>
+        @if (shippingLine1() || shippingCity()) {
+          <small>{{ shippingCity() }} · {{ customerName() || 'Khách hàng' }} · {{ customerPhone() }}</small>
+        }
+        @if (addressEditorOpen()) {
+          <div class="create-order__address-fields">
+            <div class="create-order__field">
+              <label for="order-address-line">Địa chỉ giao hàng <span aria-hidden="true">*</span></label>
+              <input id="order-address-line" type="text" placeholder="Số nhà, đường, phường/xã, quận/huyện"
+                [value]="shippingLine1()" (input)="updateShippingLine1($any($event.target).value)">
+            </div>
+            <div class="create-order__field">
+              <label for="order-address-city">Tỉnh / Thành phố <span aria-hidden="true">*</span></label>
+              <input id="order-address-city" type="text" placeholder="Nhập tỉnh hoặc thành phố"
+                [value]="shippingCity()" (input)="updateShippingCity($any($event.target).value)">
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="create-order__panel" aria-labelledby="payment-title">
+      <h2 id="payment-title">Thanh toán và tổng đơn</h2>
+      <div class="create-order__payment-grid">
+        <div class="create-order__payment-fields">
+          <div class="create-order__payment-toggle" role="group" aria-label="Phương thức thanh toán">
+            <button type="button" [class.is-active]="paymentMethod() === 'COD'"
+              [attr.aria-pressed]="paymentMethod() === 'COD'" (click)="togglePayment('COD')">Khi nhận hàng</button>
+            <button type="button" [class.is-active]="paymentMethod() === 'ONLINE_MOCK'"
+              [attr.aria-pressed]="paymentMethod() === 'ONLINE_MOCK'"
+              (click)="togglePayment('ONLINE_MOCK')">Trực tuyến</button>
+          </div>
+          @if (paymentMethod() === 'ONLINE_MOCK') {
+            <p class="create-order__helper">Thanh toán trực tuyến hiện dùng môi trường mô phỏng; chưa phát sinh giao dịch thật.</p>
+          }
+          <label class="create-order__label" for="order-voucher-code">Thẻ quà tặng / Mã giảm giá</label>
+          <div class="create-order__voucher-row">
+            <input id="order-voucher-code" placeholder="Nhập mã" [value]="voucherCode()"
+              (input)="updateVoucher($any($event.target).value)">
+            <button type="button" class="create-order__button create-order__button--outline"
+              (click)="explainVoucher()">Áp dụng</button>
+          </div>
+          <label class="create-order__label" for="order-note">Ghi chú đơn hàng</label>
+          <textarea id="order-note" rows="2" placeholder="Ghi chú giao hàng (nếu có)..."
+            [value]="note()" (input)="updateNote($any($event.target).value)"></textarea>
+        </div>
+        <div class="create-order__summary">
+          <dl class="create-order__breakdown">
+            <div><dt>Tạm tính</dt><dd>{{ price(subtotal()) }}</dd></div>
+            <div><dt>Phí vận chuyển</dt><dd>Chờ tính</dd></div>
+            <div><dt>Giảm giá</dt><dd>Chưa áp dụng</dd></div>
+          </dl>
+          <div class="create-order__total">
+            <div><strong>Tổng cộng</strong><small>(Theo kết quả xác nhận từ hệ thống)</small></div>
+            <strong>Chờ báo giá</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <p class="create-order__pending">
+      Chưa thể xác nhận tạo đơn: cần API tạo đơn hộ khách và báo giá chính thức từ hệ thống.
+      Hồ sơ khách vãng lai sẽ được xử lý theo luồng chờ kích hoạt, không tự tạo mật khẩu.
+    </p>
+    <div class="create-order__footer">
+      <a routerLink="/admin/orders" class="create-order__button create-order__button--outline">Hủy</a>
+      <button type="button" class="create-order__button create-order__button--primary" disabled
+        title="Chờ API Admin tạo đơn hàng hộ khách">Xác nhận tạo đơn</button>
+    </div>
+  </main>
+</app-admin-catalog-shell>
