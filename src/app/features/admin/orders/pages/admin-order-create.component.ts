@@ -17,6 +17,15 @@ interface OrderVariantChoice {
   availableStock?: number;
 }
 interface OrderDraftLine extends OrderVariantChoice { quantity: number; }
+interface ShippingAddressDraft {
+  recipientName: string;
+  recipientPhone: string;
+  city: string;
+  district: string;
+  ward: string;
+  line1: string;
+}
+type AddressDialogMode = 'add' | 'edit' | 'choose';
 type LookupState = 'idle' | 'loading' | 'found' | 'not-found' | 'error';
 
 const normalizePhone = (value: string): string => {
@@ -49,7 +58,19 @@ export class AdminOrderCreateComponent {
   readonly customerEmail = signal('');
   readonly shippingLine1 = signal('');
   readonly shippingCity = signal('');
-  readonly addressEditorOpen = signal(true);
+  readonly shippingDistrict = signal('');
+  readonly shippingWard = signal('');
+  readonly shippingRecipientName = signal('');
+  readonly shippingRecipientPhone = signal('');
+  readonly addressDialog = signal<AddressDialogMode | null>(null);
+  readonly addressDialogError = signal('');
+  readonly addressDraft = signal<ShippingAddressDraft>(this.emptyAddress());
+  readonly addressWasConfirmed = signal(false);
+  readonly shippingAddressDescription = computed(() => [
+    this.shippingLine1(), this.shippingWard(), this.shippingDistrict(), this.shippingCity(),
+  ].filter(part => Boolean(part.trim())).join(', '));
+  // BE /customers does not return saved addresses yet; show no fabricated address choices.
+  readonly savedAddresses = signal<ShippingAddressDraft[]>([]);
   readonly productQuery = signal('');
   readonly productLoading = signal(false);
   readonly productResults = signal<OrderVariantChoice[]>([]);
@@ -63,7 +84,8 @@ export class AdminOrderCreateComponent {
     (item.availableStock !== undefined && item.quantity > item.availableStock)));
   readonly hasUnsavedChanges = computed(() => Boolean(
     this.lookupPhone() || this.customerName() || this.customerEmail() || this.shippingLine1() ||
-    this.shippingCity() || this.lines().length || this.voucherCode() || this.note()
+    this.shippingCity() || this.shippingDistrict() || this.shippingWard() ||
+    this.lines().length || this.voucherCode() || this.note()
   ));
 
   constructor() {
@@ -94,9 +116,7 @@ export class AdminOrderCreateComponent {
     this.lookupState.set('idle');
     this.customerName.set('');
     this.customerEmail.set('');
-    this.shippingLine1.set('');
-    this.shippingCity.set('');
-    this.addressEditorOpen.set(true);
+    this.clearShippingAddress();
   }
 
   lookupCustomer(): void {
@@ -134,16 +154,84 @@ export class AdminOrderCreateComponent {
     this.lookupPhone.set(customer.phone ?? this.lookupPhone());
     this.lookupResults.set([]);
     this.lookupState.set('found');
-    this.shippingLine1.set('');
-    this.shippingCity.set('');
+    this.clearShippingAddress();
+    this.shippingRecipientName.set(customer.fullName ?? '');
+    this.shippingRecipientPhone.set(customer.phone ?? this.lookupPhone());
     // /customers currently exposes no saved/default address; do not fabricate one.
-    this.addressEditorOpen.set(true);
   }
 
   updateCustomerName(value: string): void { this.customerName.set(value); }
   updateCustomerEmail(value: string): void { this.customerEmail.set(value); }
-  updateShippingLine1(value: string): void { this.shippingLine1.set(value); }
-  updateShippingCity(value: string): void { this.shippingCity.set(value); }
+  updateShippingLine1(value: string): void { this.shippingLine1.set(value); this.addressWasConfirmed.set(false); }
+  updateShippingCity(value: string): void { this.shippingCity.set(value); this.addressWasConfirmed.set(false); }
+  updateShippingDistrict(value: string): void { this.shippingDistrict.set(value); this.addressWasConfirmed.set(false); }
+  updateShippingWard(value: string): void { this.shippingWard.set(value); this.addressWasConfirmed.set(false); }
+
+  private emptyAddress(): ShippingAddressDraft {
+    return { recipientName: '', recipientPhone: '', city: '', district: '', ward: '', line1: '' };
+  }
+
+  private clearShippingAddress(): void {
+    this.shippingLine1.set('');
+    this.shippingCity.set('');
+    this.shippingDistrict.set('');
+    this.shippingWard.set('');
+    this.shippingRecipientName.set('');
+    this.shippingRecipientPhone.set('');
+    this.addressWasConfirmed.set(false);
+    this.addressDialog.set(null);
+    this.addressDraft.set(this.emptyAddress());
+    this.addressDialogError.set('');
+  }
+
+  openAddressDialog(mode: AddressDialogMode): void {
+    this.addressDialogError.set('');
+    this.addressDraft.set({
+      recipientName: mode === 'add' ? this.customerName() : (this.shippingRecipientName() || this.customerName()),
+      recipientPhone: mode === 'add' ? this.customerPhone() : (this.shippingRecipientPhone() || this.customerPhone()),
+      city: mode === 'add' ? '' : this.shippingCity(),
+      district: mode === 'add' ? '' : this.shippingDistrict(),
+      ward: mode === 'add' ? '' : this.shippingWard(),
+      line1: mode === 'add' ? '' : this.shippingLine1(),
+    });
+    this.addressDialog.set(mode);
+  }
+
+  @HostListener('document:keydown.escape')
+  closeAddressOnEscape(): void { this.closeAddressDialog(); }
+
+  closeAddressDialog(): void {
+    this.addressDialog.set(null);
+    this.addressDialogError.set('');
+  }
+
+  editAddressField(key: keyof ShippingAddressDraft, value: string): void {
+    this.addressDraft.update(draft => ({ ...draft, [key]: value }));
+    this.addressDialogError.set('');
+  }
+
+  saveAddressDraft(): void {
+    const draft = this.addressDraft();
+    if (!draft.recipientName.trim() || !draft.recipientPhone.trim() ||
+        normalizePhone(draft.recipientPhone).length < 9 ||
+        !draft.city.trim() || !draft.district.trim() || !draft.line1.trim()) {
+      this.addressDialogError.set('Vui lòng nhập đầy đủ người nhận, số điện thoại và địa chỉ giao hàng.');
+      return;
+    }
+    this.shippingRecipientName.set(draft.recipientName.trim());
+    this.shippingRecipientPhone.set(draft.recipientPhone.trim());
+    this.shippingCity.set(draft.city.trim());
+    this.shippingDistrict.set(draft.district.trim());
+    this.shippingWard.set(draft.ward.trim());
+    this.shippingLine1.set(draft.line1.trim());
+    this.addressWasConfirmed.set(true);
+    this.closeAddressDialog();
+  }
+
+  chooseAddress(draft: ShippingAddressDraft): void {
+    this.addressDraft.set(draft);
+    this.saveAddressDraft();
+  }
   updateVoucher(value: string): void { this.voucherCode.set(value); }
   updateNote(value: string): void { this.note.set(value); }
 
@@ -231,6 +319,7 @@ export class AdminOrderCreateComponent {
     this.toast.show('Chưa thể lưu đơn hàng. Hệ thống đang chờ chức năng tạo đơn hộ khách.', 'info');
   }
 
-  readonly missingShippingAddress = computed(() => !this.shippingLine1().trim() || !this.shippingCity().trim());
+  readonly missingShippingAddress = computed(() =>
+    !this.shippingLine1().trim() || !this.shippingCity().trim() || !this.shippingDistrict().trim());
   readonly showAddressContractWarning = computed(() => this.selectedCustomer() !== null);
 }
