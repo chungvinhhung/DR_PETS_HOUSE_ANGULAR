@@ -5,6 +5,10 @@ on:
       - feature/admin-order-management-phase1
     paths:
       - '.github/workflows/api-connectivity-smoke.yml'
+      - 'src/environments/**'
+      - 'src/app/features/admin/orders/**'
+      - 'src/app/features/admin/vouchers/**'
+      - 'src/app/features/admin/staff/services/**'
   workflow_dispatch:
 
 permissions:
