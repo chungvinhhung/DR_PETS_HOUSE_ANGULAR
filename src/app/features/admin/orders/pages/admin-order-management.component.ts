@@ -360,7 +360,7 @@ export class AdminOrderManagementComponent {
     this.toast.show('Đã xuất những bản ghi hiện có theo bộ lọc.', 'success');
   }
   newOrder(): void {
-    this.toast.show('BE hiện chỉ hỗ trợ tạo đơn qua giỏ hàng/checkout. Chưa có chức năng tạo đơn trực tiếp từ Admin.', 'info');
+    this.toast.show('Hiện chưa hỗ trợ tạo đơn trực tiếp tại trang quản trị. Vui lòng tạo đơn qua giỏ hàng và thanh toán.', 'info');
   }
   setSearch(value: string): void { this.search.set(value); this.page.set(1); }
   setStatus(value: string): void {
