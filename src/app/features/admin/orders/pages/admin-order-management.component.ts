@@ -44,6 +44,7 @@ export class AdminOrderManagementComponent {
   private detailRequestVersion = 0;
 
   readonly statuses = STATUS_LABELS;
+  readonly canCreateOrder = computed(() => this.session.user()?.systemRole === 'ADMIN');
   readonly milestones: OrderStatus[] = ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'COMPLETED'];
   readonly orderId = signal('');
   readonly isDetail = computed(() => Boolean(this.orderId()));
@@ -359,9 +360,7 @@ export class AdminOrderManagementComponent {
     URL.revokeObjectURL(objectUrl);
     this.toast.show('Đã xuất những bản ghi hiện có theo bộ lọc.', 'success');
   }
-  newOrder(): void {
-    this.toast.show('Hiện chưa hỗ trợ tạo đơn trực tiếp tại trang quản trị. Vui lòng tạo đơn qua giỏ hàng và thanh toán.', 'info');
-  }
+
   setSearch(value: string): void { this.search.set(value); this.page.set(1); }
   setStatus(value: string): void {
     if (value === 'ALL' || value in STATUS_LABELS || ['REQUESTED','RECEIVED','APPROVED','REJECTED'].includes(value)) {
