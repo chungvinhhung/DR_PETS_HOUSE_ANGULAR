@@ -3,7 +3,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
-import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
+import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import { orderErrorMessage } from '../services/admin-order-error-message';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import {
   AdminOrderApiService, OrderReturnSummary, OrderRefundRecord, ReturnStatus,
@@ -93,7 +94,7 @@ export class AdminOrderReturnDetailComponent {
       error: err => {
         if (this.id() !== id) return;
         this.data.set(null); this.loading.set(false);
-        this.error.set(adminErrorMessage(err, 'Không tải được chi tiết yêu cầu trả hàng.'));
+        this.error.set(orderErrorMessage(err, 'Không tải được chi tiết yêu cầu trả hàng.'));
       },
     });
   }
@@ -106,7 +107,7 @@ export class AdminOrderReturnDetailComponent {
         this.refundLoading.set(false);
       },
       error: err => {
-        if (this.id() === data.id) this.toast.show(adminErrorMessage(err, 'Không đọc được trạng thái giao dịch hoàn tiền.'), 'error');
+        if (this.id() === data.id) this.toast.show(orderErrorMessage(err, 'Không đọc được trạng thái giao dịch hoàn tiền.'), 'error');
         this.refundLoading.set(false);
       },
     });
@@ -133,9 +134,9 @@ export class AdminOrderReturnDetailComponent {
     return ({
       process: 'Yêu cầu chuyển sang Đang xử lý. Chưa tiếp nhận hàng thực tế.',
       receive: 'Xác nhận chi nhánh đã nhận và kiểm tra sản phẩm khách gửi. Việc nhận hàng KHÔNG tự động nhập lại tồn kho.',
-      approve: 'Duyệt yêu cầu và tạo giao dịch hoàn tiền PENDING theo đúng số tiền BE đã tính sau voucher. Không tự động đánh dấu đã hoàn tiền.',
+      approve: 'Phê duyệt số tiền hoàn dựa trên số tiền thực trả sau giảm giá. Khoản hoàn sẽ được xử lý ở bước tiếp theo.',
       reject: 'Yêu cầu sẽ bị từ chối và BE giải phóng số lượng trả hàng đã giữ. Vui lòng ghi lý do rõ ràng.',
-      refund: 'Xử lý hoàn tiền qua nhà cung cấp MOCK; chỉ sau khi BE xác nhận mới đánh dấu hoàn tất. Chức năng này không thực hiện chuyển khoản thực.',
+      refund: 'Xác nhận hoàn tiền trong môi trường mô phỏng. Thao tác này không chuyển tiền thật cho khách hàng.',
     })[action];
   }
   open(action: WorkflowAction): void {
@@ -158,12 +159,12 @@ export class AdminOrderReturnDetailComponent {
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.busy.set(false); this.dialog.set(null);
-        this.toast.show('Đã cập nhật yêu cầu trả hàng theo kết quả Backend.', 'success');
+        this.toast.show('Đã cập nhật yêu cầu trả hàng thành công.', 'success');
         this.load();
       },
       error: (err: unknown) => {
         this.busy.set(false);
-        this.toast.show(adminErrorMessage(err, 'Không thể xử lý yêu cầu. Vui lòng kiểm tra trạng thái mới nhất.'), 'error');
+        this.toast.show(orderErrorMessage(err, 'Không thể xử lý yêu cầu. Vui lòng kiểm tra trạng thái mới nhất.'), 'error');
         this.load();
       },
     });
