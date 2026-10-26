@@ -103,11 +103,15 @@
               <p>Không có sản phẩm hoặc biến thể đang bán phù hợp.</p>
             } @else {
               @for (option of productResults(); track option.productId + ':' + option.variantId) {
-                <button type="button" class="create-order__product-result" (click)="addProduct(option)">
+                <button type="button" class="create-order__product-result"
+                  [disabled]="option.availableStock !== undefined && option.availableStock <= 0"
+                  (click)="addProduct(option)">
                   <span class="create-order__product-text"><strong>{{ option.productName }}</strong>
                     <small>{{ option.label }} · {{ option.sku }}</small></span>
                   <span class="create-order__product-price">{{ price(option.price) }}</span>
-                  <span class="create-order__product-add">+ Thêm</span>
+                  <span class="create-order__product-add">
+                    {{ option.availableStock !== undefined && option.availableStock <= 0 ? 'Hết hàng' : '+ Thêm' }}
+                  </span>
                 </button>
               }
             }
