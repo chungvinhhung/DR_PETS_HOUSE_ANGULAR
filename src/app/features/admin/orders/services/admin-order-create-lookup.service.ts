@@ -48,7 +48,8 @@ export class AdminOrderCreateLookupService {
   saleVariants(product: AdminProduct) {
     if (product.status !== 'ACTIVE' || !['SALE', 'SHARED'].includes(product.usageType)) return [];
     return product.variants
-      .filter(variant => variant.status === 'ACTIVE')
+      .filter(variant => variant.status === 'ACTIVE' &&
+        Number.isFinite(variant.finalPrice) && variant.finalPrice >= 0)
       .map(variant => ({
         productId: product.id,
         variantId: variant.id,
