@@ -1,9 +1,7 @@
 name: API Domain Smoke Test
 
+# Run on demand after changing custom-domain DNS. Checks do not use credentials.
 on:
-  push:
-    branches:
-      - feature/admin-order-management-phase1
   workflow_dispatch:
 
 permissions:
