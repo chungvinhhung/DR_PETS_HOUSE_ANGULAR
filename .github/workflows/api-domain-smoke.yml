@@ -29,4 +29,17 @@ jobs:
             fi
           done
           echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Compare previous Render host" >> "$GITHUB_STEP_SUMMARY"
+          if oldcode=$(curl --silent --show-error --location --output /dev/null --write-out '%{http_code}' --connect-timeout 10 --max-time 25 "https://pet-clinic-backend-a4lj.onrender.com/api/v1/vouchers"); then
+            echo "Previous Render voucher API: HTTP ${oldcode}"
+            echo "- Previous Render voucher API: HTTP ${oldcode}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Previous Render voucher API: unable to connect"
+            echo "- Previous Render voucher API: unable to connect" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Public resolver checks" >> "$GITHUB_STEP_SUMMARY"
+          for server in 1.1.1.1 8.8.8.8; do
+            echo "Resolver ${server}: $(dig +time=3 +tries=1 +short @"${server}" api.drpetshouse.lat A | tr '\n' ' ')" | tee -a "$GITHUB_STEP_SUMMARY"
+          done
           echo "HTTP 401/403 indicates a reachable protected API; this test cannot confirm records without Admin authentication." >> "$GITHUB_STEP_SUMMARY"
