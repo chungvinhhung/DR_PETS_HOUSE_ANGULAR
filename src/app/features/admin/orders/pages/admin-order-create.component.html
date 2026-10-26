@@ -233,6 +233,7 @@
                   [class.is-selected]="onlineProvider() === method.key">
                   <input type="radio" name="order-online-provider" [checked]="onlineProvider() === method.key"
                     [value]="method.key" (change)="chooseOnlineProvider(method.key)">
+                  <img class="create-order__provider-icon" [src]="providerIcon(method.key)" alt="" width="32" height="32">
                   <span class="create-order__online-provider-label">{{ method.label }}</span>
                 </label>
               }
