@@ -16,17 +16,17 @@
 .voucher-list__panel{border:1px solid #dce5f0;border-radius:12px;overflow:hidden;background:white}
 .voucher-list__scroll{overflow-x:auto}
 .voucher-list__table{width:100%;min-width:990px;table-layout:fixed;border-collapse:collapse}
-.voucher-list__col-code{width:20%}
-.voucher-list__col-scope{width:15%}
+.voucher-list__col-code{width:19%}
+.voucher-list__col-scope{width:16%}
 .voucher-list__col-discount{width:13%}
 .voucher-list__col-dates{width:17%}
 .voucher-list__col-quota{width:17%}
 .voucher-list__col-status{width:12%}
 .voucher-list__col-actions{width:6%}
-.voucher-list__table th{height:48px;padding:13px 14px;background:#f2f6fa;color:#334155;font-size:12px;font-weight:600;text-align:left;white-space:nowrap}
-.voucher-list__table td{height:76px;padding:14px;border-top:1px solid #e2e8f0;color:#475569;overflow-wrap:anywhere}
-.voucher-list__table :is(td,th):first-child{padding-left:20px}
-.voucher-list__table :is(td,th):last-child{padding-right:20px;text-align:right}
+.voucher-list__table th{height:48px;padding:13px 16px;background:#f2f6fa;color:#334155;font-size:12px;font-weight:600;text-align:left;white-space:nowrap}
+.voucher-list__table td{height:76px;padding:14px 16px;border-top:1px solid #e2e8f0;color:#475569;overflow-wrap:anywhere}
+.voucher-list__table :is(td,th):first-child{padding-left:24px}
+.voucher-list__table :is(td,th):last-child{padding-right:24px;text-align:center}
 .voucher-list__table td small{display:block;margin-top:4px;font-size:11px;color:#708198}
 .voucher-list__code{font-weight:600;color:#0d47a1;text-decoration:none}
 .voucher-list__code:hover{text-decoration:underline}
