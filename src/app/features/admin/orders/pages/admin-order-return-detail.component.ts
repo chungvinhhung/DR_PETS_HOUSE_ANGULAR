@@ -113,6 +113,17 @@ export class AdminOrderReturnDetailComponent {
     });
   }
   label(status: ReturnStatus | string): string { return RETURN_LABELS[status as ReturnStatus] ?? status; }
+  finalRefundAmount(): number | null {
+    const ret = this.data();
+    if (!ret || ret.status !== 'COMPLETED') return null;
+    // Read settled refund amount when available, falling back to this BE's
+    // approved amount only because processOrderRefund settles that exact value.
+    const settled = this.refund();
+    const amount = settled?.status === 'REFUNDED'
+      ? settled.amount : (ret.finalRefundAmount ?? ret.refundBreakdown?.total);
+    return typeof amount === 'number' && Number.isFinite(amount) && amount >= 0
+      ? amount : null;
+  }
   money(value?: number | null): string {
     return typeof value === 'number' && Number.isFinite(value)
       ? new Intl.NumberFormat('vi-VN').format(value) + 'đ' : '—';
