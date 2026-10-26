@@ -203,10 +203,10 @@
           <span class="sr-only">Trạng thái yêu cầu</span>
           <select #returnStatus [value]="status()" aria-label="Trạng thái yêu cầu" (change)="setStatus(returnStatus.value)">
             <option value="ALL">Tất cả trạng thái</option>
-            <option value="REQUESTED">Mới yêu cầu</option>
+            <option value="REQUESTED">Chờ tiếp nhận</option>
             <option value="PROCESSING">Đang xử lý</option>
             <option value="RECEIVED">Đã nhận hàng</option>
-            <option value="APPROVED">Đã duyệt</option>
+            <option value="APPROVED">Đã duyệt hoàn</option>
             <option value="COMPLETED">Hoàn tất</option>
             <option value="REJECTED">Đã từ chối</option>
             <option value="CANCELLED">Đã hủy</option>
@@ -382,7 +382,7 @@
           }
         </div>
         <footer class="order-admin__pagination">
-          <span>Đang hiển thị {{ activeTab() === 'orders' ? pageRows().length : returnPageRows().length }} trên {{ activeRowCount() }} bản ghi đã tải</span>
+          <span>Đang hiển thị {{ activeTab() === 'orders' ? pageRows().length : returnPageRows().length }} trên tổng số {{ activeRowCount() }} {{ activeTab() === 'orders' ? 'đơn hàng' : 'yêu cầu' }}</span>
           <div>
             <button type="button" [disabled]="page() <= 1" (click)="changePage(page()-1)" aria-label="Trang trước">‹</button>
             <strong aria-label="Trang hiện tại">{{ page() }}</strong>
@@ -390,7 +390,7 @@
           </div>
         </footer>
       </section>
-      <p class="order-admin__data-note">Dữ liệu lấy trực tiếp từ BE; API hiện trả tối đa 100 bản ghi mới nhất. KPI, bộ lọc và file xuất chỉ tính trên dữ liệu đã tải, không đại diện toàn hệ thống.</p>
+
     }
 
     @if (dialog(); as action) {
