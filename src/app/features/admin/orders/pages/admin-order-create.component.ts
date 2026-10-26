@@ -50,6 +50,7 @@ export class AdminOrderCreateComponent {
   private readonly destroyRef = inject(DestroyRef);
   private customerRequest = 0;
   private productRequest = 0;
+  private pendingExitDecision: ((allow: boolean) => void) | null = null;
   private productTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly lookupPhone = signal('');
@@ -423,15 +424,23 @@ export class AdminOrderCreateComponent {
     this.voucherPreviewState.set('unverified');
   }
 
+  canLeavePage(): boolean | Promise<boolean> {
+    if (!this.hasUnsavedChanges()) return true;
+    // A single in-app confirmation applies to Cancel, Back and sidebar links.
+    if (this.pendingExitDecision) return false;
+    this.cancelDialogOpen.set(true);
+    return new Promise<boolean>(resolve => { this.pendingExitDecision = resolve; });
+  }
+
   askCancel(): void {
-    if (this.hasUnsavedChanges()) {
-      this.cancelDialogOpen.set(true);
-      return;
-    }
     void this.router.navigateByUrl('/admin/orders');
   }
 
-  closeCancel(): void { this.cancelDialogOpen.set(false); }
+  closeCancel(): void {
+    this.cancelDialogOpen.set(false);
+    this.pendingExitDecision?.(false);
+    this.pendingExitDecision = null;
+  }
 
   confirmCancel(): void {
     // Intentional navigation after user consent. Clear state so the browser
@@ -444,7 +453,10 @@ export class AdminOrderCreateComponent {
     this.voucherCode.set('');
     this.note.set('');
     this.clearShippingAddress();
-    void this.router.navigateByUrl('/admin/orders');
+    const decide = this.pendingExitDecision;
+    this.pendingExitDecision = null;
+    if (decide) decide(true);
+    else void this.router.navigateByUrl('/admin/orders');
   }
 
   reviewDraft(): void {
