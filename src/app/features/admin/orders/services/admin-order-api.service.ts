@@ -1,6 +1,6 @@
 import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { ApiClientService } from '../../../../core/services/api-client.service';
 
 export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
@@ -44,6 +44,7 @@ export interface OrderRecord {
 }
 export interface OrderListResponse {
   items: OrderRecord[];
+  totalCount?: number;
   nextCursor?: string | null;
 }
 
@@ -63,6 +64,7 @@ export interface OrderReturnSummary {
 }
 export interface OrderReturnListResponse {
   items: OrderReturnSummary[];
+  totalCount?: number;
   nextCursor?: string | null;
 }
 
@@ -83,16 +85,28 @@ export type OrderWriteAction = 'confirm' | 'process' | 'ship' | 'mark-delivered'
 export class AdminOrderApiService {
   private readonly api = inject(ApiClientService);
 
-  /** BE source feat/foundation-v6 caps GET /orders at 100 and returns nextCursor:null. */
+  /** The deployed API may return fewer orders than its reported totalCount. */
   list(): Observable<OrderListResponse> {
-    return this.api.get<OrderListResponse>('/orders', {
+    return this.api.get<unknown>('/orders', {
       params: new HttpParams().set('limit', '100'),
-    });
+    }).pipe(map((response) => this.requirePage<OrderRecord>(response, 'Đơn hàng')));
   }
   listReturns(): Observable<OrderReturnListResponse> {
-    return this.api.get<OrderReturnListResponse>('/order-returns', {
+    return this.api.get<unknown>('/order-returns', {
       params: new HttpParams().set('limit', '100'),
-    });
+    }).pipe(map((response) => this.requirePage<OrderReturnSummary>(response, 'Trả hàng')));
+  }
+
+  /**
+   * Do not turn HTTP 200 with an unexpected response shape into a fake empty state.
+   * The admin UI can only display "no records" for an actual items: [] response.
+   */
+  private requirePage<T>(response: unknown, resource: string): { items: T[]; totalCount?: number; nextCursor?: string | null } {
+    if (!response || typeof response !== 'object' || !('items' in response) ||
+        !Array.isArray((response as { items: unknown }).items)) {
+      throw new Error('API ' + resource + ' trả về sai cấu trúc danh sách.');
+    }
+    return response as { items: T[]; totalCount?: number; nextCursor?: string | null };
   }
 
   getReturn(id: string): Observable<OrderReturnSummary> {
