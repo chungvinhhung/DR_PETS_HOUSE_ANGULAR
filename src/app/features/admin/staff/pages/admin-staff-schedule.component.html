@@ -1,6 +1,6 @@
 <app-admin-catalog-shell activeItem="staff">
   <main class="schedule-page">
-    <header class="schedule-heading"><h1>Quản lý nhân sự</h1><span class="preview">Lịch ca từ Backend Render</span></header>
+    <header class="schedule-heading"><h1>Quản lý nhân sự</h1></header>
     <nav class="schedule-tabs" aria-label="Nhân sự"><a routerLink="/admin/staff">Nhân viên</a><span aria-current="page">Lịch làm việc</span></nav>
     <section class="schedule-filter-panel" aria-label="Bộ lọc lịch làm việc">
       <div class="schedule-toolbar">
@@ -59,6 +59,6 @@
         <button type="button" aria-label="Trang sau" [disabled]="page()>=pageCount()" (click)="changePage(page()+1)">›</button>
       </nav></footer>
     </section>
-    <p class="schedule-note">Nguồn: API Shift trên Render. Dữ liệu chỉ được xác nhận khi tải thành công; không tự tạo slot đặt lịch.</p>
+    
   </main>
 </app-admin-catalog-shell>
