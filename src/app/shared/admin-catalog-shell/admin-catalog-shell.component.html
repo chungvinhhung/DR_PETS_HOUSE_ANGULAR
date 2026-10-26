@@ -72,7 +72,7 @@
         </div>
 
         <button type="button" class="catalog-sidebar__group"
-          [class.catalog-sidebar__group--active]="activeItem === 'branches' || activeItem === 'staff'"
+          [class.catalog-sidebar__group--active]="activeItem === 'branches' || activeItem === 'staff' || activeItem === 'inventory'"
           [attr.aria-expanded]="operationsExpanded" aria-controls="admin-operations-submenu"
           (click)="toggleOperations()">
           <img src="/assets/admin-product/icon-operations.svg" alt="" width="20" height="20">
@@ -83,7 +83,9 @@
         </button>
         <div id="admin-operations-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
           [hidden]="!operationsExpanded" aria-label="Các mục thuộc Vận hành">
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Kho</span>
+          <a class="catalog-sidebar__sub" routerLink="/admin/inventory"
+            [class.catalog-sidebar__sub--active]="activeItem === 'inventory'"
+            [attr.aria-current]="activeItem === 'inventory' ? 'page' : null">Kho</a>
           <a class="catalog-sidebar__sub" routerLink="/admin/branches"
             [class.catalog-sidebar__sub--active]="activeItem === 'branches'"
             [attr.aria-current]="activeItem === 'branches' ? 'page' : null">
