@@ -101,7 +101,7 @@
         </table>
       </div>
       <footer class="voucher-list__pagination">
-        <span>Hiển thị {{ filtered().length }} voucher trên trang {{ page() }} · API phân trang theo cursor</span>
+        <span>Đang hiển thị {{ filtered().length }} trên tổng số {{ all().length }} voucher</span>
         <div>
           <button type="button" [disabled]="!previous().length || loading()" (click)="prev()" aria-label="Trang trước">‹</button>
           <strong>{{ page() }}</strong>
@@ -109,6 +109,6 @@
         </div>
       </footer>
     </section>
-    <p class="voucher-list__hint">Tìm kiếm và bộ lọc Khả dụng chỉ áp dụng trong trang hiện tại; bộ lọc phạm vi và trạng thái được gửi lên BE.</p>
+
   </main>
 </app-admin-catalog-shell>
