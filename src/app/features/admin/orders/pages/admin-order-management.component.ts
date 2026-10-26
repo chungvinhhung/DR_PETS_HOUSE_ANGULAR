@@ -319,8 +319,8 @@ export class AdminOrderManagementComponent {
   }
   returnStatusLabel(status: ReturnStatus): string {
     return ({
-      REQUESTED: 'Mới yêu cầu', PROCESSING: 'Đang xử lý', RECEIVED: 'Đã nhận hàng',
-      APPROVED: 'Đã duyệt', REJECTED: 'Đã từ chối', COMPLETED: 'Hoàn tất',
+      REQUESTED: 'Chờ tiếp nhận', PROCESSING: 'Đang xử lý', RECEIVED: 'Đã nhận hàng',
+      APPROVED: 'Đã duyệt hoàn', REJECTED: 'Đã từ chối', COMPLETED: 'Hoàn tất',
       CANCELLED: 'Đã hủy',
     })[status] ?? 'Chưa xác định';
   }
