@@ -1,0 +1,16 @@
+@if (mode() === 'appointment') {
+  <app-booking-payment-step
+    [selectedDate]="null"
+    [selectedSlot]="'09:30 AM'"
+    [paymentMode]="paymentMode()"
+    [setPaymentMode]="setPaymentModeFn"
+    (onBack)="onBack.emit($event)"
+    (onConfirm)="handleAppointmentConfirm()"
+  />
+  @if (success()) {
+    <div app-booking-success-modal></div>
+  }
+} @else if (!isOpen()) {
+} @else {
+  <div app-shopping-checkout (onBack)="onBack.emit($event)"></div>
+}

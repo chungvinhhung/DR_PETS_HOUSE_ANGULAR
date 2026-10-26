@@ -1,0 +1,37 @@
+@if (to()) {
+  <a
+    [appCustomerLink]="to()"
+    (click)="onClick.emit($event)"
+    [attr.aria-label]="ariaLabel()"
+    [attr.aria-disabled]="disabled() || loading() || undefined"
+    [attr.tabindex]="disabled() || loading() ? -1 : undefined"
+    [class]="buttonClassName()"
+  >
+    <ng-container [ngTemplateOutlet]="projectedContent" />
+  </a>
+} @else if (href()) {
+  <a
+    [attr.href]="href()"
+    (click)="onClick.emit($event)"
+    [attr.aria-label]="ariaLabel()"
+    [attr.aria-disabled]="disabled() || loading() || undefined"
+    [attr.tabindex]="disabled() || loading() ? -1 : undefined"
+    [class]="buttonClassName()"
+  >
+    <ng-container [ngTemplateOutlet]="projectedContent" />
+  </a>
+} @else {
+  <button
+    [attr.type]="type()"
+    (click)="onClick.emit($event)"
+    [disabled]="disabled() || loading()"
+    [attr.aria-label]="ariaLabel()"
+    [attr.aria-busy]="loading() || undefined"
+    [class]="buttonClassName()"
+  >
+    <ng-container [ngTemplateOutlet]="projectedContent" />
+  </button>
+}
+
+<!-- Nội dung được truyền vào component (children trong React) -->
+<ng-template #projectedContent><ng-content /></ng-template>

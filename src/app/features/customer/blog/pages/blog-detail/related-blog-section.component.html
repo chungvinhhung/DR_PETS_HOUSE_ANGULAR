@@ -1,0 +1,24 @@
+@if (!(!posts().length)) {
+  <section class="w-[1200px]">
+    <div app-section-heading>Bài viết liên quan</div>
+    <div class="relative mt-6 flex justify-between">
+      @for (post of visible(); track post.id) {
+        <article app-blog-card [post]="post"></article>
+      }
+      <button
+        type="button"
+        (click)="handle1()"
+        class="absolute -left-14 top-[143px] flex h-14 w-14 items-center justify-center rounded-full bg-[#FDD835] text-[#0D47A1]"
+      >
+        <app-customer-icon name="chevron-left" className="h-5 w-5" />
+      </button>
+      <button
+        type="button"
+        (click)="handle2()"
+        class="absolute -right-14 top-[143px] flex h-14 w-14 items-center justify-center rounded-full bg-[#FDD835] text-[#0D47A1]"
+      >
+        <app-customer-icon name="chevron-right" className="h-5 w-5" />
+      </button>
+    </div>
+  </section>
+}

@@ -1,0 +1,68 @@
+<div class="max-h-full w-[595px] overflow-y-auto bg-white p-[10px]" (click)="$any($event).stopPropagation()">
+  <div class="border border-[#CACACA] p-[21px] text-black">
+    <div class="flex items-start justify-between border-b border-[#CACACA] pb-5">
+      <div>
+        <p class="text-[18px] text-[#726C6C]">Người nhận</p>
+        <h2 class="mt-2 text-[24px] font-medium">{{ order().recipient.name }}</h2>
+        <p class="mt-2 max-w-[300px] text-[15px] text-[#726C6C]">{{ order().recipient.address }}</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          (click)="downloadInvoice()"
+          class="inline-flex h-9 items-center gap-2 rounded-[4px] bg-[#FFF176] px-3 text-[13px] font-bold transition-colors hover:bg-[#FDD835]"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path
+              d="M10 2v10m0 0 4-4m-4 4L6 8M3 14v3h14v-3"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>Tải xuống</button>
+        <button type="button" (click)="onClose.emit($event)" class="text-2xl" aria-label="Đóng hóa đơn">×</button>
+      </div>
+    </div>
+    <h3 class="mt-4 text-[20px] font-semibold">Chi tiết đơn hàng #{{ order().id }}</h3>
+    <p class="mt-1 text-[14px] text-[#726C6C]">Ngày đặt: {{ formatOrderDate(order().orderedAt) }}</p>
+    <table class="mt-5 w-full text-left text-[14px]">
+      <thead class="bg-[#F0F0F0]">
+        <tr>
+          <th class="p-2">Sản phẩm</th>
+          <th class="p-2">Đơn giá</th>
+          <th class="p-2">SL</th>
+          <th class="p-2">Thành tiền</th>
+        </tr>
+      </thead>
+      <tbody class="text-[#726C6C]">
+        @for (product of order().products; track product.id) {
+          <tr class="border-b border-[#E5E5E5]">
+            <td class="px-2 py-4">{{ product.name }}</td>
+            <td class="px-2 py-4">{{ formatCurrency(product.price) }}</td>
+            <td class="px-2 py-4">{{ product.quantity }}</td>
+            <td class="px-2 py-4">{{ formatCurrency(product.price * product.quantity) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <div class="mt-4 space-y-2 text-[15px]">
+      <p class="flex justify-between">
+        <span>Tạm tính</span>
+        <span>{{ formatCurrency(getOrderSubtotal(order())) }}</span>
+      </p>
+      <p class="flex justify-between">
+        <span>Phí vận chuyển</span>
+        <span>{{ formatCurrency(order().shippingFee) }}</span>
+      </p>
+      <p class="flex justify-between">
+        <span>Giảm giá</span>
+        <span>-{{ formatCurrency(order().discount) }}</span>
+      </p>
+      <p class="flex justify-between border-t-2 border-[#CACACA] pt-3 text-[20px] font-semibold">
+        <span>Tổng cộng</span>
+        <span>{{ formatCurrency(getOrderTotal(order())) }}</span>
+      </p>
+    </div>
+  </div>
+</div>

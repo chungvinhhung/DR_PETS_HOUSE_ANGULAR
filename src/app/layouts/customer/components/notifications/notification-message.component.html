@@ -1,0 +1,3 @@
+@for (part of parts(); track $index; let index = $index) {
+  <span [class]="messageToneClass[part.tone]">{{ part.text }}</span>
+}

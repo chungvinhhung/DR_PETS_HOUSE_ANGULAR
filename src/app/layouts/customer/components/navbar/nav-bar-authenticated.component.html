@@ -1,0 +1,29 @@
+<header class="fixed inset-x-0 top-0 z-[70] hidden w-full bg-white lg:block">
+  <div class="mx-auto flex max-w-page items-center gap-2 px-3 py-3 sm:gap-2.5 sm:px-6 lg:px-10">
+    <a href="/" class="shrink-0">
+      <img
+        [attr.src]="homeImages.logo"
+        alt="Dr. Pet's House"
+        class="h-[52px] w-[112px] object-contain sm:h-[59px] sm:w-[136px]"
+      />
+    </a>
+    <nav app-nav-links></nav>
+    <div class="ml-auto flex min-w-0 items-center gap-2 sm:gap-4 lg:gap-6">
+      <form app-nav-search-bar [className]="'hidden lg:block'"></form>
+      <a href="/dat-lich" class="shrink-0">
+        <app-yellow-button [className]="'h-[35px] min-w-[82px] px-3 py-2 text-[13px] tracking-[0.1px] sm:min-w-[109px] sm:px-[22px] sm:text-base sm:tracking-[0.15px]'">ĐẶT LỊCH</app-yellow-button>
+      </a>
+      <app-notification-bell />
+      <button
+        type="button"
+        (click)="cartService.openCart()"
+        class="btn-icon hidden shrink-0 p-1 min-[520px]:block"
+        aria-label="Giỏ hàng"
+      >
+        <img [attr.src]="navbarImages.cartYellow" alt="" class="h-9 w-9" />
+      </button>
+      <div app-nav-user-menu [avatarSrc]="avatarSrc()" (onLogout)="onLogout.emit($event)" [hasOnLogout]="true"></div>
+    </div>
+  </div>
+</header>
+<div class="hidden h-[88px] shrink-0 lg:block" aria-hidden="true"></div>

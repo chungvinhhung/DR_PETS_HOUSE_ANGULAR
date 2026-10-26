@@ -1,0 +1,15 @@
+<div
+  [class]="`w-5 h-5 flex-shrink-0 ${maskColorClass()}`"
+  [appStyle]="{ 
+        WebkitMaskImage: `url(${targetIcon()})`, 
+        WebkitMaskSize: 'contain', 
+        WebkitMaskRepeat: 'no-repeat', 
+        WebkitMaskPosition: 'center',
+        maskImage: `url(${targetIcon()})`, 
+        maskSize: 'contain', 
+        maskRepeat: 'no-repeat', 
+        maskPosition: 'center',
+        filter: boldFilter()
+      }"
+  [attr.title]="species() || 'Khác'"
+></div>

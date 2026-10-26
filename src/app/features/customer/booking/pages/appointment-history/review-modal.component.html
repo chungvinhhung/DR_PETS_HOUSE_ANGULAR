@@ -1,0 +1,15 @@
+<div class="w-full max-w-[992px]">
+  <form
+    app-write-review-form
+    [targetType]="'service'"
+    [targetId]="appointment().service.id"
+    [targetName]="appointment().service.name"
+    [appointmentId]="appointment().id"
+    (onSubmit)="onSubmit.emit($event)"
+  ></form>
+  <button
+    type="button"
+    (click)="onClose.emit($event)"
+    class="focus-ring-brand mx-auto mt-4 flex justify-center block rounded bg-white/90 px-4 py-2 text-sm font-medium text-[#06105a]"
+  >x</button>
+</div>

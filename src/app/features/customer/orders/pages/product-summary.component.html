@@ -1,0 +1,14 @@
+<img
+  [attr.src]="safeProduct().image || productImages.detailImage"
+  [attr.alt]="safeProduct().name"
+  class="h-20 w-20 shrink-0 object-cover"
+/>
+<div class="flex min-w-0 flex-1 flex-col gap-[8px]">
+  <strong [class]="`${large() ? 'text-[20px]' : 'text-[14px]'} block truncate text-[#0D47A1]`">{{ safeProduct().name }}</strong>
+  <strong class="text-[14px] text-[#353535]">{{ formatCurrency(safeProduct().price) }}</strong>
+  <div class="flex min-w-0 flex-nowrap items-center gap-x-4 text-[12px] text-[#353535]">
+    <span class="min-w-0 truncate">Loại: {{ productType() }}</span>
+    <span class="min-w-0 truncate">Kích cỡ: {{ productSize() }}</span>
+    <span class="shrink-0">Số lượng: {{ safeProduct().quantity }}</span>
+  </div>
+</div>

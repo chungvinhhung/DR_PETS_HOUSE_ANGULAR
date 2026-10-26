@@ -1,0 +1,45 @@
+@if (state().open) {
+  <div class="decision-modal__overlay" role="presentation">
+    <section
+      class="decision-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="decision-modal-title"
+      aria-describedby="decision-modal-message"
+    >
+      <button
+        type="button"
+        class="decision-modal__close"
+        (click)="decisionModal.close()"
+        aria-label="Đóng popup"
+      >
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+      <div [class]="isSuccess() ? 'decision-modal__success-body' : 'decision-modal__body'">
+        <div app-warning-mark [type]="state().type"></div>
+        <div [class]="isSuccess() ? 'decision-modal__copy decision-modal__copy--success' : 'decision-modal__copy'">
+          <h2 id="decision-modal-title">{{ state().title }}</h2>
+          <p id="decision-modal-message">{{ state().message }}</p>
+        </div>
+        <div class="decision-modal__actions">
+          <button
+            type="button"
+            [class]="isSuccess() ? 'decision-modal__button decision-modal__button--yellow-outline' : 'decision-modal__button decision-modal__button--outline'"
+            (click)="decisionModal.cancel()"
+          >
+            {{ state().cancelLabel }}
+          </button>
+          <button
+            type="button"
+            [class]="isSuccess() ? 'decision-modal__button decision-modal__button--yellow' : 'decision-modal__button decision-modal__button--danger'"
+            (click)="decisionModal.confirm()"
+          >
+            {{ state().confirmLabel }}
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+}

@@ -1,0 +1,21 @@
+<div class="medical-cta__actions">
+  <button
+    type="button"
+    class="medical-cta__item"
+    (click)="onOpenPricing.emit($event)"
+    [appStyle]="{
+          border: 0,
+          background: 'transparent',
+          padding: 0,
+          cursor: 'pointer'
+        }"
+  >
+    <img [attr.src]="medicalAssets.ctaPrice" alt="" />
+    <span>BẢNG GIÁ CHI TIẾT</span>
+  </button>
+  <a appCustomerLink="/dat-lich" class="medical-cta__item">
+    <img [attr.src]="medicalAssets.ctaBook" alt="" />
+    <span>ĐẶT LỊCH NGAY</span>
+  </a>
+</div>
+<p>Hành động ngay giúp bé cưng của bạn luôn khỏe mạnh, năng động và phát triển toàn diện!</p>

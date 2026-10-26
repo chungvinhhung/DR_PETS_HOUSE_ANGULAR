@@ -1,0 +1,27 @@
+@for (question of COMMITMENT_QUESTIONS; track $index) {
+  @if (question.type === 'textarea') {
+    <div
+      app-textarea-question
+      [question]="question"
+      [value]="values()[question.name]"
+      (onChange)="onChange.emit($event)"
+      [error]="errors().includes(question.name)"
+    ></div>
+  } @else {
+    <fieldset
+      app-radio-question
+      [question]="question"
+      [value]="values()[question.name]"
+      (onChange)="onChange.emit($event)"
+      [error]="errors().includes(question.name)"
+    ></fieldset>
+  }
+}
+<div class="flex w-full items-center gap-4 rounded-[4px] border border-[rgba(186,26,26,0.2)] bg-[rgba(255,218,214,0.3)] px-[25px] py-[11px]">
+  <app-customer-icon
+    name="alert-triangle"
+    className="h-[26px] w-[18px] shrink-0 text-[#BA1A1A]"
+    [strokeWidth]="2"
+  />
+  <p class="text-justify text-[13px] font-semibold leading-5 tracking-[0.28px] text-[#93000A]">{{ ADOPTION_COMMITMENT_NOTE }}</p>
+</div>

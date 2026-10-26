@@ -1,0 +1,21 @@
+<span class="text-[14px] leading-5 tracking-[0.17px] text-[#3d3d3d]">{{ label() }}@if (required()) {
+    <span class="text-[#c62828]">*</span>
+  }
+</span>
+<input
+  [attr.autofocus]="autoFocus()"
+  [attr.autocomplete]="autoComplete()"
+  (input)="onChange.emit($event)"
+  [attr.type]="type()"
+  [value]="value() ?? ''"
+  [required]="required()"
+  [attr.data-address-error]="invalid() ? 'true' : undefined"
+  [class]="`h-[43px] w-full rounded-[4px] border bg-white px-3 text-[14px] text-[#191c1e] outline-none transition ${
+        invalid()
+          ? 'border-[#c62828] ring-1 ring-[#c62828]'
+          : 'border-[#e0e0e0] hover:border-[#90caf9] focus:border-[#0d47a1] focus:ring-1 focus:ring-[#0d47a1]'
+      }`"
+/>
+@if (invalid()) {
+  <span class="-mt-2 text-xs text-[#c62828]">Vui lòng điền thông tin</span>
+}

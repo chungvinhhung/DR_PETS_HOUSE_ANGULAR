@@ -1,0 +1,12 @@
+<div
+  class="relative mx-auto"
+  [ngStyle]="{ 'width.px': designWidth() * scale(), height: scaledHeight() !== null ? scaledHeight() + 'px' : 'auto' }"
+>
+  <div
+    #innerRef
+    [class]="className()"
+    [ngStyle]="{ 'width.px': designWidth(), transform: 'scale(' + scale() + ')', 'transform-origin': 'top left' }"
+  >
+    <ng-content />
+  </div>
+</div>

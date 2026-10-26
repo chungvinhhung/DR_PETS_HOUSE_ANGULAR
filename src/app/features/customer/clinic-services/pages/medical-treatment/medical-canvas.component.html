@@ -1,0 +1,9 @@
+<section app-medical-hero></section>
+<section app-medical-services [services]="services()"></section>
+<section app-medical-cta (onOpenPricing)="onOpenPricing.emit($event)"></section>
+<section app-medical-stats></section>
+<section app-medical-why></section>
+<section app-medical-doctors></section>
+<section app-grooming-feedback-section></section>
+<app-medical-faq />
+<app-footer [variant]="'blue'" />

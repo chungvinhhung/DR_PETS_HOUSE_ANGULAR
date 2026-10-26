@@ -1,0 +1,9 @@
+@if (!products().length) {
+  <div class="flex h-[532px] items-center justify-center text-[18px] text-[#414141]">Không tìm thấy sản phẩm phù hợp.</div>
+} @else {
+  <div class="grid w-full grid-cols-5 gap-x-[10.75px] gap-y-[64px]">
+    @for (product of products(); track product.id) {
+      <app-shopping-product-card [product]="product" [href]="'/product-details'" />
+    }
+  </div>
+}

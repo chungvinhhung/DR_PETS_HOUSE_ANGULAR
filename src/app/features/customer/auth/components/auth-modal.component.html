@@ -1,0 +1,69 @@
+@if (!(!authService.authModal())) {
+  <div
+    class="overlay-fade-in fixed inset-0 z-[200] flex items-center justify-center bg-[#06105a40] p-3 backdrop-blur-sm"
+    (mousedown)="handle1($any($event))"
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Tài khoản"
+      class="relative max-h-[calc(100vh-24px)] w-full max-w-[360px] overflow-y-auto rounded-xl md:max-w-[744px] lg:max-w-[930px]"
+    >
+      <button
+        type="button"
+        (click)="authService.closeAuth()"
+        class="btn-icon-subtle absolute right-[13px] top-[13px] z-20 p-0 text-gray-500 md:right-[17px] md:top-8"
+        aria-label="Đóng"
+      >
+        <app-customer-icon name="x" className="size-[14px] md:size-5" />
+      </button>
+      @if (isSplit()) {
+        <div class="flex flex-col overflow-hidden rounded-xl bg-white shadow-2xl md:min-h-[637px] md:flex-row">
+          <aside app-split-side [variant]="authService.authModal()"></aside>
+          <section class="flex flex-1 flex-col justify-center bg-white px-5 pb-[15px] md:h-[637px] md:px-[30px] md:py-12 lg:px-12">
+            <div [class]="authService.authModal() === 'login' ? 'pb-8 pt-4' : 'pb-[19px] pt-4'">
+              <h1 class="text-[20px] font-bold leading-[1.5] md:text-[32px] md:leading-10">
+                @if (authService.authModal() === 'login') {
+                  Đăng Nhập
+                } @else {
+                  Đăng Ký Tài Khoản
+                }
+              </h1>
+              @if (authService.authModal() === 'login') {
+                <p class="mt-2 text-[12px] leading-6 md:text-[16px]">Vui lòng nhập thông tin của bạn.</p>
+              }
+            </div>
+            @if (authService.authModal() === 'login') {
+              <form
+                app-login-form
+                [form]="forms().login"
+                [setForm]="compute2()"
+                [changeScreen]="authService.openAuth"
+                [completeLogin]="authService.completeLogin"
+              ></form>
+            } @else {
+              <form
+                app-register-form
+                [form]="forms().register"
+                [setForm]="compute3()"
+                [changeScreen]="authService.openAuth"
+                [updateUserProfile]="authService.updateUserProfile"
+                [completeLogin]="authService.completeLogin"
+              ></form>
+            }
+          </section>
+        </div>
+      } @else if (authService.authModal() === 'success') {
+        <div app-success-panel [changeScreen]="authService.openAuth"></div>
+      } @else {
+        <div
+          app-recovery-panel
+          [screen]="authService.authModal()"
+          [forms]="forms()"
+          [setForms]="setFormsFn"
+          [changeScreen]="authService.openAuth"
+        ></div>
+      }
+    </div>
+  </div>
+}

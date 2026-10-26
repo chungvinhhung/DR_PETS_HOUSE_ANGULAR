@@ -1,0 +1,126 @@
+<div class="branch-config__backdrop">
+  <section #dialog tabindex="-1" class="branch-config__dialog branch-config__dialog--v2"
+    role="dialog" aria-modal="true"
+    aria-labelledby="branch-config-title" aria-describedby="branch-config-description">
+    <header class="branch-config__header">
+      <div>
+        <h2 id="branch-config-title">Cấu hình dịch vụ</h2>
+        <p id="branch-config-description">
+          {{ service.name }} @if (selectedBranch) { · {{ selectedBranch.name }} }
+        </p>
+      </div>
+      <button type="button" class="branch-config__close" [disabled]="saving" aria-label="Đóng cấu hình"
+        (click)="requestClose()">×</button>
+    </header>
+
+    <div class="branch-config__fields branch-config__fields--capacity">
+      <div class="branch-config__field">
+        <span>Kích hoạt tại chi nhánh</span>
+        <div class="branch-config__switch-row">
+          <span class="branch-config__switch-label">{{ enabled() ? 'Đang bật' : 'Đã tắt' }}</span>
+          <button type="button" class="branch-config__switch"
+            [class.branch-config__switch--active]="enabled()"
+            [attr.aria-pressed]="enabled()"
+            [disabled]="!canEnable && !enabled()"
+            [attr.aria-label]="'Kích hoạt ' + service.name"
+            (click)="toggleEnabled()"><span></span></button>
+        </div>
+      </div>
+      <div class="branch-config__field">
+        <span>Sức chứa đồng thời</span>
+        <div class="branch-config__stepper" role="group" aria-label="Sức chứa đồng thời">
+          <button type="button" [disabled]="capacity() <= 0" (click)="decrease()" aria-label="Giảm sức chứa">−</button>
+          <output aria-live="polite">{{ capacity() }}</output>
+          <button type="button" [disabled]="capacity() >= 100" (click)="increase()" aria-label="Tăng sức chứa">+</button>
+        </div>
+      </div>
+    </div>
+
+    @if (!isServiceActive) {
+      <p class="branch-config__hint" role="status">Dịch vụ đang tạm ngưng toàn hệ thống. Không thể bật tại chi nhánh.</p>
+    } @else if (capacity() === 0) {
+      <p class="branch-config__hint" role="status">Vui lòng đặt sức chứa ít nhất là 1 để bật dịch vụ.</p>
+    }
+
+    <section class="branch-config__blocked" aria-labelledby="branch-blocked-title">
+      <div class="branch-config__blocked-heading">
+        <h3 id="branch-blocked-title">Tạm khóa dịch vụ</h3>
+        <button type="button" class="branch-config__button branch-config__button--outline"
+          (click)="startAddingBlockedWindow()">+ Thêm khoảng tạm khóa</button>
+      </div>
+      <p class="branch-config__demo-note">Chức năng lưu khoảng tạm khóa hiện chưa khả dụng.</p>
+
+      @if (blockedWindows().length) {
+        <ul class="branch-config__blocked-list" aria-label="Danh sách khoảng tạm khóa">
+          @for (window of blockedWindows(); track window.id) {
+            <li>
+              <div class="branch-config__blocked-info">
+                <strong>{{ formatWindow(window) }}</strong>
+                <small>{{ window.reason }}</small>
+              </div>
+              <div class="branch-config__blocked-actions">
+                <button type="button" [attr.aria-label]="'Sửa khoảng tạm khóa ' + formatWindow(window)" (click)="editBlockedWindow(window.id)">
+                  <img src="/assets/admin-staff/icon-edit.svg" width="18" height="18" alt="" />
+                </button>
+                <button type="button" [attr.aria-label]="'Xóa khoảng tạm khóa ' + formatWindow(window)" (click)="removeBlockedWindow(window.id)">
+                  <img src="/assets/admin-product/icon-delete.svg" width="18" height="18" alt="" />
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="branch-config__blocked-empty">Chưa có khoảng tạm khóa.</p>
+      }
+
+      @if (showBlockForm()) {
+        <div class="branch-config__inline-block">
+          <div class="branch-config__inline-heading">
+            <strong>{{ editingBlockedId() ? 'Sửa khoảng tạm khóa' : 'Thêm khoảng tạm khóa' }}</strong>
+            <div>
+              <button type="button" (click)="cancelBlockedWindow()">Hủy thêm</button>
+              <button type="button" class="branch-config__button--primary" (click)="addBlockedWindow()">Lưu khoảng</button>
+            </div>
+          </div>
+          <div class="branch-config__blocked-fields">
+            <label class="branch-config__blocked-field">
+              <span>Bắt đầu <b>*</b></span>
+              <input type="datetime-local" [value]="blockStart()" (input)="updateStart($any($event.target).value)" />
+            </label>
+            <label class="branch-config__blocked-field">
+              <span>Kết thúc <b>*</b></span>
+              <input type="datetime-local" [value]="blockEnd()" (input)="updateEnd($any($event.target).value)" />
+            </label>
+            <label class="branch-config__blocked-field branch-config__blocked-field--full">
+              <span>Lý do <b>*</b></span>
+              <input type="text" maxlength="180" placeholder="Nhập lý do tạm khóa"
+                [value]="blockReason()" (input)="updateReason($any($event.target).value)" />
+            </label>
+          </div>
+        </div>
+      }
+    </section>
+
+    @if (errors().length) {
+      <div class="branch-config__errors" role="alert">@for (error of errors(); track error) { <p>{{ error }}</p> }</div>
+    }
+    @if (feedback()) {
+      <div class="branch-config__feedback" role="status">{{ feedback() }}</div>
+    }
+
+    @if (confirmDiscard()) {
+      <div class="branch-config__discard" role="alert">
+        <strong>Bỏ các thay đổi chưa lưu?</strong>
+        <div>
+          <button type="button" class="branch-config__button branch-config__button--outline" (click)="cancelDiscard()">Tiếp tục chỉnh sửa</button>
+          <button type="button" class="branch-config__button branch-config__button--primary" (click)="discardChanges()">Bỏ thay đổi</button>
+        </div>
+      </div>
+    } @else {
+      <footer class="branch-config__footer">
+        <button type="button" class="branch-config__button branch-config__button--outline" [disabled]="saving" (click)="requestClose()">Hủy</button>
+        <button type="button" class="branch-config__button branch-config__button--primary" [disabled]="saving" (click)="validatePreview()">{{ saving ? 'Đang lưu...' : 'Lưu cấu hình' }}</button>
+      </footer>
+    }
+  </section>
+</div>

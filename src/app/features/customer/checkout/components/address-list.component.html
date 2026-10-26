@@ -1,0 +1,26 @@
+@if (addresses().length === 0) {
+  <p class="rounded-[4px] bg-[rgba(25,118,210,0.04)] p-[10px] text-[14px] leading-5 text-[#42474F]">Chưa có địa chỉ nào.</p>
+} @else {
+  <div class="flex flex-col gap-[16px]">
+    @for (address of addresses(); track address.id) {
+      <div class="flex w-full items-start gap-[5px] rounded-[4px] bg-[rgba(25,118,210,0.04)] p-[10px]">
+        <button
+          type="button"
+          (click)="onSelect.emit(address)"
+          class="flex min-w-0 flex-1 flex-col gap-[5px] text-left"
+        >
+          <span class="text-[16px] leading-[24px] tracking-[0.15px] text-[#191C1E]">{{ address.name }} | {{ address.phone }}</span>
+          <span class="text-[14px] leading-[20px] tracking-[0.17px] text-[#42474F]">{{ address.displayAddress || address.address }}</span>
+          @if (address.isDefault) {
+            <span class="w-fit rounded-[2px] bg-[#D2E4FF] px-2 py-1 text-[12px] leading-[20px] tracking-[0.4px] text-[#001C37]">Mặc định</span>
+          }
+        </button>
+        <button
+          type="button"
+          (click)="onEdit.emit(address)"
+          class="shrink-0 px-1 text-[12px] leading-[20px] tracking-[0.4px] text-[#00355F] hover:underline"
+        >Thay đổi</button>
+      </div>
+    }
+  </div>
+}

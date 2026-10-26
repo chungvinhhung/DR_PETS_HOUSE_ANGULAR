@@ -1,0 +1,7 @@
+<div
+  [class]="`absolute inset-0 overflow-hidden rounded-[16px] ${className()}`"
+  [appStyle]="cssMask(maskUrl(), maskSize())"
+>
+  <div class="absolute inset-0 rounded-[39px] bg-[rgba(144,202,249,0.3)]"></div>
+  <ng-content />
+</div>

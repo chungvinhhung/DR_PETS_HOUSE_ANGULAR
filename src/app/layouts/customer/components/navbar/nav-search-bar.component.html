@@ -1,0 +1,49 @@
+<div class="absolute inset-0 rounded border border-secondary transition-colors duration-micro group-focus-within:border-[#1976D2]"></div>
+<img
+  [attr.src]="navbarImages.dogSearch"
+  alt=""
+  class="pointer-events-none absolute left-0 top-0 h-[37px] w-[39px] object-cover"
+  aria-hidden="true"
+/>
+<input
+  id="site-search-input"
+  type="text"
+  placeholder="Bạn muốn tìm gì nè?"
+  [value]="term() ?? ''"
+  (input)="handle3($any($event))"
+  (focusin)="isSuggestOpen.set(term().trim().length > 0)"
+  class="input-search pl-10 pr-[50px] text-xs tracking-[0.4px] text-black/87"
+  aria-label="Tìm kiếm"
+  [attr.aria-expanded]="shouldShowSuggestions()"
+  aria-controls="site-search-suggestions"
+/>
+@if (term()) {
+  <button
+    type="button"
+    (click)="handle4()"
+    class="focus-ring-brand absolute right-[30px] top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-full bg-[#E3F2FD] text-[12px] font-semibold leading-none text-[#0D47A1] transition-colors hover:bg-[#BBDEFB]"
+    aria-label="Xóa tìm kiếm"
+  >×</button>
+}
+<button
+  type="submit"
+  class="focus-ring-brand absolute right-1 top-1/2 flex h-[25px] w-[25px] -translate-y-1/2 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[#fff176]"
+  aria-label="Tìm kiếm"
+>
+  <img [attr.src]="navbarImages.searchIcon" alt="" class="h-4 w-4" />
+</button>
+@if (shouldShowSuggestions()) {
+  <app-search-suggestion-dropdown
+    [query]="term()"
+    [suggestions]="searchSuggestions().suggestions"
+    [products]="searchSuggestions().products"
+    [isLoading]="isLoadingSuggestions()"
+    [error]="suggestionError()"
+    [activeItemId]="suggestionItems()[activeIndex()]?.id"
+    (onClose)="closeSuggestions()"
+    (onSuggestionSelect)="selectSuggestion($any($event))"
+    (onProductSelect)="openProduct($any($event))"
+    (onSeeAll)="searchByKeyword(term())"
+    (onItemHover)="handle5($any($event))"
+  />
+}

@@ -1,0 +1,7 @@
+@for (product of products(); track product.id; let index = $index) {
+  <app-shopping-product-card
+    [product]="product"
+    [variant]="product.discountPercent ? 'tag' : index === 1 ? 'hover' : 'default'"
+    [href]="'/product-details'"
+  />
+}

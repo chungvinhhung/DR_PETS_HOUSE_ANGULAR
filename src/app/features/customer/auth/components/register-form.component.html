@@ -1,0 +1,65 @@
+<label
+  app-field
+  [label]="'Họ và Tên'"
+  [name]="'name'"
+  [value]="form().name"
+  (onChange)="update($any($event))"
+  [required]="true"
+  [error]="validationAttempted() ? errors().name : ''"
+></label>
+<div class="grid grid-cols-2 gap-[9px] md:gap-4">
+  <label
+    app-field
+    [label]="'Số điện thoại'"
+    [name]="'phone'"
+    [value]="form().phone"
+    (onChange)="update($any($event))"
+    [type]="'tel'"
+    [required]="true"
+    [error]="validationAttempted() ? errors().phone : ''"
+  ></label>
+  <label
+    app-field
+    [label]="'Email'"
+    [name]="'email'"
+    [value]="form().email"
+    (onChange)="update($any($event))"
+    [type]="'email'"
+    [error]="validationAttempted() ? errors().email : ''"
+  ></label>
+</div>
+<label
+  app-field
+  [label]="'Mật khẩu'"
+  [name]="'password'"
+  [value]="form().password"
+  (onChange)="update($any($event))"
+  [type]="'password'"
+  [required]="true"
+  [hint]="'Tối thiểu 8 ký tự, 1 chữ hoa, 1 số'"
+  [error]="validationAttempted() ? errors().password : ''"
+></label>
+<label
+  app-field
+  [label]="'Xác nhận mật khẩu'"
+  [name]="'confirmPassword'"
+  [value]="form().confirmPassword"
+  (onChange)="update($any($event))"
+  [type]="'password'"
+  [required]="true"
+  [error]="validationAttempted() ? errors().confirmPassword : ''"
+></label>
+@if (submitError()) {
+  <p class="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{{ submitError() }}</p>
+}
+<button app-primary-button [disabled]="submitting()">
+  @if (submitting()) {
+    ĐANG GỬI OTP...
+  } @else {
+    ĐĂNG KÝ NGAY
+  }
+</button>
+<div app-divider></div>
+<button app-google-button></button>
+<p class="text-center text-sm">Đã có tài khoản?    <button type="button" (click)="changeScreen()('login')" class="font-semibold text-blue-900">Đăng nhập ngay</button>
+</p>

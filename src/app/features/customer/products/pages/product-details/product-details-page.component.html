@@ -1,0 +1,476 @@
+@if (isLoading()) {
+  <div class="flex min-h-screen items-center justify-center text-[#0D47A1]">Đang tải sản phẩm...</div>
+} @else if (!product()) {
+  <div class="flex min-h-screen items-center justify-center text-[#D32F2F]">{{ loadError() || 'Không tìm thấy sản phẩm.' }}</div>
+} @else {
+  <div class="min-h-screen bg-white">
+    <div app-canvas-layout>
+      <app-nav-bar />
+      <nav
+        app-breadcrumb
+        [items]="[
+            { label: 'Mua sắm', to: '/petshop' },
+            { label: 'Danh mục sản phẩm', to: '/products' },
+            { label: product()?.name || (isLoading() ? 'Đang tải...' : 'Chi tiết sản phẩm') }
+          ]"
+      ></nav>
+      @if (loadError()) {
+        <div class="mx-auto mt-2 w-[1200px] rounded-[12px] bg-[#E5F6FD] px-5 py-3 text-sm font-medium text-[#0D47A1]">{{ loadError() }}</div>
+      }
+      <!-- —— Product detail section —— -->
+      <section class="relative h-[778px] w-[1440px]">
+        <!-- Breadcrumb -->
+        <!-- <nav className="absolute left-[120px] top-[32px] flex items-center gap-[4px] text-[16px]" aria-label="Breadcrumb">
+            <Link
+              to="/"
+              className="text-[#0D47A1] underline-offset-2 hover:underline focus-ring-brand transition-all duration-micro"
+            >
+              Product Listing
+            </Link>
+            <img src={productImages.chevronRight} alt="" className="h-5 w-5 pointer-events-none opacity-50" aria-hidden="true" />
+            <span className="text-[rgba(0,0,0,0.87)] cursor-default">{product.name}</span>
+          </nav> -->
+        <!-- Product layout -->
+        <div class="absolute left-[120px] top-[20px] flex h-[622px] w-[1200px] items-start overflow-visible">
+          <div class="ml-[-18px] flex h-[644px] w-[1218px] items-start gap-[71px]">
+            <!-- Left: image gallery -->
+            <div class="flex w-[626px] gap-[24px] pl-[15px] pt-[8.5px]">
+              <!-- Thumbnails -->
+              <div class="flex h-[626px] flex-col justify-between rounded-[16px]">
+                @for (thumb of thumbnails(); track $index; let i = $index) {
+                  <button
+                    type="button"
+                    (click)="selectedImageIdx.set(i)"
+                    (mouseenter)="thumbHovered.set(i)"
+                    (mouseleave)="thumbHovered.set(null)"
+                    [class]="`group relative rounded-[4px] object-cover transition-all duration-micro focus-ring-brand focus-visible:ring-2 focus-visible:ring-[#0D47A1] ${
+                        i === selectedImageIdx()
+                          ? 'border-2 border-[#90CAF9] shadow-[0_0_0_1px_#90CAF9]'
+                          : thumbHovered() === i
+                            ? 'border border-[#90CAF9] shadow-sm'
+                            : 'border border-transparent'
+                      }`"
+                    [attr.aria-label]="`Xem ảnh ${i + 1}`"
+                    [attr.aria-current]="i === selectedImageIdx() ? 'true' : undefined"
+                  >
+                    <img
+                      [attr.src]="thumb"
+                      alt=""
+                      [class]="`h-[194px] w-[141px] object-cover transition-opacity duration-micro ${
+                          i !== selectedImageIdx() && thumbHovered() !== i ? 'opacity-60 group-hover:opacity-80' : ''
+                        }`"
+                    />
+                  </button>
+                }
+              </div>
+              <!-- Main image -->
+              <img
+                [attr.src]="selectedImage()"
+                [attr.alt]="product().name"
+                class="h-[627px] w-[460px] rounded-[4px] object-cover"
+              />
+            </div>
+            <!-- Right: product info -->
+            <div class="flex h-[644px] w-[511px] flex-col justify-between">
+              <div class="flex w-[489px] flex-col gap-[42px]">
+                <div class="flex flex-col gap-[24px]">
+                  <!-- Title + stars -->
+                  <div class="flex flex-col gap-[12px]">
+                    <h1 class="w-[494px] font-['Roboto'] text-[32px] font-bold leading-[1.235] tracking-[0.25px] text-[#0D47A1]">{{ product().name }}</h1>
+                    <div class="flex items-center gap-[10px]">
+                      <app-product-rating [value]="product().rating" />
+                      <span class="font-['Oxygen'] text-[14px] leading-[23.87px] text-[#414141]">( {{ product().reviewCount || 0 }} review )</span>
+                    </div>
+                    <div class="flex items-center gap-[10px]">
+                      <span class="font-['Roboto'] text-[32px] font-normal leading-[39.52px] tracking-[0.25px] text-[#D32F2F]">{{ formatPrice(product().price) }}</span>
+                      @if (product().originalPrice > product().price) {
+                        <span class="font-['Roboto'] text-[24px] font-normal leading-[32.02px] text-[rgba(0,0,0,0.38)] line-through">{{ formatPrice(product().originalPrice) }}</span>
+                        <span class="inline-flex h-[21px] w-[50px] items-center justify-center rounded-[40px] bg-[#D32F2F] font-['Roboto'] text-[12px] font-bold leading-[19.92px] tracking-[0.4px] text-white">-{{ compute1() }}%</span>
+                      }
+                    </div>
+                  </div>
+                  <div class="h-px w-[494px] bg-[#D7D7D7]"></div>
+                  <!-- Description + "Đọc thêm" scroll -->
+                  <div class="w-[494px] text-[16px] leading-[1.5] tracking-[0.15px] text-[#414141]">
+                    <p
+                      class="mb-0 overflow-hidden"
+                      [appStyle]="{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2 }"
+                    >{{ product().shortDescription || product().description }}</p>
+                    <button
+                      type="button"
+                      (click)="handleReadMore()"
+                      class="mt-[8px] text-[#0D47A1] underline underline-offset-2 hover:no-underline hover:text-[#1565C0] focus-ring-brand transition-all duration-micro"
+                    >Đọc thêm...</button>
+                  </div>
+                  <div class="h-px w-[494px] bg-[#D7D7D7]"></div>
+                  <!-- Type selection -->
+                  <div class="flex items-center gap-[24px] pb-7">
+                    <span class="font-['Roboto'] text-[20px] font-medium leading-[32px] tracking-[0.15px] text-[#1D2939]">Loại</span>
+                    <div class="flex gap-[24px]">
+                      @for (variant of product().variants ?? []; track $index; let i = $index) {
+                        <button
+                          type="button"
+                          (click)="handle2(i, variant)"
+                          [class]="`group h-[78px] w-[83px] rounded-[12px] transition-all duration-micro focus-ring-brand active:scale-95 ${
+                              i === selectedTypeIdx()
+                                ? 'border-2 border-[#90CAF9] bg-[#F2F4F7] shadow-[0_0_0_1px_#90CAF9]'
+                                : 'border border-transparent bg-[#F2F4F7] hover:border-[#90CAF9] hover:shadow-sm'
+                            }`"
+                          [attr.aria-pressed]="i === selectedTypeIdx()"
+                        >
+                          <span class="font-['Roboto'] text-[14px] font-medium leading-[32px] tracking-[0.15px] text-[#1D2939]">{{ variant.name }}</span>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Action buttons -->
+              <div class="flex w-[494px] flex-col gap-[15px]">
+                <div class="flex h-[49px] gap-[15px]">
+                  <!-- Dropdown: 100ml -->
+                  @if (dropdownOptions().length > 0) {
+                    <div #dropdownRef class="relative">
+                      <button
+                        type="button"
+                        (click)="handle3()"
+                        [class]="`flex h-[49px] items-center gap-[11px] rounded-[4px] border bg-white px-[20px] py-[10px] transition-all duration-micro focus-ring-brand ${
+                          dropdownOpen()
+                            ? 'border-[#0D47A1] shadow-[0_0_0_1px_#0D47A1]'
+                            : 'border-[#D7D7D7] hover:border-[#90CAF9]'
+                        }`"
+                        aria-haspopup="listbox"
+                        [attr.aria-expanded]="dropdownOpen()"
+                      >
+                        <span class="font-['Roboto'] text-[16px] font-bold leading-[24px] tracking-[0.15px] text-[#1D2939]">{{ dropdownValue() }}</span>
+                        <img
+                          [attr.src]="productImages.chevronDownSmall"
+                          alt=""
+                          [class]="`h-2 w-3 transition-transform duration-micro ${dropdownOpen() ? 'rotate-180' : ''}`"
+                        />
+                      </button>
+                      @if (dropdownOpen()) {
+                        <ul
+                          class="animate-dropdown-in absolute left-0 top-full z-10 mt-1 w-full overflow-hidden rounded-[4px] border border-[#D7D7D7] bg-white shadow-lg"
+                          role="listbox"
+                        >
+                          @for (opt of dropdownOptions(); track opt) {
+                            <li>
+                              <button
+                                type="button"
+                                (click)="handle4(opt)"
+                                [class]="`flex w-full px-[20px] py-[10px] font-['Roboto'] text-[16px] leading-[24px] tracking-[0.15px] transition-colors duration-micro focus:bg-[#F2F4F7] focus-ring-brand ${
+                                  opt === dropdownValue() ? 'bg-[#E3F2FD] text-[#0D47A1]' : 'text-[#1D2939] hover:bg-[#F2F4F7]'
+                                }`"
+                                role="option"
+                                [attr.aria-selected]="opt === dropdownValue()"
+                              >{{ opt }}</button>
+                            </li>
+                          }
+                        </ul>
+                      }
+                    </div>
+                  }
+                  <!-- Quantity stepper -->
+                  <div class="flex h-[49px] w-[94px] items-center justify-between rounded-[4px] border border-[#D7D7D7] bg-white px-[14px] py-[10px]">
+                    <button
+                      type="button"
+                      (click)="handleDecrement()"
+                      class="flex h-6 w-6 cursor-pointer items-center justify-center text-[20px] leading-6 text-[#414141] transition-colors duration-micro hover:text-[#0D47A1] focus-ring-brand active:scale-90"
+                      aria-label="Giảm số lượng"
+                    >
+                      <img [attr.src]="productImages.remove" alt="" class="h-6 w-6" />
+                    </button>
+                    <span class="font-['Oxygen'] text-[18px] font-bold leading-normal text-[#414141]">{{ quantity() }}</span>
+                    <button
+                      type="button"
+                      (click)="handleIncrement()"
+                      class="flex h-6 w-6 cursor-pointer items-center justify-center text-[20px] leading-6 text-[#414141] transition-colors duration-micro hover:text-[#0D47A1] focus-ring-brand active:scale-90"
+                      aria-label="Tăng số lượng"
+                    >
+                      <img [attr.src]="productImages.add" alt="" class="h-6 w-6" />
+                    </button>
+                  </div>
+                  <!-- Add to cart -->
+                  <button
+                    type="button"
+                    (click)="handleAddToCart()"
+                    [class]="`relative h-[43px] flex-1 rounded-[4px] px-[22px] py-[8px] font-['Roboto'] text-[15px] font-bold uppercase tracking-[0.46px] shadow-elevation transition-all duration-micro focus-ring-brand active:scale-[0.98] ${
+                        cartAdded()
+                          ? 'bg-[#4CAF50] text-white'
+                          : 'bg-[#FFF176] text-black hover:bg-[#ffe454]'
+                      }`"
+                  >
+                    <span [class]="`transition-all duration-200 ${cartAdded() ? 'opacity-0 scale-90' : 'opacity-100 scale-100'}`">THÊM VÀO GIỎ HÀNG</span>
+                    @if (cartAdded()) {
+                      <span class="absolute inset-0 flex items-center justify-center text-[13px]">✓ Đã thêm</span>
+                    }
+                  </button>
+                </div>
+                <!-- Buy now -->
+                <button
+                  type="button"
+                  (click)="handleBuyNow()"
+                  class="h-[43px] w-[494px] rounded-[4px] border border-[#FDD835] px-[22px] py-[8px] font-['Roboto'] text-[15px] font-medium uppercase tracking-[0.46px] text-[#FDD835] transition-all duration-micro hover:border-[#e6c233] hover:text-[#e6c233] focus-ring-brand active:scale-[0.98]"
+                >MUA NGAY</button>
+              </div>
+              <!-- Shipping info -->
+              <div class="w-[350px] space-y-[16px] pb-[2px] font-['Roboto'] text-[14px] leading-[normal] text-[#424242]">
+                <div class="flex items-center gap-[20px]">
+                  <img [attr.src]="productImages.truck" alt="" class="h-6 w-[26px]" />
+                  @if (product().shipping?.freeShippingThreshold) {
+                    {{ `Miễn phí vận chuyển cho đơn từ ${formatPrice(product().shipping.freeShippingThreshold)}` }}
+                  } @else {
+                    Chính sách miễn phí vận chuyển đang cập nhật
+                  }
+                </div>
+                <div class="flex items-center gap-[20px] whitespace-nowrap">
+                  <img [attr.src]="productImages.rotate3d" alt="" class="h-[26px] w-[26px]" />Giao hàng trong: {{ product().shipping?.deliveryEstimate || 'Đang cập nhật' }}                  <a
+                    appCustomerLink="/policies/van-chuyen"
+                    class="underline underline-offset-2 hover:no-underline hover:text-[#0D47A1] transition-colors duration-micro"
+                  >Chính sách giao hàng</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- —— Description / Review tabs —— -->
+      <section
+        #tabSectionRef
+        [class]="`w-[1440px] bg-[#E5F6FD] px-[120px] ${
+            showWriteReview()
+              ? 'pb-[80px] pt-[80px]'
+              : isReviewTab()
+                ? 'pb-[52px] pt-[80px]'
+                : 'py-[80px]'
+          }`"
+      >
+        <div [class]="`flex w-full flex-col gap-[40px] transition-opacity duration-150 ${tabTransitioning() ? 'opacity-0' : 'opacity-100'}`">
+          <!-- Tab bar -->
+          <div class="flex w-full items-start gap-[20px]">
+            <button
+              type="button"
+              (click)="handleTabMota()"
+              [class]="`font-['Roboto'] text-[32px] leading-[39.52px] tracking-[0.25px] transition-all duration-micro ${
+                  !isReviewTab()
+                    ? 'font-bold text-[#0D47A1]'
+                    : 'font-normal text-[rgba(0,0,0,0.38)] hover:text-[#0D47A1] hover:font-medium'
+                }`"
+            >Mô tả</button>
+            <div class="h-[33px] w-0">
+              <img
+                [attr.src]="isReviewTab() ? productImages.reviewDivider : productImages.verticalDivider"
+                alt=""
+                class="h-[33px]"
+              />
+            </div>
+            <button
+              type="button"
+              (click)="handleTabDanhGia()"
+              [class]="`font-['Roboto'] text-[32px] leading-[39.52px] tracking-[0.25px] transition-all duration-micro ${
+                  isReviewTab()
+                    ? 'font-bold text-[#0D47A1]'
+                    : 'font-normal text-[rgba(0,0,0,0.38)] hover:text-[#0D47A1] hover:font-medium'
+                }`"
+            >Đánh giá</button>
+          </div>
+          @if (!isReviewTab()) {
+            <div
+              #descriptionRef
+              class="w-full scroll-mt-[24px] font-['Roboto'] text-[16px] font-normal leading-[24px] tracking-[0.15px] text-[#575757]"
+            >
+              <p class="mb-0">{{ product().description }}</p>
+            </div>
+          } @else {
+            <div class="flex w-full flex-col gap-[40px]">
+              <!-- Summary -->
+              <div class="flex h-[139px] w-[1198px] items-start justify-center gap-[51px] self-center">
+                <div class="w-[198px]">
+                  <div class="font-['Roboto'] text-[32px] font-medium leading-[32px] tracking-[0.15px] text-black">{{ reviewsData().totalItems || 0 }} Đánh giá</div>
+                  <div class="mt-[16px] h-[87px] rounded-[14px] bg-white px-[22px] py-[11px]">
+                    <div class="font-['Roboto'] text-[40px] font-bold leading-[40px] tracking-[0.25px] text-black">{{ reviewsData().averageRating || 0 }}</div>
+                    <app-product-rating [value]="reviewsData().averageRating" />
+                  </div>
+                </div>
+                <!-- Rating breakdown -->
+                <div class="mt-px flex h-[138px] w-[263px] flex-col gap-[5px]">
+                  @for (value of [5, 4, 3, 2, 1]; track value) {
+                    <div class="flex h-6 items-center gap-px">
+                      <div class="flex items-center">
+                        <span class="font-['Roboto'] text-[16px] leading-[24px] tracking-[0.15px] text-[rgba(0,0,0,0.7)]">{{ value }}</span>
+                        <app-product-rating [value]="1" [max]="1" [size]="16" [fillColor]="'#FFB70A'" />
+                      </div>
+                      <div class="relative h-[22px] w-[200px]">
+                        <div class="absolute left-4 right-4 top-[9px] h-[6px] rounded-[3px] bg-[rgba(120,120,120,0.2)]"></div>
+                        <div
+                          class="absolute left-4 top-[9px] h-[6px] rounded-[3px] bg-[#FFB70A]"
+                          [appStyle]="styles5(value)"
+                        ></div>
+                      </div>
+                      <span class="font-['Roboto'] text-[14px] leading-[20px] tracking-[0.17px] text-[rgba(0,0,0,0.7)]">{{ reviewsData().ratingBreakdown?.[value] || 0 }}%</span>
+                    </div>
+                  }
+                </div>
+              </div>
+              <!-- Review items -->
+              @for (review of reviewItems(); track review.id) {
+                <div class="group w-full rounded-[14px] border border-[#90CAF9] bg-white px-4 py-[15px] transition-shadow duration-micro hover:shadow-[0_2px_12px_rgba(144,202,249,0.4)]">
+                  <div class="flex gap-5">
+                    <img
+                      [attr.src]="review.authorAvatar || productImages.reviewAvatarBlock"
+                      alt=""
+                      class="h-[52px] w-[52px] shrink-0 rounded-full object-cover"
+                    />
+                    <div class="flex min-w-0 flex-1 flex-col gap-5">
+                      <div class="flex flex-col gap-1">
+                        <div class="flex items-center justify-between">
+                          <span class="font-['Oxygen'] text-[16px] leading-[normal] text-[#3D3D3D]">{{ review.authorName }}</span>
+                          <app-product-rating [value]="review.rating" />
+                        </div>
+                        <p class="font-['Oxygen'] text-[16px] leading-[1.705] text-[#949494]">{{ review.content }}</p>
+                      </div>
+                      <!-- Actions: Like + time -->
+                      <div class="flex items-center gap-[15px] font-['Oxygen'] text-[16px] leading-[1.705] text-[#949494]">
+                        <button
+                          type="button"
+                          (click)="handleLike(review.id)"
+                          class="flex items-center gap-[6px] focus-ring-brand transition-colors duration-micro active:scale-90"
+                          aria-label="Thích đánh giá này"
+                          [attr.aria-pressed]="!!likedReviews()[`_${review.id}`]"
+                        >
+                          @if (likedReviews()[`_${review.id}`]) {
+                            <svg
+                              class="h-4 w-4 shrink-0 text-[#D32F2F]"
+                              viewBox="0 0 16 16"
+                              fill="#D32F2F"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path d="M8 14C8 14 2 9.5 2 5C2 3.34315 3.34315 2 5 2C6.10457 2 7.07843 2.55414 7.625 3.4C7.95386 3.99269 8.47193 4.47328 9.10862 4.77682C9.7453 5.08035 10.4686 5.19269 11.1796 5.09882C11.8905 5.00494 12.5539 4.7087 13.0799 4.24981C13.6058 3.79092 13.9677 3.19041 14.115 2.53277C14.2624 1.87514 14.1879 1.19261 13.9021 0.581797C13.6163 -0.0290182 13.1346 -0.507642 12.5 0.5L8 14Z" />
+                            </svg>
+                          } @else {
+                            <svg
+                              class="h-4 w-4 shrink-0"
+                              viewBox="0 0 16 16"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M8 14C8 14 2 9.5 2 5C2 3.34315 3.34315 2 5 2C6.10457 2 7.07843 2.55414 7.625 3.4C7.95386 3.99269 8.47193 4.47328 9.10862 4.77682C9.7453 5.08035 10.4686 5.19269 11.1796 5.09882C11.8905 5.00494 12.5539 4.7087 13.0799 4.24981C13.6058 3.79092 13.9677 3.19041 14.115 2.53277C14.2624 1.87514 14.1879 1.19261 13.9021 0.581797C13.6163 -0.0290182 13.1346 -0.507642 12.5 0.5L8 14Z"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linejoin="round"
+                              />
+                            </svg>
+                          }
+                          <span [class]="likedReviews()[`_${review.id}`] ? 'text-[#D32F2F]' : ''">
+                            @if (likedReviews()[`_${review.id}`]) {
+                              Đã thích
+                            } @else {
+                              Thích
+                            }
+                          </span>
+                          <span>({{ (review.likeCount || 0) + (likedReviews()[review.id] || 0) }})</span>
+                        </button>
+                        <span>{{ formatReviewTime(review.createdAt) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+              <!-- Pagination -->
+              <div class="flex w-full items-center justify-center gap-[28.3px]">
+                <button
+                  type="button"
+                  (click)="handle6()"
+                  [disabled]="reviewPage() === 1"
+                  class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-[4px] border border-transparent p-2 transition-all duration-micro disabled:cursor-not-allowed disabled:opacity-30 hover:border-[#90CAF9] hover:bg-[#E3F2FD] focus-ring-brand"
+                  aria-label="Trang trước"
+                >
+                  <img [attr.src]="productImages.paginationPrev" alt="" class="h-6 w-6" />
+                </button>
+                <div class="flex items-center">
+                  @for (page of getPageNumbers(); track $index; let i = $index) {
+                    @if (page === '...') {
+                      <span class="px-3 font-['Inter'] text-[18px] font-medium leading-[28px] text-[#7D858D]">...</span>
+                    } @else {
+                      <button
+                        type="button"
+                        (click)="handleReviewPage(page)"
+                        [class]="`mx-[3px] flex h-10 w-10 cursor-pointer items-center justify-center rounded-[4px] font-['Inter'] text-[18px] font-medium leading-[28px] transition-all duration-micro focus-ring-brand ${
+                            page === reviewPage()
+                              ? 'bg-[#0D47A1] text-white shadow-md'
+                              : 'text-[#7D858D] hover:bg-[#E3F2FD] hover:text-[#0D47A1]'
+                          }`"
+                        [attr.aria-label]="`Trang ${page}`"
+                        [attr.aria-current]="page === reviewPage() ? 'page' : undefined"
+                      >{{ page }}</button>
+                    }
+                  }
+                </div>
+                <button
+                  type="button"
+                  (click)="handle7()"
+                  [disabled]="reviewPage() === totalReviewPages()"
+                  class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-[4px] border border-transparent p-2 transition-all duration-micro disabled:cursor-not-allowed disabled:opacity-30 hover:border-[#90CAF9] hover:bg-[#E3F2FD] focus-ring-brand"
+                  aria-label="Trang sau"
+                >
+                  <img [attr.src]="productImages.paginationNext" alt="" class="h-6 w-6" />
+                </button>
+              </div>
+              @if (showWriteReview()) {
+                <div class="mt-[50px] w-full">
+                  <form
+                    app-write-review-form
+                    [targetId]="product().id"
+                    [targetName]="product().name"
+                    (onSubmit)="handleReviewSubmit($any($event))"
+                  ></form>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </section>
+      <!-- —— Similar Products —— -->
+      <section class="flex h-auto w-[1440px] flex-col items-center justify-center gap-[36px] px-[80px] py-[60px]">
+        <div class="w-full"><h3 class="text-[32px] font-bold leading-[1.235] tracking-[0.25px] text-[#0D47A1]">Sản phẩm tương tự</h3></div>
+        <div class="relative flex w-full items-center gap-5">
+          <!-- Prev button -->
+          <button
+            type="button"
+            (click)="handleSimPrev()"
+            [disabled]="!canGoSimPrev()"
+            class="btn-carousel disabled:opacity-30"
+            aria-label="Sản phẩm trước"
+          >‹</button>
+          <!-- Cards -->
+          <div
+            class="overflow-hidden py-3"
+            [appStyle]="{ width: SIM_CARD_WIDTH() * SIM_VISIBLE_COUNT() + SIM_CARD_GAP() * (SIM_VISIBLE_COUNT() - 1) }"
+          >
+            <div
+              class="flex gap-5 transition-transform duration-300 ease-in-out"
+              [appStyle]="{ transform: `translateX(-${simOffset() * (SIM_CARD_WIDTH() + SIM_CARD_GAP())}px)` }"
+            >
+              @for (product of safeSimilarProducts(); track product.id) {
+                <div class="shrink-0" [appStyle]="{ width: SIM_CARD_WIDTH() }">
+                  <app-shopping-product-card [product]="product" [href]="'/product-details'" />
+                </div>
+              }
+            </div>
+          </div>
+          <!-- Next button -->
+          <button
+            type="button"
+            (click)="handleSimNext()"
+            [disabled]="!canGoSimNext()"
+            class="btn-carousel disabled:opacity-30"
+            aria-label="Sản phẩm tiếp"
+          >›</button>
+        </div>
+      </section>
+      <app-footer [variant]="'blue'" />
+    </div>
+  </div>
+}

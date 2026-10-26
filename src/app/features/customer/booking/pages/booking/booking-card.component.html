@@ -1,0 +1,8 @@
+<section
+  [class]="`rounded-2xl bg-white shadow-[0_4px_13px_rgba(144,202,249,0.85)] ${className()}`"
+  [attr.title]="title()"
+  [attr.data-booking-error]="dataBookingError()"
+  [attr.tabindex]="tabIndex()"
+>
+  <ng-content />
+</section>

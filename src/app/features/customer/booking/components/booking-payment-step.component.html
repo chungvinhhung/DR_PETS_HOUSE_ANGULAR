@@ -1,0 +1,33 @@
+<div class="grid gap-5 md:gap-8 lg:grid-cols-[minmax(0,2fr)_390px]">
+  <app-appointment-details
+    [selectedDate]="selectedDate()"
+    [selectedSlot]="selectedSlot()"
+    [selectedPet]="selectedPet()"
+    [selectedPets]="selectedPets()"
+    [petInfo]="petInfo()"
+    [petInfos]="petInfos()"
+    [ownerInfo]="ownerInfo()"
+    [selectedServices]="selectedServices()"
+    [quantities]="quantities()"
+    [pricingByServiceId]="pricingByServiceId()"
+    (onQuantityChange)="handleQuantityChange($any($event)[0], $any($event)[1])"
+  />
+  <app-payment-panel
+    [paymentMode]="paymentMode()"
+    [setPaymentMode]="setPaymentMode()"
+    (onConfirm)="handleConfirm()"
+    [subtotal]="subtotal()"
+    [surchargeTotal]="surchargeTotal()"
+    [discountTotal]="discountTotal()"
+    [total]="total()"
+    [pricingLoading]="pricingLoading()"
+    [pricingError]="pricingError()"
+  />
+</div>
+<div class="mt-5 md:mt-6">
+  <button
+    type="button"
+    (click)="onBack.emit($event)"
+    class="rounded bg-secondary-light px-5 py-2 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation md:px-6 md:py-3"
+  >‹ Quay lại</button>
+</div>

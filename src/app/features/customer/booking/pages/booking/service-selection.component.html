@@ -1,0 +1,121 @@
+<div class="grid items-stretch gap-5 md:gap-6 lg:grid-cols-[minmax(0,2fr)_320px]">
+  <div
+    [class]="`grid h-full gap-3 rounded-2xl md:grid-cols-2 md:gap-4 lg:gap-6 ${
+            validationAttempted() && !selectedServiceType() ? 'ring-2 ring-red-500' : ''
+          }`"
+    [attr.title]="validationAttempted() && !selectedServiceType() ? 'Vui lòng điền thông tin' : undefined"
+    [attr.data-booking-error]="validationAttempted() && !selectedServiceType() ? 'true' : undefined"
+    [attr.tabindex]="validationAttempted() && !selectedServiceType() ? -1 : undefined"
+  >
+    @for (serviceType of BOOKING_SERVICE_TYPES; track $index) {
+      @let active = selectedServiceType() === serviceType.id;
+      <button
+        type="button"
+        (click)="selectServiceType(serviceType.id)"
+        [class]="`relative h-full rounded-2xl border-2 bg-white p-[26px] text-left shadow-[0_4px_13px_rgba(144,202,249,0.85)] transition ${
+                  active ? 'border-blue-900' : 'border-transparent'
+                }`"
+      >
+        @if (active) {
+          <img [attr.src]="serviceSelectedCheck" alt="" class="absolute right-4 top-4 h-4 w-4" />
+        }
+        <div class="flex items-center gap-4">
+          <img [attr.src]="serviceType.icon" alt="" class="h-12 w-12 rounded object-cover shadow" />
+          <h3 [class]="`text-xl font-bold ${active ? 'text-blue-900' : 'text-slate-900'}`">{{ serviceType.title }}</h3>
+        </div>
+        <p class="mt-3 text-base leading-6 text-slate-600 lg:mt-5">{{ serviceType.desc }}</p>
+      </button>
+    }
+  </div>
+  <app-branch-selection-card
+    [selectedBranch]="ownerInfo().branch"
+    (onSelect)="selectBranch($any($event))"
+    [branches]="branches()"
+    [invalid]="validationAttempted() && !ownerInfo().branch"
+  />
+  <app-booking-card
+    [className]="`flex h-[757px] flex-col p-6 lg:h-[744px] ${validationAttempted() && selectedServices().length === 0 ? 'ring-2 ring-red-500' : ''}`"
+    [title]="validationAttempted() && selectedServices().length === 0 ? 'Vui lòng điền thông tin' : undefined"
+    [data-booking-error]="validationAttempted() && selectedServices().length === 0 ? 'true' : undefined"
+    [tabIndex]="validationAttempted() && selectedServices().length === 0 ? -1 : undefined"
+  >
+    <h2 class="mb-5 flex items-center gap-2 text-xl font-bold text-blue-900">
+      <img app-asset-icon [src]="serviceListIcon" /> Danh sách dịch vụ chi tiết</h2>
+    <div class="relative mb-6 flex h-12 items-center rounded-lg border border-slate-300 bg-white py-1 pl-4 pr-2 focus-within:border-blue-900">
+      <input
+        type="text"
+        [value]="serviceSearch() ?? ''"
+        (input)="serviceSearch.set($any($event).target.value)"
+        placeholder="Tìm kiếm dịch vụ..."
+        class="min-w-0 flex-1 bg-transparent text-base outline-none"
+      />
+      @if (serviceSearch()) {
+        <button
+          type="button"
+          (click)="serviceSearch.set('')"
+          class="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E3F2FD] text-[26px] font-semibold leading-none text-[#0D47A1] transition-colors hover:bg-[#BBDEFB]"
+          aria-label="Xóa tìm kiếm dịch vụ"
+        >×</button>
+      }
+      <img [attr.src]="productImages.searchIcon" alt="" class="h-7 w-7 shrink-0" />
+    </div>
+    <div class="min-h-0 flex-1 space-y-[10px] overflow-y-auto pr-1 md:pr-2">
+      @for (service of visibleServices(); track $index) {
+        @let active = selectedServices().includes(service.id);
+        <div [class]="`flex items-center justify-between gap-3 rounded-2xl p-5 ${
+                    active ? 'border-l-4 border-blue-900 bg-[#d5e4f3]' : 'bg-[#f2f4f6]'
+                  }`">
+          <div class="min-w-0">
+            <h3 class="text-sm font-bold text-slate-900 md:text-base">{{ service.name }}</h3>
+            <p class="text-xs font-medium leading-4 text-slate-700 md:text-sm">{{ service.desc }}</p>
+            <p class="text-sm font-bold text-blue-900 md:text-base">{{ formatMoney(service.price) }}@if (serviceQuantity() > 1) {
+                {{ ` x ${serviceQuantity()}` }}
+              }
+            </p>
+          </div>
+          <button
+            type="button"
+            (click)="toggleService(service.id)"
+            [class]="`flex min-w-[58px] items-center justify-center rounded-full border px-4 py-2 text-xs font-bold md:min-w-[68px] md:px-5 md:text-sm ${
+                      active ? 'border-blue-900 bg-blue-900 text-white' : 'border-blue-900 bg-white text-blue-900'
+                    }`"
+          >
+            @if (active) {
+              <span class="relative z-10 text-base leading-none">✓</span>
+            } @else {
+              Chọn
+            }
+          </button>
+        </div>
+      }
+      @if (visibleServices().length === 0) {
+        <p class="rounded-2xl bg-slate-50 p-5 text-sm font-medium text-slate-500">Chưa có dịch vụ phù hợp.</p>
+      }
+    </div>
+    <div class="mt-5 flex items-center justify-between rounded-xl bg-slate-100 p-5 shadow">
+      <span class="text-sm font-bold text-slate-900 md:text-base">Tổng tiền tạm tính</span>
+      <div class="text-right">
+        <p class="text-base font-black text-blue-900 md:text-2xl">{{ formatMoney(total()) }}</p>
+        <p class="text-xs text-slate-500">(Chưa bao gồm thuế)</p>
+      </div>
+    </div>
+  </app-booking-card>
+  <aside class="grid gap-6 lg:h-[744px] lg:grid-rows-[auto_minmax(0,1fr)]">
+    <app-booking-calendar
+      [selectedDate]="selectedDate()"
+      (onSelect)="selectDate($any($event))"
+      [invalid]="validationAttempted() && !dateBookable()"
+    />
+    <app-time-slots
+      [selectedDate]="selectedDate()"
+      [selectedSlot]="selectedSlot()"
+      (onSelect)="setSelectedSlot()?.($event)"
+      [timeSlots]="timeSlots()"
+      [invalid]="validationAttempted() && !slotBookable()"
+    />
+    @if (slotsLoading()) {
+      <p class="mt-2 text-sm font-medium text-blue-900">Đang tải khung giờ...</p>
+    }
+  </aside>
+</div>
+<div app-flow-buttons (onNext)="handleNext()"></div>

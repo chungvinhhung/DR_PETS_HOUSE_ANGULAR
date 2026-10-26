@@ -1,0 +1,7 @@
+<app-nav-bar />
+<div app-scaled-canvas-layout [className]="'bg-white'"><app-grooming-canvas (onOpenPricing)="isPricingOpen.set(true)" /></div>
+<app-service-pricing-modal
+  [open]="isPricingOpen()"
+  [defaultFilter]="'grooming'"
+  (onClose)="isPricingOpen.set(false)"
+/>

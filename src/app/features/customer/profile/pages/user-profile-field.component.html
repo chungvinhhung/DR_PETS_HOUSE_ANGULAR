@@ -1,0 +1,9 @@
+<span class="mb-2 block pl-1 text-base font-medium">{{ label() }}</span>
+<span class="relative block">
+  <ng-content />
+  @if (isTemplateRef(action())) {
+    <ng-container [ngTemplateOutlet]="action()" />
+  } @else {
+    {{ action() }}
+  }
+</span>

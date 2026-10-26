@@ -1,0 +1,9 @@
+<button
+  type="button"
+  [class]="`inline-flex h-[42px] items-center justify-center rounded-[4px] px-[22px] py-2 text-[15px] font-medium uppercase leading-[26px] tracking-[0.46px] transition ${buttonShadow} ${variants()[variant()]} ${className()}`"
+  (click)="onClick.emit($event)"
+  [attr.type]="type()"
+  [disabled]="disabled()"
+>
+  <ng-content />
+</button>

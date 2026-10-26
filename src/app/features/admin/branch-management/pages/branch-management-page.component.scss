@@ -1,0 +1,1285 @@
+/* Branch management V2 — rebuilt from Figma 7353:38040, 7353:38072.
+   The original card layout was intentionally removed, not enhanced. */
+app-branch-management-page { display:block; font-family:Roboto,Arial,sans-serif; color:#1b273b; }
+.branch-management { padding:32px; width:100%; max-width:1440px; font-size:13px; }
+.branch-management * { box-sizing:border-box; }
+.branch-management a { text-decoration:none; }
+.branch-management button { cursor:pointer; font:inherit; }
+.branch-management button:disabled { cursor:not-allowed; opacity:.5; }
+.branch-management :is(button,a,input,select):focus-visible { outline:2px solid #0d47a1; outline-offset:2px; }
+.branch-v2-page { --blue:#0d47a1; --border:#e0e8f2; --pale:#e5f6fd; --muted:#64748b; }
+.branch-v2-page__sr { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.branch-v2-page__header { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:40px; margin-bottom:20px; }
+.branch-v2-page__header--list { margin-bottom:22px; }
+.branch-v2-page__header h1 { margin:0; font-size:22px; font-weight:700; color:#202b3c; line-height:1.4; }
+.branch-v2-page__header h1 span { color:#2a3647; font-size:18px; margin-left:7px; }
+.branch-v2-page__btn { display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:8px 16px; border-radius:7px; border:1px solid var(--border); background:#fff; font-size:12px; font-weight:600; white-space:nowrap; color:#0d47a1; }
+.branch-v2-page__btn--primary { background:var(--blue); color:#fff; border-color:var(--blue); }
+.branch-v2-page__btn--primary:hover { background:#123979; }
+.branch-v2-page__btn--outline:hover { background:#f3f8ff; }
+.branch-v2-page__filters { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:20px; padding:15px 16px; min-height:64px; border:1px solid #d4dfed; border-radius:9px; }
+.branch-v2-page__search { display:flex; gap:9px; align-items:center; width:min(100%,405px); padding:0 10px; height:38px; border:1px solid #d4dfed; border-radius:6px; }
+.branch-v2-page__search span[aria-hidden] { color:#6f7d8c; font-size:22px; }
+.branch-v2-page__search input { background:transparent; border:0; outline:0; width:100%; color:#2c3d53; font:inherit; }
+.branch-v2-page__status-filter select { min-width:150px; height:40px; border:1px solid #d4dfed; border-radius:7px; background:#fff; padding:0 12px; color:#21344f; font-size:12px; }
+.branch-v2-page__table-card { border:1px solid var(--border); border-radius:10px; overflow:hidden; background:#fff; }
+.branch-v2-page__table-scroll { overflow-x:auto; }
+.branch-v2-page__table { border-collapse:collapse; width:100%; text-align:left; table-layout:fixed; color:#29374b; font-size:12px; }
+.branch-v2-page__table--branches { min-width:830px; }
+.branch-v2-page__table--branches th:nth-child(1) { width:17%; }
+.branch-v2-page__table--branches th:nth-child(2) { width:25%; }
+.branch-v2-page__table--branches th:nth-child(3) { width:14%; }
+.branch-v2-page__table--branches th:nth-child(4) { width:18%; }
+.branch-v2-page__table--branches th:nth-child(5) { width:15%; }
+.branch-v2-page__table--branches th:nth-child(6) { width:11%; }
+.branch-v2-page__table thead th { background:#f8fafc; color:#1e293b; font-size:12px; font-weight:600; padding:15px 15px; white-space:normal; }
+.branch-v2-page__table--services thead th,
+.branch-v2-page .branch-v2__slots thead th,
+.branch-v2-page .branch-v2__shifts thead th { background:var(--pale); font-size:11px; font-weight:600; }
+.branch-v2-page__table tbody td { min-height:67px; height:70px; padding:13px 15px; border-top:1px solid var(--border); line-height:1.55; vertical-align:middle; overflow-wrap:anywhere; }
+.branch-v2-page__table tr:hover td { background:#fafcff; }
+.branch-v2-page__table--services tr td { height:59px; }
+.branch-v2-page__secondary { color:#4f647f; }
+.branch-v2-page__empty { padding:32px 16px!important; text-align:center; color:#72819a; }
+.branch-v2-page__badge { display:inline-flex; align-items:center; white-space:nowrap; padding:4px 11px; font-size:11px; font-weight:500; line-height:1.25; border:1px solid #c8e6c9; background:#e8f5e9; color:#2e7d32; border-radius:999px; }
+.branch-v2-page__badge--off { color:#6d7680; border-color:#d9e0e8; background:#eef1f4; }
+.branch-v2-page__actions { display:flex; align-items:center; justify-content:center; gap:12px; }
+.branch-v2-page__icon-action { display:inline-grid; place-items:center; min-width:27px; min-height:30px; border:0; background:transparent; color:#0d47a1; font-size:19px; font-weight:500; }
+.branch-v2-page__icon-action:hover { color:#082f70; background:#eef6ff; border-radius:6px; }
+.branch-v2-page__pagination { display:flex; align-items:center; justify-content:space-between; gap:15px; padding:16px; color:#617087; font-size:11px; }
+.branch-v2-page__pagination nav { display:inline-flex; border:1px solid var(--border); border-radius:7px; overflow:hidden; }
+.branch-v2-page__pagination button { border:0; border-right:1px solid var(--border); background:#fff; color:#182b43; min-width:44px; min-height:42px; }
+.branch-v2-page__pagination button:last-child { border-right:0; }
+.branch-v2-page__pagination button:hover:not(:disabled) { background:#f3f8ff; }
+.branch-v2-page__pagination .branch-v2-page__page--active { background:#e9f3ff; border-bottom:2px solid var(--blue); color:var(--blue); }
+.branch-v2-page__footnote { font-size:11px; color:#64748b; line-height:1.6; margin:12px 0 0; }
+.branch-v2-page__notice { padding:11px 14px; border:1px solid #bfd7f2; background:#eff7ff; border-radius:8px; margin:12px 0; color:#355a88; font-size:12px; }
+.branch-v2-page__notice a { color:#0d47a1; text-decoration:underline; }
+.branch-v2-page__breadcrumb { display:flex; align-items:center; gap:8px; color:#8290a2; margin:0 0 16px; font-size:12px; }
+.branch-v2-page__breadcrumb a { color:#718199; }
+.branch-v2-page__breadcrumb strong { font-weight:600; color:#263951; }
+.branch-v2-page__info { display:grid; grid-template-columns:minmax(0,2.2fr) minmax(0,.65fr) minmax(0,.65fr); align-items:center; gap:22px; min-height:75px; padding:17px 18px; border:1px solid var(--border); border-radius:10px; margin-bottom:20px; }
+.branch-v2-page__info > div { display:flex; flex-direction:column; gap:8px; min-width:0; }
+.branch-v2-page__info span { color:#617591; font-size:10px; font-weight:500; }
+.branch-v2-page__info strong:not(.branch-v2-page__badge) { font-size:12px; font-weight:500; }
+.branch-v2-page__info strong.branch-v2-page__badge { align-self:flex-start; font-size:10px; font-weight:500; }
+.branch-v2-page__inventory { display:grid; grid-template-columns:minmax(0,1.6fr) repeat(3,minmax(0,.7fr)) auto; gap:16px; align-items:center; min-height:75px; padding:16px 18px; border:1px solid var(--border); border-radius:10px; margin-bottom:25px; }
+.branch-v2-page__inventory > div { display:flex; flex-direction:column; gap:5px; min-width:0; }
+.branch-v2-page__inventory span { color:#71829a; font-size:11px; }
+.branch-v2-page__inventory strong { color:#1b293c; font-size:18px; }
+.branch-v2-page__inventory-heading strong { font-size:12px; font-weight:600; }
+.branch-v2-page__inventory-heading span { font-size:11px; }
+.branch-v2-page__inventory strong.branch-v2-page__warning { color:#d97706; }
+.branch-v2-page__inventory strong.branch-v2-page__danger { color:#b91c1c; }
+.branch-v2-page__tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:0 0 20px; }
+.branch-v2-page__tabs button { min-height:43px; background:transparent; border:0; border-bottom:2px solid transparent; color:#1c314c; font-size:12px; font-weight:500; }
+.branch-v2-page__tabs button:hover { color:var(--blue); }
+.branch-v2-page__tabs .branch-v2-page__tab--active { color:var(--blue); border-bottom-color:var(--blue); font-weight:600; }
+.branch-v2-page__detail-card { padding:20px; border:1px solid var(--border); background:white; border-radius:10px; }
+.branch-v2-page__detail-card h2 { color:#1c2737; font-size:17px; margin:0 0 18px; }
+.branch-v2-page__service-toolbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:18px; color:#50637c; font-size:12px; }
+.branch-v2-page__service-toolbar :is(input,select) { height:38px; padding:0 10px; border:1px solid #dce4ee; border-radius:7px; background:#fff; color:#30425a; font-size:12px; }
+.branch-v2-page__table--services { min-width:820px; }
+.branch-v2-page__table--services th:nth-child(1){width:30%}
+.branch-v2-page__table--services th:nth-child(2){width:18%}
+.branch-v2-page__table--services th:nth-child(3){width:17%}
+.branch-v2-page__table--services th:nth-child(4){width:25%}
+.branch-v2-page__table--services th:nth-child(5){width:10%}
+.branch-v2-page__focused td { background:#f4faff; }
+.branch-v2-page__availability { color:#0d47a1; font-weight:600; }
+.branch-v2-page__switch-row { display:inline-flex; align-items:center; gap:10px; background:transparent; border:0; padding:0; color:#29374b; white-space:nowrap; }
+.branch-v2-page__switch { display:inline-flex; width:44px; height:25px; align-items:center; padding:3px; background:#6b7280; border-radius:99px; transition:background .2s; }
+.branch-v2-page__switch--on { background:#2e7d32; }
+.branch-v2-page__switch i { display:block; width:19px; height:19px; background:#fff; border-radius:50%; transition:transform .2s; }
+.branch-v2-page__switch--on i { transform:translateX(18px); }
+@media(max-width:930px) {
+ .branch-v2-page__info { grid-template-columns:1.4fr 1fr; }
+ .branch-v2-page__inventory { grid-template-columns:repeat(3,minmax(0,1fr)); }
+ .branch-v2-page__inventory-heading { grid-column:1/-1; }
+}
+@media(max-width:630px) {
+ .branch-management { padding:18px; }
+ .branch-v2-page__filters { flex-wrap:wrap; }
+ .branch-v2-page__status-filter { width:100%; }
+ .branch-v2-page__status-filter select { width:100%; }
+ .branch-v2-page__pagination { flex-wrap:wrap; }
+ .branch-v2-page__info { grid-template-columns:1fr; }
+ .branch-v2-page__inventory { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+
+/* Figma V2 — lịch hoạt động và mẫu ca. Scoped to branch management. */
+.branch-management .branch-v2 { margin-top: 0; padding: 20px; }
+.branch-management .branch-v2__heading {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 16px; margin-bottom: 18px;
+}
+.branch-management .branch-v2__heading h2 {
+  margin: 0 0 7px; color: #1b273b; font-size: 18px; font-weight: 700;
+}
+.branch-management .branch-v2__heading p {
+  margin: 0; color: #708198; font-size: 12px; line-height: 1.5;
+}
+.branch-management .branch-v2__week-nav {
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+}
+.branch-management .branch-v2__week-nav button,
+.branch-management .branch-v2__date-control {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 40px; border: 1px solid #dfe7f1; border-radius: 7px;
+  background: #fff; color: #1d3551; padding: 0 12px; font-size: 12px;
+}
+.branch-management .branch-v2__week-nav button:hover { background: #eef6ff; }
+.branch-management .branch-v2__date-control input {
+  width: 148px; border: 0; outline: none; background: transparent;
+  color: inherit; font: inherit;
+}
+.branch-management .branch-v2__days {
+  display: grid; grid-template-columns: repeat(7,minmax(0,1fr));
+  gap: 8px; margin-bottom: 16px;
+}
+.branch-management .branch-v2__days button {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  border: 1px solid #e1e9f2; border-radius: 8px;
+  min-width: 0; min-height: 72px; padding: 8px 4px;
+  background: #fff; color: #61738c;
+}
+.branch-management .branch-v2__days button strong { font-size: 13px; color: #263951; }
+.branch-management .branch-v2__days button small { font-size: 12px; color: #a0aec0; }
+.branch-management .branch-v2__days .branch-v2__day--active {
+  background: #edf5ff; border-color: #0d47a1;
+  box-shadow: inset 0 0 0 1px #0d47a1;
+}
+.branch-management .branch-v2__day--active strong { color: #0d47a1 !important; }
+.branch-management .branch-v2__preview-note {
+  padding: 12px 14px; margin: 0 0 16px;
+  border: 1px solid #e3d5a3; border-radius: 8px;
+  color: #795b13; background: #fff9e8; font-size: 12px; line-height: 1.6;
+}
+.branch-management .branch-v2__slots,
+.branch-management .branch-v2__shifts { min-width: 850px; }
+.branch-management .branch-v2__slots th,
+.branch-management .branch-v2__shifts th { font-weight: 600; text-transform: uppercase; }
+.branch-management .branch-v2__slots td,
+.branch-management .branch-v2__shifts td { height: 58px; }
+.branch-management .branch-v2__muted-pill {
+  display: inline-block; padding: 5px 8px; border-radius: 99px;
+  color: #69778c; background: #eff2f5; font-size: 11px;
+}
+.branch-management .branch-v2__progress {
+  width: 100%; max-width: 195px; height: 7px;
+  border-radius: 999px; background: #edf2f7; overflow: hidden;
+}
+.branch-management .branch-v2__progress span { display: block; width: 0; height: 100%; }
+.branch-management .branch-v2__shift-summary {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 13px; margin: 0 0 16px;
+  color: #708198; font-size: 12px;
+}
+.branch-management .branch-v2__shift-summary a { color: #0d47a1; }
+.branch-management .branch-v2__shift-summary a:hover { text-decoration: underline; }
+.branch-management .branch-v2__footer-actions { margin-top: 20px; }
+.branch-management .branch-v2__success {
+  padding: 10px 14px; border-radius: 7px; background: #e8f5e9;
+  color: #2e7d32; font-size: 12px; line-height: 1.5;
+}
+.branch-management .branch-v2__overlay {
+  position: fixed; z-index: 1000; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 18px; background: rgba(15,23,42,.45);
+}
+.branch-management .branch-v2__modal {
+  width: min(100%,620px); max-height: calc(100vh - 36px);
+  overflow-y: auto; border: 1px solid #dfe7f1;
+  border-radius: 12px; padding: 24px; background: #fff;
+  box-shadow: 0 24px 60px rgba(25,46,73,.19);
+}
+.branch-management .branch-v2__modal-header {
+  display: flex; justify-content: space-between; align-items: start; gap: 10px;
+  padding-bottom: 17px; margin-bottom: 17px; border-bottom: 1px solid #e1e9f2;
+}
+.branch-management .branch-v2__modal-header h2 {
+  margin: 0 0 6px; font-size: 20px; color: #1d3551;
+}
+.branch-management .branch-v2__modal-header p,
+.branch-management .branch-v2__modal > p {
+  margin: 0 0 12px; color: #74849b; font-size: 12px; line-height: 1.55;
+}
+.branch-management .branch-v2__modal-header > button {
+  border: 0; background: transparent; color: #6e8097; font-size: 23px;
+}
+.branch-management .branch-v2__form { display: flex; flex-direction: column; gap: 16px; }
+.branch-management .branch-v2__field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.branch-management .branch-v2__field span { color: #34465e; font-size: 12px; font-weight: 600; }
+.branch-management .branch-v2__field b,
+.branch-management .branch-v2__weekday-fieldset b { color: #c72b45; }
+.branch-management .branch-v2__field input {
+  width: 100%; height: 38px; padding: 0 11px; border: 1px solid #d5dfeb;
+  border-radius: 7px; color: #2b3d53; font: inherit;
+}
+.branch-management .branch-v2__time-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.branch-management .branch-v2__weekday-fieldset { margin: 0; padding: 0; border: 0; }
+.branch-management .branch-v2__weekday-fieldset legend {
+  padding: 0; margin-bottom: 10px; color: #34465e; font-weight: 600; font-size: 12px;
+}
+.branch-management .branch-v2__weekday-picker {
+  display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 6px;
+}
+.branch-management .branch-v2__weekday-picker label {
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+  min-height: 36px; border: 1px solid #dfe7f1; border-radius: 6px;
+  font-size: 11px; color: #40536e; white-space: nowrap;
+}
+.branch-management .branch-v2__weekday-picker label:has(input:checked) {
+  border-color: #7da8e4; background: #f3f8ff;
+}
+.branch-management .branch-v2__weekday-picker input { accent-color: #0d47a1; }
+.branch-management .branch-v2__toggle-line {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding-top: 12px; border-top: 1px solid #edf1f5;
+  color: #34465e; font-size: 12px; font-weight: 600;
+}
+.branch-management .branch-v2__toggle-line small {
+  display: block; margin-top: 6px; font-weight: 400; color: #788ba1;
+}
+.branch-management .branch-v2__toggle-line input { width: 18px; height: 18px; accent-color: #0d47a1; }
+.branch-management .branch-v2__form-error {
+  color: #a9223a; font-size: 12px; margin: 0; background: #fff0f2;
+  padding: 10px 12px; border-radius: 6px;
+}
+.branch-management .branch-v2__discard {
+  padding: 13px; border-radius: 7px; background: #fff7e7; border: 1px solid #ead5a1;
+}
+.branch-management .branch-v2__discard p { margin: 0 0 9px; }
+.branch-management .branch-v2__discard button {
+  margin-right: 9px; border: 0; border-radius: 5px; padding: 7px 11px;
+  color: #0d47a1; background: #fff;
+}
+.branch-management .branch-v2__modal-footer {
+  display: flex; justify-content: flex-end; gap: 9px; padding-top: 14px;
+  border-top: 1px solid #edf1f5; margin-top: 10px;
+}
+@media (max-width: 700px) {
+  .branch-management .branch-v2__days { gap: 3px; }
+  .branch-management .branch-v2__days button { padding: 7px 2px; }
+  .branch-management .branch-v2__weekday-picker { grid-template-columns: repeat(4,minmax(0,1fr)); }
+  .branch-management .branch-v2__time-fields { grid-template-columns: 1fr; }
+  .branch-management .branch-v2__modal { padding: 18px; }
+}
+
+/* Dedicated Figma V2 schedule/shift table geometry. */
+.branch-management .branch-v2 {
+  margin-top:0; padding:20px; border:1px solid #e0e8f2; border-radius:10px; background:#fff;
+}
+.branch-management .branch-v2__heading { margin-bottom:17px; min-height:40px; }
+.branch-management .branch-v2__heading h2 { margin:0; font-size:17px; }
+.branch-management .branch-v2__week-nav { margin-left:auto; }
+.branch-management .branch-v2__date-control { min-width:225px; position:relative; gap:10px; }
+.branch-management .branch-v2__date-control input { width:20px; flex:0 0 20px; padding:0; }
+.branch-management .branch-v2__date-control > span { font-size:12px; white-space:nowrap; }
+.branch-management .branch-v2__days { gap:6px; margin-bottom:14px; }
+.branch-management .branch-v2__days button { background:#e5f6fd; min-height:69px; }
+.branch-management .branch-v2__days .branch-v2__day--active { background:#d9edfc; }
+.branch-management .branch-v2__table-scroll { overflow-x:auto; border:1px solid #e0e8f2; border-radius:8px; }
+.branch-management .branch-v2__monitor { width:100%; min-width:790px; border-collapse:collapse; font-size:12px; table-layout:fixed; }
+.branch-management .branch-v2__monitor thead { background:#e5f6fd; color:#27354a; }
+.branch-management .branch-v2__monitor th { padding:12px 10px; text-align:left; font-weight:600; }
+.branch-management .branch-v2__monitor td { border-top:1px solid #e0e8f2; height:43px; padding:6px 10px; color:#26364c; }
+.branch-management .branch-v2__monitor tr:hover td { background:#fafcff; }
+.branch-management .branch-v2__monitor th:nth-child(1){width:17%}
+.branch-management .branch-v2__monitor th:nth-child(2){width:17%}
+.branch-management .branch-v2__monitor th:nth-child(3){width:13%}
+.branch-management .branch-v2__monitor th:nth-child(4){width:13%}
+.branch-management .branch-v2__monitor th:nth-child(5){width:33%}
+.branch-management .branch-v2__monitor th:nth-child(6){width:7%}
+.branch-management .branch-v2__status { display:inline-flex; justify-content:center; min-width:92px; border-radius:22px; padding:5px 8px; color:#2e7d32; background:#e8f5e9; font-size:11px; white-space:nowrap; }
+.branch-management .branch-v2__status--near { color:#b45309; background:#fff3df; }
+.branch-management .branch-v2__status--full { color:#b91c1c; background:#ffdedb; }
+.branch-management .branch-v2__status--locked { color:#687487; background:#f0f1f3; }
+.branch-management .branch-v2__fill { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.branch-management .branch-v2__fill > span { flex:0 0 35px; }
+.branch-management .branch-v2__progress { flex:1; max-width:none; background:#e5f6fd; height:6px; }
+.branch-management .branch-v2__progress i { display:block; height:100%; border-radius:8px; background:#2e7d32; }
+.branch-management .branch-v2__progress i.branch-v2__progress--near { background:#f97316; }
+.branch-management .branch-v2__progress i.branch-v2__progress--full { background:#9f1239; }
+.branch-management .branch-v2__eye { display:grid;place-items:center;min-width:27px;height:28px;border:0;background:transparent;color:#1b273b;font-size:18px; }
+.branch-management .branch-v2__eye:hover { background:#eef6ff;color:#0d47a1;border-radius:6px; }
+.branch-management .branch-v2__slot-modal { width:min(100%,720px); }
+.branch-management .branch-v2__slot-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:18px; }
+.branch-management .branch-v2__slot-stats > div { display:flex;flex-direction:column;gap:8px; }
+.branch-management .branch-v2__slot-stats span { color:#6c7f99;font-size:11px; }
+.branch-management .branch-v2__slot-stats strong { font-size:15px;color:#1b273b; }
+.branch-management .branch-v2__slot-modal h3 { margin:12px 0;font-size:14px; }
+.branch-management .branch-v2__modal-table { border-collapse:collapse;width:100%;table-layout:fixed;border:1px solid #e0e8f2;font-size:12px; }
+.branch-management .branch-v2__modal-table th { text-align:left;font-weight:500;background:#f8fafc;padding:11px 10px; }
+.branch-management .branch-v2__modal-table td { border-top:1px solid #e0e8f2;padding:11px 10px; }
+.branch-management .branch-v2__modal-close,.branch-management .branch-v2__modal-lock { min-height:40px;padding:0 15px;border-radius:7px;border:1px solid #dce4ee;background:#fff;color:#0d47a1; }
+.branch-management .branch-v2__modal-lock { color:#fff;border-color:#0d47a1;background:#0d47a1; }
+.branch-management .branch-v2__shifts { width:100%; border-collapse:collapse; }
+.branch-management .branch-v2__shifts thead th { background:#e5f6fd; color:#26374f; }
+.branch-management .branch-v2__shifts td strong { font-weight:500; }
+.branch-management .branch-management__table-scroll { border:1px solid #e0e8f2; border-radius:8px; overflow-x:auto; }
+.branch-management .branch-management__table { table-layout:fixed; }
+.branch-management .branch-management__table td { height:58px; }
+.branch-management .branch-v2__heading .branch-management__button--primary,
+.branch-management .branch-v2__footer-actions .branch-management__button,
+.branch-management .branch-v2__modal-footer .branch-management__button {
+  min-height:38px; display:inline-flex;align-items:center;justify-content:center;
+  padding:7px 13px; border:1px solid #0d47a1;border-radius:7px;background:#0d47a1;color:#fff;font-size:12px;
+}
+.branch-management .branch-v2__footer-actions .branch-management__button,
+.branch-management .branch-v2__modal-footer .branch-management__button--outline { border-color:#dce4ee;background:#fff;color:#0d47a1; }
+.branch-management .branch-v2__shifts .branch-management__button {
+ border:0;background:transparent;color:#0d47a1;min-height:34px;padding:3px 9px;font-size:12px;
+}
+.branch-management .branch-management__pill { border-radius:99px;padding:5px 10px;background:#e8f5e9;color:#2e7d32;display:inline-block; }
+.branch-management .branch-management__pill--off { background:#f0f2f4;color:#6b7280; }
+@media(max-width:650px) { .branch-management .branch-v2__slot-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .branch-management .branch-v2__date-control { min-width:170px; } }
+
+
+/* Exact Figma 1440px desktop measurements (content width 1034 at 1440). */
+@media (min-width: 1200px) {
+  .branch-v2-page { padding:32px; max-width:none; }
+  .branch-v2-page__table--branches tbody td { height:76px; }
+  .branch-v2-page__table--branches thead th { height:44px; }
+  .branch-v2-page__table--branches th:nth-child(1) { width:17.4%; }
+  .branch-v2-page__table--branches th:nth-child(2) { width:24.2%; }
+  .branch-v2-page__table--branches th:nth-child(3) { width:14.5%; }
+  .branch-v2-page__table--branches th:nth-child(4) { width:17.4%; }
+  .branch-v2-page__table--branches th:nth-child(5) { width:12.6%; }
+  .branch-v2-page__table--branches th:nth-child(6) { width:13.9%; }
+}
+.branch-v2-page__icon-action img { display:block; width:20px;height:20px;object-fit:contain; }
+.branch-v2-page__actions { gap:13px; }
+.branch-v2-page__table--branches tbody td { font-size:12px; }
+
+
+/*
+ * ADMIN VISUAL CONSISTENCY — match the Staff module on main.
+ * Source of metrics: admin-staff-list.component.scss (Staff)
+ * These overrides are deliberately scoped to branch-management only.
+ */
+.branch-v2-page {
+  padding:40px 32px;
+  width:100%;
+  max-width:none;
+  min-width:0;
+  font:13px Roboto,Arial,sans-serif;
+  color:#1b273b;
+}
+.branch-v2-page__breadcrumb {
+  display:flex;align-items:center;gap:0;
+  margin:0 0 16px;
+  color:#6b7a8f;
+  font-size:12px;line-height:18px;
+}
+.branch-v2-page__breadcrumb span[aria-hidden="true"] {padding:0 9px;color:#94a3b8;}
+.branch-v2-page__breadcrumb strong {font-weight:500;}
+.branch-v2-page__breadcrumb a {color:#6b7a8f;text-decoration:none;}
+.branch-v2-page__breadcrumb a:hover {color:#0d47a1;text-decoration:underline;}
+.branch-v2-page__header {
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;margin:0 0 24px;min-height:0;
+}
+.branch-v2-page__header h1 {
+  font-size:28px;line-height:34px;letter-spacing:-.28px;
+  font-weight:700;margin:0;color:#222;
+}
+.branch-v2-page__header h1 span {font-size:19px;}
+.branch-v2-page__preview-label {
+  font-size:11px;background:#fff7df;color:#815a12;
+  padding:5px 9px;border-radius:6px;white-space:nowrap;
+}
+.branch-v2-page__table-card {
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  background:#fff;
+  overflow:hidden;
+}
+.branch-v2-page__filters {
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  min-height:0;margin:0;padding:16px;
+  border:0;border-radius:0;
+}
+.branch-v2-page__search {
+  display:flex;align-items:center;gap:8px;
+  flex:1 1 240px;max-width:350px;
+  width:auto;height:40px;
+  padding:0 12px;border:1px solid #e2e8f0;border-radius:8px;
+  color:#64748b;
+}
+.branch-v2-page__search svg {
+  display:block;flex:0 0 20px;width:20px;height:20px;color:#64748b;
+}
+.branch-v2-page__search input {
+  font:14px Roboto,Arial,sans-serif;
+  color:#1b273b;border:0;outline:0;min-width:0;width:100%;
+}
+.branch-v2-page__status-filter {
+  position:relative;display:block;margin-left:auto;
+}
+.branch-v2-page__status-filter select {
+  appearance:none;-webkit-appearance:none;
+  width:100%;height:40px;min-width:160px;
+  border:1px solid #e2e8f0;border-radius:8px;
+  padding:0 40px 0 12px;background:#fff;
+  color:#1b273b;cursor:pointer;
+  font:13px Roboto,Arial,sans-serif;
+}
+.branch-v2-page__filter-chevron {
+  position:absolute;top:50%;right:12px;transform:translateY(-50%);
+  width:18px;height:18px;pointer-events:none;
+}
+.branch-v2-page__btn--primary,
+.branch-v2-page__add {
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:40px;
+  padding:0 14px;
+  background:#0d47a1;color:#fff;
+  border:0;border-radius:8px;white-space:nowrap;
+  font-weight:600;font-size:13px;text-decoration:none;
+}
+.branch-v2-page__btn--primary:hover,.branch-v2-page__add:hover {
+  background:#073984;color:#fff;
+}
+.branch-v2-page__table-scroll {overflow-x:auto;border:0;border-radius:0;}
+.branch-v2-page__table {
+  width:100%;min-width:960px;border-collapse:collapse;
+  text-align:left;table-layout:auto;
+}
+.branch-v2-page__table thead th,
+.branch-v2-page__table--branches thead th {
+  height:46px;padding:10px 12px;
+  background:#f1f5f9;
+  font-weight:500;font-size:12px;color:#475569;
+  white-space:nowrap;
+}
+.branch-v2-page__table tbody td,
+.branch-v2-page__table--branches tbody td {
+  height:76px;padding:12px;
+  border-top:0;border-bottom:1px solid #e2e8f0;
+  font-size:13px;line-height:1.5;color:#475569;
+  vertical-align:middle;
+}
+.branch-v2-page__table--branches th:first-child,
+.branch-v2-page__table--branches td:first-child {
+  padding-left:26px;color:#1b273b;
+}
+.branch-v2-page__table--branches th:last-child,
+.branch-v2-page__table--branches td:last-child {
+  min-width:102px;width:102px;text-align:center;
+  padding-left:16px;padding-right:16px;
+}
+.branch-v2-page__table--branches th:nth-child(5),
+.branch-v2-page__table--branches td:nth-child(5) {
+  text-align:center;
+}
+.branch-v2-page__table--branches th:nth-child(1){width:19%;}
+.branch-v2-page__table--branches th:nth-child(2){width:28%;}
+.branch-v2-page__table--branches th:nth-child(3){width:13%;}
+.branch-v2-page__table--branches th:nth-child(4){width:15%;}
+.branch-v2-page__table--branches th:nth-child(5){width:15%;}
+.branch-v2-page__table--branches th:nth-child(6){width:10%;}
+.branch-v2-page__badge {
+  display:inline-flex;justify-content:center;
+  padding:3px 10px;border-radius:999px;
+  white-space:nowrap;font-size:12px;font-weight:500;
+  color:#2e7d32;background:#e8f5e9;border:1px solid #c8e6c9;
+}
+.branch-v2-page__badge--off {
+  color:#93000a;background:#ffdad6;border-color:#ffcdd2;
+}
+.branch-v2-page__actions {
+  display:flex;align-items:center;justify-content:center;
+  gap:10px;min-height:20px;
+}
+.branch-v2-page__icon-action {
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;min-width:20px;min-height:20px;
+  flex:0 0 20px;padding:0;
+  background:transparent;border:0;
+  cursor:pointer;
+}
+.branch-v2-page__icon-action img {
+  display:block;width:20px;height:20px;object-fit:contain;
+}
+.branch-v2-page__icon-action:hover {
+  background:#e5f6fd;border-radius:4px;
+}
+.branch-v2-page__pagination {
+  display:flex;align-items:center;justify-content:space-between;
+  min-height:72px;padding:12px 16px;
+  gap:12px;color:#64748b;font-size:12px;
+}
+.branch-v2-page__pagination nav {
+  display:flex;align-items:center;overflow:hidden;
+  border:1px solid #e2e8f0;border-radius:8px;
+}
+.branch-v2-page__pagination button {
+  min-width:44px;height:44px;
+  border:0;border-right:1px solid #e2e8f0;
+  background:#fff;color:#0d47a1;cursor:pointer;
+}
+.branch-v2-page__pagination button:last-child{border-right:0;}
+.branch-v2-page__pagination button:disabled{color:#aab6c7;cursor:default;}
+.branch-v2-page__pagination .branch-v2-page__page--active {
+  background:#e5f6fd;outline:2px solid #0d47a1;outline-offset:-2px;
+}
+.branch-v2-page__empty {
+  text-align:center;color:#64748b!important;padding:32px 12px!important;
+}
+.branch-v2-page__empty button {
+  border:0;background:transparent;color:#0d47a1;text-decoration:underline;
+}
+/* Phase 2: the same Staff tab and panel treatment for branch details. */
+.branch-v2-page__info,.branch-v2-page__inventory,.branch-v2-page__detail-card,
+.branch-v2-page .branch-v2 {
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  background:#fff;
+}
+.branch-v2-page__tabs {
+  display:flex;gap:0;
+  border-bottom:1px solid #e2e8f0;
+  margin:0 0 24px;
+}
+.branch-v2-page__tabs button {
+  flex:1;min-height:0;
+  padding:11px 22px 14px;
+  font-size:16px;font-weight:500;color:#475569;
+  background:transparent;border:0;border-bottom:3px solid transparent;
+}
+.branch-v2-page__tabs button.branch-v2-page__tab--active {
+  color:#0d47a1;border-bottom-color:#0d47a1;
+}
+.branch-v2-page__tabs button:hover {color:#0d47a1;}
+.branch-v2-page__detail-card {padding:20px;}
+.branch-v2-page__detail-card h2 {font-size:18px;margin:0 0 20px;}
+.branch-v2-page__table--services {table-layout:auto;}
+.branch-v2-page__table--services thead th {
+  height:44px;background:#e5f6fd;color:#475569;
+}
+.branch-v2-page__table--services tbody td {height:58px;padding:13px;font-size:13px;}
+.branch-v2-page__service-toolbar {gap:12px;margin-bottom:20px;}
+.branch-v2-page__service-toolbar :is(input,select) {
+  height:40px;border-radius:8px;border-color:#e2e8f0;font-size:13px;
+}
+.branch-v2-page .branch-v2__heading h2 {font-size:18px;font-weight:700;}
+.branch-v2-page .branch-v2__shifts,
+.branch-v2-page .branch-v2__monitor {font-size:13px;}
+.branch-v2-page .branch-v2__shifts thead th,
+.branch-v2-page .branch-v2__monitor thead th {
+  height:46px;background:#e5f6fd;color:#475569;font-weight:500;font-size:12px;
+}
+.branch-v2-page .branch-v2__shifts tbody td,
+.branch-v2-page .branch-v2__monitor tbody td {
+  height:58px;border-bottom:1px solid #e2e8f0;color:#475569;
+}
+@media(max-width:1100px) {
+  .branch-v2-page {padding:25px 20px;}
+  .branch-v2-page__status-filter{margin-left:0;}
+}
+@media(max-width:700px) {
+  .branch-v2-page {padding:18px 12px;}
+  .branch-v2-page__header{align-items:flex-start;flex-direction:column;}
+  .branch-v2-page__header h1{font-size:24px;}
+  .branch-v2-page__pagination{align-items:flex-start;flex-direction:column;}
+  .branch-v2-page__tabs button{font-size:13px;padding:11px 8px;}
+}
+
+
+/* Phase 2 finish: Staff-like table actions and compact Figma detail tabs. */
+.branch-v2-page .branch-v2__edit-cell {text-align:center;}
+.branch-v2-page .branch-v2__edit-icon {
+  display:inline-flex;align-items:center;justify-content:center;
+  width:24px;height:24px;
+  padding:0;border:0;background:transparent;border-radius:4px;
+}
+.branch-v2-page .branch-v2__edit-icon img{display:block;width:20px;height:20px;}
+.branch-v2-page .branch-v2__edit-icon:hover{background:#e5f6fd;}
+.branch-v2-page .branch-v2__eye {
+  display:inline-flex;align-items:center;justify-content:center;
+  width:24px;height:24px;
+  border:0;border-radius:4px;background:transparent;
+}
+.branch-v2-page .branch-v2__eye img {display:block;width:20px;height:20px;}
+.branch-v2-page .branch-v2__eye:hover {background:#e5f6fd;}
+.branch-v2-page .branch-v2__demo-caption {
+  font-size:12px;color:#8191a7;line-height:18px;margin:12px 0 0;
+}
+.branch-v2-page .branch-v2__shifts {min-width:790px;}
+.branch-v2-page .branch-v2__shifts th:last-child,
+.branch-v2-page .branch-v2__shifts td:last-child {text-align:center;width:90px;}
+.branch-v2-page .branch-v2__shifts thead th:first-child,
+.branch-v2-page .branch-v2__shifts tbody td:first-child {padding-left:20px;color:#1b273b;}
+.branch-v2-page .branch-v2__heading {
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;gap:12px;flex-wrap:wrap;
+}
+.branch-v2-page .branch-v2__heading .branch-management__button--primary {
+  background:#0d47a1;border:0;min-height:40px;
+  padding:0 14px;border-radius:8px;
+  color:#fff;font-size:13px;font-weight:600;
+}
+.branch-v2-page__inventory-heading strong {font-size:13px;}
+.branch-v2-page__inventory-heading span {font-size:12px;}
+.branch-v2-page__inventory span,
+.branch-v2-page__info span {font-size:12px;}
+.branch-v2-page__inventory strong:not(.branch-v2-page__warning,.branch-v2-page__danger){color:#1b273b;}
+.branch-v2-page__switch-row {font-size:13px;}
+
+
+/* Phase 2 panels use the same table header treatment as Staff list. */
+.branch-v2-page__table--services thead th,
+.branch-v2-page .branch-v2__monitor thead th,
+.branch-v2-page .branch-v2__shifts thead th {
+  background:#f1f5f9;
+  color:#475569;
+  font-weight:500;
+  font-size:12px;
+}
+.branch-v2-page .branch-v2__shifts tbody td,
+.branch-v2-page .branch-v2__monitor tbody td,
+.branch-v2-page__table--services tbody td {
+  border-bottom:1px solid #e2e8f0;
+}
+
+
+/* Configuration picker is an entry point from the Branch List gear.
+   The actual service settings dialog reuses the Figma V2 service config component. */
+.branch-service-picker__backdrop {
+  position:fixed;inset:0;z-index:1250;padding:16px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(15,23,42,.55);
+}
+.branch-service-picker__dialog {
+  width:min(100%,500px);max-height:calc(100dvh - 32px);overflow-y:auto;
+  background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+  padding:24px;box-shadow:0 20px 60px rgba(15,23,42,.18);
+  color:#1b273b;font-family:Roboto,Arial,sans-serif;
+}
+.branch-service-picker__header {
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:12px;border-bottom:1px solid #e2e8f0;padding-bottom:16px;margin-bottom:14px;
+}
+.branch-service-picker__header h2{margin:0 0 5px;font-size:20px;}
+.branch-service-picker__header p{margin:0;color:#64748b;font-size:12px;}
+.branch-service-picker__header button {
+  border:0;background:transparent;color:#64748b;font-size:24px;cursor:pointer;
+}
+.branch-service-picker__list{display:flex;flex-direction:column;gap:8px;}
+.branch-service-picker__item {
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  width:100%;min-height:52px;padding:11px 12px;
+  border:1px solid #e2e8f0;border-radius:8px;
+  background:#fff;color:#1b273b;font:400 13px Roboto,Arial,sans-serif;
+  text-align:left;cursor:pointer;
+}
+.branch-service-picker__item:hover{border-color:#0d47a1;background:#f3f8ff;}
+.branch-service-picker__item > span:last-child{
+  display:inline-flex;align-items:center;gap:8px;white-space:nowrap;
+  color:#0d47a1;font-weight:600;
+}
+.branch-service-picker__item img{display:block;width:18px;height:18px;}
+.branch-service-picker__empty{font-size:12px;line-height:1.6;color:#64748b;}
+.branch-service-picker__footer{
+  display:flex;align-items:center;justify-content:flex-end;gap:12px;
+  border-top:1px solid #e2e8f0;margin-top:18px;padding-top:16px;
+}
+.branch-service-picker__footer a{color:#0d47a1;font-size:13px;text-decoration:none;}
+.branch-service-picker__footer button{
+  height:40px;padding:0 14px;border:1px solid #e2e8f0;
+  border-radius:8px;background:#fff;color:#0d47a1;font-size:13px;cursor:pointer;
+}
+/* The shared Staff week navigator already owns the date-picker sizing, icon and
+   native picker accessibility. Only align it within the Figma branch panel. */
+.branch-v2-page .branch-v2__heading app-admin-staff-week-nav{
+  display:inline-flex;max-width:100%;min-width:0;
+}
+@media(max-width:650px){
+  .branch-v2-page .branch-v2__heading app-admin-staff-week-nav{width:100%;}
+}
+
+
+/* Branch detail chevron and select spacing: match shared Admin controls. */
+.branch-v2-page__header h1.branch-v2-page__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.branch-v2-page__title-chevron {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  object-fit: contain;
+}
+.branch-v2-page .branch-v2-page__status-filter select {
+  padding-right: 48px;
+}
+.branch-v2-page .branch-v2-page__filter-chevron {
+  right: 16px;
+  width: 16px;
+  height: 16px;
+}
+.branch-v2-page .branch-v2-page__service-toolbar select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 42px;
+  background-color: #fff;
+  background-image: url('/assets/admin-product/icon-chevron-down.svg');
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+
+
+/* Branch V2: independent filter and table sections (same structure as Product/Service Admin).
+   The preceding shared Admin rules continue to control typography and table rows. */
+.branch-v2-page > section.branch-v2-page__filters {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:12px;
+  min-height:82px;
+  margin:0 0 24px;
+  padding:16px 18px;
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+}
+.branch-v2-page > .branch-v2-page__filters .branch-v2-page__search {
+  flex:1 1 290px;
+  max-width:440px;
+  height:48px;
+  border-radius:8px;
+}
+.branch-v2-page > .branch-v2-page__filters .branch-v2-page__search input {
+  font-size:14px;
+}
+.branch-v2-page > .branch-v2-page__filters .branch-v2-page__status-filter {
+  margin-left:auto;
+}
+.branch-v2-page > .branch-v2-page__filters .branch-v2-page__status-filter select {
+  height:48px;
+  min-width:204px;
+}
+.branch-v2-page > .branch-v2-page__filters .branch-v2-page__add {
+  min-height:48px;
+  padding:0 18px;
+}
+.branch-v2-page > .branch-v2-page__table-card {
+  margin:0;
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  background:#fff;
+  overflow:hidden;
+}
+.branch-v2-page__branch-choice {
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  min-width:0;
+}
+.branch-v2-page__branch-choice-trigger {
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  max-width:100%;
+  padding:0;
+  min-height:38px;
+  background:transparent;
+  border:0;
+  color:#1b273b;
+  font:700 28px/36px Roboto,Arial,sans-serif;
+  cursor:pointer;
+  text-align:left;
+}
+.branch-v2-page__branch-choice-trigger .branch-v2-page__title-chevron {
+  margin-left:2px;
+  transition:transform .16s ease;
+}
+.branch-v2-page__branch-choice-trigger[aria-expanded="true"] .branch-v2-page__title-chevron {
+  transform:rotate(180deg);
+}
+.branch-v2-page__branch-choice-trigger:hover {
+  color:#0d47a1;
+}
+.branch-v2-page__branch-choice-trigger:focus-visible {
+  outline:2px solid #0d47a1;
+  outline-offset:5px;
+  border-radius:3px;
+}
+.branch-v2-page__branch-menu {
+  position:absolute;
+  top:calc(100% + 10px);
+  left:0;
+  z-index:50;
+  min-width:min(360px,calc(100vw - 60px));
+  max-height:320px;
+  padding:6px;
+  overflow-y:auto;
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  box-shadow:0 12px 36px rgba(20,40,68,.15);
+}
+.branch-v2-page__branch-menu a {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  min-height:42px;
+  padding:9px 12px;
+  gap:12px;
+  color:#29374b;
+  font:500 13px/20px Roboto,Arial,sans-serif;
+  border-radius:7px;
+  text-decoration:none;
+}
+.branch-v2-page__branch-menu a:hover,
+.branch-v2-page__branch-menu .branch-v2-page__branch-option--selected {
+  background:#e8f3fc;
+  color:#0d47a1;
+}
+.branch-v2-page__branch-menu a span:last-child {
+  color:#0d47a1;
+  font-weight:700;
+}
+@media(max-width:680px){
+  .branch-v2-page > section.branch-v2-page__filters {
+    padding:12px;
+    align-items:stretch;
+    gap:10px;
+  }
+  .branch-v2-page > .branch-v2-page__filters .branch-v2-page__search,
+  .branch-v2-page > .branch-v2-page__filters .branch-v2-page__status-filter,
+  .branch-v2-page > .branch-v2-page__filters .branch-v2-page__add {
+    flex:1 1 100%;
+    max-width:none;
+    width:100%;
+  }
+  .branch-v2-page__branch-choice-trigger {
+    font-size:23px;
+  }
+}
+
+
+/*
+ * Figma V2 detail header — 7353:38078..38084
+ * Scope these rules to branch detail only; do not affect Staff or Branch List.
+ *
+ * Why this is explicit: the legacy `.branch-management button { font: inherit }`
+ * has greater specificity than the plain `.branch-v2-page__branch-choice-trigger`
+ * rule, so Chrome previously rendered the branch title as body-sized text.
+ */
+.branch-v2-page.branch-v2-page--detail {
+  padding: 32px;
+}
+.branch-v2-page--detail .branch-v2-page__breadcrumb--detail {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+  margin: 0 0 6px;
+  font: 400 12px/18px Roboto, Arial, sans-serif;
+}
+.branch-v2-page--detail .branch-v2-page__breadcrumb--detail strong {
+  font-weight: 500;
+  color: #202e45;
+}
+.branch-v2-page--detail .branch-v2-page__header--detail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  margin: 0 0 20px;
+  gap: 16px;
+}
+.branch-v2-page--detail button.branch-v2-page__branch-choice-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(0, 0, 0, .87);
+  font: 600 20px/28px Roboto, Arial, sans-serif;
+  letter-spacing: 0;
+  font-variation-settings: "wdth" 100;
+}
+.branch-v2-page--detail .branch-v2-page__branch-choice-trigger .branch-v2-page__title-chevron {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  margin-left: 0;
+  object-fit: contain;
+}
+.branch-v2-page--detail .branch-v2-page__header--detail .branch-v2-page__btn {
+  min-height: 40px;
+  font-size: 12px;
+}
+/* Figma detail tab labels use 13px Medium / 13px SemiBold (selected). */
+.branch-v2-page--detail .branch-v2-page__tabs {
+  margin-bottom: 20px;
+}
+.branch-v2-page--detail .branch-v2-page__tabs button {
+  min-height: 34px;
+  padding: 9px 12px;
+  border-bottom-width: 2px;
+  font: 500 13px/18px Roboto, Arial, sans-serif;
+}
+.branch-v2-page--detail .branch-v2-page__tabs .branch-v2-page__tab--active {
+  font-weight: 600;
+}
+/* Figma service card: 17px SemiBold heading and compact 12px controls. */
+.branch-v2-page--detail .branch-v2-page__detail-card h2 {
+  margin-bottom: 15px;
+  font: 600 17px/24px Roboto, Arial, sans-serif;
+}
+.branch-v2-page--detail .branch-v2-page__service-toolbar {
+  gap: 8px;
+  margin-bottom: 15px;
+  font-size: 12px;
+}
+.branch-v2-page--detail .branch-v2-page__service-toolbar :is(input, select) {
+  height: 36px;
+  font-size: 12px;
+}
+.branch-v2-page--detail .branch-v2-page__info span,
+.branch-v2-page--detail .branch-v2-page__inventory > div:not(.branch-v2-page__inventory-heading) span {
+  font-size: 10px;
+}
+.branch-v2-page--detail .branch-v2-page__info strong:not(.branch-v2-page__badge) {
+  font-size: 13px;
+}
+@media (max-width: 700px) {
+  .branch-v2-page.branch-v2-page--detail {
+    padding: 20px 12px;
+  }
+  .branch-v2-page--detail button.branch-v2-page__branch-choice-trigger {
+    font-size: 20px;
+    line-height: 28px;
+  }
+  .branch-v2-page--detail .branch-v2-page__header--detail {
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+
+/* Branch detail refinements — requested 21 Oct, scoped to this screen only. */
+
+/* Info card now contains the Edit action as its fourth grid child. */
+.branch-v2-page--detail .branch-v2-page__info {
+  grid-template-columns: minmax(0, 2.2fr) minmax(110px, .7fr) minmax(125px, .7fr) auto;
+  align-items: center;
+  gap: 22px;
+}
+.branch-v2-page--detail .branch-v2-page__info > div > span {
+  text-transform: none;
+}
+.branch-v2-page--detail .branch-v2-page__info-edit {
+  justify-self: end;
+  min-width: 110px;
+  height: 40px;
+  white-space: nowrap;
+}
+/* Match the rounded, bordered time-slot table in the adjacent tab. */
+.branch-v2-page--detail .branch-v2-page__table-scroll--services {
+  border: 1px solid #dce4ee;
+  border-radius: 10px;
+  overflow-x: auto;
+  background: #fff;
+}
+.branch-v2-page--detail .branch-v2-page__table--services {
+  width: 100%;
+  border-collapse: collapse;
+}
+.branch-v2-page--detail .branch-v2-page__table--services thead th {
+  background: #f1f5f9;
+}
+.branch-v2-page--detail .branch-v2-page__table--services tbody tr:last-child td {
+  border-bottom: 0;
+}
+@media (max-width: 1050px) {
+  .branch-v2-page--detail .branch-v2-page__info {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 18px 20px;
+  }
+  .branch-v2-page--detail .branch-v2-page__info-edit {
+    justify-self: start;
+  }
+}
+@media (max-width: 650px) {
+  .branch-v2-page--detail .branch-v2-page__info {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .branch-v2-page--detail .branch-v2-page__info-edit {
+    justify-self: stretch;
+    width: 100%;
+  }
+}
+
+
+/*
+ * Align Hotline with Sắp hết across the two detail cards.
+ * Both cards now share identical grid track boundaries; the 8th desktop
+ * track is used by Hotline (info card) and Sắp hết (inventory card).
+ */
+.branch-v2-page--detail .branch-v2-page__info,
+.branch-v2-page--detail .branch-v2-page__inventory {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: 16px;
+  align-items: center;
+  padding-left: 18px;
+  padding-right: 18px;
+}
+.branch-v2-page--detail .branch-v2-page__info > div:nth-child(1) {
+  grid-column: 1 / span 7;
+}
+.branch-v2-page--detail .branch-v2-page__info > div:nth-child(2) {
+  grid-column: 8 / span 2;
+}
+.branch-v2-page--detail .branch-v2-page__info > div:nth-child(3) {
+  grid-column: 10 / span 2;
+}
+.branch-v2-page--detail .branch-v2-page__inventory > div:nth-child(1) {
+  grid-column: 1 / span 4;
+}
+.branch-v2-page--detail .branch-v2-page__inventory > div:nth-child(2) {
+  grid-column: 5 / span 3;
+}
+.branch-v2-page--detail .branch-v2-page__inventory > div:nth-child(3) {
+  grid-column: 8 / span 2;
+}
+.branch-v2-page--detail .branch-v2-page__inventory > div:nth-child(4) {
+  grid-column: 10 / span 2;
+}
+/* Original Figma assets: Edit from admin-staff, eye from Figma branch.
+   Icon-only buttons retain accessible aria-label and native tooltip. */
+.branch-v2-page--detail .branch-v2-page__info-edit,
+.branch-v2-page--detail .branch-v2-page__inventory-eye {
+  grid-column: 12 / 13;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  justify-self: end;
+  align-self: center;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+.branch-v2-page--detail .branch-v2-page__info-edit:hover,
+.branch-v2-page--detail .branch-v2-page__inventory-eye:hover {
+  background: #eaf3ff;
+}
+.branch-v2-page--detail .branch-v2-page__info-edit img {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+.branch-v2-page--detail .branch-v2-page__inventory-eye img {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+@media (max-width: 1050px) {
+  .branch-v2-page--detail .branch-v2-page__info,
+  .branch-v2-page--detail .branch-v2-page__inventory {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .branch-v2-page--detail .branch-v2-page__info > div:nth-child(1) {
+    grid-column: 1 / span 3;
+  }
+  .branch-v2-page--detail .branch-v2-page__info > div:nth-child(2) {
+    grid-column: 4 / span 1;
+  }
+  .branch-v2-page--detail .branch-v2-page__info > div:nth-child(3) {
+    grid-column: 5 / span 1;
+  }
+  .branch-v2-page--detail .branch-v2-page__inventory > div:nth-child(1) {
+    grid-column: 1 / span 2;
+  }
+  .branch-v2-page--detail .branch-v2-page__inventory > div:nth-child(2) {
+    grid-column: 3 / span 1;
+  }
+  .branch-v2-page--detail .branch-v2-page__inventory > div:nth-child(3) {
+    grid-column: 4 / span 1;
+  }
+  .branch-v2-page--detail .branch-v2-page__inventory > div:nth-child(4) {
+    grid-column: 5 / span 1;
+  }
+  .branch-v2-page--detail .branch-v2-page__info-edit,
+  .branch-v2-page--detail .branch-v2-page__inventory-eye {
+    grid-column: 6 / 7;
+  }
+}
+@media (max-width: 700px) {
+  .branch-v2-page--detail .branch-v2-page__info,
+  .branch-v2-page--detail .branch-v2-page__inventory {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 16px;
+  }
+  .branch-v2-page--detail .branch-v2-page__info > div:nth-child(1),
+  .branch-v2-page--detail .branch-v2-page__inventory > div:nth-child(1) {
+    grid-column: 1 / -1;
+  }
+  .branch-v2-page--detail .branch-v2-page__info > div:nth-child(2),
+  .branch-v2-page--detail .branch-v2-page__inventory > div:nth-child(2) {
+    grid-column: 1 / 2;
+  }
+  .branch-v2-page--detail .branch-v2-page__info > div:nth-child(3),
+  .branch-v2-page--detail .branch-v2-page__inventory > div:nth-child(3) {
+    grid-column: 2 / 3;
+  }
+  .branch-v2-page--detail .branch-v2-page__inventory > div:nth-child(4) {
+    grid-column: 1 / 2;
+  }
+  .branch-v2-page--detail .branch-v2-page__info-edit,
+  .branch-v2-page--detail .branch-v2-page__inventory-eye {
+    grid-column: 2 / 3;
+    width: 40px;
+    justify-self: end;
+  }
+}
+
+
+/* Center the action-column heading on the same axis as the icon controls. */
+.branch-v2-page .branch-v2-page__table--branches thead th.branch-v2-page__actions-heading,
+.branch-v2-page .branch-v2-page__table--branches tbody td:last-child,
+.branch-v2-page .branch-v2-page__table--services thead th.branch-v2-page__actions-heading,
+.branch-v2-page .branch-v2-page__table--services tbody td:last-child {
+  text-align: center;
+}
+.branch-v2-page .branch-v2-page__table--services thead th:last-child,
+.branch-v2-page .branch-v2-page__table--services tbody td:last-child {
+  min-width: 0;
+}
+.branch-v2-page .branch-v2-page__table--services tbody td:last-child .branch-v2-page__icon-action {
+  margin-inline: auto;
+}
+/* A disabled backend feature needs a clear message, not implementation terminology. */
+.branch-v2-page__api-note {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+
+/*
+ * Product List table parity for Branch List / Branch Service List.
+ * Isolated to Branch V2 table classes; does not affect forms or time-slot grid.
+ */
+.branch-v2-page > .branch-v2-page__table-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+.branch-v2-page .branch-v2-page__table--branches,
+.branch-v2-page .branch-v2-page__table--services {
+  min-width: 1034px;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  color: #243045;
+  font-size: 12px;
+}
+.branch-v2-page .branch-v2-page__table--branches thead th,
+.branch-v2-page .branch-v2-page__table--services thead th {
+  height: 44px;
+  box-sizing: border-box;
+  padding: 0 16px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #243045;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  vertical-align: middle;
+  text-align: left;
+}
+.branch-v2-page .branch-v2-page__table--branches tbody td,
+.branch-v2-page .branch-v2-page__table--services tbody td {
+  height: 76px;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  border-top: 0;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fff;
+  color: #243045;
+  font-size: 12px;
+  line-height: 1.5;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+.branch-v2-page .branch-v2-page__table--branches tbody tr:last-child td,
+.branch-v2-page .branch-v2-page__table--services tbody tr:last-child td {
+  border-bottom: 0;
+}
+.branch-v2-page .branch-v2-page__table--branches tbody tr:hover td,
+.branch-v2-page .branch-v2-page__table--services tbody tr:hover td {
+  background: #fbfdff;
+}
+.branch-v2-page .branch-v2-page__table--branches thead th:nth-child(5),
+.branch-v2-page .branch-v2-page__table--branches tbody td:nth-child(5),
+.branch-v2-page .branch-v2-page__table--branches thead th:last-child,
+.branch-v2-page .branch-v2-page__table--branches tbody td:last-child,
+.branch-v2-page .branch-v2-page__table--services thead th:nth-child(2),
+.branch-v2-page .branch-v2-page__table--services tbody td:nth-child(2),
+.branch-v2-page .branch-v2-page__table--services thead th:last-child,
+.branch-v2-page .branch-v2-page__table--services tbody td:last-child {
+  text-align: center;
+}
+.branch-v2-page--detail .branch-v2-page__table-scroll--services {
+  border-color: #e2e8f0;
+  border-radius: 12px;
+}
+/* Even visual spacing for the five Branch Detail service columns.
+ * Keep the service name left aligned; numeric/status/action columns share
+ * centered header and value axes. Avoid fixed 110px action-column override. */
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services {
+  width: 100%;
+  min-width: 950px;
+  table-layout: fixed;
+}
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(1) { width: 24%; }
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(2) { width: 19%; }
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(3) { width: 19%; }
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(4) { width: 26%; }
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(5) { width: 12%; }
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services thead th:first-child,
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services tbody td:first-child {
+  text-align: left;
+}
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services thead th:nth-child(n+2),
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services tbody td:nth-child(n+2) {
+  text-align: center;
+  vertical-align: middle;
+  padding-inline: 12px;
+}
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services tbody td:nth-child(4) .branch-v2-page__switch-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-inline: auto;
+}
+.branch-v2-page.branch-v2-page--detail .branch-v2-page__table--services tbody td:last-child .branch-v2-page__icon-action {
+  margin-inline: auto;
+}
+.branch-v2-page .branch-v2-page__pagination {
+  min-height: 60px;
+  padding: 8px 12px;
+  border-top: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 12px;
+}

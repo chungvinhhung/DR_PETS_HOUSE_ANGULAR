@@ -1,0 +1,68 @@
+<app-nav-bar />
+<main class="bg-[#e5f6fd]">
+  <div app-stepper [step]="step()"></div>
+  <div class="mx-auto w-full max-w-[360px] px-5 pb-6 pt-0 md:max-w-[768px] md:px-10 md:pb-8 lg:max-w-[1280px] lg:px-6 lg:pt-6">
+    @if (step() === 1) {
+      <app-service-selection
+        [selectedServiceType]="selectedServiceType()"
+        [setSelectedServiceType]="setSelectedServiceTypeFn"
+        [selectedServices]="selectedServices()"
+        [setSelectedServices]="setSelectedServicesFn"
+        [selectedPets]="selectedPets()"
+        [petInfos]="petInfos()"
+        [selectedDate]="selectedDate()"
+        [setSelectedDate]="setSelectedDateFn"
+        [selectedSlot]="selectedSlot()"
+        [setSelectedSlot]="setSelectedSlotFn"
+        [ownerInfo]="ownerInfo()"
+        [setOwnerInfo]="setOwnerInfoFn"
+        [branches]="branches()"
+        [services]="services()"
+        [timeSlots]="timeSlots()"
+        [slotsLoading]="slotsLoading()"
+        (onNext)="handle1()"
+      />
+    }
+    @if (step() === 2) {
+      <app-info-form
+        [selectedPets]="selectedPets()"
+        [setSelectedPets]="setSelectedPetsFn"
+        [petInfos]="petInfos()"
+        [setPetInfos]="setPetInfosFn"
+        [ownerInfo]="ownerInfo()"
+        [setOwnerInfo]="setOwnerInfoFn"
+        [pets]="pets()"
+        [petsLoading]="petsLoading()"
+        [petsError]="petsError()"
+        (onBack)="handleInfoBack()"
+        (onNext)="step.set(3)"
+      />
+    }
+    @if (step() === 3) {
+      <app-booking-payment-step
+        [selectedDate]="selectedDate()"
+        [selectedSlot]="selectedSlot()"
+        [selectedPet]="selectedPets()[0] || null"
+        [selectedPets]="selectedPets()"
+        [petInfo]="petInfos()[0]"
+        [petInfos]="petInfos()"
+        [ownerInfo]="ownerInfo()"
+        [selectedServices]="compute2()"
+        [paymentMode]="paymentMode()"
+        [setPaymentMode]="setPaymentModeFn"
+        (onBack)="step.set(2)"
+        (onConfirm)="handleConfirm($any($event))"
+      />
+    }
+    @if (bookingError()) {
+      <p class="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700">{{ bookingError() }}</p>
+    }
+    @if (bookingSubmitting()) {
+      <p class="mt-4 rounded-lg bg-blue-50 px-4 py-3 text-sm font-medium text-blue-900">Đang gửi yêu cầu đặt lịch...</p>
+    }
+  </div>
+  <app-footer />
+</main>
+@if (success()) {
+  <div app-booking-success-modal></div>
+}

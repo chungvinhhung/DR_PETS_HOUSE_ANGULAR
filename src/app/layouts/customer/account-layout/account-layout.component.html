@@ -1,0 +1,13 @@
+<!-- Header -->
+<div class="flex-shrink-0 z-50 bg-white shadow-sm relative"><app-nav-bar /></div>
+<!-- Phần thân dưới -->
+<div class="flex flex-1 overflow-hidden bg-white w-full h-full">
+  <div app-sidebar></div>
+  <!-- Khối nội dung chính (Chỉ có duy nhất 1 thanh cuộn nằm ở đây) -->
+  <main class="flex-1 overflow-y-auto flex flex-col bg-white relative">
+    <div class="ml-auto flex-1 w-full max-w-[1160px] px-4 py-6 sm:px-6 lg:px-8 [&>div]:!mx-0 [&>div]:!w-full [&>div]:!max-w-none">
+      <router-outlet />
+    </div>
+  </main>
+</div>
+<app-footer [variant]="'account'" />

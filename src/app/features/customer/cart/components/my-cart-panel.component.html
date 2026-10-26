@@ -1,0 +1,61 @@
+<!-- Header -->
+<div class="flex h-12 w-full shrink-0 items-center justify-between bg-white pr-[10px] lg:h-auto lg:w-[503px] lg:bg-transparent lg:pr-0">
+  <p class="whitespace-nowrap tracking-[0.15px] text-[#353535]">
+    <span class="font-['Roboto'] text-[16px] font-bold leading-[1.5]">Giỏ hàng</span>
+    <span class="font-['Roboto'] text-[16px] font-bold leading-[1.5] text-[#f45757]">({{ itemCount() }})</span>
+  </p>
+  <button
+    type="button"
+    (click)="onClose.emit($event)"
+    class="btn-icon-subtle relative size-[30px] shrink-0 p-1 transition-transform duration-micro hover:scale-110 active:scale-95"
+    aria-label="Đóng giỏ hàng"
+  >
+    <img [attr.src]="cartImages.iconClose" alt="" class="size-full" />
+  </button>
+</div>
+<!-- Item list -->
+<div class="flex min-h-0 w-full max-w-[340px] flex-1 flex-col items-start overflow-x-clip overflow-y-auto lg:max-w-none">
+  @if (hasItems()) {
+    @for (item of cartService.cartItems(); track item.id) {
+      <div app-cart-item-row [item]="item"></div>
+    }
+  } @else {
+    <div class="flex w-full flex-col items-center justify-center gap-3 py-16">
+      <!-- Empty cart SVG -->
+      <svg
+        class="text-[#ccc]"
+        width="64"
+        height="64"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M7 18C5.9 18 5 18.9 5 20C5 21.1 5.9 22 7 22C8.1 22 9 21.1 9 20C9 18.9 8.1 18 7 18ZM1 2V4H3L6.6 11.59L5.25 14.04C5.09 14.32 5 14.65 5 15C5 16.1 5.9 17 7 17H19V15H7.42C7.28 15 7.17 14.89 7.17 14.75L7.2 14.63L8.1 13H15.55C16.3 13 16.96 12.59 17.3 11.97L20.88 5.48C20.96 5.34 21 5.17 21 5C21 4.45 20.55 4 20 4H5.21L4.27 2H1Z"
+          fill="currentColor"
+        />
+      </svg>
+      <p class="font-['Roboto'] text-[16px] font-medium leading-[1.5] text-[#999]">Giỏ hàng trống</p>
+      <p class="font-['Roboto'] text-[13px] leading-[1.5] text-[#bbb] text-center">Thêm sản phẩm để bắt đầu mua sắm</p>
+    </div>
+  }
+</div>
+<!-- Footer -->
+<div class="flex h-[60px] w-full shrink-0 items-center justify-center gap-6 rounded bg-[#f5f5f5] p-6">
+  <div class="flex h-5 min-w-0 flex-1 items-center gap-5 font-['Roboto'] text-[16px] font-bold leading-[1.5] tracking-[0.15px]">
+    <p class="shrink-0 whitespace-nowrap text-[rgba(0,0,0,0.87)]">Tạm tính:</p>
+    <p class="min-w-0 flex-1 text-[#f45757]">{{ formatPrice(subtotal()) }}</p>
+  </div>
+  <button
+    type="button"
+    (click)="cartService.openCheckout()"
+    [disabled]="selectedCount() === 0"
+    [class]="`btn-brand-cart shrink-0 transition-all duration-micro ${
+          selectedCount() > 0
+            ? 'opacity-100 hover:bg-[#ffe454] active:scale-[0.98]'
+            : 'opacity-50 cursor-not-allowed'
+        }`"
+  >
+    <span class="whitespace-nowrap font-['Roboto'] text-[13px] font-medium uppercase leading-[22px] tracking-[0.46px] text-black">Đặt hàng</span>
+  </button>
+</div>

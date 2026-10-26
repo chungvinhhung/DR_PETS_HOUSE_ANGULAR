@@ -1,0 +1,86 @@
+<section
+  role="dialog"
+  aria-modal="true"
+  [attr.aria-label]="title()"
+  class="max-h-[calc(100vh-32px)] w-full max-w-[737px] overflow-y-auto bg-white p-6 shadow-[0_20px_60px_rgba(6,16,90,0.18)]"
+>
+  <div class="rounded-lg bg-white p-[10px]">
+    <header class="mb-[10px] flex h-[37px] items-center gap-2">
+      <app-customer-icon name="map-pin" className="h-5 w-4 shrink-0 text-[#00355f]" [strokeWidth]="2" />
+      <h2 class="flex-1 text-[20px] font-bold leading-8 tracking-[0.15px] text-[#00355f]">{{ title() }}</h2>
+      <button
+        type="button"
+        (click)="onClose.emit($event)"
+        aria-label="Đóng"
+        class="btn-icon-subtle flex size-[30px] items-center justify-center text-[#727780]"
+      >
+        <app-customer-icon name="x" className="size-[18px]" [strokeWidth]="1.6" />
+      </button>
+    </header>
+    <form novalidate (submit)="handleSubmit($any($event))" class="flex flex-col items-center gap-[10px]">
+      <div class="grid w-full gap-x-[46px] gap-y-[10px] sm:grid-cols-2">
+        <label
+          app-address-form-field
+          [label]="'Họ tên'"
+          [required]="true"
+          [autoFocus]="true"
+          [autoComplete]="'name'"
+          [showError]="validationAttempted()"
+          [value]="form().name"
+          (onChange)="updateField('name', $any($event).target.value)"
+        ></label>
+        <label
+          app-address-form-field
+          [label]="'Số điện thoại'"
+          [required]="true"
+          [type]="'tel'"
+          [autoComplete]="'tel'"
+          [showError]="validationAttempted()"
+          [value]="form().phone"
+          (onChange)="updateField('phone', $any($event).target.value)"
+        ></label>
+        <label
+          app-address-form-field
+          [label]="'Email'"
+          [type]="'email'"
+          [autoComplete]="'email'"
+          [value]="form().email"
+          (onChange)="updateField('email', $any($event).target.value)"
+        ></label>
+        <label
+          app-address-form-field
+          [label]="'Quốc gia'"
+          [required]="true"
+          [autoComplete]="'country-name'"
+          [showError]="validationAttempted()"
+          [value]="form().country"
+          (onChange)="updateField('country', $any($event).target.value)"
+        ></label>
+        <label
+          app-address-form-field
+          [label]="'Địa chỉ cụ thể'"
+          [required]="true"
+          [autoComplete]="'street-address'"
+          [showError]="validationAttempted()"
+          [value]="form().address"
+          (onChange)="updateField('address', $any($event).target.value)"
+          [className]="'sm:col-span-2'"
+        ></label>
+        <label
+          app-address-form-field
+          [label]="'Tỉnh/Thành phố'"
+          [required]="true"
+          [autoComplete]="'address-level1'"
+          [showError]="validationAttempted()"
+          [value]="form().city"
+          (onChange)="updateField('city', $any($event).target.value)"
+          [className]="'sm:col-span-2'"
+        ></label>
+      </div>
+      <button
+        type="submit"
+        class="h-[33px] rounded-[4px] bg-[#fff176] px-[22px] text-[15px] font-medium uppercase leading-[26px] tracking-[0.46px] shadow-elevation hover:bg-[#fdd835]"
+      >Lưu</button>
+    </form>
+  </div>
+</section>

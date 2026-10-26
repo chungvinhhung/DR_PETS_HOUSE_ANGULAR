@@ -1,0 +1,12 @@
+<a
+  [appCustomerLink]="`/blog/${post().id}`"
+  [class]="`group block rounded-[10px] px-9 py-8 transition-all hover:-translate-y-0.5 hover:shadow-md ${
+        highlighted() ? 'bg-[#E3F2FD]' : 'bg-white'
+      }`"
+>
+  <p class="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.5px] text-[#0D47A1]">
+    <app-category-icon [category]="post().category" [className]="'h-3 w-3'" />{{ post().categoryLabel }}</p>
+  <h3 class="mt-3 text-2xl font-bold leading-snug text-[#232536] transition-colors group-hover:text-[#0D47A1]">{{ post().title }}</h3>
+  <p class="mt-3 flex items-center gap-1 text-sm text-[#6B7280]">
+    <app-customer-icon name="calendar-days" className="h-3.5 w-3.5" />{{ post().publishedAt }}</p>
+</a>
