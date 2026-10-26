@@ -354,6 +354,18 @@ export class AdminOrderCreateComponent {
     if (method === 'COD') this.onlineProvider.set(null);
   }
 
+  providerIcon(method: OnlineProvider): string {
+    const icons: Record<OnlineProvider, string> = {
+      MOMO: '/assets/admin-order/payment-momo.svg',
+      ZALOPAY: '/assets/admin-order/payment-zalopay.svg',
+      VNPAY: '/assets/admin-order/payment-vnpay.svg',
+      BANK_TRANSFER: '/assets/admin-order/payment-bank.svg',
+      ATM: '/assets/admin-order/payment-atm.svg',
+      CARD: '/assets/admin-order/payment-card.svg',
+    };
+    return icons[method];
+  }
+
   chooseOnlineProvider(method: OnlineProvider): void {
     this.paymentMethod.set('ONLINE_MOCK');
     this.onlineProvider.set(method);
