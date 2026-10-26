@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import {
@@ -46,6 +46,7 @@ const normalizePhone = (value: string): string => {
 export class AdminOrderCreateComponent {
   private readonly api = inject(AdminOrderCreateLookupService);
   private readonly toast = inject(AdminToastService);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private customerRequest = 0;
   private productRequest = 0;
@@ -53,6 +54,7 @@ export class AdminOrderCreateComponent {
 
   readonly lookupPhone = signal('');
   readonly lookupState = signal<LookupState>('idle');
+  readonly lookupIncomplete = signal(false);
   readonly lookupResults = signal<OrderCustomerLookup[]>([]);
   readonly selectedCustomer = signal<OrderCustomerLookup | null>(null);
   readonly customerName = signal('');
@@ -75,6 +77,7 @@ export class AdminOrderCreateComponent {
   readonly savedAddresses = signal<ShippingAddressDraft[]>([]);
   readonly productQuery = signal('');
   readonly productLoading = signal(false);
+  readonly productError = signal(false);
   readonly productResults = signal<OrderVariantChoice[]>([]);
   readonly lines = signal<OrderDraftLine[]>([]);
   readonly paymentMethod = signal<'COD' | 'ONLINE_MOCK'>('COD');
@@ -90,6 +93,7 @@ export class AdminOrderCreateComponent {
   readonly voucherCode = signal('');
   readonly voucherPreviewState = signal<VoucherPreviewState>('idle');
   readonly reviewAttempted = signal(false);
+  readonly cancelDialogOpen = signal(false);
   readonly note = signal('');
   // Listing finalPrice includes the product's own discount; BE remains the source
   // of truth for voucher allocation, stock/branch availability and order total.
@@ -107,7 +111,7 @@ export class AdminOrderCreateComponent {
     if (this.selectedCustomer()?.accountStatus === 'BLOCKED')
       issues.push('Tài khoản khách hàng đang bị khóa.');
     if (!this.customerName().trim()) issues.push('Nhập họ và tên khách hàng.');
-    if (this.customerEmail().trim() && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(this.customerEmail().trim()))
+    if (this.customerEmail().trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.customerEmail().trim()))
       issues.push('Địa chỉ email chưa hợp lệ.');
     if (this.lines().length === 0) issues.push('Thêm ít nhất một sản phẩm vào đơn hàng.');
     if (this.hasInvalidQuantities()) issues.push('Kiểm tra lại số lượng sản phẩm trong đơn.');
@@ -153,6 +157,7 @@ export class AdminOrderCreateComponent {
     this.customerPhone.set(value);
     this.selectedCustomer.set(null);
     this.lookupResults.set([]);
+    this.lookupIncomplete.set(false);
     this.lookupState.set('idle');
     this.customerName.set('');
     this.customerEmail.set('');
@@ -167,12 +172,20 @@ export class AdminOrderCreateComponent {
     }
     const version = ++this.customerRequest;
     this.lookupState.set('loading');
+    this.lookupIncomplete.set(false);
     this.lookupResults.set([]);
     this.api.searchCustomers(phone).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: data => {
         if (version !== this.customerRequest) return;
         // Backend search is partial across phone/email; only accept exact phone matches.
         const matches = data.items.filter(row => normalizePhone(row.phone ?? '') === phone);
+        // /customers is a partial search with a maximum page size. If more pages
+        // remain, absence of an exact match is not evidence of a new customer.
+        if (!matches.length && data.nextCursor) {
+          this.lookupIncomplete.set(true);
+          this.lookupState.set('error');
+          return;
+        }
         this.lookupResults.set(matches);
         this.lookupState.set(matches.length ? 'found' : 'not-found');
         if (matches.length === 1) this.selectCustomer(matches[0]);
@@ -277,6 +290,7 @@ export class AdminOrderCreateComponent {
   editProductQuery(value: string): void {
     this.productQuery.set(value);
     this.productResults.set([]);
+    this.productError.set(false);
     const version = ++this.productRequest;
     if (this.productTimer) clearTimeout(this.productTimer);
     if (!value.trim()) {
@@ -296,6 +310,7 @@ export class AdminOrderCreateComponent {
       return;
     }
     this.productLoading.set(true);
+    this.productError.set(false);
     this.api.searchProducts(text).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: data => {
         if (version !== this.productRequest) return;
@@ -311,6 +326,7 @@ export class AdminOrderCreateComponent {
         if (version !== this.productRequest) return;
         this.productLoading.set(false);
         this.productResults.set([]);
+        this.productError.set(true);
         this.toast.show(adminErrorMessage(error, 'Chưa tải được danh sách sản phẩm.'));
       },
     });
@@ -328,6 +344,7 @@ export class AdminOrderCreateComponent {
     this.productQuery.set('');
     this.productResults.set([]);
     this.productLoading.set(false);
+    this.productError.set(false);
     this.productRequest += 1;
     if (this.productTimer !== null) clearTimeout(this.productTimer);
   }
@@ -397,6 +414,30 @@ export class AdminOrderCreateComponent {
     // The current /vouchers/validate evaluates the authenticated Customer's cart.
     // Never call it using the Admin session as that could validate the wrong cart.
     this.voucherPreviewState.set('unverified');
+  }
+
+  askCancel(): void {
+    if (this.hasUnsavedChanges()) {
+      this.cancelDialogOpen.set(true);
+      return;
+    }
+    void this.router.navigateByUrl('/admin/orders');
+  }
+
+  closeCancel(): void { this.cancelDialogOpen.set(false); }
+
+  confirmCancel(): void {
+    // Intentional navigation after user consent. Clear state so the browser
+    // unload warning is not triggered on the way out.
+    this.cancelDialogOpen.set(false);
+    this.lookupPhone.set('');
+    this.customerName.set('');
+    this.customerEmail.set('');
+    this.lines.set([]);
+    this.voucherCode.set('');
+    this.note.set('');
+    this.clearShippingAddress();
+    void this.router.navigateByUrl('/admin/orders');
   }
 
   reviewDraft(): void {
