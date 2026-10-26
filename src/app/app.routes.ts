@@ -151,6 +151,13 @@ export const routes: Routes = [
       .then(component => component.AdminOrderReturnDetailComponent),
   },
   {
+    path: 'admin/orders/new',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () => import('./features/admin/orders/pages/admin-order-create.component')
+      .then(component => component.AdminOrderCreateComponent),
+  },
+  {
     path: 'admin/orders/:id',
     canActivate: [authGuard, roleGuard, orderOperatorGuard],
     data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
