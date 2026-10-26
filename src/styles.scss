@@ -1838,3 +1838,60 @@ app-admin-order-create .create-order__dialog-actions {
   app-admin-order-create .create-order__address-top {align-items:stretch;}
   app-admin-order-create .create-order__dialog {padding:16px;}
 }
+
+/* WEB2 Admin Create Order Phase 3 — payment and draft validation. */
+app-admin-order-create .create-order__sr-only {
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+app-admin-order-create .create-order__online-methods {
+  display:flex; flex-direction:column; gap:5px; padding:8px;
+  margin:0 0 12px; border:0; border-radius:9px;
+  background:#f6f8fb; min-width:0;
+}
+app-admin-order-create .create-order__online-method {
+  display:flex; align-items:center; gap:12px; min-height:40px;
+  padding:7px 12px; border:1px solid transparent; border-radius:7px;
+  background:#fff; color:#212e45; font-size:13px; cursor:pointer;
+}
+app-admin-order-create .create-order__online-method:hover {
+  background:#f7fbff; border-color:#c9dbee;
+}
+app-admin-order-create .create-order__online-method.is-selected {
+  background:#edf4ff; border-color:#0e4aa8;
+  font-weight:500; color:#0e4aa8;
+}
+app-admin-order-create .create-order__online-method input {
+  width:18px; height:18px; margin:0; accent-color:#0e4aa8; flex:0 0 18px;
+}
+app-admin-order-create .create-order__online-provider-label { min-width:0; overflow-wrap:anywhere; }
+app-admin-order-create .create-order__voucher-row {position:relative;align-items:center;}
+app-admin-order-create .create-order__voucher-row input {padding-right:35px;}
+app-admin-order-create .create-order__voucher-clear {
+  display:flex;align-items:center;justify-content:center;position:absolute;
+  right:114px;top:50%;transform:translateY(-50%);height:26px;width:26px;
+  border:0;border-radius:5px;background:transparent;font-size:20px;color:#7184a0;
+}
+app-admin-order-create .create-order__voucher-clear:hover {background:#f0f3f7;color:#1b3155;}
+app-admin-order-create .create-order__voucher-status {
+  margin:0 0 14px; padding:9px 12px; color:#805919;
+  border:1px solid #ead8b8; background:#fff9ee;
+  border-radius:7px; font-size:12px; line-height:1.5;
+}
+app-admin-order-create .create-order__breakdown dt small {color:#91a0b6;font-size:11px;}
+app-admin-order-create .create-order__review {
+  padding:14px 16px; margin:0 0 16px;
+  background:#fff8ed; border:1px solid #e5ca9c;
+  color:#825516; border-radius:8px; font-size:13px;
+}
+app-admin-order-create .create-order__review--ready {
+  background:#f0faf3; border-color:#bbdbc5;color:#286940;
+}
+app-admin-order-create .create-order__review strong {font-weight:600;}
+app-admin-order-create .create-order__review ul {margin:6px 0 0;padding-left:18px;}
+app-admin-order-create .create-order__review li {margin:3px 0;}
+app-admin-order-create .create-order__review p {margin:6px 0 0;}
+@media (max-width:750px) {
+  app-admin-order-create .create-order__footer {flex-wrap:wrap;}
+  app-admin-order-create .create-order__voucher-clear {right:118px;}
+}
