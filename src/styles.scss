@@ -1494,14 +1494,17 @@ app-admin-order-management .order-admin__table--figma th:nth-child(5) {width:13%
 app-admin-order-management .order-admin__table--figma th:nth-child(6) {width:12%}
 app-admin-order-management .order-admin__table--figma th:nth-child(7) {width:12%}
 app-admin-order-management .order-admin__table--figma th:nth-child(8) {width:11%}
-/* Returns: request ID, date, order ID, items, refund, status, action = 100%. */
-app-admin-order-management .order-admin__table--returns th:nth-child(1) {width:13%}
-app-admin-order-management .order-admin__table--returns th:nth-child(2) {width:13%}
-app-admin-order-management .order-admin__table--returns th:nth-child(3) {width:13%}
+/* Returns: ID, date, order, item, expected refund, final refund, status, action = 100%. */
+app-admin-order-management .order-admin__table--returns {min-width:1100px}
+app-admin-order-management .order-admin__table--returns th:nth-child(1) {width:10%}
+app-admin-order-management .order-admin__table--returns th:nth-child(2) {width:12%}
+app-admin-order-management .order-admin__table--returns th:nth-child(3) {width:11%}
 app-admin-order-management .order-admin__table--returns th:nth-child(4) {width:19%}
-app-admin-order-management .order-admin__table--returns th:nth-child(5) {width:17%}
-app-admin-order-management .order-admin__table--returns th:nth-child(6) {width:13%}
+app-admin-order-management .order-admin__table--returns th:nth-child(5) {width:14%}
+app-admin-order-management .order-admin__table--returns th:nth-child(6) {width:14%}
 app-admin-order-management .order-admin__table--returns th:nth-child(7) {width:12%}
+app-admin-order-management .order-admin__table--returns th:nth-child(8) {width:8%}
+app-admin-order-management .order-admin__table--returns .order-admin__final-refund {white-space:nowrap}
 /* First and last content start/end exactly 20px from the table's inner edges. */
 app-admin-order-management .order-admin__table--figma :is(th,td):first-child,
 app-admin-order-management .order-admin__table--returns :is(th,td):first-child {
@@ -1514,7 +1517,7 @@ app-admin-order-management .order-admin__table--returns :is(th,td):last-child {
   text-align:right
 }
 app-admin-order-management .order-admin__table--figma :is(th,td):nth-child(7),
-app-admin-order-management .order-admin__table--returns :is(th,td):nth-child(6) {
+app-admin-order-management .order-admin__table--returns :is(th,td):nth-child(7) {
   text-align:center;
   padding-inline:12px
 }
