@@ -1,6 +1,6 @@
 import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { ApiClientService } from '../../../../core/services/api-client.service';
 
 export type VoucherScope = 'ORDER' | 'PRODUCT' | 'SERVICE';
@@ -54,7 +54,15 @@ export class AdminVoucherApiService {
     if (filters.status) params = params.set('status', filters.status);
     if (filters.scope) params = params.set('scope', filters.scope);
     if (filters.cursor) params = params.set('cursor', filters.cursor);
-    return this.api.get<VoucherListResult>('/vouchers', { params });
+    return this.api.get<unknown>('/vouchers', { params }).pipe(
+      map(response => {
+        if (!response || typeof response !== 'object' || !('items' in response) ||
+            !Array.isArray((response as { items: unknown }).items)) {
+          throw new Error('API Voucher trả về sai cấu trúc danh sách.');
+        }
+        return response as VoucherListResult;
+      }),
+    );
   }
   get(id: string): Observable<AdminVoucher> {
     return this.api.get<AdminVoucher>('/vouchers/' + encodeURIComponent(id));
