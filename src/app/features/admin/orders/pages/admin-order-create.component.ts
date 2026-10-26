@@ -336,6 +336,10 @@ export class AdminOrderCreateComponent {
   }
 
   addProduct(choice: OrderVariantChoice): void {
+    if (choice.availableStock !== undefined && choice.availableStock <= 0) {
+      this.toast.show('Sản phẩm này hiện đã hết hàng.');
+      return;
+    }
     const current = this.lines();
     this.invalidateDraftPricing();
     const existing = current.find(line => line.variantId === choice.variantId && line.productId === choice.productId);
