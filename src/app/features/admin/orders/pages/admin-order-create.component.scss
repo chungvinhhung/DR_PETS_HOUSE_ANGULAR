@@ -76,17 +76,20 @@
 .create-order__product-price {white-space:nowrap;font-weight:600;font-size:12px}
 .create-order__product-add {white-space:nowrap;font-size:12px;color:var(--blue)}
 .create-order__table-scroll {overflow-x:auto;border:1px solid var(--border);border-radius:8px}
-.create-order__table {width:100%;min-width:670px;table-layout:fixed;border-collapse:collapse;text-align:left}
+.create-order__table {width:100%;min-width:920px;table-layout:fixed;border-collapse:collapse;text-align:left}
 .create-order__table thead {background:#f0f5ff}
-.create-order__table th {padding:12px 10px;color:#617694;font-size:12px;font-weight:500}
-.create-order__table th:nth-child(1) {width:40%}
-.create-order__table th:nth-child(2) {width:15%}
-.create-order__table th:nth-child(3) {width:19%}
-.create-order__table th:nth-child(4) {width:16%}
-.create-order__table th:nth-child(5) {width:10%}
+.create-order__table th {padding:12px 10px;color:#617694;font-size:12px;font-weight:500;white-space:nowrap}
+.create-order__table th:nth-child(1) {width:27%}
+.create-order__table th:nth-child(2) {width:19%}
+.create-order__table th:nth-child(3) {width:14%}
+.create-order__table th:nth-child(4) {width:17%}
+.create-order__table th:nth-child(5) {width:15%}
+.create-order__table th:nth-child(6) {width:8%}
 .create-order__table td {padding:14px 10px;border-top:1px solid #e7edf6;vertical-align:middle;font-size:13px}
 .create-order__table td strong {display:block;font-weight:500}
 .create-order__table td small {display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.create-order__product-name,.create-order__sku {overflow-wrap:anywhere;vertical-align:middle}
+.create-order__sku strong {font-weight:500}
 .create-order__table .create-order__empty {height:70px;text-align:center;color:var(--muted);font-weight:400}
 .create-order__actions {text-align:center}
 .create-order__line-price {font-weight:500;white-space:nowrap}
