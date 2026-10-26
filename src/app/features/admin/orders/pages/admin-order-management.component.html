@@ -340,14 +340,16 @@
               <thead><tr>
                 <th scope="col">Mã yêu cầu</th><th scope="col">Ngày tạo</th>
                 <th scope="col">Đơn hàng</th><th scope="col">Sản phẩm trả</th>
-                <th scope="col">Tiền dự kiến hoàn</th><th scope="col">Trạng thái</th>
+                <th scope="col">Tiền dự kiến hoàn</th>
+                <th scope="col">Hoàn cuối cùng</th>
+                <th scope="col">Trạng thái</th>
                 <th scope="col">Thao tác</th>
               </tr></thead>
               <tbody>
                 @if (returnsLoading()) {
-                  <tr><td colspan="7" class="order-admin__empty" role="status">Đang tải yêu cầu trả hàng...</td></tr>
+                  <tr><td colspan="8" class="order-admin__empty" role="status">Đang tải yêu cầu trả hàng...</td></tr>
                 } @else if (returnsError()) {
-                  <tr><td colspan="7" class="order-admin__empty" role="alert">{{ returnsError() }}
+                  <tr><td colspan="8" class="order-admin__empty" role="alert">{{ returnsError() }}
                     <button type="button" class="order-admin__btn order-admin__btn--outline" (click)="refresh()">Thử lại</button>
                   </td></tr>
                 } @else {
@@ -357,6 +359,9 @@
                       <td>{{ ret.orderId.slice(-8) }}</td>
                       <td>{{ ret.items[0]?.productName || '—' }} @if (ret.items.length > 1) { (+{{ ret.items.length - 1 }}) }</td>
                       <td>{{ price(ret.refundBreakdown.total) }}</td>
+                      <td class="order-admin__final-refund">
+                        {{ finalRefundAmount(ret) === null ? '—' : price(finalRefundAmount(ret)!) }}
+                      </td>
                       <td><span class="order-admin__badge" [attr.data-status]="ret.status">{{ returnStatusLabel(ret.status) }}</span></td>
                       <td class="order-admin__action-head">
                         <a [routerLink]="['/admin/order-returns',ret.id]" class="order-admin__icon-link"
@@ -366,7 +371,7 @@
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="7" class="order-admin__empty">
+                    <tr><td colspan="8" class="order-admin__empty">
                       <strong>Không có yêu cầu trả hàng phù hợp.</strong>
                       <p>Hãy thử thay đổi bộ lọc hoặc tìm kiếm.</p>
                     </td></tr>
