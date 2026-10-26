@@ -66,6 +66,12 @@ export const routes: Routes = [
   },
 
   {
+    path: 'admin/inventory',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () => import('./features/admin/inventory/pages/admin-inventory-page.component').then(c => c.AdminInventoryPageComponent),
+  },
+  {
     path: 'admin/branches/:id',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN', 'MANAGER'] },
