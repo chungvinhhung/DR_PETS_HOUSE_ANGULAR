@@ -251,7 +251,10 @@ export class AdminOrderCreateComponent {
   }
 
   @HostListener('document:keydown.escape')
-  closeAddressOnEscape(): void { this.closeAddressDialog(); }
+  closeAddressOnEscape(): void {
+    if (this.cancelDialogOpen()) this.closeCancel();
+    else this.closeAddressDialog();
+  }
 
   closeAddressDialog(): void {
     this.addressDialog.set(null);
