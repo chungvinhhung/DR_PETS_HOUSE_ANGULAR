@@ -3,7 +3,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, from, map, mergeMap, of, toArray } from 'rxjs';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
-import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
+import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import { orderErrorMessage } from '../services/admin-order-error-message';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
 import {
@@ -92,6 +93,7 @@ export class AdminOrderManagementComponent {
   readonly pageSize = 6;
   readonly dialog = signal<ActionDialog>(null);
   readonly dialogBusy = signal(false);
+  private cancelRequestKey: string | null = null;
   readonly reason = signal('');
   readonly carrier = signal('');
   readonly tracking = signal('');
@@ -297,7 +299,7 @@ export class AdminOrderManagementComponent {
       error: (error: unknown) => {
         if (version !== this.returnsRequestVersion) return;
         this.returns.set([]);
-        this.returnsError.set(adminErrorMessage(error, 'Không tải được yêu cầu trả hàng.'));
+        this.returnsError.set(orderErrorMessage(error, 'Không tải được yêu cầu trả hàng.'));
         this.returnsLoading.set(false);
       },
     });
@@ -388,7 +390,7 @@ export class AdminOrderManagementComponent {
       error: (error: unknown) => {
         if (version !== this.ordersRequestVersion) return;
         this.loading.set(false); this.allOrders.set([]);
-        this.error.set(adminErrorMessage(error, 'Không tải được danh sách đơn hàng.'));
+        this.error.set(orderErrorMessage(error, 'Không tải được danh sách đơn hàng.'));
       },
     });
   }
@@ -405,7 +407,7 @@ export class AdminOrderManagementComponent {
       },
       error: (error: unknown) => {
         if (this.orderId() !== id || version !== this.detailRequestVersion) return;
-        this.error.set(adminErrorMessage(error, 'Không tải được chi tiết đơn hàng.'));
+        this.error.set(orderErrorMessage(error, 'Không tải được chi tiết đơn hàng.'));
         this.loading.set(false);
       },
     });
@@ -448,7 +450,7 @@ export class AdminOrderManagementComponent {
     if (typeof order.shippingAddress === 'string') return order.shippingAddress;
     const record = order.shippingAddress;
     if (!record) return 'Chưa có địa chỉ';
-    const parts = [record['street'], record['address'], record['ward'], record['district'], record['city']].filter((v) => typeof v === 'string' && !!v);
+    const parts = [record['line1'], record['street'], record['address'], record['ward'], record['district'], record['city']].filter((v) => typeof v === 'string' && !!v);
     return parts.length ? parts.join(', ') : 'Chưa có địa chỉ';
   }
   actionLabel(action: OrderWriteAction): string {
@@ -470,9 +472,17 @@ export class AdminOrderManagementComponent {
   openAction(action: ActionDialog): void {
     if (!this.canManage() || !action || this.dialogBusy()) return;
     if (action === 'cancel' ? !this.canCancel() : this.availableAction() !== action) return;
-    this.reason.set(''); this.carrier.set(''); this.tracking.set(''); this.dialog.set(action);
+    this.reason.set(''); this.carrier.set(''); this.tracking.set('');
+    this.cancelRequestKey = action === 'cancel'
+      ? 'staff-cancel-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2)
+      : null;
+    this.dialog.set(action);
   }
-  closeDialog(): void { if (!this.dialogBusy()) this.dialog.set(null); }
+  closeDialog(): void {
+    if (this.dialogBusy()) return;
+    this.dialog.set(null);
+    this.cancelRequestKey = null;
+  }
   confirmDialog(): void {
     const action = this.dialog();
     const order = this.selected();
@@ -481,18 +491,19 @@ export class AdminOrderManagementComponent {
     if (action !== 'cancel' && this.availableAction() !== action) return;
     this.dialogBusy.set(true);
     const request = action === 'cancel'
-      ? this.api.cancel(order.id, this.reason().trim(), 'staff-cancel-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2))
+      ? this.api.cancel(order.id, this.reason().trim(), this.cancelRequestKey ?? 'staff-cancel-' + order.id)
       : this.api.changeStatus(order.id, action, { carrier: this.carrier().trim(), trackingNumber: this.tracking().trim() });
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (updated) => {
         this.dialogBusy.set(false); this.dialog.set(null);
+        this.cancelRequestKey = null;
         this.selected.set(updated);
         this.toast.show(action === 'cancel' ? 'Đơn hàng đã được hủy.' : 'Đã cập nhật trạng thái đơn hàng.', 'success');
         this.loadDetail();
       },
       error: (error: unknown) => {
         this.dialogBusy.set(false);
-        this.toast.show(adminErrorMessage(error, 'Không thể cập nhật đơn hàng. Vui lòng thử lại.'), 'error');
+        this.toast.show(orderErrorMessage(error, 'Không thể cập nhật đơn hàng. Vui lòng thử lại.'), 'error');
         this.loadDetail();
       },
     });
