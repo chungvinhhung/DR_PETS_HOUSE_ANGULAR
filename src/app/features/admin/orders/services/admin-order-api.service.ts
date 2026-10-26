@@ -73,7 +73,7 @@ export interface OrderRefundRecord {
   orderId: string;
   orderReturnId: string | null;
   amount: number;
-  status: 'PENDING' | 'REFUNDED';
+  status: 'PENDING' | 'REFUNDED' | 'FAILED';
   provider: 'MOCK';
   refundedAt?: string | null;
 }
