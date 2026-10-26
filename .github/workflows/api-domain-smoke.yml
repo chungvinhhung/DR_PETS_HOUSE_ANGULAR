@@ -1,0 +1,32 @@
+name: API Domain Smoke Test
+
+on:
+  push:
+    branches:
+      - feature/admin-order-management-phase1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  connectivity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check new API domain without credentials
+        shell: bash
+        run: |
+          echo "## API connectivity (unauthenticated)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          for path in /api/v1/health /api/v1/orders /api/v1/vouchers; do
+            url="https://api.drpetshouse.lat${path}"
+            if code=$(curl --silent --show-error --location --output /dev/null --write-out '%{http_code}' --connect-timeout 10 --max-time 25 "$url"); then
+              echo "${path}: HTTP ${code}"
+              echo "- \`${path}\`: HTTP ${code}" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "${path}: Unable to connect"
+              echo "- \`${path}\`: connection failed" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "HTTP 401/403 indicates a reachable protected API; this test cannot confirm records without Admin authentication." >> "$GITHUB_STEP_SUMMARY"
