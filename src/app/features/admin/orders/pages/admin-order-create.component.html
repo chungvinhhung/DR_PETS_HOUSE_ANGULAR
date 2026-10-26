@@ -4,6 +4,10 @@
       <a routerLink="/admin/orders">Đơn hàng</a><span aria-hidden="true">›</span><strong>Tạo đơn hàng</strong>
     </nav>
     <h1>Tạo đơn hàng</h1>
+    <p class="create-order__helper create-order__helper--warning" role="status">
+      Chức năng tạo đơn hàng hộ khách chưa được Backend hỗ trợ.
+      Bạn có thể điền và rà soát thông tin bản nháp, nhưng chưa thể gửi tạo đơn thật.
+    </p>
 
     <section class="create-order__panel" aria-labelledby="lookup-title">
       <h2 id="lookup-title">Tra cứu khách hàng</h2>
@@ -24,7 +28,7 @@
       @if (lookupState() === 'not-found') {
         <p class="create-order__helper create-order__helper--warning" role="status">
           Không tìm thấy hồ sơ trùng số điện thoại trong kết quả tra cứu. Vui lòng nhập thông tin khách bên dưới.
-          Tài khoản đăng nhập sẽ được kích hoạt theo quy trình dành cho khách vãng lai.
+          Việc tạo đơn cho khách vãng lai và gửi lời mời kích hoạt chỉ thực hiện được khi Backend hỗ trợ luồng tạo đơn hộ.
         </p>
       }
       @if (lookupState() === 'error') {
