@@ -15,6 +15,7 @@ const confirmProductLeave: CanDeactivateFn<ProductLeaveAware> = (component) => c
 
 const confirmStaffLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
 const confirmVoucherLeave: CanDeactivateFn<{ canLeavePage(): boolean }> = component => component.canLeavePage();
+const confirmOrderCreateLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
 
 export const routes: Routes = [
   {
@@ -153,6 +154,7 @@ export const routes: Routes = [
   {
     path: 'admin/orders/new',
     canActivate: [authGuard, roleGuard],
+    canDeactivate: [confirmOrderCreateLeave],
     data: { roles: ['ADMIN'] },
     loadComponent: () => import('./features/admin/orders/pages/admin-order-create.component')
       .then(component => component.AdminOrderCreateComponent),
