@@ -83,7 +83,7 @@
             </tr></thead>
             <tbody>
               @for (item of ret.items; track item.orderItemId) {
-                <tr>
+                <tr [class.return-detail__item--requested]="item.requestedQty > 0">
                   <td><span class="return-detail__product-thumb" aria-label="Chưa có ảnh sản phẩm">Chưa có ảnh</span></td>
                   <td><strong>{{ item.productName }}</strong></td>
                   <td>{{ orderSku(item.orderItemId) }}</td>
