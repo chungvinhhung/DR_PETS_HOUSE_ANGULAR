@@ -5,7 +5,7 @@ import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.c
 import { formatStaffWeekRange } from '../utils/staff-week-range';
 import { AdminStaffApiService, staffTodayISO } from '../services/admin-staff-api.service';
 import { JOB_LABELS, JobRole, StaffPreview, displayStaffName } from '../models/staff-preview.model';
-import { DayShiftDraft, ShiftOption, StaffShiftAssignmentDialogComponent } from '../components/staff-shift-assignment-dialog.component';
+import { DayShiftDraft, ShiftOption, StaffShiftAssignmentDialogComponent, overlaps } from '../components/staff-shift-assignment-dialog.component';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 
 const DAY = 86_400_000;
@@ -54,6 +54,7 @@ export class AdminStaffScheduleComponent {
   readonly templateStart = signal('08:00');
   readonly templateEnd = signal('17:00');
   readonly templateError = signal('');
+  readonly createSaving = signal(false);
   readonly selectedOptions = computed(() => this.createdOptions());
   readonly role = signal('ALL');
   readonly roles = Object.entries(JOB_LABELS) as [JobRole, string][];
@@ -118,17 +119,58 @@ export class AdminStaffScheduleComponent {
   }
   beginNewTemplate():void {this.showCreateTemplate.set(true);this.templateError.set('');}
   cancelNewTemplate():void {this.showCreateTemplate.set(false);this.templateError.set('');}
-  addLocalTemplate():void {
-    const name=this.templateName().trim(),start=this.templateStart(),end=this.templateEnd();
-    if(!name || !/^\\d{2}:\\d{2}$/.test(start) || !/^\\d{2}:\\d{2}$/.test(end) || start===end) {
-      this.templateError.set('Vui lòng nhập tên và giờ làm việc hợp lệ.');return;
+  /**
+   * Save a real shift immediately for the selected employee and date.
+   * There is no backend contract for reusable branch shift templates yet.
+   */
+  createShiftNow(): void {
+    if (this.createSaving()) return;
+    const current = this.dialog();
+    const branchId = this.branch();
+    const name = this.templateName().trim();
+    const start = this.templateStart();
+    const end = this.templateEnd();
+    const validTime = (time: string) => /^(?:[01]\\d|2[0-3]):[0-5]\\d$/.test(time);
+    if (!current || !branchId || !current.employee.branchIds?.includes(branchId)) {
+      this.templateError.set('Nhân viên chưa được phân công tại chi nhánh đã chọn.'); return;
     }
-    if(this.createdOptions().some(x=>x.name.toLocaleLowerCase('vi')===name.toLocaleLowerCase('vi'))) {
-      this.templateError.set('Tên ca đã tồn tại trong bản nháp.');return;
+    if (!name || !validTime(start) || !validTime(end) || start === end) {
+      this.templateError.set('Nhập tên ca và giờ bắt đầu, kết thúc hợp lệ và khác nhau.'); return;
     }
-    this.createdOptions.update(list=>[...list,{id:'local-'+list.length,name,start,end,enabled:true}]);
-    this.showCreateTemplate.set(false);
-    this.toast.show('Đã thêm ca vào bản nháp. Chưa lưu định nghĩa ca vào hệ thống.', 'info');
+    const planned: DayShiftDraft = {id:'new',name,start,end};
+    const assigned = this.staffApi.shifts().filter(s =>
+      s.staffId === current.employee.id && s.isoDate === current.date);
+    if (assigned.some(s => {
+      const [from, until] = s.time.split(/[–—-]/).map(x => x.trim());
+      return !!from && !!until && overlaps(planned,{id:s.shiftId ?? 'assigned',name:'',start:from,end:until});
+    })) {
+      this.templateError.set('Ca mới bị trùng giờ với ca đã phân tại chi nhánh này hoặc chi nhánh khác.'); return;
+    }
+    // All times are branch-local Vietnam times. Roll endAt to next day
+    // when a shift crosses midnight, then send ISO 8601 instants to Backend.
+    const startAt = new Date(current.date + 'T' + start + ':00+07:00');
+    const endAt = new Date(current.date + 'T' + end + ':00+07:00');
+    if (endAt <= startAt) endAt.setTime(endAt.getTime() + DAY);
+    this.createSaving.set(true);
+    this.templateError.set('');
+    this.staffApi.createShift({
+      staffId: current.employee.id,
+      branchId,
+      startAt: startAt.toISOString(),
+      endAt: endAt.toISOString(),
+    }).subscribe({
+      next: () => {
+        this.createSaving.set(false);
+        this.showCreateTemplate.set(false);
+        this.closeDay();
+        this.staffApi.loadWeek(this.monday(), true);
+        this.toast.show('Đã tạo ca làm việc và phân cho nhân viên trong ngày được chọn.', 'success');
+      },
+      error: () => {
+        this.createSaving.set(false);
+        this.templateError.set('Không thể tạo ca trên hệ thống. Kiểm tra quyền và API POST /shifts của Backend; chưa có ca nào được lưu.');
+      },
+    });
   }
 
 }
