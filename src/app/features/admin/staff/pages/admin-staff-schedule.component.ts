@@ -57,7 +57,7 @@ export class AdminStaffScheduleComponent {
   readonly createSaving = signal(false);
   readonly selectedOptions = computed(() => this.createdOptions());
   readonly role = signal('ALL');
-  readonly roles = Object.entries(JOB_LABELS) as [JobRole, string][];
+  readonly roles = (Object.entries(JOB_LABELS) as [JobRole, string][]).filter(([role]) => role !== 'UNKNOWN');
   readonly branches = computed(() => this.staffApi.branches());
   readonly activeBranch = computed(() => this.branches().find(x => x.id === this.branch()));
   readonly days = computed(() => Array.from({ length: 7 }, (_, index) => {
