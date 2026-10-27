@@ -29,6 +29,7 @@
           (click)="toggleSales()">
           <img src="/assets/admin-product/icon-sales.svg" alt="" width="20" height="20">
           <span>Bán hàng</span>
+          @if (pendingReturnCount() > 0) { <span class="catalog-sidebar__return-badge" [attr.aria-label]="pendingReturnCount() + ' yêu cầu trả hàng chờ tiếp nhận'">{{ pendingReturnCount() }}</span> }
           <img class="catalog-sidebar__group-chevron"
             [src]="salesExpanded ? '/assets/admin-product/expand_less.svg' : '/assets/admin-product/expand_more.svg'"
             alt="" aria-hidden="true" width="16" height="16">
@@ -48,7 +49,7 @@
           </a>
           <a class="catalog-sidebar__sub" routerLink="/admin/orders"
             [class.catalog-sidebar__sub--active]="activeItem === 'orders'"
-            [attr.aria-current]="activeItem === 'orders' ? 'page' : null">Đơn hàng</a>
+            [attr.aria-current]="activeItem === 'orders' ? 'page' : null">Đơn hàng @if (pendingReturnCount() > 0) { <span class="catalog-sidebar__return-badge">{{ pendingReturnCount() }}</span> }</a>
           <a class="catalog-sidebar__sub" routerLink="/admin/vouchers"
             [class.catalog-sidebar__sub--active]="activeItem === 'vouchers'"
             [attr.aria-current]="activeItem === 'vouchers' ? 'page' : null">Voucher / Khuyến mãi</a>
