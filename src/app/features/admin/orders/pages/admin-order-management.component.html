@@ -295,7 +295,7 @@
       <section class="order-admin__table-panel order-admin__table-panel--figma" [attr.aria-label]="activeTab() === 'orders' ? 'Danh sách đơn hàng' : 'Danh sách trả hàng'">
         <div class="order-admin__table-scroll">
           @if (activeTab() === 'orders') {
-            <table class="order-admin__table order-admin__table--figma">
+            <table class="order-admin__table order-admin__table--figma web2-product-table">
               <thead><tr>
                 <th scope="col">Mã đơn</th>
                 <th scope="col">Ngày tạo</th>
@@ -341,7 +341,7 @@
               </tbody>
             </table>
           } @else {
-            <table class="order-admin__table order-admin__table--returns">
+            <table class="order-admin__table order-admin__table--returns web2-product-table">
               <thead><tr>
                 <th scope="col">Mã yêu cầu</th><th scope="col">Ngày tạo</th>
                 <th scope="col">Đơn hàng</th><th scope="col">Sản phẩm trả</th>
