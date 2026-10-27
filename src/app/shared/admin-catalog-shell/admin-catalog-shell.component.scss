@@ -387,3 +387,55 @@
 .catalog-sidebar__sub .catalog-sidebar__return-badge{margin-left:auto}
 .catalog-sidebar__group .catalog-sidebar__return-badge{margin-left:auto}
 .catalog-sidebar__group:has(.catalog-sidebar__return-badge) .catalog-sidebar__group-chevron{margin-left:0}
+
+
+/* Accordion transitions: retain a flex layout while collapsed so the submenu
+   can animate its height instead of snapping from display:none to display:flex. */
+.catalog-sidebar__children,
+.catalog-sidebar__children--services {
+  display: flex;
+  max-height: 360px;
+  opacity: 1;
+  visibility: visible;
+  overflow: hidden;
+  transform: translateY(0);
+  transition:
+    max-height 300ms cubic-bezier(.2,.7,.2,1),
+    opacity 220ms ease,
+    transform 300ms cubic-bezier(.2,.7,.2,1),
+    margin-bottom 300ms cubic-bezier(.2,.7,.2,1),
+    padding-top 300ms ease,
+    padding-bottom 300ms ease,
+    visibility 0s;
+}
+.catalog-sidebar__children[hidden] {
+  display: flex;
+  max-height: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+  transition:
+    max-height 260ms ease-in-out,
+    opacity 180ms ease,
+    transform 260ms ease-in-out,
+    margin-bottom 260ms ease-in-out,
+    padding-top 260ms ease,
+    padding-bottom 260ms ease,
+    visibility 0s linear 260ms;
+}
+.catalog-sidebar__group {
+  transition: background-color 200ms ease, color 200ms ease;
+}
+.catalog-sidebar__group-chevron {
+  transition: transform 220ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .catalog-sidebar__children,
+  .catalog-sidebar__children[hidden],
+  .catalog-sidebar__group,
+  .catalog-sidebar__group-chevron { transition: none; }
+}
