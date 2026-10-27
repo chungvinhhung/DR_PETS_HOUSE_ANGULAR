@@ -74,6 +74,12 @@ export class AdminStaffScheduleComponent {
     (this.role() === 'ALL' || staff.jobRole === this.role()) &&
     !!this.branch() && !!staff.branchIds?.includes(this.branch())));
   readonly pageCount = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.pageSize)));
+  readonly visiblePageNumbers = computed(() => {
+    const total = this.pageCount();
+    const current = this.page();
+    const start = Math.max(1, Math.min(current - 1, total - 2));
+    return Array.from({length: Math.min(3,total)}, (_, i) => start + i);
+  });
   readonly rows = computed(() => this.filtered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
 
   displayName = displayStaffName;
