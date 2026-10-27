@@ -89,9 +89,26 @@ export class AdminOrderManagementComponent {
   readonly awaitingCount = computed(() => this.allOrders().filter(item => item.status === 'PENDING').length);
   readonly shippingCount = computed(() => this.allOrders().filter(item => item.status === 'SHIPPED').length);
   readonly selected = signal<OrderRecord | null>(null);
-  // Keep the API history unchanged; the detail timeline displays latest events first.
-  readonly detailHistory = computed(() => [...(this.selected()?.statusHistory ?? [])]
-    .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()));
+  // Display EVERY reached order milestone, newest first. Missing BE audit timestamps
+  // remain explicit rather than being invented from the final delivery time.
+  readonly detailHistory = computed(() => {
+    const order = this.selected();
+    if (!order) return [];
+    const flow: OrderStatus[] = ['PENDING', ...this.milestones];
+    const reached = order.status === 'CANCELLED'
+      ? [...flow.filter(status => status === 'PENDING' || order.statusHistory?.some(entry => entry.status === status)),
+          'CANCELLED' as OrderStatus]
+      : flow.slice(0, flow.indexOf(order.status) + 1);
+    return reached.map(status => {
+      const event = order.statusHistory?.find(entry => entry.status === status);
+      return {
+        status,
+        at: event?.at ?? (status === 'PENDING' ? order.createdAt :
+          status === 'COMPLETED' ? order.deliveredAt : null),
+        note: event?.note ?? null,
+      };
+    }).reverse();
+  });
   readonly branches = signal<{ id: string; name: string }[]>([]);
   readonly loading = signal(false);
   readonly error = signal('');
@@ -444,6 +461,14 @@ export class AdminOrderManagementComponent {
     });
   }
 
+  progressTime(order: OrderRecord, step: OrderStatus): string {
+    const reached = this.milestones.indexOf(order.status) >= this.milestones.indexOf(step);
+    if (!reached && order.status !== 'CANCELLED') return 'Chưa bắt đầu';
+    const recordedAt = order.statusHistory?.find(entry => entry.status === step)?.at
+      ?? (step === 'COMPLETED' ? order.deliveredAt : null);
+    if (recordedAt) return this.when(recordedAt);
+    return reached ? 'BE chưa ghi thời gian' : 'Chưa bắt đầu';
+  }
   statusLabel(status: OrderStatus): string { return STATUS_LABELS[status] ?? 'Chưa xác định'; }
   customerName(order: OrderRecord): string {
     return order.contactSnapshot?.fullName || order.contactSnapshot?.name || 'Khách hàng';
