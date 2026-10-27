@@ -102,3 +102,17 @@
 .order-admin__data-note {font-size:12px;color:#6b7e92;margin:12px 0}
 .order-admin__feedback {border:1px solid var(--line);border-radius:12px;padding:34px 20px;text-align:center;color:var(--soft)}
 .order-admin__feedback p {margin:0 0 14px}
+
+/* Table density and centered column alignment, with symmetrical edge padding. */
+.order-admin__table--figma,.order-admin__table--returns{min-width:960px}
+.order-admin__table--figma :is(th,td),
+.order-admin__table--returns :is(th,td){padding-inline:12px}
+.order-admin__table--figma :is(th,td):first-child,
+.order-admin__table--returns :is(th,td):first-child{padding-left:20px}
+.order-admin__table--figma :is(th,td):last-child,
+.order-admin__table--returns :is(th,td):last-child{padding-right:20px}
+.order-admin__pagination .order-admin__page-number{width:44px;height:42px;border-left:1px solid #e2e8f0;font-size:14px;color:#1b273b}
+.order-admin__pagination .order-admin__page-number--active{background:#e5f6fd;color:#0d47a1;box-shadow:inset 0 0 0 2px #0d47a1;font-weight:600}
+.order-admin__pagination button:disabled{color:#b1bfce}
+.order-admin__pagination>div{max-width:100%;overflow-x:auto}
+.order-admin__btn{width:max-content;max-width:100%}
