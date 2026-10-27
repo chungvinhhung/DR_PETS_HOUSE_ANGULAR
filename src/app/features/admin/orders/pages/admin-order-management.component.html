@@ -13,7 +13,9 @@
               <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="openAction('cancel')">Hủy đơn</button>
             }
             @if (availableAction(); as action) {
-              <button class="order-admin__btn order-admin__btn--primary" type="button" (click)="openAction(action)">{{ actionLabel(action) }}</button>
+              <button class="order-admin__btn order-admin__btn--primary" type="button" (click)="openAction(action)">Cập nhật trạng thái</button>
+            } @else if (order.status === 'COMPLETED' || order.status === 'CANCELLED') {
+              <a class="order-admin__btn order-admin__btn--primary" routerLink="/admin/orders">Quay lại danh sách</a>
             }
           </div>
         }
@@ -412,7 +414,7 @@
         <section class="order-admin__modal" role="dialog" aria-modal="true" aria-label="Xác nhận thao tác với đơn hàng" (click)="$event.stopPropagation()">
           <div class="order-admin__modal-head">
             <div><h2>{{ action === 'cancel' ? 'Hủy đơn hàng' : 'Cập nhật trạng thái đơn hàng' }}</h2>
-              <p>Đơn hàng {{ selected()?.code }}</p></div>
+              <p>{{ selected()?.code }} · {{ statusLabel(selected()!.status) }} @if (action !== 'cancel') { → {{ nextStatusLabel(action) }} }</p></div>
             <button class="order-admin__modal-close" type="button" (click)="closeDialog()" [disabled]="dialogBusy()" aria-label="Đóng">×</button>
           </div>
           @if (action === 'cancel') {
@@ -425,6 +427,14 @@
             }
           } @else {
             <p>{{ actionDescription(action) }}</p>
+            <label class="order-admin__field">Hiện tại
+              <span class="order-admin__field-value">{{ statusLabel(selected()!.status) }}</span>
+            </label>
+            <label class="order-admin__field">Trạng thái tiếp theo <span aria-hidden="true">*</span>
+              <select [value]="nextStatusLabel(action)" aria-label="Trạng thái tiếp theo">
+                <option [value]="nextStatusLabel(action)">{{ nextStatusLabel(action) }}</option>
+              </select>
+            </label>
             @if (action === 'ship') {
               <label class="order-admin__field">Đơn vị vận chuyển
                 <input #carrierInput type="text" maxlength="120" placeholder="Tên đơn vị vận chuyển" [value]="carrier()" (input)="carrier.set(carrierInput.value)">
@@ -435,7 +445,7 @@
             }
           }
           <div class="order-admin__modal-actions">
-            <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="closeDialog()" [disabled]="dialogBusy()">Quay lại</button>
+            <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="closeDialog()" [disabled]="dialogBusy()">Đóng</button>
             <button class="order-admin__btn" [class.order-admin__btn--danger]="action === 'cancel'" [class.order-admin__btn--primary]="action !== 'cancel'"
               type="button" [disabled]="dialogBusy() || (action === 'cancel' && reason().trim().length < 5)" (click)="confirmDialog()">
               {{ dialogBusy() ? 'Đang xử lý...' : action === 'cancel' ? 'Xác nhận hủy đơn' : 'Xác nhận cập nhật' }}
