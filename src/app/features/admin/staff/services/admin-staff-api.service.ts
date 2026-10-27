@@ -216,8 +216,19 @@ export class AdminStaffApiService {
     });
   }
 
-  loadWeek(monday: string): void {
-    if (this.loadedMonday() === monday && !this.shiftError()) return;
+  /**
+   * Create an actual, dated staff shift. This is NOT a reusable shift template:
+   * that requires a separate contract from Backend.
+   * If Backend rejects the write, the caller must show the error and keep the form open.
+   */
+  createShift(payload: {
+    staffId: string; branchId: string; startAt: string; endAt: string;
+  }): Observable<unknown> {
+    return this.api.post<unknown>('/shifts', payload);
+  }
+
+  loadWeek(monday: string, force = false): void {
+    if (!force && this.loadedMonday() === monday && !this.shiftError()) return;
     const request = ++this.weekRequest;
     this.shiftLoading.set(true); this.shiftError.set(''); this.shifts.set([]);
     this.loadedMonday.set('');
