@@ -19,7 +19,7 @@ type ActionDialog = OrderWriteAction | 'cancel' | null;
 const STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING: 'Chờ xác nhận',
   CONFIRMED: 'Đã xác nhận',
-  PROCESSING: 'Đang chuẩn bị',
+  PROCESSING: 'Chuẩn bị hàng',
   SHIPPED: 'Đang giao',
   COMPLETED: 'Đã giao',
   CANCELLED: 'Đã hủy',
@@ -512,9 +512,17 @@ export class AdminOrderManagementComponent {
   actionLabel(action: OrderWriteAction): string {
     return ({
       confirm: 'Xác nhận đơn hàng',
-      process: 'Chuyển sang chuẩn bị hàng',
+      process: 'Chuẩn bị hàng',
       ship: 'Xác nhận bàn giao vận chuyển',
       'mark-delivered': 'Xác nhận đã giao hàng',
+    })[action];
+  }
+  nextStatusLabel(action: OrderWriteAction): string {
+    return ({
+      confirm: 'Đã xác nhận',
+      process: 'Chuẩn bị hàng',
+      ship: 'Đang giao',
+      'mark-delivered': 'Đã giao',
     })[action];
   }
   actionDescription(action: OrderWriteAction): string {
