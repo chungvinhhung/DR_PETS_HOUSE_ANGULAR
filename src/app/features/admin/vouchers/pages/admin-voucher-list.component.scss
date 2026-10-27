@@ -48,3 +48,16 @@
 .voucher-list .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:1260px){.voucher-list{padding:26px 20px}.voucher-list__toolbar{grid-template-columns:minmax(215px,1fr) 157px 145px 145px 138px}}
 @media(max-width:850px){.voucher-list{padding:18px 12px}.voucher-list__pagination{flex-wrap:wrap}}
+
+/* Compact, balanced voucher columns: preserve readable code and date ranges. */
+.voucher-list__table{min-width:940px}
+.voucher-list__col-code{width:21%}
+.voucher-list__col-scope{width:15%}
+.voucher-list__col-discount{width:13%}
+.voucher-list__col-dates{width:17%}
+.voucher-list__col-quota{width:17%}
+.voucher-list__col-status{width:11%}
+.voucher-list__col-actions{width:6%}
+.voucher-list__table :is(th,td){padding-inline:12px}
+.voucher-list__table :is(th,td):first-child{padding-left:20px}
+.voucher-list__table :is(th,td):last-child{padding-right:20px}
