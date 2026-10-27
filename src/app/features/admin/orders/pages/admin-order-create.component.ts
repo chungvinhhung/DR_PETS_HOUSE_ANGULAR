@@ -214,6 +214,29 @@ export class AdminOrderCreateComponent {
   }
 
   updateCustomerName(value: string): void { this.customerName.set(value); }
+  updateCustomerPhone(value: string): void {
+    const previousPhone = this.customerPhone();
+    if (value === previousPhone && value === this.lookupPhone()) return;
+    // Both the lookup field and customer form represent the same contact number.
+    // A changed phone must invalidate any previously verified lookup result.
+    const priorCustomer = this.selectedCustomer();
+    this.customerRequest += 1;
+    this.customerPhone.set(value);
+    this.lookupPhone.set(value);
+    this.selectedCustomer.set(null);
+    this.lookupResults.set([]);
+    this.lookupIncomplete.set(false);
+    this.lookupState.set('idle');
+    if (priorCustomer) {
+      // Do not retain another customer's read-only profile or confirmed address.
+      this.customerName.set('');
+      this.customerEmail.set('');
+      this.clearShippingAddress();
+    } else if (this.shippingRecipientPhone() === previousPhone) {
+      this.shippingRecipientPhone.set(value);
+      this.addressWasConfirmed.set(false);
+    }
+  }
   updateCustomerEmail(value: string): void { this.customerEmail.set(value); }
   updateShippingLine1(value: string): void { this.shippingLine1.set(value); this.addressWasConfirmed.set(false); }
   updateShippingCity(value: string): void { this.shippingCity.set(value); this.addressWasConfirmed.set(false); }
