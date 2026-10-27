@@ -2022,28 +2022,28 @@ app-admin-order-management .order-admin__tabs-count.web2-notification-badge {
 app-admin-catalog-shell :is(
  .staff-toolbar,.voucher-list__toolbar,.list-toolbar,.branch-v2-page__filters,
  .service-catalog__filters,.order-admin__filters--figma,.product-panel .toolbar
-) { box-sizing:border-box;min-height:84px;align-items:center;gap:12px;padding:16px;
+) { box-sizing:border-box;min-height:84px !important;align-items:center;gap:12px;padding:16px !important;
     border:1px solid #e2e8f0;border-radius:12px;background:#fff }
 app-admin-catalog-shell :is(
  .staff-search,.voucher-list__search,.search-field,.branch-v2-page__search,
  .service-catalog__search,.order-admin__filters--figma .order-admin__search,
  .product-panel .search
-) {height:48px;min-height:48px;border-radius:8px}
+) {height:48px !important;min-height:48px !important;border-radius:8px}
 app-admin-catalog-shell :is(
  .staff-filters select,.voucher-list__control select,.branch-v2-page__status-filter select,
  .service-catalog__select select,.order-admin__filters--figma select,
  .filter-label select
-) {height:48px;min-height:48px;border-radius:8px}
+) {height:48px !important;min-height:48px !important;border-radius:8px}
 app-admin-order-management .order-admin__filters--figma {
-  grid-template-rows:48px;grid-template-columns:minmax(270px,1fr) 160px 160px 114px 158px;
+  grid-template-rows:48px !important;grid-template-columns:minmax(270px,1fr) 160px 160px 114px 158px !important;
   min-width:0;
 }
 app-admin-order-management .order-admin__filters--figma .order-admin__search {
   width:100%;min-width:0;max-width:none;
 }
 app-admin-voucher-list .voucher-list__toolbar {
-  grid-template-rows:48px;
-  grid-template-columns:minmax(220px,1fr) 170px 158px 148px max-content;
+  grid-template-rows:48px !important;
+  grid-template-columns:minmax(220px,1fr) 170px 158px 148px max-content !important;
 }
 app-admin-voucher-list .voucher-list__control {height:48px}
 app-admin-voucher-list .voucher-list__toolbar .web2-add-button {justify-self:end}
@@ -2074,7 +2074,7 @@ app-admin-catalog-shell :is(
 app-admin-catalog-shell :is(
  .order-admin__pagination,.voucher-list__pagination,.staff-pagination,.schedule-footer
 ) :is(button,.staff-page-selected,span[aria-current],strong[aria-label]) {
-  min-width:44px;height:44px;min-height:44px;border-radius:0;
+  min-width:44px !important;height:44px !important;min-height:44px !important;border-radius:0;
 }
 app-admin-catalog-shell :is(
  .order-admin__pagination,.voucher-list__pagination,.staff-pagination,.schedule-footer
