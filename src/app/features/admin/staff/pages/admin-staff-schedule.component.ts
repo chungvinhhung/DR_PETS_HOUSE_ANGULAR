@@ -130,7 +130,7 @@ export class AdminStaffScheduleComponent {
     const name = this.templateName().trim();
     const start = this.templateStart();
     const end = this.templateEnd();
-    const validTime = (time: string) => /^(?:[01]\\d|2[0-3]):[0-5]\\d$/.test(time);
+    const validTime = (time: string) => /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time);
     if (!current || !branchId || !current.employee.branchIds?.includes(branchId)) {
       this.templateError.set('Nhân viên chưa được phân công tại chi nhánh đã chọn.'); return;
     }
