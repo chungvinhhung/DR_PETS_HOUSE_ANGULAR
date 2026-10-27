@@ -75,6 +75,25 @@ export class AdminOrderReturnDetailComponent {
     return [];
   });
   readonly totalQuantity = computed(() => this.data()?.items.reduce((sum, item) => sum + item.requestedQty, 0) ?? 0);
+  readonly returnHistory = computed(() => [...(this.data()?.history ?? [])]
+    .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()));
+
+  requestSubmittedAt(ret: OrderReturnSummary): string | undefined {
+    return ret.history?.find(event => event.status === 'REQUESTED')?.at ?? ret.history?.[0]?.at;
+  }
+  progressLabel(ret: OrderReturnSummary, step: ReturnStatus): string {
+    const at = ret.history?.find(event => event.status === step)?.at;
+    if (at) return this.when(at);
+    const reached = this.statusSteps.indexOf(ret.status) >= this.statusSteps.indexOf(step);
+    return reached ? 'Đã chuyển bước' : 'Chưa bắt đầu';
+  }
+  availableReturnQty(item: OrderReturnSummary['items'][number]): number {
+    return Math.max(0, item.orderedQty - item.alreadyReturnedQty);
+  }
+  receivedTotal(ret: OrderReturnSummary): string {
+    if (!ret.items.length || ret.items.some(item => typeof item.receivedQty !== 'number')) return 'BE chưa cung cấp';
+    return ret.items.reduce((total, item) => total + (item.receivedQty ?? 0), 0) + ' sản phẩm';
+  }
 
   constructor() {
     this.branchApi.listBranches().pipe(takeUntilDestroyed()).subscribe({
