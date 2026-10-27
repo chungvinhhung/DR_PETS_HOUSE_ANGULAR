@@ -326,9 +326,9 @@ export class AdminInventoryPageComponent implements OnInit {
     return !value || ['mặc định', 'default', '-', '—'].includes(value.toLowerCase())
       ? '—' : value;
   }
-  formatVariantSku(variant: string | null | undefined, sku: string | null | undefined): string {
+  formatVariantSku(sku: string | null | undefined, variant: string | null | undefined): string {
     const normalized = this.normalizedVariant(variant);
-    return `${normalized === '—' ? '-' : normalized} | ${sku?.trim() || '-'}`;
+    return `${sku?.trim() || '-'} | ${normalized === '—' ? '-' : normalized}`;
   }
   productLabel(item: StockItem): string {
     return item.variant === '—' ? item.name : `${item.name} · ${item.variant}`;
