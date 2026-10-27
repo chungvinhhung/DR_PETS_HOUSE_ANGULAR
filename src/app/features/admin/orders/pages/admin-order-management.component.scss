@@ -115,7 +115,9 @@
 .order-admin__feedback p {margin:0 0 14px}
 
 /* Table density and centered column alignment, with symmetrical edge padding. */
-.order-admin__table--figma,.order-admin__table--returns{min-width:960px}
+/* Order list fits its panel; Return table retains its wider multi-field layout. */
+.order-admin__table--figma{min-width:0}
+.order-admin__table--returns{min-width:960px}
 .order-admin__table--figma :is(th,td),
 .order-admin__table--returns :is(th,td){padding-inline:12px}
 .order-admin__table--figma :is(th,td):first-child,
