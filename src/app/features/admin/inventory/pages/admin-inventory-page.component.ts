@@ -113,7 +113,7 @@ export class AdminInventoryPageComponent implements OnInit {
       .filter(b => b.status === 'ACTIVE' && (isAdmin || accessibleIds.has(b.id)))
       .map(b => b.name);
   });
-  readonly pageSize = 7;
+  readonly pageSize = 6;
   readonly productOptions = computed(() => {
     const catalog = this.catalogBySku();
     return this.inventoryItems().filter(item =>
