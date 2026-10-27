@@ -66,30 +66,27 @@
           <div class="order-admin__table-scroll">
             <table class="order-admin__table order-admin__table--detail-items">
               <thead><tr>
+                <th scope="col">Hình ảnh</th>
                 <th scope="col">Sản phẩm</th>
                 <th scope="col">SKU</th>
-                <th scope="col" class="order-admin__number">SL</th>
-                <th scope="col" class="order-admin__number">Đơn giá tại đặt</th>
-                <th scope="col" class="order-admin__number">Giảm</th>
+                <th scope="col" class="order-admin__qty">Số lượng</th>
+                <th scope="col" class="order-admin__number">Đơn giá sản phẩm</th>
+                <th scope="col" class="order-admin__number">Giảm voucher</th>
                 <th scope="col" class="order-admin__number">Thành tiền</th>
               </tr></thead>
               <tbody>
                 @for (item of order.items; track item.orderItemId) {
                   <tr>
-                    <td class="order-admin__item-name">
-                      <div class="order-admin__product-line">
-                        <span class="order-admin__product-thumb" aria-label="Sản phẩm chưa có ảnh trong API">Chưa có ảnh</span>
-                        <span>{{ item.name }}</span>
-                      </div>
-                    </td>
+                    <td><span class="order-admin__product-thumb" aria-label="Sản phẩm chưa có ảnh trong API">Chưa có ảnh</span></td>
+                    <td class="order-admin__item-name">{{ item.name }}</td>
                     <td>{{ item.skuSnapshot || '—' }}</td>
-                    <td class="order-admin__number">{{ item.quantity }}</td>
+                    <td class="order-admin__qty">{{ item.quantity }}</td>
                     <td class="order-admin__number">{{ price(item.unitPrice) }}</td>
                     <td class="order-admin__number">{{ price(item.allocatedDiscount) }}</td>
                     <td class="order-admin__number">{{ price(item.lineNet) }}</td>
                   </tr>
                 } @empty {
-                  <tr><td colspan="6" class="order-admin__empty">Không có sản phẩm trong đơn.</td></tr>
+                  <tr><td colspan="7" class="order-admin__empty">Không có sản phẩm trong đơn.</td></tr>
                 }
               </tbody>
             </table>
@@ -101,19 +98,19 @@
             <h2>Thanh toán</h2>
             <dl class="order-admin__totals">
               <div><dt>Tạm tính</dt><dd>{{ price(order.pricing.merchandiseSubtotal) }}</dd></div>
-              <div><dt>Giảm giá @if (order.voucherCode) { ({{ order.voucherCode }}) }</dt><dd>−{{ price(order.pricing.voucherDiscount) }}</dd></div>
+              <div><dt>Giảm voucher @if (order.voucherCode) { ({{ order.voucherCode }}) }</dt><dd>−{{ price(order.pricing.voucherDiscount) }}</dd></div>
               <div><dt>Phí giao hàng</dt><dd>{{ price(order.pricing.shippingFee) }}</dd></div>
               <div class="order-admin__grand"><dt>Tổng thanh toán</dt><dd>{{ price(order.pricing.totalAmount) }}</dd></div>
               <div><dt>Phương thức</dt><dd>{{ paymentLabel(order) }}</dd></div>
-              <div><dt>Trạng thái</dt><dd>{{ paymentStatus(order) }}</dd></div>
+              <div><dt>Trạng thái</dt><dd><span class="order-admin__payment-badge" [attr.data-payment]="order.payment?.status || 'UNKNOWN'">{{ paymentStatus(order) }}</span></dd></div>
             </dl>
           </section>
           <section class="order-admin__card order-admin__card--detail" aria-label="Lịch sử xử lý">
             <h2>Lịch sử xử lý</h2>
             @if (order.statusHistory?.length) {
               <ol class="order-admin__history">
-                @for (event of order.statusHistory; track $index) {
-                  <li><strong>{{ statusLabel(event.status) }}</strong><small>{{ when(event.at) }}</small>
+                @for (event of detailHistory(); track $index; let first = $first) {
+                  <li [class.order-admin__history--latest]="first"><strong>{{ statusLabel(event.status) }}</strong><small>{{ when(event.at) }}</small>
                     @if (event.note) { <p>{{ event.note }}</p> }
                   </li>
                 }
