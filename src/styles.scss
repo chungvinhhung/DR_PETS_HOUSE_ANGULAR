@@ -1997,8 +1997,15 @@ app-admin-catalog-shell .web2-notification-badge.web2-notification-badge {
   font:500 11px/20px Roboto,Arial,sans-serif !important;text-align:center;
   letter-spacing:0 !important;white-space:nowrap;
 }
-app-admin-catalog-shell .web2-notification-badge--inverted.web2-notification-badge--inverted {
-  background:#e5f6fd !important;color:#0d47a1 !important;
+/* The Sales badge stays legible BOTH when Sales is open (blue header)
+   and when another sidebar group is active (light header). */
+app-admin-catalog-shell .catalog-sidebar__group[aria-expanded="true"] .web2-notification-badge--inverted {
+  background:#fff !important;color:#0d47a1 !important;
+  font-weight:700 !important;opacity:1 !important;
+}
+app-admin-catalog-shell .catalog-sidebar__group[aria-expanded="false"] .web2-notification-badge--inverted {
+  background:#0d47a1 !important;color:#fff !important;
+  font-weight:700 !important;opacity:1 !important;
 }
 app-admin-catalog-shell .catalog-sidebar__sub .web2-notification-badge {margin-left:auto}
 app-admin-catalog-shell .catalog-sidebar__group .web2-notification-badge {margin-left:auto}
@@ -2718,8 +2725,30 @@ app-admin-order-return-detail .return-detail__heading-main {
 }
 app-admin-order-return-detail .return-detail__heading-badge {
   display:inline-flex;align-items:center;justify-content:center;
-  height:28px;padding:5px 10px;border:1px solid #e0e0e0;
+  height:28px;padding:5px 12px;border:1px solid transparent;
+  border-radius:999px;
   background:#eee;color:#757575;font-size:11px;white-space:nowrap;
+}
+/* Match the Figma Return detail state palette, including states reached
+   by workflow actions.  Badge colors are independent from action permissions. */
+app-admin-order-return-detail .return-detail__heading-badge[data-status="REQUESTED"] {
+  background:#eeeeee !important;color:#757575 !important;border-color:#dfdfdf !important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="PROCESSING"] {
+  background:#fff2df !important;color:#df8108 !important;border-color:#f9e3bd !important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="RECEIVED"] {
+  background:#e3f2fd !important;color:#1976d2 !important;border-color:#d3eaff !important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="APPROVED"] {
+  background:#f1e7ff !important;color:#7c3fc8 !important;border-color:#e7d7ff !important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="COMPLETED"] {
+  background:#e2f5e9 !important;color:#258448 !important;border-color:#d5ecd9 !important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="REJECTED"],
+app-admin-order-return-detail .return-detail__heading-badge[data-status="CANCELLED"] {
+  background:#ffebeb !important;color:#cb3e48 !important;border-color:#ffdada !important;
 }
 app-admin-order-management .order-admin:has(.order-admin__card--detail) .order-admin__heading-actions,
 app-admin-order-return-detail .return-detail__actions {display:flex;align-items:center;gap:10px;margin:0;}
@@ -2991,6 +3020,29 @@ app-admin-order-management .order-admin__totals .order-admin__grand dt {color:#1
 app-admin-order-management .order-admin__totals .order-admin__grand dd {
   color:#0d47a1;font-size:16px;font-weight:700;
 }
+/* Match Figma's compact next-state confirmation dialog; only the
+   single backend-supported next stage is shown, so no invalid jump is sent. */
+app-admin-order-management .order-admin__modal .order-admin__field-value {
+  display:block;min-height:20px;margin-top:6px;
+  color:#334155;font-weight:600;
+}
+app-admin-order-management .order-admin__modal .order-admin__field select {
+  display:block;width:100%;height:40px;margin-top:7px;padding:0 12px;
+  color:#334155;background:#fff;border:1px solid #dce5f0;
+  border-radius:8px;appearance:auto;
+}
+app-admin-order-return-detail .return-detail__button--outline-danger {
+  color:#de414c !important;
+  border:1px solid #ed6b72 !important;
+  background:#fff !important;
+}
+app-admin-order-return-detail .return-detail__button--outline-danger:hover {
+  background:#fff1f1 !important;
+}
+app-admin-order-return-detail .return-detail__button--back {
+  display:inline-flex;align-items:center;justify-content:center;text-decoration:none;
+  min-height:36px;padding:0 12px;white-space:nowrap;
+}
 app-admin-order-management .order-admin__payment-badge {
   display:inline-flex;align-items:center;min-height:24px;
   padding:4px 12px;border-radius:99px;
@@ -3123,9 +3175,9 @@ app-admin-order-return-detail .return-detail__extra--bottom .return-detail__meta
 /* WEB2 Figma QA 2026-10-27 — corrections based on the user's paired screenshots.
    All selectors are restricted to Order and Return DETAIL components. */
 
-/* Return workflow: reached steps, including the LAST step, are green;
-   each milestone shows its actual date and the progress rail never appears
-   as an outlined blue interactive stepper. */
+/* Figma Return workflow: previous stages green, current stage state-specific,
+   unreached stages grey. Rejected/cancelled use actual audit history to
+   determine the reached portion, without inventing progress. */
 app-admin-order-return-detail .return-detail__progress li.return-detail__progress--done .return-detail__progress-dot,
 app-admin-order-return-detail .return-detail__progress li.return-detail__progress--done .return-detail__progress-bar {
   background:#2f935b !important;
@@ -3134,13 +3186,25 @@ app-admin-order-return-detail .return-detail__progress li.return-detail__progres
 app-admin-order-return-detail .return-detail__progress li.return-detail__progress--done .return-detail__progress-head {
   color:#475569 !important;
 }
-app-admin-order-return-detail .return-detail__progress li.return-detail__progress--current.return-detail__progress--done .return-detail__progress-dot,
-app-admin-order-return-detail .return-detail__progress li.return-detail__progress--current.return-detail__progress--done .return-detail__progress-bar {
-  background:#2f935b !important;
+app-admin-order-return-detail .return-detail__progress[data-status="REQUESTED"] li.return-detail__progress--current .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress[data-status="REQUESTED"] li.return-detail__progress--current .return-detail__progress-bar {
+  background:#7a7a7a !important;
 }
-app-admin-order-return-detail .return-detail__progress li.return-detail__progress--rejected .return-detail__progress-dot,
-app-admin-order-return-detail .return-detail__progress li.return-detail__progress--rejected .return-detail__progress-bar {
-  background:#e2e8f0 !important;
+app-admin-order-return-detail .return-detail__progress[data-status="PROCESSING"] li.return-detail__progress--current .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress[data-status="PROCESSING"] li.return-detail__progress--current .return-detail__progress-bar {
+  background:#ee8c19 !important;
+}
+app-admin-order-return-detail .return-detail__progress[data-status="RECEIVED"] li.return-detail__progress--current .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress[data-status="RECEIVED"] li.return-detail__progress--current .return-detail__progress-bar {
+  background:#1976d2 !important;
+}
+app-admin-order-return-detail .return-detail__progress[data-status="APPROVED"] li.return-detail__progress--current .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress[data-status="APPROVED"] li.return-detail__progress--current .return-detail__progress-bar {
+  background:#8243c8 !important;
+}
+app-admin-order-return-detail .return-detail__progress[data-status="COMPLETED"] li.return-detail__progress--current .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress[data-status="COMPLETED"] li.return-detail__progress--current .return-detail__progress-bar {
+  background:#2f935b !important;
 }
 app-admin-order-return-detail .return-detail__progress-bar {
   margin:8px 0 7px;
