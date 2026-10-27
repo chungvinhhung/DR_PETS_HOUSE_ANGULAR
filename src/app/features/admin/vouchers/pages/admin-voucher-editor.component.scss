@@ -47,3 +47,15 @@
 .voucher-editor__dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:15px;border-top:1px solid #e2e8f0}
 @media(max-width:1000px){.voucher-editor{padding:25px 20px}.voucher-editor__fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:720px){.voucher-editor{padding:18px 12px}.voucher-editor__fields,.voucher-editor__summary{grid-template-columns:1fr}.voucher-editor__heading h1{font-size:22px}}
+
+/* Unified product-editor visual rhythm for create and view voucher. */
+.voucher-editor__crumb{align-items:center;gap:12px;font-size:13px;color:#60748d}
+.voucher-editor__crumb a{color:#60748d}
+.voucher-editor__panel{padding:24px;margin-bottom:16px}
+.voucher-editor__panel h2{font-size:18px;line-height:26px;margin-bottom:20px}
+.voucher-editor__heading{margin-bottom:20px}
+.voucher-editor__heading h1{font-size:28px;line-height:36px}
+.voucher-editor__button{width:max-content;max-width:100%;min-height:40px;gap:8px}
+.voucher-editor__fields{gap:20px 16px}
+.voucher-editor__fields input,.voucher-editor__fields select{min-height:44px}
+@media(max-width:760px){.voucher-editor__fields,.voucher-editor__summary{grid-template-columns:1fr}}
