@@ -9,8 +9,8 @@
       </header>
 
       <section class="list-panel" aria-label="Danh sách danh mục">
-        <div class="list-toolbar">
-          <div class="search-field">
+        <div class="list-toolbar web2-management-toolbar">
+          <div class="search-field web2-management-search">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
               <circle cx="10.8" cy="10.8" r="6.5"></circle>
@@ -20,11 +20,11 @@
               placeholder="Tìm theo tên danh mục..." aria-label="Tìm danh mục"
               (ngModelChange)="onSearchInput($event)" (keyup.enter)="applyFilters()">
           </div>
-          <div class="toolbar-actions">
-            <label class="filter-label">
-              Trạng thái
+          <div class="toolbar-actions web2-management-actions">
+            <label class="filter-label web2-management-control">
+              <span class="web2-management-sr-only">Trạng thái</span>
               <select [(ngModel)]="statusFilter" (change)="applyFilters()" aria-label="Lọc theo trạng thái">
-                <option value="ALL">Tất cả</option>
+                <option value="ALL">Tất cả trạng thái</option>
                 <option value="ACTIVE">Đang hoạt động</option>
                 <option value="INACTIVE">Tạm ngưng</option>
               </select>
