@@ -11,7 +11,7 @@
     </nav>
 
     <section class="product-panel" aria-label="Danh sách sản phẩm">
-      <div class="toolbar web2-management-toolbar">
+      <div class="toolbar web2-management-toolbar web2-filterbar">
         <label class="search web2-management-search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.2 4.2"/></svg>
           <input type="search" [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput($event)" (keyup.enter)="applyFilters()" placeholder="Tìm kiếm tên sản phẩm hoặc SKU..." aria-label="Tìm sản phẩm theo tên hoặc SKU">
