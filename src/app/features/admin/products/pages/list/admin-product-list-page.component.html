@@ -70,7 +70,7 @@
       <div class="table-scroll">
         <table>
           <thead><tr>
-            <th scope="col">STT</th><th scope="col">Hình ảnh</th><th scope="col">Tên sản phẩm</th><th scope="col">SKU / Biến thể</th><th scope="col">Danh mục</th><th scope="col">Giá</th><th scope="col">Tổng tồn kho</th><th scope="col">Ngày tạo</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th>
+            <th scope="col">STT</th><th scope="col">Hình ảnh</th><th scope="col">Tên sản phẩm</th><th scope="col">SKU / Biến thể</th><th scope="col">Danh mục</th><th scope="col">Giá</th><th scope="col" class="web2-cell-center">Tổng tồn kho</th><th scope="col" class="web2-cell-center">Ngày tạo</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th>
           </tr></thead>
           <tbody>
             @if (loading()) {
@@ -93,8 +93,8 @@
                   </td>
                   <td>{{ categoryName(product.categoryId) }}</td>
                   <td class="price">{{ priceRange(product) }}</td>
-                  <td class="stock-cell">{{ product.totalStock }}</td>
-                  <td class="date-cell">{{ product.createdAt ? product.createdAt.slice(0, 10) : '—' }}</td>
+                  <td class="stock-cell web2-cell-center">{{ product.totalStock }}</td>
+                  <td class="date-cell web2-cell-center">{{ product.createdAt ? product.createdAt.slice(0, 10) : '—' }}</td>
                   <td class="status-cell">
                     <span class="status" [class.active]="product.status === 'ACTIVE'" [class.archived]="product.status === 'ARCHIVED'">{{ product.status === 'ACTIVE' ? 'Đang hoạt động' : product.status === 'ARCHIVED' ? 'Đã lưu trữ' : 'Tạm ngưng' }}</span>
                   </td>
