@@ -253,6 +253,12 @@ export class BranchManagementPageComponent {
     this.branchStatus.set(value); this.listPage.set(1);
   }
   changePage(page: number): void { if (page >= 1 && page <= this.pageCount) this.listPage.set(page); }
+  get visiblePageNumbers(): number[] {
+    const total = this.pageCount;
+    const current = this.listPage();
+    const start = Math.max(1, Math.min(current - 1, total - 2));
+    return Array.from({ length: Math.min(3,total) }, (_, i) => start + i);
+  }
   setDetailTab(tab: Tab): void { this.detailTab.set(tab); }
   branchLink(row: BranchRow): string[] { return ['/admin/branches', row.id]; }
   branchQueryParams(): Record<string, string> | null {
