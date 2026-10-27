@@ -2424,9 +2424,9 @@ app-admin-order-management table.order-admin__table--figma.web2-product-table {
 app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--code {width:17%}
 app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--date {width:11%}
 app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--time {width:12%}
-app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--customer {width:10%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--customer {width:11%}
 app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--total {width:11%}
-app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--payment {width:17%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--payment {width:16%}
 app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--status {width:14%}
 app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--action {width:8%}
 
@@ -2442,12 +2442,14 @@ app-admin-order-management table.order-admin__table--figma.web2-product-table :i
 app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):last-child {
   padding-right:20px !important;
 }
-app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(2),
-app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(4) {
+app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(2) {
   text-align:left !important;
 }
-/* Center time equally within its own column (header + value). */
+/* Align the customer name and header at the CENTER of its own column:
+   time/customer/total centers now sit at ~34%/45.5%/56.5% of the table,
+   making the two visual gaps almost equal, regardless of name length. */
 app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(3),
+app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(4),
 app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(5),
 app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(6),
 app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(7),
