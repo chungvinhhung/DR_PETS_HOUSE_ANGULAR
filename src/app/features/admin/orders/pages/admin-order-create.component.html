@@ -74,8 +74,9 @@
         </div>
         <div class="create-order__field">
           <label for="order-customer-phone">Số điện thoại <span aria-hidden="true">*</span></label>
-          <input id="order-customer-phone" type="tel" autocomplete="off" readonly
-            placeholder="Số điện thoại từ tra cứu" [value]="customerPhone()">
+          <input id="order-customer-phone" type="tel" autocomplete="off"
+            placeholder="Nhập số điện thoại khách hàng" [value]="customerPhone()"
+            (input)="updateCustomerPhone($any($event.target).value)">
         </div>
         <div class="create-order__field">
           <label for="order-customer-email">Email</label>
@@ -110,11 +111,19 @@
                 <button type="button" class="create-order__product-result"
                   [disabled]="option.availableStock !== undefined && option.availableStock <= 0"
                   (click)="addProduct(option)">
-                  <span class="create-order__product-text"><strong>{{ option.productName }}</strong>
-                    <small>{{ option.label }} · {{ option.sku }}</small></span>
-                  <span class="create-order__product-price">{{ price(option.price) }}</span>
-                  <span class="create-order__product-add">
-                    {{ option.availableStock !== undefined && option.availableStock <= 0 ? 'Hết hàng' : '+ Thêm' }}
+                  <span class="create-order__product-thumb" aria-hidden="true">
+                    @if (option.imageUrl) {
+                      <img [src]="option.imageUrl" alt="" loading="lazy">
+                    } @else {
+                      <span>Ảnh</span>
+                    }
+                  </span>
+                  <span class="create-order__product-text">
+                    <strong>{{ option.productName }}</strong>
+                    <small>{{ option.sku }} · {{ option.label }}</small>
+                  </span>
+                  <span class="create-order__product-price">
+                    {{ option.availableStock !== undefined && option.availableStock <= 0 ? 'Hết hàng' : price(option.price) }}
                   </span>
                 </button>
               }
