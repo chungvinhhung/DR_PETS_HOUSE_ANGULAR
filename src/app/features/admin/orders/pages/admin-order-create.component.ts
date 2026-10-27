@@ -390,7 +390,7 @@ export class AdminOrderCreateComponent {
   queryProducts(version = ++this.productRequest): void {
     if (this.productTimer !== null) clearTimeout(this.productTimer);
     const text = this.productQuery().trim();
-    // The Backend accepts an empty q and returns the first active products.
+    // Empty input loads the first active products without sending the q parameter.
     this.productLoading.set(true);
     this.productError.set(false);
     this.api.searchProducts(text).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -407,14 +407,12 @@ export class AdminOrderCreateComponent {
         this.productHighlighted.set(0);
         this.productLoading.set(false);
       },
-      error: error => {
+      error: () => {
         if (version !== this.productRequest) return;
         this.productLoading.set(false);
         this.productResults.set([]);
         this.productError.set(true);
-        // Lookup failures are shown inline next to "Thử lại". Do not show
-        // a misleading global form-validation toast for an automatic GET.
-
+        // Lookup failure is shown inline next to "Thử lại", not as form validation.
       },
     });
   }
