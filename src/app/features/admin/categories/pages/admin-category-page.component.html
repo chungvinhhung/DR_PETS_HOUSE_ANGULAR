@@ -22,6 +22,16 @@
           </div>
           <div class="toolbar-actions web2-management-actions">
             <label class="filter-label web2-management-control">
+              <span class="web2-management-sr-only">Danh mục cha</span>
+              <select [(ngModel)]="parentFilter" (change)="applyFilters()" aria-label="Lọc theo danh mục cha">
+                <option value="ALL">Tất cả danh mục cha</option>
+                <option value="ROOT">Danh mục gốc</option>
+                @for (parent of parentFilterOptions; track parent.id) {
+                  <option [value]="parent.id">{{ parent.name }}</option>
+                }
+              </select>
+            </label>
+            <label class="filter-label web2-management-control">
               <span class="web2-management-sr-only">Trạng thái</span>
               <select [(ngModel)]="statusFilter" (change)="applyFilters()" aria-label="Lọc theo trạng thái">
                 <option value="ALL">Tất cả trạng thái</option>
@@ -49,15 +59,17 @@
                 <th scope="col">Tên danh mục</th>
                 <th scope="col">Slug</th>
                 <th scope="col">Danh mục cha</th>
+                <th scope="col" class="category-col-count">Số lượng sản phẩm</th>
+                <th scope="col" class="category-col-date">Ngày tạo</th>
                 <th scope="col">Trạng thái</th>
                 <th scope="col">Thao tác</th>
               </tr>
             </thead>
             <tbody>
               @if (loading()) {
-                <tr><td colspan="6" class="empty">Đang tải danh mục...</td></tr>
+                <tr><td colspan="8" class="empty">Đang tải danh mục...</td></tr>
               } @else if (categories().length === 0) {
-                <tr><td colspan="6" class="empty">Chưa có danh mục phù hợp. Bạn có thể tạo danh mục mới.</td></tr>
+                <tr><td colspan="8" class="empty">Chưa có danh mục phù hợp. Bạn có thể tạo danh mục mới.</td></tr>
               } @else {
                 @for (category of categories(); track category.id) {
                   <tr>
@@ -65,6 +77,8 @@
                     <td class="category-name">{{ category.name }}</td>
                     <td class="slug" [title]="'Slug đang lưu trên Backend: ' + category.slug"><code>{{ category.slug }}</code></td>
                     <td>{{ parentName(category.parentId) }}</td>
+                    <td class="category-col-count" [title]="categoryProductCount(category.id) === '—' ? 'Không thể tải số lượng sản phẩm' : 'Số sản phẩm chưa lưu trữ trong danh mục'">{{ categoryProductCount(category.id) }}</td>
+                    <td class="category-col-date" [title]="category.createdAt ? '' : 'BE chưa trả createdAt trong API danh mục'">{{ categoryCreatedAt(category.createdAt) }}</td>
                     <td>
                       <span class="status" [class.status--active]="category.status === 'ACTIVE'"
                         [class.status--inactive]="category.status === 'INACTIVE'">
