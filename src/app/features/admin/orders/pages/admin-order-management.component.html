@@ -6,7 +6,7 @@
         <span>Chi tiết đơn hàng</span>
       </nav>
       <header class="order-admin__heading">
-        <h1>Chi tiết đơn hàng {{ selected()?.code || '' }}</h1>
+        <h1>Đơn hàng {{ selected()?.code || '' }}</h1>
         @if (selected(); as order) {
           <div class="order-admin__heading-actions">
             @if (canCancel()) {
@@ -26,7 +26,7 @@
           <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="refresh()">Thử lại</button>
         </div>
       } @else if (selected(); as order) {
-        <section class="order-admin__card" aria-label="Thông tin đơn hàng">
+        <section class="order-admin__card order-admin__card--detail" aria-label="Thông tin đơn hàng">
           <h2>Thông tin đơn hàng</h2>
           <div class="order-admin__information">
             <div><span>Khách hàng</span><strong>{{ customerName(order) }}</strong></div>
@@ -35,12 +35,15 @@
             <div><span>Chi nhánh giao</span><strong>{{ branchName(order.fulfillmentBranchId) }}</strong></div>
             <div><span>Trạng thái đơn hàng</span><strong><span class="order-admin__badge" [attr.data-status]="order.status">{{ statusLabel(order.status) }}</span></strong></div>
             <div><span>Ngày giao thành công</span><strong>{{ when(order.deliveredAt) }}</strong></div>
-            <div class="order-admin__information--wide"><span>Địa chỉ giao hàng</span><strong>{{ shipping(order) }}</strong></div>
           </div>
+          <details class="order-admin__extra">
+            <summary>Địa chỉ giao hàng</summary>
+            <p>{{ shipping(order) }}</p>
+          </details>
         </section>
 
-        <section class="order-admin__card" aria-label="Tiến trình xử lý đơn hàng">
-          <h2>Tiến trình xử lý đơn hàng</h2>
+        <section class="order-admin__card order-admin__card--detail" aria-label="Tiến trình xử lý đơn hàng">
+          <h2>Tiến trình xử lý đơn</h2>
           <div class="order-admin__progress">
             @for (step of milestones; track step; let i = $index) {
               <div class="order-admin__progress-step"
@@ -58,10 +61,10 @@
           </div>
         </section>
 
-        <section class="order-admin__card" aria-label="Sản phẩm trong đơn">
+        <section class="order-admin__card order-admin__card--detail" aria-label="Sản phẩm trong đơn">
           <h2>Sản phẩm trong đơn</h2>
           <div class="order-admin__table-scroll">
-            <table class="order-admin__table">
+            <table class="order-admin__table order-admin__table--detail-items">
               <thead><tr>
                 <th scope="col">Sản phẩm</th>
                 <th scope="col">SKU</th>
@@ -94,7 +97,7 @@
         </section>
 
         <div class="order-admin__grid">
-          <section class="order-admin__card" aria-label="Thanh toán">
+          <section class="order-admin__card order-admin__card--detail" aria-label="Thanh toán">
             <h2>Thanh toán</h2>
             <dl class="order-admin__totals">
               <div><dt>Tạm tính</dt><dd>{{ price(order.pricing.merchandiseSubtotal) }}</dd></div>
@@ -105,7 +108,7 @@
               <div><dt>Trạng thái</dt><dd>{{ paymentStatus(order) }}</dd></div>
             </dl>
           </section>
-          <section class="order-admin__card" aria-label="Lịch sử xử lý">
+          <section class="order-admin__card order-admin__card--detail" aria-label="Lịch sử xử lý">
             <h2>Lịch sử xử lý</h2>
             @if (order.statusHistory?.length) {
               <ol class="order-admin__history">
