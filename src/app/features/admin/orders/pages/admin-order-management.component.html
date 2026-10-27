@@ -30,16 +30,12 @@
           <h2>Thông tin đơn hàng</h2>
           <div class="order-admin__information">
             <div><span>Khách hàng</span><strong>{{ customerName(order) }}</strong></div>
-            <div><span>Liên hệ</span><strong>{{ contact(order) }}</strong></div>
-            <div><span>Thanh toán</span><strong>{{ paymentStatus(order) }}</strong></div>
+            <div><span>Số điện thoại</span><strong>{{ contact(order) }}</strong></div>
+            <div><span>Địa chỉ giao hàng</span><strong>{{ shipping(order) }}</strong></div>
             <div><span>Chi nhánh giao</span><strong>{{ branchName(order.fulfillmentBranchId) }}</strong></div>
-            <div><span>Trạng thái đơn hàng</span><strong><span class="order-admin__badge" [attr.data-status]="order.status">{{ statusLabel(order.status) }}</span></strong></div>
-            <div><span>Ngày giao thành công</span><strong>{{ when(order.deliveredAt) }}</strong></div>
+            <div><span>Ngày giao dự kiến</span><strong>{{ when(order.expectedDeliveryAt) }}</strong></div>
+            <div><span>Ngày giao thực tế</span><strong>{{ when(order.deliveredAt) }}</strong></div>
           </div>
-          <details class="order-admin__extra">
-            <summary>Địa chỉ giao hàng</summary>
-            <p>{{ shipping(order) }}</p>
-          </details>
         </section>
 
         <section class="order-admin__card order-admin__card--detail" aria-label="Tiến trình xử lý đơn hàng">
@@ -51,11 +47,7 @@
                 [class.order-admin__progress-step--cancelled]="order.status === 'CANCELLED'">
                 <div class="order-admin__progress-title"><span class="order-admin__dot"></span>{{ statusLabel(step) }}</div>
                 <div class="order-admin__progress-line"></div>
-                <small>
-                  @if (step === 'COMPLETED' && order.deliveredAt) { {{ when(order.deliveredAt) }} }
-                  @else if (order.status === 'CANCELLED') { Đã hủy }
-                  @else { {{ milestones.indexOf(order.status) >= i ? 'Đã chuyển bước' : 'Chưa bắt đầu' }} }
-                </small>
+                <small>{{ progressTime(order, step) }}</small>
               </div>
             }
           </div>
@@ -107,10 +99,12 @@
           </section>
           <section class="order-admin__card order-admin__card--detail" aria-label="Lịch sử xử lý">
             <h2>Lịch sử xử lý</h2>
-            @if (order.statusHistory?.length) {
+            @if (detailHistory().length) {
               <ol class="order-admin__history">
-                @for (event of detailHistory(); track $index; let first = $first) {
-                  <li [class.order-admin__history--latest]="first"><strong>{{ statusLabel(event.status) }}</strong><small>{{ when(event.at) }}</small>
+                @for (event of detailHistory(); track event.status; let first = $first) {
+                  <li [class.order-admin__history--latest]="first">
+                    <strong>{{ statusLabel(event.status) }}</strong>
+                    <small>{{ event.at ? when(event.at) : 'BE chưa ghi thời gian bước này' }}</small>
                     @if (event.note) { <p>{{ event.note }}</p> }
                   </li>
                 }
