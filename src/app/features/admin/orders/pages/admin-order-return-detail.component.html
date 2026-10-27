@@ -40,15 +40,7 @@
           <div><span>Hạn trả &amp; hoàn tiền</span><strong>{{ when(linkedOrder()?.returnWindowEndsAt) }}</strong></div>
           <div><span>Khách hàng</span><strong>{{ linkedOrder()?.contactSnapshot?.fullName || linkedOrder()?.contactSnapshot?.name || 'Chưa có dữ liệu' }}</strong></div>
         </div>
-        <details class="return-detail__extra">
-          <summary>Thông tin bổ sung</summary>
-          <div class="return-detail__metadata">
-            <div><span>Mã yêu cầu</span><strong>{{ ret.id }}</strong></div>
-            <div><span>Ngày gửi yêu cầu</span><strong>{{ when(requestSubmittedAt(ret)) }}</strong></div>
-            <div><span>Số lượng yêu cầu trả</span><strong>{{ totalQuantity() }} sản phẩm</strong></div>
-            <div><span>Tiền hoàn dự kiến</span><strong>{{ money(ret.refundBreakdown.total) }}</strong></div>
-          </div>
-        </details>
+
       </section>
 
       <section class="return-detail__panel" aria-label="Tiến trình xử lý yêu cầu">
@@ -199,6 +191,15 @@
           <p>Chưa có API xác nhận kiểm tra hoặc giao dịch nhập kho theo SKU; hoàn tiền không đồng nghĩa nhập lại kho.</p>
         </details>
       </section>
+      <details class="return-detail__extra return-detail__extra--bottom">
+        <summary>Thông tin bổ sung về yêu cầu</summary>
+        <div class="return-detail__metadata">
+          <div><span>Mã yêu cầu</span><strong>{{ ret.id }}</strong></div>
+          <div><span>Ngày gửi yêu cầu</span><strong>{{ when(requestSubmittedAt(ret)) }}</strong></div>
+          <div><span>Số lượng yêu cầu trả</span><strong>{{ totalQuantity() }} sản phẩm</strong></div>
+          <div><span>Tiền hoàn dự kiến</span><strong>{{ money(ret.refundBreakdown.total) }}</strong></div>
+        </div>
+      </details>
     }
 
     @if (dialog(); as action) {
