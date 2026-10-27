@@ -15,9 +15,15 @@
       <div class="return-detail__actions">
         @for (action of availableActions(); track action) {
           <button type="button" class="return-detail__button"
-            [class.return-detail__button--danger]="action === 'reject'"
+            [class.return-detail__button--outline-danger]="action === 'reject'"
             [class.return-detail__button--primary]="action !== 'reject'"
             (click)="open(action)">{{ actionName(action) }}</button>
+        }
+        @if (data(); as ret) {
+          @if (ret.status === 'COMPLETED' || ret.status === 'REJECTED' || ret.status === 'CANCELLED') {
+            <a class="return-detail__button return-detail__button--primary return-detail__button--back"
+              routerLink="/admin/orders" [queryParams]="{tab:'returns'}">Quay lại danh sách</a>
+          }
         }
       </div>
     </header>
@@ -45,9 +51,9 @@
 
       <section class="return-detail__panel" aria-label="Tiến trình xử lý yêu cầu">
         <h2>Luồng xử lý yêu cầu</h2>
-        <ol class="return-detail__progress">
+        <ol class="return-detail__progress" [attr.data-status]="ret.status">
           @for (step of statusSteps; track step; let index = $index) {
-            <li [class.return-detail__progress--done]="statusSteps.indexOf(ret.status) >= index"
+            <li [class.return-detail__progress--done]="isStepReached(ret, step)"
                 [class.return-detail__progress--current]="ret.status === step"
                 [class.return-detail__progress--rejected]="ret.status === 'REJECTED' || ret.status === 'CANCELLED'">
               <div class="return-detail__progress-head">
