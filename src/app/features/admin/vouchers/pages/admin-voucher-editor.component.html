@@ -96,9 +96,9 @@
             </span>
           </label>
           <label class="voucher-editor__fields--full">Mô tả
-            <textarea rows="2" disabled
+            <textarea rows="2" readonly
               placeholder="Nhập mô tả chương trình"
-              title="Backend hiện chưa hỗ trợ lưu mô tả voucher"></textarea>
+              title="Trường mô tả hiện chưa được Backend hỗ trợ lưu"></textarea>
           </label>
         </div>
       </section>
@@ -193,6 +193,29 @@
       @if (!canWrite()) {
         <p class="voucher-editor__muted">Chỉ Quản trị viên được phép tạo hoặc chỉnh sửa voucher.</p>
       }
+    }
+
+    @if (leaveDialogOpen()) {
+      <div class="voucher-editor__overlay voucher-editor__leave-overlay" (click)="resolveLeave(false)">
+        <section class="voucher-editor__dialog voucher-editor__leave-dialog" role="dialog"
+          aria-modal="true" aria-labelledby="voucher-leave-title"
+          aria-describedby="voucher-leave-description" (click)="$event.stopPropagation()">
+          <div class="voucher-editor__leave-head">
+            <div>
+              <h2 id="voucher-leave-title">Rời khỏi trang {{ mode === 'create' ? 'tạo voucher' : 'chỉnh sửa voucher' }}?</h2>
+              <p id="voucher-leave-description">Thông tin bạn vừa thay đổi chưa được lưu. Bạn có muốn rời khỏi trang?</p>
+            </div>
+            <button class="voucher-editor__leave-close" type="button" aria-label="Đóng thông báo"
+              (click)="resolveLeave(false)">×</button>
+          </div>
+          <div class="voucher-editor__dialog-actions voucher-editor__leave-actions">
+            <button class="voucher-editor__button voucher-editor__button--outline"
+              type="button" (click)="resolveLeave(false)">Ở lại trang</button>
+            <button class="voucher-editor__button voucher-editor__button--primary"
+              type="button" (click)="resolveLeave(true)">Rời trang</button>
+          </div>
+        </section>
+      </div>
     }
 
     @if (disableDialog() && original(); as voucher) {
