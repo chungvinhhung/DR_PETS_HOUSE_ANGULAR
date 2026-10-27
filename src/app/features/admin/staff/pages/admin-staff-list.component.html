@@ -9,7 +9,7 @@
       <a class="staff-tab" routerLink="/admin/staff/schedule">Lịch làm việc</a>
     </nav>
     <section class="staff-filter-panel" aria-label="Tìm kiếm và lọc nhân viên">
-      <div class="staff-toolbar">
+      <div class="staff-toolbar web2-filterbar">
         <label class="staff-search">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.2 4.2"/></svg>
           <input type="search" aria-label="Tìm tên hoặc mã nhân viên" placeholder="Tìm tên hoặc mã nhân viên..." [ngModel]="query()" (ngModelChange)="updateQuery($event)">
