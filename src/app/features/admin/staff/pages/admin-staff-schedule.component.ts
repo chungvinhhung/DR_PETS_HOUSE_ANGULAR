@@ -64,7 +64,7 @@ export class AdminStaffScheduleComponent {
     const iso = dateFor(this.monday(), index);
     return {
       iso,
-      weekday: index === 6 ? 'CN' : 'Thứ ' + (index + 2),
+      weekday: index === 6 ? 'Chủ Nhật' : 'Thứ ' + (index + 2),
       dayMonth: readable(iso),
     };
   }));
