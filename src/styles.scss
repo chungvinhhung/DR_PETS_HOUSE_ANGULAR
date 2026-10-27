@@ -4283,11 +4283,17 @@ app-admin-catalog-shell .web2-filterbar.web2-filterbar .toolbar-selects .date-fi
   align-items:center;
 }
 .shift-assign-dialog .shift-assign-add select {
+  box-sizing:border-box;
+  appearance:none;
   width:100%;
   min-width:0;
   height:38px;
+  padding:0 42px 0 12px;
   border:1px solid #dce5ef;
   border-radius:7px;
+  background:#fff url('/assets/admin-product/icon-chevron-down.svg') no-repeat right 14px center;
+  background-size:16px 16px;
+  color:#26364a;
   font:400 12px/18px Roboto,Arial,sans-serif;
 }
 .shift-assign-dialog .shift-assign-add > button {
