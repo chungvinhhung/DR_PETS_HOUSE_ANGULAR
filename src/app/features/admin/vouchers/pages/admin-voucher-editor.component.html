@@ -41,7 +41,6 @@
             <div><span>Phạm vi áp dụng</span><strong>{{ scopeLabels[voucher.scope] }}</strong></div>
             <div><span>Trạng thái quản lý</span><strong><span class="voucher-editor__badge" [attr.data-status]="voucher.status">{{ voucher.status === 'ACTIVE' ? 'Đang bật' : 'Đã tắt' }}</span></strong></div>
             <div><span>Hiệu lực</span><strong>{{ when(voucher.effectiveFrom) }} – {{ when(voucher.effectiveTo) }}</strong></div>
-            <div><span>Khả dụng</span><strong>{{ availability(voucher) }}</strong></div>
             <div><span>Ngày tạo</span><strong>{{ when(voucher.createdAt) }}</strong></div>
           </div>
         </section>
