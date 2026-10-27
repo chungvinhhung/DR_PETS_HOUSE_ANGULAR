@@ -4,8 +4,8 @@
     <nav class="schedule-tabs" aria-label="Nhân sự"><a routerLink="/admin/staff">Nhân viên</a><span aria-current="page">Lịch làm việc</span></nav>
     <section class="schedule-filter-panel" aria-label="Bộ lọc lịch làm việc">
       <div class="schedule-toolbar">
-        <h2 class="schedule-toolbar__title">Lịch làm việc theo tuần</h2>
         <div class="schedule-toolbar__controls">
+          <h2 class="schedule-toolbar__title">Lịch làm việc theo tuần</h2>
           <app-admin-staff-week-nav
             [monday]="monday()" [label]="weekLabel()"
             (previousWeek)="changeWeek(-1)" (nextWeek)="changeWeek(1)"
