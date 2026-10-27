@@ -73,7 +73,12 @@
               <tbody>
                 @for (item of order.items; track item.orderItemId) {
                   <tr>
-                    <td class="order-admin__item-name">{{ item.name }}</td>
+                    <td class="order-admin__item-name">
+                      <div class="order-admin__product-line">
+                        <span class="order-admin__product-thumb" aria-label="Sản phẩm chưa có ảnh trong API">Chưa có ảnh</span>
+                        <span>{{ item.name }}</span>
+                      </div>
+                    </td>
                     <td>{{ item.skuSnapshot || '—' }}</td>
                     <td class="order-admin__number">{{ item.quantity }}</td>
                     <td class="order-admin__number">{{ price(item.unitPrice) }}</td>
