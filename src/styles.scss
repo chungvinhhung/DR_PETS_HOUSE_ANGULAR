@@ -4729,3 +4729,13 @@ app-admin-product-list-page .product-panel .table-scroll table :is(th,td):first-
   padding-inline: 0 !important;
   vertical-align: middle !important;
 }
+
+
+/* Generated SKU is display-only text, not a large placeholder. */
+app-admin-product-create-page .product-screen .basics .form-field input.auto-generated-sku[readonly] {
+  background: #e5f6fd !important;
+  color: #26364a !important;
+  font: 400 13px/20px Roboto, Arial, sans-serif !important;
+  cursor: default;
+  caret-color: transparent;
+}
