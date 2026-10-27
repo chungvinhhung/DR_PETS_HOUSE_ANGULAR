@@ -71,6 +71,21 @@ export class AdminCategoryPageComponent implements OnInit {
   get pageNumber(): number {
     return this.cursorStack.length + 1;
   }
+  get visiblePageNumbers(): number[] {
+    const current = this.pageNumber;
+    const from = Math.max(1, current - 2);
+    const end = current + (this.nextCursor() ? 1 : 0);
+    return Array.from({length: end - from + 1}, (_, i) => from + i);
+  }
+  goToPage(target: number): void {
+    if (!Number.isSafeInteger(target) || target < 1 || this.loading()) return;
+    if (target === this.pageNumber) return;
+    if (target === this.pageNumber + 1) { this.nextPage(); return; }
+    if (target > this.cursorStack.length) return;
+    const cursor = this.cursorStack[target - 1] ?? null;
+    this.cursorStack = this.cursorStack.slice(0, target - 1);
+    this.loadPage(cursor);
+  }
 
   ngOnInit(): void {
     this.loadPage(null);
