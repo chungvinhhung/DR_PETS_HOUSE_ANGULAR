@@ -89,6 +89,9 @@ export class AdminOrderManagementComponent {
   readonly awaitingCount = computed(() => this.allOrders().filter(item => item.status === 'PENDING').length);
   readonly shippingCount = computed(() => this.allOrders().filter(item => item.status === 'SHIPPED').length);
   readonly selected = signal<OrderRecord | null>(null);
+  // Keep the API history unchanged; the detail timeline displays latest events first.
+  readonly detailHistory = computed(() => [...(this.selected()?.statusHistory ?? [])]
+    .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()));
   readonly branches = signal<{ id: string; name: string }[]>([]);
   readonly loading = signal(false);
   readonly error = signal('');
