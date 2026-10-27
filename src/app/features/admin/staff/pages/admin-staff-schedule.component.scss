@@ -19,18 +19,28 @@
 .schedule-tabs > a:hover { color:#0d47a1; text-decoration:none; }
 .schedule-tabs > a:focus-visible { outline:2px solid #0d47a1; outline-offset:-3px; }
 
-/* Figma: controls and weekday grid share one connected outer card. */
-.schedule-filter-panel {
-  margin:0;
-  padding:0;
+/* Figma: an inset calendar table overlaps the empty lower portion of
+   the controls card. The parent retains the outer border on all four sides. */
+.schedule-weekly-card {
+  position:relative;
+  box-sizing:border-box;
+  min-width:0;
+  padding:14px;
   border:1px solid #dce5f0;
-  border-bottom:0;
-  border-radius:12px 12px 0 0;
+  border-radius:12px;
   background:#fff;
 }
+.schedule-filter-panel {
+  position:relative;
+  min-width:0;
+  margin:0;
+  padding:0 0 42px;
+  border:0;
+  background:transparent;
+}
 .schedule-toolbar {
-  min-height:70px;
-  padding:12px 14px;
+  min-height:44px;
+  padding:0;
 }
 .schedule-toolbar__controls {
   display:grid;
@@ -85,13 +95,15 @@
 .schedule-filter select:focus-visible { outline:2px solid #8eb8ee; outline-offset:1px; }
 
 .schedule-panel {
+  position:relative;
+  z-index:1;
   width:100%;
   min-width:0;
+  margin-top:-42px;
   padding:0;
   background:#fff;
   border:1px solid #dce5f0;
-  border-top:0;
-  border-radius:0 0 12px 12px;
+  border-radius:8px;
   overflow:hidden;
 }
 .schedule-scroller {
@@ -247,7 +259,7 @@
   .schedule-page {padding:18px 12px}
   .schedule-heading h1 {font-size:24px}
   .schedule-tabs > * {min-width:135px;padding-inline:14px}
-  .schedule-toolbar {padding:12px}
+  .schedule-toolbar {padding:0}
   .schedule-toolbar__controls {grid-template-columns:1fr;row-gap:12px}
   .schedule-toolbar__title {grid-column:1;grid-row:1}
   .schedule-toolbar__controls > app-admin-staff-week-nav {
