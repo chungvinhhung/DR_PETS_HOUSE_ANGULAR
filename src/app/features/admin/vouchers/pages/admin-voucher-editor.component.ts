@@ -58,6 +58,8 @@ export class AdminVoucherEditorComponent {
   readonly dirty = signal(false);
   readonly maxDiscountUnlimited = signal(true);
   readonly disableDialog = signal(false);
+  readonly leaveDialogOpen = signal(false);
+  private leaveResolver: ((allow: boolean) => void) | null = null;
   readonly disableNote = signal('');
   readonly discountTypeLabels: Record<VoucherDiscountType,string> = {
     PERCENTAGE:'Theo phần trăm', FIXED:'Tiền cố định',
@@ -126,10 +128,22 @@ export class AdminVoucherEditorComponent {
     this.validation.set('');
     this.dirty.set(true);
   }
-  canLeavePage(): boolean {
-    return !this.dirty() || window.confirm('Voucher đang có thay đổi chưa lưu. Bạn muốn rời trang?');
+  /** Angular CanDeactivate: covers Hủy, sidebar, breadcrumb and browser Back. */
+  canLeavePage(): boolean | Promise<boolean> {
+    if (this.saving()) return false;
+    if (!this.dirty()) return true;
+    // Only one pending navigation can own the confirmation dialog.
+    if (this.leaveResolver) return false;
+    this.leaveDialogOpen.set(true);
+    return new Promise<boolean>(resolve => { this.leaveResolver = resolve; });
   }
-  cancel(): void {this.router.navigateByUrl('/admin/vouchers');}
+  resolveLeave(allow: boolean): void {
+    const resolve = this.leaveResolver;
+    this.leaveResolver = null;
+    this.leaveDialogOpen.set(false);
+    resolve?.(allow);
+  }
+  cancel(): void {void this.router.navigateByUrl('/admin/vouchers');}
   private iso(date: string, time: string): string | null {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return null;
     const t = new Date(date + 'T' + time + ':00');
