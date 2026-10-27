@@ -52,7 +52,7 @@
             <col class="voucher-list__col-actions">
           </colgroup>
           <thead><tr>
-            <th scope="col">Mã voucher</th><th scope="col" class="web2-cell-center">Phạm vi</th><th scope="col">Ưu đãi</th>
+            <th scope="col">Mã voucher</th><th scope="col" class="web2-cell-center">Phạm vi</th><th scope="col" class="web2-cell-center">Ưu đãi</th>
             <th scope="col" class="web2-cell-center">Hiệu lực</th><th scope="col">Đã dùng / Giới hạn</th>
             <th scope="col">Khả dụng</th><th scope="col">Thao tác</th>
           </tr></thead>
@@ -71,7 +71,7 @@
                     <small>{{ voucher.name }}</small>
                   </td>
                   <td class="web2-cell-center">{{ scopeLabels[voucher.scope] }}</td>
-                  <td>{{ offer(voucher) }}</td>
+                  <td class="web2-cell-center">{{ offer(voucher) }}</td>
                   <td class="web2-cell-center"><span>{{ date(voucher.effectiveFrom) }}</span><small>đến {{ date(voucher.effectiveTo) }}</small></td>
                   <td><strong>{{ voucher.usedCount }} / {{ voucher.quota }}</strong>
                     <div class="voucher-list__progress" role="progressbar" [attr.aria-valuenow]="voucher.usedCount"
