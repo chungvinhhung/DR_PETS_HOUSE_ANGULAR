@@ -2,6 +2,10 @@
   <main class="schedule-page">
     <header class="schedule-heading"><h1>Quản lý nhân sự</h1></header>
     <nav class="schedule-tabs" aria-label="Nhân sự"><a routerLink="/admin/staff">Nhân viên</a><span aria-current="page">Lịch làm việc</span></nav>
+    @if (staffApi.loading() || staffApi.shiftLoading()) { <p role="status">Đang tải lịch nhân sự...</p> }
+    @if (staffApi.error()) { <p role="alert">{{ staffApi.error() }} <button type="button" (click)="staffApi.loadRoster(true)">Thử lại</button></p> }
+    @if (staffApi.shiftError()) { <p role="alert">{{ staffApi.shiftError() }}</p> }
+    <div class="schedule-weekly-card">
     <section class="schedule-filter-panel" aria-label="Bộ lọc lịch làm việc">
       <div class="schedule-toolbar">
         <div class="schedule-toolbar__controls">
@@ -32,9 +36,6 @@
         </div>
       </div>
     </section>
-    @if (staffApi.loading() || staffApi.shiftLoading()) { <p role="status">Đang tải lịch nhân sự...</p> }
-    @if (staffApi.error()) { <p role="alert">{{ staffApi.error() }} <button type="button" (click)="staffApi.loadRoster(true)">Thử lại</button></p> }
-    @if (staffApi.shiftError()) { <p role="alert">{{ staffApi.shiftError() }}</p> }
     <section class="schedule-panel" aria-label="Bảng lịch làm việc">
       <div class="schedule-scroller"><table>
         <colgroup><col class="schedule-col-staff">@for (day of days(); track day.iso) { <col class="schedule-col-day"> }</colgroup>
@@ -56,8 +57,8 @@
         } @empty { <tr><td colspan="8" class="schedule-empty">{{ staffApi.loading() ? 'Đang tải nhân sự...' : staffApi.error() ? 'Không tải được nhân viên.' : 'Không có nhân viên phù hợp.' }}</td></tr> }
         </tbody>
       </table></div>
-
     </section>
+    </div>
     @if (dialog(); as selected) {
       <app-staff-shift-assignment-dialog [employee]="selected.employee" [isoDate]="selected.date"
         [branchName]="activeBranch()?.name || ''" [existing]="forDay()" [otherBranchShifts]="otherBranches()"
