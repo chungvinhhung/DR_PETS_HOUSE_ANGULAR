@@ -56,6 +56,7 @@ export class AdminVoucherEditorComponent {
   readonly error = signal('');
   readonly validation = signal('');
   readonly dirty = signal(false);
+  readonly maxDiscountUnlimited = signal(true);
   readonly disableDialog = signal(false);
   readonly disableNote = signal('');
   readonly discountTypeLabels: Record<VoucherDiscountType,string> = {
@@ -104,6 +105,7 @@ export class AdminVoucherEditorComponent {
           fromDate:this.fmtDate(v.effectiveFrom), fromTime:this.fmtTime(v.effectiveFrom),
           toDate:this.fmtDate(v.effectiveTo), toTime:this.fmtTime(v.effectiveTo),
         });
+        this.maxDiscountUnlimited.set(v.maxDiscountAmount == null);
         this.dirty.set(false);
         this.loading.set(false);
       },
@@ -114,6 +116,13 @@ export class AdminVoucherEditorComponent {
   change<K extends keyof VoucherFields>(field: K, value: VoucherFields[K]): void {
     if (!this.allowEditing() || this.saving()) return;
     this.form.update(f => ({...f,[field]: value}));
+    this.validation.set('');
+    this.dirty.set(true);
+  }
+  toggleMaxDiscountUnlimited(checked: boolean): void {
+    if (!this.allowEditing() || this.mode !== 'create' || this.saving()) return;
+    this.maxDiscountUnlimited.set(checked);
+    if (checked) this.form.update(current => ({...current, maxDiscountAmount: ''}));
     this.validation.set('');
     this.dirty.set(true);
   }
@@ -159,7 +168,10 @@ export class AdminVoucherEditorComponent {
         this.validation.set('Giá trị giao dịch tối thiểu phải là số không âm.');return null;
       }
       body.minOrderAmount=minimum;
-      if (v.discountType === 'PERCENTAGE' && v.maxDiscountAmount.trim()) {
+      if (v.discountType === 'PERCENTAGE' && !this.maxDiscountUnlimited()) {
+        if (!v.maxDiscountAmount.trim()) {
+          this.validation.set('Vui lòng nhập mức giảm tối đa hoặc chọn Không giới hạn mức giảm.');return null;
+        }
         const max = Number(v.maxDiscountAmount);
         if (!Number.isFinite(max) || max <= 0) {
           this.validation.set('Giảm tối đa phải lớn hơn 0 hoặc để trống.');return null;
