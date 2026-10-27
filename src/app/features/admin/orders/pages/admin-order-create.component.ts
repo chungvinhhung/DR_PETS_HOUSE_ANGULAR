@@ -15,6 +15,7 @@ interface OrderVariantChoice {
   sku: string;
   price: number;
   availableStock?: number;
+  imageUrl?: string;
 }
 interface OrderDraftLine extends OrderVariantChoice { quantity: number; }
 interface ShippingAddressDraft {
