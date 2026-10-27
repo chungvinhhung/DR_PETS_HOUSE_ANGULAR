@@ -116,9 +116,9 @@
           <fieldset class="voucher-editor__discount-options" [disabled]="!allowEditing()">
             <legend>Loại ưu đãi <span class="voucher-editor__required">*</span></legend>
             <label><input type="radio" name="voucherDiscountType" [checked]="form().discountType === 'PERCENTAGE'"
-              (change)="change('discountType','PERCENTAGE')"> Theo phần trăm</label>
+              (change)="change('discountType','PERCENTAGE')"><span class="voucher-editor__radio-text">Theo phần trăm</span></label>
             <label><input type="radio" name="voucherDiscountType" [checked]="form().discountType === 'FIXED'"
-              (change)="change('discountType','FIXED')"> Tiền cố định</label>
+              (change)="change('discountType','FIXED')"><span class="voucher-editor__radio-text">Tiền cố định</span></label>
           </fieldset>
           <label>Giá trị ưu đãi <span class="voucher-editor__required">*</span>
             <div class="voucher-editor__input-suffix">
@@ -208,7 +208,7 @@
             <button class="voucher-editor__leave-close" type="button" aria-label="Đóng thông báo"
               (click)="resolveLeave(false)">×</button>
           </div>
-          <div class="voucher-editor__dialog-actions voucher-editor__leave-actions">
+          <div class="voucher-editor__leave-actions">
             <button class="voucher-editor__button voucher-editor__button--outline"
               type="button" (click)="resolveLeave(false)">Ở lại trang</button>
             <button class="voucher-editor__button voucher-editor__button--primary"
