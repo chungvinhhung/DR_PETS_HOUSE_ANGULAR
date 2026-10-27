@@ -459,13 +459,6 @@ export class AdminOrderCreateComponent {
     else void this.router.navigateByUrl('/admin/orders');
   }
 
-  reviewDraft(): void {
-    this.reviewAttempted.set(true);
-    if (this.isDraftValid()) {
-      this.toast.show('Thông tin bản nháp đã đầy đủ. Tổng tiền cuối cùng sẽ được xác nhận khi hệ thống hỗ trợ tạo đơn.', 'info');
-    }
-  }
-
   readonly missingShippingAddress = computed(() =>
     !this.shippingLine1().trim() || !this.shippingCity().trim() || !this.shippingDistrict().trim());
   readonly showAddressContractWarning = computed(() => this.selectedCustomer() !== null);
