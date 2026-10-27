@@ -104,7 +104,11 @@
         <span>Đang hiển thị {{ filtered().length }} trên tổng số {{ all().length }} voucher</span>
         <div>
           <button type="button" [disabled]="!previous().length || loading()" (click)="prev()" aria-label="Trang trước">‹</button>
-          <strong>{{ page() }}</strong>
+          @for (index of visiblePageNumbers(); track index) {
+            <button type="button" class="voucher-list__page" [class.voucher-list__page--active]="page() === index"
+              [attr.aria-current]="page() === index ? 'page' : null"
+              [attr.aria-label]="'Trang ' + index" [disabled]="loading()" (click)="goToPage(index)">{{ index }}</button>
+          }
           <button type="button" [disabled]="!nextCursor() || loading()" (click)="next()" aria-label="Trang sau">›</button>
         </div>
       </footer>
