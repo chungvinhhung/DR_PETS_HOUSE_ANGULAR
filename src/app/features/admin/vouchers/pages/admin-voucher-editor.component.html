@@ -45,6 +45,7 @@
             <div><span>Ngày tạo</span><strong>{{ when(voucher.createdAt) }}</strong></div>
           </div>
         </section>
+        <div class="voucher-editor__detail-grid">
         <section class="voucher-editor__panel">
           <h2>Điều kiện áp dụng</h2>
           <div class="voucher-editor__summary">
@@ -66,6 +67,7 @@
           </div>
           <p class="voucher-editor__muted">Đã sử dụng {{ percentage() }}% · {{ voucher.usedCount }} / {{ voucher.quota }} lượt</p>
         </section>
+        </div>
       }
     } @else {
       <section class="voucher-editor__panel">
