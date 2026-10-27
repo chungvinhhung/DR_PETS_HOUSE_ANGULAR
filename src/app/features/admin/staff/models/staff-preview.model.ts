@@ -39,7 +39,7 @@ export const JOB_LABELS: Record<JobRole, string> = {
   RECEPTIONIST: 'Lễ tân',
   CARE_STAFF: 'Nhân viên chăm sóc',
   MANAGER: 'Quản lý',
-  UNKNOWN: 'Chưa xác định',
+  UNKNOWN: '—',
 };
 
 export const JOB_PREFIX: Record<JobRole, string> = {
