@@ -56,14 +56,7 @@
         } @empty { <tr><td colspan="8" class="schedule-empty">{{ staffApi.loading() ? 'Đang tải nhân sự...' : staffApi.error() ? 'Không tải được nhân viên.' : 'Không có nhân viên phù hợp.' }}</td></tr> }
         </tbody>
       </table></div>
-      <footer class="schedule-footer"><span>Đang hiển thị {{ rows().length }} trên tổng số {{ filtered().length }} nhân viên</span><nav aria-label="Phân trang nhân viên">
-        <button type="button" aria-label="Trang trước" [disabled]="page()===1" (click)="changePage(page()-1)">‹</button>
-        @for (number of visiblePageNumbers(); track number) {
-          <button type="button" class="schedule-page-number" [attr.aria-current]="page() === number ? 'page' : null"
-            [class.schedule-page-number--active]="page() === number" (click)="changePage(number)">{{ number }}</button>
-        }
-        <button type="button" aria-label="Trang sau" [disabled]="page()>=pageCount()" (click)="changePage(page()+1)">›</button>
-      </nav></footer>
+
     </section>
     @if (dialog(); as selected) {
       <app-staff-shift-assignment-dialog [employee]="selected.employee" [isoDate]="selected.date"
