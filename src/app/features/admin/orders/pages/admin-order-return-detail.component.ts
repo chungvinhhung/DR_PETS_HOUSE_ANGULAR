@@ -7,8 +7,9 @@ import { AdminToastService } from '../../../../shared/services/admin-toast.servi
 import { AdminReturnNotificationService } from '../../../../shared/services/admin-return-notification.service';
 import { orderErrorMessage } from '../services/admin-order-error-message';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
 import {
-  AdminOrderApiService, OrderReturnSummary, OrderRefundRecord, ReturnStatus,
+  AdminOrderApiService, OrderRecord, OrderReturnSummary, OrderRefundRecord, ReturnStatus,
   ReturnStaffAction, ReturnManagerAction,
 } from '../services/admin-order-api.service';
 
@@ -34,12 +35,15 @@ export class AdminOrderReturnDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly api = inject(AdminOrderApiService);
   private readonly session = inject(AuthSessionService);
+  private readonly branchApi = inject(BranchManagementApiService);
   private readonly toast = inject(AdminToastService);
   private readonly returnNotifications = inject(AdminReturnNotificationService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly id = signal('');
   readonly data = signal<OrderReturnSummary | null>(null);
+  readonly linkedOrder = signal<OrderRecord | null>(null);
+  readonly branchNames = signal<Record<string,string>>({});
   readonly refund = signal<OrderRefundRecord | null>(null);
   readonly loading = signal(true);
   readonly refundLoading = signal(false);
@@ -73,10 +77,15 @@ export class AdminOrderReturnDetailComponent {
   readonly totalQuantity = computed(() => this.data()?.items.reduce((sum, item) => sum + item.requestedQty, 0) ?? 0);
 
   constructor() {
+    this.branchApi.listBranches().pipe(takeUntilDestroyed()).subscribe({
+      next: branches => this.branchNames.set(Object.fromEntries(branches.map(branch => [branch.id, branch.name]))),
+      error: () => { /* A branch name is noncritical; display the ID instead. */ },
+    });
     this.route.paramMap.pipe(takeUntilDestroyed()).subscribe(params => {
       const id = params.get('id') ?? '';
       this.id.set(id);
       this.data.set(null);
+      this.linkedOrder.set(null);
       this.refund.set(null);
       this.dialog.set(null);
       this.load();
@@ -90,6 +99,7 @@ export class AdminOrderReturnDetailComponent {
       next: value => {
         if (this.id() !== id) return;
         this.data.set(value);
+        this.loadLinkedOrder(value.id, value.orderId);
         this.loading.set(false);
         this.refreshRefund(value);
       },
@@ -99,6 +109,25 @@ export class AdminOrderReturnDetailComponent {
         this.error.set(orderErrorMessage(err, 'Không tải được chi tiết yêu cầu trả hàng.'));
       },
     });
+  }
+  private loadLinkedOrder(returnId: string, orderId: string): void {
+    this.linkedOrder.set(null);
+    this.api.get(orderId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: order => {
+        if (this.data()?.id === returnId) this.linkedOrder.set(order);
+      },
+      error: () => {
+        // Display a clear placeholder when the order is not available in this role.
+        if (this.data()?.id === returnId) this.linkedOrder.set(null);
+      },
+    });
+  }
+  branchName(id?: string | null): string {
+    if (!id) return 'Chưa có dữ liệu';
+    return this.branchNames()[id] || id;
+  }
+  orderSku(orderItemId: string): string {
+    return this.linkedOrder()?.items.find(item => item.orderItemId === orderItemId)?.skuSnapshot || '—';
   }
   private refreshRefund(data: OrderReturnSummary): void {
     if (!data.refundId || !this.isManager()) { this.refund.set(null); return; }
