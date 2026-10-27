@@ -2891,8 +2891,11 @@ app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(n+4) {
 app-admin-order-return-detail .return-detail__table tbody td:nth-child(n+4) {
   white-space:nowrap;
 }
+/* Figma's 59px image cell uses 4px outer gutters; avoid squeezing
+   a 48px thumbnail when the table reaches its 1000px minimum width. */
 app-admin-order-return-detail .return-detail__table :is(th,td):first-child {
-  padding-left:12px !important;
+  padding-left:4px !important;
+  padding-right:4px !important;
 }
 app-admin-order-return-detail .return-detail__table :is(th,td):last-child {
   padding-right:12px !important;
