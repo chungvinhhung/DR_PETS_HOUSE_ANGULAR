@@ -2318,7 +2318,7 @@ app-admin-voucher-editor .voucher-editor__quota-controls input[type="checkbox"]:
 }
 app-admin-voucher-editor .voucher-editor__detail-grid > .voucher-editor__panel {min-height:230px;}
 @media(max-width:1100px) {
-  app-admin-voucher-editor .voucher-editor__program-fields {grid-template-columns:repeat(2,minmax(0,1fr));}
+  app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields {grid-template-columns:repeat(2,minmax(0,1fr));}
   app-admin-voucher-editor .voucher-editor__create-grid {grid-template-columns:1fr;}
 }
 @media(max-width:700px) {
