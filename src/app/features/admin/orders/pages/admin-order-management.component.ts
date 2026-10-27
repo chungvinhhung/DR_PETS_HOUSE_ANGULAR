@@ -92,6 +92,7 @@ export class AdminOrderManagementComponent {
   readonly branchId = signal('ALL');
   readonly page = signal(1);
   readonly pageSize = 6;
+  readonly pageNumbers = computed(() => Array.from({length: this.totalPages()}, (_, index) => index + 1));
   readonly dialog = signal<ActionDialog>(null);
   readonly dialogBusy = signal(false);
   private cancelRequestKey: string | null = null;
