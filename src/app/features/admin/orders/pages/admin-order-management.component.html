@@ -418,11 +418,20 @@
             <button class="order-admin__modal-close" type="button" (click)="closeDialog()" [disabled]="dialogBusy()" aria-label="Đóng">×</button>
           </div>
           @if (action === 'cancel') {
-            <p>Đơn hàng sẽ bị hủy. Việc hoàn kho và điều chỉnh thanh toán do hệ thống xử lý.</p>
             <label class="order-admin__field">Lý do hủy <span aria-hidden="true">*</span>
-              <textarea #cancelReason rows="3" maxlength="500" [value]="reason()" (input)="reason.set(cancelReason.value)" placeholder="Nhập lý do hủy đơn hàng..."></textarea>
+              <select #cancelReasonSelect [value]="cancelCategory()" (change)="cancelCategory.set(cancelReasonSelect.value)">
+                <option value="" disabled>Khoanh lại theo yêu cầu hủy</option>
+                <option value="Khách hàng yêu cầu hủy">Khách hàng yêu cầu hủy</option>
+                <option value="Đơn hàng trùng lặp">Đơn hàng trùng lặp</option>
+                <option value="Không thể cung cấp sản phẩm">Không thể cung cấp sản phẩm</option>
+                <option value="Khác">Lý do khác</option>
+              </select>
             </label>
-            @if (reason().trim().length > 0 && reason().trim().length < 5) {
+            <label class="order-admin__field">Ghi chú @if (cancelCategory() === 'Khác') { <span aria-hidden="true">*</span> }
+              <textarea #cancelReason rows="2" maxlength="500" [value]="reason()" (input)="reason.set(cancelReason.value)"
+                [placeholder]="cancelCategory() === 'Khác' ? 'Nhập lý do hủy ít nhất 5 ký tự...' : 'Nhập ghi chú nếu cần'"></textarea>
+            </label>
+            @if (cancelCategory() === 'Khác' && reason().trim().length > 0 && reason().trim().length < 5) {
               <p class="order-admin__invalid">Vui lòng nhập lý do ít nhất 5 ký tự.</p>
             }
           } @else {
@@ -447,7 +456,7 @@
           <div class="order-admin__modal-actions">
             <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="closeDialog()" [disabled]="dialogBusy()">Đóng</button>
             <button class="order-admin__btn" [class.order-admin__btn--danger]="action === 'cancel'" [class.order-admin__btn--primary]="action !== 'cancel'"
-              type="button" [disabled]="dialogBusy() || (action === 'cancel' && reason().trim().length < 5)" (click)="confirmDialog()">
+              type="button" [disabled]="dialogBusy() || (action === 'cancel' && !isCancelReasonValid())" (click)="confirmDialog()">
               {{ dialogBusy() ? 'Đang xử lý...' : action === 'cancel' ? 'Xác nhận hủy đơn' : 'Xác nhận cập nhật' }}
             </button>
           </div>
