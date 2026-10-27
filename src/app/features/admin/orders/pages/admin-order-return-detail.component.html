@@ -6,9 +6,11 @@
     </nav>
 
     <header class="return-detail__heading">
-      <div>
+      <div class="return-detail__heading-main">
         <h1>Chi tiết yêu cầu {{ data()?.id || '' }}</h1>
-        <p>Quản lý tiếp nhận, kiểm tra hàng và phê duyệt hoàn tiền</p>
+        @if (data(); as current) {
+          <span class="return-detail__badge return-detail__heading-badge" [attr.data-status]="current.status">{{ label(current.status) }}</span>
+        }
       </div>
       <div class="return-detail__actions">
         @for (action of availableActions(); track action) {
@@ -30,22 +32,27 @@
     } @else if (data(); as ret) {
       <section class="return-detail__panel">
         <h2>Thông tin yêu cầu</h2>
-        <div class="return-detail__metadata">
+        <div class="return-detail__metadata return-detail__metadata--overview">
           <div><span>Mã yêu cầu</span><strong>{{ ret.id }}</strong></div>
           <div><span>Mã đơn hàng</span><a [routerLink]="['/admin/orders',ret.orderId]">{{ linkedOrder()?.code || ret.orderId }}</a></div>
           <div><span>Chi nhánh xử lý</span><strong>{{ branchName(linkedOrder()?.fulfillmentBranchId) }}</strong></div>
           <div><span>Trạng thái</span><strong><span class="return-detail__badge" [attr.data-status]="ret.status">{{ label(ret.status) }}</span></strong></div>
           <div><span>Ngày gửi yêu cầu</span><strong>{{ when(ret.history?.[0]?.at) }}</strong></div>
           <div><span>Ngày giao đơn</span><strong>{{ when(linkedOrder()?.deliveredAt) }}</strong></div>
-          <div><span>Hạn đổi trả</span><strong>{{ when(linkedOrder()?.returnWindowEndsAt) }}</strong></div>
-          <div><span>Khách hàng</span><strong>{{ linkedOrder()?.contactSnapshot?.fullName || linkedOrder()?.contactSnapshot?.name || 'Chưa có dữ liệu' }}</strong></div>
-          <div><span>Số lượng yêu cầu trả</span><strong>{{ totalQuantity() }} sản phẩm</strong></div>
-          <div><span>Tiền hoàn dự kiến</span><strong>{{ money(ret.refundBreakdown.total) }}</strong></div>
         </div>
+        <details class="return-detail__extra">
+          <summary>Thông tin bổ sung</summary>
+          <div class="return-detail__metadata">
+            <div><span>Hạn đổi trả</span><strong>{{ when(linkedOrder()?.returnWindowEndsAt) }}</strong></div>
+            <div><span>Khách hàng</span><strong>{{ linkedOrder()?.contactSnapshot?.fullName || linkedOrder()?.contactSnapshot?.name || 'Chưa có dữ liệu' }}</strong></div>
+            <div><span>Số lượng yêu cầu trả</span><strong>{{ totalQuantity() }} sản phẩm</strong></div>
+            <div><span>Tiền hoàn dự kiến</span><strong>{{ money(ret.refundBreakdown.total) }}</strong></div>
+          </div>
+        </details>
       </section>
 
       <section class="return-detail__panel" aria-label="Tiến trình xử lý yêu cầu">
-        <h2>Tiến trình xử lý yêu cầu</h2>
+        <h2>Luồng xử lý yêu cầu</h2>
         <ol class="return-detail__progress">
           @for (step of statusSteps; track step) {
             <li [class.return-detail__progress--done]="statusSteps.indexOf(ret.status) >= statusSteps.indexOf(step)"
@@ -61,7 +68,7 @@
       </section>
 
       <section class="return-detail__panel">
-        <h2>Sản phẩm yêu cầu trả</h2>
+        <h2>Sản phẩm trong đơn hàng</h2>
         <div class="return-detail__scroll">
           <table class="return-detail__table">
             <thead><tr>
@@ -96,7 +103,7 @@
 
       <div class="return-detail__columns">
         <section class="return-detail__panel">
-          <h2>Lý do và minh chứng</h2>
+          <h2>Lý do &amp; bằng chứng</h2>
           <div class="return-detail__subheading">Lý do khách gửi trả</div>
           <p class="return-detail__reason">{{ ret.reason || 'Chưa có lý do được cung cấp.' }}</p>
           <div class="return-detail__subheading">Minh chứng khách gửi</div>
@@ -132,12 +139,12 @@
       </div>
 
       <section class="return-detail__panel">
-        <h2>Hoàn tiền và tài khoản</h2>
+        <h2>Đối chiếu số tiền hoàn</h2>
         <div class="return-detail__metadata">
           <div><span>Tiền hàng được hoàn</span><strong>{{ money(ret.refundBreakdown.merchandiseNet) }}</strong></div>
           <div><span>Phí giao hàng hoàn lại</span><strong>{{ money(ret.refundBreakdown.shippingRefunded) }}</strong></div>
           <div><span>Tổng tiền dự kiến</span><strong class="return-detail__highlight">{{ money(ret.refundBreakdown.total) }}</strong></div>
-          <div><span>Hoàn cuối cùng</span><strong class="return-detail__highlight">{{ money(finalRefundAmount()) }}</strong></div>
+          <div class="return-detail__refund-extra"><span>Hoàn cuối cùng</span><strong class="return-detail__highlight">{{ money(finalRefundAmount()) }}</strong></div>
           <div><span>Trạng thái hoàn tiền</span><strong>
             @if (refund(); as paid) {
               {{ paid.status === 'REFUNDED' ? 'Đã hoàn tất (MOCK)' : paid.status === 'FAILED' ? 'Hoàn tiền thất bại' : 'Đang chờ xử lý (MOCK)' }}
@@ -147,13 +154,14 @@
             @else { Chưa có giao dịch hoàn tiền }
           </strong></div>
           <div><span>Ngày hoàn tiền</span><strong>{{ when(refund()?.refundedAt) }}</strong></div>
-          <div><span>Ngân hàng / Tài khoản nhận</span><strong>BE chưa cung cấp thông tin</strong></div>
+          <div class="return-detail__refund-account"><span>Ngân hàng / Tài khoản nhận</span><strong>BE chưa cung cấp thông tin</strong></div>
         </div>
+        <div class="return-detail__refund-account-title">Thông tin tài khoản hoàn tiền</div>
         <p class="return-detail__muted">Tiền hoàn do Backend tính trên giá thực trả sau phân bổ voucher; phí vận chuyển không hoàn. Hàng đã nhận không tự động nhập lại kho.</p>
       </section>
 
       <section class="return-detail__panel" aria-label="Tình trạng nhập kho">
-        <h2>Tình trạng nhập kho</h2>
+        <h2>Xử lý hàng trả &amp; tồn kho</h2>
         <div class="return-detail__metadata">
           <div><span>Số lượng thực nhận</span><strong>BE chưa cung cấp</strong></div>
           <div><span>Kết quả kiểm tra hàng</span><strong>BE chưa cung cấp</strong></div>
