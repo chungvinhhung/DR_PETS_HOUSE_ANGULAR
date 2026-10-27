@@ -151,6 +151,17 @@
         </div>
         <p class="return-detail__muted">Tiền hoàn do Backend tính trên giá thực trả sau phân bổ voucher; phí vận chuyển không hoàn. Hàng đã nhận không tự động nhập lại kho.</p>
       </section>
+
+      <section class="return-detail__panel" aria-label="Tình trạng nhập kho">
+        <h2>Tình trạng nhập kho</h2>
+        <div class="return-detail__metadata">
+          <div><span>Số lượng thực nhận</span><strong>BE chưa cung cấp</strong></div>
+          <div><span>Kết quả kiểm tra hàng</span><strong>BE chưa cung cấp</strong></div>
+          <div><span>Số lượng nhập lại kho</span><strong>BE chưa hỗ trợ</strong></div>
+          <div><span>Giao dịch kho</span><strong>Chưa có dữ liệu</strong></div>
+        </div>
+        <p class="return-detail__muted">Các trường trên thuộc bố cục Figma, nhưng chưa có API xác nhận thực nhận, kiểm tra và tái nhập kho theo SKU. Không tự đánh dấu đã nhập kho khi hoàn tiền.</p>
+      </section>
     }
 
     @if (dialog(); as action) {
