@@ -2,8 +2,9 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, Observable, finalize, switchMap, tap } from 'rxjs';
+import { catchError, forkJoin, Observable, finalize, of, switchMap, tap } from 'rxjs';
 import { AdminProduct } from '../../products/models/admin-product.model';
+import { AdminCategoryService } from '../../categories/services/admin-category.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
@@ -58,6 +59,7 @@ interface StockHistory {
 export class AdminInventoryPageComponent implements OnInit {
   private readonly adminToast = inject(AdminToastService);
   private readonly inventoryApi = inject(AdminInventoryService);
+  private readonly categoryApi = inject(AdminCategoryService);
   private readonly auth = inject(AuthSessionService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -70,9 +72,10 @@ export class AdminInventoryPageComponent implements OnInit {
   readonly history = signal<StockHistory[]>([]);
   readonly inventoryItems = signal<InventoryItemDto[]>([]);
   readonly catalogProducts = signal<AdminProduct[]>([]);
+  readonly categoryNames = signal<Map<string, string>>(new Map());
   readonly scopedBranchIds = signal<string[]>([]);
   readonly catalogBySku = computed(() => {
-    const bySku = new Map<string, { name: string; label: string; usage: StockKind; hasVariant: boolean }>();
+    const bySku = new Map<string, { name: string; label: string; usage: StockKind; hasVariant: boolean; categoryId: string; image: string | null; price: number | null }>();
     for (const product of this.catalogProducts()) {
       for (const variant of product.variants) {
         bySku.set(variant.sku.trim().toLowerCase(), {
@@ -81,6 +84,9 @@ export class AdminInventoryPageComponent implements OnInit {
           usage: product.usageType === 'SHARED' ? 'Dùng chung'
             : product.usageType === 'SERVICE_SUPPLY' ? 'Vật tư dịch vụ' : 'Hàng bán',
           hasVariant: product.productType === 'VARIANT',
+          categoryId: product.categoryId,
+          image: variant.image || product.images.find(photo => photo.isPrimary)?.url || product.images[0]?.url || null,
+          price: Number.isFinite(variant.finalPrice) ? variant.finalPrice : (Number.isFinite(variant.price) ? variant.price : null),
         });
       }
     }
@@ -103,6 +109,9 @@ export class AdminInventoryPageComponent implements OnInit {
   readonly destination = signal('');
   readonly receiptBranch = signal('');
   readonly receiptSku = signal('');
+  readonly receiptSearch = signal('');
+  readonly receiptLookupOpen = signal(false);
+  readonly receiptHighlighted = signal(0);
   readonly note = signal('');
   private writeKey = '';
 
@@ -119,6 +128,14 @@ export class AdminInventoryPageComponent implements OnInit {
     return this.inventoryItems().filter(item =>
       item.status === 'ACTIVE' && (item.kind === 'MATERIAL' || catalog.has(item.sku.trim().toLowerCase())),
     );
+  });
+  readonly matchingReceiptProducts = computed(() => {
+    const term = this.receiptSearch().trim().toLocaleLowerCase('vi');
+    return this.productOptions().filter(item => {
+      const catalog = this.catalogBySku().get(item.sku.trim().toLowerCase());
+      return !term || [item.sku, item.name, catalog?.name, catalog?.label]
+        .some(text => text?.toLocaleLowerCase('vi').includes(term));
+    }).slice(0, 50);
   });
   readonly receiptStock = computed(() => {
     const selected = this.activeItem();
@@ -181,11 +198,15 @@ export class AdminInventoryPageComponent implements OnInit {
       items: this.inventoryApi.listItems(),
       stocks: this.inventoryApi.listStocks(),
       products: this.inventoryApi.listCatalogProducts(),
+      categories: this.categoryApi.listCategories({ limit: 100 }).pipe(
+        catchError(() => of({ items: [] as { id: string; name: string }[] })),
+      ),
     }).pipe(
       takeUntilDestroyed(this.destroyRef),
       finalize(() => this.loading.set(false)),
     ).subscribe({
-      next: ({ branches, items, stocks, products }) => {
+      next: ({ branches, items, stocks, products, categories }) => {
+        this.categoryNames.set(new Map(categories.items.map(category => [category.id, category.name])));
         this.branchesData.set(branches);
         this.inventoryItems.set(items);
         this.catalogProducts.set(products);
@@ -198,6 +219,7 @@ export class AdminInventoryPageComponent implements OnInit {
         this.stock.set([]);
         this.inventoryItems.set([]);
         this.catalogProducts.set([]);
+        this.categoryNames.set(new Map());
         this.scopedBranchIds.set([]);
         this.branchesData.set([]);
         this.loadError.set(adminErrorMessage(error, 'Không tải được dữ liệu kho. Vui lòng thử lại.'));
@@ -311,6 +333,51 @@ export class AdminInventoryPageComponent implements OnInit {
   productLabel(item: StockItem): string {
     return item.variant === '—' ? item.name : `${item.name} · ${item.variant}`;
   }
+  receiptItemName(item: InventoryItemDto): string {
+    return this.catalogBySku().get(item.sku.trim().toLowerCase())?.name ?? item.name;
+  }
+  receiptItemDetail(item: InventoryItemDto): string {
+    const catalog = this.catalogBySku().get(item.sku.trim().toLowerCase());
+    const category = catalog ? this.categoryNames().get(catalog.categoryId) : null;
+    const label = catalog?.hasVariant ? this.normalizedVariant(catalog.label) : '—';
+    return [item.sku, category || (item.kind === 'MATERIAL' ? 'Vật tư dịch vụ' : 'Sản phẩm'), ...(label !== '—' ? [label] : [])].join(' · ');
+  }
+  receiptItemImage(item: InventoryItemDto): string | null {
+    return this.catalogBySku().get(item.sku.trim().toLowerCase())?.image ?? null;
+  }
+  receiptItemPrice(item: InventoryItemDto): string {
+    const price = this.catalogBySku().get(item.sku.trim().toLowerCase())?.price;
+    return price == null ? '—' : new Intl.NumberFormat('vi-VN').format(price) + 'đ';
+  }
+  onReceiptSearch(value: string): void {
+    this.receiptSearch.set(value);
+    this.receiptLookupOpen.set(true);
+    this.receiptHighlighted.set(0);
+    this.receiptSku.set('');
+    this.activeItem.set(null);
+    this.threshold.set(null);
+  }
+  chooseReceiptProduct(item: InventoryItemDto): void {
+    this.selectProduct(item.sku);
+    this.receiptSearch.set(this.inventoryItemLabel(item));
+    this.receiptLookupOpen.set(false);
+  }
+  closeReceiptLookup(): void { this.receiptLookupOpen.set(false); }
+  onReceiptSearchKeydown(event: KeyboardEvent): void {
+    const results = this.matchingReceiptProducts();
+    if (event.key === 'Escape') {
+      this.closeReceiptLookup(); return;
+    }
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.receiptLookupOpen.set(true);
+      const step = event.key === 'ArrowDown' ? 1 : -1;
+      this.receiptHighlighted.set((this.receiptHighlighted() + step + results.length) % Math.max(1, results.length));
+    } else if (event.key === 'Enter' && this.receiptLookupOpen() && results.length) {
+      event.preventDefault();
+      this.chooseReceiptProduct(results[this.receiptHighlighted()] ?? results[0]);
+    }
+  }
   inventoryItemLabel(item: InventoryItemDto): string {
     const product = this.catalogBySku().get(item.sku.trim().toLowerCase());
     if (!product) return item.name;
@@ -341,6 +408,9 @@ export class AdminInventoryPageComponent implements OnInit {
     this.quantity.set(null);
     this.receiptBranch.set(this.branch() || item?.branch || this.branches()[0] || '');
     this.receiptSku.set('');
+    this.receiptSearch.set('');
+    this.receiptLookupOpen.set(false);
+    this.receiptHighlighted.set(0);
     this.threshold.set(kind === 'receipt' ? null : item?.threshold ?? null);
     this.destination.set('');
     this.note.set('');
