@@ -3243,3 +3243,9 @@ html:has(.customer-root) {
   border-radius: 4px;
   background: #fdd835;
 }
+
+
+.customer-root input[type='password']::-ms-reveal,
+.customer-root input[type='password']::-ms-clear {
+  display: none;
+}

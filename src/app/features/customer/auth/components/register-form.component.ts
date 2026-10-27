@@ -8,9 +8,20 @@ import { GoogleButtonComponent } from './google-button.component';
 import { reactSetter } from '../../../../shared/customer/utils/react-setter';
 import { VALIDATION_SCHEMAS, getFormErrors, submitValidatedForm } from './auth-modal.helpers';
 
-/**
- * RegisterForm — chuyển từ React: src/components/auth/AuthModal.jsx
- */
+const PASSWORD_RULES = [
+  { key: 'length', label: 'Ít nhất 8 ký tự', test: (value: string) => value.length >= 8 },
+  { key: 'upper', label: 'Có chữ in hoa (A–Z)', test: (value: string) => /\p{Lu}/u.test(value) },
+  { key: 'lower', label: 'Có chữ thường (a–z)', test: (value: string) => /\p{Ll}/u.test(value) },
+  { key: 'number', label: 'Có chữ số (0–9)', test: (value: string) => /\d/.test(value) },
+  { key: 'special', label: 'Có ký tự đặc biệt (!@#$%...)', test: (value: string) => /[^\p{L}\p{N}\s]/u.test(value) },
+];
+
+const PASSWORD_LEVELS = [
+  { index: 0, label: 'Yếu', color: '#e53935' },
+  { index: 1, label: 'Trung bình', color: '#fb8c00' },
+  { index: 2, label: 'Mạnh', color: '#2e7d32' },
+];
+
 @Component({
   selector: 'form[app-register-form]',
   standalone: true,
@@ -19,42 +30,73 @@ import { VALIDATION_SCHEMAS, getFormErrors, submitValidatedForm } from './auth-m
   host: {
     'novalidate': '',
     'class': 'flex flex-col gap-4',
-    '(submit)': 'submitValidatedForm($any($event), errors(), setValidationAttemptedFn, handleSubmitFn)',
+    '(submit)': 'onSubmit($any($event))',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegisterFormComponent {
-  // --- Service dùng chung ---
   protected readonly authApi = inject(AuthApiService);
 
-  // --- Input / Output (props của React) ---
   readonly form = input<any>(undefined);
   readonly setForm = input<any>(undefined);
   readonly changeScreen = input<any>(undefined);
   readonly updateUserProfile = input<any>(undefined);
   readonly completeLogin = input<any>(undefined);
 
-  // --- Dữ liệu & hàm dùng trong template ---
-  /** handleSubmit được truyền như một hàm (callback) trong template -> giữ đúng "this" */
   protected readonly handleSubmitFn = this.handleSubmit.bind(this);
   protected readonly submitValidatedForm: any = submitValidatedForm;
+  protected readonly strengthSegments = [0, 1, 2];
 
-  // --- Giá trị tính toán (computed) ---
-  readonly errors = computed<any>(() => getFormErrors(this.form(), VALIDATION_SCHEMAS.register));
+    readonly errors = computed<any>(() => {
+    const baseErrors = getFormErrors(this.form(), VALIDATION_SCHEMAS.register);
+    if (baseErrors?.confirmPassword && !this.form()?.confirmPassword) {
+      return { ...baseErrors, confirmPassword: 'Vui lòng nhập lại mật khẩu' };
+    }
+    return baseErrors;
+  });
+  
+  readonly passwordChecks = computed(() => {
+    const password = this.form()?.password ?? '';
+    return PASSWORD_RULES.map((rule) => ({ key: rule.key, label: rule.label, passed: rule.test(password) }));
+  });
 
-  // --- Trạng thái (signal = useState / useRef) ---
+  readonly passwordStrength = computed(() => {
+    const password = this.form()?.password ?? '';
+    if (!password) return null;
+    const passedCount = this.passwordChecks().filter((rule) => rule.passed).length;
+    if (passedCount <= 2) return PASSWORD_LEVELS[0];
+    if (passedCount <= 4) return PASSWORD_LEVELS[1];
+    return PASSWORD_LEVELS[2];
+  });
+
   readonly validationAttempted = signal<any>(false);
   readonly submitting = signal<any>(false);
   readonly submitError = signal<any>("");
+  readonly agreedTerms = signal(false);
+  readonly showTermsError = signal(false);
 
-  /** Hàm set kiểu React cho signal "validationAttempted" (dùng khi truyền cho component con / callback) */
   protected readonly setValidationAttemptedFn = reactSetter(this.validationAttempted);
 
   protected update({ target }: any) {
     return this.setForm()((current: any) => ({ ...current, [target.name]: target.value }));
   }
 
+  protected onAgreeChange(checked: boolean) {
+    this.agreedTerms.set(checked);
+    if (checked) this.showTermsError.set(false);
+  }
+
+  protected onSubmit(event: Event) {
+    event.preventDefault();
+    if (!this.agreedTerms()) this.showTermsError.set(true);
+    this.submitValidatedForm(event, this.errors(), this.setValidationAttemptedFn, this.handleSubmitFn);
+  }
+
   protected async handleSubmit() {
+    if (!this.agreedTerms()) {
+      this.showTermsError.set(true);
+      return;
+    }
     this.submitting.set(true);
     this.submitError.set("");
     try {
@@ -86,7 +128,7 @@ export class RegisterFormComponent {
       }
       this.changeScreen()("registerOtp");
     } catch (error: any) {
-      this.submitError.set(error?.message || "Dang ky khong thanh cong");
+      this.submitError.set(error?.message || "Đăng ký không thành công");
     } finally {
       this.submitting.set(false);
     }

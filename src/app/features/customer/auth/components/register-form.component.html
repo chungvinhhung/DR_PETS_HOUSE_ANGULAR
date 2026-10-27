@@ -36,9 +36,34 @@
   (onChange)="update($any($event))"
   [type]="'password'"
   [required]="true"
-  [hint]="'Tối thiểu 8 ký tự, 1 chữ hoa, 1 số'"
+  [hint]="form().password ? '' : 'Tối thiểu 8 ký tự, 1 chữ hoa, 1 số'"
   [error]="validationAttempted() ? errors().password : ''"
 ></label>
+@if (passwordStrength(); as strength) {
+  <div class="-mt-2 flex flex-col gap-2">
+    <div class="flex items-center gap-3">
+      <div class="flex flex-1 gap-1">
+        @for (segment of strengthSegments; track segment) {
+          <span
+            class="h-1.5 flex-1 rounded-full transition-colors duration-200"
+            [style.background-color]="segment <= strength.index ? strength.color : '#e5e7eb'"
+          ></span>
+        }
+      </div>
+      <span class="min-w-[76px] text-right text-xs font-semibold" [style.color]="strength.color">
+        Mật khẩu {{ strength.label.toLowerCase() }}
+      </span>
+    </div>
+    <ul class="grid grid-cols-1 gap-x-4 gap-y-1 text-xs sm:grid-cols-2">
+      @for (rule of passwordChecks(); track rule.key) {
+        <li class="flex items-center gap-1.5" [style.color]="rule.passed ? '#2e7d32' : '#9e9e9e'">
+          <span aria-hidden="true" class="w-3 text-center font-bold">{{ rule.passed ? '✓' : '○' }}</span>
+          {{ rule.label }}
+        </li>
+      }
+    </ul>
+  </div>
+}
 <label
   app-field
   [label]="'Xác nhận mật khẩu'"
@@ -49,10 +74,32 @@
   [required]="true"
   [error]="validationAttempted() ? errors().confirmPassword : ''"
 ></label>
+<div class="flex flex-col gap-1">
+  <label class="flex cursor-pointer items-start gap-2.5 text-sm leading-5">
+    <input
+      type="checkbox"
+      class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer"
+      [style.accent-color]="'#1e3a8a'"
+      [checked]="agreedTerms()"
+      (change)="onAgreeChange($any($event).target.checked)"
+    />
+    <span>
+      Tôi đồng ý với
+      <a href="/policies/dieu-khoan-dich-vu" target="_blank" rel="noopener" class="font-semibold text-blue-900 underline">Điều khoản dịch vụ</a>
+      và
+      <a href="/policies/chinh-sach-bao-mat" target="_blank" rel="noopener" class="font-semibold text-blue-900 underline">Chính sách bảo mật</a>.
+    </span>
+  </label>
+  @if (showTermsError()) {
+    <p class="text-sm text-[#c62828]" role="alert">
+      Vui lòng đọc và đồng ý với Điều khoản dịch vụ và Chính sách bảo mật.
+    </p>
+  }
+</div>
 @if (submitError()) {
   <p class="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{{ submitError() }}</p>
 }
-<button app-primary-button [disabled]="submitting()">
+<button app-primary-button [disabled]="submitting()" [inactive]="!agreedTerms()">
   @if (submitting()) {
     ĐANG GỬI OTP...
   } @else {
@@ -61,5 +108,7 @@
 </button>
 <div app-divider></div>
 <button app-google-button></button>
-<p class="text-center text-sm">Đã có tài khoản?    <button type="button" (click)="changeScreen()('login')" class="font-semibold text-blue-900">Đăng nhập ngay</button>
+<p class="text-center text-sm">
+  Đã có tài khoản?
+  <button type="button" (click)="changeScreen()('login')" class="font-semibold text-blue-900">Đăng nhập</button>
 </p>

@@ -59,7 +59,7 @@ export const VALIDATION_SCHEMAS = {
 
 export const VALIDATION_MESSAGES = {
   requiredByField: {
-    phone: "Vui lòng nhập số điện thoại hoặc email",
+    phone: "Vui lòng nhập số điện thoại",
     password: "Vui lòng nhập mật khẩu",
   },
   required: "Vui lòng điền thông tin",
