@@ -297,9 +297,20 @@
         <div class="order-admin__table-scroll">
           @if (activeTab() === 'orders') {
             <table class="order-admin__table order-admin__table--figma web2-product-table">
+              <!-- Single source of truth for the eight Order list column widths. -->
+              <colgroup>
+                <col class="order-admin__col--code">
+                <col class="order-admin__col--date">
+                <col class="order-admin__col--time">
+                <col class="order-admin__col--customer">
+                <col class="order-admin__col--total">
+                <col class="order-admin__col--payment">
+                <col class="order-admin__col--status">
+                <col class="order-admin__col--action">
+              </colgroup>
               <thead><tr>
                 <th scope="col">Mã đơn</th>
-                <th scope="col" class="web2-cell-center">Ngày tạo</th>
+                <th scope="col">Ngày tạo</th>
                 <th scope="col">Giờ tạo</th>
                 <th scope="col">Khách hàng</th>
                 <th scope="col">Tổng tiền</th>
@@ -318,7 +329,7 @@
                   @for (order of pageRows(); track order.id) {
                     <tr>
                       <td><a class="order-admin__link" [routerLink]="['/admin/orders',order.id]">{{ order.code }}</a></td>
-                      <td class="web2-cell-center">{{ datePart(order.createdAt) }}</td>
+                      <td>{{ datePart(order.createdAt) }}</td>
                       <td>{{ timePart(order.createdAt) }}</td>
                       <td class="order-admin__customer">{{ customerName(order) }}</td>
                       <td>{{ price(order.pricing.totalAmount) }}</td>
