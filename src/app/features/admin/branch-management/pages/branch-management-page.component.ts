@@ -83,7 +83,7 @@ export class BranchManagementPageComponent {
   readonly search = signal('');
   readonly branchStatus = signal<BranchFilter>('ALL');
   readonly listPage = signal(1);
-  readonly pageSize = 7;
+  readonly pageSize = 6;
   readonly detailTab = signal<Tab>('services');
   readonly viewDate = signal(this.isoLocal(new Date()));
   readonly viewTime = signal('10:00');
