@@ -37,8 +37,8 @@
         </select>
       </label>
       @if (canEdit()) {
-        <a routerLink="/admin/vouchers/new" class="voucher-list__button voucher-list__button--primary">
-          <img src="/assets/admin-product/icon-add.svg" alt="" width="16" height="16">Tạo voucher
+        <a routerLink="/admin/vouchers/new" class="voucher-list__button voucher-list__button--primary web2-add-button">
+          <span class="web2-add-icon" aria-hidden="true">+</span><span>Tạo voucher</span>
         </a>
       }
     </section>
@@ -92,7 +92,7 @@
                   @if (hasActiveFilters()) {
                     <button class="voucher-list__button voucher-list__button--plain" type="button" (click)="clearFilters()">Xóa bộ lọc</button>
                   } @else if (canEdit()) {
-                    <a class="voucher-list__button voucher-list__button--primary" routerLink="/admin/vouchers/new">Tạo voucher</a>
+                    <a class="voucher-list__button voucher-list__button--primary" routerLink="/admin/vouchers/new"><span class="web2-add-icon" aria-hidden="true">+</span><span>Tạo voucher</span></a>
                   }
                 </td></tr>
               }
