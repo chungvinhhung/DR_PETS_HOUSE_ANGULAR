@@ -292,21 +292,6 @@
       </div>
     </section>
 
-    @if (reviewIssues().length > 0 && (lines().length > 0 || lookupPhone().trim().length > 0)) {
-      <section class="create-order__review" [class.create-order__review--ready]="isDraftValid()"
-        aria-labelledby="order-review-title" role="status">
-        <strong id="order-review-title">
-          {{ isDraftValid() ? 'Thông tin bản nháp đã đầy đủ' : 'Cần kiểm tra lại thông tin đơn hàng' }}
-        </strong>
-        @if (reviewIssues().length > 0) {
-          <ul>
-            @for (issue of reviewIssues(); track issue) { <li>{{ issue }}</li> }
-          </ul>
-        } @else {
-          <p>Hệ thống sẽ xác nhận tình trạng hàng hóa, voucher và tổng thanh toán trước khi tạo đơn.</p>
-        }
-      </section>
-    }
     <p class="create-order__pending">
       Chưa thể xác nhận tạo đơn cho đến khi hệ thống hỗ trợ tính tổng và lưu đơn hộ khách.
     </p>
@@ -317,12 +302,14 @@
     </div>
   </main>
   @if (cancelDialogOpen()) {
-    <div class="create-order__overlay">
-      <section class="create-order__dialog create-order__dialog--confirm" role="dialog" aria-modal="true" aria-labelledby="order-cancel-dialog-title">
+    <div class="create-order__overlay" (click)="closeCancel()">
+      <section class="create-order__dialog create-order__dialog--confirm"
+        role="dialog" aria-modal="true" aria-labelledby="order-cancel-dialog-title"
+        aria-describedby="order-cancel-dialog-description" (click)="$event.stopPropagation()">
         <div class="create-order__dialog-head">
           <div>
             <h2 id="order-cancel-dialog-title">Rời khỏi trang tạo đơn?</h2>
-            <p>Thông tin bản nháp chưa được lưu. Bạn có muốn rời khỏi trang?</p>
+            <p id="order-cancel-dialog-description">Thông tin bản nháp chưa được lưu. Bạn có muốn rời khỏi trang?</p>
           </div>
           <button type="button" class="create-order__dialog-close" aria-label="Đóng"
             (click)="closeCancel()">×</button>
