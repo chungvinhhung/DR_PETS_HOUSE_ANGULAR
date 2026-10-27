@@ -19,12 +19,13 @@
 .schedule-tabs > a:hover { color:#0d47a1; text-decoration:none; }
 .schedule-tabs > a:focus-visible { outline:2px solid #0d47a1; outline-offset:-3px; }
 
-/* Figma: separate upper controls card and lower inset calendar card. */
+/* Figma: controls and weekday grid share one connected outer card. */
 .schedule-filter-panel {
-  margin:0 0 12px;
+  margin:0;
   padding:0;
   border:1px solid #dce5f0;
-  border-radius:12px;
+  border-bottom:0;
+  border-radius:12px 12px 0 0;
   background:#fff;
 }
 .schedule-toolbar {
@@ -86,16 +87,18 @@
 .schedule-panel {
   width:100%;
   min-width:0;
-  padding:8px;
+  padding:0;
   background:#fff;
   border:1px solid #dce5f0;
-  border-radius:12px;
+  border-top:0;
+  border-radius:0 0 12px 12px;
+  overflow:hidden;
 }
 .schedule-scroller {
   width:100%;
   overflow-x:auto;
-  border:1px solid #dce5f0;
-  border-radius:8px;
+  border:0;
+  border-radius:0;
 }
 .schedule-scroller table {
   width:100%;
