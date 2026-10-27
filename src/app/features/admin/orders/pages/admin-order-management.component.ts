@@ -4,6 +4,7 @@ import { catchError, from, map, mergeMap, of, toArray } from 'rxjs';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import { AdminReturnNotificationService } from '../../../../shared/services/admin-return-notification.service';
 import { orderErrorMessage } from '../services/admin-order-error-message';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
@@ -38,6 +39,7 @@ export class AdminOrderManagementComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly session = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
+  private readonly returnNotifications = inject(AdminReturnNotificationService);
   private readonly destroyRef = inject(DestroyRef);
   private ordersRequestVersion = 0;
   private returnsRequestVersion = 0;
@@ -79,7 +81,8 @@ export class AdminOrderManagementComponent {
   readonly returnsLoading = signal(false);
   readonly returnsError = signal('');
   readonly hasLoadedReturns = signal(false);
-  readonly returnPendingCount = computed(() => this.returns().filter(item => item.status === 'REQUESTED').length);
+  // Shared with sidebar; loaded on initial page render, not when the tab is clicked.
+  readonly returnPendingCount = this.returnNotifications.pendingCount;
   readonly totalLoaded = computed(() => this.allOrders().length);
   readonly awaitingCount = computed(() => this.allOrders().filter(item => item.status === 'PENDING').length);
   readonly shippingCount = computed(() => this.allOrders().filter(item => item.status === 'SHIPPED').length);
@@ -159,6 +162,7 @@ export class AdminOrderManagementComponent {
     (this.selected()?.status === 'PENDING' || this.selected()?.status === 'CONFIRMED' || this.selected()?.status === 'PROCESSING'));
 
   constructor() {
+    this.returnNotifications.ensureLoaded();
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((query) => {
       if (!this.isDetail() && query.get('tab') === 'returns') this.setTab('returns');
     });
@@ -293,7 +297,8 @@ export class AdminOrderManagementComponent {
     this.api.listReturns().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: page => {
         if (version !== this.returnsRequestVersion) return;
-        this.returns.set(Array.isArray(page.items) ? page.items : []);
+        this.returns.set(page.items);
+        this.returnNotifications.updateFromList(page.items);
         this.hasLoadedReturns.set(true);
         this.returnsLoading.set(false);
         this.resolveReturnBranches();
