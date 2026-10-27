@@ -24,6 +24,7 @@ export class AdminVoucherListComponent {
   private readonly destroyRef = inject(DestroyRef);
   private requestVersion = 0;
 
+  readonly pageSize = 6;
   readonly all = signal<AdminVoucher[]>([]);
   readonly search = signal('');
   readonly scope = signal<VoucherScope | 'ALL'>('ALL');
@@ -62,6 +63,7 @@ export class AdminVoucherListComponent {
       ...(this.scope() !== 'ALL' ? {scope: this.scope() as VoucherScope} : {}),
       ...(this.status() !== 'ALL' ? {status: this.status() as VoucherStatus} : {}),
       ...(current ? {cursor:current} : {}),
+      limit: this.pageSize,
     };
     this.loading.set(true);
     this.error.set('');
