@@ -32,9 +32,13 @@
         <h2>Thông tin yêu cầu</h2>
         <div class="return-detail__metadata">
           <div><span>Mã yêu cầu</span><strong>{{ ret.id }}</strong></div>
-          <div><span>Mã đơn hàng</span><a [routerLink]="['/admin/orders',ret.orderId]">{{ ret.orderId }}</a></div>
+          <div><span>Mã đơn hàng</span><a [routerLink]="['/admin/orders',ret.orderId]">{{ linkedOrder()?.code || ret.orderId }}</a></div>
+          <div><span>Chi nhánh xử lý</span><strong>{{ branchName(linkedOrder()?.fulfillmentBranchId) }}</strong></div>
           <div><span>Trạng thái</span><strong><span class="return-detail__badge" [attr.data-status]="ret.status">{{ label(ret.status) }}</span></strong></div>
           <div><span>Ngày gửi yêu cầu</span><strong>{{ when(ret.history?.[0]?.at) }}</strong></div>
+          <div><span>Ngày giao đơn</span><strong>{{ when(linkedOrder()?.deliveredAt) }}</strong></div>
+          <div><span>Hạn đổi trả</span><strong>{{ when(linkedOrder()?.returnWindowEndsAt) }}</strong></div>
+          <div><span>Khách hàng</span><strong>{{ linkedOrder()?.contactSnapshot?.fullName || linkedOrder()?.contactSnapshot?.name || 'Chưa có dữ liệu' }}</strong></div>
           <div><span>Số lượng yêu cầu trả</span><strong>{{ totalQuantity() }} sản phẩm</strong></div>
           <div><span>Tiền hoàn dự kiến</span><strong>{{ money(ret.refundBreakdown.total) }}</strong></div>
         </div>
@@ -61,7 +65,9 @@
         <div class="return-detail__scroll">
           <table class="return-detail__table">
             <thead><tr>
+              <th scope="col">Ảnh</th>
               <th scope="col">Sản phẩm</th>
+              <th scope="col">SKU</th>
               <th scope="col">Mã dòng đơn</th>
               <th scope="col">Số lượng mua</th>
               <th scope="col">Đã trả trước đó</th>
@@ -71,7 +77,9 @@
             <tbody>
               @for (item of ret.items; track item.orderItemId) {
                 <tr>
+                  <td><span class="return-detail__product-thumb" aria-label="Chưa có ảnh sản phẩm">Chưa có ảnh</span></td>
                   <td><strong>{{ item.productName }}</strong></td>
+                  <td>{{ orderSku(item.orderItemId) }}</td>
                   <td>{{ item.orderItemId }}</td>
                   <td>{{ item.orderedQty }}</td>
                   <td>{{ item.alreadyReturnedQty }}</td>
@@ -79,7 +87,7 @@
                   <td><strong>{{ money(item.refundAmount) }}</strong></td>
                 </tr>
               } @empty {
-                <tr><td colspan="6">Không có sản phẩm trong yêu cầu.</td></tr>
+                <tr><td colspan="8">Không có sản phẩm trong yêu cầu.</td></tr>
               }
             </tbody>
           </table>
