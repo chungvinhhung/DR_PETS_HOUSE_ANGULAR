@@ -3022,6 +3022,15 @@ app-admin-order-management .order-admin__totals .order-admin__grand dd {
 }
 /* Match Figma's compact next-state confirmation dialog; only the
    single backend-supported next stage is shown, so no invalid jump is sent. */
+/* Order detail actions: neutral cancel outline + Figma blue progression. */
+app-admin-order-management .order-admin:has(.order-admin__card--detail) .order-admin__heading-actions .order-admin__btn--outline {
+  color:#334155 !important;
+  background:#fff !important;
+  border:1px solid #dce5f0 !important;
+}
+app-admin-order-management .order-admin:has(.order-admin__card--detail) .order-admin__heading-actions .order-admin__btn--outline:hover {
+  background:#f8fafc !important;
+}
 app-admin-order-management .order-admin__modal .order-admin__field-value {
   display:block;min-height:20px;margin-top:6px;
   color:#334155;font-weight:600;
