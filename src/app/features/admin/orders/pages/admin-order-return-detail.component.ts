@@ -96,6 +96,20 @@ export class AdminOrderReturnDetailComponent {
   availableReturnQty(item: OrderReturnSummary['items'][number]): number {
     return Math.max(0, item.orderedQty - item.alreadyReturnedQty);
   }
+  /**
+   * Badge "Hoàn X/Y": X = quantity refunded by this return, Y = requestedQty.
+   * This backend settles the entire approved request at COMPLETED (it has no
+   * partial-refund quantity action). Use approvedQty if a newer API supplies
+   * it; otherwise a completed return has refunded its full requestedQty.
+   * Never use orderedQty or alreadyReturnedQty as the denominator.
+   */
+  refundedQuantity(ret: OrderReturnSummary, item: OrderReturnSummary['items'][number]): number {
+    if (ret.status !== 'COMPLETED') return 0;
+    const approved = item.approvedQty;
+    const quantity = typeof approved === 'number' && Number.isFinite(approved)
+      ? approved : item.requestedQty;
+    return Math.max(0, Math.min(quantity, item.requestedQty));
+  }
   receivedTotal(ret: OrderReturnSummary): string {
     if (!ret.items.length || ret.items.some(item => typeof item.receivedQty !== 'number')) return 'BE chưa cung cấp';
     return ret.items.reduce((total, item) => total + (item.receivedQty ?? 0), 0) + ' sản phẩm';
