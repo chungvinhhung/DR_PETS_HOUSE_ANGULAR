@@ -92,6 +92,7 @@
           </label>
         </div>
       </section>
+      <div class="voucher-editor__create-grid">
       <section class="voucher-editor__panel">
         <h2>Ưu đãi &amp; phạm vi</h2>
         <div class="voucher-editor__fields">
@@ -102,11 +103,13 @@
               <option value="SERVICE">Đơn dịch vụ</option>
             </select>
           </label>
-          <label>Loại ưu đãi <span class="voucher-editor__required">*</span>
-            <select #kindField [value]="form().discountType" (change)="change('discountType',kindField.value === 'FIXED' ? 'FIXED' : 'PERCENTAGE')" [disabled]="!allowEditing()">
-              <option value="PERCENTAGE">Theo phần trăm</option><option value="FIXED">Tiền cố định</option>
-            </select>
-          </label>
+          <fieldset class="voucher-editor__discount-options" [disabled]="!allowEditing()">
+            <legend>Loại ưu đãi <span class="voucher-editor__required">*</span></legend>
+            <label><input type="radio" name="voucherDiscountType" [checked]="form().discountType === 'PERCENTAGE'"
+              (change)="change('discountType','PERCENTAGE')"> Theo phần trăm</label>
+            <label><input type="radio" name="voucherDiscountType" [checked]="form().discountType === 'FIXED'"
+              (change)="change('discountType','FIXED')"> Số tiền cố định</label>
+          </fieldset>
           <label>Giá trị ưu đãi <span class="voucher-editor__required">*</span>
             <div class="voucher-editor__input-suffix">
               <input #valueField type="number" min="0" [max]="form().discountType === 'PERCENTAGE' ? 100 : null" [value]="form().discountValue"
@@ -159,6 +162,7 @@
           </label>
         </div>
       </section>
+      </div>
       @if (validation()) {
         <div class="voucher-editor__validation" role="alert">{{ validation() }}</div>
       }
