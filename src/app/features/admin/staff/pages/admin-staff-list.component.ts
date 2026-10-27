@@ -44,6 +44,7 @@ export class AdminStaffListComponent {
     );
   });
   readonly pages = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.pageSize)));
+  readonly pageNumbers = computed(() => Array.from({length: this.pages()}, (_, index) => index + 1));
   readonly rows = computed(() => this.filtered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
 
   displayName(staff: StaffPreview): string {
