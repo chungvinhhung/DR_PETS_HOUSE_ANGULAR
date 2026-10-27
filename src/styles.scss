@@ -1969,77 +1969,119 @@ app-admin-order-create .create-order__dialog--confirm .create-order__dialog-head
 .shift-assign-footer .shift-assign-save{color:#fff;background:#0d47a1;border-color:#0d47a1}
 @media(max-width:600px){.shift-assign-dialog{padding:15px}.shift-assign-context{grid-template-columns:1fr}.shift-assign-scope{flex-wrap:wrap}}
 
-/* WEB2 2026-10-27 — shared management controls, based on Product and Service screens. */
+/* WEB2 shared Admin UI, 2026-10-27 — exact reference: Service's "Thêm dịch vụ".
+   Explicit shared classes beat older screen-specific styles. */
+app-admin-catalog-shell .web2-add-button.web2-add-button {
+  display:inline-flex !important;align-items:center !important;justify-content:center !important;
+  box-sizing:border-box !important;gap:8px !important;flex:0 0 auto !important;
+  width:max-content !important;max-width:100% !important;
+  height:40px !important;min-height:40px !important;
+  padding:0 15px !important;border:1px solid #0d47a1 !important;
+  border-radius:8px !important;background:#0d47a1 !important;color:#fff !important;
+  text-decoration:none !important;text-align:center !important;
+  font:600 13px/20px Roboto,Arial,sans-serif !important;white-space:nowrap !important;
+  box-shadow:none !important;
+}
+app-admin-catalog-shell .web2-add-button.web2-add-button:hover:not(:disabled) {
+  background:#083a89 !important;border-color:#083a89 !important;
+}
+app-admin-catalog-shell .web2-add-button.web2-add-button:focus-visible {
+  outline:2px solid #367dcd !important;outline-offset:2px !important;
+}
+app-admin-catalog-shell .web2-add-button .web2-add-icon {
+  display:inline-flex !important;align-items:center;justify-content:center;
+  flex:0 0 16px;width:16px;height:18px;line-height:18px !important;
+  font-family:Roboto,Arial,sans-serif;font-size:18px !important;font-weight:400 !important;
+}
+
+/* Figma sidebar notification: #0d47a1 22x20, 11px text.
+   One style for Orders and Return tab; inverted treatment on Sales' blue header. */
+app-admin-catalog-shell .web2-notification-badge.web2-notification-badge {
+  display:inline-flex !important;align-items:center !important;justify-content:center !important;
+  box-sizing:border-box;flex:0 0 auto !important;
+  width:auto !important;min-width:22px !important;height:20px !important;min-height:20px !important;
+  padding:0 6px !important;border-radius:10px !important;
+  border:0 !important;box-shadow:none !important;
+  background:#0d47a1 !important;color:#fff !important;
+  font:500 11px/20px Roboto,Arial,sans-serif !important;text-align:center;
+  letter-spacing:0 !important;white-space:nowrap;
+}
+app-admin-catalog-shell .web2-notification-badge--inverted.web2-notification-badge--inverted {
+  background:#e5f6fd !important;color:#0d47a1 !important;
+}
+app-admin-catalog-shell .catalog-sidebar__sub .web2-notification-badge {margin-left:auto}
+app-admin-catalog-shell .catalog-sidebar__group .web2-notification-badge {margin-left:auto}
+app-admin-catalog-shell .catalog-sidebar__group:has(.web2-notification-badge)
+ .catalog-sidebar__group-chevron {margin-left:0}
+app-admin-order-management .order-admin__tabs-count.web2-notification-badge {
+  margin-left:2px;vertical-align:middle;
+}
+
+/* Unified toolbar dimensions; STAFF screenshot is the template.
+   Do not alter button colors or other independent form controls. */
 app-admin-catalog-shell :is(
-  .staff-add,.order-admin__btn--new,.voucher-list__button--primary,
-  .category-add,.product-add,.branch-add,.service-add
-) {background:#0d47a1;color:#fff;border-color:#0d47a1;border-radius:8px;
-  min-height:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;
-  gap:8px;width:max-content;max-width:100%;padding:0 16px;font-size:14px;font-weight:500;white-space:nowrap}
+ .staff-toolbar,.voucher-list__toolbar,.list-toolbar,.branch-v2-page__filters,
+ .service-catalog__filters,.order-admin__filters--figma,.product-panel .toolbar
+) { box-sizing:border-box;min-height:84px;align-items:center;gap:12px;padding:16px;
+    border:1px solid #e2e8f0;border-radius:12px;background:#fff }
 app-admin-catalog-shell :is(
-  .staff-add,.order-admin__btn--new,.voucher-list__button--primary,
-  .category-add,.product-add,.branch-add,.service-add
-) :is(img,svg){width:16px;height:16px;flex:0 0 16px;object-fit:contain}
+ .staff-search,.voucher-list__search,.search-field,.branch-v2-page__search,
+ .service-catalog__search,.order-admin__filters--figma .order-admin__search,
+ .product-panel .search
+) {height:48px;min-height:48px;border-radius:8px}
 app-admin-catalog-shell :is(
-  .staff-toolbar,.order-admin__filters--figma,.voucher-list__toolbar,
-  .list-toolbar,.catalog-filter-toolbar
-){min-height:84px;align-items:center;column-gap:12px;padding:16px;
-  border:1px solid #e2e8f0;border-radius:12px}
+ .staff-filters select,.voucher-list__control select,.branch-v2-page__status-filter select,
+ .service-catalog__select select,.order-admin__filters--figma select,
+ .filter-label select
+) {height:48px;min-height:48px;border-radius:8px}
+app-admin-order-management .order-admin__filters--figma {
+  grid-template-rows:48px;grid-template-columns:minmax(270px,1fr) 160px 160px 114px 158px;
+  min-width:0;
+}
+app-admin-order-management .order-admin__filters--figma .order-admin__search {
+  width:100%;min-width:0;max-width:none;
+}
+app-admin-voucher-list .voucher-list__toolbar {
+  grid-template-rows:48px;
+  grid-template-columns:minmax(220px,1fr) 170px 158px 148px max-content;
+}
+app-admin-voucher-list .voucher-list__control {height:48px}
+app-admin-voucher-list .voucher-list__toolbar .web2-add-button {justify-self:end}
+@media(max-width:1200px) {
+  app-admin-order-management .order-admin__filters--figma,
+  app-admin-voucher-list .voucher-list__toolbar {overflow-x:auto}
+}
+
+/* Consistent product-style breadcrumbs and action widths */
 app-admin-catalog-shell :is(
-  .staff-search,.order-admin__search,.voucher-list__search,.search-field
-){height:48px;min-height:48px}
+ .order-admin__crumb,.voucher-editor__crumb,.return-detail__breadcrumb,
+ .create-order__breadcrumb,.schedule-crumb,.staff-breadcrumb
+){display:flex;align-items:center;gap:10px;font-size:13px;line-height:20px;color:#60748d}
 app-admin-catalog-shell :is(
-  .staff-filters select,.order-admin__filters--figma select,
-  .voucher-list__control select,.filter-label select
-){height:48px;min-height:48px;border-radius:8px}
-app-admin-catalog-shell :is(
-  .order-admin__crumb,.voucher-editor__crumb,.return-detail__breadcrumb,
-  .create-order__breadcrumb,.schedule-crumb,.staff-breadcrumb
-){display:flex;align-items:center;gap:12px;font-size:13px;line-height:20px;color:#60748d}
-app-admin-catalog-shell :is(
-  .order-admin__crumb,.voucher-editor__crumb,.return-detail__breadcrumb,
-  .create-order__breadcrumb,.schedule-crumb,.staff-breadcrumb
+ .order-admin__crumb,.voucher-editor__crumb,.return-detail__breadcrumb,
+ .create-order__breadcrumb,.schedule-crumb,.staff-breadcrumb
 ) a{color:#60748d;text-decoration:none}
 app-admin-catalog-shell :is(
-  .order-admin__crumb,.voucher-editor__crumb,.return-detail__breadcrumb,
-  .create-order__breadcrumb,.schedule-crumb,.staff-breadcrumb
+ .order-admin__crumb,.voucher-editor__crumb,.return-detail__breadcrumb,
+ .create-order__breadcrumb,.schedule-crumb,.staff-breadcrumb
 ) a:hover{color:#0d47a1;text-decoration:underline}
 app-admin-catalog-shell :is(
+ .order-admin__btn,.voucher-editor__button,.return-detail__button,
+ .create-order__button,.staff-add,.voucher-list__button
+){width:fit-content;max-width:100%}
+
+/* Product pagination: connected rectangular cells with outlined active page. */
+app-admin-catalog-shell :is(
  .order-admin__pagination,.voucher-list__pagination,.staff-pagination,.schedule-footer
-) :is(button,span[aria-current],strong[aria-label],.staff-page-selected) {
-  min-width:44px;height:44px;min-height:44px;border-radius:0
+) :is(button,.staff-page-selected,span[aria-current],strong[aria-label]) {
+  min-width:44px;height:44px;min-height:44px;border-radius:0;
 }
 app-admin-catalog-shell :is(
  .order-admin__pagination,.voucher-list__pagination,.staff-pagination,.schedule-footer
 ) [aria-current="page"],
 app-admin-catalog-shell .staff-page-selected{
-  background:#e5f6fd;color:#0d47a1;box-shadow:inset 0 0 0 2px #0d47a1
+  background:#e5f6fd;color:#0d47a1;box-shadow:inset 0 0 0 2px #0d47a1;
 }
-app-admin-catalog-shell :is(
-  .order-admin__btn,.voucher-editor__button,.return-detail__button,
-  .create-order__button,.staff-add,.voucher-list__button
-){width:max-content;max-width:100%;flex:0 0 auto}
-@media(max-width:1050px){
- app-admin-catalog-shell :is(.staff-toolbar,.order-admin__filters--figma,.voucher-list__toolbar){
-  overflow-x:auto
- }
-}
-
-/* Exact selectors for legacy add actions used by Category, Product and Branch. */
-app-admin-category-page .btn-primary,
-app-admin-product-list-page .primary-btn,
-app-branch-management-page .branch-v2-page__add,
-app-service-catalog-list .service-catalog__create {
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  min-height:44px;height:44px;width:max-content;max-width:100%;padding:0 16px;
-  background:#0d47a1;color:#fff;border:1px solid #0d47a1;border-radius:8px;
-  font:500 14px/20px Roboto,Arial,sans-serif;text-decoration:none;white-space:nowrap;
-}
-app-admin-category-page .btn-primary span,
-app-admin-product-list-page .primary-btn span {font-size:16px;line-height:16px}
-app-branch-management-page .branch-v2-page__add:hover,
-app-admin-category-page .btn-primary:hover,
-app-admin-product-list-page .primary-btn:hover {background:#093875}
 
 // Return detail visuals live globally to respect Angular's per-component stylesheet budget.
 app-admin-order-return-detail {
