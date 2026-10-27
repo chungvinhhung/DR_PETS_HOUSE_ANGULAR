@@ -74,7 +74,7 @@
             <th scope="col">Vai trò thực hiện</th>
             <th scope="col">Hình thức</th>
             <th scope="col">Thời lượng</th>
-            <th scope="col">Giá cơ sở</th>
+            <th scope="col" class="web2-cell-center">Giá cơ sở</th>
             <th scope="col" class="service-catalog__activation-col">
               {{ filters().branchId === 'ALL' ? 'CN đang bật' : 'Kích hoạt tại CN' }}
             </th>
@@ -140,7 +140,7 @@
                 <td class="service-catalog__secondary">
                   {{ service.durationMinutes !== null ? service.durationMinutes + ' phút' : '—' }}
                 </td>
-                <td class="service-catalog__price">{{ priceLabel(service) }}</td>
+                <td class="service-catalog__price web2-cell-center">{{ priceLabel(service) }}</td>
                 <td class="service-catalog__activation-cell">
                   @if (filters().branchId === 'ALL') {
                     <span class="service-catalog__activation"
