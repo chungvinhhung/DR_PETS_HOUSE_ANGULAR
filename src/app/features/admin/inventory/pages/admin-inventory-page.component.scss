@@ -33,7 +33,8 @@
 }
 
 .inventory-tabs {
-  width: 340px;
+  /* The divider spans the entire content width; only tab buttons stay compact. */
+  width: 100%;
   max-width: 100%;
   height: 46px;
   display: grid;

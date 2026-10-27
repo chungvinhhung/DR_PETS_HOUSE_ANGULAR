@@ -7,6 +7,7 @@ on:
       - feature/admin-product-category
       - feat/figma-branch-v2-admin
       - integration/branch-v2-service-pricing-staff
+      - feature/admin-order-management-phase1
   pull_request:
     branches:
       - develop

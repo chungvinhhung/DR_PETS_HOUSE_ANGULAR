@@ -1378,3 +1378,3418 @@ app-admin-staff-detail .staff-detail__calendar-button:focus-visible {
   app-admin-staff-form .week-nav,
   app-admin-staff-detail .staff-detail__week-control { flex-wrap: wrap; }
 }
+
+/* WEB2 Order Management Phase 1 - globally scoped extension (component budget) */
+.order-admin__card {padding:20px;margin-bottom:16px;min-width:0}
+.order-admin__card h2 {font-size:17px;color:var(--ink);line-height:1.3;margin:0 0 18px;font-weight:700}
+.order-admin__information {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 16px}
+.order-admin__information>div {min-width:0}
+.order-admin__information>div span:first-child:not(.order-admin__badge) {display:block;color:#70839c;font-size:12px;margin-bottom:5px}
+.order-admin__information>div strong {font-weight:500;overflow-wrap:anywhere}
+.order-admin__information--wide {grid-column:1/-1}
+.order-admin__progress {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.order-admin__progress-step {min-width:0;color:#90a0b5}
+.order-admin__progress-title {display:flex;align-items:center;gap:9px;font-size:13px;white-space:nowrap}
+.order-admin__dot {height:12px;width:12px;display:inline-block;border-radius:50%;background:#cbd5e1;flex:none}
+.order-admin__progress-line {height:4px;background:#e5eef8;margin:9px 0 8px;border-radius:4px}
+.order-admin__progress-step--done {color:#21658f}
+.order-admin__progress-step--done .order-admin__dot,.order-admin__progress-step--done .order-admin__progress-line {background:#3a9662}
+.order-admin__progress-step--cancelled {color:#a4aaba}
+.order-admin__progress-step small {display:block;font-size:11px;color:#7c90a8}
+.order-admin__number {text-align:right !important;white-space:nowrap}
+.order-admin__item-name {font-weight:600}
+.order-admin__grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.order-admin__totals {margin:0}
+.order-admin__totals div {display:flex;align-items:start;justify-content:space-between;gap:16px;margin-bottom:13px}
+.order-admin__totals dt {color:#5d7189}
+.order-admin__totals dd {text-align:right;margin:0;font-weight:500}
+.order-admin__totals .order-admin__grand {border-top:1px solid var(--line);padding-top:12px;font-size:16px;font-weight:700}
+.order-admin__history {padding-left:20px;margin:0}
+.order-admin__history li {padding:0 0 18px 4px}
+.order-admin__history li strong,.order-admin__history li small {display:block}
+.order-admin__history li small,.order-admin__history li p {font-size:12px;color:#73859b;margin:3px 0}
+.order-admin__muted {color:#697f97}
+.order-admin__backdrop {position:fixed;inset:0;z-index:220;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(21,36,56,.52)}
+.order-admin__modal {max-height:92vh;overflow-y:auto;width:min(100%,540px);padding:24px;border-radius:14px;background:white;box-shadow:0 14px 45px #0003}
+.order-admin__modal-head {display:flex;justify-content:space-between;align-items:start;border-bottom:1px solid var(--line);padding-bottom:18px;gap:10px}
+.order-admin__modal-head h2 {font-size:22px;margin:0}
+.order-admin__modal-head p {color:var(--soft);margin:4px 0 0}
+.order-admin__modal>p {margin:18px 0;color:#526880}
+.order-admin__modal-close {border:0;background:none;font-size:27px;color:#61738a;line-height:1;min-width:32px}
+.order-admin__field {display:block;font-weight:500;margin:14px 0}
+.order-admin__field input,.order-admin__field textarea {display:block;width:100%;margin-top:8px;padding:11px 12px;border:1px solid var(--line);border-radius:8px;resize:vertical}
+.order-admin__field span,.order-admin__invalid {color:#b32b3e}
+.order-admin__invalid {font-size:12px}
+.order-admin__modal-actions {display:flex;justify-content:flex-end;gap:12px;border-top:1px solid var(--line);padding-top:18px;margin-top:24px}
+@media (max-width:1120px) {
+  .order-admin__grid {grid-template-columns:1fr}
+  .order-admin__information {grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:800px) {
+  .order-admin {padding:20px 14px}
+  .order-admin__heading {align-items:flex-start;flex-direction:column}
+  .order-admin__heading h1 {font-size:24px}
+  .order-admin__filter-controls {justify-content:stretch;flex:1 1 100%}
+  .order-admin__search {max-width:none}
+  .order-admin__progress {overflow-x:auto;grid-template-columns:repeat(4,minmax(150px,1fr))}
+}
+@media (max-width:490px) {
+  .order-admin__filters {overflow-x:auto}
+  .order-admin__information {grid-template-columns:1fr}
+  .order-admin__modal-actions {flex-wrap:wrap}
+}
+
+/* WEB2 Order Management Figma 7544:42404 - scoped only to the Order admin page */
+app-admin-order-management .catalog-header {height:107px}
+app-admin-order-management .catalog-layout {min-height:calc(100vh - 107px)}
+app-admin-order-management .catalog-sidebar {top:107px;height:calc(100dvh - 107px)}
+app-admin-order-management .order-admin {padding:36px 40px 28px;max-width:1480px;margin-inline:auto;background:#fff}
+app-admin-order-management .order-admin__heading--list {margin-bottom:24px}
+app-admin-order-management .order-admin__heading--list h1 {font-size:24px;font-weight:600}
+app-admin-order-management .order-admin__kpis {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0 0 23px}
+app-admin-order-management .order-admin__kpi {display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-width:0;min-height:112px;padding:13px 18px 14px;border:1px solid #e2e8f0;border-radius:9px;background:white}
+app-admin-order-management .order-admin__kpi>span {color:#475569;font-size:12px;font-weight:500}
+app-admin-order-management .order-admin__kpi>strong {color:#202e45;font-size:25px;line-height:33px;font-weight:600}
+app-admin-order-management .order-admin__kpi>strong.order-admin__kpi-number--blue {color:#0d47a1}
+app-admin-order-management .order-admin__kpi>small {color:#64748b;font-size:11px}
+app-admin-order-management .order-admin__tabs {display:flex;align-items:flex-end;height:43px;gap:26px;margin:0 0 17px;border-bottom:1px solid #d9e2ed}
+app-admin-order-management .order-admin__tabs button {display:inline-flex;align-items:center;justify-content:center;gap:7px;height:42px;padding:0 12px;border:0;border-bottom:2px solid transparent;background:transparent;color:#475569;font-size:13px;white-space:nowrap;cursor:pointer}
+app-admin-order-management .order-admin__tabs button.order-admin__tabs--active {color:#0d47a1;border-bottom-color:#0d47a1;font-weight:500}
+app-admin-order-management .order-admin__tabs-count {display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 5px;border-radius:10px;background:#0d47a1;color:white;font-size:11px}
+/* Filter toolbar layout lives only in admin-order-management.component.scss. */
+app-admin-order-management .order-admin__btn--export {background:white;color:#0d47a1;border-color:#0d47a1}
+app-admin-order-management .order-admin__btn--new {background:#003178;color:white;border-color:#003178}
+app-admin-order-management .order-admin__btn--new:hover {background:#0d47a1}
+app-admin-order-management .order-admin__table-panel--figma {border-radius:9px;overflow:hidden}
+/* Return/Refund retains its independent responsive table contract.
+   Order list sizing is defined once using its colgroup below. */
+app-admin-order-management .order-admin__table--returns {
+  width:100%;
+  min-width:1000px;
+  table-layout:fixed;
+  border-spacing:0
+}
+app-admin-order-management .order-admin__table--figma thead th,
+app-admin-order-management .order-admin__table--returns thead th {
+  height:44px;
+  padding:10px 16px;
+  color:#111827;
+  background:#f4f6f9;
+  font-size:12px;
+  font-weight:600;
+  white-space:nowrap
+}
+app-admin-order-management .order-admin__table--figma tbody td,
+app-admin-order-management .order-admin__table--returns tbody td {
+  height:76px;
+  padding:12px 16px;
+  font-size:13px;
+  color:#475569
+}
+/* Returns: ID, date, order, item, expected refund, final refund, status, action = 100%. */
+app-admin-order-management .order-admin__table--returns {min-width:1100px}
+app-admin-order-management .order-admin__table--returns th:nth-child(1) {width:10%}
+app-admin-order-management .order-admin__table--returns th:nth-child(2) {width:12%}
+app-admin-order-management .order-admin__table--returns th:nth-child(3) {width:11%}
+app-admin-order-management .order-admin__table--returns th:nth-child(4) {width:19%}
+app-admin-order-management .order-admin__table--returns th:nth-child(5) {width:14%}
+app-admin-order-management .order-admin__table--returns th:nth-child(6) {width:14%}
+app-admin-order-management .order-admin__table--returns th:nth-child(7) {width:12%}
+app-admin-order-management .order-admin__table--returns th:nth-child(8) {width:8%}
+app-admin-order-management .order-admin__table--returns .order-admin__final-refund {white-space:nowrap}
+/* First and last content start/end exactly 20px from the table's inner edges. */
+app-admin-order-management .order-admin__table--figma :is(th,td):first-child,
+app-admin-order-management .order-admin__table--returns :is(th,td):first-child {
+  padding-left:20px;
+  text-align:left
+}
+app-admin-order-management .order-admin__table--figma :is(th,td):last-child,
+app-admin-order-management .order-admin__table--returns :is(th,td):last-child {
+  padding-right:20px;
+  text-align:right
+}
+app-admin-order-management .order-admin__table--figma :is(th,td):nth-child(7),
+app-admin-order-management .order-admin__table--returns :is(th,td):nth-child(7) {
+  text-align:center;
+  padding-inline:12px
+}
+app-admin-order-management .order-admin__table--figma .order-admin__badge,
+app-admin-order-management .order-admin__table--returns .order-admin__badge {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  max-width:100%;
+  min-width:90px
+}
+app-admin-order-management .order-admin__customer {font-weight:500}
+app-admin-order-management .order-admin__badge[data-status="REQUESTED"] {color:#985a06;background:#fff4dc}
+app-admin-order-management .order-admin__badge[data-status="RECEIVED"] {color:#145a9e;background:#dceeff}
+app-admin-order-management .order-admin__badge[data-status="APPROVED"] {color:#267349;background:#e1f6e9}
+app-admin-order-management .order-admin__badge[data-status="REJECTED"] {color:#a43c47;background:#f9e1e3}
+app-admin-order-management .order-admin__pagination {height:60px;min-height:60px;padding:8px 12px}
+app-admin-order-management .order-admin__pagination button {height:42px;width:38px}
+app-admin-order-management .order-admin__pagination strong {height:42px;min-width:46px;background:#e5f6fd;color:#0d47a1}
+app-admin-order-management .order-admin__data-note {font-size:11px;margin-top:8px}
+/* Keep every filter on a single row. Scroll locally on narrow viewports. */
+@media(max-width:1350px){
+  app-admin-order-management .order-admin {padding:32px 24px}
+}
+@media(max-width:950px){
+  app-admin-order-management .order-admin__kpis {grid-template-columns:1fr;gap:10px}
+  app-admin-order-management .order-admin__kpi {min-height:95px}
+}
+@media(max-width:800px){
+  app-admin-order-management .catalog-header {height:72px}
+  app-admin-order-management .catalog-layout {min-height:calc(100vh - 72px)}
+  app-admin-order-management .order-admin {padding:18px 14px}
+  app-admin-order-management .order-admin__tabs {overflow-x:auto}
+}
+app-admin-order-management .order-admin__btn--new img {filter:brightness(0) invert(1);width:14px;height:14px;flex:none}
+
+/* Return/Refund: one-line filters and a dedicated two-click calendar panel.
+   Calendar is OUTSIDE the horizontally scrollable toolbar to avoid clipping. */
+app-admin-order-management .order-admin__returns-toolbar {
+  position:relative;
+  min-width:0;
+  margin-bottom:16px;
+}
+app-admin-order-management .order-admin__filters--returns {
+  display:grid;
+  grid-template-columns:minmax(235px,1fr) minmax(148px,196px) minmax(148px,190px) 222px;
+  grid-template-rows:44px;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:16px;
+  margin:0;
+  border:1px solid #dce5f0;
+  border-radius:10px;
+}
+app-admin-order-management .order-admin__filters--returns .sr-only {
+  position:absolute;
+  width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);
+  white-space:nowrap;border:0;
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__search {
+  grid-column:1;grid-row:1;
+  display:flex;flex-direction:row;align-items:center;gap:10px;
+  min-width:0;max-width:none;width:100%;height:44px;margin:0;
+  padding:0 14px;border:1px solid #dce5f0;border-radius:8px;color:#60748d;
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__search svg {
+  display:block;flex:none;width:18px;height:18px;
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__search input {
+  flex:1 1 auto;display:block;
+  min-width:0;width:100%;height:42px;
+  margin:0;padding:0;border:0;background:transparent;outline:none;
+  font-size:12px;line-height:20px;color:#1d2a42;
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__status-filter {
+  grid-column:2;grid-row:1;
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__branch-filter {
+  grid-column:3;grid-row:1;
+}
+app-admin-order-management .order-admin__filters--returns :is(.order-admin__status-filter,.order-admin__branch-filter) {
+  display:block;position:relative;
+  width:100%;min-width:0;height:44px;margin:0;align-self:center;
+}
+app-admin-order-management .order-admin__filters--returns select {
+  box-sizing:border-box;display:block;
+  width:100%;height:44px;min-height:44px;margin:0;
+  padding:0 34px 0 12px;
+  border:1px solid #dce5f0;border-radius:8px;
+  appearance:none;
+  background:#fff url('/assets/admin-product/expand_more.svg') no-repeat right 10px center;
+  background-size:18px;font-size:12px;color:#21334d;
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__range-trigger {
+  grid-column:4;grid-row:1;
+  box-sizing:border-box;
+  display:flex;align-items:center;justify-content:space-between;gap:7px;
+  width:100%;min-width:0;height:44px;margin:0;padding:0 10px;
+  border:1px solid #dce5f0;border-radius:8px;
+  background:white;color:#21334d;
+  font:12px Roboto,Arial,sans-serif;
+  cursor:pointer;white-space:nowrap;
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__range-trigger:hover {
+  border-color:#8dafd8;
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__range-trigger[aria-expanded="true"] {
+  border-color:#0d47a1;outline:1px solid #0d47a1;
+}
+app-admin-order-management .order-admin__range-trigger .order-admin__range-values {
+  display:inline-flex;align-items:center;justify-content:flex-start;
+  flex:none;gap:5px;
+}
+app-admin-order-management .order-admin__range-trigger .order-admin__range-dash {color:#8694a8}
+app-admin-order-management .order-admin__range-trigger svg {display:block;flex:none;margin:0;color:#536781}
+app-admin-order-management .order-admin__calendar-panel {
+  position:absolute;top:calc(100% + 6px);right:0;z-index:120;
+  box-sizing:border-box;
+  width:270px;max-width:calc(100vw - 36px);
+  padding:10px 12px 9px;
+  border:1px solid #dce5f0;border-radius:12px;
+  background:#fff;box-shadow:0 14px 38px rgba(24,47,80,.17);
+}
+app-admin-order-management .order-admin__calendar-header {
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  height:30px;
+}
+app-admin-order-management .order-admin__calendar-header strong {
+  color:#1d2a42;font-size:14px;font-weight:600;
+}
+app-admin-order-management .order-admin__calendar-header button {
+  display:flex;align-items:center;justify-content:center;
+  width:28px;height:28px;padding:0;border:1px solid #dce5f0;border-radius:7px;
+  background:#fff;color:#0d47a1;font-size:23px;line-height:1;cursor:pointer;
+}
+app-admin-order-management .order-admin__calendar-instruction {
+  margin:6px 0;color:#536a87;font-size:11px;
+}
+app-admin-order-management .order-admin__calendar-days {
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:1px;min-width:0;
+}
+app-admin-order-management .order-admin__calendar-weekday {
+  display:flex;align-items:center;justify-content:center;
+  height:23px;color:#7c8da2;font-size:11px;font-weight:600;
+}
+app-admin-order-management .order-admin__calendar-days button {
+  box-sizing:border-box;display:flex;align-items:center;justify-content:center;
+  width:100%;height:30px;margin:0;padding:0;
+  border:0;border-radius:7px;background:transparent;
+  color:#263b55;font-size:12px;cursor:pointer;
+}
+app-admin-order-management .order-admin__calendar-days button:hover {background:#e8f1fd}
+app-admin-order-management .order-admin__calendar-days button.order-admin__calendar-day--muted {color:#a7b4c4}
+app-admin-order-management .order-admin__calendar-days button.order-admin__calendar-day--between {
+  background:#e7f1ff;color:#0d47a1;border-radius:0;
+}
+app-admin-order-management .order-admin__calendar-days button:is(.order-admin__calendar-day--start,.order-admin__calendar-day--end) {
+  background:#0d47a1;color:#fff;border-radius:7px;font-weight:600;
+}
+app-admin-order-management .order-admin__calendar-footer {
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0;
+  color:#64748b;font-size:11px;
+}
+app-admin-order-management .order-admin__calendar-footer .order-admin__calendar-footer-note {
+  min-width:0;flex:1 1 auto;line-height:1.3;
+}
+app-admin-order-management .order-admin__calendar-footer-actions {
+  flex:none;display:flex;gap:12px;align-items:center;
+}
+app-admin-order-management .order-admin__calendar-footer button {
+  flex:none;background:transparent;border:0;color:#0d47a1;
+  font-size:12px;font-weight:500;cursor:pointer;padding:5px 0;
+}
+app-admin-order-management .order-admin__calendar-footer button:disabled {
+  color:#a8b5c4;cursor:not-allowed;
+}
+app-admin-order-management .order-admin__filter-warning,
+app-admin-order-management .order-admin__filter-hint {
+  margin:-5px 0 13px;font-size:12px;color:#65758e;
+}
+app-admin-order-management .order-admin__filter-warning {color:#ad394a}
+
+/* Order creation page-only layout extracted to respect the Angular component CSS budget. */
+.create-order__address {padding:14px;border:1px solid var(--border);border-radius:8px}
+.create-order__address-actions {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.create-order__address-actions strong {font-size:13px;font-weight:500}
+.create-order__address > small {display:block;color:var(--muted);margin:7px 0 0}
+.create-order__address-fields {display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px;margin-top:15px}
+.create-order__payment-grid {display:grid;grid-template-columns:1.15fr .85fr;gap:32px}
+.create-order__payment-fields {min-width:0}
+.create-order__payment-toggle {display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-bottom:16px;background:#f3f6fa;border-radius:8px}
+.create-order__payment-toggle button {height:37px;border:1px solid transparent;border-radius:7px;background:transparent;color:#617694}
+.create-order__payment-toggle button.is-active {background:#fff;color:var(--blue);border-color:var(--border);font-weight:500}
+.create-order__voucher-row {display:flex;gap:8px;margin-bottom:14px}
+.create-order__voucher-row input {flex:1;width:100%;min-width:0;height:42px;padding:0 12px}
+.create-order__payment-fields textarea {display:block;width:100%;padding:10px 12px;resize:vertical;min-height:62px}
+.create-order__summary {min-width:0}
+.create-order__breakdown,.create-order__total {margin:0;padding:15px;border-radius:8px;background:#f5f7fb}
+.create-order__breakdown div {display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.create-order__breakdown div:last-child {margin-bottom:0}
+.create-order__breakdown dt {color:var(--muted)}
+.create-order__breakdown dd {margin:0;font-weight:500;white-space:nowrap}
+.create-order__total {display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;background:#eaf2ff;color:var(--blue)}
+.create-order__total strong {font-size:15px}
+.create-order__total small {display:block;font-size:11px;font-weight:400}
+.create-order__pending {padding:11px 14px;margin:0 0 16px;border:1px solid #f0d6a1;border-radius:8px;background:#fffaf0;color:#825c26;font-size:12px}
+.create-order__footer {display:flex;justify-content:flex-end;align-items:center;gap:10px}
+@media (max-width:1100px) {
+ .create-order {padding:24px}
+ .create-order__fields {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .create-order__payment-grid {gap:16px}
+}
+@media (max-width:750px) {
+ .create-order {padding:16px}
+ .create-order__fields,.create-order__payment-grid,.create-order__address-fields {grid-template-columns:1fr}
+ .create-order__panel {padding:16px}
+ .create-order__product-results {width:min(520px,calc(100vw - 48px));min-width:0}
+ .create-order__voucher-row {flex-wrap:wrap}
+ .create-order__voucher-row button {flex:0 0 auto}
+}
+
+/* WEB2 Admin Create Order Phase 2 — delivery-address variants from Figma. */
+app-admin-order-create .create-order__region-fields {
+  display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px;
+  align-items:start; margin:12px 0 18px;
+}
+app-admin-order-create .create-order__region-fields--two {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+app-admin-order-create .create-order__address-line { margin-top:15px; }
+app-admin-order-create .create-order__address-line input,
+app-admin-order-create .create-order__dialog-form .create-order__field input {
+  width:100%; height:42px; padding:0 12px; border:1px solid #d9e3f2;
+  border-radius:8px; color:#202d44; background:#fff;
+}
+app-admin-order-create .create-order__address-card {
+  border:1px solid #d9e3f2; border-radius:8px; padding:16px; min-height:85px;
+}
+app-admin-order-create .create-order__address-top {
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+  gap:14px;
+}
+app-admin-order-create .create-order__address-preview {
+  display:flex; flex-direction:column; align-items:flex-start; gap:6px;
+  flex:1 1 250px; min-width:0;
+}
+app-admin-order-create .create-order__address-preview strong {
+  font-size:13px; line-height:20px; font-weight:500; overflow-wrap:anywhere;
+}
+app-admin-order-create .create-order__address-preview small {
+  font-size:12px; color:#697f9d;
+}
+app-admin-order-create .create-order__address-tag {
+  color:#4672a4; background:#edf4ff; padding:3px 8px; border-radius:4px;
+  font-size:11px;
+}
+app-admin-order-create .create-order__address-buttons {
+  display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;
+}
+app-admin-order-create .create-order__overlay {
+  position:fixed; inset:0; z-index:1150; display:flex;
+  align-items:center; justify-content:center; padding:20px;
+  overflow-y:auto; background:#14233d86;
+}
+app-admin-order-create .create-order__dialog {
+  width:min(100%,730px); max-height:calc(100dvh - 40px); overflow-y:auto;
+  background:#fff; color:#202d44; border-radius:14px;
+  box-shadow:0 18px 60px #14274047; padding:24px;
+}
+app-admin-order-create .create-order__dialog-head {
+  display:flex; align-items:flex-start; justify-content:space-between; gap:16px;
+  margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #d9e3f2;
+}
+app-admin-order-create .create-order__dialog-head h2 {
+  font-size:20px; line-height:28px; font-weight:700; margin:0;
+}
+app-admin-order-create .create-order__dialog-head p {
+  color:#657b97; margin:4px 0 0; font-size:13px;
+}
+app-admin-order-create .create-order__dialog-close {
+  display:flex; align-items:center; justify-content:center;
+  flex:none; width:32px; height:32px; border:0; border-radius:8px;
+  background:transparent; color:#57708d; font-size:25px; line-height:1;
+}
+app-admin-order-create .create-order__dialog-close:hover { background:#eef3f9; }
+app-admin-order-create .create-order__dialog-form .create-order__region-fields { margin-bottom:12px; }
+app-admin-order-create .create-order__dialog-error {
+  color:#bd2739; font-size:12px; margin:12px 0 0;
+}
+app-admin-order-create .create-order__address-choices {
+  padding:8px 0 22px; display:flex; flex-direction:column; gap:12px;
+}
+app-admin-order-create .create-order__address-choices p {
+  margin:0; font-size:13px; line-height:1.65; color:#697e96;
+}
+app-admin-order-create .create-order__address-choice {
+  display:flex; flex-direction:column; gap:6px; width:100%;
+  align-items:flex-start; padding:12px 14px; background:#fff;
+  border:1px solid #d9e3f2; border-radius:8px; text-align:left;
+}
+app-admin-order-create .create-order__address-choice:hover {
+  border-color:#0e48a3; background:#f6f9fe;
+}
+app-admin-order-create .create-order__address-choice strong {font-size:13px;}
+app-admin-order-create .create-order__address-choice small {font-size:12px;color:#627690;}
+app-admin-order-create .create-order__dialog-actions {
+  display:flex; align-items:center; justify-content:flex-end;
+  gap:10px; margin-top:20px; padding-top:16px; border-top:1px solid #d9e3f2;
+}
+@media (max-width:860px) {
+  app-admin-order-create .create-order__region-fields {grid-template-columns:1fr;}
+  app-admin-order-create .create-order__region-fields--two {grid-template-columns:1fr;}
+  app-admin-order-create .create-order__address-buttons {justify-content:flex-start;}
+  app-admin-order-create .create-order__address-top {align-items:stretch;}
+  app-admin-order-create .create-order__dialog {padding:16px;}
+}
+
+/* WEB2 Admin Create Order Phase 3 — payment and draft validation. */
+app-admin-order-create .create-order__sr-only {
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+app-admin-order-create .create-order__online-methods {
+  display:flex; flex-direction:column; gap:5px; padding:8px;
+  margin:0 0 12px; border:0; border-radius:9px;
+  background:#f6f8fb; min-width:0;
+}
+app-admin-order-create .create-order__online-method {
+  display:flex; align-items:center; gap:12px; min-height:40px;
+  padding:7px 12px; border:1px solid transparent; border-radius:7px;
+  background:#fff; color:#212e45; font-size:13px; cursor:pointer;
+}
+app-admin-order-create .create-order__online-method:hover {
+  background:#f7fbff; border-color:#c9dbee;
+}
+app-admin-order-create .create-order__online-method.is-selected {
+  background:#edf4ff; border-color:#0e4aa8;
+  font-weight:500; color:#0e4aa8;
+}
+app-admin-order-create .create-order__online-method input {
+  width:18px; height:18px; margin:0; accent-color:#0e4aa8; flex:0 0 18px;
+}
+app-admin-order-create .create-order__online-provider-label { min-width:0; overflow-wrap:anywhere; }
+app-admin-order-create .create-order__voucher-row {position:relative;align-items:center;}
+app-admin-order-create .create-order__voucher-row input {padding-right:35px;}
+app-admin-order-create .create-order__voucher-clear {
+  display:flex;align-items:center;justify-content:center;position:absolute;
+  right:114px;top:50%;transform:translateY(-50%);height:26px;width:26px;
+  border:0;border-radius:5px;background:transparent;font-size:20px;color:#7184a0;
+}
+app-admin-order-create .create-order__voucher-clear:hover {background:#f0f3f7;color:#1b3155;}
+app-admin-order-create .create-order__voucher-status {
+  margin:0 0 14px; padding:9px 12px; color:#805919;
+  border:1px solid #ead8b8; background:#fff9ee;
+  border-radius:7px; font-size:12px; line-height:1.5;
+}
+app-admin-order-create .create-order__breakdown dt small {color:#91a0b6;font-size:11px;}
+app-admin-order-create .create-order__review {
+  padding:14px 16px; margin:0 0 16px;
+  background:#fff8ed; border:1px solid #e5ca9c;
+  color:#825516; border-radius:8px; font-size:13px;
+}
+app-admin-order-create .create-order__review--ready {
+  background:#f0faf3; border-color:#bbdbc5;color:#286940;
+}
+app-admin-order-create .create-order__review strong {font-weight:600;}
+app-admin-order-create .create-order__review ul {margin:6px 0 0;padding-left:18px;}
+app-admin-order-create .create-order__review li {margin:3px 0;}
+app-admin-order-create .create-order__review p {margin:6px 0 0;}
+@media (max-width:750px) {
+  app-admin-order-create .create-order__footer {flex-wrap:wrap;}
+  app-admin-order-create .create-order__voucher-clear {right:118px;}
+}
+
+app-admin-order-create .create-order__provider-icon {width:32px;height:32px;object-fit:contain;flex:0 0 32px}
+
+/* QA refinements for Admin Create Order */
+app-admin-order-create .create-order__search-error {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; padding:12px 14px; font-size:12px; color:#6a7890;
+}
+app-admin-order-create .create-order__search-error button {
+  padding:7px 12px; flex:none; background:#fff; color:#0e48a3;
+  border:1px solid #d9e3f2; border-radius:7px; font-size:12px;
+}
+app-admin-order-create .create-order__search-error button:hover {
+  background:#f3f8ff;
+}
+/* Reuse the same compact header + footer pattern as Order/Return action modals.
+   Confirm/leave buttons must stay visible and aligned at every viewport width. */
+app-admin-order-create .create-order__dialog--confirm {
+  width:min(100%,520px);
+  max-width:520px;
+  padding:24px;
+  border:1px solid #dce5f0;
+  border-radius:12px;
+  box-shadow:0 18px 50px #10233e35;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-head {
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:14px;padding:0;margin:0;
+  border:0;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-head h2 {
+  margin:0;color:#1f2d42;
+  font:700 20px/27px Roboto,Arial,sans-serif;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-head p {
+  margin:8px 0 0;color:#64748b;
+  font:400 13px/19px Roboto,Arial,sans-serif;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-actions {
+  display:flex;align-items:center;justify-content:flex-end;
+  flex-wrap:wrap;gap:10px;
+  width:100%;min-height:58px;
+  margin-top:0;padding-top:16px;
+  border-top:0;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-actions .create-order__button {
+  position:relative;display:inline-flex !important;
+  align-items:center;justify-content:center;
+  flex:0 0 auto;width:auto !important;min-width:105px;min-height:38px;
+  padding:0 14px !important;border-radius:8px;
+  font:600 13px/20px Roboto,Arial,sans-serif !important;
+  opacity:1 !important;visibility:visible !important;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-actions .create-order__button--outline {
+  color:#334155 !important;background:#fff !important;border:1px solid #dce5f0 !important;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-actions .create-order__button--primary {
+  color:#fff !important;background:#0d47a1 !important;border:1px solid #0d47a1 !important;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-close {
+  flex:0 0 28px;width:28px;height:28px;
+  color:#64748b;font-size:22px;
+}
+@media(max-width:460px) {
+  app-admin-order-create .create-order__dialog--confirm {padding:18px;}
+  app-admin-order-create .create-order__dialog--confirm .create-order__dialog-actions .create-order__button {
+    min-width:0;flex:1 1 auto;
+  }
+}
+
+/* Staff weekly assignment - shared modal overlay (component encapsulation safe) */
+.schedule-cell{display:flex;min-height:62px;width:100%;flex-direction:column;justify-content:center;align-items:stretch;gap:5px;padding:4px;border:0;border-radius:6px;background:transparent;cursor:pointer}
+.schedule-cell:hover:not(:disabled){background:#eff6ff}
+.schedule-cell:focus-visible{outline:2px solid #0d47a1;outline-offset:-2px}
+.schedule-cell:disabled{cursor:not-allowed;opacity:.6}
+.schedule-cell-plus{display:block;color:#0d47a1;font-size:18px;font-weight:500;text-align:center}
+.schedule-cell .schedule-shift{display:block;text-align:center;margin:0;min-height:26px;padding:5px 3px;background:#d7eafa;border-radius:4px;color:#225b90}
+.schedule-cell .schedule-shift strong{font-size:11px;font-weight:500;white-space:nowrap}
+.shift-assign-overlay{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:20px;background:#0e1f3780}
+.shift-assign-overlay--front{z-index:1300}
+.shift-assign-dialog{width:min(100%,520px);max-height:calc(100dvh - 40px);overflow-y:auto;padding:24px;background:#fff;border-radius:12px;box-shadow:0 15px 50px #0003;color:#20314b;font:13px/1.5 Roboto,Arial,sans-serif}
+.shift-assign-dialog *{box-sizing:border-box}
+.shift-assign-dialog button{cursor:pointer;font:inherit}
+.shift-assign-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:15px;border-bottom:1px solid #e2e8f0}
+.shift-assign-header h2{margin:0;font-size:19px;font-weight:700}
+.shift-assign-x,.shift-assign-header button{border:0;background:none;color:#34445a;font-size:22px}
+.shift-assign-context{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px;margin:14px 0;background:#f3f8fd;border-radius:8px}
+.shift-assign-context span{display:flex;flex-direction:column;gap:5px;min-width:0}
+.shift-assign-context small{color:#6a809b;font-size:10px;text-transform:uppercase}
+.shift-assign-context strong{font-size:12px;overflow-wrap:anywhere}
+.shift-assign-dialog h3{font-size:14px;font-weight:600;margin:15px 0 10px}
+.shift-assign-items{display:flex;flex-direction:column;gap:8px}
+.shift-assign-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f7f9fc;border:1px solid #e1e9f3;border-radius:8px}
+.shift-assign-item div{display:flex;flex-direction:column;flex:1;gap:3px}
+.shift-assign-item strong{font-size:12px}
+.shift-assign-item small{font-size:11px;color:#607693}
+.shift-assign-clock{font-size:18px}
+.shift-assign-delete{background:transparent;border:0;padding:8px;color:#293b50}
+.shift-assign-delete:hover{color:#c53535}
+.shift-assign-empty{margin:0;padding:12px;background:#f7f9fc;border-radius:6px;color:#6c7d94}
+.shift-assign-add{display:flex;gap:10px}
+.shift-assign-add select,.shift-assign-field input,.shift-assign-validity input{min-width:0;height:40px;padding:0 12px;border:1px solid #dce5ef;border-radius:7px;background:#fff}
+.shift-assign-add select{flex:1}
+.shift-assign-add button{border:0;border-radius:7px;background:#0d47a1;color:#fff;padding:0 13px}
+.shift-assign-add button:disabled{background:#edf2f7;color:#9aa9bc}
+.shift-assign-new{margin-top:9px;background:white;border:1px solid #0d47a1;border-radius:7px;color:#0d47a1;padding:8px 12px}
+.shift-assign-hint{color:#64748b;font-size:12px;margin:10px 0}
+.shift-assign-scope{border:0;border-top:1px solid #e1e8f1;border-bottom:1px solid #e1e8f1;margin:15px 0;padding:13px 0;display:flex;gap:16px}
+.shift-assign-scope legend{font-weight:600;padding:0 0 7px}
+.shift-assign-scope label{display:flex;gap:5px;align-items:center}
+.shift-assign-scope input{accent-color:#0d47a1}
+.shift-assign-validity{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.shift-assign-validity h3{grid-column:1/-1;margin:0}
+.shift-assign-validity label,.shift-assign-field{display:flex;flex-direction:column;gap:5px;margin:10px 0}
+.shift-assign-error{padding:8px;background:#fff2f2;color:#b42a36;border-radius:6px}
+.shift-assign-discard{padding:12px;background:#fff8e8;border-radius:6px;margin:12px 0}
+.shift-assign-discard button{padding:7px;margin-right:7px;border:1px solid #dce5ef;border-radius:6px;background:white}
+.shift-assign-footer{display:flex;justify-content:flex-end;gap:8px;padding-top:14px;border-top:1px solid #e1e8f1;margin-top:15px}
+.shift-assign-footer button{padding:9px 13px;border:1px solid #dce5ef;border-radius:7px;background:#fff}
+.shift-assign-footer .shift-assign-save{color:#fff;background:#0d47a1;border-color:#0d47a1}
+@media(max-width:600px){.shift-assign-dialog{padding:15px}.shift-assign-context{grid-template-columns:1fr}.shift-assign-scope{flex-wrap:wrap}}
+
+/* WEB2 shared Admin UI, 2026-10-27 — exact reference: Service's "Thêm dịch vụ".
+   Explicit shared classes beat older screen-specific styles. */
+app-admin-catalog-shell .web2-add-button.web2-add-button {
+  display:inline-flex !important;align-items:center !important;justify-content:center !important;
+  box-sizing:border-box !important;gap:8px !important;flex:0 0 auto !important;
+  width:max-content !important;max-width:100% !important;
+  height:40px !important;min-height:40px !important;
+  padding:0 15px !important;border:1px solid #0d47a1 !important;
+  border-radius:8px !important;background:#0d47a1 !important;color:#fff !important;
+  text-decoration:none !important;text-align:center !important;
+  font:600 13px/20px Roboto,Arial,sans-serif !important;white-space:nowrap !important;
+  box-shadow:none !important;
+}
+app-admin-catalog-shell .web2-add-button.web2-add-button:hover:not(:disabled) {
+  background:#083a89 !important;border-color:#083a89 !important;
+}
+app-admin-catalog-shell .web2-add-button.web2-add-button:focus-visible {
+  outline:2px solid #367dcd !important;outline-offset:2px !important;
+}
+app-admin-catalog-shell .web2-add-button .web2-add-icon {
+  display:inline-flex !important;align-items:center;justify-content:center;
+  flex:0 0 16px;width:16px;height:18px;line-height:18px !important;
+  font-family:Roboto,Arial,sans-serif;font-size:18px !important;font-weight:400 !important;
+}
+
+/* Figma sidebar notification: #0d47a1 22x20, 11px text.
+   One style for Orders and Return tab; inverted treatment on Sales' blue header. */
+app-admin-catalog-shell .web2-notification-badge.web2-notification-badge {
+  display:inline-flex !important;align-items:center !important;justify-content:center !important;
+  box-sizing:border-box;flex:0 0 auto !important;
+  width:auto !important;min-width:22px !important;height:20px !important;min-height:20px !important;
+  padding:0 6px !important;border-radius:10px !important;
+  border:0 !important;box-shadow:none !important;
+  background:#0d47a1 !important;color:#fff !important;
+  font:500 11px/20px Roboto,Arial,sans-serif !important;text-align:center;
+  letter-spacing:0 !important;white-space:nowrap;
+}
+/* The Sales badge stays legible BOTH when Sales is open (blue header)
+   and when another sidebar group is active (light header). */
+app-admin-catalog-shell .catalog-sidebar__group[aria-expanded="true"] .web2-notification-badge--inverted {
+  background:#fff !important;color:#0d47a1 !important;
+  font-weight:700 !important;opacity:1 !important;
+}
+app-admin-catalog-shell .catalog-sidebar__group[aria-expanded="false"] .web2-notification-badge--inverted {
+  background:#0d47a1 !important;color:#fff !important;
+  font-weight:700 !important;opacity:1 !important;
+}
+app-admin-catalog-shell .catalog-sidebar__sub .web2-notification-badge {margin-left:auto}
+app-admin-catalog-shell .catalog-sidebar__group .web2-notification-badge {margin-left:auto}
+app-admin-catalog-shell .catalog-sidebar__group:has(.web2-notification-badge)
+ .catalog-sidebar__group-chevron {margin-left:0}
+app-admin-order-management .order-admin__tabs-count.web2-notification-badge {
+  margin-left:2px;vertical-align:middle;
+}
+
+/* Unified toolbar dimensions; STAFF screenshot is the template.
+   Do not alter button colors or other independent form controls. */
+app-admin-catalog-shell :is(
+ .staff-toolbar,.voucher-list__toolbar,.list-toolbar,.branch-v2-page__filters,
+ .service-catalog__filters,.order-admin__filters--figma,.product-panel .toolbar
+) { box-sizing:border-box;min-height:84px !important;align-items:center;gap:12px;padding:16px !important;
+    border:1px solid #e2e8f0;border-radius:12px;background:#fff }
+app-admin-catalog-shell :is(
+ .staff-search,.voucher-list__search,.search-field,.branch-v2-page__search,
+ .service-catalog__search,.order-admin__filters--figma .order-admin__search,
+ .product-panel .search
+) {height:48px !important;min-height:48px !important;border-radius:8px}
+app-admin-catalog-shell :is(
+ .staff-filters select,.voucher-list__control select,.branch-v2-page__status-filter select,
+ .service-catalog__select select,.order-admin__filters--figma select,
+ .filter-label select
+) {height:48px !important;min-height:48px !important;border-radius:8px}
+app-admin-order-management .order-admin__filters--figma {
+  grid-template-rows:48px !important;grid-template-columns:minmax(270px,1fr) 160px 160px 114px 158px !important;
+  min-width:0;
+}
+app-admin-order-management .order-admin__filters--figma .order-admin__search {
+  width:100%;min-width:0;max-width:none;
+}
+app-admin-voucher-list .voucher-list__toolbar {
+  grid-template-rows:48px !important;
+  grid-template-columns:minmax(220px,1fr) 170px 158px 148px max-content !important;
+}
+app-admin-voucher-list .voucher-list__control {height:48px}
+app-admin-voucher-list .voucher-list__toolbar .web2-add-button {justify-self:end}
+@media(max-width:1200px) {
+  app-admin-order-management .order-admin__filters--figma,
+  app-admin-voucher-list .voucher-list__toolbar {overflow-x:auto}
+}
+
+/* Consistent product-style breadcrumbs and action widths */
+app-admin-catalog-shell :is(
+ .order-admin__crumb,.voucher-editor__crumb,.return-detail__breadcrumb,
+ .create-order__breadcrumb,.schedule-crumb,.staff-breadcrumb
+){display:flex;align-items:center;gap:10px;font-size:13px;line-height:20px;color:#60748d}
+app-admin-catalog-shell :is(
+ .order-admin__crumb,.voucher-editor__crumb,.return-detail__breadcrumb,
+ .create-order__breadcrumb,.schedule-crumb,.staff-breadcrumb
+) a{color:#60748d;text-decoration:none}
+app-admin-catalog-shell :is(
+ .order-admin__crumb,.voucher-editor__crumb,.return-detail__breadcrumb,
+ .create-order__breadcrumb,.schedule-crumb,.staff-breadcrumb
+) a:hover{color:#0d47a1;text-decoration:underline}
+app-admin-catalog-shell :is(
+ .order-admin__btn,.voucher-editor__button,.return-detail__button,
+ .create-order__button,.staff-add,.voucher-list__button
+){width:fit-content;max-width:100%}
+
+/* Product pagination: connected rectangular cells with outlined active page. */
+app-admin-catalog-shell :is(
+ .order-admin__pagination,.voucher-list__pagination,.staff-pagination,.schedule-footer
+) :is(button,.staff-page-selected,span[aria-current],strong[aria-label]) {
+  min-width:44px !important;height:44px !important;min-height:44px !important;border-radius:0;
+}
+app-admin-catalog-shell :is(
+ .order-admin__pagination,.voucher-list__pagination,.staff-pagination,.schedule-footer
+) [aria-current="page"],
+app-admin-catalog-shell .staff-page-selected{
+  background:#e5f6fd;color:#0d47a1;box-shadow:inset 0 0 0 2px #0d47a1;
+}
+
+// Return detail visuals live globally to respect Angular's per-component stylesheet budget.
+app-admin-order-return-detail {
+.return-detail__heading{align-items:center}
+.return-detail__heading h1{font-size:28px;line-height:36px;font-weight:700}
+.return-detail__panel{padding:24px;border-radius:12px}
+.return-detail__panel h2{font-size:18px;line-height:26px;margin-bottom:20px}
+.return-detail__metadata{gap:22px 18px}
+.return-detail__table :is(th,td):first-child{padding-left:20px}
+.return-detail__table :is(th,td):last-child{padding-right:20px}
+.return-detail__button{display:inline-flex;align-items:center;justify-content:center;width:max-content;max-width:100%;min-height:40px;gap:8px}
+.return-detail__columns{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.return-detail__progress{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;list-style:none;padding:10px 0;margin:0}
+.return-detail__progress li{position:relative;display:flex;align-items:center;flex-direction:column;gap:10px;min-width:0;text-align:center;color:#70849d;font-size:12px}
+.return-detail__progress li:not(:last-child)::after{content:'';position:absolute;top:8px;left:calc(50% + 14px);width:calc(100% - 18px);height:2px;background:#dce5f0}
+.return-detail__progress-dot{display:block;width:18px;height:18px;border:3px solid #dce5f0;background:#fff;border-radius:50%;flex:0 0 18px}
+.return-detail__progress--done{color:#0d47a1!important;font-weight:600}
+.return-detail__progress--done .return-detail__progress-dot{border-color:#0d47a1;background:#e5f6fd}
+.return-detail__progress--done:not(:last-child)::after{background:#0d47a1!important}
+.return-detail__progress--rejected .return-detail__progress-dot{border-color:#dce5f0;background:white}
+@media(max-width:900px){.return-detail__columns{grid-template-columns:1fr}.return-detail__metadata{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.return-detail__progress{overflow-x:auto;grid-template-columns:repeat(5,minmax(105px,1fr))}}
+@media(max-width:600px){.return-detail__metadata{grid-template-columns:1fr}}
+}
+
+
+/* WEB2 Voucher creation — Figma form rows and functional native controls.
+   Keep styles scoped to create/edit forms; detail voucher cards are unaffected. */
+app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px 18px;
+  align-items:start;
+}
+app-admin-voucher-editor .voucher-editor__program-fields .voucher-editor__fields--full {
+  grid-column:1/-1;
+}
+/* Third field uses Figma's centered label and centered switch/description group.
+   It should not sit flush against the left edge of the third grid column. */
+app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields .voucher-editor__status-control {
+  display:flex !important;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  justify-self:stretch;
+  gap:7px;
+  min-width:0;
+  min-height:0;
+  margin:0;
+  padding:0;
+  text-align:center;
+}
+app-admin-voucher-editor .voucher-editor__program-fields .voucher-editor__field-caption,
+app-admin-voucher-editor .voucher-editor__time-fields .voucher-editor__field-caption {
+  display:block;
+  font-size:12px;
+  font-weight:550;
+  line-height:18px;
+  color:#475569;
+}
+app-admin-voucher-editor .voucher-editor__switch-row {
+  display:flex;align-items:center;gap:12px;
+  min-height:44px;margin-top:8px;
+  color:#1e293b;font-weight:400;
+}
+app-admin-voucher-editor .voucher-editor__switch {
+  display:inline-flex;align-items:center;
+  position:relative;flex:0 0 48px;
+  width:48px;height:26px;
+}
+app-admin-voucher-editor .voucher-editor__program-fields .voucher-editor__switch input[type="checkbox"] {
+  position:absolute;z-index:1;inset:0;
+  width:48px !important;height:26px !important;min-width:0 !important;min-height:0 !important;
+  opacity:0;margin:0 !important;padding:0 !important;
+  cursor:pointer;
+}
+app-admin-voucher-editor .voucher-editor__switch-track {
+  display:block;position:relative;width:48px;height:26px;
+  border-radius:99px;background:#cbd5e1;
+  transition:background-color .16s ease;
+}
+app-admin-voucher-editor .voucher-editor__switch-track::after {
+  content:"";position:absolute;top:3px;left:3px;
+  width:20px;height:20px;background:#fff;
+  border-radius:50%;box-shadow:0 1px 3px #0002;
+  transition:transform .16s ease;
+}
+app-admin-voucher-editor .voucher-editor__switch input:checked + .voucher-editor__switch-track {
+  background:#0d47a1;
+}
+app-admin-voucher-editor .voucher-editor__switch input:checked + .voucher-editor__switch-track::after {
+  transform:translateX(22px);
+}
+app-admin-voucher-editor .voucher-editor__switch input:focus-visible + .voucher-editor__switch-track {
+  outline:2px solid #2874d0;outline-offset:3px;
+}
+app-admin-voucher-editor .voucher-editor__switch input:disabled + .voucher-editor__switch-track {opacity:.65}
+app-admin-voucher-editor .voucher-editor__program-fields .voucher-editor__switch-text {
+  white-space:normal;color:#1e293b;font-size:12px;
+}
+app-admin-voucher-editor .voucher-editor__program-fields textarea:disabled {
+  opacity:1;background:#fff;color:#64748b;
+  cursor:not-allowed;
+}
+app-admin-voucher-editor .voucher-editor__program-fields textarea {
+  min-height:90px;resize:vertical;
+}
+app-admin-voucher-editor .voucher-editor__create-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;align-items:stretch;
+}
+app-admin-voucher-editor .voucher-editor__create-grid > .voucher-editor__panel {
+  min-width:0;margin:0;padding:18px;
+}
+app-admin-voucher-editor .voucher-editor__create-grid .voucher-editor__fields {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:start;
+  gap:16px 14px;
+}
+app-admin-voucher-editor .voucher-editor__create-grid .voucher-editor__fields--full {
+  grid-column:1/-1;
+}
+app-admin-voucher-editor .voucher-editor__create-grid .voucher-editor__fields input:not([type="radio"]):not([type="checkbox"]),
+app-admin-voucher-editor .voucher-editor__create-grid .voucher-editor__fields select {
+  min-height:40px;height:40px;
+  font-size:13px;
+}
+app-admin-voucher-editor .voucher-editor__create-grid .voucher-editor__fields input:disabled {
+  background:#f8fafc;
+}
+app-admin-voucher-editor .voucher-editor__discount-options {
+  display:flex;
+  align-content:start;align-items:center;
+  flex-wrap:wrap;gap:10px 18px;
+  min-width:0;margin:0;padding:0;border:0;
+}
+app-admin-voucher-editor .voucher-editor__discount-options legend {
+  width:100%;padding:0;margin-bottom:9px;
+  color:#475569;font-size:12px;font-weight:550;line-height:18px;
+}
+app-admin-voucher-editor .voucher-editor__discount-options label {
+  display:inline-flex;align-items:center;gap:6px;
+  flex:0 0 auto;white-space:nowrap;
+  color:#1d2b41;font-size:12px;font-weight:400;
+  margin:0;
+}
+app-admin-voucher-editor .voucher-editor__discount-options input[type="radio"] {
+  appearance:auto !important;
+  display:inline-block !important;flex:0 0 16px;
+  width:16px !important;height:16px !important;
+  min-width:16px !important;min-height:16px !important;
+  padding:0 !important;margin:0 !important;
+  accent-color:#0d47a1;
+}
+app-admin-voucher-editor .voucher-editor__max-field {
+  display:block;min-width:0;
+}
+app-admin-voucher-editor .voucher-editor__max-field > label:first-child {
+  display:block;
+  color:#475569;font-size:12px;font-weight:550;
+}
+app-admin-voucher-editor .voucher-editor__checkbox-line {
+  display:inline-flex !important;
+  align-items:center;gap:9px;
+  color:#243348;font-size:12px !important;font-weight:400 !important;
+  cursor:pointer;white-space:normal;line-height:18px;
+}
+app-admin-voucher-editor .voucher-editor__max-field .voucher-editor__checkbox-line {
+  margin-top:10px;
+}
+app-admin-voucher-editor .voucher-editor__checkbox-line input[type="checkbox"] {
+  display:block !important;
+  appearance:auto !important;flex:0 0 16px;
+  width:16px !important;height:16px !important;min-width:16px !important;min-height:16px !important;
+  padding:0 !important;margin:0 !important;
+  accent-color:#0d47a1;
+}
+app-admin-voucher-editor .voucher-editor__quota-field {
+  min-width:0;
+}
+app-admin-voucher-editor .voucher-editor__quota-controls {
+  display:grid;grid-template-columns:1fr 1fr;
+  align-items:center;gap:14px;
+  margin-top:8px;
+}
+app-admin-voucher-editor .voucher-editor__quota-controls .voucher-editor__input-suffix input {
+  margin-top:0;
+}
+app-admin-voucher-editor .voucher-editor__quota-controls .voucher-editor__checkbox-line {
+  margin:0;cursor:not-allowed;
+}
+app-admin-voucher-editor .voucher-editor__quota-controls input[type="checkbox"]:disabled {
+  opacity:1;cursor:not-allowed;
+}
+app-admin-voucher-editor .voucher-editor__detail-grid > .voucher-editor__panel {min-height:230px;}
+@media(max-width:1100px) {
+  app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields {grid-template-columns:repeat(2,minmax(0,1fr));}
+  app-admin-voucher-editor .voucher-editor__create-grid {grid-template-columns:1fr;}
+}
+@media(max-width:700px) {
+  app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields {grid-template-columns:1fr;}
+  app-admin-voucher-editor .voucher-editor__create-grid .voucher-editor__fields {grid-template-columns:1fr;}
+  app-admin-voucher-editor .voucher-editor__create-grid .voucher-editor__fields--full {grid-column:1;}
+}
+@media(max-width:440px) {
+  app-admin-voucher-editor .voucher-editor__quota-controls {grid-template-columns:1fr;}
+  app-admin-voucher-editor .voucher-editor__discount-options label {white-space:normal;}
+}
+
+/* OR-02: image cell is reserved even when Order API exposes no imageUrl. */
+app-admin-order-management .order-admin__product-line {
+  display:flex;align-items:center;gap:12px;min-width:0;
+}
+app-admin-order-management .order-admin__product-line > span:last-child {
+  min-width:0;font-weight:500;color:#23354f;
+}
+app-admin-order-management .order-admin__product-thumb {
+  display:inline-flex;align-items:center;justify-content:center;text-align:center;
+  box-sizing:border-box;flex:0 0 52px;width:52px;height:52px;
+  padding:4px;border:1px solid #e2e8f0;border-radius:8px;
+  background:#f8fafc;color:#708198;font-size:9px;line-height:1.2;
+}
+
+/* Compact selected number cells with separators; preserve cursor semantics. */
+app-admin-voucher-list .voucher-list__pagination .voucher-list__page {
+  border-left:1px solid #e2e8f0;font-size:14px;font-weight:500;
+  min-width:44px;height:44px;
+}
+app-admin-voucher-list .voucher-list__pagination .voucher-list__page--active {
+  background:#e5f6fd;color:#0d47a1;box-shadow:inset 0 0 0 2px #0d47a1;
+}
+app-admin-staff-schedule .schedule-footer nav .schedule-page-number {
+  width:44px;height:44px;border-left:1px solid #e2e8f0;font-size:14px;
+}
+app-admin-staff-schedule .schedule-footer nav .schedule-page-number--active {
+  background:#e5f6fd;color:#0d47a1;box-shadow:inset 0 0 0 2px #0d47a1;
+}
+
+/* Return detail column sizing is now driven by its 11-column colgroup. */
+app-admin-order-return-detail .return-detail__product-thumb{
+  display:inline-flex;align-items:center;justify-content:center;text-align:center;
+  box-sizing:border-box;width:52px;min-width:52px;height:52px;padding:4px;
+  background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;
+  font:400 9px/1.2 Roboto,Arial,sans-serif;color:#708198;
+}
+
+
+/* Account administration uses the same 44px product pagination cells. */
+app-admin-users-page .users-pagination nav button{
+  width:44px;height:44px;min-height:44px;border-right:1px solid #dce4ee;
+  background:#fff;font-size:14px;
+}
+app-admin-users-page .users-pagination nav button:last-child{border-right:0}
+app-admin-users-page .users-pagination nav button[aria-current="page"]{
+  background:#e5f6fd;color:#0d47a1;font-weight:600;
+  box-shadow:inset 0 0 0 2px #0d47a1;
+}
+
+
+/* WEB2 management toolbar — Voucher list is the sizing reference.
+   Product and Category have fewer controls, but the exact same shell: 84px
+   min-height, 16px padding, 48px inputs/selects, 40px add buttons. */
+:is(app-admin-product-list-page,app-admin-category-page) .web2-management-toolbar.web2-management-toolbar {
+  display:grid !important;
+  grid-template-columns:minmax(0,430px) minmax(0,1fr) !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+  box-sizing:border-box;
+  width:100%;
+  min-height:84px !important;
+  margin-bottom:18px;
+  padding:16px !important;
+  border:1px solid #e2e8f0;
+  border-radius:12px;
+  background:#fff;
+}
+:is(app-admin-product-list-page,app-admin-category-page) .web2-management-search.web2-management-search {
+  position:relative;
+  display:block !important;
+  box-sizing:border-box;
+  width:100% !important;
+  max-width:430px !important;
+  min-width:0 !important;
+  height:48px !important;
+  min-height:48px !important;
+  flex:none !important;
+  margin:0;
+  padding:0;
+  border:0;
+}
+:is(app-admin-product-list-page,app-admin-category-page) .web2-management-search input {
+  box-sizing:border-box;
+  display:block;
+  width:100% !important;
+  min-width:0;
+  height:48px !important;
+  min-height:48px !important;
+  margin:0;
+  padding:0 14px 0 42px !important;
+  border:1px solid #dce5f0 !important;
+  border-radius:8px !important;
+  background:#fff;
+  color:#263e5d;
+  font:400 13px/20px Roboto,Arial,sans-serif;
+}
+:is(app-admin-product-list-page,app-admin-category-page) .web2-management-search svg {
+  position:absolute !important;
+  top:50% !important;
+  left:14px !important;
+  width:18px !important;
+  height:18px !important;
+  transform:translateY(-50%) !important;
+  pointer-events:none;
+  color:#64748b;
+}
+:is(app-admin-product-list-page,app-admin-category-page) .web2-management-actions.web2-management-actions {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  flex-wrap:nowrap !important;
+  gap:12px !important;
+  min-width:0;
+  margin:0 !important;
+  padding:0 !important;
+}
+app-admin-category-page .web2-management-control.web2-management-control {
+  display:block !important;
+  position:relative;
+  flex:0 0 170px;
+  box-sizing:border-box;
+  width:170px;
+  min-width:170px;
+  height:48px;
+  min-height:48px;
+  margin:0;
+  padding:0;
+  line-height:normal;
+}
+app-admin-category-page .web2-management-sr-only {
+  position:absolute !important;
+  width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+}
+app-admin-category-page .web2-management-control select {
+  display:block;
+  box-sizing:border-box;
+  width:100%;
+  height:48px !important;
+  min-height:48px !important;
+  margin:0;
+  padding:0 34px 0 12px;
+  border:1px solid #dce5f0;
+  border-radius:8px;
+  background:#fff url('/assets/admin-product/expand_more.svg') no-repeat right 9px center;
+  background-size:18px 18px;
+  appearance:none;
+  color:#263e5d;
+  font:400 13px/20px Roboto,Arial,sans-serif;
+  cursor:pointer;
+}
+app-admin-product-list-page .web2-management-filter-button.web2-management-filter-button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  height:48px !important;
+  min-height:48px !important;
+  padding:0 12px !important;
+  margin:0;
+  border:1px solid #dce5f0;
+  border-radius:8px;
+  background:#fff;
+  color:#263e5d;
+  font:500 13px/20px Roboto,Arial,sans-serif;
+  white-space:nowrap;
+}
+:is(app-admin-product-list-page,app-admin-category-page) .web2-management-actions .web2-add-button.web2-add-button {
+  min-height:40px !important;
+  height:40px !important;
+  margin:0 !important;
+  padding:0 15px !important;
+}
+:is(app-admin-product-list-page,app-admin-category-page) .web2-management-actions > * {align-self:center}
+:is(app-admin-product-list-page,app-admin-category-page) .web2-management-toolbar :is(input,select,button,a):focus-visible {
+  outline:2px solid #0d47a1;outline-offset:2px;
+}
+@media(max-width:980px) {
+  :is(app-admin-product-list-page,app-admin-category-page) .web2-management-toolbar.web2-management-toolbar {
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:12px !important;
+  }
+  :is(app-admin-product-list-page,app-admin-category-page) .web2-management-search.web2-management-search {
+    max-width:none !important;
+  }
+}
+@media(max-width:600px) {
+  :is(app-admin-product-list-page,app-admin-category-page) .web2-management-actions.web2-management-actions {
+    flex-wrap:wrap !important;
+    justify-content:flex-start !important;
+  }
+  app-admin-category-page .web2-management-control.web2-management-control {
+    flex:1 1 170px;width:auto;min-width:170px;
+  }
+}
+
+/* WEB2 list tables — Product table is the typography, row density and
+   inner-gutter reference for Order, Return/Refund and Voucher lists.
+   Deliberately excludes product/order/return detail tables. */
+:is(app-admin-order-management,app-admin-voucher-list) table.web2-product-table {
+  width:100%;
+  min-width:1034px;
+  table-layout:fixed;
+  border-collapse:collapse;
+  border-spacing:0;
+  color:#37475e;
+  background:#fff;
+  font:400 12px/1.4 Roboto,Arial,sans-serif;
+}
+app-admin-order-management table.order-admin__table--returns.web2-product-table {min-width:1100px}
+:is(app-admin-order-management,app-admin-voucher-list) table.web2-product-table thead th {
+  box-sizing:border-box;
+  height:44px !important;
+  padding:0 14px !important;
+  border:0 !important;
+  border-bottom:1px solid #e2e8f0 !important;
+  background:#f8fafc !important;
+  color:#17243a !important;
+  font:700 12px/1.4 Roboto,Arial,sans-serif !important;
+  text-align:left;
+  vertical-align:middle;
+  text-transform:none;
+  letter-spacing:0;
+  white-space:nowrap;
+}
+:is(app-admin-order-management,app-admin-voucher-list) table.web2-product-table tbody td {
+  box-sizing:border-box;
+  height:76px !important;
+  padding:12px 14px !important;
+  border:0 !important;
+  border-bottom:1px solid #e2e8f0 !important;
+  background:transparent;
+  color:#37475e !important;
+  font:400 12px/1.4 Roboto,Arial,sans-serif !important;
+  vertical-align:middle;
+  overflow-wrap:anywhere;
+}
+:is(app-admin-order-management,app-admin-voucher-list) table.web2-product-table :is(th,td):first-child {
+  padding-left:20px !important;
+  text-align:left !important;
+}
+:is(app-admin-order-management,app-admin-voucher-list) table.web2-product-table :is(th,td):last-child {
+  padding-right:20px !important;
+  text-align:center !important;
+}
+:is(app-admin-order-management,app-admin-voucher-list) table.web2-product-table tbody tr:hover {
+  background:#f7faff;
+}
+:is(app-admin-order-management,app-admin-voucher-list) table.web2-product-table tbody tr:last-child td {
+  border-bottom:0 !important;
+}
+app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td):nth-child(7),
+app-admin-order-management table.order-admin__table--returns.web2-product-table :is(th,td):nth-child(7),
+app-admin-voucher-list table.voucher-list__table.web2-product-table :is(th,td):nth-child(6) {
+  text-align:center !important;
+}
+/* Order list: fit the same available panel width as other admin tables.
+   Never force a 1160px minimum that adds a desktop horizontal scrollbar.
+   Give Giờ tạo its own 12% centered column between Ngày tạo and Khách hàng.
+   All eight colgroup percentages add up to 100%. */
+app-admin-order-management table.order-admin__table--figma.web2-product-table {
+  box-sizing:border-box;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  table-layout:fixed;
+  border-collapse:collapse;
+}
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--code {width:17%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--date {width:11%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--time {width:12%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--customer {width:11%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--total {width:11%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--payment {width:16%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--status {width:14%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--action {width:8%}
+
+/* Same inner padding in every column, same alignment for TH and TD. */
+app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])) {
+  padding-inline:12px !important;
+  vertical-align:middle;
+}
+app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):first-child {
+  padding-left:20px !important;
+  text-align:left !important;
+}
+app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):last-child {
+  padding-right:20px !important;
+}
+app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(2) {
+  text-align:left !important;
+}
+/* Align the customer name and header at the CENTER of its own column:
+   time/customer/total centers now sit at ~34%/45.5%/56.5% of the table,
+   making the two visual gaps almost equal, regardless of name length. */
+app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(3),
+app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(4),
+app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(5),
+app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(6),
+app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(7),
+app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(8) {
+  text-align:center !important;
+}
+app-admin-order-management table.order-admin__table--figma.web2-product-table td.order-admin__empty {
+  text-align:center !important;
+  padding:48px 16px !important;
+}
+app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-code{width:20%}
+app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-scope{width:15%}
+app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-discount{width:13%}
+app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-dates{width:17%}
+app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-quota{width:16%}
+app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-status{width:11%}
+app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-actions{width:8%}
+
+
+/* WEB2 27/10 — Align the requested table column headers and their values.
+   Class is placed on the exact TH and TD, rather than guessed nth-child
+   indexes or every cell. This preserves other tables and empty colspan rows. */
+:is(
+  app-admin-product-list-page,
+  app-admin-order-management,
+  app-admin-voucher-list,
+  app-branch-management-page,
+  app-admin-staff-list
+) :is(th, td).web2-cell-center {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Multi-line voucher effective dates and future stacked cell content. */
+:is(
+  app-admin-product-list-page,
+  app-admin-order-management,
+  app-admin-voucher-list,
+  app-branch-management-page,
+  app-admin-staff-list
+) td.web2-cell-center > :is(span, small, strong, div) {
+  text-align: center !important;
+}
+app-admin-voucher-list .voucher-list__table td.web2-cell-center small {
+  display: block;
+  margin: 4px auto 0;
+}
+
+
+/* WEB2 27/10 QA — exact table cell centering including Service > Giá cơ sở. */
+app-service-catalog-list .service-catalog__table :is(th,td).web2-cell-center,
+app-admin-voucher-list .voucher-list__table :is(th,td).web2-cell-center {
+  text-align:center !important;
+  vertical-align:middle !important;
+}
+
+/* Product's 12px table type is the reference, while preserving semantic
+   badges and links with their distinct colors and weights. */
+app-admin-order-management table.web2-product-table :is(th,td),
+app-admin-voucher-list table.web2-product-table :is(th,td) {
+  font-size:12px !important;
+}
+app-admin-order-management table.web2-product-table thead th,
+app-admin-voucher-list table.web2-product-table thead th {
+  font-weight:700 !important;
+}
+app-admin-order-management table.web2-product-table .order-admin__badge,
+app-admin-voucher-list table.web2-product-table .voucher-list__badge {
+  font-size:11px;
+}
+
+/* Align the Order local tabs with Product's 16px/24px, 46px high tab system. */
+app-admin-order-management .order-admin__tabs {
+  display:flex;
+  align-items:stretch;
+  gap:24px;
+  height:46px;
+  margin-bottom:24px;
+  border-bottom:1px solid #dce5f0;
+}
+app-admin-order-management .order-admin__tabs button {
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:46px;height:46px;
+  padding:10px 24px;
+  border:0;border-bottom:3px solid transparent;
+  background:transparent;color:#475569;
+  font:500 16px/24px Roboto,Arial,sans-serif !important;
+  letter-spacing:.2px;
+  white-space:nowrap;cursor:pointer;
+}
+app-admin-order-management .order-admin__tabs button.order-admin__tabs--active {
+  color:#0d47a1;border-bottom-color:#0d47a1;
+}
+app-admin-order-management .order-admin__tabs .web2-notification-badge {
+  font:500 11px/20px Roboto,Arial,sans-serif !important;
+  letter-spacing:0;
+  margin-left:0;
+}
+@media(max-width:760px){
+  app-admin-order-management .order-admin__tabs{gap:4px;overflow-x:auto}
+  app-admin-order-management .order-admin__tabs button{padding-inline:12px}
+}
+
+/* Order list: same compact 64px toolbar and 430px search as Product.
+   Keep the search left and all filters/actions tight to the right. */
+app-admin-order-management .order-admin__filters.order-admin__filters--figma {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+  box-sizing:border-box;
+  min-height:64px !important;
+  padding:12px 16px !important;
+  margin-bottom:16px;
+  overflow:visible;
+  border:1px solid #e2e8f0;
+  border-radius:12px;
+  background:#fff;
+}
+app-admin-order-management .order-admin__filters--figma .order-admin__search {
+  box-sizing:border-box;
+  display:flex !important;
+  flex:0 1 430px;
+  width:430px !important;
+  max-width:430px !important;
+  min-width:0 !important;
+  height:40px !important;
+  min-height:40px !important;
+  margin:0;
+  padding:0 12px;
+  border:1px solid #c3c6d4;
+  border-radius:8px;
+}
+app-admin-order-management .order-admin__filters--figma .order-admin__search input {
+  box-sizing:border-box;
+  min-width:0;
+  height:100%;
+  padding:0;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  background:transparent;
+  font-size:14px;
+}
+app-admin-order-management .order-admin__filter-actions {
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  flex:0 0 auto;
+  gap:8px;
+  min-width:0;
+  margin-left:auto;
+  white-space:nowrap;
+}
+app-admin-order-management .order-admin__filter-actions .order-admin__status-filter,
+app-admin-order-management .order-admin__filter-actions .order-admin__date-filter {
+  flex:0 0 150px;
+  width:150px;
+  min-width:0;
+}
+app-admin-order-management .order-admin__filter-actions :is(
+  .order-admin__status-filter select,.order-admin__date-filter select
+) {
+  box-sizing:border-box;
+  height:40px !important;
+  min-height:40px !important;
+  border-radius:8px;
+}
+app-admin-order-management .order-admin__filter-actions .order-admin__btn {
+  flex:0 0 auto;
+  width:max-content;
+  height:40px !important;
+  min-height:40px !important;
+}
+app-admin-order-management .order-admin__filter-actions .web2-add-button.web2-add-button {
+  height:40px !important;
+  min-height:40px !important;
+}
+@media(max-width:1100px) {
+  app-admin-order-management .order-admin__filters.order-admin__filters--figma {
+    flex-wrap:wrap;
+  }
+  app-admin-order-management .order-admin__filters--figma .order-admin__search {
+    flex:1 1 300px;
+  }
+  app-admin-order-management .order-admin__filter-actions {
+    margin-left:auto;
+    flex-wrap:wrap;
+  }
+}
+@media(max-width:670px) {
+  app-admin-order-management .order-admin__filter-actions {
+    justify-content:flex-start;
+    margin-left:0;
+  }
+}
+
+/* The product picker has ONE outer border. Keyboard focus highlights its
+   container; the nested input must never show a second round outline. */
+app-admin-order-create .create-order__search-field--product {
+  display:flex;align-items:center;
+  box-sizing:border-box;
+  width:100%;height:44px;
+  border:1px solid #dce5f0;border-radius:10px;
+  padding:0 12px;gap:10px;
+  background:#fff;
+}
+app-admin-order-create .create-order__search-field--product input {
+  min-width:0;flex:1;height:100%;
+  border:0 !important;outline:0 !important;
+  border-radius:0 !important;box-shadow:none !important;
+  padding:0;background:transparent;
+}
+app-admin-order-create .create-order__search-field--product input:focus-visible{
+  border:0 !important;outline:0 !important;box-shadow:none !important;
+}
+app-admin-order-create .create-order__search-field--product:focus-within {
+  border-color:#0d47a1;box-shadow:0 0 0 2px rgba(13,71,161,.14);
+}
+app-admin-order-create .create-order__search-field--product img{flex:0 0 18px}
+
+/* Return date range: the calendar icon hugs the dates rather than
+   being pushed to the far end of the 222px grid area. */
+app-admin-order-management .order-admin__filters--returns .order-admin__range-trigger {
+  display:inline-flex;
+  justify-content:flex-start;
+  width:max-content;max-width:100%;
+  min-width:0;
+  gap:10px;padding:0 12px;
+  font-variant-numeric:tabular-nums;
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__range-trigger .order-admin__range-values {
+  gap:5px;flex:none;
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__range-trigger svg {
+  margin-left:0;flex:0 0 18px;
+}
+
+
+/* WEB2 / Figma verified 7432:38519 & 7432:39673, 2026-10-27.
+   These rules style DETAIL views only; order/return list tables retain their
+   own column-sizing contract and UI typography. */
+app-admin-order-management .order-admin:has(.order-admin__card--detail),
+app-admin-order-return-detail .return-detail {
+  box-sizing:border-box;
+  width:100%;
+  max-width:none;
+  margin:0;
+  padding:32px !important;
+  background:#fff;
+  color:#1d2a42;
+  font:400 12px/1.45 Roboto,Arial,sans-serif;
+}
+app-admin-order-management .order-admin:has(.order-admin__card--detail) .order-admin__crumb,
+app-admin-order-return-detail .return-detail__breadcrumb {
+  display:flex;align-items:center;gap:7px;
+  height:20px;margin:0 0 14px;
+  font-size:12px;line-height:20px;color:#475569;
+}
+app-admin-order-management .order-admin:has(.order-admin__card--detail) .order-admin__crumb a,
+app-admin-order-return-detail .return-detail__breadcrumb a {
+  color:#475569;text-decoration:none;
+}
+app-admin-order-management .order-admin:has(.order-admin__card--detail) .order-admin__crumb > span:last-child,
+app-admin-order-return-detail .return-detail__breadcrumb > span:last-child {color:#0d47a1;}
+app-admin-order-management .order-admin:has(.order-admin__card--detail) .order-admin__heading,
+app-admin-order-return-detail .return-detail__heading {
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;min-height:38px;margin:0 0 14px;
+}
+app-admin-order-management .order-admin:has(.order-admin__card--detail) .order-admin__heading h1,
+app-admin-order-return-detail .return-detail__heading h1 {
+  margin:0;font:500 24px/28px Roboto,Arial,sans-serif;
+  color:#111827;overflow-wrap:anywhere;
+}
+app-admin-order-return-detail .return-detail__heading-main {
+  display:flex;align-items:center;flex-wrap:wrap;gap:12px;min-width:0;
+}
+app-admin-order-return-detail .return-detail__heading-badge {
+  display:inline-flex;align-items:center;justify-content:center;
+  height:28px;padding:5px 12px;border:1px solid transparent;
+  border-radius:999px;
+  background:#eee;color:#757575;font-size:11px;white-space:nowrap;
+}
+/* Match the Figma Return detail state palette, including states reached
+   by workflow actions.  Badge colors are independent from action permissions. */
+app-admin-order-return-detail .return-detail__heading-badge[data-status="REQUESTED"] {
+  background:#eeeeee !important;color:#757575 !important;border-color:#dfdfdf !important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="PROCESSING"] {
+  background:#fff2df !important;color:#df8108 !important;border-color:#f9e3bd !important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="RECEIVED"] {
+  background:#e3f2fd !important;color:#1976d2 !important;border-color:#d3eaff !important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="APPROVED"] {
+  background:#f1e7ff !important;color:#7c3fc8 !important;border-color:#e7d7ff !important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="COMPLETED"] {
+  background:#e2f5e9 !important;color:#258448 !important;border-color:#d5ecd9 !important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="REJECTED"],
+app-admin-order-return-detail .return-detail__heading-badge[data-status="CANCELLED"] {
+  background:#ffebeb !important;color:#cb3e48 !important;border-color:#ffdada !important;
+}
+app-admin-order-management .order-admin:has(.order-admin__card--detail) .order-admin__heading-actions,
+app-admin-order-return-detail .return-detail__actions {display:flex;align-items:center;gap:10px;margin:0;}
+app-admin-order-management .order-admin:has(.order-admin__card--detail) .order-admin__heading-actions .order-admin__btn,
+app-admin-order-return-detail .return-detail__actions .return-detail__button {
+  min-height:36px;height:36px;padding:0 12px;border-radius:8px;font-size:12px;
+}
+
+/* Figma cards: 1px #e2e8f0 border, 18px padding and 14px gaps. */
+app-admin-order-management .order-admin__card--detail,
+app-admin-order-return-detail .return-detail__panel {
+  box-sizing:border-box;
+  min-width:0;margin:0 0 14px;
+  padding:18px !important;
+  border:1px solid #e2e8f0;
+  border-radius:12px;
+  background:#fff;
+}
+app-admin-order-management .order-admin__card--detail h2,
+app-admin-order-return-detail .return-detail__panel h2 {
+  margin:0 0 13px;
+  font:600 15px/18px Roboto,Arial,sans-serif;
+  color:#111827;
+}
+app-admin-order-management .order-admin__information,
+app-admin-order-return-detail .return-detail__metadata {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  column-gap:12px;
+  row-gap:13px;
+  align-items:start;
+}
+app-admin-order-management .order-admin__information > div,
+app-admin-order-return-detail .return-detail__metadata > div {
+  min-width:0;
+}
+app-admin-order-management .order-admin__information > div > span:first-child:not(.order-admin__badge),
+app-admin-order-return-detail .return-detail__metadata > div > span:first-child {
+  display:block;margin:0 0 5px;
+  color:#64748b;font:400 11px/14px Roboto,Arial,sans-serif;
+}
+app-admin-order-management .order-admin__information > div > strong,
+app-admin-order-return-detail .return-detail__metadata > div > :is(strong,a) {
+  color:#111827;font:500 12px/16px Roboto,Arial,sans-serif;
+  overflow-wrap:anywhere;
+}
+app-admin-order-return-detail .return-detail__metadata > div > a {color:#0d47a1;text-decoration:underline;}
+app-admin-order-management .order-admin__information .order-admin__badge,
+app-admin-order-return-detail .return-detail__metadata .return-detail__badge {
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:0;min-height:22px;padding:3px 10px;
+  border-radius:99px;font:500 11px/16px Roboto,Arial,sans-serif;
+}
+app-admin-order-management .order-admin__extra,
+app-admin-order-return-detail .return-detail__extra {
+  margin-top:10px;padding-top:6px;
+  border-top:1px solid #edf1f5;
+  font:400 11px/16px Roboto,Arial,sans-serif;color:#60748d;
+}
+app-admin-order-management .order-admin__extra summary,
+app-admin-order-return-detail .return-detail__extra summary {
+  display:list-item;cursor:pointer;color:#0d47a1;
+}
+app-admin-order-management .order-admin__extra p {margin:7px 0 0;color:#1d2a42;}
+app-admin-order-return-detail .return-detail__extra .return-detail__metadata {margin:9px 0;}
+
+/* Compact 109px horizontal progress panel; statuses and dates remain bound to BE. */
+app-admin-order-management .order-admin__progress {gap:14px;}
+app-admin-order-management .order-admin__progress-step {min-width:0;}
+app-admin-order-management .order-admin__progress-title {
+  display:flex;align-items:center;gap:8px;
+  font:400 12px/17px Roboto,Arial,sans-serif;
+}
+app-admin-order-management .order-admin__progress-line {
+  height:4px;margin:9px 0 7px;border-radius:2px;
+}
+app-admin-order-management .order-admin__progress-step small {
+  color:#64748b;font-size:10px;line-height:14px;
+}
+app-admin-order-return-detail .return-detail__progress {
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:10px;padding:0;margin:0;list-style:none;
+}
+app-admin-order-return-detail .return-detail__progress li {
+  position:relative;display:flex;align-items:center;flex-direction:column;
+  gap:7px;min-width:0;text-align:center;
+  font:500 11px/16px Roboto,Arial,sans-serif;color:#70849d;
+}
+app-admin-order-return-detail .return-detail__progress-dot {
+  width:16px;height:16px;flex:0 0 16px;
+  border:2px solid #dce5f0;background:#fff;border-radius:50%;
+}
+app-admin-order-return-detail .return-detail__progress li:not(:last-child)::after {
+  top:7px;left:calc(50% + 14px);
+  width:calc(100% - 18px);height:2px;
+}
+app-admin-order-return-detail .return-detail__progress--done .return-detail__progress-dot {
+  border-color:#0d47a1;background:#e5f6fd;
+}
+
+/* Table header #f6f8fb / 44px, body 76px as in Figma. */
+app-admin-order-management .order-admin__table--detail-items,
+app-admin-order-return-detail .return-detail__table {
+  width:100%;max-width:100%;
+  min-width:0;table-layout:fixed;border-collapse:collapse;
+  border:1px solid #e2e8f0;
+}
+app-admin-order-management .order-admin__table--detail-items thead th,
+app-admin-order-return-detail .return-detail__table thead th {
+  box-sizing:border-box;
+  height:44px;padding:10px 12px !important;
+  background:#f6f8fb;color:#334155;
+  border-bottom:1px solid #e2e8f0;
+  font:600 11px/16px Roboto,Arial,sans-serif;
+  white-space:normal;vertical-align:middle;
+}
+app-admin-order-management .order-admin__table--detail-items tbody td,
+app-admin-order-return-detail .return-detail__table tbody td {
+  box-sizing:border-box;
+  height:76px;padding:12px !important;
+  border-bottom:1px solid #e2e8f0;
+  color:#37475e;font:400 12px/17px Roboto,Arial,sans-serif;
+  overflow-wrap:anywhere;vertical-align:middle;
+}
+
+/* Order detail products: seven columns exactly as Figma, including a separate image cell. */
+app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(1) {width:9%;text-align:left;}
+app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(2) {width:25%;text-align:left;}
+app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(3) {width:15%;text-align:left;}
+app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(4) {width:9%;text-align:center;}
+app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(5) {width:16%;text-align:center;}
+app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(6) {width:13%;text-align:center;}
+app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(7) {width:13%;text-align:right;}
+app-admin-order-management .order-admin__table--detail-items .order-admin__qty {text-align:center !important;}
+app-admin-order-management .order-admin__table--detail-items .order-admin__number {text-align:center !important;}
+app-admin-order-management .order-admin__table--detail-items :is(th,td):last-child {text-align:right !important;}
+app-admin-order-management .order-admin__table--detail-items .order-admin__item-name {font-weight:500;color:#34435c;}
+app-admin-order-management .order-admin__table--detail-items .order-admin__product-thumb {width:48px;height:48px;min-width:48px;flex-basis:48px;border-radius:8px;}
+
+/* Return detail: measured from Figma 7432:39673 table header (994px): image 59px, product 139px, nine equal ~88.44px columns. Only colgroup defines column widths. */
+app-admin-order-return-detail .return-detail__table {min-width:1000px;}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-image {width:5.94%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-product {width:13.98%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-sku {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-qty {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-returned {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-available {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-requested {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-received {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-approved {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-estimated {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-final {width:8.88%}
+/* Match Figma: the image/product/SKU columns are left-aligned; all eight
+   quantity/refund columns share centered header and row-value alignment.
+   Column widths remain exclusively controlled by the 11-col colgroup. */
+app-admin-order-return-detail .return-detail__table :is(th,td) {
+  box-sizing:border-box;
+  width:auto !important;
+  padding-inline:8px !important;
+  vertical-align:middle;
+}
+app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(-n+3) {
+  text-align:left !important;
+}
+app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(n+4) {
+  text-align:center !important;
+  font-variant-numeric:tabular-nums;
+}
+app-admin-order-return-detail .return-detail__table tbody td:nth-child(n+4) {
+  white-space:nowrap;
+}
+/* Figma's 59px image cell uses 4px outer gutters; avoid squeezing
+   a 48px thumbnail when the table reaches its 1000px minimum width. */
+app-admin-order-return-detail .return-detail__table :is(th,td):first-child {
+  padding-left:4px !important;
+  padding-right:4px !important;
+}
+app-admin-order-return-detail .return-detail__table :is(th,td):last-child {
+  padding-right:12px !important;
+  text-align:center !important;
+}
+app-admin-order-return-detail .return-detail__table .return-detail__emphasis {font-weight:700;color:#0d47a1;}
+app-admin-order-return-detail .return-detail__table .return-detail__final-refund {font-weight:700;color:#268447;}
+app-admin-order-return-detail .return-detail__table :is(th,td).return-detail__table-empty {text-align:center !important;}
+app-admin-order-return-detail .return-detail__table tbody tr.return-detail__item--requested {background:#e3f2fd;}
+
+app-admin-order-management .order-admin__table-scroll,
+app-admin-order-return-detail .return-detail__scroll {border-radius:8px;overflow-x:auto;}
+
+/* Consistent two equal-width cards in the Figma detail bottom sections. */
+app-admin-order-management .order-admin__grid,
+app-admin-order-return-detail .return-detail__columns {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;align-items:stretch;
+}
+/* The two side-by-side cards are a single grid row. Keep the Figma
+   14px SECTION gap beneath that row, even when child margins are reset. */
+app-admin-order-return-detail .return-detail__columns {
+  margin-bottom:14px;
+}
+app-admin-order-management .order-admin__grid > .order-admin__card--detail,
+app-admin-order-return-detail .return-detail__columns > .return-detail__panel {height:100%;margin:0;}
+app-admin-order-management .order-admin__totals > div {
+  margin-bottom:7px;gap:12px;
+  font-size:12px;line-height:17px;
+}
+app-admin-order-management .order-admin__totals .order-admin__grand {
+  margin:8px 0;padding:8px 0 0;
+  border-top:1px solid #e2e8f0;font-size:14px;
+}
+app-admin-order-management .order-admin__history {padding-left:17px;}
+app-admin-order-management .order-admin__history li{padding-bottom:13px;}
+app-admin-order-return-detail .return-detail__columns .return-detail__subheading {
+  color:#475569;font-size:11px;margin-bottom:6px;
+}
+app-admin-order-return-detail .return-detail__reason {
+  background:transparent;border:0;border-bottom:1px solid #e2e8f0;
+  border-radius:0;padding:0 0 12px;margin:0 0 12px;
+}
+app-admin-order-return-detail .return-detail__refund-account-title {
+  padding:10px 0 0;margin:12px 0 10px;
+  border-top:1px solid #e2e8f0;
+  color:#111827;font:600 15px/18px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__refund-account {
+  grid-column:1/-1;
+}
+app-admin-order-return-detail .return-detail__muted {
+  margin:10px 0 0;color:#60748d;font:400 11px/16px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__panel[aria-label="Tình trạng nhập kho"] .return-detail__metadata {
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+/* Responsive without changing desktop Figma composition. */
+@media(max-width:900px) {
+  app-admin-order-management .order-admin__information,
+  app-admin-order-return-detail .return-detail__metadata {grid-template-columns:repeat(2,minmax(0,1fr));}
+  app-admin-order-return-detail .return-detail__panel[aria-label="Tình trạng nhập kho"] .return-detail__metadata {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  app-admin-order-management .order-admin__grid,
+  app-admin-order-return-detail .return-detail__columns {grid-template-columns:1fr;}
+}
+@media(max-width:600px) {
+  app-admin-order-management .order-admin:has(.order-admin__card--detail),
+  app-admin-order-return-detail .return-detail {padding:18px 12px !important;}
+  app-admin-order-management .order-admin__information,
+  app-admin-order-return-detail .return-detail__metadata {grid-template-columns:1fr;}
+  app-admin-order-management .order-admin__progress {overflow-x:auto;}
+  app-admin-order-return-detail .return-detail__progress {overflow-x:auto;grid-template-columns:repeat(5,minmax(100px,1fr));}
+  app-admin-order-management .order-admin__table--detail-items {min-width:760px;}
+  app-admin-order-return-detail .return-detail__table {min-width:900px;}
+}
+
+
+/* WEB2 screenshot QA: order payment rows and the newest-first status history.
+   Figma 7432:38519 / comparisons 3–4. */
+app-admin-order-management .order-admin__totals > div {
+  align-items:center;min-height:24px;margin-bottom:4px;
+}
+app-admin-order-management .order-admin__totals dt {color:#475569;}
+app-admin-order-management .order-admin__totals dd {color:#111827;font-weight:600;}
+app-admin-order-management .order-admin__totals .order-admin__grand {
+  margin:7px 0 8px;padding:12px 0 0;
+  border-top:1px solid #e2e8f0;
+  font-size:14px;line-height:20px;
+}
+app-admin-order-management .order-admin__totals .order-admin__grand dt {color:#111827;font-weight:700;}
+app-admin-order-management .order-admin__totals .order-admin__grand dd {
+  color:#0d47a1;font-size:16px;font-weight:700;
+}
+/* Match Figma's compact next-state confirmation dialog; only the
+   single backend-supported next stage is shown, so no invalid jump is sent. */
+/* Order detail actions: neutral cancel outline + Figma blue progression. */
+app-admin-order-management .order-admin:has(.order-admin__card--detail) .order-admin__heading-actions .order-admin__btn--outline {
+  color:#334155 !important;
+  background:#fff !important;
+  border:1px solid #dce5f0 !important;
+}
+app-admin-order-management .order-admin:has(.order-admin__card--detail) .order-admin__heading-actions .order-admin__btn--outline:hover {
+  background:#f8fafc !important;
+}
+app-admin-order-management .order-admin__modal .order-admin__field-value {
+  display:block;min-height:20px;margin-top:6px;
+  color:#334155;font-weight:600;
+}
+app-admin-order-management .order-admin__modal .order-admin__field select {
+  display:block;width:100%;height:40px;margin-top:7px;padding:0 12px;
+  color:#334155;background:#fff;border:1px solid #dce5f0;
+  border-radius:8px;appearance:auto;
+}
+app-admin-order-return-detail .return-detail__button--outline-danger {
+  color:#de414c !important;
+  border:1px solid #ed6b72 !important;
+  background:#fff !important;
+}
+app-admin-order-return-detail .return-detail__button--outline-danger:hover {
+  background:#fff1f1 !important;
+}
+app-admin-order-return-detail .return-detail__button--back {
+  display:inline-flex;align-items:center;justify-content:center;text-decoration:none;
+  min-height:36px;padding:0 12px;white-space:nowrap;
+}
+app-admin-order-management .order-admin__payment-badge {
+  display:inline-flex;align-items:center;min-height:24px;
+  padding:4px 12px;border-radius:99px;
+  background:#e5f6fd;color:#213042;
+  font:500 11px/16px Roboto,Arial,sans-serif;
+}
+app-admin-order-management .order-admin__payment-badge[data-payment="PAID"],
+app-admin-order-management .order-admin__payment-badge[data-payment="REFUNDED"] {
+  background:#e2f5e9;color:#237a3e;
+}
+app-admin-order-management .order-admin__payment-badge[data-payment="FAILED"],
+app-admin-order-management .order-admin__payment-badge[data-payment="CANCELLED"] {
+  background:#fae9e9;color:#ab4545;
+}
+app-admin-order-management .order-admin__history {
+  padding:0;margin:0;list-style:none;
+}
+app-admin-order-management .order-admin__history li {
+  position:relative;min-height:48px;margin:0 0 0 6px;
+  padding:0 0 16px 20px;border-left:2px solid #dce5f0;
+}
+app-admin-order-management .order-admin__history li:last-child {border-left-color:transparent;}
+app-admin-order-management .order-admin__history li:before {
+  content:"";position:absolute;left:-7px;top:3px;
+  width:12px;height:12px;border-radius:50%;
+  background:#dce5f0;
+}
+app-admin-order-management .order-admin__history li.order-admin__history--latest:before {background:#2f935b;}
+app-admin-order-management .order-admin__history li strong {
+  color:#253348;font:600 12px/18px Roboto,Arial,sans-serif;
+}
+app-admin-order-management .order-admin__history li small,
+app-admin-order-management .order-admin__history li p {
+  margin:2px 0 0;color:#64748b;
+  font:400 11px/16px Roboto,Arial,sans-serif;
+}
+
+/* WEB2 screenshot QA: Return overview, stepper & the four-field refund/stock grid.
+   Figma 7432:39673 / comparisons 5–10. */
+app-admin-order-return-detail .return-detail__metadata--overview {
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px 16px;
+}
+app-admin-order-return-detail .return-detail__metadata--overview :is(strong,a) {
+  font-weight:600;color:#253248;
+}
+app-admin-order-return-detail .return-detail__metadata--overview a {color:#0d47a1;}
+app-admin-order-return-detail .return-detail__progress {
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:10px;margin:0;padding:0;list-style:none;
+}
+app-admin-order-return-detail .return-detail__progress li {
+  display:block;min-width:0;text-align:left;
+  color:#64748b;font:400 12px/17px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__progress li:not(:last-child)::after {display:none;}
+app-admin-order-return-detail .return-detail__progress-head {
+  display:flex;align-items:center;gap:8px;min-height:18px;
+  white-space:normal;
+}
+app-admin-order-return-detail .return-detail__progress-dot {
+  display:inline-block;flex:0 0 12px;
+  width:12px;height:12px;
+  border:0;border-radius:50%;background:#e2e8f0;
+}
+app-admin-order-return-detail .return-detail__progress-bar {
+  height:3px;margin:7px 0 8px;background:#e2e8f0;
+}
+app-admin-order-return-detail .return-detail__progress li small {
+  display:block;color:#64748b;
+  font:400 10px/14px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__progress--current .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress--current .return-detail__progress-bar {
+  background:#7a7a7a;
+}
+app-admin-order-return-detail .return-detail__progress--done:not(.return-detail__progress--current) .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress--done:not(.return-detail__progress--current) .return-detail__progress-bar {
+  background:#2f935b;
+}
+app-admin-order-return-detail .return-detail__progress--done .return-detail__progress-head {color:#334155;}
+app-admin-order-return-detail .return-detail__panel--refund .return-detail__reconcile,
+app-admin-order-return-detail .return-detail__panel--warehouse .return-detail__stock-fields {
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:16px;
+}
+app-admin-order-return-detail .return-detail__reconcile > div,
+app-admin-order-return-detail .return-detail__stock-fields > div {min-width:0;}
+app-admin-order-return-detail .return-detail__reconcile > div > span,
+app-admin-order-return-detail .return-detail__stock-fields > div > span {
+  display:block;margin-bottom:6px;
+  color:#475569;font:400 11px/15px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__reconcile > div > strong,
+app-admin-order-return-detail .return-detail__stock-fields > div > strong {
+  display:block;color:#1f2937;
+  font:600 12px/17px Roboto,Arial,sans-serif;
+  overflow-wrap:anywhere;
+}
+app-admin-order-return-detail .return-detail__refund-account-title {
+  margin:15px 0 14px;padding:14px 0 0;
+  border-top:1px solid #e2e8f0;
+  font:600 15px/19px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__panel--warehouse .return-detail__stock-row {
+  display:flex;align-items:center;gap:16px;min-width:0;
+}
+app-admin-order-return-detail .return-detail__stock-fields {flex:1;min-width:0;}
+app-admin-order-return-detail .return-detail__button--stock {
+  flex:0 0 auto;height:38px;min-height:38px;
+  background:#fff;color:#0d47a1;border:1px solid #dce5f0;
+}
+app-admin-order-return-detail .return-detail__extra--bottom {
+  box-sizing:border-box;background:#fff;border:1px solid #e2e8f0;
+  border-radius:12px;padding:12px 18px;margin:0 0 16px;
+}
+app-admin-order-return-detail .return-detail__extra--bottom .return-detail__metadata {margin:12px 0 0;}
+@media(max-width:1050px) {
+  app-admin-order-return-detail .return-detail__reconcile,
+  app-admin-order-return-detail .return-detail__stock-fields {grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:650px) {
+  app-admin-order-return-detail .return-detail__panel--refund .return-detail__reconcile,
+  app-admin-order-return-detail .return-detail__panel--warehouse .return-detail__stock-fields {grid-template-columns:1fr;}
+  app-admin-order-return-detail .return-detail__stock-row {align-items:stretch;flex-wrap:wrap;}
+  app-admin-order-return-detail .return-detail__metadata--overview {grid-template-columns:1fr;}
+}
+
+
+/* WEB2 Figma QA 2026-10-27 — corrections based on the user's paired screenshots.
+   All selectors are restricted to Order and Return DETAIL components. */
+
+/* Figma Return workflow: previous stages green, current stage state-specific,
+   unreached stages grey. Rejected/cancelled use actual audit history to
+   determine the reached portion, without inventing progress. */
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--done .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--done .return-detail__progress-bar {
+  background:#2f935b !important;
+  border:0 !important;
+}
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--done .return-detail__progress-head {
+  color:#475569 !important;
+}
+app-admin-order-return-detail .return-detail__progress[data-status="REQUESTED"] li.return-detail__progress--current .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress[data-status="REQUESTED"] li.return-detail__progress--current .return-detail__progress-bar {
+  background:#7a7a7a !important;
+}
+app-admin-order-return-detail .return-detail__progress[data-status="PROCESSING"] li.return-detail__progress--current .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress[data-status="PROCESSING"] li.return-detail__progress--current .return-detail__progress-bar {
+  background:#ee8c19 !important;
+}
+app-admin-order-return-detail .return-detail__progress[data-status="RECEIVED"] li.return-detail__progress--current .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress[data-status="RECEIVED"] li.return-detail__progress--current .return-detail__progress-bar {
+  background:#1976d2 !important;
+}
+app-admin-order-return-detail .return-detail__progress[data-status="APPROVED"] li.return-detail__progress--current .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress[data-status="APPROVED"] li.return-detail__progress--current .return-detail__progress-bar {
+  background:#8243c8 !important;
+}
+app-admin-order-return-detail .return-detail__progress[data-status="COMPLETED"] li.return-detail__progress--current .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress[data-status="COMPLETED"] li.return-detail__progress--current .return-detail__progress-bar {
+  background:#2f935b !important;
+}
+/* Current-step labels follow the same Figma state color as the rail. */
+app-admin-order-return-detail .return-detail__progress[data-status="REQUESTED"] li.return-detail__progress--current .return-detail__progress-head {color:#757575 !important;}
+app-admin-order-return-detail .return-detail__progress[data-status="PROCESSING"] li.return-detail__progress--current .return-detail__progress-head {color:#df8108 !important;}
+app-admin-order-return-detail .return-detail__progress[data-status="RECEIVED"] li.return-detail__progress--current .return-detail__progress-head {color:#1976d2 !important;}
+app-admin-order-return-detail .return-detail__progress[data-status="APPROVED"] li.return-detail__progress--current .return-detail__progress-head {color:#7c3fc8 !important;}
+app-admin-order-return-detail .return-detail__progress[data-status="COMPLETED"] li.return-detail__progress--current .return-detail__progress-head {color:#258448 !important;}
+app-admin-order-return-detail .return-detail__progress-bar {
+  margin:8px 0 7px;
+  height:3px;
+}
+app-admin-order-return-detail .return-detail__progress li small {
+  color:#64748b;font-size:10px;
+}
+
+/* Return product table mirrors Figma's restrained type and thumbnail.
+   Each row reflects actual BE items (never mock extra rows or quantities). */
+/* Header dimensions and intentional two-line labels match the Figma table. */
+app-admin-order-return-detail .return-detail__table thead th {
+  height:58px !important;
+  font-size:11px !important;
+  font-weight:600 !important;
+  line-height:15px !important;
+  color:#475569 !important;
+  padding:10px 8px !important;
+  vertical-align:middle !important;
+}
+app-admin-order-return-detail .return-detail__table thead th:nth-child(n+4) {
+  text-align:center !important;
+}
+app-admin-order-return-detail .return-detail__table .return-detail__th-label {
+  display:inline-block;
+  text-align:center;
+  line-height:15px;
+  white-space:nowrap;
+}
+app-admin-order-return-detail .return-detail__table tbody td {
+  font-size:12px !important;
+  line-height:17px !important;
+  font-weight:400;
+  padding-block:12px !important;
+}
+app-admin-order-return-detail .return-detail__table .return-detail__product-name > strong {
+  display:block;color:#3e4e65;font-weight:500;
+}
+/* Figma's purple rounded "Hoàn X/Y" chip is a separate line beneath the product.
+   Do not render it as underlined text or a squared-off label. */
+app-admin-order-return-detail .return-detail__partial-badge {
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:max-content;
+  max-width:100%;
+  min-height:21px;
+  margin:8px 0 0 !important;
+  padding:2px 10px !important;
+  border:1px solid #d7bcff !important;
+  border-radius:999px !important;
+  background:#f1e7ff !important;
+  color:#783ac5 !important;
+  text-decoration:none !important;
+  white-space:nowrap;
+  font:500 10px/16px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__table .return-detail__product-thumb {
+  width:48px;height:48px;min-width:48px;padding:4px;
+  border-radius:8px;
+}
+
+/* Return reason & evidence: plain bold reason, divider and compact audit
+   timeline, rather than a bordered input-looking box and oversized panels. */
+app-admin-order-return-detail .return-detail__columns {
+  align-items:stretch;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__panel {
+  padding:18px !important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__subheading {
+  color:#34435a;font-size:12px;font-weight:600;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__reason {
+  box-sizing:border-box;
+  padding:0 0 12px !important;
+  margin:0 0 12px !important;
+  border:0 !important;
+  border-bottom:1px solid #e2e8f0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  color:#253248 !important;
+  font-weight:600 !important;
+  line-height:18px;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline {
+  padding:0 !important;
+  margin:0 !important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li {
+  box-sizing:border-box;
+  min-height:50px !important;
+  margin-left:7px !important;
+  padding:0 0 12px 18px !important;
+  border-left:2px solid #e2e8f0 !important;
+  font-size:12px;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li:last-child {
+  border-left-color:transparent !important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline-dot {
+  top:3px !important;left:-6px !important;
+  width:10px !important;height:10px !important;
+  border:0 !important;border-radius:50% !important;
+  background:#e2e8f0 !important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline--latest .return-detail__timeline-dot {
+  background:#2f935b !important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li strong {
+  font-size:12px;line-height:17px;color:#334155;font-weight:600;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li small,
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li p {
+  font-size:11px;line-height:16px;
+  color:#64748b;
+  margin:2px 0 0;
+}
+
+/* Figma Order overview: only 3 columns x 2 rows. No extra disclosure. */
+app-admin-order-management .order-admin__card--detail .order-admin__information {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  column-gap:16px;row-gap:12px;
+}
+app-admin-order-management .order-admin__card--detail .order-admin__information > div > strong {
+  display:block;
+  line-height:17px;
+  font-weight:500;
+  color:#111827;
+}
+app-admin-order-management .order-admin__card--detail .order-admin__information > div:nth-child(3) strong {
+  overflow-wrap:break-word;
+}
+@media(max-width:760px) {
+  app-admin-order-management .order-admin__card--detail .order-admin__information {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:520px) {
+  app-admin-order-management .order-admin__card--detail .order-admin__information {
+    grid-template-columns:1fr;
+  }
+}
+
+/* Order detail: transition date replaces old "Đã chuyển bước" filler.
+   The history visibly logs all reached milestones, even when an individual
+   backend timestamp is not available. */
+app-admin-order-management .order-admin__progress-step small {
+  font-size:10px;line-height:14px;
+  white-space:normal;
+}
+app-admin-order-management .order-admin__history li {
+  min-height:47px;
+}
+
+
+/* VP-02 Figma QA: compact program fields and neutral, accessible radio labels. */
+app-admin-voucher-editor .voucher-editor__panel:has(.voucher-editor__program-fields) {
+  padding:18px 20px 20px;
+}
+app-admin-voucher-editor .voucher-editor__panel:has(.voucher-editor__program-fields) h2 {
+  margin:0 0 16px;
+  font-size:16px;
+  line-height:23px;
+  font-weight:650;
+}
+app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields {
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px 18px;
+  align-items:start;
+}
+app-admin-voucher-editor .voucher-editor__program-fields label {
+  font-size:12px;
+  line-height:18px;
+  font-weight:500;
+}
+app-admin-voucher-editor .voucher-editor__program-fields label > input {
+  min-height:40px;
+  height:40px;
+  margin-top:7px;
+}
+app-admin-voucher-editor .voucher-editor__program-fields .voucher-editor__fields--full {
+  grid-column:1/-1;
+}
+app-admin-voucher-editor .voucher-editor__program-fields textarea[readonly] {
+  display:block;
+  background:#fff !important;
+  color:#203047 !important;
+  min-height:68px;
+  height:68px;
+  padding:12px 14px;
+  margin-top:7px;
+  resize:none;
+  opacity:1 !important;
+  cursor:default;
+}
+app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields .voucher-editor__status-control .voucher-editor__field-caption {
+  display:block;
+  text-align:center;
+  width:max-content;
+  max-width:100%;
+  margin:0;
+  line-height:18px;
+}
+app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields .voucher-editor__status-control .voucher-editor__switch-row {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:max-content;
+  max-width:100%;
+  gap:10px;
+  min-height:40px;
+  margin:0;
+  text-align:left;
+}
+app-admin-voucher-editor .voucher-editor__program-fields .voucher-editor__switch-text {
+  font-weight:400;
+}
+/* Figma: blue radio, optically centered against the baseline of plain-weight text. */
+app-admin-voucher-editor .voucher-editor__discount-options label {
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:flex-start;
+  vertical-align:middle;
+  margin:0 !important;
+  padding:0 !important;
+  gap:7px !important;
+  min-height:20px;
+  color:#243248 !important;
+  font:400 12px/20px Roboto,Arial,sans-serif !important;
+  white-space:nowrap;
+}
+app-admin-voucher-editor .voucher-editor__discount-options .voucher-editor__radio-text {
+  display:inline-block;
+  font:400 12px/20px Roboto,Arial,sans-serif;
+  text-align:left;
+}
+app-admin-voucher-editor .voucher-editor__discount-options input[type="radio"] {
+  box-sizing:border-box;
+  display:block !important;
+  align-self:center;
+  position:static;
+  top:auto;
+  margin:0 !important;
+  padding:0 !important;
+  flex:0 0 16px;
+  width:16px !important;
+  height:16px !important;
+  min-width:16px !important;
+  min-height:16px !important;
+  vertical-align:middle !important;
+  appearance:auto !important;
+  accent-color:#0d47a1 !important;
+}
+
+/* Shared Admin confirmation style, rather than a browser-native alert. */
+app-admin-voucher-editor .voucher-editor__leave-overlay {
+  z-index:1150;
+  background:rgba(20,35,61,.52);
+}
+app-admin-voucher-editor .voucher-editor__leave-dialog {
+  box-sizing:border-box;
+  width:min(100%,520px);
+  max-width:520px;
+  padding:24px;
+  border:1px solid #dce5f0;
+  border-radius:12px;
+  box-shadow:0 18px 50px rgba(16,35,62,.21);
+}
+app-admin-voucher-editor .voucher-editor__leave-head {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin:0;
+  padding:0;
+  border:0;
+}
+app-admin-voucher-editor .voucher-editor__leave-head > div {min-width:0}
+app-admin-voucher-editor .voucher-editor__leave-head h2 {
+  margin:0;
+  color:#1f2d42;
+  font:700 20px/27px Roboto,Arial,sans-serif;
+}
+app-admin-voucher-editor .voucher-editor__leave-head p {
+  margin:8px 0 0;
+  color:#64748b;
+  font:400 13px/19px Roboto,Arial,sans-serif;
+}
+app-admin-voucher-editor .voucher-editor__leave-close {
+  display:inline-flex;
+  flex:0 0 28px;
+  align-items:center;
+  justify-content:center;
+  width:28px;
+  height:28px;
+  padding:0;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#64748b;
+  font-size:22px;
+  line-height:1;
+  cursor:pointer;
+}
+app-admin-voucher-editor .voucher-editor__leave-close:hover {background:#eef3f9}
+app-admin-voucher-editor .voucher-editor__leave-actions {
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+  gap:10px;
+  min-height:38px;
+  margin:20px 0 0;
+  padding:0;
+  border:0;
+}
+app-admin-voucher-editor .voucher-editor__leave-actions .voucher-editor__button {
+  min-width:105px;
+  min-height:38px;
+  padding:0 14px;
+  font-weight:600;
+}
+app-admin-voucher-editor .voucher-editor__leave-actions .voucher-editor__button--outline {
+  border-color:#dce5f0;
+  color:#334155;
+}
+@media(max-width:1100px) {
+  app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:720px) {
+  app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields {grid-template-columns:1fr;}
+}
+@media(max-width:460px) {
+  app-admin-voucher-editor .voucher-editor__leave-dialog {padding:18px}
+  app-admin-voucher-editor .voucher-editor__leave-actions .voucher-editor__button {flex:1;min-width:0}
+}
+
+
+/* WEB2 2026-10-27 UI parity: Order creation lookup, navigation, and list badges.
+   Keep the result list anchored to its input, as in the Services material picker. */
+app-admin-order-create .create-order__products-lookup {
+  width:430px;
+  max-width:100%;
+  position:relative;
+  overflow:visible;
+}
+app-admin-order-create .create-order__search-field--product {
+  box-sizing:border-box;
+  width:100%;
+  max-width:100%;
+  height:44px;
+}
+app-admin-order-create .create-order__product-results {
+  position:absolute;
+  top:calc(100% + 6px);
+  left:0;
+  z-index:30;
+  box-sizing:border-box;
+  width:min(520px,calc(100vw - 48px));
+  min-width:0;
+  max-width:none;
+  max-height:380px;
+  margin:0;
+  padding:0;
+  overflow-x:hidden;
+  overflow-y:auto;
+  border:1px solid #dce5f0;
+  border-radius:12px;
+  background:#fff;
+  box-shadow:0 12px 30px rgba(24,45,77,.15);
+}
+app-admin-order-create .create-order__product-result {
+  display:grid;
+  grid-template-columns:48px minmax(0,1fr) auto;
+  align-items:center;
+  gap:12px;
+  box-sizing:border-box;
+  width:100%;
+  min-height:76px;
+  padding:12px 16px;
+  border:0;
+  border-bottom:1px solid #e6edf6;
+  color:#1d2b42;
+  text-align:left;
+  background:#fff;
+}
+app-admin-order-create .create-order__product-result:last-child {border-bottom:0}
+app-admin-order-create .create-order__product-result:hover:not(:disabled),
+app-admin-order-create .create-order__product-result:focus-visible {
+  background:#f1f7ff;
+}
+app-admin-order-create .create-order__product-result:disabled {
+  opacity:.64;cursor:not-allowed;
+}
+app-admin-order-create .create-order__product-thumb {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:48px;
+  height:48px;
+  overflow:hidden;
+  flex:none;
+  background:#f3f8ff;
+  border:1px solid #dce5f0;
+  border-radius:8px;
+  color:#7085a0;
+  font:400 11px/16px Roboto,Arial,sans-serif;
+}
+app-admin-order-create .create-order__product-thumb img {
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+app-admin-order-create .create-order__product-text {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:4px;
+  min-width:0;
+}
+app-admin-order-create .create-order__product-text strong {
+  display:block;
+  font:600 13px/18px Roboto,Arial,sans-serif;
+  color:#1a2e49;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+app-admin-order-create .create-order__product-text small {
+  display:block;
+  font:400 12px/16px Roboto,Arial,sans-serif;
+  color:#6680a0;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  margin:0;
+}
+app-admin-order-create .create-order__product-price {
+  font:600 12px/18px Roboto,Arial,sans-serif;
+  color:#0d47a1;
+  white-space:nowrap;
+  text-align:right;
+}
+/* Product-style breadcrumb text and hover for all sales module detail/create pages. */
+app-admin-catalog-shell :is(
+  .order-admin__crumb,.create-order__breadcrumb,
+  .voucher-editor__crumb,.return-detail__breadcrumb,
+  .schedule-crumb,.staff-breadcrumb,
+  .crumb,.breadcrumb
+) {
+  font:400 12px/20px Roboto,Arial,sans-serif;
+  color:#60748d;
+  align-items:center;
+  gap:10px;
+}
+app-admin-catalog-shell :is(
+  .order-admin__crumb,.create-order__breadcrumb,
+  .voucher-editor__crumb,.return-detail__breadcrumb,
+  .schedule-crumb,.staff-breadcrumb,
+  .crumb,.breadcrumb
+) a {
+  color:#60748d;
+  text-decoration:none;
+  transition:color .15s ease;
+}
+app-admin-catalog-shell :is(
+  .order-admin__crumb,.create-order__breadcrumb,
+  .voucher-editor__crumb,.return-detail__breadcrumb,
+  .schedule-crumb,.staff-breadcrumb,
+  .crumb,.breadcrumb
+) a:hover {
+  color:#0d47a1;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+app-admin-catalog-shell :is(
+  .order-admin__crumb,.create-order__breadcrumb,
+  .voucher-editor__crumb,.return-detail__breadcrumb,
+  .schedule-crumb,.staff-breadcrumb,
+  .crumb,.breadcrumb
+) a:focus-visible {
+  outline:2px solid #0d47a1;
+  outline-offset:3px;
+  border-radius:3px;
+}
+app-admin-catalog-shell :is(
+  .order-admin__crumb,.create-order__breadcrumb,
+  .voucher-editor__crumb,.return-detail__breadcrumb,
+  .schedule-crumb,.staff-breadcrumb,
+  .crumb,.breadcrumb
+) :is(strong,[aria-current="page"],span:last-child) {
+  color:#0d47a1;
+  font-weight:600;
+}
+/* Reuse the red "Hết hạn" voucher badge palette for cancelled orders. */
+app-admin-order-management .order-admin__table--figma .order-admin__badge[data-status="CANCELLED"],
+app-admin-order-management .order-admin__card--detail .order-admin__badge[data-status="CANCELLED"] {
+  background:#ffebeb !important;
+  color:#a63b47 !important;
+}
+@media(max-width:640px) {
+  app-admin-order-create .create-order__product-results {
+    width:100%;
+    max-width:100%;
+  }
+  app-admin-order-create .create-order__product-result {
+    grid-template-columns:42px minmax(0,1fr) auto;
+    gap:8px;
+    padding:10px;
+  }
+  app-admin-order-create .create-order__product-thumb {width:42px;height:42px;}
+}
+
+
+/* WEB2 management filter bars — authoritative baseline: Service Catalog.
+   Opt-in class on list screens only; no overrides to editing forms or
+   Service Catalog's own reference. Preserve component event handlers. */
+app-admin-catalog-shell .web2-filterbar.web2-filterbar {
+  box-sizing:border-box !important;
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  justify-content:space-between !important;
+  align-items:center !important;
+  gap:12px !important;
+  width:100% !important;
+  height:auto !important;
+  min-height:70px !important;
+  padding:14px !important;
+  border:1px solid #dce5f0 !important;
+  border-radius:10px !important;
+  background:#fff !important;
+  overflow:visible !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  .web2-management-search,.order-admin__search,.voucher-list__search,
+  .branch-v2-page__search,.staff-search,.search-field
+) {
+  box-sizing:border-box !important;
+  position:relative !important;
+  display:flex !important;
+  align-items:center !important;
+  flex:0 1 430px !important;
+  width:430px !important;
+  max-width:430px !important;
+  min-width:0 !important;
+  height:40px !important;
+  min-height:40px !important;
+  gap:8px !important;
+  margin:0 auto 0 0 !important;
+  padding:0 11px !important;
+  border:1px solid #dce5f0 !important;
+  border-radius:8px !important;
+  background:#fff !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  .web2-management-search,.order-admin__search,.voucher-list__search,
+  .branch-v2-page__search,.staff-search,.search-field
+) > input:not([type="date"]) {
+  box-sizing:border-box !important;
+  display:block;
+  flex:1 1 auto !important;
+  width:100% !important;
+  min-width:0 !important;
+  height:100% !important;
+  min-height:0 !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  background:transparent !important;
+  color:#26364a !important;
+  font:400 13px/20px Roboto,Arial,sans-serif !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar input::placeholder {
+  color:#66758c !important;
+  opacity:1;
+  font:400 13px/20px Roboto,Arial,sans-serif !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  .web2-management-search,.order-admin__search,.voucher-list__search,
+  .branch-v2-page__search,.staff-search,.search-field
+) :is(svg,img) {
+  position:static !important;
+  display:block;
+  flex:0 0 15px !important;
+  width:15px !important;
+  height:15px !important;
+  margin:0 !important;
+  transform:none !important;
+  color:#66758c !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  .web2-management-search,.order-admin__search,.voucher-list__search,
+  .branch-v2-page__search,.staff-search,.search-field
+):focus-within {
+  outline:2px solid #8eb8ee;
+  outline-offset:0;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  .web2-management-actions,.order-admin__filter-actions,.service-catalog__filter-selects,
+  .staff-filters,.toolbar-selects
+) {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  flex:0 0 auto !important;
+  flex-wrap:nowrap !important;
+  gap:12px !important;
+  width:auto !important;
+  min-width:0 !important;
+  margin:0 0 0 auto !important;
+  padding:0 !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  select,button:not(.web2-add-button),a:not(.web2-add-button),
+  input[type="date"]
+) {
+  box-sizing:border-box;
+  height:40px !important;
+  min-height:40px !important;
+  border-radius:8px !important;
+  font:400 13px/20px Roboto,Arial,sans-serif !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar select {
+  width:100%;
+  padding:0 30px 0 12px;
+  background-color:#fff;
+  color:#26364a;
+  border:1px solid #dce5f0;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  .web2-management-control,.order-admin__status-filter,.order-admin__date-filter,
+  .order-admin__branch-filter,.voucher-list__control,.branch-v2-page__status-filter,
+  .staff-filters label
+) {
+  box-sizing:border-box;
+  flex:0 0 auto !important;
+  height:40px !important;
+  min-height:40px !important;
+  margin:0 !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  .web2-management-control,.order-admin__status-filter,.order-admin__date-filter,
+  .order-admin__branch-filter,.voucher-list__control,.branch-v2-page__status-filter
+) {width:170px !important;min-width:0 !important}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar .web2-add-button.web2-add-button {
+  box-sizing:border-box !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  flex:0 0 auto !important;
+  width:max-content !important;
+  min-width:max-content !important;
+  height:40px !important;
+  min-height:40px !important;
+  padding:0 15px !important;
+  border-radius:8px !important;
+  font:600 13px/20px Roboto,Arial,sans-serif !important;
+  white-space:nowrap !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar .order-admin__range-trigger{
+  flex:0 0 auto;
+  width:max-content;
+  min-width:0;
+}
+/* Branch and Voucher filters are direct siblings rather than nested groups. */
+app-admin-catalog-shell .web2-filterbar.web2-filterbar > :is(
+  .voucher-list__control,.branch-v2-page__status-filter
+) {margin-left:0 !important}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar > :is(
+  .web2-add-button,.inventory-create
+) {flex:0 0 auto !important;margin-left:0 !important}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar .staff-filters label {
+  position:relative;
+  width:auto;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar .staff-filters select {
+  min-width:140px;
+  height:40px !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar .toolbar-selects .date-filter {
+  height:40px;
+}
+/* Keep search capped at 430px; wrap the action group instead of stretching
+   inputs or forcing horizontal overflow on narrower admin viewports. */
+@media(max-width:1180px) {
+  app-admin-catalog-shell .web2-filterbar.web2-filterbar {
+    flex-wrap:wrap !important;
+  }
+  app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+    .web2-management-actions,.order-admin__filter-actions,.staff-filters,.toolbar-selects
+  ) {
+    flex-wrap:wrap !important;
+    margin-left:auto !important;
+  }
+  app-admin-catalog-shell .web2-filterbar.web2-filterbar > :is(
+    .voucher-list__control,.branch-v2-page__status-filter
+  ) {margin-left:0 !important}
+}
+@media(max-width:620px) {
+  app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+    .web2-management-search,.order-admin__search,.voucher-list__search,
+    .branch-v2-page__search,.staff-search,.search-field
+  ){flex:1 1 100% !important;width:100% !important;max-width:430px !important}
+  app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+    .web2-management-actions,.order-admin__filter-actions,.staff-filters,.toolbar-selects
+  ){justify-content:flex-start !important;margin-left:0 !important}
+}
+
+
+/* WEB2 2026-10-27: Shift assignment modal aligned with Figma's compact cards.
+   Specific global selectors are needed because the dialog is a standalone child. */
+.shift-assign-overlay {
+  padding:16px;
+  background:rgba(21,34,51,.42);
+}
+.shift-assign-overlay .shift-assign-dialog {
+  box-sizing:border-box;
+  width:min(100%,520px);
+  max-height:calc(100dvh - 32px);
+  overflow-x:hidden;
+  overflow-y:auto;
+  padding:22px 24px 20px;
+  border-radius:10px;
+  background:#fff;
+  box-shadow:0 16px 50px rgba(22,38,57,.2);
+  font:400 12px/1.5 Roboto,Arial,sans-serif;
+}
+.shift-assign-dialog .shift-assign-header {
+  gap:12px;
+  margin:0 0 14px;
+  padding:0 0 14px;
+  border-bottom:1px solid #dce5ef;
+}
+.shift-assign-dialog .shift-assign-header h2 {
+  margin:0;
+  color:#263950;
+  font:700 20px/27px Roboto,Arial,sans-serif;
+}
+.shift-assign-dialog .shift-assign-header > button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 28px;
+  width:28px;
+  height:28px;
+  margin:0;
+  padding:0;
+  border:0;
+  border-radius:6px;
+  background:transparent;
+  color:#304660;
+  font:500 23px/23px Roboto,Arial,sans-serif;
+}
+.shift-assign-dialog .shift-assign-header > button:hover {background:#eef5fc}
+.shift-assign-dialog .shift-assign-context {
+  display:grid;
+  grid-template-columns:minmax(0,1.12fr) minmax(0,1fr) minmax(0,1fr);
+  align-items:start;
+  column-gap:12px;
+  margin:0 0 16px;
+  padding:12px;
+  border-radius:7px;
+  background:#f0f6fc;
+}
+.shift-assign-dialog .shift-assign-context span {
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:4px;
+  min-width:0;
+  width:100%;
+}
+.shift-assign-dialog .shift-assign-context small {
+  display:block;
+  min-width:0;
+  margin:0;
+  color:#7089a2;
+  font:500 10px/14px Roboto,Arial,sans-serif;
+  text-transform:uppercase;
+}
+.shift-assign-dialog .shift-assign-context strong {
+  display:block;
+  max-width:100%;
+  min-width:0;
+  margin:0;
+  overflow:hidden;
+  white-space:nowrap !important;
+  overflow-wrap:normal !important;
+  word-break:normal !important;
+  text-overflow:ellipsis;
+  color:#2a405a;
+  font:600 12px/18px Roboto,Arial,sans-serif;
+}
+.shift-assign-dialog .shift-assign-context strong.shift-assign-person,
+.shift-assign-dialog .shift-assign-context strong.shift-assign-branch {
+  text-overflow:ellipsis;
+}
+.shift-assign-dialog h3 {
+  margin:14px 0 9px;
+  color:#243a53;
+  font:600 13px/20px Roboto,Arial,sans-serif;
+}
+.shift-assign-dialog .shift-assign-items {
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+.shift-assign-dialog .shift-assign-item {
+  display:flex;
+  align-items:center;
+  min-height:54px;
+  gap:10px;
+  padding:9px 10px;
+  background:#f6f9fc;
+  border:1px solid #dce5ef;
+  border-radius:7px;
+}
+.shift-assign-dialog .shift-assign-clock {
+  display:grid;
+  place-items:center;
+  flex:0 0 19px;
+  width:19px;
+  color:#344b65;
+}
+.shift-assign-dialog .shift-assign-item > div {
+  display:flex;
+  flex-direction:column;
+  flex:1;
+  min-width:0;
+  gap:3px;
+}
+.shift-assign-dialog .shift-assign-item strong {
+  color:#2d4058;
+  font:600 12px/16px Roboto,Arial,sans-serif;
+}
+.shift-assign-dialog .shift-assign-item small {
+  color:#607792;
+  font:400 11px/15px Roboto,Arial,sans-serif;
+}
+.shift-assign-dialog .shift-assign-delete {
+  display:grid;
+  place-items:center;
+  flex:0 0 30px;
+  width:30px;
+  height:30px;
+  border:0;
+  border-radius:6px;
+  background:transparent;
+  color:#465e77;
+}
+.shift-assign-dialog .shift-assign-delete:hover {background:#e7eff7;color:#ad2a36}
+.shift-assign-dialog .shift-assign-add {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:9px;
+  align-items:center;
+}
+.shift-assign-dialog .shift-assign-add select {
+  box-sizing:border-box;
+  appearance:none;
+  width:100%;
+  min-width:0;
+  height:38px;
+  padding:0 42px 0 12px;
+  border:1px solid #dce5ef;
+  border-radius:7px;
+  background:#fff url('/assets/admin-product/icon-chevron-down.svg') no-repeat right 14px center;
+  background-size:16px 16px;
+  color:#26364a;
+  font:400 12px/18px Roboto,Arial,sans-serif;
+}
+.shift-assign-dialog .shift-assign-add > button {
+  min-width:90px;
+  height:38px;
+  padding:0 11px;
+  border-radius:7px;
+  font:500 12px/18px Roboto,Arial,sans-serif;
+}
+.shift-assign-dialog .shift-assign-new {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:36px;
+  min-height:36px;
+  margin-top:9px;
+  padding:0 13px;
+  border-radius:7px;
+  font:500 12px/18px Roboto,Arial,sans-serif;
+}
+.shift-assign-dialog .shift-assign-hint {
+  margin:7px 0 10px;
+  color:#70839b;
+  font:400 11px/16px Roboto,Arial,sans-serif;
+}
+.shift-assign-dialog .shift-assign-scope {
+  display:flex;
+  align-items:center;
+  gap:18px;
+  margin:16px 0 0;
+  padding:12px 0;
+  border:0;
+  border-top:1px solid #dce5ef;
+  border-bottom:1px solid #dce5ef;
+}
+.shift-assign-dialog .shift-assign-scope legend {
+  display:block;
+  padding:0 0 8px;
+  color:#283e57;
+  font:600 13px/18px Roboto,Arial,sans-serif;
+}
+.shift-assign-dialog .shift-assign-scope label {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin:0;
+  font:400 12px/18px Roboto,Arial,sans-serif;
+  white-space:nowrap;
+}
+.shift-assign-dialog .shift-assign-footer {
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  gap:8px;
+  margin:16px 0 0;
+  padding:14px 0 0;
+  border-top:1px solid #dce5ef;
+}
+.shift-assign-dialog .shift-assign-footer button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:38px;
+  padding:0 13px;
+  border-radius:7px;
+  font:500 12px/18px Roboto,Arial,sans-serif;
+  white-space:nowrap;
+}
+.shift-assign-dialog .shift-assign-footer button:disabled {opacity:.55;cursor:not-allowed}
+.shift-assign-dialog .shift-assign-field {
+  margin:9px 0;
+  color:#334b65;
+  font-size:12px;
+}
+.shift-assign-dialog .shift-assign-field input {height:40px}
+@media(max-width:620px) {
+  .shift-assign-overlay .shift-assign-dialog {padding:16px}
+  .shift-assign-dialog .shift-assign-context {
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    row-gap:12px;
+  }
+  .shift-assign-dialog .shift-assign-context span:first-child {grid-column:1/-1}
+  .shift-assign-dialog .shift-assign-scope {flex-wrap:wrap}
+}
+
+
+/* WEB2 27 Oct: fix Branch's nested filter group. The select must never
+   exceed its label width or overlap the Add Branch control. */
+app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar {
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+}
+app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar .branch-v2-page__filter-actions {
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  flex:0 0 auto;
+  gap:12px;
+  min-width:0;
+  margin-left:auto;
+}
+app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar .branch-v2-page__filter-actions .branch-v2-page__status-filter {
+  position:relative;
+  display:block;
+  flex:0 0 180px !important;
+  width:180px !important;
+  min-width:0 !important;
+  max-width:180px;
+  height:40px;
+  margin:0 !important;
+}
+app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar .branch-v2-page__filter-actions .branch-v2-page__status-filter select {
+  display:block;
+  box-sizing:border-box;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  height:40px !important;
+  padding:0 36px 0 12px !important;
+  appearance:none;
+  background-color:#fff;
+}
+app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar .branch-v2-page__filter-actions .branch-v2-page__filter-chevron {
+  right:12px;
+  pointer-events:none;
+}
+app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar .branch-v2-page__filter-actions .branch-v2-page__add {
+  position:relative;
+  flex:0 0 auto !important;
+  width:max-content !important;
+  min-width:max-content !important;
+  margin:0 !important;
+}
+@media(max-width:800px) {
+  app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar {flex-wrap:wrap !important}
+  app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar .branch-v2-page__filter-actions {
+    flex-wrap:wrap;
+    flex:0 1 auto;
+    margin-left:auto;
+  }
+}
+@media(max-width:550px) {
+  app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar .branch-v2-page__filter-actions {
+    flex:1 1 100%;justify-content:flex-start;margin-left:0;
+  }
+}
+
+/* Voucher uses the same compact connected 44px pagination as Product. */
+app-admin-voucher-list .voucher-list__pagination > div {
+  display:inline-flex;
+  align-items:center;
+  flex:0 0 auto;
+  overflow:hidden;
+  border:1px solid #dce5f0;
+  border-radius:8px;
+}
+app-admin-voucher-list .voucher-list__pagination > div button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+  flex:0 0 44px;
+  width:44px !important;
+  min-width:44px !important;
+  height:44px !important;
+  min-height:44px !important;
+  padding:0 !important;
+  border:0;
+  border-right:1px solid #dce5f0;
+  border-radius:0 !important;
+  background:#fff;
+  color:#0d47a1;
+  font:500 15px/20px Roboto,Arial,sans-serif !important;
+}
+app-admin-voucher-list .voucher-list__pagination > div button:last-child {border-right:0}
+app-admin-voucher-list .voucher-list__pagination > div button:disabled {color:#bac8d9;cursor:default}
+app-admin-voucher-list .voucher-list__pagination > div button.voucher-list__page {
+  font-size:14px !important;
+}
+app-admin-voucher-list .voucher-list__pagination > div button.voucher-list__page--active {
+  background:#e5f6fd;
+  color:#0d47a1;
+  box-shadow:inset 0 0 0 2px #0d47a1;
+}
+
+/* Sitewide Admin breadcrumbs: Product > Add Product is the reference.
+   All actual ancestor links remain RouterLinks; current location is not clickable. */
+app-admin-catalog-shell :is(
+  .crumb,.breadcrumb,.branch-v2-page__breadcrumb,
+  .service-editor__breadcrumb,.staff-detail__breadcrumb,.assign-crumb,
+  .order-admin__crumb,.create-order__breadcrumb,.return-detail__breadcrumb,
+  .voucher-editor__crumb,.staff-breadcrumb,.schedule-crumb
+) {
+  display:flex !important;
+  align-items:center !important;
+  flex-wrap:wrap;
+  gap:0 !important;
+  min-height:20px;
+  font:400 12px/20px Roboto,Arial,sans-serif !important;
+  color:#6b7a8f !important;
+}
+app-admin-catalog-shell :is(
+  .crumb,.breadcrumb,.branch-v2-page__breadcrumb,
+  .service-editor__breadcrumb,.staff-detail__breadcrumb,.assign-crumb,
+  .order-admin__crumb,.create-order__breadcrumb,.return-detail__breadcrumb,
+  .voucher-editor__crumb,.staff-breadcrumb,.schedule-crumb
+) > a {
+  color:#4d6f9d !important;
+  font:400 12px/20px Roboto,Arial,sans-serif !important;
+  text-decoration:none !important;
+  cursor:pointer;
+  transition:color .15s ease;
+}
+app-admin-catalog-shell :is(
+  .crumb,.breadcrumb,.branch-v2-page__breadcrumb,
+  .service-editor__breadcrumb,.staff-detail__breadcrumb,.assign-crumb,
+  .order-admin__crumb,.create-order__breadcrumb,.return-detail__breadcrumb,
+  .voucher-editor__crumb,.staff-breadcrumb,.schedule-crumb
+) > a:hover {
+  color:#0d47a1 !important;
+  text-decoration:underline !important;
+  text-underline-offset:3px;
+}
+app-admin-catalog-shell :is(
+  .crumb,.breadcrumb,.branch-v2-page__breadcrumb,
+  .service-editor__breadcrumb,.staff-detail__breadcrumb,.assign-crumb,
+  .order-admin__crumb,.create-order__breadcrumb,.return-detail__breadcrumb,
+  .voucher-editor__crumb,.staff-breadcrumb,.schedule-crumb
+) > a:focus-visible {
+  outline:2px solid #0d47a1;
+  outline-offset:3px;
+  border-radius:2px;
+}
+app-admin-catalog-shell :is(
+  .crumb,.breadcrumb,.branch-v2-page__breadcrumb,
+  .service-editor__breadcrumb,.staff-detail__breadcrumb,.assign-crumb,
+  .order-admin__crumb,.create-order__breadcrumb,.return-detail__breadcrumb,
+  .voucher-editor__crumb,.staff-breadcrumb,.schedule-crumb
+) > span[aria-hidden="true"] {
+  padding:0 9px !important;
+  color:#94a3b8 !important;
+  font-weight:400 !important;
+}
+app-admin-catalog-shell :is(
+  .crumb,.breadcrumb,.branch-v2-page__breadcrumb,
+  .service-editor__breadcrumb,.staff-detail__breadcrumb,.assign-crumb,
+  .order-admin__crumb,.create-order__breadcrumb,.return-detail__breadcrumb,
+  .voucher-editor__crumb,.staff-breadcrumb,.schedule-crumb
+) > :is(strong,[aria-current="page"]) {
+  padding:0 !important;
+  color:#0d47a1 !important;
+  font:600 12px/20px Roboto,Arial,sans-serif !important;
+}
+
+
+/* WEB2 — Create Product typography aligned with the other Admin edit forms.
+   Apply only within this screen; keep geometry, validators and variant logic. */
+app-admin-product-create-page .product-screen {
+  font-size: 13px;
+  line-height: 1.5;
+}
+app-admin-product-create-page .product-screen .page-head h1 {
+  font: 700 24px/30px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen .panel h2 {
+  font: 700 16px/22px Roboto, Arial, sans-serif;
+  min-height: 22px;
+}
+app-admin-product-create-page .product-screen .form-field {
+  font: 500 12px/18px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen .form-field > :is(.field-label, span:first-child) {
+  min-height: 18px;
+  line-height: 18px;
+  font-size: 12px;
+  font-weight: 600;
+}
+app-admin-product-create-page .product-screen .form-field :is(
+  input:not([type="radio"]), select, textarea
+) {
+  font: 400 13px/20px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen :is(input, textarea)::placeholder {
+  color: #71829b;
+  opacity: 1;
+  font: 400 13px/20px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen .radios label {
+  font: 400 13px/20px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen :is(
+  .head-buttons .btn-outline, .head-buttons .btn-primary, .variant-panel .add
+) {
+  font: 600 13px/20px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen :is(
+  .status-row, .upload, .price-summary
+) {
+  font-size: 13px;
+}
+app-admin-product-create-page .product-screen .upload small {
+  font-size: 11px;
+  line-height: 16px;
+}
+app-admin-product-create-page .product-screen .single-price-fields .field-label {
+  font-size: 12px;
+  line-height: 18px;
+}
+app-admin-product-create-page .product-screen .single-price-fields .currency-input > input[type="number"] {
+  font: 400 13px/20px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen .single-price-fields .calculated-price output {
+  font-size: 13px;
+}
+app-admin-product-create-page .product-screen .variant-panel table {
+  font-size: 12px;
+}
+app-admin-product-create-page .product-screen .variant-panel th {
+  font-size: 12px;
+  font-weight: 600;
+}
+app-admin-product-create-page .product-screen .variant-panel td {
+  font-size: 13px;
+}
+app-admin-product-create-page .product-screen .variant-panel td input {
+  font: 400 13px/20px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen .variant-panel .variant-currency-input > input[type="number"] {
+  font-size: 13px;
+}
+app-admin-product-create-page .product-screen .variant-panel :is(
+  .variant-price-output, .variant-unit
+) {
+  font-size: 13px;
+}
+
+
+/* WEB2 Product create/edit: remove legacy tall blank space in Basic Info.
+   Explicitly scoped, so these spacing rules do not affect other Admin modules. */
+app-admin-product-create-page .product-screen .basics {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 22px !important;
+}
+app-admin-product-create-page .product-screen .basics h2 {
+  margin-bottom: 18px !important;
+}
+app-admin-product-create-page .product-screen .basics .form-field {
+  margin-bottom: 15px;
+}
+app-admin-product-create-page .product-screen .basics > .product-type-usage-row {
+  margin-bottom: 14px;
+}
+app-admin-product-create-page .product-screen .basics > .product-type-usage-row .form-field,
+app-admin-product-create-page .product-screen .basics > .two-fields .form-field {
+  margin-bottom: 0;
+}
+app-admin-product-create-page .product-screen .basics > .two-fields {
+  margin-bottom: 0 !important;
+  align-items: start;
+}
+app-admin-product-create-page .product-screen .basics > .description {
+  margin: 16px 0 0 !important;
+}
+app-admin-product-create-page .product-screen .basics > .description textarea {
+  box-sizing: border-box;
+  height: 120px !important;
+  min-height: 100px;
+}
+
+/* Edit Product must use the same typography, vertical rhythm and compact
+   descriptive input as Create Product, while leaving the variant tools intact. */
+app-admin-product-edit-page .edit-page .page-heading h1 {
+  font: 700 24px/30px Roboto,Arial,sans-serif;
+}
+app-admin-product-edit-page .edit-page .panel h2 {
+  font: 700 16px/22px Roboto,Arial,sans-serif;
+}
+app-admin-product-edit-page .edit-page .basic-panel {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 22px;
+}
+app-admin-product-edit-page .edit-page .basic-panel h2 {
+  margin-bottom: 18px;
+}
+app-admin-product-edit-page .edit-page .form-field {
+  font: 500 12px/18px Roboto,Arial,sans-serif;
+}
+app-admin-product-edit-page .edit-page .form-field > span:first-child {
+  line-height: 18px;
+  font-weight: 600;
+}
+app-admin-product-edit-page .edit-page .form-field :is(
+  input:not([type="radio"]),select,textarea
+) {
+  font: 400 13px/20px Roboto,Arial,sans-serif;
+}
+app-admin-product-edit-page .edit-page .form-field :is(input,textarea)::placeholder {
+  font: 400 13px/20px Roboto,Arial,sans-serif;
+  color: #71829b;
+  opacity: 1;
+}
+app-admin-product-edit-page .edit-page .radios label {
+  font: 400 13px/20px Roboto,Arial,sans-serif;
+}
+app-admin-product-edit-page .edit-page .actions :is(.outline-btn,.primary-btn) {
+  font: 600 13px/20px Roboto,Arial,sans-serif;
+}
+app-admin-product-edit-page .edit-page .basic-panel > .form-field {
+  margin-bottom: 15px;
+}
+app-admin-product-edit-page .edit-page .basic-panel > .two-fields {
+  gap: 20px;
+  margin-bottom: 14px;
+}
+app-admin-product-edit-page .edit-page .basic-panel > .two-fields .form-field {
+  margin-bottom: 0;
+}
+app-admin-product-edit-page .edit-page .basic-panel > .form-field:last-child {
+  margin: 0 !important;
+}
+app-admin-product-edit-page .edit-page .basic-panel textarea {
+  box-sizing:border-box;
+  height:120px !important;
+  min-height:100px;
+}
+
+/* Product listing: STT column header and values share an exact center line. */
+app-admin-product-list-page .product-panel .table-scroll table :is(th,td):first-child {
+  text-align: center !important;
+  padding-inline: 0 !important;
+  vertical-align: middle !important;
+}
+
+
+/* Generated SKU is display-only text, not a large placeholder. */
+app-admin-product-create-page .product-screen .basics .form-field input.auto-generated-sku[readonly] {
+  background: #e5f6fd !important;
+  color: #26364a !important;
+  font: 400 13px/20px Roboto, Arial, sans-serif !important;
+  cursor: default;
+  caret-color: transparent;
+}
+
+
+/* WEB2 sidebar accordion.
+   Each Admin route creates a new sidebar shell: disable submenu transitions on
+   mounting/navigation, and enable them only for a user-triggered expand/collapse.
+   This prevents the previously visited group from "closing again" after a click
+   on a child in the newly expanded group. */
+app-admin-catalog-shell .catalog-sidebar__children {
+  display:flex;
+  max-height:360px;
+  opacity:1;
+  visibility:visible;
+  overflow:hidden;
+  transform:translateY(0);
+  transition:none;
+}
+app-admin-catalog-shell .catalog-sidebar__children[hidden] {
+  display:flex !important;
+  max-height:0;
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(-6px);
+  margin-bottom:0 !important;
+  padding-top:0 !important;
+  padding-bottom:0 !important;
+  pointer-events:none;
+  transition:none;
+}
+app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__children {
+  transition:max-height 300ms cubic-bezier(.2,.7,.2,1),
+    opacity 220ms ease,transform 300ms cubic-bezier(.2,.7,.2,1),
+    margin-bottom 300ms ease,padding 300ms ease,visibility 0s;
+}
+app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__children[hidden] {
+  transition:max-height 260ms ease-in-out,opacity 180ms ease,
+    transform 260ms ease-in-out,margin-bottom 260ms ease-in-out,
+    padding 260ms ease,visibility 0s linear 260ms;
+}
+/* Do not animate the parent's blue highlight when a routed child page
+   recreates this shell: it looks like the same parent flashes on each click.
+   Keep color easing only during an explicit group button interaction. */
+app-admin-catalog-shell .catalog-sidebar__group {
+  transition:none !important;
+}
+app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__group {
+  transition:background-color 200ms ease,color 200ms ease !important;
+}
+@media(prefers-reduced-motion:reduce) {
+  app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__children,
+  app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__children[hidden],
+  app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__group {
+    transition:none !important;
+  }
+}

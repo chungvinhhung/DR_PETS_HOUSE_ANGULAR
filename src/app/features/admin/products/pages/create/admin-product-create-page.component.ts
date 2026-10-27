@@ -57,6 +57,8 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
   categoryId = '';
   usageType = '';
   description = '';
+  // Product type invariant: SIMPLE = 1 SKU, VARIANT = at least 2 SKUs.
+  readonly minVariantCount = 2;
   hasVariants = true;
   active = false;
   // Only show previews for photos that the user has actually uploaded.
@@ -73,7 +75,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
   private leaveResolver: ((confirmed: boolean) => void) | null = null;
 
   // No demonstration SKU/price data should be accidentally saved.
-  variants: VariantDraft[] = [this.newVariant()];
+  variants: VariantDraft[] = Array.from({ length: this.minVariantCount }, () => this.newVariant());
 
   private nextImageId = 1;
   private readonly maxImageCount = 10;
@@ -155,16 +157,18 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     this.hasVariants = value;
     this.active = false;
     this.variants = value
-      ? [this.newVariant()]
+      ? Array.from({ length: this.minVariantCount }, () => this.newVariant())
       : [this.newVariant('Mặc định')];
   }
 
   addVariant(): void {
+    if (!this.hasVariants || this.saving) return;
     this.variants.push(this.newVariant());
   }
 
   removeVariant(index: number): void {
-    if (this.variants.length <= 1) return;
+    if (!this.hasVariants || this.saving || this.variants.length <= this.minVariantCount ||
+        index < 0 || index >= this.variants.length) return;
     const removed = this.variants.splice(index, 1)[0];
     if (removed) this.releaseVariantImage(removed);
     this.active = this.variants.some(v => v.active);
@@ -307,11 +311,12 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Do not treat an untouched form as dirty, including its default empty variant row. */
+  /** Do not treat the initial two empty variant rows as unsaved changes. */
   hasUnsavedChanges(): boolean {
     if (this.createdProductId) return false;
     if (this.productName.trim() || this.categoryId || this.usageType || this.description.trim()) return true;
-    if (this.images.length || this.active || !this.hasVariants || this.variants.length !== 1) return true;
+    if (this.images.length || this.active || !this.hasVariants ||
+        this.variants.length !== this.minVariantCount) return true;
     return this.variants.some(v =>
       !!v.label.trim() || !!v.sku.trim() || Number(v.price) !== 0 ||
       Number(v.discount) !== 0 || v.active || !!v.imageFile,
@@ -360,7 +365,12 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.variants.length || this.variants.some(v =>
+    if (this.hasVariants ? this.variants.length < this.minVariantCount : this.variants.length !== 1) {
+      this.feedback = 'Sản phẩm có biến thể phải có ít nhất 2 biến thể; sản phẩm không có biến thể chỉ có 1 SKU.';
+      return;
+    }
+
+    if (this.variants.some(v =>
       (this.hasVariants && !v.label.trim()) ||
       v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) <= 0 ||
       v.discount == null || !Number.isFinite(Number(v.discount)) || Number(v.discount) < 0 || Number(v.discount) > 100

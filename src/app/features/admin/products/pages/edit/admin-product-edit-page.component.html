@@ -1,7 +1,7 @@
 <app-admin-catalog-shell activeItem="products">
 <main class="edit-page">
   <header class="page-heading">
-    <div><p class="breadcrumb"><a routerLink="/admin/products" [queryParams]="archivedReturnQuery">Sản phẩm</a> <span>›</span> Chỉnh sửa sản phẩm</p><h1>Chỉnh sửa sản phẩm</h1></div>
+    <div><p class="breadcrumb" aria-label="Đường dẫn"><a routerLink="/admin/products" [queryParams]="archivedReturnQuery">Sản phẩm</a><span aria-hidden="true">›</span><span aria-current="page">Chỉnh sửa sản phẩm</span></p><h1>Chỉnh sửa sản phẩm</h1></div>
     <div class="actions"><a class="outline-btn" routerLink="/admin/products" [queryParams]="archivedReturnQuery">Hủy bỏ</a>@if (product()?.status === 'ARCHIVED') {<button class="primary-btn" type="button" (click)="requestRestore()" [disabled]="saving()">Khôi phục sản phẩm</button>}<button class="primary-btn" type="button" (click)="save()" [disabled]="loading() || saving() || !product() || product()?.status === 'ARCHIVED' || !hasUnsavedChanges()"><img class="action-icon" src="/assets/admin-product/icon-save.svg" alt="">{{ saving() ? 'Đang lưu...' : 'Lưu sản phẩm' }}</button></div>
   </header>
   

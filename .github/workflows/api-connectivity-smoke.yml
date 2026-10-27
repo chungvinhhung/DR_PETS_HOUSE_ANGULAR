@@ -1,0 +1,47 @@
+name: API Connectivity Smoke
+on:
+  push:
+    branches:
+      - feature/admin-order-management-phase1
+    paths:
+      - '.github/workflows/api-connectivity-smoke.yml'
+      - 'src/environments/**'
+      - 'src/app/features/admin/orders/**'
+      - 'src/app/features/admin/vouchers/**'
+      - 'src/app/features/admin/staff/services/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-endpoint-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Test DNS, HTTPS and CORS without credentials
+        shell: bash
+        run: |
+          set +e
+          for domain in api.drpetshouse.lat pet-clinic-backend-a4lj.onrender.com; do
+            echo "::group::PROBE $domain"
+            echo 'DNS IPv4:'
+            getent ahostsv4 "$domain" | head -2 || true
+            for path in /health /api/v1/health /api/v1/orders /api/v1/vouchers; do
+              printf 'GET %s => ' "$path"
+              curl --silent --output /dev/null --max-time 16 --connect-timeout 7 \
+                --write-out 'http=%{http_code} ip=%{remote_ip} total=%{time_total}s\n' \
+                "https://$domain$path"
+              echo "curl_exit=${PIPESTATUS[0]}"
+            done
+            echo 'CORS preflight POST /api/v1/auth/login:'
+            curl --silent --show-error --output /dev/null --max-time 16 --connect-timeout 7 \
+              --request OPTIONS \
+              --header 'Origin: http://localhost:3001' \
+              --header 'Access-Control-Request-Method: POST' \
+              --header 'Access-Control-Request-Headers: content-type' \
+              --dump-header /tmp/cors-head.txt \
+              "https://$domain/api/v1/auth/login"
+            grep -iE '^(HTTP/|access-control-allow-origin:|access-control-allow-methods:|access-control-allow-headers:|access-control-allow-credentials:)' /tmp/cors-head.txt || true
+            echo "::endgroup::"
+          done

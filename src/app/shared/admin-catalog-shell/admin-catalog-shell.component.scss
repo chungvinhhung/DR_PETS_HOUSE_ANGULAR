@@ -378,3 +378,13 @@
 .catalog-sidebar__children a.catalog-sidebar__sub.catalog-sidebar__sub--active:hover {
   background: #d4ebf9;
 }
+
+/* Pending return counters: shared by Sales section and Orders entry. */
+.catalog-sidebar__return-badge{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
+ min-width:21px;height:21px;padding:0 6px;border-radius:999px;background:#0d47a1;color:#fff;
+ font-size:12px;font-weight:700;line-height:1}
+.catalog-sidebar__group .catalog-sidebar__return-badge{background:#fff;color:#0d47a1}
+.catalog-sidebar__sub .catalog-sidebar__return-badge{margin-left:auto}
+.catalog-sidebar__group .catalog-sidebar__return-badge{margin-left:auto}
+.catalog-sidebar__group:has(.catalog-sidebar__return-badge) .catalog-sidebar__group-chevron{margin-left:0}
+

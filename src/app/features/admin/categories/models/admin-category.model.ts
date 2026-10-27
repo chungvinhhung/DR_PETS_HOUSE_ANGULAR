@@ -6,6 +6,8 @@ export interface AdminCategory {
   slug: string;
   parentId: string | null;
   status: CategoryStatus;
+  /** Optional until BE Category DTO exposes persisted creation time. */
+  createdAt?: string;
 }
 
 export interface CategoryPageResponse {

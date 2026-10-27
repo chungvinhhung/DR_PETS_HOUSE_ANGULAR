@@ -1,0 +1,242 @@
+<app-admin-catalog-shell activeItem="vouchers">
+  <main class="voucher-editor">
+    <nav class="voucher-editor__crumb" aria-label="Đường dẫn">
+      <a routerLink="/admin/vouchers">Khuyến mãi</a><span aria-hidden="true">›</span>
+      <span>{{ mode === 'create' ? 'Tạo voucher' : mode === 'edit' ? 'Chỉnh sửa voucher' : 'Chi tiết voucher' }}</span>
+    </nav>
+    <header class="voucher-editor__heading">
+      <h1>{{ mode === 'create' ? 'Tạo voucher' : mode === 'edit' ? 'Chỉnh sửa voucher ' + (original()?.code || '') : 'Chi tiết voucher ' + (original()?.code || '') }}</h1>
+      <div class="voucher-editor__heading-actions">
+        @if (mode === 'view' && canWrite() && original(); as voucher) {
+          <button type="button" class="voucher-editor__button voucher-editor__button--outline"
+            (click)="openDisableDialog()" [disabled]="saving()">
+            {{ voucher.status === 'ACTIVE' ? 'Tắt voucher' : 'Bật voucher' }}
+          </button>
+          <a class="voucher-editor__button voucher-editor__button--primary"
+            [routerLink]="['/admin/vouchers',voucher.id,'edit']">Chỉnh sửa</a>
+        } @else if (mode !== 'view') {
+          <button type="button" class="voucher-editor__button voucher-editor__button--outline"
+            [disabled]="saving()" (click)="cancel()">Hủy</button>
+          @if (canWrite()) {
+            <button type="button" class="voucher-editor__button voucher-editor__button--primary"
+              [disabled]="saving() || loading()" (click)="save()">{{ saving() ? 'Đang lưu...' : mode === 'create' ? 'Lưu voucher' : 'Lưu thay đổi' }}</button>
+          }
+        }
+      </div>
+    </header>
+
+    @if (loading()) {
+      <section class="voucher-editor__panel" role="status">Đang tải thông tin voucher...</section>
+    } @else if (error()) {
+      <section class="voucher-editor__panel voucher-editor__error" role="alert">
+        <p>{{ error() }}</p><button class="voucher-editor__button" type="button" (click)="retry()">Thử lại</button>
+      </section>
+    } @else if (mode === 'view') {
+      @if (original(); as voucher) {
+        <section class="voucher-editor__panel">
+          <h2>Thông tin voucher</h2>
+          <div class="voucher-editor__summary">
+            <div><span>Mã</span><strong>{{ voucher.code }}</strong></div>
+            <div><span>Tên</span><strong>{{ voucher.name }}</strong></div>
+            <div><span>Phạm vi áp dụng</span><strong>{{ scopeLabels[voucher.scope] }}</strong></div>
+            <div><span>Trạng thái quản lý</span><strong><span class="voucher-editor__badge" [attr.data-status]="voucher.status">{{ voucher.status === 'ACTIVE' ? 'Đang bật' : 'Đã tắt' }}</span></strong></div>
+            <div><span>Hiệu lực</span><strong>{{ when(voucher.effectiveFrom) }} – {{ when(voucher.effectiveTo) }}</strong></div>
+            <div><span>Ngày tạo</span><strong>{{ when(voucher.createdAt) }}</strong></div>
+          </div>
+        </section>
+        <div class="voucher-editor__detail-grid">
+        <section class="voucher-editor__panel">
+          <h2>Điều kiện áp dụng</h2>
+          <div class="voucher-editor__summary">
+            <div><span>Loại ưu đãi</span><strong>{{ discountTypeLabels[voucher.discountType] }}</strong></div>
+            <div><span>Mức giảm</span><strong>{{ offer(voucher) }}</strong></div>
+            <div><span>Giao dịch tối thiểu</span><strong>{{ voucher.minOrderAmount == null ? 'BE chưa cung cấp' : money(voucher.minOrderAmount) }}</strong></div>
+            <div><span>Giảm tối đa</span><strong>{{ voucher.maxDiscountAmount == null ? 'BE chưa cung cấp' : money(voucher.maxDiscountAmount) }}</strong></div>
+          </div>
+        </section>
+        <section class="voucher-editor__panel">
+          <h2>Lượt sử dụng</h2>
+          <div class="voucher-editor__summary voucher-editor__summary--usage">
+            <div><span>Tổng lượt cho phép</span><strong>{{ voucher.quota }}</strong></div>
+            <div><span>Đã sử dụng</span><strong>{{ voucher.usedCount }}</strong></div>
+            <div><span>Còn lại</span><strong>{{ remaining() }}</strong></div>
+          </div>
+          <div class="voucher-editor__progress" role="progressbar" [attr.aria-valuenow]="voucher.usedCount" [attr.aria-valuemax]="voucher.quota" aria-valuemin="0">
+            <span [style.width.%]="percentage()"></span>
+          </div>
+          <p class="voucher-editor__muted">Đã sử dụng {{ percentage() }}% · {{ voucher.usedCount }} / {{ voucher.quota }} lượt</p>
+        </section>
+        </div>
+      }
+    } @else {
+      <section class="voucher-editor__panel">
+        <h2>Thông tin chương trình</h2>
+        <div class="voucher-editor__fields voucher-editor__program-fields">
+          <label>Mã voucher <span class="voucher-editor__required">*</span>
+            <input #codeField type="text" required maxlength="40" [value]="form().code"
+              (input)="change('code',codeField.value)" placeholder="Ví dụ: PET10" [disabled]="!allowEditing()">
+          </label>
+          <label>Tên chương trình <span class="voucher-editor__required">*</span>
+            <input #nameField type="text" required maxlength="120" [value]="form().name"
+              (input)="change('name',nameField.value)" placeholder="Ưu đãi tháng 10" [disabled]="!allowEditing()">
+          </label>
+          <label class="voucher-editor__status-control">
+            <span class="voucher-editor__field-caption">Trạng thái voucher</span>
+            <span class="voucher-editor__switch-row">
+              <span class="voucher-editor__switch">
+                <input #statusField type="checkbox" role="switch"
+                  [checked]="form().status === 'ACTIVE'"
+                  (change)="change('status',statusField.checked ? 'ACTIVE' : 'INACTIVE')"
+                  [disabled]="!allowEditing()"
+                  [attr.aria-checked]="form().status === 'ACTIVE'">
+                <span class="voucher-editor__switch-track" aria-hidden="true"></span>
+              </span>
+              <span class="voucher-editor__switch-text">{{ form().status === 'ACTIVE' ? 'Đang hoạt động' : 'Đã tắt' }}</span>
+            </span>
+          </label>
+          <label class="voucher-editor__fields--full">Mô tả
+            <textarea rows="2" readonly
+              placeholder="Nhập mô tả chương trình"
+              title="Trường mô tả hiện chưa được Backend hỗ trợ lưu"></textarea>
+          </label>
+        </div>
+      </section>
+      <div class="voucher-editor__create-grid">
+      <section class="voucher-editor__panel">
+        <h2>Ưu đãi &amp; phạm vi</h2>
+        <div class="voucher-editor__fields voucher-editor__offer-fields">
+          <label class="voucher-editor__fields--full">Phạm vi áp dụng <span class="voucher-editor__required">*</span>
+            <select #scopeField [value]="form().scope" (change)="change('scope',scopeField.value === 'PRODUCT' ? 'PRODUCT' : scopeField.value === 'SERVICE' ? 'SERVICE' : 'ORDER')" [disabled]="!allowEditing()">
+              <option value="ORDER">Tất cả giao dịch</option>
+              <option value="PRODUCT">Đơn mua hàng</option>
+              <option value="SERVICE">Đơn dịch vụ</option>
+            </select>
+          </label>
+          <fieldset class="voucher-editor__discount-options" [disabled]="!allowEditing()">
+            <legend>Loại ưu đãi <span class="voucher-editor__required">*</span></legend>
+            <label><input type="radio" name="voucherDiscountType" [checked]="form().discountType === 'PERCENTAGE'"
+              (change)="change('discountType','PERCENTAGE')"><span class="voucher-editor__radio-text">Theo phần trăm</span></label>
+            <label><input type="radio" name="voucherDiscountType" [checked]="form().discountType === 'FIXED'"
+              (change)="change('discountType','FIXED')"><span class="voucher-editor__radio-text">Tiền cố định</span></label>
+          </fieldset>
+          <label>Giá trị ưu đãi <span class="voucher-editor__required">*</span>
+            <div class="voucher-editor__input-suffix">
+              <input #valueField type="number" min="0" [max]="form().discountType === 'PERCENTAGE' ? 100 : null" [value]="form().discountValue"
+                (input)="change('discountValue',valueField.value)" [disabled]="!allowEditing()" placeholder="0">
+              <span>{{ form().discountType === 'PERCENTAGE' ? '%' : 'đ' }}</span>
+            </div>
+          </label>
+          <label>Giá trị đơn tối thiểu
+            <div class="voucher-editor__input-suffix">
+              <input #minField type="number" min="0" [value]="form().minOrderAmount" (input)="change('minOrderAmount',minField.value)"
+                [disabled]="mode !== 'create' || !allowEditing()" placeholder="0">
+              <span>đ</span>
+            </div>
+          </label>
+          <div class="voucher-editor__max-field">
+            <label for="voucher-maximum-discount">Mức giảm tối đa</label>
+            <div class="voucher-editor__input-suffix">
+              <input id="voucher-maximum-discount" #maxField type="number" min="0"
+                [value]="form().maxDiscountAmount" (input)="change('maxDiscountAmount',maxField.value)"
+                [disabled]="mode !== 'create' || form().discountType === 'FIXED' || maxDiscountUnlimited() || !allowEditing()"
+                placeholder="50.000">
+              <span>đ</span>
+            </div>
+            @if (form().discountType === 'PERCENTAGE') {
+              <label class="voucher-editor__checkbox-line">
+                <input #noMaxDiscount type="checkbox" [checked]="maxDiscountUnlimited()"
+                  (change)="toggleMaxDiscountUnlimited(noMaxDiscount.checked)"
+                  [disabled]="mode !== 'create' || !allowEditing()">
+                Không giới hạn mức giảm
+              </label>
+            }
+          </div>
+        </div>
+      </section>
+      <section class="voucher-editor__panel">
+        <h2>Thời gian &amp; giới hạn</h2>
+        <div class="voucher-editor__fields voucher-editor__time-fields">
+          <label>Ngày bắt đầu <span class="voucher-editor__required">*</span>
+            <input #fromDate type="date" [value]="form().fromDate" (change)="change('fromDate',fromDate.value)" [disabled]="!allowEditing()">
+          </label>
+          <label>Giờ bắt đầu <span class="voucher-editor__required">*</span>
+            <input #fromTime type="time" [value]="form().fromTime" (change)="change('fromTime',fromTime.value)" [disabled]="!allowEditing()">
+          </label>
+          <label>Ngày kết thúc <span class="voucher-editor__required">*</span>
+            <input #toDate type="date" [value]="form().toDate" (change)="change('toDate',toDate.value)" [disabled]="!allowEditing()">
+          </label>
+          <label>Giờ kết thúc <span class="voucher-editor__required">*</span>
+            <input #toTime type="time" [value]="form().toTime" (change)="change('toTime',toTime.value)" [disabled]="!allowEditing()">
+          </label>
+          <div class="voucher-editor__quota-field voucher-editor__fields--full">
+            <div class="voucher-editor__field-caption">Giới hạn lượt sử dụng</div>
+            <div class="voucher-editor__quota-controls">
+              <label class="voucher-editor__checkbox-line" title="Backend hiện chưa hỗ trợ giới hạn lượt sử dụng không giới hạn">
+                <input type="checkbox" disabled>
+                Không giới hạn lượt sử dụng
+              </label>
+              <div class="voucher-editor__input-suffix">
+                <input #quotaField type="number" min="1" step="1" [value]="form().quota"
+                  (input)="change('quota',quotaField.value)" [disabled]="!allowEditing()" placeholder="100"
+                  aria-label="Giới hạn số lượt sử dụng">
+                <span>lượt</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      </div>
+      @if (validation()) {
+        <div class="voucher-editor__validation" role="alert">{{ validation() }}</div>
+      }
+      @if (!canWrite()) {
+        <p class="voucher-editor__muted">Chỉ Quản trị viên được phép tạo hoặc chỉnh sửa voucher.</p>
+      }
+    }
+
+    @if (leaveDialogOpen()) {
+      <div class="voucher-editor__overlay voucher-editor__leave-overlay" (click)="resolveLeave(false)">
+        <section class="voucher-editor__dialog voucher-editor__leave-dialog" role="dialog"
+          aria-modal="true" aria-labelledby="voucher-leave-title"
+          aria-describedby="voucher-leave-description" (click)="$event.stopPropagation()">
+          <div class="voucher-editor__leave-head">
+            <div>
+              <h2 id="voucher-leave-title">Rời khỏi trang {{ mode === 'create' ? 'tạo voucher' : 'chỉnh sửa voucher' }}?</h2>
+              <p id="voucher-leave-description">Thông tin bạn vừa thay đổi chưa được lưu. Bạn có muốn rời khỏi trang?</p>
+            </div>
+            <button class="voucher-editor__leave-close" type="button" aria-label="Đóng thông báo"
+              (click)="resolveLeave(false)">×</button>
+          </div>
+          <div class="voucher-editor__leave-actions">
+            <button class="voucher-editor__button voucher-editor__button--outline"
+              type="button" (click)="resolveLeave(false)">Ở lại trang</button>
+            <button class="voucher-editor__button voucher-editor__button--primary"
+              type="button" (click)="resolveLeave(true)">Rời trang</button>
+          </div>
+        </section>
+      </div>
+    }
+
+    @if (disableDialog() && original(); as voucher) {
+      <div class="voucher-editor__overlay" (click)="closeDisableDialog()">
+        <section class="voucher-editor__dialog" role="dialog" aria-modal="true" aria-label="Xác nhận trạng thái voucher" (click)="$event.stopPropagation()">
+          <h2>{{ voucher.status === 'ACTIVE' ? 'Tắt voucher ' : 'Bật voucher ' }}{{ voucher.code }}</h2>
+          <p>{{ voucher.status === 'ACTIVE' ? 'Voucher sẽ ngừng được áp dụng cho những giao dịch mới.' : 'Voucher sẽ có thể được áp dụng lại nếu còn hạn và còn lượt.' }}</p>
+          <div class="voucher-editor__notice">
+            <strong>Lưu ý nghiệp vụ</strong>
+            <p>Thao tác này chỉ cập nhật trạng thái quản lý; không thay đổi số lượt đã sử dụng hoặc hoàn quota.</p>
+          </div>
+          <label>Ghi chú
+            <textarea rows="2" disabled placeholder="Chưa hỗ trợ ghi chú trên Backend"></textarea>
+            <small>Trường này được khóa để tránh nhập lý do mà hệ thống không lưu được.</small>
+          </label>
+          <div class="voucher-editor__dialog-actions">
+            <button class="voucher-editor__button voucher-editor__button--outline" type="button" [disabled]="saving()" (click)="closeDisableDialog()">Quay lại</button>
+            <button class="voucher-editor__button voucher-editor__button--primary" type="button" [disabled]="saving()"
+              (click)="toggleStatus()">{{ saving() ? 'Đang xử lý...' : voucher.status === 'ACTIVE' ? 'Tắt voucher' : 'Bật voucher' }}</button>
+          </div>
+        </section>
+      </div>
+    }
+  </main>
+</app-admin-catalog-shell>

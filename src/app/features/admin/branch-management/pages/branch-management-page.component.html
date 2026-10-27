@@ -18,13 +18,14 @@
       @if (!isAdmin && visibleBranches.length === 0 && !branchListLoading()) {
         <p class="branch-v2-page__notice">Không tìm thấy chi nhánh được phân quyền cho tài khoản này trong phiên đăng nhập.</p>
       }
-      <section class="branch-v2-page__filters" aria-label="Bộ lọc chi nhánh">
+      <section class="branch-v2-page__filters web2-filterbar" aria-label="Bộ lọc chi nhánh">
         <label class="branch-v2-page__search">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.2 4.2"/></svg>
           <span class="branch-v2-page__sr">Tìm chi nhánh</span>
           <input #branchSearchInput type="search" placeholder="Tìm chi nhánh..."
             [value]="search()" (input)="updateSearch(branchSearchInput.value)" />
         </label>
+        <div class="branch-v2-page__filter-actions">
         <label class="branch-v2-page__status-filter">
           <span class="branch-v2-page__sr">Trạng thái chi nhánh</span>
           <select #branchStatusInput [value]="branchStatus()" (change)="updateBranchStatus(branchStatusInput.value)">
@@ -35,9 +36,10 @@
           <img class="branch-v2-page__filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" width="18" height="18" alt="" aria-hidden="true" />
         </label>
         @if (isAdmin) {
-          <button type="button" class="branch-v2-page__btn branch-v2-page__btn--primary branch-v2-page__add"
-            (click)="openCreateBranch()">+ Thêm chi nhánh</button>
+          <button type="button" class="branch-v2-page__btn branch-v2-page__btn--primary branch-v2-page__add web2-add-button"
+            (click)="openCreateBranch()"><span class="web2-add-icon" aria-hidden="true">+</span><span>Thêm chi nhánh</span></button>
         }
+        </div>
       </section>
       <section class="branch-v2-page__table-card" aria-label="Danh sách chi nhánh">
         <div class="branch-v2-page__table-scroll">
@@ -45,8 +47,8 @@
             <thead><tr>
               <th scope="col">Chi nhánh</th>
               <th scope="col">Địa chỉ</th>
-              <th scope="col">Hotline</th>
-              <th scope="col">Dịch vụ đang bật</th>
+              <th scope="col" class="web2-cell-center">Hotline</th>
+              <th scope="col" class="web2-cell-center">Dịch vụ đang bật</th>
               <th scope="col">Trạng thái</th>
               <th scope="col" class="branch-v2-page__actions-heading">Thao tác</th>
             </tr></thead>
@@ -62,8 +64,8 @@
                 <tr>
                   <td>{{ item.name }}</td>
                   <td class="branch-v2-page__secondary">{{ item.address }}</td>
-                  <td class="branch-v2-page__secondary">{{ item.hotline || '—' }}</td>
-                  <td class="branch-v2-page__secondary">{{ item.enabledServiceCount === null ? '—' : item.enabledServiceCount + ' dịch vụ' }}</td>
+                  <td class="branch-v2-page__secondary web2-cell-center">{{ item.hotline || '—' }}</td>
+                  <td class="branch-v2-page__secondary web2-cell-center">{{ item.enabledServiceCount === null ? '—' : item.enabledServiceCount + ' dịch vụ' }}</td>
                   <td><span class="branch-v2-page__badge"
                     [class.branch-v2-page__badge--off]="item.status !== 'ACTIVE'">
                     {{ item.status === 'ACTIVE' ? 'Hoạt động' : 'Ngừng hoạt động' }}
@@ -94,7 +96,7 @@
           <nav aria-label="Phân trang chi nhánh">
             <button type="button" aria-label="Trang trước" [disabled]="listPage() === 1"
               (click)="changePage(listPage() - 1)">‹</button>
-            @for (index of [1, 2, 3, 4, 5]; track index) {
+            @for (index of visiblePageNumbers; track index) {
               @if (index <= pageCount) {
                 <button type="button" [class.branch-v2-page__page--active]="index === listPage()"
                   [attr.aria-current]="index === listPage() ? 'page' : null" (click)="changePage(index)">{{ index }}</button>

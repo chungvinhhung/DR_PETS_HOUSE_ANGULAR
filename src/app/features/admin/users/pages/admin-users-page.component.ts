@@ -220,7 +220,10 @@ import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagi
             <nav aria-label="Phân trang tài khoản">
               <button type="button" aria-label="Trang trước"
                 [disabled]="page() === 1" (click)="goToPage(page() - 1)">‹</button>
-              <span aria-current="page">{{ page() }}</span>
+              @for (number of visiblePageNumbers; track number) {
+                <button type="button" class="users-page-number" [attr.aria-current]="page() === number ? 'page' : null"
+                  [disabled]="loading()" (click)="goToPage(number)">{{ number }}</button>
+              }
               <button type="button" aria-label="Trang tiếp"
                 [disabled]="page() >= pageCount" (click)="goToPage(page() + 1)">›</button>
             </nav>
@@ -561,6 +564,12 @@ export class AdminUsersPageComponent {
 
   get pageCount(): number {
     return Math.max(1, Math.ceil(this.total() / this.pageSize));
+  }
+  get visiblePageNumbers(): number[] {
+    const total = this.pageCount;
+    const current = this.page();
+    const start = Math.max(1, Math.min(current - 1, total - 2));
+    return Array.from({length: Math.min(3, total)}, (_, i) => start + i);
   }
 
   goToPage(target: number): void {

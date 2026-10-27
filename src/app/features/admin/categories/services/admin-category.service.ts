@@ -13,6 +13,8 @@ import {
 export interface CategoryQuery {
   q?: string;
   status?: CategoryStatus;
+  /** 'null' selects root categories; category ID selects direct children. */
+  parentId?: string;
   limit?: number;
   cursor?: string | null;
 }
@@ -25,6 +27,7 @@ export class AdminCategoryService {
     let params = new HttpParams().set('limit', String(query.limit ?? 20));
     if (query.q?.trim()) params = params.set('q', query.q.trim());
     if (query.status) params = params.set('status', query.status);
+    if (query.parentId !== undefined) params = params.set('parentId', query.parentId);
     if (query.cursor) params = params.set('cursor', query.cursor);
     return this.api.get<CategoryPageResponse>('/categories', { params });
   }

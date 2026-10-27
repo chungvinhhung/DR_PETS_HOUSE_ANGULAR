@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize } from 'rxjs';
+import { catchError, finalize, forkJoin, map, of } from 'rxjs';
 
 import {
   AdminCategory,
@@ -19,6 +19,7 @@ import {
   SaveCategoryRequest,
 } from '../models/admin-category.model';
 import { AdminCategoryService } from '../services/admin-category.service';
+import { AdminProductService } from '../../products/services/admin-product.service';
 import { ADMIN_TABLE_PAGE_SIZE, countCursorItems } from '../../../../shared/utils/admin-table-pagination';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 
@@ -32,11 +33,14 @@ import { AdminToastService } from '../../../../shared/services/admin-toast.servi
 })
 export class AdminCategoryPageComponent implements OnInit {
   private readonly categoryService = inject(AdminCategoryService);
+  private readonly productService = inject(AdminProductService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly pageSize = ADMIN_TABLE_PAGE_SIZE;
   readonly categories = signal<AdminCategory[]>([]);
   readonly parentOptions = signal<AdminCategory[]>([]);
+  /** Null means the count could not be loaded; never confuse it with zero. */
+  readonly productCounts = signal<Record<string, number | null>>({});
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly nextCursor = signal<string | null>(null);
@@ -52,6 +56,7 @@ export class AdminCategoryPageComponent implements OnInit {
 
   searchTerm = '';
   statusFilter: 'ALL' | CategoryStatus = 'ALL';
+  parentFilter = 'ALL';
   formName = '';
   formSlug = '';
   formParentId = '';
@@ -64,12 +69,34 @@ export class AdminCategoryPageComponent implements OnInit {
   private countRequested = false;
   private loadSequence = 0;
 
+  /** Only categories that have children are listed as parent filter choices. */
+  get parentFilterOptions(): AdminCategory[] {
+    const options = this.parentOptions();
+    const usedParentIds = new Set(options.map(item => item.parentId).filter((id): id is string => !!id));
+    return options.filter(item => usedParentIds.has(item.id));
+  }
+
   get hasPreviousPage(): boolean {
     return this.cursorStack.length > 0;
   }
 
   get pageNumber(): number {
     return this.cursorStack.length + 1;
+  }
+  get visiblePageNumbers(): number[] {
+    const current = this.pageNumber;
+    const from = Math.max(1, current - 2);
+    const end = current + (this.nextCursor() ? 1 : 0);
+    return Array.from({length: end - from + 1}, (_, i) => from + i);
+  }
+  goToPage(target: number): void {
+    if (!Number.isSafeInteger(target) || target < 1 || this.loading()) return;
+    if (target === this.pageNumber) return;
+    if (target === this.pageNumber + 1) { this.nextPage(); return; }
+    if (target > this.cursorStack.length) return;
+    const cursor = this.cursorStack[target - 1] ?? null;
+    this.cursorStack = this.cursorStack.slice(0, target - 1);
+    this.loadPage(cursor);
   }
 
   ngOnInit(): void {
@@ -96,6 +123,7 @@ export class AdminCategoryPageComponent implements OnInit {
     this.categoryService.listCategories({
       q: this.searchTerm,
       status: this.statusFilter === 'ALL' ? undefined : this.statusFilter,
+      parentId: this.parentFilter === 'ALL' ? undefined : this.parentFilter === 'ROOT' ? 'null' : this.parentFilter,
       limit: this.pageSize,
       cursor,
     }).pipe(
@@ -114,6 +142,8 @@ export class AdminCategoryPageComponent implements OnInit {
           this.countDisplayedCategories();
         }
         this.categories.set(response.items);
+        this.productCounts.set({});
+        this.loadProductCounts(response.items, serial);
         this.nextCursor.set(response.nextCursor);
         this.currentCursor = cursor;
       },
@@ -130,8 +160,9 @@ export class AdminCategoryPageComponent implements OnInit {
     const generation = this.countGeneration;
     const q = this.searchTerm;
     const status = this.statusFilter === 'ALL' ? undefined : this.statusFilter;
+    const parentId = this.parentFilter === 'ALL' ? undefined : this.parentFilter === 'ROOT' ? 'null' : this.parentFilter;
     void countCursorItems(
-      (cursor) => this.categoryService.listCategories({ q, status, limit: 100, cursor }),
+      (cursor) => this.categoryService.listCategories({ q, status, parentId, limit: 100, cursor }),
     ).then((total) => {
       if (generation === this.countGeneration && total !== null) {
         this.totalCategories.set(total);
@@ -164,6 +195,30 @@ export class AdminCategoryPageComponent implements OnInit {
     if (!this.cursorStack.length || this.loading()) return;
     const cursor = this.cursorStack.pop() ?? null;
     this.loadPage(cursor);
+  }
+
+  /** Product counts reflect non-archived products as defined by the Product API. */
+  private loadProductCounts(items: AdminCategory[], serial: number): void {
+    if (!items.length) return;
+    forkJoin(items.map(category => this.productService.listProducts({ categoryId: category.id, limit: 1 }).pipe(
+      map(response => ({ id: category.id, count: response.totalItems ?? response.totalCount ?? response.total ?? null })),
+      catchError(() => of({ id: category.id, count: null })),
+    ))).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(results => {
+      if (serial !== this.loadSequence) return;
+      this.productCounts.set(Object.fromEntries(results.map(result => [result.id, result.count])));
+    });
+  }
+
+  categoryCreatedAt(iso?: string): string {
+    if (!iso) return '—';
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime()) ? '—' : new Intl.DateTimeFormat('vi-VN').format(date);
+  }
+
+  categoryProductCount(id: string): string {
+    const counts = this.productCounts();
+    if (!Object.prototype.hasOwnProperty.call(counts, id)) return '…';
+    return counts[id] === null ? '—' : String(counts[id]);
   }
 
   parentName(parentId: string | null): string {

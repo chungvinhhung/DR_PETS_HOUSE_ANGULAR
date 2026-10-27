@@ -11,16 +11,16 @@
     </nav>
 
     <section class="product-panel" aria-label="Danh sách sản phẩm">
-      <div class="toolbar">
-        <label class="search">
+      <div class="toolbar web2-management-toolbar web2-filterbar">
+        <label class="search web2-management-search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.2 4.2"/></svg>
           <input type="search" [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput($event)" (keyup.enter)="applyFilters()" placeholder="Tìm kiếm tên sản phẩm hoặc SKU..." aria-label="Tìm sản phẩm theo tên hoặc SKU">
         </label>
-        <div class="toolbar-actions">
-          <button class="outline-btn filter-trigger" type="button" [attr.aria-expanded]="filterOpen" aria-controls="product-filters" (click)="filterOpen = !filterOpen">
+        <div class="toolbar-actions web2-management-actions">
+          <button class="outline-btn filter-trigger web2-management-filter-button" type="button" [attr.aria-expanded]="filterOpen" aria-controls="product-filters" (click)="filterOpen = !filterOpen">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 5h16l-6.5 7.5V19l-3 1.5v-8L4 5z"/></svg>Bộ lọc
           </button>
-          <a class="primary-btn" routerLink="/admin/products/new"><span aria-hidden="true">＋</span> Thêm sản phẩm</a>
+          <a class="primary-btn web2-add-button" routerLink="/admin/products/new"><span class="web2-add-icon" aria-hidden="true">+</span><span>Thêm sản phẩm</span></a>
         </div>
       </div>
 
@@ -70,7 +70,7 @@
       <div class="table-scroll">
         <table>
           <thead><tr>
-            <th scope="col">STT</th><th scope="col">Hình ảnh</th><th scope="col">Tên sản phẩm</th><th scope="col">SKU / Biến thể</th><th scope="col">Danh mục</th><th scope="col">Giá</th><th scope="col">Tổng tồn kho</th><th scope="col">Ngày tạo</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th>
+            <th scope="col">STT</th><th scope="col">Hình ảnh</th><th scope="col">Tên sản phẩm</th><th scope="col">SKU / Biến thể</th><th scope="col">Danh mục</th><th scope="col">Giá</th><th scope="col" class="web2-cell-center">Tổng tồn kho</th><th scope="col" class="web2-cell-center">Ngày tạo</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th>
           </tr></thead>
           <tbody>
             @if (loading()) {
@@ -93,8 +93,8 @@
                   </td>
                   <td>{{ categoryName(product.categoryId) }}</td>
                   <td class="price">{{ priceRange(product) }}</td>
-                  <td class="stock-cell">{{ product.totalStock }}</td>
-                  <td class="date-cell">{{ product.createdAt ? product.createdAt.slice(0, 10) : '—' }}</td>
+                  <td class="stock-cell web2-cell-center">{{ product.totalStock }}</td>
+                  <td class="date-cell web2-cell-center">{{ product.createdAt ? product.createdAt.slice(0, 10) : '—' }}</td>
                   <td class="status-cell">
                     <span class="status" [class.active]="product.status === 'ACTIVE'" [class.archived]="product.status === 'ARCHIVED'">{{ product.status === 'ACTIVE' ? 'Đang hoạt động' : product.status === 'ARCHIVED' ? 'Đã lưu trữ' : 'Tạm ngưng' }}</span>
                   </td>

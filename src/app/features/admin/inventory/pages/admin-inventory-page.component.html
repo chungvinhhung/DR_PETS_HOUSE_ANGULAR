@@ -8,7 +8,7 @@
     <button type="button" role="tab" [attr.aria-selected]="tab()==='history'" [class.active]="tab()==='history'" (click)="switchTab('history')">Lịch sử kho</button>
   </div>
 
-  <div class="toolbar">
+  <div class="toolbar web2-filterbar">
     <div class="search-field">
       <img src="/assets/admin-inventory/search.svg" alt="" aria-hidden="true" />
       <input [ngModel]="search()" (ngModelChange)="search.set($event);onFilter()" aria-label="Tìm kiếm sản phẩm hoặc SKU" placeholder="Tìm sản phẩm / SKU..." />
@@ -28,7 +28,7 @@
         <select aria-label="Trạng thái tồn kho" [ngModel]="status()" (ngModelChange)="status.set($event);onFilter()">
           <option value="">Tất cả trạng thái</option><option>Đủ hàng</option><option>Sắp hết hàng</option><option>Hết hàng</option><option>Chưa cài ngưỡng</option>
         </select>
-        <button type="button" class="primary-btn inventory-create" (click)="openDialog('receipt')"><span aria-hidden="true">＋</span> Nhập kho</button>
+        <button type="button" class="primary-btn inventory-create web2-add-button" (click)="openDialog('receipt')"><span class="web2-add-icon" aria-hidden="true">+</span><span>Nhập kho</span></button>
       } @else {
         <select aria-label="Loại biến động" [ngModel]="changeType()" (ngModelChange)="changeType.set($event);onFilter()">
           <option value="">Tất cả biến động</option><option>Nhập kho</option><option>Xuất kho</option><option>Điều chỉnh</option><option>Chuyển kho</option><option>Hoàn stock</option>
@@ -48,12 +48,12 @@
             <col style="width:10%"/><col style="width:13.5%"/><col style="width:14.5%"/><col style="width:7%"/>
           </colgroup>
           <thead><tr>
-          <th>Tên sản phẩm</th><th>SKU / Biến thể</th><th>Loại</th><th>Chi nhánh</th><th>Tồn hiện tại</th><th>Ngưỡng cảnh báo</th><th>Trạng thái</th><th class="center">Thao tác</th>
+          <th>Tên sản phẩm</th><th>SKU | Biến thể</th><th>Loại</th><th>Chi nhánh</th><th>Tồn hiện tại</th><th>Ngưỡng cảnh báo</th><th>Trạng thái</th><th class="center">Thao tác</th>
         </tr></thead><tbody>
           @for (item of currentRows(); track item.id) {
             <tr>
               <td class="product">{{item.name}}</td>
-              <td class="sku-inline" [title]="formatVariantSku(item.variant, item.sku)">{{formatVariantSku(item.variant, item.sku)}}</td>
+              <td class="sku-inline" [title]="formatVariantSku(item.sku, item.variant)">{{formatVariantSku(item.sku, item.variant)}}</td>
               <td>{{item.kind}}</td><td [title]="item.branch">{{ item.branch === 'Chi nhánh Quận 1' ? 'Q1' : item.branch === 'Chi nhánh Quận 3' ? 'Q3' : item.branch }}</td>
               <td class="number">{{item.quantity}}</td><td class="number">{{item.threshold === null ? 'Chưa cài' : item.threshold}}</td>
               <td><span class="stock-badge" [class.ok]="stockStatus(item)==='Đủ hàng'" [class.low]="stockStatus(item)==='Sắp hết hàng'" [class.out]="stockStatus(item)==='Hết hàng'" [class.unset]="stockStatus(item)==='Chưa cài ngưỡng'">{{stockStatus(item)}}</span></td>
@@ -80,10 +80,10 @@
             <col style="width:11%"/><col style="width:10%"/><col style="width:11%"/><col style="width:11%"/>
           </colgroup>
           <thead><tr>
-          <th>Thời gian</th><th>Sản phẩm | Biến thể | SKU</th><th>Chi nhánh / Tuyến</th><th>Giao dịch & Lý do</th><th>Thay đổi</th><th>Tồn sau</th><th>Tham chiếu</th><th>Người thao tác</th>
+          <th>Thời gian</th><th>Sản phẩm | SKU | Biến thể</th><th>Chi nhánh / Tuyến</th><th>Giao dịch & Lý do</th><th>Thay đổi</th><th>Tồn sau</th><th>Tham chiếu</th><th>Người thao tác</th>
         </tr></thead><tbody>
           @for (record of currentHistory();track record.reference) {
-            <tr><td>{{record.date}}</td><td><div class="product">{{record.item}}</div><small>{{formatVariantSku(record.variant, record.sku)}}</small></td><td>{{record.branch}}</td><td><strong>{{record.action}}</strong><small>{{record.reason}}</small></td><td class="number" [class.positive]="record.delta.startsWith('+')">{{record.delta}}</td><td>{{record.after}}</td><td>{{record.reference}}</td><td>{{record.actor}}</td></tr>
+            <tr><td>{{record.date}}</td><td><div class="product">{{record.item}}</div><small>{{formatVariantSku(record.sku, record.variant)}}</small></td><td>{{record.branch}}</td><td><strong>{{record.action}}</strong><small>{{record.reason}}</small></td><td class="number" [class.positive]="record.delta.startsWith('+')">{{record.delta}}</td><td>{{record.after}}</td><td>{{record.reference}}</td><td>{{record.actor}}</td></tr>
           } @empty {<tr><td colspan="8" class="empty">Không có lịch sử kho phù hợp.</td></tr>}
         </tbody></table>
       }
@@ -111,19 +111,47 @@
       <div class="dialog-body">
         @if (modal() === 'receipt') {
           <div class="dialog-columns dialog-columns--product">
-            <label class="field-label field-label--sku">Sản phẩm / SKU
-              <span class="sku-input-wrap">
-                <img src="/assets/admin-inventory/search.svg" alt="" aria-hidden="true">
-                <input type="search" list="inventory-sku-options" autocomplete="off"
-                  [ngModel]="receiptSku()" (ngModelChange)="selectProduct($event)"
-                  placeholder="Tìm SKU sản phẩm" aria-label="Tìm sản phẩm theo SKU" />
-              </span>
-              <datalist id="inventory-sku-options">
-                @for (product of productOptions(); track product.sku) {
-                  <option [value]="product.sku">{{inventoryItemLabel(product)}}</option>
+            <div class="field-label field-label--sku">
+              <label for="inventory-receipt-search">Sản phẩm / SKU</label>
+              <div class="inventory-sku-combobox">
+                <span class="sku-input-wrap">
+                  <img src="/assets/admin-inventory/search.svg" alt="" aria-hidden="true">
+                  <input id="inventory-receipt-search" type="search" autocomplete="off" role="combobox"
+                    [ngModel]="receiptSearch()" (ngModelChange)="onReceiptSearch($event)"
+                    (focus)="receiptLookupOpen.set(true)" (blur)="closeReceiptLookup()"
+                    (keydown)="onReceiptSearchKeydown($event)"
+                    [attr.aria-expanded]="receiptLookupOpen()"
+                    aria-controls="inventory-receipt-product-options"
+                    aria-autocomplete="list" placeholder="Tìm SKU / tên sản phẩm..."
+                    aria-label="Tìm sản phẩm theo SKU hoặc tên">
+                </span>
+                @if (receiptLookupOpen()) {
+                  <div id="inventory-receipt-product-options" class="inventory-product-results" role="listbox"
+                    aria-label="Kết quả tra cứu sản phẩm nhập kho">
+                    @for (product of matchingReceiptProducts(); track product.id; let index = $index) {
+                      <button type="button" role="option" class="inventory-product-option"
+                        [class.inventory-product-option--highlight]="index === receiptHighlighted()"
+                        [attr.aria-selected]="index === receiptHighlighted()"
+                        (pointerdown)="$event.preventDefault(); chooseReceiptProduct(product)"
+                        (click)="chooseReceiptProduct(product)">
+                        @if (receiptItemImage(product); as image) {
+                          <img class="inventory-product-thumbnail" [src]="image" alt="" loading="lazy">
+                        } @else {
+                          <span class="inventory-product-thumbnail inventory-product-thumbnail--empty">Ảnh</span>
+                        }
+                        <span class="inventory-product-description">
+                          <strong>{{receiptItemName(product)}}</strong>
+                          <small>{{receiptItemDetail(product)}}</small>
+                        </span>
+                        <span class="inventory-product-price">{{receiptItemPrice(product)}}</span>
+                      </button>
+                    } @empty {
+                      <p class="inventory-product-empty">Không tìm thấy sản phẩm phù hợp.</p>
+                    }
+                  </div>
                 }
-              </datalist>
-            </label>
+              </div>
+            </div>
             <label class="field-label">Chi nhánh
               <select [ngModel]="receiptBranch()" (ngModelChange)="changeReceiptBranch($event)">
                 @for (b of branches(); track b) {<option [value]="b">{{shortBranch(b)}}</option>}
