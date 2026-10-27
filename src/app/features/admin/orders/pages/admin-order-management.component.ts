@@ -76,6 +76,8 @@ export class AdminOrderManagementComponent {
     return 'Tháng ' + month + '/' + year;
   });
   readonly returnBranchLookup = signal<Record<string,string|null>>({});
+  // BE Return DTO includes orderId only. Resolve the actual order.code, never display a sliced Mongo ID.
+  readonly returnOrderCodes = signal<Record<string,string>>({});
   readonly returnBranchResolving = signal(false);
   readonly invalidReturnDates = computed(() => Boolean(this.returnDateFrom() && this.returnDateTo() && this.returnDateFrom() > this.returnDateTo()));
   readonly returnsLoading = signal(false);
@@ -132,7 +134,7 @@ export class AdminOrderManagementComponent {
         ?? this.returnBranchLookup()[row.orderId];
       const created = row.history?.find(event => event.status === 'REQUESTED')?.at ?? row.history?.[0]?.at;
       const day = this.localReturnDay(created);
-      return (!q || [row.id, row.orderId, ...row.items.map(item => item.productName)].some(v => v.toLocaleLowerCase('vi').includes(q))) &&
+      return (!q || [row.id, row.orderId, this.returnOrderCode(row.orderId), ...row.items.map(item => item.productName)].some(v => v.toLocaleLowerCase('vi').includes(q))) &&
         (status === 'ALL' || row.status === status) &&
         (branch === 'ALL' || branchOfOrder === branch) &&
         (!from || (!!day && day >= from)) &&
@@ -261,25 +263,33 @@ export class AdminOrderManagementComponent {
     const p = (kind: Intl.DateTimeFormatPartTypes): string => pieces.find(part => part.type === kind)?.value ?? '';
     return [p('year'), p('month'), p('day')].join('-');
   }
+  returnOrderCode(orderId: string): string {
+    // A code comes from Order.code, not Return.orderId.
+    return this.allOrders().find(order => order.id === orderId)?.code
+      || this.returnOrderCodes()[orderId]
+      || '—';
+  }
   private resolveReturnBranches(): void {
-    if (this.returnBranchResolving() || this.branchId() === 'ALL') return;
-    const known = this.returnBranchLookup();
-    const fromOrders = new Set(this.allOrders().map(order => order.id));
+    if (this.returnBranchResolving()) return;
+    const loadedIds = new Set(this.allOrders().map(order => order.id));
+    const known = this.returnOrderCodes();
     const missing = [...new Set(this.returns().map(ret => ret.orderId))]
-      .filter(id => !fromOrders.has(id) && !(id in known));
+      .filter(id => !loadedIds.has(id) && !(id in known));
     if (!missing.length) return;
     this.returnBranchResolving.set(true);
     from(missing).pipe(
       mergeMap(id => this.api.get(id).pipe(
-        map(order => ({ id, branch: order.fulfillmentBranchId as string | null })),
-        catchError(() => of({ id, branch: null })),
+        map(order => ({id, code: order.code, branch: order.fulfillmentBranchId as string | null})),
+        catchError(() => of({id, code: '', branch: null})),
       ), 4),
       toArray(),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe({
       next: rows => {
+        this.returnOrderCodes.update(current => Object.assign({}, current,
+          ...rows.map(row => ({[row.id]: row.code}))));
         this.returnBranchLookup.update(current => Object.assign({}, current,
-          ...rows.map(row => ({[row.id]:row.branch}))));
+          ...rows.map(row => ({[row.id]: row.branch}))));
         this.returnBranchResolving.set(false);
       },
       error: () => this.returnBranchResolving.set(false),
@@ -348,7 +358,7 @@ export class AdminOrderManagementComponent {
       if (!current.length) { this.toast.show('Không có yêu cầu trả hàng để xuất file.', 'info'); return; }
       const cells = [
         ['Mã yêu cầu','Mã đơn hàng','Ngày yêu cầu','Sản phẩm','Số lượng trả','Tiền dự kiến hoàn','Hoàn cuối cùng','Trạng thái'],
-        ...current.map(row => [row.id, row.orderId, this.datePart(row.history?.[0]?.at),
+        ...current.map(row => [row.id, this.returnOrderCode(row.orderId), this.datePart(row.history?.[0]?.at),
           row.items.map(item => item.productName).join('; '),
           String(row.items.reduce((sum, item) => sum + item.requestedQty, 0)),
           String(row.refundBreakdown.total), this.finalRefundAmount(row) === null ? '' : String(this.finalRefundAmount(row)),
