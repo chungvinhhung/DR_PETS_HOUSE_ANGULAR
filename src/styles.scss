@@ -2211,40 +2211,39 @@ app-admin-users-page .users-pagination nav button[aria-current="page"]{
 }
 
 
-/* WEB2 Product + Category management toolbar contract, 2026-10-27.
-   Shared layout is opt-in to these two screens; neither page changes its
-   data filters, search handlers or create action. */
-:is(app-admin-product-list-page, app-admin-category-page) .web2-management-toolbar.web2-management-toolbar {
+/* WEB2 management toolbar — Voucher list is the sizing reference.
+   Product and Category have fewer controls, but the exact same shell: 84px
+   min-height, 16px padding, 48px inputs/selects, 40px add buttons. */
+:is(app-admin-product-list-page,app-admin-category-page) .web2-management-toolbar.web2-management-toolbar {
   display:grid !important;
-  grid-template-columns:minmax(0, 536px) minmax(0, 1fr) !important;
+  grid-template-columns:minmax(0,430px) minmax(0,1fr) !important;
   align-items:center !important;
   justify-content:space-between !important;
-  gap:16px !important;
+  gap:12px !important;
   box-sizing:border-box;
   width:100%;
-  min-height:104px !important;
-  margin-bottom:20px;
-  padding:20px !important;
+  min-height:84px !important;
+  margin-bottom:18px;
+  padding:16px !important;
   border:1px solid #e2e8f0;
   border-radius:12px;
   background:#fff;
 }
-:is(app-admin-product-list-page, app-admin-category-page) .web2-management-search.web2-management-search {
+:is(app-admin-product-list-page,app-admin-category-page) .web2-management-search.web2-management-search {
   position:relative;
   display:block !important;
   box-sizing:border-box;
   width:100% !important;
-  max-width:536px !important;
+  max-width:430px !important;
   min-width:0 !important;
-  flex:none !important;
   height:48px !important;
   min-height:48px !important;
+  flex:none !important;
   margin:0;
   padding:0;
   border:0;
-  border-radius:8px;
 }
-:is(app-admin-product-list-page, app-admin-category-page) .web2-management-search input {
+:is(app-admin-product-list-page,app-admin-category-page) .web2-management-search input {
   box-sizing:border-box;
   display:block;
   width:100% !important;
@@ -2252,41 +2251,40 @@ app-admin-users-page .users-pagination nav button[aria-current="page"]{
   height:48px !important;
   min-height:48px !important;
   margin:0;
-  padding:0 15px 0 48px !important;
-  border:1px solid #c3c6d4 !important;
+  padding:0 14px 0 42px !important;
+  border:1px solid #dce5f0 !important;
   border-radius:8px !important;
   background:#fff;
-  color:#202e45;
-  font:400 14px/20px Roboto,Arial,sans-serif;
+  color:#263e5d;
+  font:400 13px/20px Roboto,Arial,sans-serif;
 }
-:is(app-admin-product-list-page, app-admin-category-page) .web2-management-search svg {
+:is(app-admin-product-list-page,app-admin-category-page) .web2-management-search svg {
   position:absolute !important;
   top:50% !important;
-  left:16px !important;
+  left:14px !important;
   width:18px !important;
   height:18px !important;
   transform:translateY(-50%) !important;
   pointer-events:none;
   color:#64748b;
 }
-:is(app-admin-product-list-page, app-admin-category-page) .web2-management-actions.web2-management-actions {
+:is(app-admin-product-list-page,app-admin-category-page) .web2-management-actions.web2-management-actions {
   display:flex !important;
   align-items:center !important;
   justify-content:flex-end !important;
   flex-wrap:nowrap !important;
   gap:12px !important;
   min-width:0;
-  width:100%;
   margin:0 !important;
   padding:0 !important;
 }
 app-admin-category-page .web2-management-control.web2-management-control {
   display:block !important;
   position:relative;
-  flex:0 0 208px;
+  flex:0 0 170px;
   box-sizing:border-box;
-  width:208px;
-  min-width:208px;
+  width:170px;
+  min-width:170px;
   height:48px;
   min-height:48px;
   margin:0;
@@ -2305,14 +2303,14 @@ app-admin-category-page .web2-management-control select {
   height:48px !important;
   min-height:48px !important;
   margin:0;
-  padding:0 38px 0 14px;
-  border:1px solid #c3c6d4;
+  padding:0 34px 0 12px;
+  border:1px solid #dce5f0;
   border-radius:8px;
-  background:#fff url('/assets/admin-product/expand_more.svg') no-repeat right 11px center;
+  background:#fff url('/assets/admin-product/expand_more.svg') no-repeat right 9px center;
   background-size:18px 18px;
   appearance:none;
-  color:#202e45;
-  font:400 14px/20px Roboto,Arial,sans-serif;
+  color:#263e5d;
+  font:400 13px/20px Roboto,Arial,sans-serif;
   cursor:pointer;
 }
 app-admin-product-list-page .web2-management-filter-button.web2-management-filter-button {
@@ -2322,30 +2320,26 @@ app-admin-product-list-page .web2-management-filter-button.web2-management-filte
   gap:8px;
   height:48px !important;
   min-height:48px !important;
-  padding:0 16px !important;
+  padding:0 12px !important;
   margin:0;
   border:1px solid #dce5f0;
   border-radius:8px;
   background:#fff;
-  color:#1b273b;
-  font:500 14px/20px Roboto,Arial,sans-serif;
+  color:#263e5d;
+  font:500 13px/20px Roboto,Arial,sans-serif;
   white-space:nowrap;
 }
-:is(app-admin-product-list-page,app-admin-category-page)
- .web2-management-actions .web2-add-button.web2-add-button {
-  min-height:48px !important;
-  height:48px !important;
+:is(app-admin-product-list-page,app-admin-category-page) .web2-management-actions .web2-add-button.web2-add-button {
+  min-height:40px !important;
+  height:40px !important;
   margin:0 !important;
-  padding:0 16px !important;
+  padding:0 15px !important;
 }
-:is(app-admin-product-list-page,app-admin-category-page) .web2-management-actions > * {
-  align-self:center;
-}
+:is(app-admin-product-list-page,app-admin-category-page) .web2-management-actions > * {align-self:center}
 :is(app-admin-product-list-page,app-admin-category-page) .web2-management-toolbar :is(input,select,button,a):focus-visible {
-  outline:2px solid #0d47a1;
-  outline-offset:2px;
+  outline:2px solid #0d47a1;outline-offset:2px;
 }
-@media (max-width:1180px) {
+@media(max-width:980px) {
   :is(app-admin-product-list-page,app-admin-category-page) .web2-management-toolbar.web2-management-toolbar {
     grid-template-columns:minmax(0,1fr) !important;
     gap:12px !important;
@@ -2354,12 +2348,88 @@ app-admin-product-list-page .web2-management-filter-button.web2-management-filte
     max-width:none !important;
   }
 }
-@media (max-width:600px) {
+@media(max-width:600px) {
   :is(app-admin-product-list-page,app-admin-category-page) .web2-management-actions.web2-management-actions {
     flex-wrap:wrap !important;
     justify-content:flex-start !important;
   }
   app-admin-category-page .web2-management-control.web2-management-control {
-    flex:1 1 180px;width:auto;min-width:180px;
+    flex:1 1 170px;width:auto;min-width:170px;
   }
 }
+
+/* WEB2 list tables — Product table is the typography, row density and
+   inner-gutter reference for Order, Return/Refund and Voucher lists.
+   Deliberately excludes product/order/return detail tables. */
+:is(app-admin-order-management,app-admin-voucher-list) table.web2-product-table {
+  width:100%;
+  min-width:1034px;
+  table-layout:fixed;
+  border-collapse:collapse;
+  border-spacing:0;
+  color:#37475e;
+  background:#fff;
+  font:400 14px/1.4 Roboto,Arial,sans-serif;
+}
+app-admin-order-management table.order-admin__table--returns.web2-product-table {min-width:1100px}
+:is(app-admin-order-management,app-admin-voucher-list) table.web2-product-table thead th {
+  box-sizing:border-box;
+  height:44px !important;
+  padding:0 14px !important;
+  border:0 !important;
+  border-bottom:1px solid #e2e8f0 !important;
+  background:#f8fafc !important;
+  color:#17243a !important;
+  font:700 13px/20px Roboto,Arial,sans-serif !important;
+  text-align:left;
+  vertical-align:middle;
+  text-transform:none;
+  letter-spacing:0;
+  white-space:nowrap;
+}
+:is(app-admin-order-management,app-admin-voucher-list) table.web2-product-table tbody td {
+  box-sizing:border-box;
+  height:76px !important;
+  padding:12px 14px !important;
+  border:0 !important;
+  border-bottom:1px solid #e2e8f0 !important;
+  background:transparent;
+  color:#37475e;
+  font:400 14px/1.4 Roboto,Arial,sans-serif;
+  vertical-align:middle;
+  overflow-wrap:anywhere;
+}
+:is(app-admin-order-management,app-admin-voucher-list) table.web2-product-table :is(th,td):first-child {
+  padding-left:20px !important;
+  text-align:left !important;
+}
+:is(app-admin-order-management,app-admin-voucher-list) table.web2-product-table :is(th,td):last-child {
+  padding-right:20px !important;
+  text-align:center !important;
+}
+:is(app-admin-order-management,app-admin-voucher-list) table.web2-product-table tbody tr:hover {
+  background:#f7faff;
+}
+:is(app-admin-order-management,app-admin-voucher-list) table.web2-product-table tbody tr:last-child td {
+  border-bottom:0 !important;
+}
+app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td):nth-child(7),
+app-admin-order-management table.order-admin__table--returns.web2-product-table :is(th,td):nth-child(7),
+app-admin-voucher-list table.voucher-list__table.web2-product-table :is(th,td):nth-child(6) {
+  text-align:center !important;
+}
+app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(1){width:16%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(2){width:11%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(3){width:9%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(4){width:17%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(5){width:12%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(6){width:13%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(7){width:13%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(8){width:9%}
+app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-code{width:20%}
+app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-scope{width:15%}
+app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-discount{width:13%}
+app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-dates{width:17%}
+app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-quota{width:16%}
+app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-status{width:11%}
+app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-actions{width:8%}
