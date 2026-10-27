@@ -2859,19 +2859,19 @@ app-admin-order-management .order-admin__table--detail-items :is(th,td):last-chi
 app-admin-order-management .order-admin__table--detail-items .order-admin__item-name {font-weight:500;color:#34435c;}
 app-admin-order-management .order-admin__table--detail-items .order-admin__product-thumb {width:48px;height:48px;min-width:48px;flex-basis:48px;border-radius:8px;}
 
-/* Return detail: one authoritative 11-column grid, no 8-column widths. */
+/* Return detail: measured from Figma 7432:39673 table header (994px): image 59px, product 139px, nine equal ~88.44px columns. Only colgroup defines column widths. */
 app-admin-order-return-detail .return-detail__table {min-width:1000px;}
-app-admin-order-return-detail .return-detail__table col.return-detail__col-image {width:7%}
-app-admin-order-return-detail .return-detail__table col.return-detail__col-product {width:18%}
-app-admin-order-return-detail .return-detail__table col.return-detail__col-sku {width:12%}
-app-admin-order-return-detail .return-detail__table col.return-detail__col-qty {width:7%}
-app-admin-order-return-detail .return-detail__table col.return-detail__col-returned {width:7%}
-app-admin-order-return-detail .return-detail__table col.return-detail__col-available {width:9%}
-app-admin-order-return-detail .return-detail__table col.return-detail__col-requested {width:7%}
-app-admin-order-return-detail .return-detail__table col.return-detail__col-received {width:8%}
-app-admin-order-return-detail .return-detail__table col.return-detail__col-approved {width:8%}
-app-admin-order-return-detail .return-detail__table col.return-detail__col-estimated {width:9%}
-app-admin-order-return-detail .return-detail__table col.return-detail__col-final {width:8%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-image {width:5.94%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-product {width:13.98%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-sku {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-qty {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-returned {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-available {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-requested {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-received {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-approved {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-estimated {width:8.9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-final {width:8.88%}
 /* Match Figma: the image/product/SKU columns are left-aligned; all eight
    quantity/refund columns share centered header and row-value alignment.
    Column widths remain exclusively controlled by the 11-col colgroup. */
