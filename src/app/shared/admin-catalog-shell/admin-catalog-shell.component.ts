@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 import { AdminToastService } from '../services/admin-toast.service';
 import { RouterLink } from '@angular/router';
+import { signal } from '@angular/core';
+import { AdminOrderApiService } from '../../features/admin/orders/services/admin-order-api.service';
+import { AuthSessionService } from '../../core/services/auth-session.service';
 
 /**
  * Shared Admin catalog chrome for Category and Product screens.
@@ -17,6 +20,9 @@ import { RouterLink } from '@angular/router';
 })
 export class AdminCatalogShellComponent {
   readonly toast = inject(AdminToastService);
+  private readonly orderApi = inject(AdminOrderApiService);
+  private readonly session = inject(AuthSessionService);
+  readonly pendingReturnCount = signal(0);
   @Input({ required: true }) activeItem!: 'categories' | 'products' | 'orders' | 'vouchers' | 'services' | 'branches' | 'staff' | 'inventory';
 
   salesExpanded = false;
@@ -26,6 +32,12 @@ export class AdminCatalogShellComponent {
   feedbackExpanded = false;
 
   ngOnInit(): void {
+    if (this.session.hasAnyRole(['ADMIN','MANAGER','STAFF'])) {
+      this.orderApi.listReturns().subscribe({
+        next: page => this.pendingReturnCount.set(page.items.filter(r => r.status === 'REQUESTED').length),
+        error: () => this.pendingReturnCount.set(0),
+      });
+    }
     this.salesExpanded = this.activeItem === 'categories' || this.activeItem === 'products' || this.activeItem === 'orders' || this.activeItem === 'vouchers';
     this.servicesExpanded = this.activeItem === 'services';
     this.operationsExpanded = this.activeItem === 'branches' || this.activeItem === 'staff' || this.activeItem === 'inventory';
