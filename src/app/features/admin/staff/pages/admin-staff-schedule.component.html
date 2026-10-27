@@ -67,14 +67,14 @@
     @if (showCreateTemplate()) {
       <div class="shift-assign-overlay shift-assign-overlay--front">
         <section role="dialog" aria-modal="true" aria-labelledby="new-template-title" class="shift-assign-dialog">
-          <header class="shift-assign-header"><h2 id="new-template-title">Tạo ca làm việc mới</h2><button type="button" aria-label="Đóng" (click)="cancelNewTemplate()">×</button></header>
+          <header class="shift-assign-header"><h2 id="new-template-title">Tạo ca làm việc mới</h2><button type="button" aria-label="Đóng" [disabled]="createSaving()" (click)="cancelNewTemplate()">×</button></header>
           <p>Chi nhánh: {{ activeBranch()?.name }}</p>
           <label class="shift-assign-field">Tên ca<input [value]="templateName()" (input)="templateName.set($any($event.target).value)" placeholder="Nhập tên ca"></label>
           <label class="shift-assign-field">Bắt đầu<input type="time" [value]="templateStart()" (change)="templateStart.set($any($event.target).value)"></label>
           <label class="shift-assign-field">Kết thúc<input type="time" [value]="templateEnd()" (change)="templateEnd.set($any($event.target).value)"></label>
           @if (templateError()) { <p role="alert" class="shift-assign-error">{{ templateError() }}</p> }
-          <p class="shift-assign-hint">Ca mới hiện chỉ dùng trong bản nháp. Chưa có API lưu mẫu ca theo chi nhánh.</p>
-          <footer class="shift-assign-footer"><button type="button" (click)="cancelNewTemplate()">Hủy</button><button class="shift-assign-save" type="button" (click)="addLocalTemplate()">Thêm vào bản nháp</button></footer>
+          <p class="shift-assign-hint">Ca mới được lưu trực tiếp vào lịch của nhân viên và ngày đã chọn. Chưa có API tạo mẫu ca dùng chung theo chi nhánh.</p>
+          <footer class="shift-assign-footer"><button type="button" [disabled]="createSaving()" (click)="cancelNewTemplate()">Hủy</button><button class="shift-assign-save" type="button" [disabled]="createSaving()" (click)="createShiftNow()">{{ createSaving() ? 'Đang tạo ca...' : 'Tạo ca làm việc' }}</button></footer>
         </section>
       </div>
     }
