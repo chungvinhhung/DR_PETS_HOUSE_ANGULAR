@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import { AdminReturnNotificationService } from '../../../../shared/services/admin-return-notification.service';
 import { orderErrorMessage } from '../services/admin-order-error-message';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import {
@@ -34,6 +35,7 @@ export class AdminOrderReturnDetailComponent {
   private readonly api = inject(AdminOrderApiService);
   private readonly session = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
+  private readonly returnNotifications = inject(AdminReturnNotificationService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly id = signal('');
@@ -171,6 +173,7 @@ export class AdminOrderReturnDetailComponent {
       next: () => {
         this.busy.set(false); this.dialog.set(null);
         this.toast.show('Đã cập nhật yêu cầu trả hàng thành công.', 'success');
+        this.returnNotifications.refresh();
         this.load();
       },
       error: (err: unknown) => {
