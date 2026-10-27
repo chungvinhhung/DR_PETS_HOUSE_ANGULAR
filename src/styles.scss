@@ -1905,8 +1905,60 @@ app-admin-order-create .create-order__search-error button {
 app-admin-order-create .create-order__search-error button:hover {
   background:#f3f8ff;
 }
-app-admin-order-create .create-order__dialog--confirm {max-width:440px;}
-app-admin-order-create .create-order__dialog--confirm .create-order__dialog-head {margin-bottom:8px;}
+/* Reuse the same compact header + footer pattern as Order/Return action modals.
+   Confirm/leave buttons must stay visible and aligned at every viewport width. */
+app-admin-order-create .create-order__dialog--confirm {
+  width:min(100%,520px);
+  max-width:520px;
+  padding:24px;
+  border:1px solid #dce5f0;
+  border-radius:12px;
+  box-shadow:0 18px 50px #10233e35;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-head {
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:14px;padding:0 0 16px;margin:0;
+  border-bottom:1px solid #e2e8f0;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-head h2 {
+  margin:0;color:#1f2d42;
+  font:700 20px/27px Roboto,Arial,sans-serif;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-head p {
+  margin:8px 0 0;color:#64748b;
+  font:400 13px/19px Roboto,Arial,sans-serif;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-actions {
+  display:flex;align-items:center;justify-content:flex-end;
+  flex-wrap:wrap;gap:10px;
+  width:100%;min-height:58px;
+  margin-top:0;padding-top:16px;
+  border-top:0;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-actions .create-order__button {
+  position:relative;display:inline-flex !important;
+  align-items:center;justify-content:center;
+  flex:0 0 auto;width:auto !important;min-width:105px;min-height:38px;
+  padding:0 14px !important;border-radius:8px;
+  font:600 13px/20px Roboto,Arial,sans-serif !important;
+  opacity:1 !important;visibility:visible !important;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-actions .create-order__button--outline {
+  color:#334155 !important;background:#fff !important;border:1px solid #dce5f0 !important;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-actions .create-order__button--primary {
+  color:#fff !important;background:#0d47a1 !important;border:1px solid #0d47a1 !important;
+}
+app-admin-order-create .create-order__dialog--confirm .create-order__dialog-close {
+  flex:0 0 28px;width:28px;height:28px;
+  color:#64748b;font-size:22px;
+}
+@media(max-width:460px) {
+  app-admin-order-create .create-order__dialog--confirm {padding:18px;}
+  app-admin-order-create .create-order__dialog--confirm .create-order__dialog-actions .create-order__button {
+    min-width:0;flex:1 1 auto;
+  }
+}
 
 /* Staff weekly assignment - shared modal overlay (component encapsulation safe) */
 .schedule-cell{display:flex;min-height:62px;width:100%;flex-direction:column;justify-content:center;align-items:stretch;gap:5px;padding:4px;border:0;border-radius:6px;background:transparent;cursor:pointer}
