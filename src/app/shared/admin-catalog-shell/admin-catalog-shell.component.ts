@@ -22,36 +22,38 @@ export class AdminCatalogShellComponent {
   readonly pendingReturnCount = this.returnNotifications.pendingCount;
   @Input({ required: true }) activeItem!: 'categories' | 'products' | 'orders' | 'vouchers' | 'services' | 'branches' | 'staff' | 'inventory';
 
-  salesExpanded = false;
-  servicesExpanded = false;
-  operationsExpanded = false;
-  contentExpanded = false;
-  feedbackExpanded = false;
+  /**
+   * Sidebar behaves as an accordion: exactly zero or one group can be open.
+   * Keep the active route intact even when its parent group is collapsed.
+   */
+  private expandedGroup: 'sales' | 'services' | 'operations' | 'content' | 'feedback' | null = null;
+
+  get salesExpanded(): boolean { return this.expandedGroup === 'sales'; }
+  get servicesExpanded(): boolean { return this.expandedGroup === 'services'; }
+  get operationsExpanded(): boolean { return this.expandedGroup === 'operations'; }
+  get contentExpanded(): boolean { return this.expandedGroup === 'content'; }
+  get feedbackExpanded(): boolean { return this.expandedGroup === 'feedback'; }
 
   ngOnInit(): void {
     this.returnNotifications.ensureLoaded();
-    this.salesExpanded = this.activeItem === 'categories' || this.activeItem === 'products' || this.activeItem === 'orders' || this.activeItem === 'vouchers';
-    this.servicesExpanded = this.activeItem === 'services';
-    this.operationsExpanded = this.activeItem === 'branches' || this.activeItem === 'staff' || this.activeItem === 'inventory';
+    if (this.activeItem === 'categories' || this.activeItem === 'products' ||
+        this.activeItem === 'orders' || this.activeItem === 'vouchers') {
+      this.expandedGroup = 'sales';
+    } else if (this.activeItem === 'services') {
+      this.expandedGroup = 'services';
+    } else if (this.activeItem === 'branches' || this.activeItem === 'staff' ||
+               this.activeItem === 'inventory') {
+      this.expandedGroup = 'operations';
+    }
   }
 
-  toggleSales(): void {
-    this.salesExpanded = !this.salesExpanded;
+  private toggleGroup(group: NonNullable<typeof this.expandedGroup>): void {
+    this.expandedGroup = this.expandedGroup === group ? null : group;
   }
 
-  toggleServices(): void {
-    this.servicesExpanded = !this.servicesExpanded;
-  }
-
-  toggleOperations(): void {
-    this.operationsExpanded = !this.operationsExpanded;
-  }
-
-  toggleContent(): void {
-    this.contentExpanded = !this.contentExpanded;
-  }
-
-  toggleFeedback(): void {
-    this.feedbackExpanded = !this.feedbackExpanded;
-  }
+  toggleSales(): void { this.toggleGroup('sales'); }
+  toggleServices(): void { this.toggleGroup('services'); }
+  toggleOperations(): void { this.toggleGroup('operations'); }
+  toggleContent(): void { this.toggleGroup('content'); }
+  toggleFeedback(): void { this.toggleGroup('feedback'); }
 }
