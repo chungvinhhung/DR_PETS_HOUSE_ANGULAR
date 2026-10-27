@@ -36,6 +36,8 @@ export interface OrderRecord {
   shippingAddress?: Record<string, unknown> | string;
   paymentMethod: OrderPaymentMethod;
   payment?: { paymentId: string; status: string };
+  /** Expected delivery timestamp when provided by the Order API; absent is not inferred. */
+  expectedDeliveryAt?: string | null;
   deliveredAt?: string | null;
   returnWindowEndsAt?: string | null;
   allowedActions?: string[];
