@@ -360,3 +360,21 @@ h1 {
   .pagination { flex-wrap: wrap; }
   .pagination-controls { margin-left: auto; }
 }
+
+/* Slug is computed from the category name, never manually editable.
+   Match the read-only SKU fill used on Create Product. */
+.category-modal .slug-field .form-field input.category-slug-input[readonly] {
+  box-sizing: border-box;
+  width: 100%;
+  background: #e5f6fd;
+  border-color: #dce5f0;
+  color: #26364a;
+  font: 400 13px/20px Roboto, Arial, sans-serif;
+  cursor: default;
+  caret-color: transparent;
+}
+.category-modal .slug-field .form-field input.category-slug-input[readonly]::placeholder {
+  font: 400 13px/20px Roboto, Arial, sans-serif;
+  color: #71829b;
+  opacity: 1;
+}
