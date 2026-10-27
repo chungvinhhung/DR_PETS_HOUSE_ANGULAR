@@ -75,32 +75,3 @@
 @media(max-width:800px){.return-detail__columns{grid-template-columns:1fr}.return-detail__summary{grid-template-columns:1fr}}
 @media(max-width:520px){.return-detail{padding:18px 12px}.return-detail__metadata{grid-template-columns:1fr}.return-detail__dialog-actions{flex-wrap:wrap}}
 
-/* Figma 7432:39673 — compact card hierarchy and status tracking. */
-.return-detail__heading{align-items:center}
-.return-detail__heading h1{font-size:28px;line-height:36px;font-weight:700}
-.return-detail__panel{padding:24px;border-radius:12px}
-.return-detail__panel h2{font-size:18px;line-height:26px;margin-bottom:20px}
-.return-detail__metadata{gap:22px 18px}
-.return-detail__table :is(th,td):first-child{padding-left:20px}
-.return-detail__table :is(th,td):last-child{padding-right:20px}
-.return-detail__button{display:inline-flex;align-items:center;justify-content:center;
-  width:max-content;max-width:100%;min-height:40px;gap:8px}
-.return-detail__columns{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-@media(max-width:900px){.return-detail__columns{grid-template-columns:1fr}
- .return-detail__metadata{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.return-detail__metadata{grid-template-columns:1fr}}
-
-/* Return flow matches Figma steps without inventing any BE fields. */
-.return-detail__progress{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;
- list-style:none;padding:10px 0;margin:0}
-.return-detail__progress li{position:relative;display:flex;align-items:center;flex-direction:column;
- gap:10px;min-width:0;text-align:center;color:#70849d;font-size:12px}
-.return-detail__progress li:not(:last-child)::after{content:'';position:absolute;
- top:8px;left:calc(50% + 14px);width:calc(100% - 18px);height:2px;background:#dce5f0}
-.return-detail__progress-dot{display:block;width:18px;height:18px;border:3px solid #dce5f0;
- background:#fff;border-radius:50%;flex:0 0 18px}
-.return-detail__progress--done{color:#0d47a1!important;font-weight:600}
-.return-detail__progress--done .return-detail__progress-dot{border-color:#0d47a1;background:#e5f6fd}
-.return-detail__progress--done:not(:last-child)::after{background:#0d47a1!important}
-.return-detail__progress--rejected .return-detail__progress-dot{border-color:#dce5f0;background:white}
-@media(max-width:700px){.return-detail__progress{overflow-x:auto;grid-template-columns:repeat(5,minmax(105px,1fr))}}
