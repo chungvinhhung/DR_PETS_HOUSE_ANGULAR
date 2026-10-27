@@ -3,6 +3,8 @@ import { AdminToastService } from '../services/admin-toast.service';
 import { RouterLink } from '@angular/router';
 import { AdminReturnNotificationService } from '../services/admin-return-notification.service';
 
+type SidebarGroup = 'sales' | 'services' | 'operations' | 'content' | 'feedback';
+
 /**
  * Shared Admin catalog chrome for Category and Product screens.
  * Render the header/sidebar once here so switching routes keeps pixel-identical
@@ -26,7 +28,7 @@ export class AdminCatalogShellComponent {
    * Sidebar behaves as an accordion: exactly zero or one group can be open.
    * Keep the active route intact even when its parent group is collapsed.
    */
-  private expandedGroup: 'sales' | 'services' | 'operations' | 'content' | 'feedback' | null = null;
+  private expandedGroup: SidebarGroup | null = null;
 
   get salesExpanded(): boolean { return this.expandedGroup === 'sales'; }
   get servicesExpanded(): boolean { return this.expandedGroup === 'services'; }
@@ -47,7 +49,7 @@ export class AdminCatalogShellComponent {
     }
   }
 
-  private toggleGroup(group: NonNullable<typeof this.expandedGroup>): void {
+  private toggleGroup(group: SidebarGroup): void {
     this.expandedGroup = this.expandedGroup === group ? null : group;
   }
 
