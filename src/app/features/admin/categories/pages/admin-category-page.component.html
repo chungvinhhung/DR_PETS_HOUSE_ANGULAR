@@ -94,7 +94,11 @@
           <div class="pagination-controls">
             <button type="button" (click)="previousPage()"
               [disabled]="!hasPreviousPage || loading()" aria-label="Trang trước">‹</button>
-            <span class="current-page" aria-current="page">{{ pageNumber }}</span>
+            @for (index of visiblePageNumbers; track index) {
+              <button type="button" class="pagination-page" [class.current-page]="index === pageNumber"
+                [attr.aria-current]="index === pageNumber ? 'page' : null"
+                [disabled]="loading()" (click)="goToPage(index)">{{ index }}</button>
+            }
             <button type="button" (click)="nextPage()"
               [disabled]="!nextCursor() || loading()" aria-label="Trang tiếp theo">›</button>
           </div>
