@@ -3152,12 +3152,24 @@ app-admin-order-return-detail .return-detail__progress li small {
 
 /* Return product table mirrors Figma's restrained type and thumbnail.
    Each row reflects actual BE items (never mock extra rows or quantities). */
+/* Header dimensions and intentional two-line labels match the Figma table. */
 app-admin-order-return-detail .return-detail__table thead th {
+  height:58px !important;
   font-size:11px !important;
   font-weight:600 !important;
   line-height:15px !important;
   color:#475569 !important;
-  padding-block:9px !important;
+  padding:10px 8px !important;
+  vertical-align:middle !important;
+}
+app-admin-order-return-detail .return-detail__table thead th:nth-child(n+4) {
+  text-align:center !important;
+}
+app-admin-order-return-detail .return-detail__table .return-detail__th-label {
+  display:inline-block;
+  text-align:center;
+  line-height:15px;
+  white-space:nowrap;
 }
 app-admin-order-return-detail .return-detail__table tbody td {
   font-size:12px !important;
@@ -3168,12 +3180,25 @@ app-admin-order-return-detail .return-detail__table tbody td {
 app-admin-order-return-detail .return-detail__table .return-detail__product-name > strong {
   display:block;color:#3e4e65;font-weight:500;
 }
+/* Figma's purple rounded "Hoàn X/Y" chip is a separate line beneath the product.
+   Do not render it as underlined text or a squared-off label. */
 app-admin-order-return-detail .return-detail__partial-badge {
-  display:table;width:max-content;max-width:100%;
-  margin-top:5px;padding:2px 7px;
-  border:1px solid #d7bcff;border-radius:99px;
-  background:#f1e7ff;color:#783ac5;
-  font:500 10px/14px Roboto,Arial,sans-serif;
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:max-content;
+  max-width:100%;
+  min-height:21px;
+  margin:8px 0 0 !important;
+  padding:2px 10px !important;
+  border:1px solid #d7bcff !important;
+  border-radius:999px !important;
+  background:#f1e7ff !important;
+  color:#783ac5 !important;
+  text-decoration:none !important;
+  white-space:nowrap;
+  font:500 10px/16px Roboto,Arial,sans-serif;
 }
 app-admin-order-return-detail .return-detail__table .return-detail__product-thumb {
   width:48px;height:48px;min-width:48px;padding:4px;
