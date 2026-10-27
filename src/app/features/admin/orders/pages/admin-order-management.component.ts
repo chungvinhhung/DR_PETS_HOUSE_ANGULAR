@@ -122,6 +122,7 @@ export class AdminOrderManagementComponent {
   readonly dialogBusy = signal(false);
   private cancelRequestKey: string | null = null;
   readonly reason = signal('');
+  readonly cancelCategory = signal('');
   readonly carrier = signal('');
   readonly tracking = signal('');
   readonly detailInfo = computed(() => this.selected());
@@ -536,11 +537,19 @@ export class AdminOrderManagementComponent {
   openAction(action: ActionDialog): void {
     if (!this.canManage() || !action || this.dialogBusy()) return;
     if (action === 'cancel' ? !this.canCancel() : this.availableAction() !== action) return;
-    this.reason.set(''); this.carrier.set(''); this.tracking.set('');
+    this.reason.set(''); this.cancelCategory.set(''); this.carrier.set(''); this.tracking.set('');
     this.cancelRequestKey = action === 'cancel'
       ? 'staff-cancel-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2)
       : null;
     this.dialog.set(action);
+  }
+  isCancelReasonValid(): boolean {
+    const category = this.cancelCategory();
+    return category.length > 0 && (category !== 'Khác' || this.reason().trim().length >= 5);
+  }
+  cancelReasonPayload(): string {
+    const category = this.cancelCategory(), note = this.reason().trim();
+    return category === 'Khác' ? note : (note ? category + ' - ' + note : category);
   }
   closeDialog(): void {
     if (this.dialogBusy()) return;
@@ -551,11 +560,11 @@ export class AdminOrderManagementComponent {
     const action = this.dialog();
     const order = this.selected();
     if (!action || !order || this.dialogBusy() || !this.canManage()) return;
-    if (action === 'cancel' && (!this.canCancel() || this.reason().trim().length < 5)) return;
+    if (action === 'cancel' && (!this.canCancel() || !this.isCancelReasonValid())) return;
     if (action !== 'cancel' && this.availableAction() !== action) return;
     this.dialogBusy.set(true);
     const request = action === 'cancel'
-      ? this.api.cancel(order.id, this.reason().trim(), this.cancelRequestKey ?? 'staff-cancel-' + order.id)
+      ? this.api.cancel(order.id, this.cancelReasonPayload(), this.cancelRequestKey ?? 'staff-cancel-' + order.id)
       : this.api.changeStatus(order.id, action, { carrier: this.carrier().trim(), trackingNumber: this.tracking().trim() });
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (updated) => {
