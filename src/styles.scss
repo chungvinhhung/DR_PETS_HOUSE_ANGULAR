@@ -2394,8 +2394,8 @@ app-admin-order-management table.order-admin__table--returns.web2-product-table 
   border:0 !important;
   border-bottom:1px solid #e2e8f0 !important;
   background:transparent;
-  color:#37475e;
-  font:400 14px/1.4 Roboto,Arial,sans-serif;
+  color:#37475e !important;
+  font:400 14px/1.4 Roboto,Arial,sans-serif !important;
   vertical-align:middle;
   overflow-wrap:anywhere;
 }
