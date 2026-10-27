@@ -149,7 +149,7 @@
         <button type="button" [class.order-admin__tabs--active]="activeTab() === 'returns'"
           [attr.aria-current]="activeTab() === 'returns' ? 'page' : null" (click)="setTab('returns')">
           Trả hàng &amp; hoàn tiền
-          @if (returnPendingCount()) { <span class="order-admin__tabs-count">{{ returnPendingCount() }}</span> }
+          @if (returnPendingCount()) { <span class="order-admin__tabs-count web2-notification-badge">{{ returnPendingCount() }}</span> }
         </button>
       </nav>
 
