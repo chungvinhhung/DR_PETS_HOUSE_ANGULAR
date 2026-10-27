@@ -80,14 +80,14 @@
               <th scope="col">Hình ảnh</th>
               <th scope="col">Sản phẩm</th>
               <th scope="col">SKU</th>
-              <th scope="col">SL đã mua</th>
-              <th scope="col">SL đã trả</th>
-              <th scope="col">SL còn được trả</th>
-              <th scope="col">SL yêu cầu</th>
-              <th scope="col">SL thực nhận</th>
-              <th scope="col">SL duyệt hoàn</th>
-              <th scope="col">Hoàn dự kiến</th>
-              <th scope="col">Hoàn cuối cùng</th>
+              <th scope="col"><span class="return-detail__th-label">SL đã<br>mua</span></th>
+              <th scope="col"><span class="return-detail__th-label">SL đã<br>trả</span></th>
+              <th scope="col"><span class="return-detail__th-label">SL còn<br>được trả</span></th>
+              <th scope="col"><span class="return-detail__th-label">SL<br>yêu cầu</span></th>
+              <th scope="col"><span class="return-detail__th-label">SL<br>thực nhận</span></th>
+              <th scope="col"><span class="return-detail__th-label">SL duyệt<br>hoàn</span></th>
+              <th scope="col"><span class="return-detail__th-label">Hoàn dự<br>kiến</span></th>
+              <th scope="col"><span class="return-detail__th-label">Hoàn cuối<br>cùng</span></th>
             </tr></thead>
             <tbody>
               @for (item of ret.items; track item.orderItemId) {
@@ -95,9 +95,9 @@
                   <td><span class="return-detail__product-thumb" aria-label="Chưa có ảnh sản phẩm">Chưa có ảnh</span></td>
                   <td class="return-detail__product-name">
                     <strong>{{ item.productName }}</strong>
-                    @if (item.requestedQty > 0 && item.requestedQty < item.orderedQty) {
+                    @if (ret.status === 'COMPLETED' && item.requestedQty > 0) {
                       <span class="return-detail__partial-badge">
-                        {{ ret.status === 'COMPLETED' ? 'Hoàn' : 'Trả' }} {{ item.requestedQty }}/{{ item.orderedQty }}
+                        Hoàn {{ refundedQuantity(ret, item) }}/{{ item.requestedQty }}
                       </span>
                     }
                   </td>
