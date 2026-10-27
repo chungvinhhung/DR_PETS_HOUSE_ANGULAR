@@ -56,8 +56,6 @@ export class AdminStaffScheduleComponent {
   readonly templateError = signal('');
   readonly selectedOptions = computed(() => this.createdOptions());
   readonly role = signal('ALL');
-  readonly page = signal(1);
-  readonly pageSize = 6;
   readonly roles = Object.entries(JOB_LABELS) as [JobRole, string][];
   readonly branches = computed(() => this.staffApi.branches());
   readonly activeBranch = computed(() => this.branches().find(x => x.id === this.branch()));
@@ -73,14 +71,8 @@ export class AdminStaffScheduleComponent {
   readonly filtered = computed(() => this.staffApi.staff().filter(staff =>
     (this.role() === 'ALL' || staff.jobRole === this.role()) &&
     !!this.branch() && !!staff.branchIds?.includes(this.branch())));
-  readonly pageCount = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.pageSize)));
-  readonly visiblePageNumbers = computed(() => {
-    const total = this.pageCount();
-    const current = this.page();
-    const start = Math.max(1, Math.min(current - 1, total - 2));
-    return Array.from({length: Math.min(3,total)}, (_, i) => start + i);
-  });
-  readonly rows = computed(() => this.filtered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
+  // The weekly grid displays every matching staff member; Figma has no pagination.
+  readonly rows = this.filtered;
 
   displayName = displayStaffName;
   roleLabel(staff: StaffPreview): string { return JOB_LABELS[staff.jobRole]; }
@@ -89,9 +81,8 @@ export class AdminStaffScheduleComponent {
       shift.staffId === staffId && shift.isoDate === iso &&
       shift.branchId === this.branch()).sort((a,b)=>a.time.localeCompare(b.time));
   }
-  selectRole(value: string) { this.role.set(value); this.page.set(1); }
-  selectBranch(value: string) { if (!this.branches().some(b=>b.id===value)) return; this.branch.set(value); this.page.set(1); this.createdOptions.set([]); }
-  changePage(value: number) { if (value >= 1 && value <= this.pageCount()) this.page.set(value); }
+  selectRole(value: string) { this.role.set(value); }
+  selectBranch(value: string) { if (!this.branches().some(b=>b.id===value)) return; this.branch.set(value); this.createdOptions.set([]); }
   changeWeek(delta: number) { this.monday.set(dateFor(this.monday(), delta * 7)); }
   goToday(): void { this.monday.set(mondayOf(todayIso())); }
 
