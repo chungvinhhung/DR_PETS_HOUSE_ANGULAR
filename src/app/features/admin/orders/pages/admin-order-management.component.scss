@@ -116,3 +116,12 @@
 .order-admin__pagination button:disabled{color:#b1bfce}
 .order-admin__pagination>div{max-width:100%;overflow-x:auto}
 .order-admin__btn{width:max-content;max-width:100%}
+
+/* Figma 7432:38519 — consistent order detail cards, spacing and key-value grid. */
+.order-admin__card{padding:24px;margin-bottom:16px}
+.order-admin__card h2{font-size:18px;font-weight:600;line-height:26px}
+.order-admin__information{gap:20px 18px}
+.order-admin__heading{align-items:center}
+.order-admin__heading h1{font-size:28px;line-height:36px}
+.order-admin__table-panel{overflow:hidden}
+@media(max-width:800px){.order-admin__card{padding:16px}}
