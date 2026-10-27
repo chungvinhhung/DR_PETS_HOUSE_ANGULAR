@@ -4548,3 +4548,85 @@ app-admin-catalog-shell :is(
   color:#0d47a1 !important;
   font:600 12px/20px Roboto,Arial,sans-serif !important;
 }
+
+
+/* WEB2 — Create Product typography aligned with the other Admin edit forms.
+   Apply only within this screen; keep geometry, validators and variant logic. */
+app-admin-product-create-page .product-screen {
+  font-size: 13px;
+  line-height: 1.5;
+}
+app-admin-product-create-page .product-screen .page-head h1 {
+  font: 700 24px/30px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen .panel h2 {
+  font: 700 16px/22px Roboto, Arial, sans-serif;
+  min-height: 22px;
+}
+app-admin-product-create-page .product-screen .form-field {
+  font: 500 12px/18px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen .form-field > :is(.field-label, span:first-child) {
+  min-height: 18px;
+  line-height: 18px;
+  font-size: 12px;
+  font-weight: 600;
+}
+app-admin-product-create-page .product-screen .form-field :is(
+  input:not([type="radio"]), select, textarea
+) {
+  font: 400 13px/20px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen :is(input, textarea)::placeholder {
+  color: #71829b;
+  opacity: 1;
+  font: 400 13px/20px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen .radios label {
+  font: 400 13px/20px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen :is(
+  .head-buttons .btn-outline, .head-buttons .btn-primary, .variant-panel .add
+) {
+  font: 600 13px/20px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen :is(
+  .status-row, .upload, .price-summary
+) {
+  font-size: 13px;
+}
+app-admin-product-create-page .product-screen .upload small {
+  font-size: 11px;
+  line-height: 16px;
+}
+app-admin-product-create-page .product-screen .single-price-fields .field-label {
+  font-size: 12px;
+  line-height: 18px;
+}
+app-admin-product-create-page .product-screen .single-price-fields .currency-input > input[type="number"] {
+  font: 400 13px/20px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen .single-price-fields .calculated-price output {
+  font-size: 13px;
+}
+app-admin-product-create-page .product-screen .variant-panel table {
+  font-size: 12px;
+}
+app-admin-product-create-page .product-screen .variant-panel th {
+  font-size: 12px;
+  font-weight: 600;
+}
+app-admin-product-create-page .product-screen .variant-panel td {
+  font-size: 13px;
+}
+app-admin-product-create-page .product-screen .variant-panel td input {
+  font: 400 13px/20px Roboto, Arial, sans-serif;
+}
+app-admin-product-create-page .product-screen .variant-panel .variant-currency-input > input[type="number"] {
+  font-size: 13px;
+}
+app-admin-product-create-page .product-screen .variant-panel :is(
+  .variant-price-output, .variant-unit
+) {
+  font-size: 13px;
+}
