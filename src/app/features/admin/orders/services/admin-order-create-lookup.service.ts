@@ -58,6 +58,8 @@ export class AdminOrderCreateLookupService {
         label: variant.label,
         price: variant.finalPrice,
         availableStock: variant.availableStock,
+        imageUrl: variant.image || product.images.find(image => image.isPrimary)?.url
+          || product.images[0]?.url || undefined,
       }));
   }
 }
