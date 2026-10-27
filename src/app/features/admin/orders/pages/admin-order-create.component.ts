@@ -93,7 +93,6 @@ export class AdminOrderCreateComponent {
   ];
   readonly voucherCode = signal('');
   readonly voucherPreviewState = signal<VoucherPreviewState>('idle');
-  readonly reviewAttempted = signal(false);
   readonly cancelDialogOpen = signal(false);
   readonly note = signal('');
   // Listing finalPrice includes the product's own discount; BE remains the source
