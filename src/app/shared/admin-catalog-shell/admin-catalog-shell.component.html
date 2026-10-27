@@ -17,7 +17,7 @@
 
   <div class="catalog-layout">
     <aside class="catalog-sidebar">
-      <nav aria-label="Điều hướng quản trị">
+      <nav aria-label="Điều hướng quản trị" [class.catalog-sidebar__nav--animated]="sidebarAnimationEnabled">
         <a class="catalog-sidebar__link" routerLink="/admin/dashboard">
           <img src="/assets/admin-product/icon-dashboard.svg" alt="" width="20" height="20">
           Dashboard
