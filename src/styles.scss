@@ -3089,3 +3089,158 @@ app-admin-order-return-detail .return-detail__extra--bottom .return-detail__meta
   app-admin-order-return-detail .return-detail__stock-row {align-items:stretch;flex-wrap:wrap;}
   app-admin-order-return-detail .return-detail__metadata--overview {grid-template-columns:1fr;}
 }
+
+
+/* WEB2 Figma QA 2026-10-27 — corrections based on the user's paired screenshots.
+   All selectors are restricted to Order and Return DETAIL components. */
+
+/* Return workflow: reached steps, including the LAST step, are green;
+   each milestone shows its actual date and the progress rail never appears
+   as an outlined blue interactive stepper. */
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--done .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--done .return-detail__progress-bar {
+  background:#2f935b !important;
+  border:0 !important;
+}
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--done .return-detail__progress-head {
+  color:#475569 !important;
+}
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--current.return-detail__progress--done .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--current.return-detail__progress--done .return-detail__progress-bar {
+  background:#2f935b !important;
+}
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--rejected .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--rejected .return-detail__progress-bar {
+  background:#e2e8f0 !important;
+}
+app-admin-order-return-detail .return-detail__progress-bar {
+  margin:8px 0 7px;
+  height:3px;
+}
+app-admin-order-return-detail .return-detail__progress li small {
+  color:#64748b;font-size:10px;
+}
+
+/* Return product table mirrors Figma's restrained type and thumbnail.
+   Each row reflects actual BE items (never mock extra rows or quantities). */
+app-admin-order-return-detail .return-detail__table thead th {
+  font-size:11px !important;
+  font-weight:600 !important;
+  line-height:15px !important;
+  color:#475569 !important;
+  padding-block:9px !important;
+}
+app-admin-order-return-detail .return-detail__table tbody td {
+  font-size:12px !important;
+  line-height:17px !important;
+  font-weight:400;
+  padding-block:12px !important;
+}
+app-admin-order-return-detail .return-detail__table .return-detail__product-name > strong {
+  display:block;color:#3e4e65;font-weight:500;
+}
+app-admin-order-return-detail .return-detail__partial-badge {
+  display:table;width:max-content;max-width:100%;
+  margin-top:5px;padding:2px 7px;
+  border:1px solid #d7bcff;border-radius:99px;
+  background:#f1e7ff;color:#783ac5;
+  font:500 10px/14px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__table .return-detail__product-thumb {
+  width:48px;height:48px;min-width:48px;padding:4px;
+  border-radius:8px;
+}
+
+/* Return reason & evidence: plain bold reason, divider and compact audit
+   timeline, rather than a bordered input-looking box and oversized panels. */
+app-admin-order-return-detail .return-detail__columns {
+  align-items:stretch;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__panel {
+  padding:18px !important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__subheading {
+  color:#34435a;font-size:12px;font-weight:600;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__reason {
+  box-sizing:border-box;
+  padding:0 0 12px !important;
+  margin:0 0 12px !important;
+  border:0 !important;
+  border-bottom:1px solid #e2e8f0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  color:#253248 !important;
+  font-weight:600 !important;
+  line-height:18px;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline {
+  padding:0 !important;
+  margin:0 !important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li {
+  box-sizing:border-box;
+  min-height:50px !important;
+  margin-left:7px !important;
+  padding:0 0 12px 18px !important;
+  border-left:2px solid #e2e8f0 !important;
+  font-size:12px;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li:last-child {
+  border-left-color:transparent !important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline-dot {
+  top:3px !important;left:-6px !important;
+  width:10px !important;height:10px !important;
+  border:0 !important;border-radius:50% !important;
+  background:#e2e8f0 !important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline--latest .return-detail__timeline-dot {
+  background:#2f935b !important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li strong {
+  font-size:12px;line-height:17px;color:#334155;font-weight:600;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li small,
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li p {
+  font-size:11px;line-height:16px;
+  color:#64748b;
+  margin:2px 0 0;
+}
+
+/* Figma Order overview: only 3 columns x 2 rows. No extra disclosure. */
+app-admin-order-management .order-admin__card--detail .order-admin__information {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  column-gap:16px;row-gap:12px;
+}
+app-admin-order-management .order-admin__card--detail .order-admin__information > div > strong {
+  display:block;
+  line-height:17px;
+  font-weight:500;
+  color:#111827;
+}
+app-admin-order-management .order-admin__card--detail .order-admin__information > div:nth-child(3) strong {
+  overflow-wrap:break-word;
+}
+@media(max-width:760px) {
+  app-admin-order-management .order-admin__card--detail .order-admin__information {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:520px) {
+  app-admin-order-management .order-admin__card--detail .order-admin__information {
+    grid-template-columns:1fr;
+  }
+}
+
+/* Order detail: transition date replaces old "Đã chuyển bước" filler.
+   The history visibly logs all reached milestones, even when an individual
+   backend timestamp is not available. */
+app-admin-order-management .order-admin__progress-step small {
+  font-size:10px;line-height:14px;
+  white-space:normal;
+}
+app-admin-order-management .order-admin__history li {
+  min-height:47px;
+}
