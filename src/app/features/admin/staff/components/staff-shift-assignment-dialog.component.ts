@@ -27,17 +27,17 @@ export function overlaps(a: DayShiftDraft, b: DayShiftDraft): boolean {
         <button type="button" aria-label="Đóng" class="shift-assign-x" (click)="askClose()">×</button>
       </header>
       <div class="shift-assign-context">
-        <span><small>Nhân viên</small><strong>{{ employee ? displayName(employee) : '—' }}</strong></span>
-        <span><small>Ngày làm việc</small><strong>{{ dateLabel }}</strong></span>
-        <span><small>Chi nhánh</small><strong>{{ branchName }}</strong></span>
+        <span><small>Nhân viên</small><strong class="shift-assign-person" [title]="employee ? displayName(employee) : ''">{{ employee ? displayName(employee) : '—' }}</strong></span>
+        <span><small>Ngày làm việc</small><strong class="shift-assign-date">{{ dateLabel }}</strong></span>
+        <span><small>Chi nhánh</small><strong class="shift-assign-branch" [title]="branchName">{{ branchName }}</strong></span>
       </div>
       <h3>Các ca đã phân trong ngày</h3>
       <div class="shift-assign-items">
         @for (item of draft(); track item.id) {
           <div class="shift-assign-item">
-            <span class="shift-assign-clock">◷</span>
+            <span class="shift-assign-clock" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg></span>
             <div><strong>{{ item.name }}</strong><small>{{ item.start }} – {{ item.end }}</small></div>
-            <button type="button" [attr.aria-label]="'Gỡ ' + item.name" (click)="remove(item.id)" class="shift-assign-delete">⌫</button>
+            <button type="button" [attr.aria-label]="'Gỡ ' + item.name" (click)="remove(item.id)" class="shift-assign-delete"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 7V4h4v3M7 7l1 13h8l1-13M10 11v6M14 11v6"/></svg></button>
           </div>
         } @empty { <p class="shift-assign-empty">Chưa được phân ca trong ngày.</p> }
       </div>
