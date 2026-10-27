@@ -59,3 +59,12 @@
 .voucher-editor__fields{gap:20px 16px}
 .voucher-editor__fields input,.voucher-editor__fields select{min-height:44px}
 @media(max-width:760px){.voucher-editor__fields,.voucher-editor__summary{grid-template-columns:1fr}}
+
+/* Figma VP-03: benefit conditions and usage share a two-column row. */
+.voucher-editor__detail-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;gap:16px}
+.voucher-editor__detail-grid>.voucher-editor__panel{margin:0;min-width:0}
+.voucher-editor__detail-grid .voucher-editor__summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+.voucher-editor__detail-grid .voucher-editor__summary--usage{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:1100px){.voucher-editor__detail-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.voucher-editor__detail-grid .voucher-editor__summary,
+.voucher-editor__detail-grid .voucher-editor__summary--usage{grid-template-columns:1fr}}
