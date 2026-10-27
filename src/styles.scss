@@ -4741,8 +4741,11 @@ app-admin-product-create-page .product-screen .basics .form-field input.auto-gen
 }
 
 
-/* WEB2 sidebar: fluid accordion, including close animation; avoid [hidden]
-   display:none snap while preserving hidden semantics and focus visibility. */
+/* WEB2 sidebar accordion.
+   Each Admin route creates a new sidebar shell: disable submenu transitions on
+   mounting/navigation, and enable them only for a user-triggered expand/collapse.
+   This prevents the previously visited group from "closing again" after a click
+   on a child in the newly expanded group. */
 app-admin-catalog-shell .catalog-sidebar__children {
   display:flex;
   max-height:360px;
@@ -4750,9 +4753,7 @@ app-admin-catalog-shell .catalog-sidebar__children {
   visibility:visible;
   overflow:hidden;
   transform:translateY(0);
-  transition:max-height 300ms cubic-bezier(.2,.7,.2,1),
-    opacity 220ms ease,transform 300ms cubic-bezier(.2,.7,.2,1),
-    margin-bottom 300ms ease,padding 300ms ease,visibility 0s;
+  transition:none;
 }
 app-admin-catalog-shell .catalog-sidebar__children[hidden] {
   display:flex !important;
@@ -4764,6 +4765,14 @@ app-admin-catalog-shell .catalog-sidebar__children[hidden] {
   padding-top:0 !important;
   padding-bottom:0 !important;
   pointer-events:none;
+  transition:none;
+}
+app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__children {
+  transition:max-height 300ms cubic-bezier(.2,.7,.2,1),
+    opacity 220ms ease,transform 300ms cubic-bezier(.2,.7,.2,1),
+    margin-bottom 300ms ease,padding 300ms ease,visibility 0s;
+}
+app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__children[hidden] {
   transition:max-height 260ms ease-in-out,opacity 180ms ease,
     transform 260ms ease-in-out,margin-bottom 260ms ease-in-out,
     padding 260ms ease,visibility 0s linear 260ms;
@@ -4772,7 +4781,7 @@ app-admin-catalog-shell .catalog-sidebar__group {
   transition:background-color 200ms ease,color 200ms ease;
 }
 @media(prefers-reduced-motion:reduce) {
-  app-admin-catalog-shell .catalog-sidebar__children,
-  app-admin-catalog-shell .catalog-sidebar__children[hidden],
+  app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__children,
+  app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__children[hidden],
   app-admin-catalog-shell .catalog-sidebar__group { transition:none; }
 }
