@@ -298,11 +298,11 @@
             <table class="order-admin__table order-admin__table--figma web2-product-table">
               <thead><tr>
                 <th scope="col">Mã đơn</th>
-                <th scope="col">Ngày tạo</th>
+                <th scope="col" class="web2-cell-center">Ngày tạo</th>
                 <th scope="col">Giờ tạo</th>
                 <th scope="col">Khách hàng</th>
                 <th scope="col">Tổng tiền</th>
-                <th scope="col">Thanh toán</th>
+                <th scope="col" class="web2-cell-center">Thanh toán</th>
                 <th scope="col">Trạng thái</th>
                 <th scope="col" class="order-admin__action-head">Thao tác</th>
               </tr></thead>
@@ -317,11 +317,11 @@
                   @for (order of pageRows(); track order.id) {
                     <tr>
                       <td><a class="order-admin__link" [routerLink]="['/admin/orders',order.id]">{{ order.code }}</a></td>
-                      <td>{{ datePart(order.createdAt) }}</td>
+                      <td class="web2-cell-center">{{ datePart(order.createdAt) }}</td>
                       <td>{{ timePart(order.createdAt) }}</td>
                       <td class="order-admin__customer">{{ customerName(order) }}</td>
                       <td>{{ price(order.pricing.totalAmount) }}</td>
-                      <td>{{ paymentLabel(order) === 'Thanh toán khi nhận hàng (COD)' ? 'COD' : paymentStatus(order) }}</td>
+                      <td class="web2-cell-center">{{ paymentLabel(order) === 'Thanh toán khi nhận hàng (COD)' ? 'COD' : paymentStatus(order) }}</td>
                       <td><span class="order-admin__badge" [attr.data-status]="order.status">{{ statusLabel(order.status) }}</span></td>
                       <td class="order-admin__action-head">
                         <a class="order-admin__icon-link" [routerLink]="['/admin/orders',order.id]"
@@ -343,10 +343,10 @@
           } @else {
             <table class="order-admin__table order-admin__table--returns web2-product-table">
               <thead><tr>
-                <th scope="col">Mã yêu cầu</th><th scope="col">Ngày tạo</th>
+                <th scope="col">Mã yêu cầu</th><th scope="col" class="web2-cell-center">Ngày tạo</th>
                 <th scope="col">Đơn hàng</th><th scope="col">Sản phẩm trả</th>
-                <th scope="col">Tiền dự kiến hoàn</th>
-                <th scope="col">Hoàn cuối cùng</th>
+                <th scope="col" class="web2-cell-center">Tiền dự kiến hoàn</th>
+                <th scope="col" class="web2-cell-center">Hoàn cuối cùng</th>
                 <th scope="col">Trạng thái</th>
                 <th scope="col">Thao tác</th>
               </tr></thead>
@@ -360,11 +360,11 @@
                 } @else {
                   @for (ret of returnPageRows(); track ret.id) {
                     <tr>
-                      <td>{{ ret.id.slice(-8) }}</td><td>{{ datePart(ret.history?.[0]?.at) }}</td>
+                      <td>{{ ret.id.slice(-8) }}</td><td class="web2-cell-center">{{ datePart(ret.history?.[0]?.at) }}</td>
                       <td>{{ ret.orderId.slice(-8) }}</td>
                       <td>{{ ret.items[0]?.productName || '—' }} @if (ret.items.length > 1) { (+{{ ret.items.length - 1 }}) }</td>
-                      <td>{{ price(ret.refundBreakdown.total) }}</td>
-                      <td class="order-admin__final-refund">
+                      <td class="web2-cell-center">{{ price(ret.refundBreakdown.total) }}</td>
+                      <td class="order-admin__final-refund web2-cell-center">
                         {{ finalRefundAmount(ret) === null ? '—' : price(finalRefundAmount(ret)!) }}
                       </td>
                       <td><span class="order-admin__badge" [attr.data-status]="ret.status">{{ returnStatusLabel(ret.status) }}</span></td>
