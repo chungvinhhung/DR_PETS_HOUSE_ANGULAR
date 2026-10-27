@@ -93,7 +93,14 @@
               @for (item of ret.items; track item.orderItemId) {
                 <tr [class.return-detail__item--requested]="item.requestedQty > 0">
                   <td><span class="return-detail__product-thumb" aria-label="Chưa có ảnh sản phẩm">Chưa có ảnh</span></td>
-                  <td><strong>{{ item.productName }}</strong></td>
+                  <td class="return-detail__product-name">
+                    <strong>{{ item.productName }}</strong>
+                    @if (item.requestedQty > 0 && item.requestedQty < item.orderedQty) {
+                      <span class="return-detail__partial-badge">
+                        {{ ret.status === 'COMPLETED' ? 'Hoàn' : 'Trả' }} {{ item.requestedQty }}/{{ item.orderedQty }}
+                      </span>
+                    }
+                  </td>
                   <td>{{ orderSku(item.orderItemId) }}</td>
                   <td>{{ item.orderedQty }}</td>
                   <td>{{ item.alreadyReturnedQty }}</td>
@@ -164,15 +171,6 @@
           <div><span>Số thẻ / Số tài khoản / Số ví</span><strong>BE chưa cung cấp</strong></div>
           <div><span>Tên chủ tài khoản</span><strong>BE chưa cung cấp</strong></div>
         </div>
-        <details class="return-detail__extra">
-          <summary>Chi tiết đối soát</summary>
-          <div class="return-detail__metadata">
-            <div><span>Tiền hàng dự kiến hoàn</span><strong>{{ money(ret.refundBreakdown.merchandiseNet) }}</strong></div>
-            <div><span>Hoàn cuối cùng</span><strong>{{ money(finalRefundAmount()) }}</strong></div>
-            <div><span>Ngày hoàn tiền</span><strong>{{ when(refund()?.refundedAt) }}</strong></div>
-          </div>
-          <p class="return-detail__muted">Giá trị do Backend tính trên giá thực trả sau phân bổ voucher; phí vận chuyển không hoàn nếu API trả về 0đ.</p>
-        </details>
       </section>
 
       <section class="return-detail__panel return-detail__panel--warehouse" aria-label="Tình trạng nhập kho">
@@ -187,19 +185,7 @@
           <button type="button" class="return-detail__button return-detail__button--stock" disabled
             title="Chưa có mã phiếu nhập kho do BE cung cấp">Xem trong Kho</button>
         </div>
-        <details class="return-detail__extra"><summary>Giới hạn dữ liệu kho</summary>
-          <p>Chưa có API xác nhận kiểm tra hoặc giao dịch nhập kho theo SKU; hoàn tiền không đồng nghĩa nhập lại kho.</p>
-        </details>
       </section>
-      <details class="return-detail__extra return-detail__extra--bottom">
-        <summary>Thông tin bổ sung về yêu cầu</summary>
-        <div class="return-detail__metadata">
-          <div><span>Mã yêu cầu</span><strong>{{ ret.id }}</strong></div>
-          <div><span>Ngày gửi yêu cầu</span><strong>{{ when(requestSubmittedAt(ret)) }}</strong></div>
-          <div><span>Số lượng yêu cầu trả</span><strong>{{ totalQuantity() }} sản phẩm</strong></div>
-          <div><span>Tiền hoàn dự kiến</span><strong>{{ money(ret.refundBreakdown.total) }}</strong></div>
-        </div>
-      </details>
     }
 
     @if (dialog(); as action) {
