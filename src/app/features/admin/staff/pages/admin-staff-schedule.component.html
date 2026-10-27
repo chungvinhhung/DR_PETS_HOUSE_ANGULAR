@@ -41,7 +41,7 @@
         <thead><tr><th>Nhân viên</th>@for (day of days(); track day.iso) { <th><span class="schedule-day"><span>{{ day.weekday }}</span><small>{{ day.dayMonth }}</small></span></th> }</tr></thead>
         <tbody>
         @for (staff of rows(); track staff.id) {
-          <tr><th scope="row"><a [routerLink]="['/admin/staff',staff.id]">{{ displayName(staff) }}</a><small>{{ staff.id }}</small></th>
+          <tr><th scope="row"><a [routerLink]="['/admin/staff',staff.id]">{{ displayName(staff) }}</a><small>{{ roleLabel(staff) }}</small></th>
             @for (day of days(); track day.iso) {
               <td>
                 <button type="button" class="schedule-cell" [attr.aria-label]="'Phân công ca cho '+displayName(staff)+' ngày '+day.iso"
