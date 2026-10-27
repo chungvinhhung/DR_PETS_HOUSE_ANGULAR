@@ -2024,3 +2024,19 @@ app-admin-catalog-shell :is(
   overflow-x:auto
  }
 }
+
+/* Exact selectors for legacy add actions used by Category, Product and Branch. */
+app-admin-category-page .btn-primary,
+app-admin-product-list-page .primary-btn,
+app-branch-management-page .branch-v2-page__add,
+app-service-catalog-list .service-catalog__create {
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:44px;height:44px;width:max-content;max-width:100%;padding:0 16px;
+  background:#0d47a1;color:#fff;border:1px solid #0d47a1;border-radius:8px;
+  font:500 14px/20px Roboto,Arial,sans-serif;text-decoration:none;white-space:nowrap;
+}
+app-admin-category-page .btn-primary span,
+app-admin-product-list-page .primary-btn span {font-size:16px;line-height:16px}
+app-branch-management-page .branch-v2-page__add:hover,
+app-admin-category-page .btn-primary:hover,
+app-admin-product-list-page .primary-btn:hover {background:#093875}
