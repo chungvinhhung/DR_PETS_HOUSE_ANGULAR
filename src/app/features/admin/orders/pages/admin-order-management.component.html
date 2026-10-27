@@ -165,16 +165,16 @@
           <input #searchBox type="search" placeholder="Tìm kiếm mã đơn hoặc tên KH..."
             aria-label="Tìm kiếm" [value]="search()" (input)="setSearch(searchBox.value)">
         </label>
-        <!-- All five controls are direct grid children to prevent nested flex wrapping. -->
+        <div class="order-admin__filter-actions">
           <label class="order-admin__status-filter"><span class="sr-only">Trạng thái</span>
             <select #statusField [value]="status()" (change)="setStatus(statusField.value)">
               <option value="ALL">Tất cả trạng thái</option>
-                <option value="PENDING">Chờ xác nhận</option>
-                <option value="CONFIRMED">Đã xác nhận</option>
-                <option value="PROCESSING">Đang chuẩn bị</option>
-                <option value="SHIPPED">Đang giao</option>
-                <option value="COMPLETED">Đã giao</option>
-                <option value="CANCELLED">Đã hủy</option>
+              <option value="PENDING">Chờ xác nhận</option>
+              <option value="CONFIRMED">Đã xác nhận</option>
+              <option value="PROCESSING">Đang chuẩn bị</option>
+              <option value="SHIPPED">Đang giao</option>
+              <option value="COMPLETED">Đã giao</option>
+              <option value="CANCELLED">Đã hủy</option>
             </select>
           </label>
           <label class="order-admin__date-filter"><span class="sr-only">Khoảng thời gian</span>
@@ -194,6 +194,7 @@
               <span class="web2-add-icon" aria-hidden="true">+</span><span>Đơn hàng mới</span>
             </a>
           }
+        </div>
       </div>
 
       } @else {
@@ -361,7 +362,7 @@
                   @for (ret of returnPageRows(); track ret.id) {
                     <tr>
                       <td>{{ ret.id.slice(-8) }}</td><td class="web2-cell-center">{{ datePart(ret.history?.[0]?.at) }}</td>
-                      <td>{{ ret.orderId.slice(-8) }}</td>
+                      <td>{{ returnOrderCode(ret.orderId) }}</td>
                       <td>{{ ret.items[0]?.productName || '—' }} @if (ret.items.length > 1) { (+{{ ret.items.length - 1 }}) }</td>
                       <td class="web2-cell-center">{{ price(ret.refundBreakdown.total) }}</td>
                       <td class="order-admin__final-refund web2-cell-center">
