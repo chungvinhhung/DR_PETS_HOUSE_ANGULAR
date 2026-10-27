@@ -412,7 +412,9 @@ export class AdminOrderCreateComponent {
         this.productLoading.set(false);
         this.productResults.set([]);
         this.productError.set(true);
-        this.toast.show(adminErrorMessage(error, 'Chưa tải được danh sách sản phẩm.'));
+        // Lookup failures are shown inline next to "Thử lại". Do not show
+        // a misleading global form-validation toast for an automatic GET.
+
       },
     });
   }
