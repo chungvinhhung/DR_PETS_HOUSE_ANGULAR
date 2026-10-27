@@ -94,7 +94,7 @@
           <nav aria-label="Phân trang chi nhánh">
             <button type="button" aria-label="Trang trước" [disabled]="listPage() === 1"
               (click)="changePage(listPage() - 1)">‹</button>
-            @for (index of [1, 2, 3, 4, 5]; track index) {
+            @for (index of visiblePageNumbers; track index) {
               @if (index <= pageCount) {
                 <button type="button" [class.branch-v2-page__page--active]="index === listPage()"
                   [attr.aria-current]="index === listPage() ? 'page' : null" (click)="changePage(index)">{{ index }}</button>
