@@ -2369,7 +2369,7 @@ app-admin-product-list-page .web2-management-filter-button.web2-management-filte
   border-spacing:0;
   color:#37475e;
   background:#fff;
-  font:400 14px/1.4 Roboto,Arial,sans-serif;
+  font:400 12px/1.4 Roboto,Arial,sans-serif;
 }
 app-admin-order-management table.order-admin__table--returns.web2-product-table {min-width:1100px}
 :is(app-admin-order-management,app-admin-voucher-list) table.web2-product-table thead th {
@@ -2380,7 +2380,7 @@ app-admin-order-management table.order-admin__table--returns.web2-product-table 
   border-bottom:1px solid #e2e8f0 !important;
   background:#f8fafc !important;
   color:#17243a !important;
-  font:700 13px/20px Roboto,Arial,sans-serif !important;
+  font:700 12px/1.4 Roboto,Arial,sans-serif !important;
   text-align:left;
   vertical-align:middle;
   text-transform:none;
@@ -2395,7 +2395,7 @@ app-admin-order-management table.order-admin__table--returns.web2-product-table 
   border-bottom:1px solid #e2e8f0 !important;
   background:transparent;
   color:#37475e !important;
-  font:400 14px/1.4 Roboto,Arial,sans-serif !important;
+  font:400 12px/1.4 Roboto,Arial,sans-serif !important;
   vertical-align:middle;
   overflow-wrap:anywhere;
 }
@@ -2421,10 +2421,10 @@ app-admin-voucher-list table.voucher-list__table.web2-product-table :is(th,td):n
 app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(1){width:16%}
 app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(2){width:11%}
 app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(3){width:9%}
-app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(4){width:17%}
-app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(5){width:12%}
-app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(6){width:13%}
-app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(7){width:13%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(4){width:13%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(5){width:14%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(6){width:14%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(7){width:14%}
 app-admin-order-management table.order-admin__table--figma.web2-product-table th:nth-child(8){width:9%}
 app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-code{width:20%}
 app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-scope{width:15%}
@@ -2462,4 +2462,153 @@ app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-lis
 app-admin-voucher-list .voucher-list__table td.web2-cell-center small {
   display: block;
   margin: 4px auto 0;
+}
+
+
+/* WEB2 27/10 QA — exact table cell centering including Service > Giá cơ sở. */
+app-service-catalog-list .service-catalog__table :is(th,td).web2-cell-center,
+app-admin-voucher-list .voucher-list__table :is(th,td).web2-cell-center {
+  text-align:center !important;
+  vertical-align:middle !important;
+}
+
+/* Product's 12px table type is the reference, while preserving semantic
+   badges and links with their distinct colors and weights. */
+app-admin-order-management table.web2-product-table :is(th,td),
+app-admin-voucher-list table.web2-product-table :is(th,td) {
+  font-size:12px !important;
+}
+app-admin-order-management table.web2-product-table thead th,
+app-admin-voucher-list table.web2-product-table thead th {
+  font-weight:700 !important;
+}
+app-admin-order-management table.web2-product-table .order-admin__badge,
+app-admin-voucher-list table.web2-product-table .voucher-list__badge {
+  font-size:11px;
+}
+
+/* Align the Order local tabs with Product's 16px/24px, 46px high tab system. */
+app-admin-order-management .order-admin__tabs {
+  display:flex;
+  align-items:stretch;
+  gap:24px;
+  height:46px;
+  margin-bottom:24px;
+  border-bottom:1px solid #dce5f0;
+}
+app-admin-order-management .order-admin__tabs button {
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:46px;height:46px;
+  padding:10px 24px;
+  border:0;border-bottom:3px solid transparent;
+  background:transparent;color:#475569;
+  font:500 16px/24px Roboto,Arial,sans-serif !important;
+  letter-spacing:.2px;
+  white-space:nowrap;cursor:pointer;
+}
+app-admin-order-management .order-admin__tabs button.order-admin__tabs--active {
+  color:#0d47a1;border-bottom-color:#0d47a1;
+}
+app-admin-order-management .order-admin__tabs .web2-notification-badge {
+  font:500 11px/20px Roboto,Arial,sans-serif !important;
+  letter-spacing:0;
+  margin-left:0;
+}
+@media(max-width:760px){
+  app-admin-order-management .order-admin__tabs{gap:4px;overflow-x:auto}
+  app-admin-order-management .order-admin__tabs button{padding-inline:12px}
+}
+
+/* Search is left-aligned. All four actions are clustered at the right edge,
+   instead of occupying five equally spaced grid columns. */
+app-admin-order-management .order-admin__filters.order-admin__filters--figma{
+  display:grid !important;
+  grid-template-columns:minmax(0,540px) minmax(0,1fr) !important;
+  grid-template-rows:minmax(48px,auto) !important;
+  gap:16px !important;
+  align-items:center;
+  min-height:84px;
+  padding:16px !important;
+  overflow-x:visible;
+  overflow-y:visible;
+}
+app-admin-order-management .order-admin__filters--figma .order-admin__search{
+  display:flex;
+  width:100% !important;max-width:540px !important;
+  min-width:0 !important;height:48px !important;
+  margin:0;border:1px solid #dce5f0;border-radius:8px;
+}
+app-admin-order-management .order-admin__filter-actions{
+  display:flex;align-items:center;justify-content:flex-end;
+  justify-self:end;
+  gap:12px;min-width:0;margin-left:auto;
+  white-space:nowrap;
+}
+app-admin-order-management .order-admin__filter-actions .order-admin__status-filter {
+  flex:0 0 160px;width:160px;
+}
+app-admin-order-management .order-admin__filter-actions .order-admin__date-filter {
+  flex:0 0 160px;width:160px;
+}
+app-admin-order-management .order-admin__filter-actions .order-admin__btn {
+  flex:none;width:max-content;
+  height:40px;min-height:40px;
+}
+@media(max-width:1260px){
+  app-admin-order-management .order-admin__filters.order-admin__filters--figma{
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:12px !important;
+  }
+  app-admin-order-management .order-admin__filter-actions{
+    justify-self:end;
+    margin-left:auto;
+  }
+}
+@media(max-width:700px){
+  app-admin-order-management .order-admin__filter-actions{
+    justify-self:stretch;
+    justify-content:flex-start;flex-wrap:wrap;
+    margin-left:0;
+  }
+}
+
+/* The product picker has ONE outer border. Keyboard focus highlights its
+   container; the nested input must never show a second round outline. */
+app-admin-order-create .create-order__search-field--product {
+  display:flex;align-items:center;
+  box-sizing:border-box;
+  width:100%;height:44px;
+  border:1px solid #dce5f0;border-radius:10px;
+  padding:0 12px;gap:10px;
+  background:#fff;
+}
+app-admin-order-create .create-order__search-field--product input {
+  min-width:0;flex:1;height:100%;
+  border:0 !important;outline:0 !important;
+  border-radius:0 !important;box-shadow:none !important;
+  padding:0;background:transparent;
+}
+app-admin-order-create .create-order__search-field--product input:focus-visible{
+  border:0 !important;outline:0 !important;box-shadow:none !important;
+}
+app-admin-order-create .create-order__search-field--product:focus-within {
+  border-color:#0d47a1;box-shadow:0 0 0 2px rgba(13,71,161,.14);
+}
+app-admin-order-create .create-order__search-field--product img{flex:0 0 18px}
+
+/* Return date range: the calendar icon hugs the dates rather than
+   being pushed to the far end of the 222px grid area. */
+app-admin-order-management .order-admin__filters--returns .order-admin__range-trigger {
+  display:inline-flex;
+  justify-content:flex-start;
+  width:max-content;max-width:100%;
+  min-width:0;
+  gap:10px;padding:0 12px;
+  font-variant-numeric:tabular-nums;
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__range-trigger .order-admin__range-values {
+  gap:5px;flex:none;
+}
+app-admin-order-management .order-admin__filters--returns .order-admin__range-trigger svg {
+  margin-left:0;flex:0 0 18px;
 }
