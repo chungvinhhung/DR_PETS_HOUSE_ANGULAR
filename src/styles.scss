@@ -4378,3 +4378,173 @@ app-admin-catalog-shell .web2-filterbar.web2-filterbar .toolbar-selects .date-fi
   .shift-assign-dialog .shift-assign-context span:first-child {grid-column:1/-1}
   .shift-assign-dialog .shift-assign-scope {flex-wrap:wrap}
 }
+
+
+/* WEB2 27 Oct: fix Branch's nested filter group. The select must never
+   exceed its label width or overlap the Add Branch control. */
+app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar {
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+}
+app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar .branch-v2-page__filter-actions {
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  flex:0 0 auto;
+  gap:12px;
+  min-width:0;
+  margin-left:auto;
+}
+app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar .branch-v2-page__filter-actions .branch-v2-page__status-filter {
+  position:relative;
+  display:block;
+  flex:0 0 180px !important;
+  width:180px !important;
+  min-width:0 !important;
+  max-width:180px;
+  height:40px;
+  margin:0 !important;
+}
+app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar .branch-v2-page__filter-actions .branch-v2-page__status-filter select {
+  display:block;
+  box-sizing:border-box;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  height:40px !important;
+  padding:0 36px 0 12px !important;
+  appearance:none;
+  background-color:#fff;
+}
+app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar .branch-v2-page__filter-actions .branch-v2-page__filter-chevron {
+  right:12px;
+  pointer-events:none;
+}
+app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar .branch-v2-page__filter-actions .branch-v2-page__add {
+  position:relative;
+  flex:0 0 auto !important;
+  width:max-content !important;
+  min-width:max-content !important;
+  margin:0 !important;
+}
+@media(max-width:800px) {
+  app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar {flex-wrap:wrap !important}
+  app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar .branch-v2-page__filter-actions {
+    flex-wrap:wrap;
+    flex:0 1 auto;
+    margin-left:auto;
+  }
+}
+@media(max-width:550px) {
+  app-admin-catalog-shell .branch-v2-page__filters.web2-filterbar .branch-v2-page__filter-actions {
+    flex:1 1 100%;justify-content:flex-start;margin-left:0;
+  }
+}
+
+/* Voucher uses the same compact connected 44px pagination as Product. */
+app-admin-voucher-list .voucher-list__pagination > div {
+  display:inline-flex;
+  align-items:center;
+  flex:0 0 auto;
+  overflow:hidden;
+  border:1px solid #dce5f0;
+  border-radius:8px;
+}
+app-admin-voucher-list .voucher-list__pagination > div button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+  flex:0 0 44px;
+  width:44px !important;
+  min-width:44px !important;
+  height:44px !important;
+  min-height:44px !important;
+  padding:0 !important;
+  border:0;
+  border-right:1px solid #dce5f0;
+  border-radius:0 !important;
+  background:#fff;
+  color:#0d47a1;
+  font:500 15px/20px Roboto,Arial,sans-serif !important;
+}
+app-admin-voucher-list .voucher-list__pagination > div button:last-child {border-right:0}
+app-admin-voucher-list .voucher-list__pagination > div button:disabled {color:#bac8d9;cursor:default}
+app-admin-voucher-list .voucher-list__pagination > div button.voucher-list__page {
+  font-size:14px !important;
+}
+app-admin-voucher-list .voucher-list__pagination > div button.voucher-list__page--active {
+  background:#e5f6fd;
+  color:#0d47a1;
+  box-shadow:inset 0 0 0 2px #0d47a1;
+}
+
+/* Sitewide Admin breadcrumbs: Product > Add Product is the reference.
+   All actual ancestor links remain RouterLinks; current location is not clickable. */
+app-admin-catalog-shell :is(
+  .crumb,.breadcrumb,.branch-v2-page__breadcrumb,
+  .service-editor__breadcrumb,.staff-detail__breadcrumb,.assign-crumb,
+  .order-admin__crumb,.create-order__breadcrumb,.return-detail__breadcrumb,
+  .voucher-editor__crumb,.staff-breadcrumb,.schedule-crumb
+) {
+  display:flex !important;
+  align-items:center !important;
+  flex-wrap:wrap;
+  gap:0 !important;
+  min-height:20px;
+  font:400 12px/20px Roboto,Arial,sans-serif !important;
+  color:#6b7a8f !important;
+}
+app-admin-catalog-shell :is(
+  .crumb,.breadcrumb,.branch-v2-page__breadcrumb,
+  .service-editor__breadcrumb,.staff-detail__breadcrumb,.assign-crumb,
+  .order-admin__crumb,.create-order__breadcrumb,.return-detail__breadcrumb,
+  .voucher-editor__crumb,.staff-breadcrumb,.schedule-crumb
+) > a {
+  color:#4d6f9d !important;
+  font:400 12px/20px Roboto,Arial,sans-serif !important;
+  text-decoration:none !important;
+  cursor:pointer;
+  transition:color .15s ease;
+}
+app-admin-catalog-shell :is(
+  .crumb,.breadcrumb,.branch-v2-page__breadcrumb,
+  .service-editor__breadcrumb,.staff-detail__breadcrumb,.assign-crumb,
+  .order-admin__crumb,.create-order__breadcrumb,.return-detail__breadcrumb,
+  .voucher-editor__crumb,.staff-breadcrumb,.schedule-crumb
+) > a:hover {
+  color:#0d47a1 !important;
+  text-decoration:underline !important;
+  text-underline-offset:3px;
+}
+app-admin-catalog-shell :is(
+  .crumb,.breadcrumb,.branch-v2-page__breadcrumb,
+  .service-editor__breadcrumb,.staff-detail__breadcrumb,.assign-crumb,
+  .order-admin__crumb,.create-order__breadcrumb,.return-detail__breadcrumb,
+  .voucher-editor__crumb,.staff-breadcrumb,.schedule-crumb
+) > a:focus-visible {
+  outline:2px solid #0d47a1;
+  outline-offset:3px;
+  border-radius:2px;
+}
+app-admin-catalog-shell :is(
+  .crumb,.breadcrumb,.branch-v2-page__breadcrumb,
+  .service-editor__breadcrumb,.staff-detail__breadcrumb,.assign-crumb,
+  .order-admin__crumb,.create-order__breadcrumb,.return-detail__breadcrumb,
+  .voucher-editor__crumb,.staff-breadcrumb,.schedule-crumb
+) > span[aria-hidden="true"] {
+  padding:0 9px !important;
+  color:#94a3b8 !important;
+  font-weight:400 !important;
+}
+app-admin-catalog-shell :is(
+  .crumb,.breadcrumb,.branch-v2-page__breadcrumb,
+  .service-editor__breadcrumb,.staff-detail__breadcrumb,.assign-crumb,
+  .order-admin__crumb,.create-order__breadcrumb,.return-detail__breadcrumb,
+  .voucher-editor__crumb,.staff-breadcrumb,.schedule-crumb
+) > :is(strong,[aria-current="page"]) {
+  padding:0 !important;
+  color:#0d47a1 !important;
+  font:600 12px/20px Roboto,Arial,sans-serif !important;
+}
