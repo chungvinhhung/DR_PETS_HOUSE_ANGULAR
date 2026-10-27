@@ -2872,11 +2872,32 @@ app-admin-order-return-detail .return-detail__table col.return-detail__col-recei
 app-admin-order-return-detail .return-detail__table col.return-detail__col-approved {width:8%}
 app-admin-order-return-detail .return-detail__table col.return-detail__col-estimated {width:9%}
 app-admin-order-return-detail .return-detail__table col.return-detail__col-final {width:8%}
-app-admin-order-return-detail .return-detail__table :is(th,td) {width:auto !important;padding-inline:7px !important;text-align:center;}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(1) {text-align:left;padding-left:12px !important}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(2),
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(3) {text-align:left;}
-app-admin-order-return-detail .return-detail__table :is(th,td):last-child {padding-right:12px !important;text-align:right;}
+/* Match Figma: the image/product/SKU columns are left-aligned; all eight
+   quantity/refund columns share centered header and row-value alignment.
+   Column widths remain exclusively controlled by the 11-col colgroup. */
+app-admin-order-return-detail .return-detail__table :is(th,td) {
+  box-sizing:border-box;
+  width:auto !important;
+  padding-inline:8px !important;
+  vertical-align:middle;
+}
+app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(-n+3) {
+  text-align:left !important;
+}
+app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(n+4) {
+  text-align:center !important;
+  font-variant-numeric:tabular-nums;
+}
+app-admin-order-return-detail .return-detail__table tbody td:nth-child(n+4) {
+  white-space:nowrap;
+}
+app-admin-order-return-detail .return-detail__table :is(th,td):first-child {
+  padding-left:12px !important;
+}
+app-admin-order-return-detail .return-detail__table :is(th,td):last-child {
+  padding-right:12px !important;
+  text-align:center !important;
+}
 app-admin-order-return-detail .return-detail__table .return-detail__emphasis {font-weight:700;color:#0d47a1;}
 app-admin-order-return-detail .return-detail__table .return-detail__final-refund {font-weight:700;color:#268447;}
 app-admin-order-return-detail .return-detail__table :is(th,td).return-detail__table-empty {text-align:center !important;}
@@ -2890,6 +2911,11 @@ app-admin-order-management .order-admin__grid,
 app-admin-order-return-detail .return-detail__columns {
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
   gap:14px;align-items:stretch;
+}
+/* The two side-by-side cards are a single grid row. Keep the Figma
+   14px SECTION gap beneath that row, even when child margins are reset. */
+app-admin-order-return-detail .return-detail__columns {
+  margin-bottom:14px;
 }
 app-admin-order-management .order-admin__grid > .order-admin__card--detail,
 app-admin-order-return-detail .return-detail__columns > .return-detail__panel {height:100%;margin:0;}
