@@ -25,6 +25,7 @@
           <input #branchSearchInput type="search" placeholder="Tìm chi nhánh..."
             [value]="search()" (input)="updateSearch(branchSearchInput.value)" />
         </label>
+        <div class="branch-v2-page__filter-actions">
         <label class="branch-v2-page__status-filter">
           <span class="branch-v2-page__sr">Trạng thái chi nhánh</span>
           <select #branchStatusInput [value]="branchStatus()" (change)="updateBranchStatus(branchStatusInput.value)">
@@ -38,6 +39,7 @@
           <button type="button" class="branch-v2-page__btn branch-v2-page__btn--primary branch-v2-page__add web2-add-button"
             (click)="openCreateBranch()"><span class="web2-add-icon" aria-hidden="true">+</span><span>Thêm chi nhánh</span></button>
         }
+        </div>
       </section>
       <section class="branch-v2-page__table-card" aria-label="Danh sách chi nhánh">
         <div class="branch-v2-page__table-scroll">
