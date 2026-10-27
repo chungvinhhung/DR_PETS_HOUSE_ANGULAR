@@ -2433,3 +2433,33 @@ app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-lis
 app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-quota{width:16%}
 app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-status{width:11%}
 app-admin-voucher-list table.voucher-list__table.web2-product-table .voucher-list__col-actions{width:8%}
+
+
+/* WEB2 27/10 — Align the requested table column headers and their values.
+   Class is placed on the exact TH and TD, rather than guessed nth-child
+   indexes or every cell. This preserves other tables and empty colspan rows. */
+:is(
+  app-admin-product-list-page,
+  app-admin-order-management,
+  app-admin-voucher-list,
+  app-branch-management-page,
+  app-admin-staff-list
+) :is(th, td).web2-cell-center {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* Multi-line voucher effective dates and future stacked cell content. */
+:is(
+  app-admin-product-list-page,
+  app-admin-order-management,
+  app-admin-voucher-list,
+  app-branch-management-page,
+  app-admin-staff-list
+) td.web2-cell-center > :is(span, small, strong, div) {
+  text-align: center !important;
+}
+app-admin-voucher-list .voucher-list__table td.web2-cell-center small {
+  display: block;
+  margin: 4px auto 0;
+}
