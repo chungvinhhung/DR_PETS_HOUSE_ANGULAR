@@ -40,6 +40,22 @@
         </div>
       </section>
 
+      <section class="return-detail__panel" aria-label="Tiến trình xử lý yêu cầu">
+        <h2>Tiến trình xử lý yêu cầu</h2>
+        <ol class="return-detail__progress">
+          @for (step of statusSteps; track step) {
+            <li [class.return-detail__progress--done]="statusSteps.indexOf(ret.status) >= statusSteps.indexOf(step)"
+                [class.return-detail__progress--rejected]="ret.status === 'REJECTED' || ret.status === 'CANCELLED'">
+              <span class="return-detail__progress-dot" aria-hidden="true"></span>
+              <span>{{ label(step) }}</span>
+            </li>
+          }
+        </ol>
+        @if (ret.status === 'REJECTED' || ret.status === 'CANCELLED') {
+          <p class="return-detail__muted">Yêu cầu đã {{ label(ret.status).toLowerCase() }}. Lịch sử xử lý được giữ nguyên bên dưới.</p>
+        }
+      </section>
+
       <section class="return-detail__panel">
         <h2>Sản phẩm yêu cầu trả</h2>
         <div class="return-detail__scroll">
