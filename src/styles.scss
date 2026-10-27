@@ -3215,6 +3215,12 @@ app-admin-order-return-detail .return-detail__progress[data-status="COMPLETED"] 
 app-admin-order-return-detail .return-detail__progress[data-status="COMPLETED"] li.return-detail__progress--current .return-detail__progress-bar {
   background:#2f935b !important;
 }
+/* Current-step labels follow the same Figma state color as the rail. */
+app-admin-order-return-detail .return-detail__progress[data-status="REQUESTED"] li.return-detail__progress--current .return-detail__progress-head {color:#757575 !important;}
+app-admin-order-return-detail .return-detail__progress[data-status="PROCESSING"] li.return-detail__progress--current .return-detail__progress-head {color:#df8108 !important;}
+app-admin-order-return-detail .return-detail__progress[data-status="RECEIVED"] li.return-detail__progress--current .return-detail__progress-head {color:#1976d2 !important;}
+app-admin-order-return-detail .return-detail__progress[data-status="APPROVED"] li.return-detail__progress--current .return-detail__progress-head {color:#7c3fc8 !important;}
+app-admin-order-return-detail .return-detail__progress[data-status="COMPLETED"] li.return-detail__progress--current .return-detail__progress-head {color:#258448 !important;}
 app-admin-order-return-detail .return-detail__progress-bar {
   margin:8px 0 7px;
   height:3px;
