@@ -44,7 +44,12 @@ export class AdminStaffListComponent {
     );
   });
   readonly pages = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.pageSize)));
-  readonly pageNumbers = computed(() => Array.from({length: this.pages()}, (_, index) => index + 1));
+  readonly pageNumbers = computed(() => {
+    const total = this.pages();
+    const current = this.page();
+    const start = Math.max(1, Math.min(current - 1, total - 2));
+    return Array.from({ length: Math.min(3, total) }, (_, index) => start + index);
+  });
   readonly rows = computed(() => this.filtered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
 
   displayName(staff: StaffPreview): string {
