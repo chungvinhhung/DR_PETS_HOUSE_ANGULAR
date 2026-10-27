@@ -78,6 +78,8 @@ export class AdminOrderCreateComponent {
   // BE /customers does not return saved addresses yet; show no fabricated address choices.
   readonly savedAddresses = signal<ShippingAddressDraft[]>([]);
   readonly productQuery = signal('');
+  readonly productLookupOpen = signal(false);
+  readonly productHighlighted = signal(0);
   readonly productLoading = signal(false);
   readonly productError = signal(false);
   readonly productResults = signal<OrderVariantChoice[]>([]);
@@ -314,14 +316,71 @@ export class AdminOrderCreateComponent {
   }
   updateNote(value: string): void { this.note.set(value); }
 
+  openProductLookup(): void {
+    if (this.productLookupOpen()) return;
+    this.productLookupOpen.set(true);
+    this.productHighlighted.set(0);
+    // An empty query intentionally retrieves active products immediately,
+    // as in the inventory stock-receipt product picker.
+    this.queryProducts();
+  }
+
+  closeProductLookup(): void {
+    if (!this.productLookupOpen()) return;
+    this.productLookupOpen.set(false);
+    this.productRequest++;
+    if (this.productTimer !== null) clearTimeout(this.productTimer);
+    this.productTimer = null;
+    this.productLoading.set(false);
+  }
+
+  @HostListener('document:pointerdown', ['$event'])
+  onDocumentPointerDown(event: PointerEvent): void {
+    if (event.target instanceof Element &&
+        !event.target.closest('.create-order__products-lookup')) {
+      this.closeProductLookup();
+    }
+  }
+
+  onProductLookupKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      this.closeProductLookup();
+      return;
+    }
+    const options = this.productResults().filter(
+      option => option.availableStock === undefined || option.availableStock > 0,
+    );
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (!this.productLookupOpen()) {
+        this.openProductLookup();
+        return;
+      }
+      if (options.length) {
+        const currentId = this.productResults()[this.productHighlighted()]?.variantId;
+        const currentIndex = options.findIndex(item => item.variantId === currentId);
+        const delta = event.key === 'ArrowDown' ? 1 : -1;
+        const next = options[(Math.max(0, currentIndex) + delta + options.length) % options.length];
+        this.productHighlighted.set(this.productResults().indexOf(next));
+      }
+    } else if (event.key === 'Enter' && this.productLookupOpen() && options.length) {
+      event.preventDefault();
+      const highlighted = this.productResults()[this.productHighlighted()];
+      this.addProduct(highlighted && options.includes(highlighted) ? highlighted : options[0]);
+    }
+  }
+
   editProductQuery(value: string): void {
     this.productQuery.set(value);
+    this.productLookupOpen.set(true);
+    this.productHighlighted.set(0);
     this.productResults.set([]);
     this.productError.set(false);
     const version = ++this.productRequest;
-    if (this.productTimer) clearTimeout(this.productTimer);
+    if (this.productTimer !== null) clearTimeout(this.productTimer);
     if (!value.trim()) {
-      this.productLoading.set(false);
+      // Clearing the search restores the unfiltered product list.
+      this.queryProducts(version);
       return;
     }
     this.productLoading.set(true);
@@ -331,11 +390,7 @@ export class AdminOrderCreateComponent {
   queryProducts(version = ++this.productRequest): void {
     if (this.productTimer !== null) clearTimeout(this.productTimer);
     const text = this.productQuery().trim();
-    if (!text) {
-      this.productLoading.set(false);
-      this.productResults.set([]);
-      return;
-    }
+    // The Backend accepts an empty q and returns the first active products.
     this.productLoading.set(true);
     this.productError.set(false);
     this.api.searchProducts(text).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -344,9 +399,12 @@ export class AdminOrderCreateComponent {
         const candidates = data.items.flatMap(item => this.api.saleVariants(item));
         const q = text.toLocaleLowerCase('vi');
         // Search on the backend and match returned variant SKU too.
-        this.productResults.set(candidates.filter(item =>
-          [item.productName, item.label, item.sku].some(x => x.toLocaleLowerCase('vi').includes(q))
-        ));
+        // Without a search term, show all active sellable results in the page.
+        this.productResults.set(q
+          ? candidates.filter(item =>
+              [item.productName, item.label, item.sku].some(x => x.toLocaleLowerCase('vi').includes(q)))
+          : candidates);
+        this.productHighlighted.set(0);
         this.productLoading.set(false);
       },
       error: error => {
@@ -373,6 +431,7 @@ export class AdminOrderCreateComponent {
       this.lines.set([...current, { ...choice, quantity: 1 }]);
     }
     this.productQuery.set('');
+    this.productLookupOpen.set(false);
     this.productResults.set([]);
     this.productLoading.set(false);
     this.productError.set(false);
