@@ -35,6 +35,13 @@ export class AdminVoucherListComponent {
   readonly nextCursor = signal<string | null>(null);
   readonly previous = signal<(string | null)[]>([]);
   readonly page = computed(() => this.previous().length + 1);
+  // Cursor pagination exposes reachable page numbers, not fabricated total pages.
+  readonly visiblePageNumbers = computed(() => {
+    const current = this.page();
+    const from = Math.max(1, current - 2);
+    const end = current + (this.nextCursor() ? 1 : 0);
+    return Array.from({ length: end - from + 1 }, (_, i) => from + i);
+  });
   readonly canEdit = computed(() => this.session.user()?.systemRole === 'ADMIN');
   readonly hasActiveFilters = computed(() =>
     Boolean(this.search().trim()) || this.scope() !== 'ALL' || this.status() !== 'ALL' ||
@@ -101,6 +108,16 @@ export class AdminVoucherListComponent {
     if (!prev.length || this.loading()) return;
     this.cursor.set(prev[prev.length - 1]);
     this.previous.set(prev.slice(0,-1));
+    this.fetch();
+  }
+  goToPage(target: number): void {
+    if (!Number.isSafeInteger(target) || target < 1 || this.loading()) return;
+    if (target === this.page()) return;
+    if (target === this.page() + 1) { this.next(); return; }
+    if (target > this.previous().length) return;
+    const previous = this.previous();
+    this.cursor.set(previous[target - 1] ?? null);
+    this.previous.set(previous.slice(0, target - 1));
     this.fetch();
   }
   date(value: string): string { return voucherDate(value); }
