@@ -203,3 +203,16 @@
 .schedule-panel { border-color:#dee5f0; }
 .schedule-scroller thead th { height:44px; background:#f4f6f9; color:#536783; font-size:12px; font-weight:500; text-transform:none; }
 .schedule-scroller th,.schedule-scroller td { border-bottom:1px solid #dee5f0; }
+
+/* WEB2 Figma 8167:40787: title, week navigation and filters share one header row. */
+.schedule-toolbar{padding:16px;gap:12px}
+.schedule-toolbar__controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between}
+.schedule-toolbar__title{flex:0 0 auto;margin:0 auto 0 0;font-size:20px;line-height:28px;font-weight:600}
+.schedule-filters{margin-left:auto;gap:8px}
+.schedule-filter select{height:40px;border-radius:8px;font-size:14px}
+.schedule-panel{border-radius:8px}
+.schedule-scroller thead th{height:58px}
+.schedule-col-staff{width:19%}
+.schedule-col-day{width:calc(81% / 7)}
+.schedule-cell .schedule-shift{border-radius:6px;background:#e8f2ff;padding:7px 4px}
+@media(max-width:1250px){.schedule-toolbar__title{width:100%;margin-right:0}}
