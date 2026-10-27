@@ -1968,3 +1968,59 @@ app-admin-order-create .create-order__dialog--confirm .create-order__dialog-head
 .shift-assign-footer button{padding:9px 13px;border:1px solid #dce5ef;border-radius:7px;background:#fff}
 .shift-assign-footer .shift-assign-save{color:#fff;background:#0d47a1;border-color:#0d47a1}
 @media(max-width:600px){.shift-assign-dialog{padding:15px}.shift-assign-context{grid-template-columns:1fr}.shift-assign-scope{flex-wrap:wrap}}
+
+/* WEB2 2026-10-27 — shared management controls, based on Product and Service screens. */
+app-admin-catalog-shell :is(
+  .staff-add,.order-admin__btn--new,.voucher-list__button--primary,
+  .category-add,.product-add,.branch-add,.service-add
+) {background:#0d47a1;color:#fff;border-color:#0d47a1;border-radius:8px;
+  min-height:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;
+  gap:8px;width:max-content;max-width:100%;padding:0 16px;font-size:14px;font-weight:500;white-space:nowrap}
+app-admin-catalog-shell :is(
+  .staff-add,.order-admin__btn--new,.voucher-list__button--primary,
+  .category-add,.product-add,.branch-add,.service-add
+) :is(img,svg){width:16px;height:16px;flex:0 0 16px;object-fit:contain}
+app-admin-catalog-shell :is(
+  .staff-toolbar,.order-admin__filters--figma,.voucher-list__toolbar,
+  .list-toolbar,.catalog-filter-toolbar
+){min-height:84px;align-items:center;column-gap:12px;padding:16px;
+  border:1px solid #e2e8f0;border-radius:12px}
+app-admin-catalog-shell :is(
+  .staff-search,.order-admin__search,.voucher-list__search,.search-field
+){height:48px;min-height:48px}
+app-admin-catalog-shell :is(
+  .staff-filters select,.order-admin__filters--figma select,
+  .voucher-list__control select,.filter-label select
+){height:48px;min-height:48px;border-radius:8px}
+app-admin-catalog-shell :is(
+  .order-admin__crumb,.voucher-editor__crumb,.return-detail__breadcrumb,
+  .create-order__breadcrumb,.schedule-crumb,.staff-breadcrumb
+){display:flex;align-items:center;gap:12px;font-size:13px;line-height:20px;color:#60748d}
+app-admin-catalog-shell :is(
+  .order-admin__crumb,.voucher-editor__crumb,.return-detail__breadcrumb,
+  .create-order__breadcrumb,.schedule-crumb,.staff-breadcrumb
+) a{color:#60748d;text-decoration:none}
+app-admin-catalog-shell :is(
+  .order-admin__crumb,.voucher-editor__crumb,.return-detail__breadcrumb,
+  .create-order__breadcrumb,.schedule-crumb,.staff-breadcrumb
+) a:hover{color:#0d47a1;text-decoration:underline}
+app-admin-catalog-shell :is(
+ .order-admin__pagination,.voucher-list__pagination,.staff-pagination,.schedule-footer
+) :is(button,span[aria-current],strong[aria-label],.staff-page-selected) {
+  min-width:44px;height:44px;min-height:44px;border-radius:0
+}
+app-admin-catalog-shell :is(
+ .order-admin__pagination,.voucher-list__pagination,.staff-pagination,.schedule-footer
+) [aria-current="page"],
+app-admin-catalog-shell .staff-page-selected{
+  background:#e5f6fd;color:#0d47a1;box-shadow:inset 0 0 0 2px #0d47a1
+}
+app-admin-catalog-shell :is(
+  .order-admin__btn,.voucher-editor__button,.return-detail__button,
+  .create-order__button,.staff-add,.voucher-list__button
+){width:max-content;max-width:100%;flex:0 0 auto}
+@media(max-width:1050px){
+ app-admin-catalog-shell :is(.staff-toolbar,.order-admin__filters--figma,.voucher-list__toolbar){
+  overflow-x:auto
+ }
+}
