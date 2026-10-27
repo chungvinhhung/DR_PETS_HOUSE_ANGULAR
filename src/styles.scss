@@ -4630,3 +4630,102 @@ app-admin-product-create-page .product-screen .variant-panel :is(
 ) {
   font-size: 13px;
 }
+
+
+/* WEB2 Product create/edit: remove legacy tall blank space in Basic Info.
+   Explicitly scoped, so these spacing rules do not affect other Admin modules. */
+app-admin-product-create-page .product-screen .basics {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 22px !important;
+}
+app-admin-product-create-page .product-screen .basics h2 {
+  margin-bottom: 18px !important;
+}
+app-admin-product-create-page .product-screen .basics .form-field {
+  margin-bottom: 15px;
+}
+app-admin-product-create-page .product-screen .basics > .product-type-usage-row {
+  margin-bottom: 14px;
+}
+app-admin-product-create-page .product-screen .basics > .product-type-usage-row .form-field,
+app-admin-product-create-page .product-screen .basics > .two-fields .form-field {
+  margin-bottom: 0;
+}
+app-admin-product-create-page .product-screen .basics > .two-fields {
+  margin-bottom: 0 !important;
+  align-items: start;
+}
+app-admin-product-create-page .product-screen .basics > .description {
+  margin: 16px 0 0 !important;
+}
+app-admin-product-create-page .product-screen .basics > .description textarea {
+  box-sizing: border-box;
+  height: 120px !important;
+  min-height: 100px;
+}
+
+/* Edit Product must use the same typography, vertical rhythm and compact
+   descriptive input as Create Product, while leaving the variant tools intact. */
+app-admin-product-edit-page .edit-page .page-heading h1 {
+  font: 700 24px/30px Roboto,Arial,sans-serif;
+}
+app-admin-product-edit-page .edit-page .panel h2 {
+  font: 700 16px/22px Roboto,Arial,sans-serif;
+}
+app-admin-product-edit-page .edit-page .basic-panel {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 22px;
+}
+app-admin-product-edit-page .edit-page .basic-panel h2 {
+  margin-bottom: 18px;
+}
+app-admin-product-edit-page .edit-page .form-field {
+  font: 500 12px/18px Roboto,Arial,sans-serif;
+}
+app-admin-product-edit-page .edit-page .form-field > span:first-child {
+  line-height: 18px;
+  font-weight: 600;
+}
+app-admin-product-edit-page .edit-page .form-field :is(
+  input:not([type="radio"]),select,textarea
+) {
+  font: 400 13px/20px Roboto,Arial,sans-serif;
+}
+app-admin-product-edit-page .edit-page .form-field :is(input,textarea)::placeholder {
+  font: 400 13px/20px Roboto,Arial,sans-serif;
+  color: #71829b;
+  opacity: 1;
+}
+app-admin-product-edit-page .edit-page .radios label {
+  font: 400 13px/20px Roboto,Arial,sans-serif;
+}
+app-admin-product-edit-page .edit-page .actions :is(.outline-btn,.primary-btn) {
+  font: 600 13px/20px Roboto,Arial,sans-serif;
+}
+app-admin-product-edit-page .edit-page .basic-panel > .form-field {
+  margin-bottom: 15px;
+}
+app-admin-product-edit-page .edit-page .basic-panel > .two-fields {
+  gap: 20px;
+  margin-bottom: 14px;
+}
+app-admin-product-edit-page .edit-page .basic-panel > .two-fields .form-field {
+  margin-bottom: 0;
+}
+app-admin-product-edit-page .edit-page .basic-panel > .form-field:last-child {
+  margin: 0 !important;
+}
+app-admin-product-edit-page .edit-page .basic-panel textarea {
+  box-sizing:border-box;
+  height:120px !important;
+  min-height:100px;
+}
+
+/* Product listing: STT column header and values share an exact center line. */
+app-admin-product-list-page .product-panel .table-scroll table :is(th,td):first-child {
+  text-align: center !important;
+  padding-inline: 0 !important;
+  vertical-align: middle !important;
+}
