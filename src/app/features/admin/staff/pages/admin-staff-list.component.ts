@@ -27,7 +27,7 @@ export class AdminStaffListComponent {
   retry(): void { this.staffApi.loadRoster(true); }
   readonly pageSize = 6;
   readonly roles = JOB_LABELS;
-  readonly roleChoices = Object.keys(JOB_LABELS) as JobRole[];
+  readonly roleChoices = (Object.keys(JOB_LABELS) as JobRole[]).filter(role => role !== 'UNKNOWN');
   readonly branches = computed(() => [...new Set(this.staffApi.staff().flatMap(s => s.branches))].sort());
   readonly query = signal('');
   readonly roleFilter = signal<JobRole | 'ALL'>('ALL');
