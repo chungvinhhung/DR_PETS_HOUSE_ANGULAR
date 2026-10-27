@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
@@ -142,6 +142,11 @@ export class AdminVoucherEditorComponent {
     this.leaveResolver = null;
     this.leaveDialogOpen.set(false);
     resolve?.(allow);
+  }
+  @HostListener('document:keydown.escape')
+  dismissDialogOnEscape(): void {
+    if (this.leaveDialogOpen()) this.resolveLeave(false);
+    else if (this.disableDialog()) this.closeDisableDialog();
   }
   cancel(): void {void this.router.navigateByUrl('/admin/vouchers');}
   private iso(date: string, time: string): string | null {
