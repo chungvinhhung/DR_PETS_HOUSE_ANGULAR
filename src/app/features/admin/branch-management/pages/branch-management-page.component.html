@@ -45,8 +45,8 @@
             <thead><tr>
               <th scope="col">Chi nhánh</th>
               <th scope="col">Địa chỉ</th>
-              <th scope="col">Hotline</th>
-              <th scope="col">Dịch vụ đang bật</th>
+              <th scope="col" class="web2-cell-center">Hotline</th>
+              <th scope="col" class="web2-cell-center">Dịch vụ đang bật</th>
               <th scope="col">Trạng thái</th>
               <th scope="col" class="branch-v2-page__actions-heading">Thao tác</th>
             </tr></thead>
@@ -62,8 +62,8 @@
                 <tr>
                   <td>{{ item.name }}</td>
                   <td class="branch-v2-page__secondary">{{ item.address }}</td>
-                  <td class="branch-v2-page__secondary">{{ item.hotline || '—' }}</td>
-                  <td class="branch-v2-page__secondary">{{ item.enabledServiceCount === null ? '—' : item.enabledServiceCount + ' dịch vụ' }}</td>
+                  <td class="branch-v2-page__secondary web2-cell-center">{{ item.hotline || '—' }}</td>
+                  <td class="branch-v2-page__secondary web2-cell-center">{{ item.enabledServiceCount === null ? '—' : item.enabledServiceCount + ' dịch vụ' }}</td>
                   <td><span class="branch-v2-page__badge"
                     [class.branch-v2-page__badge--off]="item.status !== 'ACTIVE'">
                     {{ item.status === 'ACTIVE' ? 'Hoạt động' : 'Ngừng hoạt động' }}
