@@ -2169,8 +2169,20 @@ app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields 
 app-admin-voucher-editor .voucher-editor__program-fields .voucher-editor__fields--full {
   grid-column:1/-1;
 }
-app-admin-voucher-editor .voucher-editor__program-fields .voucher-editor__status-control {
-  min-height:70px;
+/* Third field uses Figma's centered label and centered switch/description group.
+   It should not sit flush against the left edge of the third grid column. */
+app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields .voucher-editor__status-control {
+  display:flex !important;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  justify-self:stretch;
+  gap:7px;
+  min-width:0;
+  min-height:0;
+  margin:0;
+  padding:0;
+  text-align:center;
 }
 app-admin-voucher-editor .voucher-editor__program-fields .voucher-editor__field-caption,
 app-admin-voucher-editor .voucher-editor__time-fields .voucher-editor__field-caption {
@@ -3603,23 +3615,63 @@ app-admin-voucher-editor .voucher-editor__program-fields textarea[readonly] {
   opacity:1 !important;
   cursor:default;
 }
-app-admin-voucher-editor .voucher-editor__program-fields .voucher-editor__switch-row {
+app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields .voucher-editor__status-control .voucher-editor__field-caption {
+  display:block;
+  text-align:center;
+  width:max-content;
+  max-width:100%;
+  margin:0;
+  line-height:18px;
+}
+app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields .voucher-editor__status-control .voucher-editor__switch-row {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:max-content;
+  max-width:100%;
   gap:10px;
   min-height:40px;
-  margin-top:7px;
+  margin:0;
+  text-align:left;
 }
 app-admin-voucher-editor .voucher-editor__program-fields .voucher-editor__switch-text {
   font-weight:400;
 }
+/* Figma: blue radio, optically centered against the baseline of plain-weight text. */
 app-admin-voucher-editor .voucher-editor__discount-options label {
-  font-size:12px;
-  font-weight:400 !important;
-  line-height:20px;
-  gap:8px;
-  color:#243248;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:flex-start;
+  vertical-align:middle;
+  margin:0 !important;
+  padding:0 !important;
+  gap:7px !important;
+  min-height:20px;
+  color:#243248 !important;
+  font:400 12px/20px Roboto,Arial,sans-serif !important;
+  white-space:nowrap;
+}
+app-admin-voucher-editor .voucher-editor__discount-options .voucher-editor__radio-text {
+  display:inline-block;
+  font:400 12px/20px Roboto,Arial,sans-serif;
+  text-align:left;
 }
 app-admin-voucher-editor .voucher-editor__discount-options input[type="radio"] {
-  accent-color:#111827 !important;
+  box-sizing:border-box;
+  display:block !important;
+  align-self:center;
+  position:static;
+  top:auto;
+  margin:0 !important;
+  padding:0 !important;
+  flex:0 0 16px;
+  width:16px !important;
+  height:16px !important;
+  min-width:16px !important;
+  min-height:16px !important;
+  vertical-align:middle !important;
+  appearance:auto !important;
+  accent-color:#0d47a1 !important;
 }
 
 /* Shared Admin confirmation style, rather than a browser-native alert. */
@@ -3642,8 +3694,8 @@ app-admin-voucher-editor .voucher-editor__leave-head {
   justify-content:space-between;
   gap:14px;
   margin:0;
-  padding:0 0 16px;
-  border-bottom:1px solid #e2e8f0;
+  padding:0;
+  border:0;
 }
 app-admin-voucher-editor .voucher-editor__leave-head > div {min-width:0}
 app-admin-voucher-editor .voucher-editor__leave-head h2 {
@@ -3679,9 +3731,9 @@ app-admin-voucher-editor .voucher-editor__leave-actions {
   justify-content:flex-end;
   flex-wrap:wrap;
   gap:10px;
-  min-height:58px;
-  margin:0;
-  padding:16px 0 0;
+  min-height:38px;
+  margin:20px 0 0;
+  padding:0;
   border:0;
 }
 app-admin-voucher-editor .voucher-editor__leave-actions .voucher-editor__button {
