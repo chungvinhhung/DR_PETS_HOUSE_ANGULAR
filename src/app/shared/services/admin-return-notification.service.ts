@@ -36,6 +36,7 @@ export class AdminReturnNotificationService {
       this.accountId = account.id;
       this.pendingCountState.set(0);
       this.loadedState.set(false);
+      this.inFlightState.set(false);
     }
     if (!force && (this.loadedState() || this.inFlightState())) return;
     const version = ++this.requestVersion;
