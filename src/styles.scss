@@ -2169,19 +2169,7 @@ app-admin-staff-schedule .schedule-footer nav .schedule-page-number--active {
   background:#e5f6fd;color:#0d47a1;box-shadow:inset 0 0 0 2px #0d47a1;
 }
 
-/* Figma RETURN detail table: 8 grounded fields including image placeholder and SKU
-   looked up from the actual parent Order. No invented received/approved counts. */
-app-admin-order-return-detail .return-detail__table{min-width:1060px}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(1){width:8% !important}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(2){width:20% !important}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(3){width:13% !important}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(4){width:17% !important}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(5){width:10% !important}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(6){width:10% !important}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(7){width:10% !important}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(8){width:12% !important}
-app-admin-order-return-detail .return-detail__table :is(th,td):first-child{padding-left:20px;text-align:left}
-app-admin-order-return-detail .return-detail__table :is(th,td):last-child{padding-right:20px;text-align:right}
+/* Return detail column sizing is now driven by its 11-column colgroup. */
 app-admin-order-return-detail .return-detail__product-thumb{
   display:inline-flex;align-items:center;justify-content:center;text-align:center;
   box-sizing:border-box;width:52px;min-width:52px;height:52px;padding:4px;
@@ -2856,24 +2844,44 @@ app-admin-order-return-detail .return-detail__table tbody td {
   color:#37475e;font:400 12px/17px Roboto,Arial,sans-serif;
   overflow-wrap:anywhere;vertical-align:middle;
 }
-app-admin-order-management .order-admin__table--detail-items :is(th,td):first-child {width:31%;text-align:left;}
-app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(2) {width:20%;text-align:left;}
-app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(3) {width:8%;text-align:center;}
-app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(4) {width:14%;text-align:right;}
-app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(5) {width:11%;text-align:right;}
-app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(6) {width:16%;text-align:right;}
-app-admin-order-management .order-admin__table--detail-items .order-admin__number {text-align:right !important;}
-app-admin-order-return-detail .return-detail__table :is(th,td):first-child {width:8% !important;}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(2) {width:20% !important;}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(3) {width:14% !important;}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(4) {width:18% !important;}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(5) {width:11% !important;}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(6) {width:10% !important;}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(7) {width:9% !important;}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(8) {width:10% !important;}
+
+/* Order detail products: seven columns exactly as Figma, including a separate image cell. */
+app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(1) {width:9%;text-align:left;}
+app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(2) {width:25%;text-align:left;}
+app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(3) {width:15%;text-align:left;}
+app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(4) {width:9%;text-align:center;}
+app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(5) {width:16%;text-align:center;}
+app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(6) {width:13%;text-align:center;}
+app-admin-order-management .order-admin__table--detail-items :is(th,td):nth-child(7) {width:13%;text-align:right;}
+app-admin-order-management .order-admin__table--detail-items .order-admin__qty {text-align:center !important;}
+app-admin-order-management .order-admin__table--detail-items .order-admin__number {text-align:center !important;}
+app-admin-order-management .order-admin__table--detail-items :is(th,td):last-child {text-align:right !important;}
+app-admin-order-management .order-admin__table--detail-items .order-admin__item-name {font-weight:500;color:#34435c;}
+app-admin-order-management .order-admin__table--detail-items .order-admin__product-thumb {width:48px;height:48px;min-width:48px;flex-basis:48px;border-radius:8px;}
+
+/* Return detail: one authoritative 11-column grid, no 8-column widths. */
+app-admin-order-return-detail .return-detail__table {min-width:1000px;}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-image {width:7%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-product {width:18%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-sku {width:12%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-qty {width:7%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-returned {width:7%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-available {width:9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-requested {width:7%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-received {width:8%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-approved {width:8%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-estimated {width:9%}
+app-admin-order-return-detail .return-detail__table col.return-detail__col-final {width:8%}
+app-admin-order-return-detail .return-detail__table :is(th,td) {width:auto !important;padding-inline:7px !important;text-align:center;}
+app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(1) {text-align:left;padding-left:12px !important}
+app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(2),
+app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(3) {text-align:left;}
+app-admin-order-return-detail .return-detail__table :is(th,td):last-child {padding-right:12px !important;text-align:right;}
+app-admin-order-return-detail .return-detail__table .return-detail__emphasis {font-weight:700;color:#0d47a1;}
+app-admin-order-return-detail .return-detail__table .return-detail__final-refund {font-weight:700;color:#268447;}
+app-admin-order-return-detail .return-detail__table :is(th,td).return-detail__table-empty {text-align:center !important;}
 app-admin-order-return-detail .return-detail__table tbody tr.return-detail__item--requested {background:#e3f2fd;}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(n+5):nth-child(-n+8) {text-align:center;}
-app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(8){text-align:right;}
+
 app-admin-order-management .order-admin__table-scroll,
 app-admin-order-return-detail .return-detail__scroll {border-radius:8px;overflow-x:auto;}
 
@@ -2935,4 +2943,149 @@ app-admin-order-return-detail .return-detail__panel[aria-label="Tình trạng nh
   app-admin-order-return-detail .return-detail__progress {overflow-x:auto;grid-template-columns:repeat(5,minmax(100px,1fr));}
   app-admin-order-management .order-admin__table--detail-items {min-width:760px;}
   app-admin-order-return-detail .return-detail__table {min-width:900px;}
+}
+
+
+/* WEB2 screenshot QA: order payment rows and the newest-first status history.
+   Figma 7432:38519 / comparisons 3–4. */
+app-admin-order-management .order-admin__totals > div {
+  align-items:center;min-height:24px;margin-bottom:4px;
+}
+app-admin-order-management .order-admin__totals dt {color:#475569;}
+app-admin-order-management .order-admin__totals dd {color:#111827;font-weight:600;}
+app-admin-order-management .order-admin__totals .order-admin__grand {
+  margin:7px 0 8px;padding:12px 0 0;
+  border-top:1px solid #e2e8f0;
+  font-size:14px;line-height:20px;
+}
+app-admin-order-management .order-admin__totals .order-admin__grand dt {color:#111827;font-weight:700;}
+app-admin-order-management .order-admin__totals .order-admin__grand dd {
+  color:#0d47a1;font-size:16px;font-weight:700;
+}
+app-admin-order-management .order-admin__payment-badge {
+  display:inline-flex;align-items:center;min-height:24px;
+  padding:4px 12px;border-radius:99px;
+  background:#e5f6fd;color:#213042;
+  font:500 11px/16px Roboto,Arial,sans-serif;
+}
+app-admin-order-management .order-admin__payment-badge[data-payment="PAID"],
+app-admin-order-management .order-admin__payment-badge[data-payment="REFUNDED"] {
+  background:#e2f5e9;color:#237a3e;
+}
+app-admin-order-management .order-admin__payment-badge[data-payment="FAILED"],
+app-admin-order-management .order-admin__payment-badge[data-payment="CANCELLED"] {
+  background:#fae9e9;color:#ab4545;
+}
+app-admin-order-management .order-admin__history {
+  padding:0;margin:0;list-style:none;
+}
+app-admin-order-management .order-admin__history li {
+  position:relative;min-height:48px;margin:0 0 0 6px;
+  padding:0 0 16px 20px;border-left:2px solid #dce5f0;
+}
+app-admin-order-management .order-admin__history li:last-child {border-left-color:transparent;}
+app-admin-order-management .order-admin__history li:before {
+  content:"";position:absolute;left:-7px;top:3px;
+  width:12px;height:12px;border-radius:50%;
+  background:#dce5f0;
+}
+app-admin-order-management .order-admin__history li.order-admin__history--latest:before {background:#2f935b;}
+app-admin-order-management .order-admin__history li strong {
+  color:#253348;font:600 12px/18px Roboto,Arial,sans-serif;
+}
+app-admin-order-management .order-admin__history li small,
+app-admin-order-management .order-admin__history li p {
+  margin:2px 0 0;color:#64748b;
+  font:400 11px/16px Roboto,Arial,sans-serif;
+}
+
+/* WEB2 screenshot QA: Return overview, stepper & the four-field refund/stock grid.
+   Figma 7432:39673 / comparisons 5–10. */
+app-admin-order-return-detail .return-detail__metadata--overview {
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px 16px;
+}
+app-admin-order-return-detail .return-detail__metadata--overview :is(strong,a) {
+  font-weight:600;color:#253248;
+}
+app-admin-order-return-detail .return-detail__metadata--overview a {color:#0d47a1;}
+app-admin-order-return-detail .return-detail__progress {
+  display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:10px;margin:0;padding:0;list-style:none;
+}
+app-admin-order-return-detail .return-detail__progress li {
+  display:block;min-width:0;text-align:left;
+  color:#64748b;font:400 12px/17px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__progress li:not(:last-child)::after {display:none;}
+app-admin-order-return-detail .return-detail__progress-head {
+  display:flex;align-items:center;gap:8px;min-height:18px;
+  white-space:normal;
+}
+app-admin-order-return-detail .return-detail__progress-dot {
+  display:inline-block;flex:0 0 12px;
+  width:12px;height:12px;
+  border:0;border-radius:50%;background:#e2e8f0;
+}
+app-admin-order-return-detail .return-detail__progress-bar {
+  height:3px;margin:7px 0 8px;background:#e2e8f0;
+}
+app-admin-order-return-detail .return-detail__progress li small {
+  display:block;color:#64748b;
+  font:400 10px/14px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__progress--current .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress--current .return-detail__progress-bar {
+  background:#7a7a7a;
+}
+app-admin-order-return-detail .return-detail__progress--done:not(.return-detail__progress--current) .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress--done:not(.return-detail__progress--current) .return-detail__progress-bar {
+  background:#2f935b;
+}
+app-admin-order-return-detail .return-detail__progress--done .return-detail__progress-head {color:#334155;}
+app-admin-order-return-detail .return-detail__panel--refund .return-detail__reconcile,
+app-admin-order-return-detail .return-detail__panel--warehouse .return-detail__stock-fields {
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:16px;
+}
+app-admin-order-return-detail .return-detail__reconcile > div,
+app-admin-order-return-detail .return-detail__stock-fields > div {min-width:0;}
+app-admin-order-return-detail .return-detail__reconcile > div > span,
+app-admin-order-return-detail .return-detail__stock-fields > div > span {
+  display:block;margin-bottom:6px;
+  color:#475569;font:400 11px/15px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__reconcile > div > strong,
+app-admin-order-return-detail .return-detail__stock-fields > div > strong {
+  display:block;color:#1f2937;
+  font:600 12px/17px Roboto,Arial,sans-serif;
+  overflow-wrap:anywhere;
+}
+app-admin-order-return-detail .return-detail__refund-account-title {
+  margin:15px 0 14px;padding:14px 0 0;
+  border-top:1px solid #e2e8f0;
+  font:600 15px/19px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__panel--warehouse .return-detail__stock-row {
+  display:flex;align-items:center;gap:16px;min-width:0;
+}
+app-admin-order-return-detail .return-detail__stock-fields {flex:1;min-width:0;}
+app-admin-order-return-detail .return-detail__button--stock {
+  flex:0 0 auto;height:38px;min-height:38px;
+  background:#fff;color:#0d47a1;border:1px solid #dce5f0;
+}
+app-admin-order-return-detail .return-detail__extra--bottom {
+  box-sizing:border-box;background:#fff;border:1px solid #e2e8f0;
+  border-radius:12px;padding:12px 18px;margin:0 0 16px;
+}
+app-admin-order-return-detail .return-detail__extra--bottom .return-detail__metadata {margin:12px 0 0;}
+@media(max-width:1050px) {
+  app-admin-order-return-detail .return-detail__reconcile,
+  app-admin-order-return-detail .return-detail__stock-fields {grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:650px) {
+  app-admin-order-return-detail .return-detail__panel--refund .return-detail__reconcile,
+  app-admin-order-return-detail .return-detail__panel--warehouse .return-detail__stock-fields {grid-template-columns:1fr;}
+  app-admin-order-return-detail .return-detail__stock-row {align-items:stretch;flex-wrap:wrap;}
+  app-admin-order-return-detail .return-detail__metadata--overview {grid-template-columns:1fr;}
 }
