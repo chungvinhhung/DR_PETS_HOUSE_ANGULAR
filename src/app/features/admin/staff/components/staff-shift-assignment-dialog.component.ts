@@ -37,7 +37,7 @@ export function overlaps(a: DayShiftDraft, b: DayShiftDraft): boolean {
           <div class="shift-assign-item">
             <span class="shift-assign-clock" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg></span>
             <div><strong>{{ item.name }}</strong><small>{{ item.start }} – {{ item.end }}</small></div>
-            <button type="button" [attr.aria-label]="'Gỡ ' + item.name" (click)="remove(item.id)" class="shift-assign-delete"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 7V4h4v3M7 7l1 13h8l1-13M10 11v6M14 11v6"/></svg></button>
+            <button type="button" [attr.aria-label]="'Gỡ ' + item.name" (click)="remove(item.id)" class="shift-assign-delete"><img src="/assets/admin-product/icon-delete.svg" width="18" height="18" alt="" aria-hidden="true"></button>
           </div>
         } @empty { <p class="shift-assign-empty">Chưa được phân ca trong ngày.</p> }
       </div>
