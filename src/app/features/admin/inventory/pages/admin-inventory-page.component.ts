@@ -243,7 +243,7 @@ export class AdminInventoryPageComponent implements OnInit {
         kind: product?.usage ?? (item.kind === 'PRODUCT' ? 'Hàng bán' as const : 'Vật tư dịch vụ' as const),
         branch: branchById.get(row.branchId) ?? row.branchId,
         quantity: row.quantity,
-        threshold: row.version === 0 ? null : row.lowStockThreshold,
+        threshold: row.thresholdConfigured === false || row.version === 0 ? null : row.lowStockThreshold,
       }];
     });
   }
@@ -292,7 +292,7 @@ export class AdminInventoryPageComponent implements OnInit {
       delta: tx.changeQty > 0 ? `+${tx.changeQty}` : String(tx.changeQty),
       after: String(tx.afterQty),
       reference: tx.id.slice(-8).toUpperCase(),
-      actor: '—',
+      actor: tx.actorName || (tx.isSystemActor ? 'Hệ thống' : 'Không rõ người thao tác'),
     };
     });
   }

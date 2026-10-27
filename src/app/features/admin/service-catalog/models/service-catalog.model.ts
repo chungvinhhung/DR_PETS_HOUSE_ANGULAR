@@ -22,6 +22,27 @@ export interface ServiceWrite {
   bookingMode: ServiceBookingMode;
   status: ServiceMasterStatus;
 }
+export interface ServiceCreateWrite extends ServiceWrite {
+  /** BE creates all active-branch configs in the same service transaction. */
+  autoEnableActiveBranches: boolean;
+  branchConfigs: { branchId: string; capacity: number; enabled: boolean }[];
+}
+export interface ServiceBranchConfigApiRecord {
+  branchId: string;
+  branchName: string;
+  branchCode: string;
+  branchStatus: 'ACTIVE' | 'INACTIVE';
+  enabled: boolean;
+  capacity: number;
+  availability: readonly { dayOfWeek: number; open: string; close: string }[];
+  blockedWindows: readonly { _id?: string; id?: string; startAt: string; endAt: string; reason: string }[];
+  version: number;
+}
+export interface ServiceBranchConfigsResponse {
+  serviceId: string;
+  serviceName: string;
+  configs: ServiceBranchConfigApiRecord[];
+}
 export interface ServiceApiRecord extends ServiceWrite {
   id: string;
   code?: string;

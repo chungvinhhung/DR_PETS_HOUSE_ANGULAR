@@ -20,6 +20,7 @@ export interface InventoryStockDto {
   quantity: number;
   lowStock: boolean;
   lowStockThreshold: number;
+  thresholdConfigured?: boolean;
   version: number;
 }
 
@@ -32,6 +33,13 @@ export interface InventoryTransactionDto {
   changeQty: number;
   afterQty: number;
   actorId: string;
+  actorName?: string | null;
+  actorRole?: string | null;
+  isSystemActor?: boolean;
+  branchName?: string | null;
+  branchCode?: string | null;
+  fromBranchName?: string | null;
+  toBranchName?: string | null;
   reason: string;
   createdAt: string;
   sourceType: string;

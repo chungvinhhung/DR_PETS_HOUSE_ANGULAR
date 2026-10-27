@@ -63,6 +63,13 @@ export const routes: Routes = [
   },
 
   {
+    path: 'admin/orders',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: BACKOFFICE_ROLES },
+    loadComponent: () => import('./features/admin/pages/orders/admin-orders-page.component')
+      .then(c => c.AdminOrdersPageComponent),
+  },
+  {
     path: 'admin/branches/:id',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN', 'MANAGER'] },
@@ -201,13 +208,6 @@ export const routes: Routes = [
           import(
             './features/admin/pages/dashboard/admin-dashboard-page.component'
           ).then((component) => component.AdminDashboardPageComponent),
-      },
-      {
-        path: 'orders',
-        loadComponent: () =>
-          import('./features/admin/pages/orders/admin-orders-page.component').then(
-            (component) => component.AdminOrdersPageComponent,
-          ),
       },
       {
         path: 'appointments',

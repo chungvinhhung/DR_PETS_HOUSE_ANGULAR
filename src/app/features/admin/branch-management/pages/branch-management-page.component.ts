@@ -145,6 +145,9 @@ export class BranchManagementPageComponent {
     const branchId = this.servicePickerBranch()?.id;
     return branchId ? this.branchServices : [];
   }
+  get operationServiceNames(): Readonly<Record<string, string>> {
+    return Object.fromEntries(this.serviceViews().map(row => [row.service.id, row.service.name]));
+  }
   get branchServices(): readonly CatalogService[] {
     return this.serviceViews().map((row) => row.service);
   }
@@ -211,6 +214,18 @@ export class BranchManagementPageComponent {
         if (this.branchId !== id) return;
         this.detailRecord.set(this.fromApi(row));
         this.detailLoading.set(false);
+        this.api.getInventorySummary(id).pipe(
+          catchError(() => of(null)),
+          takeUntilDestroyed(this.destroyRef),
+        ).subscribe((summary) => {
+          if (!summary || this.branchId !== id) return;
+          const inventory = {
+            total: summary.totalItems,
+            low: summary.lowStockItems,
+            out: summary.outOfStockItems,
+          };
+          this.detailRecord.update((current) => current?.id === id ? { ...current, inventory } : current);
+        });
       },
       error: () => {
         if (this.branchId !== id) return;
@@ -410,7 +425,7 @@ export class BranchManagementPageComponent {
     this.occupancyLoading.set(true);
     from(services).pipe(
       mergeMap((row) =>
-        this.api.getServiceAvailability(branchId, row.service.id, date).pipe(
+        this.api.getServiceOccupancy(branchId, row.service.id, date).pipe(
           map((result): { serviceId: string; data: OccupancySnapshot } | null => {
             const slot = result.slots?.find((candidate) =>
               typeof candidate.start === 'string' && candidate.start.slice(11, 16) === time,
@@ -474,10 +489,6 @@ export class BranchManagementPageComponent {
     this.configuredServiceBranch.set(null);
   }
   applyServiceConfiguration(value: BranchServiceConfigPreview): void {
-    if (value.blockedWindows.length > 0) {
-      this.toast.show('Chưa thể lưu khoảng tạm khóa. Vui lòng xóa các khoảng đã thêm để tiếp tục.', 'error');
-      return;
-    }
     const existing = this.serviceViews().find((row) => row.service.id === value.serviceId)?.config;
     this.persistServiceConfig(
       value.branchId, value.serviceId, value.enabled, value.capacity,
