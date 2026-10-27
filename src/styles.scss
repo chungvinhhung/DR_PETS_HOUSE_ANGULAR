@@ -3933,3 +3933,202 @@ app-admin-order-management .order-admin__card--detail .order-admin__badge[data-s
   }
   app-admin-order-create .create-order__product-thumb {width:42px;height:42px;}
 }
+
+
+/* WEB2 management filter bars — authoritative baseline: Service Catalog.
+   Opt-in class on list screens only; no overrides to editing forms or
+   Service Catalog's own reference. Preserve component event handlers. */
+app-admin-catalog-shell .web2-filterbar.web2-filterbar {
+  box-sizing:border-box !important;
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  justify-content:space-between !important;
+  align-items:center !important;
+  gap:12px !important;
+  width:100% !important;
+  height:auto !important;
+  min-height:70px !important;
+  padding:14px !important;
+  border:1px solid #dce5f0 !important;
+  border-radius:10px !important;
+  background:#fff !important;
+  overflow:visible !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  .web2-management-search,.order-admin__search,.voucher-list__search,
+  .branch-v2-page__search,.staff-search,.search-field
+) {
+  box-sizing:border-box !important;
+  position:relative !important;
+  display:flex !important;
+  align-items:center !important;
+  flex:0 1 430px !important;
+  width:430px !important;
+  max-width:430px !important;
+  min-width:0 !important;
+  height:40px !important;
+  min-height:40px !important;
+  gap:8px !important;
+  margin:0 auto 0 0 !important;
+  padding:0 11px !important;
+  border:1px solid #dce5f0 !important;
+  border-radius:8px !important;
+  background:#fff !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  .web2-management-search,.order-admin__search,.voucher-list__search,
+  .branch-v2-page__search,.staff-search,.search-field
+) > input:not([type="date"]) {
+  box-sizing:border-box !important;
+  display:block;
+  flex:1 1 auto !important;
+  width:100% !important;
+  min-width:0 !important;
+  height:100% !important;
+  min-height:0 !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  background:transparent !important;
+  color:#26364a !important;
+  font:400 13px/20px Roboto,Arial,sans-serif !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar input::placeholder {
+  color:#66758c !important;
+  opacity:1;
+  font:400 13px/20px Roboto,Arial,sans-serif !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  .web2-management-search,.order-admin__search,.voucher-list__search,
+  .branch-v2-page__search,.staff-search,.search-field
+) :is(svg,img) {
+  position:static !important;
+  display:block;
+  flex:0 0 15px !important;
+  width:15px !important;
+  height:15px !important;
+  margin:0 !important;
+  transform:none !important;
+  color:#66758c !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  .web2-management-search,.order-admin__search,.voucher-list__search,
+  .branch-v2-page__search,.staff-search,.search-field
+):focus-within {
+  outline:2px solid #8eb8ee;
+  outline-offset:0;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  .web2-management-actions,.order-admin__filter-actions,.service-catalog__filter-selects,
+  .staff-filters,.toolbar-selects
+) {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  flex:0 0 auto !important;
+  flex-wrap:nowrap !important;
+  gap:12px !important;
+  width:auto !important;
+  min-width:0 !important;
+  margin:0 0 0 auto !important;
+  padding:0 !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  select,button:not(.web2-add-button),a:not(.web2-add-button),
+  input[type="date"]
+) {
+  box-sizing:border-box;
+  height:40px !important;
+  min-height:40px !important;
+  border-radius:8px !important;
+  font:400 13px/20px Roboto,Arial,sans-serif !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar select {
+  width:100%;
+  padding:0 30px 0 12px;
+  background-color:#fff;
+  color:#26364a;
+  border:1px solid #dce5f0;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  .web2-management-control,.order-admin__status-filter,.order-admin__date-filter,
+  .order-admin__branch-filter,.voucher-list__control,.branch-v2-page__status-filter,
+  .staff-filters label
+) {
+  box-sizing:border-box;
+  flex:0 0 auto !important;
+  height:40px !important;
+  min-height:40px !important;
+  margin:0 !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  .web2-management-control,.order-admin__status-filter,.order-admin__date-filter,
+  .order-admin__branch-filter,.voucher-list__control,.branch-v2-page__status-filter
+) {width:170px !important;min-width:0 !important}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar .web2-add-button.web2-add-button {
+  box-sizing:border-box !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  flex:0 0 auto !important;
+  width:max-content !important;
+  min-width:max-content !important;
+  height:40px !important;
+  min-height:40px !important;
+  padding:0 15px !important;
+  border-radius:8px !important;
+  font:600 13px/20px Roboto,Arial,sans-serif !important;
+  white-space:nowrap !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar .order-admin__range-trigger{
+  flex:0 0 auto;
+  width:max-content;
+  min-width:0;
+}
+/* Branch and Voucher filters are direct siblings rather than nested groups. */
+app-admin-catalog-shell .web2-filterbar.web2-filterbar > :is(
+  .voucher-list__control,.branch-v2-page__status-filter
+) {margin-left:0 !important}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar > :is(
+  .web2-add-button,.inventory-create
+) {flex:0 0 auto !important;margin-left:0 !important}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar .staff-filters label {
+  position:relative;
+  width:auto;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar .staff-filters select {
+  min-width:140px;
+  height:40px !important;
+}
+app-admin-catalog-shell .web2-filterbar.web2-filterbar .toolbar-selects .date-filter {
+  height:40px;
+}
+/* Keep search capped at 430px; wrap the action group instead of stretching
+   inputs or forcing horizontal overflow on narrower admin viewports. */
+@media(max-width:1180px) {
+  app-admin-catalog-shell .web2-filterbar.web2-filterbar {
+    flex-wrap:wrap !important;
+  }
+  app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+    .web2-management-actions,.order-admin__filter-actions,.staff-filters,.toolbar-selects
+  ) {
+    flex-wrap:wrap !important;
+    margin-left:auto !important;
+  }
+  app-admin-catalog-shell .web2-filterbar.web2-filterbar > :is(
+    .voucher-list__control,.branch-v2-page__status-filter
+  ) {margin-left:0 !important}
+}
+@media(max-width:620px) {
+  app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+    .web2-management-search,.order-admin__search,.voucher-list__search,
+    .branch-v2-page__search,.staff-search,.search-field
+  ){flex:1 1 100% !important;width:100% !important;max-width:430px !important}
+  app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+    .web2-management-actions,.order-admin__filter-actions,.staff-filters,.toolbar-selects
+  ){justify-content:flex-start !important;margin-left:0 !important}
+}
