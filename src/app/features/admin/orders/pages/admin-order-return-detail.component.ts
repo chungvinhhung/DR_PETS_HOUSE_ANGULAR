@@ -67,14 +67,22 @@ export class AdminOrderReturnDetailComponent {
     if (!r) return [];
     if (r.status === 'REQUESTED' && this.canStaff()) return ['process'];
     if (r.status === 'PROCESSING') return [
-      ...(this.canStaff() ? ['receive' as WorkflowAction] : []),
       ...(this.isManager() ? ['reject' as WorkflowAction] : []),
+      ...(this.canStaff() ? ['receive' as WorkflowAction] : []),
     ];
-    if (r.status === 'RECEIVED' && this.isManager()) return ['approve','reject'];
+    if (r.status === 'RECEIVED' && this.isManager()) return ['reject','approve'];
     if (r.status === 'APPROVED' && this.isManager() && r.refundId && this.refund()?.status === 'PENDING') return ['refund'];
     return [];
   });
   readonly totalQuantity = computed(() => this.data()?.items.reduce((sum, item) => sum + item.requestedQty, 0) ?? 0);
+  /** Terminal rejection/cancellation can follow any workflow step.
+   * Use audit history to show which steps were actually reached. */
+  isStepReached(ret: OrderReturnSummary, step: ReturnStatus): boolean {
+    if (ret.status === 'REJECTED' || ret.status === 'CANCELLED') {
+      return step === 'REQUESTED' || Boolean(ret.history?.some(event => event.status === step));
+    }
+    return this.statusSteps.indexOf(ret.status) >= this.statusSteps.indexOf(step);
+  }
   readonly returnHistory = computed(() => [...(this.data()?.history ?? [])]
     .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()));
 
@@ -207,9 +215,9 @@ export class AdminOrderReturnDetailComponent {
     }).format(d);
   }
   actionName(action: WorkflowAction): string {
-    return ({ process: 'Tiếp nhận yêu cầu', receive: 'Xác nhận đã nhận hàng',
-      approve: 'Phê duyệt hoàn tiền', reject: 'Từ chối yêu cầu',
-      refund: 'Xác nhận hoàn tiền' })[action];
+    if (action === 'reject') return this.data()?.status === 'RECEIVED' ? 'Từ chối hoàn tiền' : 'Từ chối';
+    return ({ process: 'Tiếp nhận xử lý', receive: 'Xác nhận nhận hàng',
+      approve: 'Phê duyệt hoàn tiền', refund: 'Xác nhận hoàn tiền' } as const)[action];
   }
   actionExplanation(action: WorkflowAction): string {
     return ({
