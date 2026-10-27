@@ -83,9 +83,15 @@ export class AdminOrderReturnDetailComponent {
   }
   progressLabel(ret: OrderReturnSummary, step: ReturnStatus): string {
     const at = ret.history?.find(event => event.status === step)?.at;
-    if (at) return this.when(at);
+    if (at) {
+      const date = new Date(at);
+      return Number.isNaN(date.getTime()) ? 'BE chưa ghi thời gian' :
+        new Intl.DateTimeFormat('vi-VN', {
+          timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', year: 'numeric',
+        }).format(date);
+    }
     const reached = this.statusSteps.indexOf(ret.status) >= this.statusSteps.indexOf(step);
-    return reached ? 'Đã chuyển bước' : 'Chưa bắt đầu';
+    return reached ? 'BE chưa ghi thời gian' : 'Chưa bắt đầu';
   }
   availableReturnQty(item: OrderReturnSummary['items'][number]): number {
     return Math.max(0, item.orderedQty - item.alreadyReturnedQty);
