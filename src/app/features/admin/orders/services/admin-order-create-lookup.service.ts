@@ -34,14 +34,16 @@ export class AdminOrderCreateLookupService {
     });
   }
 
-  /** Existing product-catalog search; the UI can filter active sale variants. */
+  /** Existing product-catalog search; omit q until the user enters a keyword.
+   *  Sending q="" triggers request validation in some deployed BE versions.
+   */
   searchProducts(nameOrSku: string): Observable<ProductPageResponse> {
-    return this.api.get<ProductPageResponse>('/products', {
-      params: new HttpParams()
-        .set('q', nameOrSku.trim())
-        .set('status', 'ACTIVE')
-        .set('limit', '100'),
-    });
+    const keyword = nameOrSku.trim();
+    let params = new HttpParams()
+      .set('status', 'ACTIVE')
+      .set('limit', '100');
+    if (keyword) params = params.set('q', keyword);
+    return this.api.get<ProductPageResponse>('/products', { params });
   }
 
   /** Unifies results in the UI without manufacturing prices or stock values. */
