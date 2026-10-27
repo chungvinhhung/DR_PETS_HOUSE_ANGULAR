@@ -53,7 +53,12 @@ export interface OrderReturnSummary {
   id: string;
   orderId: string;
   status: ReturnStatus;
-  items: { orderItemId: string; productName: string; orderedQty: number; alreadyReturnedQty: number; requestedQty: number; refundAmount: number }[];
+  items: {
+    orderItemId: string; productName: string; orderedQty: number;
+    alreadyReturnedQty: number; requestedQty: number; refundAmount: number;
+    /** Optional fields: only display them if the backend actually supplies them. */
+    receivedQty?: number | null; approvedQty?: number | null; finalRefundAmount?: number | null;
+  }[];
   refundBreakdown: { merchandiseNet: number; shippingRefunded: number; total: number };
   /** Optional authoritative settled amount when BE adds it to the Return DTO. */
   finalRefundAmount?: number | null;
