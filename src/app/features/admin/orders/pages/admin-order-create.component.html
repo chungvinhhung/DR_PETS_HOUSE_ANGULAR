@@ -292,7 +292,7 @@
       </div>
     </section>
 
-    @if (reviewAttempted()) {
+    @if (reviewIssues().length > 0 && (lines().length > 0 || lookupPhone().trim().length > 0)) {
       <section class="create-order__review" [class.create-order__review--ready]="isDraftValid()"
         aria-labelledby="order-review-title" role="status">
         <strong id="order-review-title">
