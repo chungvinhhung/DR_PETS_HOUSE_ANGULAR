@@ -83,6 +83,7 @@ export class AdminStaffScheduleComponent {
   readonly rows = computed(() => this.filtered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
 
   displayName = displayStaffName;
+  roleLabel(staff: StaffPreview): string { return JOB_LABELS[staff.jobRole]; }
   shifts(staffId: string, iso: string) {
     return this.staffApi.shifts().filter(shift =>
       shift.staffId === staffId && shift.isoDate === iso &&
