@@ -2871,7 +2871,7 @@ app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(5) {wid
 app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(6) {width:10% !important;}
 app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(7) {width:9% !important;}
 app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(8) {width:10% !important;}
-app-admin-order-return-detail .return-detail__table tbody tr {background:#e3f2fd;}
+app-admin-order-return-detail .return-detail__table tbody tr.return-detail__item--requested {background:#e3f2fd;}
 app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(n+5):nth-child(-n+8) {text-align:center;}
 app-admin-order-return-detail .return-detail__table :is(th,td):nth-child(8){text-align:right;}
 app-admin-order-management .order-admin__table-scroll,
