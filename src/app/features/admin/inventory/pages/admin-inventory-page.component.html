@@ -8,7 +8,7 @@
     <button type="button" role="tab" [attr.aria-selected]="tab()==='history'" [class.active]="tab()==='history'" (click)="switchTab('history')">Lịch sử kho</button>
   </div>
 
-  <div class="toolbar">
+  <div class="toolbar web2-filterbar">
     <div class="search-field">
       <img src="/assets/admin-inventory/search.svg" alt="" aria-hidden="true" />
       <input [ngModel]="search()" (ngModelChange)="search.set($event);onFilter()" aria-label="Tìm kiếm sản phẩm hoặc SKU" placeholder="Tìm sản phẩm / SKU..." />
