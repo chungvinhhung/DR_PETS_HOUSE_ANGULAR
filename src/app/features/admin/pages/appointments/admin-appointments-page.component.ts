@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -29,7 +29,7 @@ import {
     <label class="sr" for="appointment-status-filter">Trạng thái lịch hẹn</label>
     <select id="appointment-status-filter" [value]="status()" (change)="changeStatus($any($event.target).value)">
       <option value="">Tất cả trạng thái</option>
-      <option value="PENDING">Chờ xác nhận</option>
+      <option value="PENDING_CONFIRMATION">Chờ xác nhận</option>
       <option value="PENDING_PAYMENT">Chờ thanh toán</option>
       <option value="CONFIRMED">Đã xác nhận</option>
       <option value="IN_PROGRESS">Đang thực hiện</option>
@@ -91,7 +91,7 @@ import {
         </table>
       </div>
       <footer>
-        <span>Đang hiển thị {{rows().length}} trên tổng số {{total()}} lịch hẹn</span>
+        <span>Đang hiển thị {{rows().length}} / {{total()}} lịch hẹn đã tải @if(partial()){ (giới hạn 100 bản ghi của BE) }</span>
         <div class="pagination">
           <button type="button" [disabled]="page()===1" (click)="goto(page()-1)" aria-label="Trang trước">‹</button>
           <span>Trang {{page()}}</span>
@@ -146,20 +146,30 @@ export class AdminAppointmentsPageComponent {
   readonly limit=7;
   readonly loading=signal(false);
   readonly error=signal('');
-  readonly rows=signal<AppointmentView[]>([]);
-  readonly total=signal(0);
+  private readonly fetchedRows=signal<AppointmentView[]>([]);
+  readonly partial=computed(()=>this.fetchedRows().length>=100);
+  readonly filteredRows=computed(()=>{
+    const search=this.search().trim().toLocaleLowerCase('vi');
+    const status=this.status();
+    return this.fetchedRows().filter(row=>
+      (!status || row.rawStatus===status) &&
+      (!search || [row.code,row.customerName,row.customerPhone,row.id,...row.serviceNames]
+        .some(t=>t.toLocaleLowerCase('vi').includes(search))));
+  });
+  readonly total=computed(()=>this.filteredRows().length);
+  readonly rows=computed(()=>this.filteredRows().slice((this.page()-1)*this.limit,this.page()*this.limit));
 
   constructor(){this.load();}
-  lookup():void{this.page.set(1);this.load();}
-  changeStatus(value:string):void{this.status.set(value);this.page.set(1);this.load();}
+  lookup():void{this.page.set(1);}
+  changeStatus(value:string):void{this.status.set(value);this.page.set(1);}
   goto(page:number):void{
     if(page<1 || page>Math.max(1,Math.ceil(this.total()/this.limit)))return;
     this.page.set(page);this.load();
   }
   load():void{
-    let params=new HttpParams().set('page',String(this.page())).set('limit',String(this.limit));
-    if(this.search().trim())params=params.set('search',this.search().trim());
-    if(this.status())params=params.set('status',this.status());
+    // BE foundation-v6 lists at most 100 records and ignores page/search.
+    // Use local paging/search for fetched subset; disclose when cap is reached.
+    const params=new HttpParams().set('limit','100');
     const version=++this.requestVersion;
     this.loading.set(true);this.error.set('');
     this.api.get<unknown>('/appointments',{params}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -167,16 +177,16 @@ export class AdminAppointmentsPageComponent {
         if(version!==this.requestVersion)return;
         try{
           const data=normalizeAppointmentPage(raw);
-          this.rows.set(data.items);this.total.set(data.total);this.loading.set(false);
+          this.fetchedRows.set(data.items);this.loading.set(false);
         }catch(err){
-          this.rows.set([]);this.total.set(0);
+          this.fetchedRows.set([]);
           this.error.set(err instanceof Error?err.message:'Dữ liệu lịch hẹn không đúng định dạng.');
           this.loading.set(false);
         }
       },
       error:err=>{
         if(version!==this.requestVersion)return;
-        this.rows.set([]);this.total.set(0);
+        this.fetchedRows.set([]);
         this.error.set(adminErrorMessage(err,'Chưa tải được lịch hẹn từ BE.'));
         this.loading.set(false);
       },
@@ -186,7 +196,7 @@ export class AdminAppointmentsPageComponent {
   statusColor(row:AppointmentView):string{
     return ['CANCELLED','NO_SHOW'].includes(row.status)?'danger':
       ['CONFIRMED','COMPLETED'].includes(row.status)?'success':
-      (row.status==='PENDING'||row.status==='PENDING_PAYMENT')?'warning':'neutral';
+      (['PENDING','PENDING_CONFIRMATION','PENDING_PAYMENT'].includes(row.status))?'warning':'neutral';
   }
   formatDate(value:string|null):string{
     if(!value)return '—';const d=new Date(value);
