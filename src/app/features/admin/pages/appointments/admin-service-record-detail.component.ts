@@ -3,7 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiClientService } from '../../../../core/services/api-client.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
-import { adminErrorMessage } from '../../../../shared/services/admin-toast.service';
+import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import {
  ServiceRecord, canFinalizeServiceRecord, normalizeServiceRecordDetail, serviceRecordStatusLabel,
 } from './admin-service-record.model';
@@ -141,6 +141,7 @@ import {
 })
 export class AdminServiceRecordDetailComponent{
  private readonly api=inject(ApiClientService);
+ private readonly toast=inject(AdminToastService);
  private readonly route=inject(ActivatedRoute);
  private readonly destroyRef=inject(DestroyRef);
  private version=0;
@@ -178,6 +179,11 @@ export class AdminServiceRecordDetailComponent{
    this.actionMessage.set(check.allowed ?
     'Hồ sơ đã đáp ứng các điều kiện hiển thị. Chức năng hoàn tất hồ sơ hiện chưa khả dụng.' :
     check.reason);
+   this.toast.show(this.actionMessage(), 'info');
  }
- explainReopen(){this.actionMessage.set('Chức năng mở lại hồ sơ hiện chưa khả dụng. Hồ sơ chưa có thay đổi.');}
+ explainReopen(){
+   const message='Chức năng mở lại hồ sơ hiện chưa khả dụng. Hồ sơ chưa có thay đổi.';
+   this.actionMessage.set(message);
+   this.toast.show(message,'info');
+ }
 }
