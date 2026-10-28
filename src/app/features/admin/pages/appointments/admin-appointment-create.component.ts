@@ -549,6 +549,66 @@ export class AdminAppointmentCreateComponent {
     this.clearReview();
   }
 
+  /** Read-only Customer preview-pricing; no voucher quota, slot reservation, or payment mutation. */
+  requestPricingPreview(): void {
+    if (this.pricingStatus() === 'loading') return;
+    const selectedPets = this.selectedPets();
+    const planned = this.plannedSegments();
+    const invalidExtras = this.extraServices().some(item => !item.serviceId);
+    if (!this.branchId() || !selectedPets.length || !this.serviceId() ||
+        invalidExtras || planned.length < selectedPets.length ||
+        selectedPets.some(pet => !pet.name.trim())) {
+      this.pricingStatus.set('error');
+      this.pricingSnapshot.set(null);
+      this.pricingError.set('Chọn đầy đủ chi nhánh, thú cưng và tất cả dịch vụ trước khi xem giá.');
+      return;
+    }
+    const payload = selectedPets.map(pet => {
+      const weight = Number(String(pet.weightKg).replace(',', '.'));
+      return {
+        petId: pet.id,
+        weightKg: String(pet.weightKg).trim() && Number.isFinite(weight) && weight > 0 ? weight : null,
+        serviceIds: planned.filter(item => item.petId === pet.id).map(item => item.serviceId),
+      };
+    });
+    const key = this.pricingRequestKey();
+    const version = ++this.priceRequestVersion;
+    this.pricingSnapshot.set(null);
+    this.pricingStatus.set('loading');
+    this.pricingError.set('');
+    try {
+      this.pricingPreviewService.preview(payload)
+        .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+          next: preview => {
+            if (version !== this.priceRequestVersion) return;
+            if (key !== this.pricingRequestKey()) {
+              this.pricingStatus.set('idle');
+              this.pricingError.set('Dữ liệu đã thay đổi trong lúc báo giá. Vui lòng xem giá lại.');
+              return;
+            }
+            this.pricingKeyAtResponse.set(key);
+            this.pricingSnapshot.set(preview);
+            this.pricingStatus.set('ready');
+          },
+          error: err => {
+            if (version !== this.priceRequestVersion) return;
+            this.pricingSnapshot.set(null);
+            this.pricingStatus.set('error');
+            this.pricingError.set(adminErrorMessage(err, 'API xem giá chưa khả dụng cho Admin. Chưa có báo giá được xác nhận.'));
+          },
+        });
+    } catch (err) {
+      this.pricingStatus.set('error');
+      this.pricingError.set(err instanceof Error ? err.message : 'Không thể chuẩn bị báo giá.');
+    }
+  }
+
+  updateVoucher(value: string): void {
+    this.voucherCode.set(value);
+    this.voucherNotice.set('');
+    this.clearReview();
+  }
+
   selectPayment(mode: PaymentMethod): void {
     this.paymentMethod.set(mode);
     if (mode === 'PAY_AT_STORE') this.onlineProvider.set(null);
@@ -597,6 +657,8 @@ export class AdminAppointmentCreateComponent {
     else if (this.appointmentDate() < this.today) errors.push('Không thể đặt lịch vào ngày đã qua.');
     if (this.paymentMethod() === 'ONLINE_MOCK' && !this.onlineProvider())
       errors.push('Chọn cổng thanh toán trực tuyến.');
+    if (!this.currentPreview())
+      errors.push('Chưa có kết quả giá tham khảo còn hiệu lực. Vui lòng xem giá lại.');
     // A slot read/price hint never authorizes a booking mutation.
     errors.push('Chưa có hợp đồng API tạo lịch hẹn hộ khách, kiểm tra toàn bộ segment, áp voucher, thu cọc và xác nhận thanh toán. Chưa tạo lịch hẹn thật.');
     this.reviewErrors.set(errors);
