@@ -28,6 +28,20 @@ export const routes: Routes = [
       .then(c => c.AdminAppointmentCreateComponent),
   },
   {
+    path: 'admin/service-records/:id',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+    loadComponent: () => import('./features/admin/pages/appointments/admin-service-record-detail.component')
+      .then(c => c.AdminServiceRecordDetailComponent),
+  },
+  {
+    path: 'admin/service-records',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+    loadComponent: () => import('./features/admin/pages/appointments/admin-service-records.component')
+      .then(c => c.AdminServiceRecordsComponent),
+  },
+  {
     path: 'admin/appointments/:id',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
