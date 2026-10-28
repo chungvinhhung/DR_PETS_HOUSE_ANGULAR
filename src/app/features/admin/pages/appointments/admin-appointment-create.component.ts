@@ -312,6 +312,10 @@ export class AdminAppointmentCreateComponent {
     this.recalculateSlots();
   }
 
+  extrasForPet(petId: string): readonly ExtraPetService[] {
+    return this.extraServices().filter(row => row.petId === petId);
+  }
+
   addExtraService(petId: string): void {
     if (!this.serviceId()) {
       this.toast.show('Chọn dịch vụ chính trước khi thêm dịch vụ.');
