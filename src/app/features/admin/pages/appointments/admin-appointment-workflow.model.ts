@@ -1,5 +1,5 @@
 export type AppointmentStatus =
-  'PENDING' | 'PENDING_PAYMENT' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'UNKNOWN';
+  'PENDING' | 'PENDING_PAYMENT' | 'PENDING_CONFIRMATION' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'UNKNOWN';
 
 export interface AppointmentHistoryEvent {
   status: string;
@@ -72,7 +72,7 @@ function namesFrom(value: unknown, singular: string): string[] {
 export function appointmentStatus(raw: unknown): AppointmentStatus {
   const key = valueText(raw).toUpperCase();
   const statuses: Record<string, AppointmentStatus> = {
-    PENDING:'PENDING', PENDING_PAYMENT:'PENDING_PAYMENT', REQUESTED:'PENDING', 
+    PENDING:'PENDING', PENDING_PAYMENT:'PENDING_PAYMENT', PENDING_CONFIRMATION:'PENDING_CONFIRMATION', REQUESTED:'PENDING', 
     CONFIRMED:'CONFIRMED', IN_PROGRESS:'IN_PROGRESS', PROCESSING:'IN_PROGRESS',
     COMPLETED:'COMPLETED', CANCELLED:'CANCELLED', CANCELED:'CANCELLED',
     NO_SHOW:'NO_SHOW', MISSED:'NO_SHOW',
@@ -81,7 +81,7 @@ export function appointmentStatus(raw: unknown): AppointmentStatus {
 }
 export function statusLabel(status: AppointmentStatus, rawStatus = ''): string {
   return ({
-    PENDING:'Chờ xác nhận', PENDING_PAYMENT:'Chờ thanh toán', CONFIRMED:'Đã xác nhận', IN_PROGRESS:'Đang thực hiện',
+    PENDING:'Chờ xác nhận', PENDING_PAYMENT:'Chờ thanh toán', PENDING_CONFIRMATION:'Chờ xác nhận', CONFIRMED:'Đã xác nhận', IN_PROGRESS:'Đang thực hiện',
     COMPLETED:'Hoàn tất', CANCELLED:'Đã hủy', NO_SHOW:'Không đến',
     UNKNOWN: rawStatus || 'Chưa xác định',
   } as Record<AppointmentStatus, string>)[status];
@@ -93,11 +93,13 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
   if (!id) throw new Error('API không trả về ID lịch hẹn.');
   const customer = obj(item['customer']) ?? obj(item['user']) ?? {};
   const contact = obj(item['contactSnapshot']) ?? obj(item['guestContact']) ?? {};
+  const custSnapshot = obj(item['customerSnapshot']) ?? {};
+  const petSnapshot = obj(item['petSnapshot']) ?? {};
   const branch = obj(item['branch']) ?? {};
   const payment = obj(item['payment']) ?? {};
   const rawStatus = firstString(item['status'], item['appointmentStatus']);
   const bookingDate = firstString(item['appointmentDate'], item['appointment_date']);
-  const start = firstString(item['startAt'], item['start_at'], item['scheduledAt'], item['scheduled_at']);
+  const start = firstString(item['startAt'], item['start_at'], item['scheduledAt'], item['scheduled_at'], item['scheduledStart']);
   const hour = firstString(item['startTime'], item['start_time']);
   const combined = bookingDate && hour ? bookingDate.slice(0,10) + 'T' + hour : bookingDate;
   const date = isDate(start) ? start : isDate(combined) ? combined : null;
@@ -108,11 +110,11 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
   const auditRows = item['auditHistory'] ?? item['auditLog'];
   return {
     id, code:firstString(item['code'], item['appointmentCode'], item['appointment_code']) || id,
-    customerName:firstString(item['customerName'], item['customer_name_snapshot'], customer['fullName'], customer['full_name'], contact['fullName']),
-    customerPhone:firstString(item['customerPhone'], item['customer_phone_snapshot'], customer['phone'], contact['phone']),
+    customerName:firstString(item['customerName'], item['customer_name_snapshot'], customer['fullName'], customer['full_name'], custSnapshot['name'], contact['fullName'], contact['name']),
+    customerPhone:firstString(item['customerPhone'], item['customer_phone_snapshot'], customer['phone'], custSnapshot['phone'], contact['phone']),
     customerEmail:firstString(item['customerEmail'], customer['email'], contact['email']),
     petNames:namesFrom(item['pets'] ?? item['pet'], 'pet').length
-      ? namesFrom(item['pets'] ?? item['pet'], 'pet') : firstString(item['petName'], item['pet_name_snapshot']) ? [firstString(item['petName'], item['pet_name_snapshot'])] : [],
+      ? namesFrom(item['pets'] ?? item['pet'], 'pet') : firstString(item['petName'], item['pet_name_snapshot'], petSnapshot['name']) ? [firstString(item['petName'], item['pet_name_snapshot'], petSnapshot['name'])] : [],
     serviceNames:namesFrom(item['services'] ?? item['appointment_services'], 'service').length
       ? namesFrom(item['services'] ?? item['appointment_services'], 'service') : firstString(item['serviceName']) ? [firstString(item['serviceName'])] : [],
     branchName:firstString(item['branchName'], branch['name'], branch['branch_name']),
@@ -120,9 +122,9 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
     status:appointmentStatus(rawStatus),rawStatus,
     paymentMethod:firstString(item['paymentMethod'], item['payment_method'], payment['method']),
     paymentStatus:firstString(item['paymentStatus'], item['payment_status'], payment['status']),
-    totalAmount:toMoney(obj(item['pricing'])?.['totalAmount'] ?? item['totalAmount'] ?? item['total_amount']),
+    totalAmount:toMoney(obj(item['pricing'])?.['finalAmount'] ?? obj(item['pricing'])?.['totalAmount'] ?? item['totalAmount'] ?? item['total_amount']),
     depositAmount:toMoney(obj(item['pricing'])?.['depositAmount'] ?? item['depositAmount'] ?? item['deposit_amount']),
-    balanceDue:toMoney(obj(item['pricing'])?.['balanceDue'] ?? item['balanceDue'] ?? item['balance_due']),
+    balanceDue:toMoney(obj(item['pricing'])?.['balanceAmount'] ?? obj(item['pricing'])?.['balanceDue'] ?? item['balanceDue'] ?? item['balance_due']),
     createdAt:isDate(firstString(item['createdAt'],item['created_at'])) ? firstString(item['createdAt'],item['created_at']) : null,
     appointmentAt:date,
     rescheduleCount:typeof reschedules === 'number' && Number.isInteger(reschedules) && reschedules >= 0 ? reschedules : null,
@@ -133,7 +135,7 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
         actor:firstString(event['actorName'], event['actorId']) || null,
         note:firstString(event['note'],event['reason']) || null};
     }).filter(row=>!!row.status) : [],
-    cancellationReason:firstString(item['cancellationReason'], item['cancelReason']) || null,
+    cancellationReason:firstString(item['cancellationReason'], item['cancelReason'], obj(item['cancel'])?.['reason']) || null,
     serviceRecordRefs:Array.isArray(referenceRows) ? referenceRows.map(raw=>{
       const r=obj(raw);if(!r)return null;
       const id=firstString(r['id'],r['serviceRecordId'],r['_id']);
