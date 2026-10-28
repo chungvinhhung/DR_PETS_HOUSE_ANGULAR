@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { ApiClientService } from '../../../../core/services/api-client.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
-import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
+import { adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 
 interface AppointmentRow {
   id: string;
@@ -69,7 +69,6 @@ interface AppointmentPage {
 })
 export class AdminAppointmentsPageComponent {
  private readonly api=inject(ApiClientService);
- private readonly toast=inject(AdminToastService);
  private readonly destroyRef=inject(DestroyRef);
  readonly search=signal(''); readonly status=signal(''); readonly page=signal(1); readonly limit=10;
  readonly loading=signal(false); readonly error=signal(''); readonly rows=signal<AppointmentRow[]>([]); readonly total=signal(0);
