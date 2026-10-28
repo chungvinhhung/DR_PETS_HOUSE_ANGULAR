@@ -30,6 +30,7 @@ import {
     <select id="appointment-status-filter" [value]="status()" (change)="changeStatus($any($event.target).value)">
       <option value="">Tất cả trạng thái</option>
       <option value="PENDING">Chờ xác nhận</option>
+      <option value="PENDING_PAYMENT">Chờ thanh toán</option>
       <option value="CONFIRMED">Đã xác nhận</option>
       <option value="IN_PROGRESS">Đang thực hiện</option>
       <option value="COMPLETED">Hoàn tất</option>
@@ -185,7 +186,7 @@ export class AdminAppointmentsPageComponent {
   statusColor(row:AppointmentView):string{
     return ['CANCELLED','NO_SHOW'].includes(row.status)?'danger':
       ['CONFIRMED','COMPLETED'].includes(row.status)?'success':
-      row.status==='PENDING'?'warning':'neutral';
+      (row.status==='PENDING'||row.status==='PENDING_PAYMENT')?'warning':'neutral';
   }
   formatDate(value:string|null):string{
     if(!value)return '—';const d=new Date(value);
