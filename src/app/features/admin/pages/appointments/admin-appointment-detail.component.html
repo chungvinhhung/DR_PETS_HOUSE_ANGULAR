@@ -114,9 +114,7 @@
         @if (appointment.audit.length) {
           <ol class="history">
             @for (event of appointment.audit; track $index) {
-              <li><div><strong>{{event.action}}
-                @if (event.isOverride) { · Override}</strong>
-                @else {</strong>}
+              <li><div><strong>{{event.action}} @if (event.isOverride) { (Override) }</strong>
                 <small>{{displayTime(event.at)}}</small></div>
                 @if (event.actor) {<small>Người thực hiện: {{event.actor}}</small>}
                 @if (event.reason) {<p>Lý do: {{event.reason}}</p>}
