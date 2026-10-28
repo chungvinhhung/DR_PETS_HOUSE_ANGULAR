@@ -1,0 +1,110 @@
+<img
+  app-auth-background-blob
+  [className]="'absolute -left-[142px] top-[-1px] h-[865px] w-[802px] max-w-none md:-left-[3px] md:top-[23px] md:h-[817.884px] md:w-[950.149px]'"
+/>
+<img
+  [attr.src]="authImages.logo"
+  alt="Dr. Pet's House"
+  class="absolute left-[13px] top-[3px] z-10 h-[56px] w-[101px] object-contain md:left-5 md:top-5 md:h-[78px] md:w-auto"
+/>
+<div class="relative z-10 flex h-[244px] w-[232px] shrink-0 items-center justify-center md:w-1/2 md:pr-7 md:pt-10">
+  <img
+    [attr.src]="authImages.searchDog"
+    alt=""
+    class="h-[206px] w-[232px] rounded-full bg-white object-cover shadow-lg md:h-[350px] md:w-[380px]"
+  />
+</div>
+<section class="relative z-10 mx-auto w-full max-w-[420px] pb-[15px]">
+  <h1 class="mb-[-8px] text-[20px] font-extrabold leading-9 tracking-[-0.75px] text-[#060b16] md:mb-0 md:text-[30px]">{{ content()[0] }}</h1>
+  <p class="mb-[23.5px] text-[12px] leading-[26px] text-[#4f5359] md:mb-6 md:mt-2 md:text-[16px]">{{ content()[1] }}</p>
+  @if (screen() === 'forgot') {
+    <form
+      novalidate
+      class="flex flex-col gap-[23.5px]"
+      (submit)="submitValidatedForm($any($event), forgotErrors(), setForgotValidationAttemptedFn, handleForgotSubmitFn)"
+    >
+      <label
+        app-field
+        [label]="'Số điện thoại / Email'"
+        [name]="'account'"
+        [value]="forms().forgot.account"
+        (onChange)="update('forgot')($event)"
+        [variant]="'soft'"
+        [required]="true"
+        [error]="forgotValidationAttempted() ? forgotErrors().account : ''"
+      ></label>
+      @if (submitError()) {
+        <p class="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{{ submitError() }}</p>
+      }
+      <button app-primary-button [disabled]="submitting()">
+        @if (submitting()) {
+          ĐANG GỬI...
+        } @else {
+          GỬI MÃ XÁC NHẬN
+        }
+      </button>
+      <button
+        type="button"
+        (click)="changeScreen()('login')"
+        class="flex items-center justify-center gap-2 text-sm text-[#7e8085]"
+      >
+        <app-customer-icon name="arrow-left" className="size-4" /> Quay lại đăng nhập</button>
+    </form>
+  }
+  @if (screen() === 'resetOtp' || screen() === 'registerOtp') {
+    <form
+      app-otp-form
+      [changeScreen]="changeScreen()"
+      [nextScreen]="screen() === 'registerOtp' ? 'success' : 'reset'"
+      [previousScreen]="screen() === 'registerOtp' ? 'register' : 'forgot'"
+      (onSubmitOtp)="handleOtpSubmit($any($event))"
+      [hasOnSubmitOtp]="true"
+      [submitError]="submitError()"
+      [submitting]="submitting()"
+    ></form>
+  }
+  @if (screen() === 'reset') {
+    <form
+      novalidate
+      class="flex flex-col gap-[23.5px]"
+      (submit)="submitValidatedForm($any($event), resetErrors(), setResetValidationAttemptedFn, handleResetSubmitFn)"
+    >
+      <div class="flex flex-col gap-4">
+        <label
+          app-field
+          [label]="'Mật khẩu mới'"
+          [name]="'password'"
+          [value]="forms().reset.password"
+          (onChange)="update('reset')($event)"
+          [type]="'password'"
+          [placeholder]="'Tối thiểu 8 ký tự'"
+          [variant]="'soft'"
+          [required]="true"
+          [error]="resetValidationAttempted() ? resetErrors().password : ''"
+        ></label>
+        <label
+          app-field
+          [label]="'Xác nhận mật khẩu'"
+          [name]="'confirmPassword'"
+          [value]="forms().reset.confirmPassword"
+          (onChange)="update('reset')($event)"
+          [type]="'password'"
+          [placeholder]="'Nhập lại mật khẩu mới'"
+          [variant]="'soft'"
+          [required]="true"
+          [error]="resetValidationAttempted() ? resetErrors().confirmPassword : ''"
+        ></label>
+      </div>
+      @if (submitError()) {
+        <p class="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{{ submitError() }}</p>
+      }
+      <button app-primary-button [disabled]="submitting()">
+        @if (submitting()) {
+          ĐANG ĐỔI...
+        } @else {
+          ĐỔI MẬT KHẨU
+        }
+      </button>
+    </form>
+  }
+</section>

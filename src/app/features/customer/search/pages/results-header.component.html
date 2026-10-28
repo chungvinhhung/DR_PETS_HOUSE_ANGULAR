@@ -1,0 +1,21 @@
+<h1 class="w-full text-[32px] font-semibold leading-10 text-black/87">Kết quả tìm kiếm cho <span class="text-[#0D47A1]">"{{ query() }}"</span>
+</h1>
+<p class="text-[16px] leading-6 text-black/60">
+  @if (isEmpty()) {
+    {{ emptyState().summary }}
+  } @else {
+    {{ `Tìm thấy ${total()} kết quả phù hợp: ${counts().service} dịch vụ, ${counts().shopping} sản phẩm, ${counts().firstAid} cẩm nang, ${counts().knowledge} kiến thức` }}
+  }
+</p>
+@if (!isEmpty()) {
+  <div class="flex flex-wrap items-center gap-3 pt-4">
+    @for (option of sortOptions(); track option.id) {
+      <button
+        app-sort-button
+        [option]="option"
+        [active]="activeSort() === option.id"
+        (onClick)="onSortChange.emit(option.id)"
+      ></button>
+    }
+  </div>
+}

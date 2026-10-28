@@ -1,0 +1,45 @@
+<span class="decision-modal__icon-glow"></span>
+<span class="decision-modal__icon-tile">
+  @if (isSuccess()) {
+    <svg width="42" height="42" viewBox="0 0 42 42" fill="none">
+      <circle cx="21" cy="21" r="17" fill="#4CAF50" />
+      <path
+        d="M13.6 21.2L18.5 26.1L29.2 15.4"
+        stroke="white"
+        stroke-width="4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  } @else {
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+      <path d="M20 5L36 33H4L20 5Z" fill="#FFB400" />
+      <path d="M20 15V22" stroke="white" stroke-width="4" stroke-linecap="round" />
+      <circle cx="20" cy="28" r="2.2" fill="white" />
+    </svg>
+  }
+</span>
+<span [class]="`decision-modal__paw ${isSuccess() ? 'decision-modal__paw--success' : ''}`">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+    <path
+      d="M19.08 15.72C18.49 12.19 15.1 9.32 11.52 9.32C7.63 9.32 4.21 12.47 3.88 16.35C3.75 17.85 4.23 19.27 5.22 20.34C6.2 21.41 7.58 22 9.08 22H13.76C15.45 22 16.93 21.34 17.94 20.15C18.95 18.96 19.35 17.38 19.08 15.72Z"
+      fill="currentColor"
+    />
+    <path
+      d="M10.28 7.86C11.9 7.86 13.21 6.55 13.21 4.93C13.21 3.31 11.9 2 10.28 2C8.66 2 7.35 3.31 7.35 4.93C7.35 6.55 8.66 7.86 10.28 7.86Z"
+      fill="currentColor"
+    />
+    <path
+      d="M16.94 9.03C18.29 9.03 19.38 7.94 19.38 6.59C19.38 5.24 18.29 4.15 16.94 4.15C15.59 4.15 14.5 5.24 14.5 6.59C14.5 7.94 15.59 9.03 16.94 9.03Z"
+      fill="currentColor"
+    />
+    <path
+      d="M20.55 12.93C21.63 12.93 22.5 12.06 22.5 10.98C22.5 9.9 21.63 9.03 20.55 9.03C19.47 9.03 18.6 9.9 18.6 10.98C18.6 12.06 19.47 12.93 20.55 12.93Z"
+      fill="currentColor"
+    />
+    <path
+      d="M3.94 10.98C5.29 10.98 6.38 9.89 6.38 8.54C6.38 7.19 5.29 6.1 3.94 6.1C2.59 6.1 1.5 7.19 1.5 8.54C1.5 9.89 2.59 10.98 3.94 10.98Z"
+      fill="currentColor"
+    />
+  </svg>
+</span>

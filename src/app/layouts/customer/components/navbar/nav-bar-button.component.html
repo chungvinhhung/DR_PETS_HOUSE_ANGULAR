@@ -1,0 +1,14 @@
+<button
+  [class]="`cursor-pointer [border:none] py-2 px-[22px] bg-[#fdd835] h-10 w-[150px] shadow-[0px_1px_5px_rgba(0,_0,_0,_0.12),_0px_2px_2px_rgba(0,_0,_0,_0.14),_0px_3px_1px_-2px_rgba(0,_0,_0,_0.2)] rounded-borderradius overflow-hidden shrink-0 flex flex-col items-center justify-center box-border ${className()}`"
+  [appStyle]="bookButtonStyle()"
+>
+  <div class="flex items-center justify-center gap-2" [appStyle]="baseStyle()">
+    @if (!!startIcon1()) {
+      {{ startIcon2() }}
+    }
+    <b class="relative text-base tracking-[0.15px] leading-[150%] font-fontfamily text-primary-contrasttext text-left shrink-0">{{ label() }}</b>
+    @if (!!endIcon1()) {
+      {{ endIcon() }}
+    }
+  </div>
+</button>

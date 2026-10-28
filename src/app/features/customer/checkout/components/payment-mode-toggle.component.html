@@ -1,0 +1,16 @@
+<div class="grid grid-cols-2">
+  <button
+    type="button"
+    (click)="cartService.setPaymentMode('cod')"
+    [class]="`rounded-2xl py-3 transition duration-micro ${
+          isCod() ? 'bg-white text-blue-900 shadow-elevation' : 'text-slate-500 hover:text-blue-900'
+        }`"
+  >Khi nhận hàng</button>
+  <button
+    type="button"
+    (click)="cartService.setPaymentMode('online')"
+    [class]="`rounded-2xl py-3 transition duration-micro ${
+          !isCod() ? 'bg-white text-blue-900 shadow-elevation' : 'text-slate-500 hover:text-blue-900'
+        }`"
+  >Trực tuyến</button>
+</div>

@@ -1,0 +1,126 @@
+@if (!(cond1())) {
+  <div
+    class="fixed inset-0 z-[200] flex items-center justify-center bg-black/35 px-6 py-8"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="grooming-pricing-title"
+    (mousedown)="handle2($any($event))"
+  >
+    <div class="relative flex max-h-[calc(100vh-64px)] w-[1280px] flex-col items-center overflow-hidden rounded-[24px] bg-white py-10 shadow-[0px_20px_25px_-5px_rgba(255,237,213,0.5),0px_8px_10px_-6px_rgba(255,237,213,0.5)]">
+      <button
+        type="button"
+        class="focus-ring-brand absolute right-6 top-6 flex size-10 items-center justify-center rounded-full bg-[#FFF9C4] text-[#0D47A1] transition-colors hover:bg-[#FDD835]"
+        aria-label="Đóng bảng giá"
+        (click)="handle3()"
+      >
+        <app-customer-icon name="x" [size]="24" [strokeWidth]="2.5" />
+      </button>
+      <header class="flex w-full shrink-0 flex-col items-center">
+        <h2
+          id="grooming-pricing-title"
+          class="m-0 w-full text-center font-['Baloo_Tamma'] text-[64px] font-normal leading-[1.1] text-[#0D47A1]"
+        >Bảng giá dịch vụ <span class="text-[#FBC02D]">Dr.Pet’s House</span>
+        </h2>
+      </header>
+      <div class="mt-6 flex h-[52px] w-[1130px] shrink-0 items-center gap-[23px] pl-[15px]">
+        <div class="relative z-20 h-[40px] w-[232px] shrink-0">
+          <button
+            type="button"
+            class="flex h-[40px] w-[232px] items-center justify-between rounded-[16px] border border-[rgba(0,0,0,0.87)] bg-[#FFF176] px-[17px] py-[9px] shadow-[0px_1px_1px_rgba(0,0,0,0.05)]"
+            aria-haspopup="listbox"
+            [attr.aria-expanded]="isDropdownOpen()"
+            (click)="handle4()"
+          >
+            <span class="font-['Roboto'] text-[16px] font-normal leading-6 text-[rgba(0,0,0,0.87)]">{{ selectedLabel() }}</span>
+            <app-customer-icon
+              name="chevron-down"
+              [size]="18"
+              [strokeWidth]="2"
+              color="rgba(0,0,0,0.87)"
+              [className]="`transition-transform ${isDropdownOpen() ? 'rotate-180' : ''}`"
+            />
+          </button>
+          @if (isDropdownOpen()) {
+            <div
+              class="absolute left-0 top-[46px] w-[232px] overflow-hidden rounded-[16px] border border-[rgba(0,0,0,0.18)] bg-white py-1 shadow-[0_10px_24px_rgba(13,71,161,0.16)]"
+              role="listbox"
+            >
+              @for (filter of SERVICE_PRICE_FILTERS; track filter.value) {
+                <button
+                  type="button"
+                  [class]="`flex h-[40px] w-full items-center px-[17px] text-left font-['Roboto'] text-[16px] font-normal leading-6 transition-colors ${
+                      selectedFilter() === filter.value
+                        ? 'bg-[#FFF176] text-[rgba(0,0,0,0.87)]'
+                        : 'bg-white text-[rgba(0,0,0,0.87)] hover:bg-[#FFFDE7]'
+                    }`"
+                  role="option"
+                  [attr.aria-selected]="selectedFilter() === filter.value"
+                  (click)="handle5(filter)"
+                >{{ filter.label }}</button>
+              }
+            </div>
+          }
+        </div>
+        <div app-price-cell-group>
+          @for (column of displayColumns().slice(0, 3); track column.label) {
+            <div [class]="`flex h-[40px] w-[80px] items-center justify-center rounded-[16px] border p-px ${columnToneClasses[column.tone]}`">
+              <span class="whitespace-nowrap font-['Baloo_Tamma_2'] text-[14px] font-bold leading-5">{{ column.label }}</span>
+            </div>
+          }
+        </div>
+        <div app-price-cell-group>
+          @for (column of displayColumns().slice(3, 6); track column.label) {
+            <div [class]="`flex h-[40px] w-[80px] items-center justify-center rounded-[16px] border p-px ${columnToneClasses[column.tone]}`">
+              <span class="whitespace-nowrap font-['Baloo_Tamma_2'] text-[14px] font-bold leading-5">{{ column.label }}</span>
+            </div>
+          }
+        </div>
+        <div app-price-cell-group>
+          @for (column of displayColumns().slice(6); track column.label) {
+            <div [class]="`flex h-[40px] w-[80px] items-center justify-center rounded-[16px] border p-px ${columnToneClasses[column.tone]}`">
+              <span class="whitespace-nowrap font-['Baloo_Tamma_2'] text-[14px] font-bold leading-5">{{ column.label }}</span>
+            </div>
+          }
+        </div>
+      </div>
+      <div class="mt-2 w-[1130px] min-h-0 flex-1 overflow-y-auto pr-[23px]">
+        <div class="flex w-[1107px] flex-col items-start gap-[15px]">
+          @for (row of displayRows(); track row.title) {
+            <div class="flex w-[1107px] shrink-0 flex-col items-start px-4">
+              <div
+                class="flex w-[1091px] items-start gap-[18px] rounded-[16px] p-4 backdrop-blur-[2px]"
+                [appStyle]="{ backgroundColor: row.background }"
+              >
+                <div class="flex h-[40px] w-[220px] shrink-0 items-center gap-4 rounded-[16px]">
+                  <div class="flex size-[30px] shrink-0 items-center justify-center">
+                    <app-service-icon [name]="row.icon" [color]="row.iconColor" />
+                  </div>
+                  <div class="flex min-w-0 flex-1 items-center">
+                    <span class="font-['Baloo_Tamma_2'] text-[16px] font-bold leading-6 text-[#1B1C1D]">{{ row.title }}</span>
+                  </div>
+                </div>
+                <div class="flex min-w-0 flex-1 items-center gap-[23px] pr-px">
+                  <div app-price-cell-group>
+                    @for (price of row.prices.slice(0, 3); track $index; let index = $index) {
+                      <div app-price-pill [value]="price" [tone]="displayColumns()[index].tone"></div>
+                    }
+                  </div>
+                  <div app-price-cell-group>
+                    @for (price of row.prices.slice(3, 6); track $index; let index = $index) {
+                      <div app-price-pill [value]="price" [tone]="displayColumns()[index + 3].tone"></div>
+                    }
+                  </div>
+                  <div app-price-cell-group>
+                    @for (price of row.prices.slice(6); track $index; let index = $index) {
+                      <div app-price-pill [value]="price" [tone]="displayColumns()[index + 6].tone"></div>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

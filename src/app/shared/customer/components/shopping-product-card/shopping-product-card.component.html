@@ -1,0 +1,13 @@
+<app-product-card
+  [product]="product()"
+  [variant]="resolvedVariant()"
+  [name]="name()"
+  [price]="price()"
+  [oldPrice]="oldPrice()"
+  [tagLabel]="tagLabel()"
+  [imageSrc]="imageSrc()"
+  [rating]="rating()"
+  [href]="href()"
+  [className]="classes()"
+  (onAddToCart)="onAddToCart.emit($event)"
+/>

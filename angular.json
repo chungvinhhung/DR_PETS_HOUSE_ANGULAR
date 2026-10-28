@@ -27,7 +27,12 @@
               }
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              {
+                "input": "src/app/shared/customer/styles/customer.scss",
+                "bundleName": "customer",
+                "inject": false
+              }
             ]
           },
           "configurations": {

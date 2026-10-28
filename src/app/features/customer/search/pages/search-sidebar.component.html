@@ -1,0 +1,25 @@
+<div class="flex items-start gap-2.5">
+  <app-customer-icon name="filter" className="mt-0.5 size-[33px] fill-black text-black" />
+  <h2 class="h-[33px] text-[24px] font-bold leading-[32px] text-black">Bộ lọc tìm kiếm</h2>
+</div>
+<div class="mt-6">
+  <p class="mb-[17px] text-[14px] font-semibold leading-5 tracking-[0.28px] text-[#121C2A]">Loại nhu cầu</p>
+  <div app-demand-tabs [activeType]="activeType()" (onChange)="onTypeChange.emit($event)"></div>
+</div>
+<div class="mt-6 flex flex-col gap-6">
+  @for (group of groups(); track group.id) {
+    <section
+      app-filter-group
+      [group]="group"
+      [selectedValues]="selectedFilters()[group.id] || []"
+      (onToggle)="onFilterToggle.emit($event)"
+    ></section>
+  }
+  <div class="flex justify-center">
+    <button
+      type="button"
+      (click)="onClear.emit($event)"
+      class="h-[42px] rounded-[4px] bg-[#FFF176] px-[22px] text-[15px] font-medium uppercase tracking-[0.46px] text-black shadow-elevation transition-colors hover:bg-[#FDD835]"
+    >Xóa bộ lọc</button>
+  </div>
+</div>

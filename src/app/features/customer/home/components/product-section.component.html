@@ -1,0 +1,54 @@
+<section
+  id="mua-sắm"
+  class="w-full py-12 md:py-[50px]"
+  [appStyle]="{
+        background:
+          'radial-gradient(50% 50% at 50% 50%, var(--primary-main, #E3F2FD) 25.48%, var(--background-default, #FFF) 100%)'
+      }"
+>
+  <div class="relative font-bold mx-auto flex max-w-page flex-col items-center gap-10 px-6 md:px-20">
+    <svg
+      class="absolute top-[50px] h-[15px] w-[179px]"
+      viewBox="0 0 182 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path
+        d="M0.213867 5.64588C23.7047 3.62998 109.211 -0.290806 179.214 5.6459C142.876 5.6459 106.198 6.7462 75.7139 13"
+        stroke="#FDD835"
+        stroke-width="5"
+        stroke-linejoin="round"
+      />
+    </svg>
+    <div app-section-title>Pet shop</div>
+    <div class="grid w-full max-w-[992px] grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
+      @for (__item1 of PRODUCT_CATEGORIES; track $index) {
+        @let label = __item1.label;
+        @let image = __item1.image;
+        @let slug = __item1.slug;
+        <a
+          [appCustomerLink]="`/san-pham?category=${slug}`"
+          class="card-category flex flex-col items-center gap-3 border-0 bg-transparent p-0 text-center"
+        >
+          <img [attr.src]="image" [attr.alt]="label" class="h-[110px] w-[106px] object-contain" />
+          <p class="text-lg font-bold text-black">{{ label }}</p>
+        </a>
+      }
+    </div>
+    @if (isLoadingProducts()) {
+      <div class="flex min-h-[392px] w-full max-w-[1200px] items-center justify-center text-base font-medium text-[#01579B]">Đang tải sản phẩm...</div>
+    } @else if (loadError()) {
+      <div class="flex min-h-[392px] w-full max-w-[1200px] items-center justify-center text-center text-base font-medium text-red-600">{{ loadError() }}</div>
+    } @else if (products().length) {
+      <div class="grid w-full max-w-[1200px] grid-cols-2 justify-items-center gap-x-5 gap-y-6 sm:grid-cols-3 lg:grid-cols-6">
+        @for (product of products(); track product.id) {
+          <app-product-card [product]="product" [variant]="product.discountPercent ? 'tag' : 'default'" />
+        }
+      </div>
+    } @else {
+      <div class="flex min-h-[392px] w-full max-w-[1200px] items-center justify-center text-base font-medium text-[#01579B]">Chưa có sản phẩm để hiển thị.</div>
+    }
+    <app-yellow-button [to]="'/san-pham'" [className]="'h-[42px] min-w-[154px]'">XEM THÊM<span class="text-xl leading-none">›</span></app-yellow-button>
+  </div>
+</section>

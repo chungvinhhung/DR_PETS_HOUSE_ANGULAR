@@ -1,0 +1,42 @@
+<div app-canvas-layout>
+  <app-nav-bar />
+  <main class="flex min-h-[2245px] flex-col items-center gap-6 bg-[#E5F6FD] pb-12 pt-6">
+    <nav
+      app-breadcrumb
+      [items]="[
+            { label: 'Trang chủ', to: '/' },
+            { label: 'Blog', to: '/blog' },
+            { label: section().label, to: section().href },
+            { label: post().categoryLabel, to: `${section().href}?category=${post().category}#latest-posts` },
+            { label: post().title }
+          ]"
+      [variant]="'blog'"
+      [className]="'w-[1200px]'"
+    ></nav>
+    <div class="flex w-[1200px] items-start gap-12">
+      <div class="flex flex-col gap-3">
+        @if (isLoading()) {
+          <div class="w-[813px] rounded-[12px] bg-white px-8 py-4 text-[#0D47A1]">Đang tải bài viết...</div>
+        }
+        @if (loadError()) {
+          <div class="w-[813px] rounded-[12px] bg-white px-8 py-4 text-[#0D47A1]">{{ loadError() }}</div>
+        }
+        <article app-article [post]="post()"></article>
+      </div>
+      <aside app-blog-sidebar [selectedCategory]="post().category"></aside>
+    </div>
+    <section class="w-[1206px] pt-6">
+      <div app-section-heading>Sản phẩm liên quan</div>
+      @if (productNotice()) {
+        <p class="mt-4 rounded-xl bg-white px-5 py-3 text-sm font-medium text-[#0D47A1]">{{ productNotice() }}</p>
+      }
+      <div class="mt-6 flex gap-9">
+        @for (product of relatedProducts(); track product.id) {
+          <app-shopping-product-card [product]="product" [href]="'/product-details'" />
+        }
+      </div>
+    </section>
+    <app-related-blog-section [posts]="relatedPosts().length ? relatedPosts() : ALL_BLOG_POSTS" />
+  </main>
+  <app-footer [variant]="'white'" />
+</div>

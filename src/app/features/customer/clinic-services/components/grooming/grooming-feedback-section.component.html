@@ -1,0 +1,87 @@
+<img
+  [attr.src]="groomingFeedbackAssets.background"
+  alt=""
+  class="absolute inset-0 h-full w-full object-cover"
+/>
+<div class="relative z-10 px-[120px] pt-10">
+  <h2 class="text-center" [appStyle]="groomingTitleStyles.dark64">Phản hồi của khách hàng</h2>
+  <div class="relative mt-[58px] h-[280px] overflow-hidden">
+    <div
+      [class]="`grid h-full grid-cols-3 items-stretch gap-[10px] ${slideOffset()}`"
+      role="tabpanel"
+      aria-live="polite"
+      [attr.aria-label]="`Trang ${pageIndex() + 1} / ${FEEDBACK_PAGE_COUNT}`"
+    >
+      @for (review of FEEDBACK_PAGES[pageIndex()]; track review.id) {
+        <article app-grooming-feedback-section-feedback-card [review]="review"></article>
+      }
+    </div>
+  </div>
+  <div
+    class="mt-[58px] flex items-center justify-center gap-[21px]"
+    role="tablist"
+    aria-label="Chọn trang phản hồi"
+  >
+    <button
+      type="button"
+      (click)="goPrev()"
+      class="btn-icon-subtle flex shrink-0 items-center justify-center rounded-lg p-1 opacity-80 transition-opacity hover:opacity-100"
+      aria-label="Trang phản hồi trước"
+    >
+      <img [attr.src]="groomingFeedbackAssets.carouselLeft" alt="" class="h-[10px] w-[271px] object-contain" />
+    </button>
+    <div class="flex items-center gap-[21px]">
+      @for (_ of range1(); track $index; let idx = $index) {
+        <button
+          app-grooming-feedback-section-feedback-dot
+          [pageIndex]="idx"
+          [totalPages]="FEEDBACK_PAGE_COUNT"
+          [isActive]="idx === pageIndex()"
+          (onClick)="goToPage(idx)"
+        ></button>
+      }
+    </div>
+    <button
+      type="button"
+      (click)="goNext()"
+      class="btn-icon-subtle flex shrink-0 items-center justify-center rounded-lg p-1 opacity-80 transition-opacity hover:opacity-100"
+      aria-label="Trang phản hồi tiếp"
+    >
+      <img
+        [attr.src]="groomingFeedbackAssets.carouselRight"
+        alt=""
+        class="h-[10px] w-[271px] object-contain"
+      />
+    </button>
+  </div>
+</div>
+<img
+  [attr.src]="groomingFeedbackAssets.pawSmall"
+  alt=""
+  class="pointer-events-none absolute left-[278px] top-[103px] h-[60px] w-[60px]"
+/>
+<img
+  [attr.src]="groomingFeedbackAssets.pawSmall"
+  alt=""
+  class="pointer-events-none absolute left-[1085px] top-[90px] h-[60px] w-[60px]"
+/>
+<img
+  [attr.src]="groomingFeedbackAssets.pawBlue"
+  alt=""
+  class="pointer-events-none absolute left-[1145px] top-[102px] h-[48px] w-[49px]"
+/>
+<img
+  [attr.src]="groomingFeedbackAssets.pawBlue"
+  alt=""
+  class="pointer-events-none absolute left-[158.39px] top-[512.17px] h-[48px] w-[49px]"
+/>
+<img
+  [attr.src]="groomingFeedbackAssets.pawBlueSmall"
+  alt=""
+  class="pointer-events-none absolute left-[158.39px] top-[526.17px] h-[34px] w-[34px]"
+/>
+<img
+  [attr.src]="groomingFeedbackAssets.pawDark"
+  alt=""
+  class="pointer-events-none absolute bottom-0 right-[50px] h-[87px] w-[87px]"
+/>

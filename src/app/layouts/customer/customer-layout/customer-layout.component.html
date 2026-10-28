@@ -1,0 +1,14 @@
+<div class="customer-root">
+  @if (stylesReady()) {
+    <router-outlet />
+
+    <!-- Popup dùng chung toàn site (trước đây được render trong các Provider của React) -->
+    <app-auth-modal />
+    <app-cart-drawer />
+    <app-checkout-overlay />
+    <app-bank-transfer-modal />
+    <app-order-success-overlay />
+    <app-guest-order-success-overlay />
+    <app-decision-modal />
+  }
+</div>

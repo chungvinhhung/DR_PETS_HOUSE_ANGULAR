@@ -1,0 +1,28 @@
+@for (step of steps(); track $index; let index = $index) {
+  @let completed = step.state === 'completed';
+  @let active = step.state === 'active';
+  @let disabled = step.state === 'disabled';
+  @let color = completed || active ? 'bg-[#0d47a1] text-white' : 'bg-[#e6e8ea] text-[#75777f]';
+  @let lineColor = completed ? 'bg-[#0d47a1]' : 'bg-[#e6e8ea]';
+  <div class="flex flex-1 items-start">
+    <div class="flex min-w-[74px] flex-col items-center">
+      <span [class]="`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold ${color} ${
+                disabled ? 'opacity-70' : ''
+              }`">
+        @if (completed) {
+          <img [attr.src]="appointmentImages.stepCheckIcon" alt="" class="h-4 w-4" />
+        } @else if (active) {
+          ●
+        } @else {
+          ○
+        }
+      </span>
+      <span [class]="`mt-2 text-center text-[11px] font-semibold leading-4 ${
+                completed || active ? 'text-[#06105a]' : 'text-[#75777f]'
+              }`">{{ step.label }}</span>
+    </div>
+    @if (index < steps().length - 1) {
+      <span [class]="`mt-[17px] h-0.5 flex-1 ${lineColor}`"></span>
+    }
+  </div>
+}

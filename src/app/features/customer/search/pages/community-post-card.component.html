@@ -1,0 +1,37 @@
+@if (post().image) {
+  <img
+    [attr.src]="post().image"
+    alt=""
+    class="-mx-6 -mt-6 mb-6 h-64 w-[calc(100%+48px)] rounded-t-[24px] object-cover"
+  />
+}
+<div class="flex items-start justify-between">
+  <div class="flex items-center gap-3">
+    <div class="flex size-10 items-center justify-center rounded-full bg-[#D7E2FF] text-[16px] font-semibold text-[#3E5E95]">{{ post().initials }}</div>
+    <div>
+      <p class="text-[16px] font-semibold leading-6 text-[#1A1C1C]">{{ post().author }}</p>
+      <p class="text-[12px] leading-4 text-[#414753]">{{ post().time }}</p>
+    </div>
+  </div>
+  @if (post().type) {
+    <span class="rounded-full bg-[#F3E8EE] px-3 py-1 text-[12px] font-semibold leading-4 text-[#672950]">{{ post().type }}</span>
+  }
+</div>
+@if (post().title) {
+  <h3 class="mt-3 pt-1 text-[16px] font-bold leading-6 text-black/87">{{ post().title }}</h3>
+}
+<p class="mt-3 text-[16px] leading-6 text-[#1A1C1C]">{{ post().content }}</p>
+@if (post().tags?.length > 0) {
+  <div class="mt-3 flex gap-2 pb-3 pt-1">
+    @for (tag of post().tags; track tag) {
+      <span class="rounded-lg bg-[rgba(214,227,255,0.5)] px-2 py-0.5 text-[10px] font-semibold uppercase leading-[15px] text-[#005AB4]">{{ tag }}</span>
+    }
+  </div>
+}
+<div class="mt-3 flex items-center justify-between border-t border-[#F3F3F3] px-6 pt-[17px] text-[14px] leading-5 text-[#414753]">
+  <div class="flex gap-6">
+    <span class="flex items-center gap-2"><app-customer-icon name="heart" className="size-4" />{{ post().likes }}</span>
+    <span class="flex items-center gap-2"><app-customer-icon name="message-circle" className="size-4" />{{ post().comments }}</span>
+  </div>
+  <app-customer-icon name="share-2" className="size-4" />
+</div>

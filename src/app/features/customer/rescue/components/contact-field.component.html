@@ -1,0 +1,83 @@
+@if (field().name === 'address' && addresses().length > 1) {
+  @let selectInvalid = invalid() && addressMode() !== NEW_ADDRESS_VALUE;
+  @let inputInvalid = invalid() && addressMode() === NEW_ADDRESS_VALUE;
+  <div [class]="`flex flex-col gap-4 ${field().fullWidth ? 'col-span-2' : ''}`">
+    <label app-adoption-application-modal-field-label [field]="field()"></label>
+    <div class="relative">
+      <select
+        id="adoption-address-select"
+        [selectValue]="addressMode()"
+        (change)="handle1($any($event))"
+        [class]="`${inputClass} ${selectInvalid ? invalidInputClass : ''} appearance-none pr-12`"
+        [attr.aria-invalid]="selectInvalid || undefined"
+        [attr.data-adoption-error]="selectInvalid ? 'true' : undefined"
+      >
+        @for (address of addresses(); track address.id) {
+          <option [value]="address.id ?? ''">{{ address.address }}</option>
+        }
+        <option [value]="NEW_ADDRESS_VALUE ?? ''">Nhập địa chỉ mới</option>
+      </select>
+      <app-customer-icon
+        name="chevron-down"
+        className="pointer-events-none absolute right-[26px] top-1/2 h-6 w-6 -translate-y-1/2 text-[rgba(0,0,0,0.87)]"
+        [strokeWidth]="1.8"
+      />
+    </div>
+    @if (addressMode() === NEW_ADDRESS_VALUE) {
+      <input
+        [attr.id]="sharedProps().id"
+        [attr.name]="sharedProps().name"
+        [value]="sharedProps().value ?? ''"
+        (input)="sharedProps().onChange($event)"
+        [attr.aria-invalid]="sharedProps()['aria-invalid']"
+        [attr.data-adoption-error]="sharedProps()['data-adoption-error']"
+        type="text"
+        [attr.placeholder]="field().placeholder"
+        [class]="`${inputClass} ${inputInvalid ? invalidInputClass : ''}`"
+        [attr.aria-invalid]="inputInvalid || undefined"
+        [attr.data-adoption-error]="inputInvalid ? 'true' : undefined"
+      />
+    }
+    <app-field-error [show]="invalid()" />
+  </div>
+} @else {
+  <div [class]="`flex flex-col gap-4 ${field().fullWidth ? 'col-span-2' : ''}`">
+    <label app-adoption-application-modal-field-label [field]="field()"></label>
+    @if (field().type === 'select') {
+      <div class="relative">
+        <select
+          [attr.id]="sharedProps().id"
+          [attr.name]="sharedProps().name"
+          [value]="sharedProps().value ?? ''"
+          (change)="sharedProps().onChange($event)"
+          [attr.aria-invalid]="sharedProps()['aria-invalid']"
+          [attr.data-adoption-error]="sharedProps()['data-adoption-error']"
+          [class]="`${inputClass} ${invalid() ? invalidInputClass : ''} appearance-none pr-12`"
+        >
+          <option value="">{{ field().placeholder }}</option>
+          @for (option of field().options; track option) {
+            <option [value]="option ?? ''">{{ option }}</option>
+          }
+        </select>
+        <app-customer-icon
+          name="chevron-down"
+          className="pointer-events-none absolute right-[26px] top-1/2 h-6 w-6 -translate-y-1/2 text-[rgba(0,0,0,0.87)]"
+          [strokeWidth]="1.8"
+        />
+      </div>
+    } @else {
+      <input
+        [attr.id]="sharedProps().id"
+        [attr.name]="sharedProps().name"
+        [value]="sharedProps().value ?? ''"
+        (input)="sharedProps().onChange($event)"
+        [attr.aria-invalid]="sharedProps()['aria-invalid']"
+        [attr.data-adoption-error]="sharedProps()['data-adoption-error']"
+        [attr.type]="field().type"
+        [attr.placeholder]="field().placeholder"
+        [class]="`${inputClass} ${invalid() ? invalidInputClass : ''}`"
+      />
+    }
+    <app-field-error [show]="invalid()" />
+  </div>
+}

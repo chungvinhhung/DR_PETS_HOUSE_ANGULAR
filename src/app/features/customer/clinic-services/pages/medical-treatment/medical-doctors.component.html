@@ -1,0 +1,41 @@
+<img class="medical-doctors__bg" [attr.src]="medicalAssets.doctorsBg" alt="" aria-hidden="true" />
+<img class="medical-doctors__shape" [attr.src]="medicalAssets.doctorsShape" alt="" aria-hidden="true" />
+<header>
+  <h2>Đội ngũ      <span>bác sĩ thú y<img [attr.src]="medicalAssets.doctorsUnderline" alt="" /></span></h2>
+  <p>Đội ngũ bác sĩ tại Dr.Pet's House luôn đặt sức khỏe và sự an toàn của thú cưng lên hàng đầu. Với kiến thức chuyên môn cùng sự tận tình trong chăm sóc, chúng tôi mang đến trải nghiệm thăm khám đáng tin cậy cho mọi khách hàng.</p>
+  <a class="medical-button medical-button--yellow" appCustomerLink="/dat-lich">ĐẶT LỊCH NGAY</a>
+</header>
+<button
+  type="button"
+  class="medical-doctors__arrow medical-doctors__arrow--left"
+  (click)="move(-1)"
+  aria-label="Trang bác sĩ trước"
+>‹</button>
+<div class="medical-doctors__grid">
+  @for (doctor of medicalDoctorPages[page()]; track doctor.name) {
+    <article class="medical-doctor-card">
+      <div class="medical-doctor-card__photo"><img [attr.src]="doctor.image" [attr.alt]="doctor.name" /></div>
+      <h3>{{ doctor.name }}</h3>
+      <strong>{{ doctor.role }}</strong>
+      <p>{{ doctor.school }}</p>
+    </article>
+  }
+</div>
+<button
+  type="button"
+  class="medical-doctors__arrow medical-doctors__arrow--right"
+  (click)="move(1)"
+  aria-label="Trang bác sĩ tiếp"
+>›</button>
+<div class="medical-doctors__dots" role="tablist" aria-label="Chọn trang bác sĩ">
+  @for (_ of medicalDoctorPages; track $index; let index = $index) {
+    <button
+      type="button"
+      [class]="page() === index ? 'is-active' : ''"
+      (click)="page.set(index)"
+      [attr.aria-label]="`Trang bác sĩ ${index + 1}`"
+      [attr.aria-selected]="page() === index"
+      role="tab"
+    ></button>
+  }
+</div>

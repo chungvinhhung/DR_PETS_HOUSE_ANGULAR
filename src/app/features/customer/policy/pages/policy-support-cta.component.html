@@ -1,0 +1,18 @@
+<div class="ml-[33px] mt-[33px] w-[371px]">
+  <h2 class="text-[20px] font-bold leading-7 text-[#C62828]">{{ policy().supportTitle }}</h2>
+  <p class="mt-2 w-[371px] text-[14px] leading-5 text-[#64748B]">{{ policy().supportDescription }}</p>
+</div>
+<div class="ml-[35px] mt-14 flex h-[46px] w-[341px] items-start gap-3">
+  <a
+    href="tel:0868686868"
+    class="flex h-[46px] w-[153px] items-center justify-center gap-1 rounded-[6px] bg-[#FDD835] p-4 text-[16px] font-bold leading-6 text-black drop-shadow-[0px_1px_2.5px_rgba(0,0,0,0.12),0px_2px_1px_rgba(0,0,0,0.14),0px_3px_0.5px_rgba(0,0,0,0.2)] transition-colors hover:bg-[#FBC02D]"
+  >
+    <img [attr.src]="policyImages.ctaPhone" alt="" class="size-4" />Gọi ngay</a>
+  <a
+    appCustomerLink="/contact"
+    class="flex h-[46px] w-[176px] items-center justify-center gap-2 rounded-[8px] border border-[#CED0D3] bg-white px-[25px] py-[11px] text-[16px] font-bold leading-6 text-[#1E293B] drop-shadow-[0px_1px_1px_rgba(0,0,0,0.05)] transition-colors hover:border-[#0D47A1] hover:text-[#0D47A1]"
+  >
+    <img [attr.src]="policyImages.ctaMessage" alt="" class="size-4" />
+    <span class="whitespace-nowrap">Để lại lời nhắn</span>
+  </a>
+</div>

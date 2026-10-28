@@ -1,0 +1,13 @@
+<span [class]="`contact-branch-card__pin${active() ? ' is-active' : ''}`" aria-hidden="true"></span>
+<span class="contact-branch-card__content">
+  <strong>{{ branch().name }}</strong>
+  <span>{{ branch().address }}</span>
+  <span class="contact-branch-card__meta">
+    <img [attr.src]="contactAssets.clock" alt="" />
+    <span><b>Mở cửa:</b> {{ branch().hours }}</span>
+  </span>
+  <span class="contact-branch-card__meta">
+    <img [attr.src]="contactAssets.branchPhone" alt="" />
+    <span><b>Liên hệ:</b> {{ branch().phone }}</span>
+  </span>
+</span>

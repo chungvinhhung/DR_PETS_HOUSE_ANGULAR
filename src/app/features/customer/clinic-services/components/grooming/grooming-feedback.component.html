@@ -1,0 +1,73 @@
+<img
+  [attr.src]="groomingImages.feedbackBg"
+  alt=""
+  class="pointer-events-none absolute inset-x-0 top-0 mx-auto h-full w-[1440px] max-w-none object-cover"
+  aria-hidden="true"
+/>
+<div class="relative flex h-[603px] flex-col items-end px-3 py-[34px]">
+  <div class="flex w-[1416px] flex-col items-center gap-[58px]">
+    <h2 class="h-[58px] w-[942px]" [appStyle]="groomingTitleStyles.dark64">Phản hồi của khách hàng</h2>
+    <div class="flex w-[1200px] items-center justify-center gap-[10px]">
+      @for (review of GROOMING_REVIEWS; track review.id) {
+        <article app-review-card [review]="review"></article>
+      }
+    </div>
+    <div class="flex w-full items-center justify-center gap-[21px]">
+      <img
+        [attr.src]="groomingImages.feedbackCarouselLeft"
+        alt=""
+        class="h-[10px] w-[271px]"
+        aria-hidden="true"
+      />
+      @for (index of [0, 1, 2, 3, 4, 5]; track index) {
+        <div [class]="`size-[22px] rounded-[9px] ${
+                index === 1
+                  ? 'border-[3px] border-[#02000F] bg-[#F4E11B]'
+                  : 'bg-white'
+              }`"></div>
+      }
+      <img
+        [attr.src]="groomingImages.feedbackCarouselRight"
+        alt=""
+        class="h-[10px] w-[271px]"
+        aria-hidden="true"
+      />
+    </div>
+  </div>
+  <img
+    [attr.src]="groomingImages.feedbackShape154"
+    alt=""
+    class="pointer-events-none absolute size-[87px]"
+    aria-hidden="true"
+  />
+  <img
+    [attr.src]="groomingImages.feedbackShape150"
+    alt=""
+    class="pointer-events-none absolute left-[278px] top-[103px] size-[60px]"
+    aria-hidden="true"
+  />
+  <img
+    [attr.src]="groomingImages.feedbackShape150"
+    alt=""
+    class="pointer-events-none absolute left-[1085px] top-[90px] size-[60px]"
+    aria-hidden="true"
+  />
+  <img
+    [attr.src]="groomingImages.feedbackShape152"
+    alt=""
+    class="pointer-events-none absolute left-[1145px] top-[102px] h-[48px] w-[49px]"
+    aria-hidden="true"
+  />
+  <img
+    [attr.src]="groomingImages.feedbackShape152"
+    alt=""
+    class="pointer-events-none absolute left-[158.39px] top-[512.17px] h-[48px] w-[49px]"
+    aria-hidden="true"
+  />
+  <img
+    [attr.src]="groomingImages.feedbackShape153"
+    alt=""
+    class="pointer-events-none absolute left-[158.39px] top-[526.17px] size-[34px]"
+    aria-hidden="true"
+  />
+</div>

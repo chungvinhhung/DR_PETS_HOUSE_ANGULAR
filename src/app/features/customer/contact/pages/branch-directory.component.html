@@ -1,0 +1,68 @@
+<h2>Danh sách chi nhánh</h2>
+<div class="contact-branches__content">
+  <div class="contact-branches__panel">
+    <label class="contact-branches__search">
+      <input
+        type="search"
+        [value]="query() ?? ''"
+        (input)="query.set($any($event).target.value)"
+        placeholder="Tìm kiếm chi nhánh..."
+        aria-label="Tìm kiếm chi nhánh"
+      />
+      <img [attr.src]="contactAssets.search" alt="" />
+    </label>
+    <div class="contact-branches__list">
+      @if (isLoadingBranches()) {
+        <p class="contact-branches__empty">Đang tải danh sách chi nhánh...</p>
+      }
+      @if (branchLoadError()) {
+        <p class="contact-branches__empty">{{ branchLoadError() }}</p>
+      }
+      @for (branch of visibleBranches(); track branch.id) {
+        <button
+          app-branch-card
+          [branch]="branch"
+          [active]="activeBranch() === branch.id"
+          (onSelect)="activeBranch.set($event)"
+        ></button>
+      }
+      @if (!visibleBranches().length) {
+        <p class="contact-branches__empty">Không tìm thấy chi nhánh phù hợp.</p>
+      }
+    </div>
+  </div>
+  <div class="contact-map" aria-label="Bản đồ chi nhánh">
+    <iframe
+      class="contact-map__embed"
+      [attr.title]="`Google Maps - ${selectedBranch()?.name || 'Chi nhánh'}`"
+      [attr.src]="getGoogleMapsEmbedLink(selectedBranch()?.address || '') | trustResourceUrl"
+      loading="lazy"
+      allowfullscreen
+      referrerpolicy="no-referrer-when-downgrade"
+    ></iframe>
+    <a
+      class="contact-map__open"
+      [attr.href]="getGoogleMapsLink(selectedBranch()?.address || '')"
+      target="_blank"
+      rel="noreferrer"
+      [attr.aria-label]="`Mở Google Maps cho ${selectedBranch()?.name || 'chi nhánh'}`"
+    >Google Maps</a>
+    @for (branch of branches(); track branch.id) {
+      <button
+        type="button"
+        [class]="`contact-map__pin${
+              activeBranch() === branch.id ? ' is-active' : ''
+            }`"
+        [appStyle]="{
+              left: branch.mapPosition.left,
+              top: branch.mapPosition.top,
+              width: branch.mapPosition.size,
+              height: branch.mapPosition.size
+            }"
+        (click)="activeBranch.set(branch.id)"
+        [attr.aria-label]="`Chọn ${branch.name}`"
+        [attr.aria-pressed]="activeBranch() === branch.id"
+      ></button>
+    }
+  </div>
+</div>

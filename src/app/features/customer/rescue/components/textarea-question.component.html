@@ -1,0 +1,18 @@
+<label
+  [attr.for]="`adoption-${question().name}`"
+  class="text-[18px] font-medium leading-7 text-[rgba(0,0,0,0.87)]"
+>{{ question().label }}@if (question().required) {
+    <span app-required-mark></span>
+  }
+</label>
+<textarea
+  [attr.id]="`adoption-${question().name}`"
+  [attr.name]="question().name"
+  [value]="value() ?? ''"
+  (input)="onChange.emit([question().name, $any($event).target.value])"
+  [attr.placeholder]="question().placeholder"
+  [attr.aria-invalid]="invalid() || undefined"
+  [attr.data-adoption-error]="invalid() ? 'true' : undefined"
+  [class]="`min-h-[108px] w-full resize-none rounded-[8px] border-2 border-[#D9E3F6] bg-white px-[26px] pb-[18px] pt-[18px] text-[16px] leading-6 text-[rgba(0,0,0,0.87)] outline-none placeholder:text-[rgba(113,119,133,0.87)] focus:border-[#90CAF9] focus:ring-2 focus:ring-[#90CAF9]/30 ${invalid() ? invalidInputClass : ''}`"
+></textarea>
+<app-field-error [show]="invalid()" />

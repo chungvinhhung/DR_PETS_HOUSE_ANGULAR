@@ -1,0 +1,21 @@
+<div class="h-full w-[192px] shrink-0 overflow-hidden">
+  <img [attr.src]="service().image" [attr.alt]="service().title" class="h-full w-full object-cover" />
+</div>
+<div class="flex min-w-0 flex-1 flex-col justify-between p-4">
+  <div>
+    <h3 class="text-[18px] font-bold leading-7 text-black/87">{{ service().title }}</h3>
+    @if (steps()) {
+      <ol class="mt-1 list-decimal pl-6 text-[16px] leading-6 text-[#6C6D71]">
+        @for (step of steps(); track step) {
+          <li>{{ step }}</li>
+        }
+      </ol>
+    } @else {
+      <p class="mt-1 text-[16px] leading-7 text-black/60">{{ service().description }}</p>
+    }
+  </div>
+  <div class="flex items-center justify-between">
+    <p class="text-[18px] font-bold leading-7 text-[#0D47A1]">{{ formatServicePrice(service().priceValue ?? parseServicePrice(service().price)) }}</p>
+    <a appCustomerLink="/dat-lich" class="btn-yellow h-[35px] rounded-full px-[22px] text-[16px]">Đặt lịch ngay</a>
+  </div>
+</div>

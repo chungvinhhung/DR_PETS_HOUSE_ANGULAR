@@ -1,0 +1,16 @@
+<p class="text-[16px] leading-[27px] text-[#414141]">Hiển thị {{ fromLabel() }}–{{ shown() }} trong {{ total() }} sản phẩm</p>
+<div class="relative h-px w-full bg-[#90CAF9]"><span class="absolute inset-y-0 left-0 bg-[#1976D2]" [appStyle]="styles1()"></span></div>
+@if (hasMore()) {
+  <button
+    type="button"
+    (click)="onLoadMore.emit($event)"
+    [disabled]="isLoading()"
+    class="flex h-[42px] items-center gap-1 rounded-[4px] bg-[#FDD835] px-[22px] text-[15px] font-medium uppercase tracking-[0.46px] text-black shadow-elevation transition-colors hover:bg-[#FDD835] disabled:opacity-60"
+  >
+    @if (isLoading()) {
+      Đang tải...
+    } @else {
+      Xem thêm
+    }
+  </button>
+}

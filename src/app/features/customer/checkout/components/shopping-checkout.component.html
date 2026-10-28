@@ -1,0 +1,58 @@
+@if (showAddressModal()) {
+  <app-address-change-modal
+    [addresses]="addresses()"
+    (onClose)="showAddressModal.set(false)"
+    (onSave)="saveAddress($any($event))"
+    (onSelect)="handle1($any($event))"
+  />
+}
+<div class="mx-auto flex w-full max-w-[1280px] flex-col items-center px-6 py-6">
+  <div class="grid gap-8 lg:grid-cols-[minmax(0,2fr)_390px]">
+    <div class="flex w-full flex-col gap-7">
+      @if (isGuest()) {
+        <section app-guest-login-banner></section>
+      }
+      @if (isGuest()) {
+        <section app-guest-shipping-form [value]="guestForm()" (onChange)="guestForm.set($event)"></section>
+      } @else {
+        <section
+          app-authenticated-address-card
+          [address]="selectedAddress()"
+          [error]="addressError()"
+          [loading]="addressesLoading()"
+          (onChange)="showAddressModal.set(true)"
+        ></section>
+      }
+      <section
+        app-order-details-card
+        [items]="orderItems()"
+        [note]="note()"
+        (onNoteChange)="note.set($event)"
+      ></section>
+    </div>
+    <aside class="w-full">
+      <div class="flex flex-col gap-5 rounded-2xl bg-white p-8 shadow-[0_4px_13px_rgba(144,202,249,0.85)]">
+        <h2 class="text-xl font-black text-blue-900">PHƯƠNG THỨC THANH TOÁN</h2>
+        <div class="flex flex-col gap-5">
+          <div app-payment-mode-toggle></div>
+          @if (cartService.paymentMode() === 'online') {
+            <div app-online-payment-methods></div>
+          }
+          <app-coupon-and-summary
+            [isGuest]="isGuest()"
+            [items]="orderItems()"
+            (onSubmitOrder)="submitOrder($any($event))"
+          />
+        </div>
+      </div>
+    </aside>
+    <div class="flex w-full flex-col gap-5">
+      <button
+        type="button"
+        (click)="onBack.emit($event)"
+        class="flex items-center gap-3 self-start rounded bg-secondary-light px-6 py-3 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition hover:bg-secondary"
+      >
+        <img [attr.src]="checkoutImages.backArrow" alt="" class="size-3" />Quay lại</button>
+    </div>
+  </div>
+</div>

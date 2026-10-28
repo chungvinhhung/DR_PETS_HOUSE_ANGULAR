@@ -1,0 +1,33 @@
+<ol [class]="`flex min-w-0 items-center gap-2 ${isBlog() ? 'w-full' : ''} ${listClassName()}`">
+  @for (item of items(); track $index; let index = $index) {
+    @let isCurrent = index === items().length - 1;
+    <li [class]="`flex items-center gap-2 ${
+              isBlog() ? (isCurrent ? 'min-w-0 flex-1' : 'shrink-0') : 'min-w-0'
+            }`">
+      @if (index > 0) {
+        <img
+          [attr.src]="productImages.chevronRight"
+          alt=""
+          [class]="`shrink-0 ${isBlog() ? 'h-[6px] w-[4px]' : 'h-2 w-2'} ${separatorClassName()}`"
+        />
+      }
+      @if (item.to && !isCurrent) {
+        <a
+          [appCustomerLink]="item.to"
+          [class]="`whitespace-nowrap transition-colors hover:text-[#1976D2] hover:underline ${
+                  linkClassName() || (isBlog() ? 'text-[#414753] hover:no-underline' : 'text-[#0D47A1]')
+                }`"
+        >{{ item.label }}</a>
+      } @else {
+        <span
+          [class]="`${isCurrent ? 'min-w-0' : 'whitespace-nowrap'} ${
+                  isCurrent
+                    ? currentClassName() || (isBlog() ? 'font-semibold text-[#005AB4]' : 'truncate text-[#414141]')
+                    : linkClassName() || (isBlog() ? 'text-[#414753]' : 'text-[#0D47A1]')
+                }`"
+          [attr.aria-current]="isCurrent ? 'page' : undefined"
+        >{{ item.label }}</span>
+      }
+    </li>
+  }
+</ol>

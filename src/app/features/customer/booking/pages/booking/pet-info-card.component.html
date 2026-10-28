@@ -1,0 +1,122 @@
+<app-booking-card [className]="'p-5 md:p-8'">
+  <div class="mb-5 flex items-center justify-between gap-4">
+    <h2 class="text-xl font-black text-blue-900">THÔNG TIN THÚ CƯNG@if (showIndex()) {
+        {{ ` ${index() + 1}` }}
+      }
+    </h2>
+    @if (canRemove()) {
+      <button type="button" (click)="onRemove.emit(petInfo().id)" class="text-sm font-bold text-[#d32f2f]">Xóa</button>
+    }
+  </div>
+  <div class="grid gap-5 md:grid-cols-6">
+    <label
+      app-booking-field
+      [className]="'md:col-span-4'"
+      [label]="'Tên thú cưng'"
+      [required]="true"
+      [showError]="validationAttempted()"
+      [value]="petInfo().name"
+      (onChange)="onChange.emit([petInfo().id, 'name', $any($event).target.value])"
+    ></label>
+    <label
+      app-booking-field
+      [className]="'md:col-span-2'"
+      [label]="'Loài'"
+      [as]="'select'"
+      [options]="['Chó', 'Mèo', 'Khác']"
+      [required]="true"
+      [showError]="validationAttempted()"
+      [value]="petInfo().species"
+      (onChange)="onChange.emit([petInfo().id, 'species', $any($event).target.value])"
+    ></label>
+    <label
+      app-booking-field
+      [className]="'md:col-span-2'"
+      [label]="'Giống'"
+      [value]="petInfo().breed"
+      (onChange)="onChange.emit([petInfo().id, 'breed', $any($event).target.value])"
+    ></label>
+    <label
+      app-booking-field
+      [className]="'md:col-span-2'"
+      [label]="'Tuổi'"
+      [suffix]="'tuổi'"
+      [value]="petInfo().age"
+      (onChange)="onChange.emit([petInfo().id, 'age', $any($event).target.value])"
+    ></label>
+    <label
+      app-booking-field
+      [className]="'md:col-span-2'"
+      [label]="'Cân nặng'"
+      [suffix]="'kg'"
+      [required]="true"
+      [showError]="validationAttempted()"
+      [value]="petInfo().weight"
+      (onChange)="onChange.emit([petInfo().id, 'weight', $any($event).target.value])"
+    ></label>
+    <div class="md:col-span-3">
+      <p class="mb-3 text-sm font-medium text-slate-900">Giới tính</p>
+      <div class="flex flex-wrap gap-5 text-sm">
+        <label>
+          <input
+            type="radio"
+            [attr.name]="`gender-${petInfo().id}`"
+            [checked]="petInfo().gender === 'male'"
+            (change)="onChange.emit([petInfo().id, 'gender', 'male'])"
+            class="mr-2 accent-blue-900"
+          />Đực</label>
+        <label>
+          <input
+            type="radio"
+            [attr.name]="`gender-${petInfo().id}`"
+            [checked]="petInfo().gender === 'female'"
+            (change)="onChange.emit([petInfo().id, 'gender', 'female'])"
+            class="mr-2 accent-blue-900"
+          />Cái</label>
+      </div>
+    </div>
+    <div class="md:col-span-3">
+      <p class="mb-3 text-sm font-medium text-slate-900">Tình trạng sức khỏe <span class="text-red-500">*</span></p>
+      <div
+        [class]="`flex flex-wrap gap-4 rounded-lg text-sm ${validationAttempted() && !petInfo().status ? 'ring-2 ring-red-500' : ''}`"
+        [attr.title]="validationAttempted() && !petInfo().status ? 'Vui lòng điền thông tin' : undefined"
+        [attr.data-booking-error]="validationAttempted() && !petInfo().status ? 'true' : undefined"
+        [attr.tabindex]="validationAttempted() && !petInfo().status ? -1 : undefined"
+      >
+        <label>
+          <input
+            type="radio"
+            [attr.name]="`status-${petInfo().id}`"
+            [checked]="petInfo().status === 'normal'"
+            (change)="onChange.emit([petInfo().id, 'status', 'normal'])"
+            class="mr-2 h-4 w-4 cursor-pointer accent-blue-900 text-blue-900 border-gray-300 focus:ring-blue-900"
+          />Bình thường</label>
+        <label>
+          <input
+            type="radio"
+            [attr.name]="`status-${petInfo().id}`"
+            [checked]="petInfo().status === 'treating'"
+            (change)="onChange.emit([petInfo().id, 'status', 'treating'])"
+            class="mr-2 h-4 w-4 cursor-pointer accent-blue-900 text-blue-900 border-gray-300 focus:ring-blue-900"
+          />Đang điều trị</label>
+        <label>
+          <input
+            type="radio"
+            [attr.name]="`status-${petInfo().id}`"
+            [checked]="petInfo().status === 'chronic'"
+            (change)="onChange.emit([petInfo().id, 'status', 'chronic'])"
+            class="mr-2 h-4 w-4 cursor-pointer accent-blue-900 text-blue-900 border-gray-300 focus:ring-blue-900"
+          />Có bệnh nền</label>
+      </div>
+    </div>
+    <label class="md:col-span-6">
+      <span class="mb-2 block text-sm font-medium text-slate-900">Thông tin thêm</span>
+      <textarea
+        placeholder="Nhập ghi chú, yêu cầu đặc biệt hoặc thông tin bổ sung tại đây..."
+        [value]="petInfo().notes ?? ''"
+        (input)="onChange.emit([petInfo().id, 'notes', $any($event).target.value])"
+        class="h-15 w-full text-sm resize-none rounded-2xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-900"
+      ></textarea>
+    </label>
+  </div>
+</app-booking-card>

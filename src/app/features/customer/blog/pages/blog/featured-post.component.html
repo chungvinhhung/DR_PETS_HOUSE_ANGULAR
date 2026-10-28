@@ -1,0 +1,33 @@
+<a
+  [appCustomerLink]="href()"
+  class="group relative flex h-[452px] w-[1200px] overflow-hidden rounded-[32px] border border-[#FFF7ED] bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-transform hover:-translate-y-0.5"
+>
+  <div class="relative h-[450px] w-[690px] shrink-0 overflow-hidden">
+    <img [attr.src]="post().image" [attr.alt]="post().title" class="h-full w-full object-cover" />
+    <div class="absolute left-6 top-6 flex items-center gap-2 rounded-full bg-[#FDD835] px-5 py-2 text-[12px] font-bold uppercase tracking-[0.6px] text-[#D32F2F] shadow-lg">
+      <app-customer-icon name="sparkles" className="h-3 w-3" /> Nổi bật</div>
+  </div>
+  <div class="relative -ml-6 my-[7px] flex flex-1 flex-col justify-center rounded-l-[32px] bg-white p-12">
+    <p class="flex items-center gap-2 text-[16px] font-bold uppercase tracking-[0.8px] text-[#0D47A1]">
+      <app-category-icon [category]="post().category" [className]="'h-[17px] w-[17px]'" />{{ post().categoryLabel }}</p>
+    <h2 class="mt-3 max-w-[460px] text-[32px] font-bold leading-[40px] text-[#111827]">{{ post().title }}</h2>
+    <p class="mt-4 max-w-[500px] text-[16px] leading-6 text-[#6B7280]">{{ post().excerpt }}</p>
+    <div class="mt-6 flex items-center justify-between border-t border-[#FFF7ED] pt-6">
+      <div class="flex items-center gap-3">
+        <img
+          [attr.src]="post().authorImage"
+          alt=""
+          class="h-10 w-10 rounded-full border-2 border-[#FFEDD5] object-cover"
+        />
+        <div>
+          <p class="text-[16px] font-bold leading-6 text-[#111827]">{{ post().author }}</p>
+          <p class="flex items-center gap-1 text-[16px] leading-6 text-[#9CA3AF]">
+            <app-customer-icon name="calendar-days" className="h-3 w-3" /> {{ post().publishedAt }}</p>
+        </div>
+      </div>
+      <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[#FDD835] text-[#0D47A1] transition-transform group-hover:scale-105">
+        <app-customer-icon name="arrow-right" className="h-4 w-4" />
+      </span>
+    </div>
+  </div>
+</a>

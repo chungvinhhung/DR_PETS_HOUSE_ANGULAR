@@ -1,0 +1,24 @@
+@if (item().avatar) {
+  <span class="notification-item__visual notification-item__visual--pet">
+    <img
+      [attr.src]="item().avatar"
+      [attr.alt]="item().avatarAlt ?? ''"
+      class="notification-item__avatar"
+      [appStyle]="item().avatarCrop"
+    />
+  </span>
+} @else {
+  <span [class]="`notification-item__visual ${
+        item().type === 'system'
+          ? 'notification-item__visual--system'
+          : 'notification-item__visual--appointment'
+      }`">
+    <img
+      [attr.src]="item().icon"
+      [attr.alt]="item().iconAlt ?? ''"
+      [class]="item().type === 'system'
+            ? 'notification-item__icon--system'
+            : 'notification-item__icon--appointment'"
+    />
+  </span>
+}

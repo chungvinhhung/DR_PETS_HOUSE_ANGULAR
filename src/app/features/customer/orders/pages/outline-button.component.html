@@ -1,0 +1,8 @@
+<button
+  type="button"
+  (click)="onClick.emit($event)"
+  [disabled]="disabled()"
+  [class]="`h-[38px] rounded-[4px] border border-[#353535] px-[18px] text-[15px] font-medium uppercase transition-colors hover:bg-black/5 ${className()}`"
+>
+  <ng-content />
+</button>

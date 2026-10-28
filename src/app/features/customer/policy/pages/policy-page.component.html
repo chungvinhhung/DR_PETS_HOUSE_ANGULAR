@@ -1,0 +1,23 @@
+<div app-canvas-layout>
+  <app-nav-bar />
+  <main class="policy-page flex flex-col items-center pb-12 pt-[43px]">
+    <nav
+      app-breadcrumb
+      [items]="[
+            { label: 'Trang chủ', to: '/' },
+            { label: 'Hỗ trợ khách hàng' },
+            { label: policy().title }
+          ]"
+      [variant]="'blog'"
+      [className]="'w-[1200px]'"
+    ></nav>
+    <div class="mt-6 flex w-[1200px] flex-col items-start gap-12">
+      <div class="flex w-full items-start gap-12">
+        <article app-policy-article [policy]="policy()"></article>
+        <aside app-policy-related-sidebar [activeSlug]="navService.params()['slug']"></aside>
+      </div>
+      <section app-policy-support-cta [policy]="policy()"></section>
+    </div>
+  </main>
+  <app-footer [variant]="'white'" />
+</div>

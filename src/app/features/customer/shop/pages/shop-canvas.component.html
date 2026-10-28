@@ -1,0 +1,175 @@
+<section app-shop-hero-section></section>
+<section class="absolute left-0 top-[calc(755px+0.5cm)] h-[287px] w-[1440px] bg-white pt-[6px]">
+  <div class="h-[68px] px-[124px] pb-0 pt-[10px]"><h2 class="text-center text-[#02000F]" [appStyle]="styles2()">Danh mục sản phẩm</h2></div>
+  <div class="mx-auto mt-0 w-[992px] px-0 py-[10px]">
+    <div class="grid grid-cols-5">
+      @for (item of PRODUCT_CATEGORIES; track item.label) {
+        <button
+          type="button"
+          class="card-category w-full border-0 bg-transparent p-0"
+          (click)="navService.navigate(`/products?category=${item.slug}`)"
+        >
+          <img
+            [attr.src]="item.image"
+            [attr.alt]="item.label"
+            class="mx-auto h-[110px] w-[106px] object-contain"
+          />
+          <p class="mt-0 font-['Roboto'] text-[18px] font-normal leading-[1.6] text-black">{{ item.label }}</p>
+        </button>
+      }
+    </div>
+  </div>
+</section>
+<section class="absolute left-0 top-[calc(1055px+0.5cm)] w-[1440px] px-[83px] py-[10px]">
+  <div class="rounded-[40px] bg-[#FFF9C4] px-[10px] pb-[27px] pt-[20px] shadow-[inset_0_0_10px_rgba(0,0,0,0.25)]">
+    <h2 class="text-center text-[#01579B]" [appStyle]="styles3()">FLASH SALE</h2>
+    <div class="mt-1 flex justify-center">
+      @for (label of ['Giờ', 'Phút', 'Giây']; track label; let index = $index) {
+        <div class="w-[88px] text-center">
+          <div class="mx-auto flex h-[50px] w-[58px] items-center justify-center rounded-[30px] bg-[#FDD835] font-['Fredoka'] text-[32px] font-semibold leading-[67.98px] text-[rgba(0,0,0,0.87)]">{{ flashSaleCountdown()[index] }}</div>
+          <p class="mt-1 font-['Roboto'] text-[20px] font-medium leading-[1.6] tracking-[0.15px] text-[#02000F]">{{ label }}</p>
+        </div>
+      }
+    </div>
+    <div class="mt-3 flex items-center justify-center gap-5">
+      <button
+        type="button"
+        class="btn-carousel disabled:opacity-30"
+        aria-label="Xem sản phẩm trước"
+        (click)="goPrevFlash()"
+        [disabled]="!canGoPrev()"
+      >‹</button>
+      <div
+        class="overflow-hidden pt-3 pb-3"
+        [appStyle]="{ width: CARD_WIDTH() * VISIBLE_COUNT() + CARD_GAP() * (VISIBLE_COUNT() - 1) }"
+      >
+        @if (isLoadingProducts()) {
+          <div class="flex h-[230px] items-center justify-center font-['Roboto'] text-[16px] font-medium text-[#01579B]">Đang tải sản phẩm...</div>
+        } @else if (flashDisplayProducts().length) {
+          <div
+            class="flex gap-5 transition-transform duration-300 ease-in-out"
+            [appStyle]="{ transform: `translateX(-${flashOffset() * (CARD_WIDTH() + CARD_GAP())}px)` }"
+          >
+            @for (p of flashDisplayProducts(); track p.id; let idx = $index) {
+              <div class="shrink-0" [appStyle]="{ width: CARD_WIDTH() }">
+                <app-shopping-product-card
+                  [id]="p.id"
+                  [product]="p"
+                  [variant]="idx < 2 || p.discountPercent ? 'tag' : 'default'"
+                  [href]="'/product-details'"
+                />
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="flex h-[230px] items-center justify-center text-center font-['Roboto'] text-[16px] font-medium text-[#01579B]">{{ productError() || 'Chưa có sản phẩm flash sale.' }}</div>
+        }
+      </div>
+      <button
+        type="button"
+        class="btn-carousel disabled:opacity-30"
+        aria-label="Xem sản phẩm tiếp"
+        (click)="goNextFlash()"
+        [disabled]="!canGoNext()"
+      >›</button>
+    </div>
+  </div>
+</section>
+<section class="absolute left-0 top-[calc(1538px+0.5cm)] h-[767px] w-[1440px] bg-[radial-gradient(50%_50%_at_50%_50%,#E3F2FD_25.48%,#FFFFFF_100%)] py-[50px]">
+  <div class="relative mx-auto h-[70px] w-[900px]">
+    <img
+      [attr.src]="shopImages.bestSellerStroke"
+      alt=""
+      class="absolute left-[479px] top-[50px] h-[7px] w-[243px]"
+    />
+    <h2 class="text-center text-[#0F172A]" [appStyle]="styles4()">Sản phẩm bán chạy</h2>
+    <img
+      [attr.src]="shopImages.bestSellerSpark"
+      alt=""
+      class="absolute left-[717px] top-[-12px] h-[42px] w-[43px]"
+    />
+  </div>
+  <div class="mx-auto mt-5 grid w-[1200px] grid-cols-6 justify-items-center gap-x-5 gap-y-[10px]">
+    @if (isLoadingProducts()) {
+      <div class="col-span-6 flex h-[260px] items-center justify-center font-['Roboto'] text-[16px] font-medium text-[#01579B]">Đang tải sản phẩm...</div>
+    } @else if (bestSellerProducts().length) {
+      @for (p of bestSellerProducts(); track $index) {
+        <app-shopping-product-card [id]="p.id" [product]="p" [href]="'/product-details'" />
+      }
+    } @else {
+      <div class="col-span-6 flex h-[260px] items-center justify-center text-center font-['Roboto'] text-[16px] font-medium text-[#01579B]">{{ productError() || 'Chưa có sản phẩm bán chạy.' }}</div>
+    }
+  </div>
+  <div class="mt-5 pt-5 flex justify-center">
+    <button
+      type="button"
+      (click)="navService.navigate('/products')"
+      class="btn-yellow flex h-[42px] items-center gap-2 px-4 text-[15px] tracking-[0.46px]"
+    >XEM THÊM<span class="text-xl leading-none">›</span>
+    </button>
+  </div>
+</section>
+<section
+  class="absolute left-0 top-[calc(2308px)] w-[1440px] bg-white py-4"
+  (mouseenter)="pausePromo()"
+  (mouseleave)="resumePromo()"
+>
+  <div class="mx-auto flex h-[269px] w-[1274px] items-center justify-between">
+    <button
+      type="button"
+      (click)="goPrevPromotion()"
+      class="btn-carousel h-[56px] w-[56px] text-[32px]"
+      aria-label="Khuyến mãi trước"
+    >‹</button>
+    <div class="flex w-[1158px] items-center justify-between">
+      <div [class]="`relative h-[269px] w-[570px] ${promoSlideClass()}`">
+        <img
+          [attr.src]="leftPromotion().image"
+          alt="Promotion banner left"
+          class="h-[269px] w-[570px] rounded-[30px] object-cover"
+        />
+        <button
+          type="button"
+          (click)="navService.navigate(`/product-details/${leftPromotion().productId}`)"
+          class="absolute left-[40px] top-[173px] h-[54px] w-[152.27px] rounded-[50px] bg-transparent"
+          aria-label="Mua ngay banner trái"
+        ></button>
+      </div>
+      <div [class]="`relative h-[269px] w-[570px] ${promoSlideClass()}`">
+        <img
+          [attr.src]="rightPromotion().image"
+          alt="Promotion banner right"
+          class="h-[269px] w-[570px] rounded-[30px] object-cover"
+        />
+        <button
+          type="button"
+          (click)="navService.navigate(`/product-details/${rightPromotion().productId}`)"
+          class="absolute left-[40px] top-[173px] h-[54px] w-[152.27px] rounded-[50px] bg-transparent"
+          aria-label="Mua ngay banner phải"
+        ></button>
+      </div>
+    </div>
+    <button
+      type="button"
+      (click)="goNextPromotion()"
+      class="btn-carousel h-[56px] w-[56px] text-[32px]"
+      aria-label="Khuyến mãi tiếp"
+    >›</button>
+  </div>
+  <div class="mt-[10px] flex items-center justify-center gap-[7px]">
+    @for (_ of SHOP_PROMOTION_PAGES; track $index; let idx = $index) {
+      <button
+        type="button"
+        (click)="goPromoPage(idx)"
+        [class]="`focus-ring-brand transition-all duration-component ease-premium ${
+              idx === promotionPageIndex()
+                ? 'h-[8px] w-[24px] rounded-[20px] bg-[#F4E11B]'
+                : 'h-[8px] w-[8px] rounded-full bg-[#D9D9D9] hover:bg-[#E6D445]'
+            }`"
+        [attr.aria-label]="`Khuyến mãi ${idx + 1}`"
+        [attr.aria-current]="idx === promotionPageIndex() ? 'true' : undefined"
+      ></button>
+    }
+  </div>
+</section>
+<section app-feedback-section (onMouseEnter)="pausePromo()" (onMouseLeave)="resumePromo()" [hasOnMouseLeave]="true"></section>

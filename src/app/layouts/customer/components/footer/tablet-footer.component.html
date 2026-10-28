@@ -1,0 +1,52 @@
+<div class="flex w-full flex-col gap-8 overflow-hidden px-8 pb-10 pt-14">
+  <div class="flex h-[232px] w-full items-start justify-between overflow-hidden">
+    <section class="flex w-[329px] flex-col gap-6">
+      <div class="flex w-[335px] flex-col gap-[10px]">
+        <a appCustomerLink="/" aria-label="Dr. Pet's House - Trang chủ">
+          <img
+            [attr.src]="homeImages.logo"
+            alt="Dr. Pet's House"
+            class="h-[88px] w-[202px] object-contain object-left"
+          />
+        </a>
+        <h2 class="font-['Baloo_2','Baloo_Tamma_2',cursive] text-[20px] font-bold leading-[1.1] text-[#0D47A1]">TRUNG TÂM CHĂM SÓC THÚ CƯNG</h2>
+        <p class="font-['Roboto'] text-[16px] font-normal leading-[1.4] text-[#475569]">Cung cấp dịch vụ khám bệnh, làm đẹp, và mua sắm sản phẩm cho thú cưng của bạn.</p>
+      </div>
+      <div app-tablet-social-links></div>
+    </section>
+    <address class="flex w-[300px] flex-col gap-2 not-italic">
+      <p app-tablet-contact-row [icon]="'phone'"><strong class="font-bold">Hotline:</strong> 086 8686868</p>
+      <p app-tablet-contact-row [icon]="'mail'">Email: hello&#64;drpetshouse.vn</p>
+      <p app-tablet-contact-row [icon]="'clock'">Thứ 2 - Chủ nhật: 8:00 - 20:00</p>
+      <p app-tablet-contact-row [icon]="'shield-alert'">Cấp cứu 24/7</p>
+    </address>
+  </div>
+  <div class="flex w-full flex-col gap-8">
+    <div class="flex w-full gap-12">
+      <section
+        app-tablet-footer-column
+        [title]="'LIÊN KẾT NHANH'"
+        [links]="QUICK_LINKS"
+        (onPricingOpen)="onPricingOpen.emit($event)"
+      ></section>
+      <section app-tablet-footer-column [title]="'DỊCH VỤ NỔI BẬT'" [links]="SERVICE_LINKS"></section>
+    </div>
+    <div class="flex w-full gap-12">
+      <section app-tablet-footer-column [title]="'THÔNG TIN CHUNG'" [links]="GENERAL_LINKS"></section>
+      <section app-tablet-footer-column [title]="'HỖ TRỢ KHÁCH HÀNG'" [links]="SUPPORT_LINKS"></section>
+    </div>
+  </div>
+</div>
+<div class="flex w-full items-start justify-between bg-[#B8E6FA] px-8 py-[18px] font-['Roboto'] text-[13px]">
+  <p class="whitespace-nowrap font-normal leading-[1.35] text-[#526575]">© 2026 Dr.Pet's House. Bản quyền thuộc về Dr.Pet's House.</p>
+  <nav
+    aria-label="Liên kết pháp lý chân trang tablet"
+    class="flex shrink-0 items-start gap-[10px] font-medium leading-[1.3] text-[#425466]"
+  >
+    @for (__item1 of LEGAL_LINKS; track $index) {
+      @let label = __item1[0];
+      @let to = __item1[1];
+      <a [appCustomerLink]="to" class="whitespace-nowrap transition-colors hover:text-[#0D47A1]">{{ label }}</a>
+    }
+  </nav>
+</div>

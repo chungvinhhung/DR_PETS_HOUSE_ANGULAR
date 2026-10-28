@@ -1,0 +1,47 @@
+<div class="flex h-[33px] items-center gap-[10px]">
+  <svg class="h-[33px] w-[33px]" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M4 5h16l-6.2 7.2V19l-3.6-2v-4.8L4 5Z" fill="currentColor" />
+  </svg>
+  <h2 class="whitespace-nowrap text-[24px] font-bold leading-[32px] text-black">Bộ lọc tìm kiếm</h2>
+</div>
+<div class="mt-[24px] overflow-hidden rounded-[40px] border border-[rgba(25,118,210,0.5)] bg-white px-[30px] py-[40px]">
+  <div app-filter-heading>Danh mục</div>
+  <div class="mt-[24px] flex flex-col gap-[16px]">
+    @for (category of categoryOptions(); track category.id) {
+      <label class="flex cursor-pointer items-center gap-[20px] text-[#414141]">
+        <input
+          type="checkbox"
+          [checked]="category.index === null
+                  ? selectedCategories().length === 0
+                  : selectedCategories().includes(category.index)"
+          (change)="onCategoryChange.emit(category.index)"
+          class="size-5 accent-[#0D47A1]"
+        />
+        <span class="whitespace-nowrap text-[15px] leading-[27px]">{{ category.label }} ({{ category.count }})</span>
+      </label>
+    }
+  </div>
+</div>
+<div class="mt-[24px] overflow-hidden rounded-[40px] border border-[rgba(25,118,210,0.5)] bg-white px-[30px] py-[40px]">
+  <div app-filter-heading>Khoảng giá</div>
+  <div class="mt-[24px] flex flex-col gap-[16px]">
+    @for (range of PRICE_RANGES; track range.label; let index = $index) {
+      <label class="flex cursor-pointer items-center gap-[20px] text-[#414141]">
+        <input
+          type="checkbox"
+          [checked]="selectedPrices().includes(index)"
+          (change)="onPriceChange.emit(index)"
+          class="size-5 accent-[#0D47A1]"
+        />
+        <span class="whitespace-nowrap text-[15px] leading-[27px]">{{ range.label }}</span>
+      </label>
+    }
+  </div>
+</div>
+<div class="mt-[24px] flex justify-center">
+  <button
+    type="button"
+    (click)="onClear.emit($event)"
+    class="h-[42px] rounded-[4px] bg-[#FFF176] px-[22px] text-[15px] font-medium uppercase tracking-[0.46px] text-black shadow-elevation transition-colors hover:bg-[#FDD835]"
+  >Xóa bộ lọc</button>
+</div>

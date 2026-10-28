@@ -1,0 +1,74 @@
+<div class="flex w-full flex-col gap-3 border-t border-solid border-slate-200 pt-5">
+  <p class="whitespace-nowrap text-sm font-bold text-slate-900">Thẻ quà tặng / Mã giảm giá</p>
+  <div class="flex flex-row items-start gap-3">
+    <div class="flex min-w-0 flex-1 flex-col">
+      <div class="flex h-10 w-full items-center rounded-2xl border border-slate-300 bg-white px-4 focus-within:border-blue-900">
+        <input
+          type="text"
+          [value]="couponCode() ?? ''"
+          (input)="handle1($any($event))"
+          placeholder="Nhập mã"
+          class="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+        />
+      </div>
+      @if (couponError()) {
+        <p class="w-full px-4 pt-1 text-xs font-medium text-red-600" role="alert">{{ couponError() }}</p>
+      }
+      @if (couponSuccess()) {
+        <p class="w-full px-4 pt-1 text-xs font-medium text-green-700">{{ couponSuccess() }}</p>
+      }
+    </div>
+    <button
+      type="button"
+      (click)="handleApplyCoupon()"
+      [disabled]="applyingCoupon() || subtotal() <= 0"
+      class="flex h-10 w-[104px] items-center justify-center rounded bg-secondary text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition-all duration-micro hover:bg-[#ffe454] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      @if (applyingCoupon()) {
+        ...
+      } @else {
+        Áp dụng
+      }
+    </button>
+  </div>
+</div>
+<div class="my-2 flex w-full flex-col gap-3 rounded-2xl bg-[#f2f4f6] p-5 text-sm">
+  @for (row of [
+          { label: 'Tạm tính', value: formatMoney(subtotal()) },
+          {
+            label: isGuest() ? 'Phí dịch vụ' : 'Phí vận chuyển',
+            value: '0đ'
+          },
+          { label: 'Giảm giá', value: `-${formatMoney(discountAmount())}` }
+        ]; track row.label) {
+    <div class="flex items-center justify-between font-medium text-slate-700">
+      <span>{{ row.label }}</span>
+      <span class="font-bold text-slate-900">{{ row.value }}</span>
+    </div>
+  }
+</div>
+<div class="flex items-start justify-between rounded-2xl bg-[#d5e4f3] p-5">
+  <div class="text-blue-900">
+    <p class="text-xl font-black leading-7">Tổng cộng</p>
+    <p class="text-xs font-medium text-slate-500">(Đã bao gồm thuế VAT)</p>
+  </div>
+  <span class="text-2xl font-black leading-7 text-blue-900">{{ formatMoney(total()) }}</span>
+</div>
+<button
+  type="button"
+  (click)="handleConfirm()"
+  [disabled]="items().length === 0 || submitting()"
+  class="relative h-12 w-full rounded bg-secondary text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition-all duration-micro hover:bg-[#ffe454] active:scale-[0.99] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
+>
+  @if (submitting()) {
+    ĐANG XỬ LÝ...
+  } @else if (isGuest()) {
+    Xác nhận đặt hàng
+  } @else {
+    Xác nhận đơn hàng
+  }
+</button>
+@if (submitError()) {
+  <p class="text-center text-sm font-medium text-red-600">{{ submitError() }}</p>
+}
+<p class="text-center text-xs leading-[15px] text-slate-500">Bằng cách nhấn xác nhận, bạn đồng ý với  <a href="/terms" class="text-blue-900 underline hover:no-underline">Điều khoản dịch vụ</a> và  <a href="/privacy" class="text-blue-900 underline hover:no-underline">Chính sách bảo mật</a> của chúng tôi.</p>

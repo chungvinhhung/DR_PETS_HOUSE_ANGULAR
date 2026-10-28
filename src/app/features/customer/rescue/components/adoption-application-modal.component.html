@@ -1,0 +1,100 @@
+@if (!(!open())) {
+  <div class="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(6,16,90,0.2)] p-6 font-['Roboto'] backdrop-blur-[2px]">
+    @if (submitted()) {
+      <div class="relative">
+        <button
+          type="button"
+          (click)="onClose.emit($event)"
+          class="absolute right-[-18px] top-[-40px] z-[102] flex h-9 w-9 items-center justify-center rounded-full bg-[#E5F6FD]"
+          aria-label="Đóng modal nhận nuôi"
+        >
+          <app-customer-icon name="x" className="h-3.5 w-3.5 text-[#717785]" [strokeWidth]="2.5" />
+        </button>
+        <div app-success-view (onClose)="onClose.emit($event)"></div>
+      </div>
+    } @else {
+      <div class="relative">
+        <button
+          type="button"
+          (click)="onClose.emit($event)"
+          class="absolute right-[-18px] top-[-19px] z-[102] flex h-9 w-9 items-center justify-center rounded-full bg-[#E5F6FD]"
+          aria-label="Đóng modal nhận nuôi"
+        >
+          <app-customer-icon name="x" className="h-3.5 w-3.5 text-[#717785]" [strokeWidth]="2.5" />
+        </button>
+        <form
+          novalidate
+          (submit)="handleNext($any($event))"
+          class="flex max-h-[calc(100vh-48px)] w-[696px] max-w-[calc(100vw-48px)] flex-col overflow-hidden rounded-[32px] border border-[#D9E3F6] bg-white p-px shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)]"
+        >
+          <div app-step-progress [stepIndex]="stepIndex()"></div>
+          <div class="flex min-h-0 flex-1 flex-col bg-[radial-gradient(circle_at_0_0,#D9E3F6_0_1%,transparent_1.2%)]">
+            <div class="min-h-0 flex-1 overflow-y-auto px-16 pb-8 pt-[50px]">
+              <div class="flex flex-col items-center gap-10">
+                <h2 class="text-center text-[28px] font-semibold leading-8 text-[rgba(0,0,0,0.87)]">{{ formTitle() }}</h2>
+                @if (submitError()) {
+                  <p class="-mt-6 rounded-[8px] bg-[#FFDAD6] px-4 py-3 text-center text-[14px] font-semibold text-[#93000A]">{{ submitError() }}</p>
+                }
+                <div class="w-full max-w-[568px]"><ng-container *ngTemplateOutlet="renderStepTpl; context: {  }" /></div>
+              </div>
+            </div>
+            <div class="shrink-0 bg-transparent px-16 pb-16 pt-0">
+              <div class="mx-auto flex max-w-[568px] items-center justify-between">
+                <app-modal-button
+                  [variant]="stepIndex() === 0 ? 'danger' : 'light'"
+                  (onClick)="stepIndex() === 0 ? onClose.emit($event) : handle1()"
+                >
+                  @if (stepIndex() === 0) {
+                    Hủy
+                  } @else {
+                    Quay lại
+                  }
+                </app-modal-button>
+                <app-modal-button [type]="'submit'" [disabled]="isSubmitting()">
+                  @if (isSubmitting()) {
+                    Đang gửi...
+                  } @else if (isLastStep()) {
+                    Gửi đơn
+                  } @else {
+                    Tiếp tục
+                  }
+                </app-modal-button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    }
+  </div>
+}
+
+<ng-template #renderStepTpl >
+  @let stepErrors = validationAttemptedByStep()[currentStep().id]
+      ? getMissingFields(values(), currentStep().id)
+      : [];
+  @if (currentStep().id === 'contact') {
+    <div
+      app-contact-step
+      [values]="values()"
+      (onChange)="handleChange($any($event)[0], $any($event)[1])"
+      [errors]="stepErrors"
+      [addresses]="addresses()"
+      [addressMode]="addressMode()"
+      (onAddressModeChange)="addressMode.set($event)"
+    ></div>
+  } @else if (currentStep().id === 'living') {
+    <div
+      app-living-step
+      [values]="values()"
+      (onChange)="handleChange($any($event)[0], $any($event)[1])"
+      [errors]="stepErrors"
+    ></div>
+  } @else {
+    <div
+      app-commitment-step
+      [values]="values()"
+      (onChange)="handleChange($any($event)[0], $any($event)[1])"
+      [errors]="stepErrors"
+    ></div>
+  }
+</ng-template>

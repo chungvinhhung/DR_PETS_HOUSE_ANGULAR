@@ -1,0 +1,10 @@
+@for (type of SEARCH_DEMAND_TYPES; track type.id) {
+  <button
+    type="button"
+    (click)="onChange.emit(type.id)"
+    [class]="[
+          'h-9 w-16 rounded-full text-[13px] font-semibold leading-5 tracking-[0.28px] text-[#0D47A1] transition',
+          activeType() === type.id ? 'bg-white shadow-[0_1px_1px_rgba(0,0,0,0.05)]' : 'hover:bg-white/60'
+        ].join(' ')"
+  >{{ type.label }}</button>
+}

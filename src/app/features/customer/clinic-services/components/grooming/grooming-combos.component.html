@@ -1,0 +1,89 @@
+<img
+  [attr.src]="groomingImages.comboSectionBg"
+  alt=""
+  class="pointer-events-none absolute inset-0 h-full w-full"
+  aria-hidden="true"
+/>
+<img
+  [attr.src]="groomingImages.comboShape117"
+  alt=""
+  class="pointer-events-none absolute left-[66px] top-[51.98px] h-[57px] w-[76px]"
+  aria-hidden="true"
+/>
+<img
+  [attr.src]="groomingImages.comboShape112"
+  alt=""
+  class="pointer-events-none absolute left-[1298px] top-[51.98px] h-[70px] w-[64px]"
+  aria-hidden="true"
+/>
+<img
+  [attr.src]="groomingImages.comboShape16"
+  alt=""
+  class="pointer-events-none absolute left-[66px] top-[473.66px] h-[67px] w-[66px]"
+  aria-hidden="true"
+/>
+<img
+  [attr.src]="groomingImages.comboShape15"
+  alt=""
+  class="pointer-events-none absolute left-[1297px] top-[466.88px] h-[76px] w-[65px]"
+  aria-hidden="true"
+/>
+<!-- Figma 1384:6083 — mask tránh nền đen PNG che mất icon -->
+<div
+  class="pointer-events-none absolute bottom-[12px] right-[48px] z-20 h-[82px] w-[70px]"
+  [appStyle]="styles1()"
+  aria-hidden="true"
+></div>
+<h2
+  class="absolute left-1/2 top-[98.57px] w-[884px] -translate-x-1/2 -translate-y-1/2"
+  [appStyle]="groomingTitleStyles.primary64"
+>Combo siêu tiết kiệm</h2>
+<p
+  class="absolute left-1/2 top-[168.98px] w-[1293px] -translate-x-1/2 -translate-y-1/2 whitespace-pre-wrap text-center text-[#0F172A]"
+  [appStyle]="{
+        fontFamily: 'Roboto, sans-serif',
+        fontWeight: 400,
+        fontSize: 24,
+        lineHeight: 1.334
+      }"
+>{{ 'Ngoài những dịch vụ riêng lẻ, chúng tôi còn thiết kế các combo phù hợp. \nKhông chỉ giúp bạn tiết kiệm hơn, mà bé cưng của bạn cũng vui vẻ hơn.' }}</p>
+<article class="absolute left-[50px] top-[235px] h-[464px] w-[658px] overflow-visible">
+  <app-masked-blue-panel
+    [maskUrl]="groomingImages.comboCardMaskLg"
+    [maskSize]="'645px 464px'"
+    [className]="'rounded-[16px]'"
+  />
+  <div class="relative flex h-full">
+    <div class="absolute left-[101px] top-[28px] h-[408px] w-[261px] overflow-hidden rounded-[16px]">
+      <img [attr.src]="groomingImages.comboBath" alt="Combo Tắm 11 bước" class="size-full object-cover" />
+    </div>
+    <div class="absolute left-[391px] top-[28px] w-[252px] pb-[56px] pr-[8px]">
+      <h3 class="font-['Roboto'] text-[24px] font-medium italic leading-[34px] text-[#02000F]">Combo Tắm 11 bước</h3>
+      <p class="mt-1 font-['Roboto'] text-[20px] italic leading-[35px] text-[#02000F]">Từ 150.000đ</p>
+      <ol class="mt-3 list-decimal pl-6 font-['Roboto'] text-[16px] leading-6 text-[#6C6D71]">
+        @for (step of GROOMING_COMBO_STEPS; track step) {
+          <li>{{ step }}</li>
+        }
+      </ol>
+    </div>
+  </div>
+  <app-book-button [className]="'absolute bottom-[8px] right-0 w-[188px]'" />
+</article>
+<div class="absolute left-[720px] top-[242px] flex w-[670px] flex-col gap-6">
+  <article
+    app-small-combo-card
+    [image]="groomingImages.comboGrooming"
+    [title]="'Combo Tắm cơ bản & cắt tỉa lông'"
+    [price]="'Từ 100.000đ'"
+    [description]="'Gói Tắm cơ bản, sấy lông & cắt tỉa'"
+    [maskUrl]="groomingImages.comboCardMaskSm1"
+  ></article>
+  <article
+    app-small-combo-card
+    [image]="groomingImages.comboNail"
+    [title]="'Combo Chăm sóc & bảo vệ móng'"
+    [price]="'Từ 80.000đ'"
+    [description]="'Cắt móng, cạo da chết đệm thịt, dưỡng ẩm'"
+    [maskUrl]="groomingImages.comboCardMaskSm2"
+  ></article>
+</div>

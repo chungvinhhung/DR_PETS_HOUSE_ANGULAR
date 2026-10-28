@@ -1,0 +1,27 @@
+<div class="flex h-full shrink-0 items-center justify-center">
+  <div class="h-20 w-20 overflow-hidden rounded-2xl bg-white shadow">
+    <img
+      [attr.src]="item().image || item().imageUrl || item().thumbnail || checkoutImages.product"
+      [attr.alt]="item().name"
+      class="size-full object-cover"
+    />
+  </div>
+</div>
+<div class="flex min-h-0 min-w-0 flex-1 flex-col justify-center gap-2">
+  <div class="flex w-full items-start justify-between">
+    <p class="line-clamp-2 min-w-0 pr-4 text-base font-bold leading-6 text-blue-900">{{ item().name }}</p>
+    <p class="shrink-0 whitespace-nowrap text-base font-black text-blue-900">{{ formatMoney(item().price * item().qty) }}</p>
+  </div>
+  <div class="flex w-full items-center justify-between whitespace-nowrap text-xs font-medium text-slate-700">
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-1">
+      <div class="flex items-center gap-1">
+        <span>Biến thể:</span>
+        <span>{{ item().type || item().variant_name || item().variant?.variant_name || 'Mặc định' }}</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-[5px]">
+      <span>x</span>
+      <span>{{ item().qty }}</span>
+    </div>
+  </div>
+</div>

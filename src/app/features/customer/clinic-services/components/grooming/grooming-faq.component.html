@@ -1,0 +1,24 @@
+<section
+  app-pet-care-faq-section
+  [faqs]="GROOMING_FAQS"
+  [assets]="{
+        icon: groomingImages.faqIcon,
+        topLeft: groomingImages.faqImg1,
+        topRight: groomingImages.faqImg3,
+        main: groomingImages.faqImg2,
+        ornament: groomingImages.faqOrnament
+      }"
+  [renderAnswer]="renderAnswerTpl1"
+></section>
+
+<ng-template #renderAnswerTpl1 let-faq>
+  @if (faq.id === 1) {
+    <ul>
+      @for (line of faq.answer; track line) {
+        <li>{{ line }}</li>
+      }
+    </ul>
+  } @else {
+    <p>{{ faq.answer.join(' ') }}</p>
+  }
+</ng-template>

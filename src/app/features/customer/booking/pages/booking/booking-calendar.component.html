@@ -1,0 +1,38 @@
+<app-booking-card
+  [className]="`p-6 max-sm:p-6 ${invalid() ? 'ring-2 ring-red-500' : ''}`"
+  [title]="invalid() ? 'Vui lòng điền thông tin' : undefined"
+  [data-booking-error]="invalid() ? 'true' : undefined"
+  [tabIndex]="invalid() ? -1 : undefined"
+>
+  <div class="mb-6 flex items-center justify-between">
+    <h3 class="text-[20px] font-bold text-slate-900">Tháng {{ viewedMonth().getMonth() + 1 }}, {{ viewedMonth().getFullYear() }}</h3>
+    <div class="flex gap-3 text-lg text-slate-500">
+      <button type="button" (click)="changeMonth(-1)" aria-label="Tháng trước">‹</button>
+      <button type="button" (click)="changeMonth(1)" aria-label="Tháng sau">›</button>
+    </div>
+  </div>
+  <div class="grid grid-cols-7 gap-2 text-center text-sm md:gap-4">
+    @for (day of days(); track day) {
+      <span class="font-bold text-slate-300">{{ day }}</span>
+    }
+    @for (cell of calendarCells(); track $index) {
+      @let active = selectedDateKey() === cell.key;
+      @let today = todayKey() === cell.key;
+      @let disabled = isBeforeToday(cell.date);
+      <button
+        type="button"
+        [disabled]="disabled"
+        (click)="selectDate(cell.date)"
+        [class]="`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition ${
+                active
+                  ? 'bg-blue-900 text-white'
+                  : disabled
+                    ? 'cursor-not-allowed text-slate-300 opacity-50'
+                    : cell.inCurrentMonth
+                    ? 'text-slate-900 hover:bg-blue-50 hover:text-blue-900'
+                    : 'text-slate-300 hover:bg-slate-100'
+              } ${today && !active ? 'ring-1 ring-blue-900' : ''}`"
+      >{{ cell.date.getDate() }}</button>
+    }
+  </div>
+</app-booking-card>
