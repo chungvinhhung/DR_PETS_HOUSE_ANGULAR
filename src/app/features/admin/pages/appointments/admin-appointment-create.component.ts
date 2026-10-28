@@ -171,7 +171,7 @@ export class AdminAppointmentCreateComponent {
   readonly estimatedSubtotal = computed(() => segmentReferenceSubtotal(this.plannedSegments()));
   readonly pricingRequestKey = computed(() => JSON.stringify({
     branch: this.branchId(),
-    pets: this.selectedPets().map(pet => [pet.id, pet.name, pet.weightKg]),
+    pets: this.selectedPets().map(pet => [pet.id, pet.name, pet.species, pet.breed, pet.age, pet.weightKg, pet.health]),
     services: this.plannedSegments().map(segment => [segment.petId, segment.serviceId]),
     pending: this.extraServices().filter(row => !row.serviceId).map(row => row.id),
   }));
