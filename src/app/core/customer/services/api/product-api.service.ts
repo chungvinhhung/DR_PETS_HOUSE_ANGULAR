@@ -7,15 +7,15 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 import { environment } from '../../../../../environments/environment';
 
 function unwrap(payload: any) {
-  return payload?.data ?? payload;
+  return assertSuccess(payload);
 }
 
 function getPayload(payload: any) {
-  return payload?.DT ?? payload?.data ?? payload;
+  return assertSuccess(payload);
 }
 
 function warnOptionalApiFailure(apiName: any, error: any) {

@@ -7,21 +7,14 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
-
-function assertSuccess(response: any) {
-  if (response?.EC !== 0) {
-    throw new Error(response?.EM || "Request failed");
-  }
-  return response.DT;
-}
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 
 function getPrimaryImage(pet: any = {}) {
   const primaryImage = Array.isArray(pet.pet_images)
     ? pet.pet_images.find((image: any) => image.is_primary) || pet.pet_images[0]
     : null;
 
-  return pet.profile_image_url || primaryImage?.image_url || null;
+  return pet.photoUrl || pet.profile_image_url || primaryImage?.image_url || null;
 }
 
 function formatDateText(value: any) {
@@ -215,20 +208,48 @@ function toHealthDiaryPayload(diary: any = {}) {
 export class PetApiService {
   private readonly http = inject(CustomerHttpService);
 
-  async getMyPets() {
-    const response = await this.http.get("/my-pets");
+  private resolveCustomerId(): string {
+    try {
+      const profileStr = localStorage.getItem('drPetUserProfile');
+      if (profileStr) {
+        const p = JSON.parse(profileStr);
+        if (p.customerId || p.userId) return String(p.customerId || p.userId);
+      }
+    } catch {}
+    return '';
+  }
+
+  async getMyPets(customerId?: string) {
+    const cid = customerId || this.resolveCustomerId();
+    if (cid) {
+      try {
+        const response = await this.http.get(`/customers/${cid}/pets`);
+        const pets = assertSuccess(response);
+        return (Array.isArray(pets) ? pets : []).map(normalizePet);
+      } catch (err: any) {
+        if (err?.status !== 404) console.warn('Customer pets API error:', err);
+      }
+    }
+    const response = await this.http.get("/my-pets").catch(() => []);
     const data = assertSuccess(response);
     const petsArray = Array.isArray(data) ? data : (data && Array.isArray(data.pets) ? data.pets : []);
     return petsArray.map(normalizePet);
   }
 
-  async getPetDetails(petId: any) {
+  async getPetDetails(petId: any, customerId?: string) {
+    const cid = customerId || this.resolveCustomerId();
+    if (cid) {
+      try {
+        const response = await this.http.get(`/customers/${cid}/pets/${petId}`);
+        return normalizePet(assertSuccess(response));
+      } catch {}
+    }
     const response = await this.http.get(`/pets/${petId}`);
     return normalizePet(assertSuccess(response));
   }
 
   async getPetSpecies() {
-    const response = await this.http.get("/pets/species");
+    const response = await this.http.get("/pets/species").catch(() => []);
     const species = assertSuccess(response);
     return Array.isArray(species) ? species : [];
   }
@@ -237,12 +258,30 @@ export class PetApiService {
     if (!speciesId) return [];
     const response = await this.http.get("/pets/breeds", {
       params: { species_id: speciesId },
-    });
+    }).catch(() => []);
     const breeds = assertSuccess(response);
     return Array.isArray(breeds) ? breeds : [];
   }
 
-  async createPet(pet: any) {
+  async createPet(pet: any, customerId?: string) {
+    const cid = customerId || this.resolveCustomerId();
+    const payload = {
+      name: pet.name || pet.pet_name,
+      species: (pet.species || pet.species_name || 'DOG').toUpperCase(),
+      breed: pet.breed || pet.breed_name || '',
+      gender: (pet.gender || 'UNKNOWN').toUpperCase(),
+      ageYears: Number(pet.ageYears || pet.age || 0),
+      weightKg: Number(pet.weightKg || pet.weight_kg || 0),
+      healthStatus: pet.healthStatus || 'NORMAL',
+      medicalNotes: pet.medicalNotes || pet.medical_note || '',
+      photoUrl: pet.photoUrl || pet.avatar || pet.profile_image_url || null,
+    };
+    if (cid) {
+      try {
+        const response = await this.http.post(`/customers/${cid}/pets`, payload);
+        return normalizePet(assertSuccess(response));
+      } catch {}
+    }
     const response = await this.http.post("/pets", toPetPayload(pet));
     return normalizePet(assertSuccess(response));
   }

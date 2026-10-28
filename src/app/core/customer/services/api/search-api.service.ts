@@ -7,17 +7,10 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 import { productCardImages } from '../../../../shared/customer/assets/product-card-assets';
 import { normalizeBookingService } from './booking-api.service';
 import { normalizeProduct } from './product-api.service';
-
-function assertSuccess(response: any) {
-  if (response?.EC !== undefined && response.EC !== 0) {
-    throw new Error(response.EM || "Tim kiem khong thanh cong");
-  }
-  return response?.DT ?? response;
-}
 
 function toBackendScope(type: any) {
   if (type === "shopping") return "product";

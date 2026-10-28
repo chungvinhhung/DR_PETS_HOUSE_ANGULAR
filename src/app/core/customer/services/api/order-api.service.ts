@@ -7,14 +7,7 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
-
-function assertSuccess(response: any) {
-  if (response?.EC !== undefined && response.EC !== 0) {
-    throw new Error(response.EM || "Dat hang khong thanh cong");
-  }
-  return response?.DT ?? response;
-}
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 
 function normalizeOrderStatus(order: any = {}) {
   const status = order.order_status || order.status;
@@ -110,31 +103,42 @@ export class OrderApiService {
   private readonly http = inject(CustomerHttpService);
 
   async checkoutOrder({ addressId, paymentMethod, voucherCode, note, items }: any) {
-    const response = await this.http.post("/orders/checkout", {
-      address_id: addressId,
-      payment_method: paymentMethod,
-      voucher_code: voucherCode || undefined,
+    const payload = {
+      addressId: addressId || undefined,
+      paymentMethod: paymentMethod === "store" ? "STORE" : paymentMethod === "online" ? "ONLINE" : "COD",
+      voucherCode: voucherCode || undefined,
       note: note || undefined,
       items: toCheckoutItems(items),
-    });
+    };
+    const response = await this.http.post("/orders/checkout", payload);
     return assertSuccess(response);
   }
 
   async guestCheckoutOrder({ guest, paymentMethod, voucherCode, note, items }: any) {
-    const response = await this.http.post("/orders/guest-checkout", {
-      full_name: guest.fullName,
-      phone: guest.phone,
-      email: guest.email,
-      address_line: guest.address,
-      ward: guest.ward || undefined,
-      district: guest.district || undefined,
-      province: guest.city,
-      payment_method: paymentMethod,
-      voucher_code: voucherCode || undefined,
+    const addressLine = [guest.address, guest.ward, guest.district, guest.city].filter(Boolean).join(", ");
+    const payload = {
+      customerId: null,
+      contactSnapshot: {
+        fullName: guest.fullName || guest.name,
+        phone: guest.phone,
+        email: guest.email || undefined,
+        address: addressLine || guest.address || "Địa chỉ nhận hàng",
+      },
+      paymentMethod: paymentMethod === "store" ? "STORE" : paymentMethod === "online" ? "ONLINE" : "COD",
+      voucherCode: voucherCode || undefined,
       note: note || undefined,
       items: toCheckoutItems(items),
-    });
-    return assertSuccess(response);
+    };
+    try {
+      const response = await this.http.post("/orders/checkout", payload);
+      return assertSuccess(response);
+    } catch (err: any) {
+      if (err?.status === 404) {
+        const response = await this.http.post("/checkout", payload);
+        return assertSuccess(response);
+      }
+      throw err;
+    }
   }
 
   async getMyOrders(params: any = {}) {
@@ -142,7 +146,13 @@ export class OrderApiService {
       params: { page: 1, limit: 100, ...params },
     });
     const payload = assertSuccess(response);
-    const orders = Array.isArray(payload?.orders) ? payload.orders : Array.isArray(payload) ? payload : [];
+    const orders = Array.isArray(payload?.items)
+      ? payload.items
+      : Array.isArray(payload?.orders)
+        ? payload.orders
+        : Array.isArray(payload)
+          ? payload
+          : [];
     return orders.map(normalizeOrder);
   }
 
@@ -151,9 +161,14 @@ export class OrderApiService {
     return normalizeOrder(assertSuccess(response));
   }
 
-  async cancelOrder(orderId: any) {
-    const response = await this.http.patch(`/orders/${orderId}/cancel`);
-    return assertSuccess(response);
+  async cancelOrder(orderId: any, reason: string = 'Khách hàng hủy đơn') {
+    try {
+      const response = await this.http.post(`/orders/${orderId}/cancel`, { reason });
+      return assertSuccess(response);
+    } catch {
+      const response = await this.http.patch(`/orders/${orderId}/cancel`, { reason });
+      return assertSuccess(response);
+    }
   }
 
   async repayOrder(orderId: any, payload: any = {}) {
