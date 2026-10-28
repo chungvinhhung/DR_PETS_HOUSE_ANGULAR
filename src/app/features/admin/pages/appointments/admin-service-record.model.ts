@@ -85,15 +85,27 @@ export function normalizeServiceRecord(raw:unknown):ServiceRecord {
   const planned=Array.isArray(r['plannedMaterials']) ? r['plannedMaterials'] : [];
   const plannedById=new Map(planned.map(v=>{const x=record(v)||{};return [first(x['inventoryItemId'],x['materialId']),x];}));
   const prof=record(r['professional']);
-  const materials=Array.isArray(rawMaterials)?rawMaterials.map(v=>{
-    const m=record(v)||{};const product=record(m['material'])||{};
+  const actualRows=Array.isArray(rawMaterials)?rawMaterials:[];
+  const actualIds=new Set(actualRows.map(v=>{
+    const m=record(v)||{};
+    return first(m['inventoryItemId'],m['materialId']);
+  }));
+  const materialRows=[
+    ...actualRows.map(v=>({item:v,isActual:true})),
+    ...planned.filter(v=>{
+      const m=record(v)||{};
+      return !actualIds.has(first(m['inventoryItemId'],m['materialId']));
+    }).map(v=>({item:v,isActual:false})),
+  ];
+  const materials=materialRows.map(({item,isActual})=>{
+    const m=record(item)||{};const product=record(m['material'])||{};
     const plannedRow=plannedById.get(first(m['inventoryItemId'],m['materialId']))||{};
     return {name:first(m['name'],m['materialName'],product['name'],m['inventoryItemId'],m['materialId']),
       templateQuantity:String(m['templateQuantity']??m['plannedQuantity']??plannedRow['quantity']??''),
-      actualQuantity:String(m['actualQuantity']??m['quantity']??''),
+      actualQuantity:isActual ? String(m['actualQuantity']??m['quantity']??'') : '',
       unit:first(m['unit'],product['unit']),
       note:first(m['note'],m['notes'],m['remark'])};
-  }):[];
+  });
   const rawHistory=r['statusHistory']??r['auditHistory']??r['history'];
   const history=Array.isArray(rawHistory)?rawHistory.map(v=>{const h=record(v)||{};return {
     action:first(h['action'],h['status'],h['type']),
