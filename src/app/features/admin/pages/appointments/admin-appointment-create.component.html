@@ -1,0 +1,279 @@
+<app-admin-catalog-shell activeItem="appointments">
+  <main class="appointment-create">
+    <nav class="appointment-create__breadcrumb" aria-label="Đường dẫn">
+      <a routerLink="/admin/appointments">Lịch hẹn</a><span aria-hidden="true">›</span><strong aria-current="page">Tạo lịch hẹn</strong>
+    </nav>
+    <div class="appointment-create__page-title">
+      <h1>Tạo lịch hẹn</h1>
+      <button type="button" class="btn btn--outline" (click)="requestCancel()">Hủy</button>
+    </div>
+
+    <div class="appointment-create__warning" role="status">
+      Bản nháp: Backend chưa xác nhận API tạo lịch hẹn hộ khách. Thông tin dưới đây chưa được đặt chỗ hoặc thanh toán.
+    </div>
+
+    <section class="panel" aria-labelledby="customer-search-heading">
+      <h2 id="customer-search-heading">Tra cứu khách hàng</h2>
+      <label class="form-label" for="appointment-lookup">Số điện thoại khách hàng <span class="required">*</span></label>
+      <div class="search-row">
+        <div class="search-control">
+          <img src="/assets/service-catalog/search.svg" width="16" height="16" alt="" />
+          <input id="appointment-lookup" type="tel" autocomplete="off" placeholder="Nhập số điện thoại..."
+            [value]="lookupPhone()" (input)="editLookupPhone($any($event.target).value)"
+            (keydown.enter)="searchCustomer()">
+        </div>
+        <button type="button" class="btn btn--primary" [disabled]="lookupState()==='loading'" (click)="searchCustomer()">
+          {{ lookupState()==='loading' ? 'Đang tra cứu...' : 'Tra cứu' }}
+        </button>
+      </div>
+      @if (lookupState()==='found' && lookupResults().length) {
+        <div class="lookup-results" aria-label="Kết quả tra cứu khách hàng">
+          @for (item of lookupResults(); track item.id) {
+            <button type="button" class="lookup-results__item" (click)="selectCustomer(item)">
+              <span><strong>{{item.fullName || 'Khách hàng'}}</strong>
+                <small>{{item.phone || '—'}} · {{item.email || 'Chưa có email'}}</small></span>
+              <span class="lookup-results__action">Chọn khách hàng</span>
+            </button>
+          }
+        </div>
+      }
+      @if (selectedCustomer(); as customer) {
+        <div class="lookup-selected">
+          <span>Đã nhận diện: <strong>{{ customer.fullName || customer.phone }}</strong></span>
+          <span class="lookup-selected__meta">
+            {{ customer.activationStatus==='ACTIVATED' ? 'Đã kích hoạt' :
+              customer.activationStatus==='PENDING_ACTIVATION' ? 'Chờ kích hoạt' : 'Chưa có tài khoản đăng nhập' }}
+          </span>
+        </div>
+        @if (customer.accountStatus==='BLOCKED') {
+          <p class="inline-error">Tài khoản khách hàng đang bị chặn, không thể đặt lịch hẹn.</p>
+        }
+      }
+      @if (lookupState()==='not-found') {
+        <p class="hint hint--notice">Không tìm thấy khách hàng. Có thể điền thông tin khách vãng lai; hệ thống không tự tạo tài khoản đăng nhập.</p>
+      }
+      @if (lookupState()==='error') {
+        <p class="inline-error">{{ lookupIncomplete() ? 'Kết quả tra cứu chưa đầy đủ, không thể kết luận khách chưa có tài khoản.' : 'Chưa tra cứu được khách hàng. Vui lòng thử lại.' }}</p>
+      }
+    </section>
+
+    <section class="panel" aria-labelledby="customer-info-heading">
+      <h2 id="customer-info-heading">Thông tin khách hàng</h2>
+      <div class="form-grid form-grid--3">
+        <label class="field">Họ và tên <span class="required">*</span>
+          <input type="text" placeholder="Nhập họ và tên" [class.field--identified]="!!selectedCustomer()"
+            [readOnly]="!!selectedCustomer()" [value]="customerName()" (input)="customerName.set($any($event.target).value)">
+        </label>
+        <label class="field">Số điện thoại <span class="required">*</span>
+          <input type="tel" placeholder="Nhập số điện thoại" [class.field--identified]="!!selectedCustomer()"
+            [value]="customerPhone()" (input)="editCustomerPhone($any($event.target).value)">
+        </label>
+        <label class="field">Email <span class="required">*</span>
+          <input type="email" placeholder="Nhập email" [class.field--identified]="!!selectedCustomer()"
+            [readOnly]="!!selectedCustomer()" [value]="customerEmail()" (input)="customerEmail.set($any($event.target).value)">
+        </label>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="pets-heading">
+      <div class="panel__heading">
+        <h2 id="pets-heading">Thú cưng</h2>
+        <button type="button" class="btn btn--outline btn--small" (click)="addPet()">+ Thêm thú cưng</button>
+      </div>
+      @if (petsLoadState()==='loading') {
+        <p class="hint" role="status">Đang tải hồ sơ thú cưng của khách hàng...</p>
+      }
+      @if (petsLoadState()==='unsupported') {
+        <p class="hint hint--notice">Backend chưa cung cấp danh sách thú cưng trong hồ sơ khách này. Không dùng thú cưng của tài khoản Admin. Có thể nhập thông tin thú cưng mới vào bản nháp.</p>
+      }
+      @if (petsLoadState()==='empty') {
+        <p class="hint">Khách hàng chưa có thú cưng trong dữ liệu trả về.</p>
+      }
+      <div class="pet-picker">
+        @for (pet of pets(); track pet.id) {
+          <label class="pet-picker__row" [class.pet-picker__row--selected]="selectedPetIds().includes(pet.id)">
+            <span class="pet-picker__details">
+              <strong>{{pet.name || 'Thú cưng'}}</strong>
+              <small>{{pet.species || 'Chưa rõ loài'}} · {{pet.breed || 'Chưa có giống'}}
+                @if (pet.age) { · {{pet.age}} tuổi }
+                @if (pet.weightKg) { · {{pet.weightKg}} kg }
+              </small>
+            </span>
+            <input type="checkbox" [checked]="selectedPetIds().includes(pet.id)"
+              (change)="togglePet(pet.id, $any($event.target).checked)" [attr.aria-label]="'Chọn ' + pet.name">
+          </label>
+        }
+        @for (pet of newPets(); track pet.id; let index=$index) {
+          <article class="pet-new" [class.pet-new--unselected]="!pet.selected">
+            <div class="pet-new__title">
+              <label><strong>Thú cưng mới {{index+1}}</strong>
+                <input type="checkbox" [checked]="pet.selected" (change)="toggleNewPet(pet.id,$any($event.target).checked)"
+                  [attr.aria-label]="'Chọn thú cưng mới ' + (index + 1)">
+              </label>
+              <button type="button" class="text-action" (click)="removePet(pet.id)">Xóa</button>
+            </div>
+            <div class="form-grid form-grid--3">
+              <label class="field">Tên thú cưng <span class="required">*</span>
+                <input placeholder="Nhập tên" [value]="pet.name" (input)="updatePet(pet.id,'name',$any($event.target).value)">
+              </label>
+              <label class="field">Loài <span class="required">*</span>
+                <select [value]="pet.species" (change)="updatePet(pet.id,'species',$any($event.target).value)">
+                  <option value="">Chọn loài</option><option value="Chó">Chó</option>
+                  <option value="Mèo">Mèo</option><option value="Khác">Khác</option>
+                </select>
+              </label>
+              <label class="field">Giống
+                <input placeholder="Nhập giống" [value]="pet.breed" (input)="updatePet(pet.id,'breed',$any($event.target).value)">
+              </label>
+              <label class="field">Tuổi
+                <input type="number" min="0" step="0.1" placeholder="Nhập tuổi"
+                  [value]="pet.age" (input)="updatePet(pet.id,'age',$any($event.target).value)">
+              </label>
+              <label class="field">Cân nặng (kg)
+                <input type="number" min="0" step="0.1" placeholder="Nhập cân nặng"
+                  [value]="pet.weightKg" (input)="updatePet(pet.id,'weightKg',$any($event.target).value)">
+              </label>
+              <label class="field">Tình trạng sức khỏe
+                <select [value]="pet.health" (change)="updatePet(pet.id,'health',$any($event.target).value)">
+                  <option value="">Chọn tình trạng</option><option value="healthy">Bình thường</option>
+                  <option value="treating">Đang điều trị</option><option value="need_recheck">Cần tái khám</option>
+                  <option value="unknown">Chưa rõ</option>
+                </select>
+              </label>
+            </div>
+          </article>
+        }
+        @if (pets().length===0 && newPets().length===0 && petsLoadState()!=='loading') {
+          <div class="pet-picker__empty">Chưa chọn thú cưng. Nhấn “+ Thêm thú cưng” để nhập thông tin.</div>
+        }
+      </div>
+      @if (petCount()>0) {
+        <p class="hint">Đã chọn {{petCount()}} thú cưng. Chi phí dự kiến có thể thay đổi theo cân nặng và loại dịch vụ.</p>
+      }
+    </section>
+
+    <section class="panel" aria-labelledby="service-heading">
+      <h2 id="service-heading">Dịch vụ và lịch hẹn</h2>
+      <div class="form-grid form-grid--4">
+        <label class="field">Chi nhánh <span class="required">*</span>
+          <select [value]="branchId()" (change)="selectBranch($any($event.target).value)">
+            <option value="">Chọn chi nhánh</option>
+            @for (branch of branches(); track branch.id) {<option [value]="branch.id">{{branch.name}}</option>}
+          </select>
+        </label>
+        <label class="field">Dịch vụ <span class="required">*</span>
+          <select [value]="serviceId()" [disabled]="!branchId() || serviceLoadState()==='loading'"
+            (change)="selectService($any($event.target).value)">
+            <option value="">{{serviceLoadState()==='loading'?'Đang tải dịch vụ...':'Chọn dịch vụ'}}</option>
+            @for (service of services(); track service.id) {
+              <option [value]="service.id">{{service.name}}
+                @if (service.durationMinutes) { · {{service.durationMinutes}} phút }
+              </option>
+            }
+          </select>
+        </label>
+        <label class="field">Ngày hẹn <span class="required">*</span>
+          <input type="date" [min]="today" [value]="appointmentDate()"
+            (input)="selectDate($any($event.target).value)">
+        </label>
+        <label class="field">Khung giờ <span class="required">*</span>
+          <select [value]="selectedSlotId()" [disabled]="slotsState()!=='ready'"
+            (change)="chooseSlot($any($event.target).value)">
+            <option value="">{{slotsState()==='loading'?'Đang tải khung giờ...':'Chọn khung giờ'}}</option>
+            @for (slot of slots(); track slot.id) {
+              <option [value]="slot.id" [disabled]="!slot.available">{{slot.label}}{{slot.available?'':' · Hết chỗ'}}</option>
+            }
+          </select>
+        </label>
+      </div>
+      @if (branchLoadState()==='error' || serviceLoadState()==='error') {
+        <p class="inline-error">{{serviceError()}} <button type="button" class="text-action"
+          (click)="branchLoadState()==='error'?loadBranches():selectBranch(branchId())">Thử lại</button></p>
+      }
+      @if (serviceLoadState()==='empty') {<p class="hint">Không có dịch vụ BOOKABLE đang hoạt động tại chi nhánh.</p>}
+      @if (slotsState()==='empty') {<p class="hint">Không còn khung giờ phù hợp trong ngày đã chọn.</p>}
+      @if (slotsState()==='error') {
+        <p class="inline-error">{{slotsError()}} <button type="button" class="text-action" (click)="loadSlots()">Thử lại</button></p>
+      }
+      <p class="hint">Khung giờ hiển thị từ API tra cứu, chưa được giữ chỗ. Khi xác nhận, BE phải kiểm tra lại sức chứa đồng thời, ca nhân viên và các lịch trùng thời gian.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="payment-heading">
+      <div class="panel__heading">
+        <h2 id="payment-heading">Thanh toán</h2>
+        <span class="payment-badge">Đang chờ thanh toán</span>
+      </div>
+      <div class="payment-layout">
+        <div class="payment-form">
+          <div class="payment-tabs" role="group" aria-label="Phương thức thanh toán">
+            <button type="button" [class.payment-tabs__active]="paymentMethod()==='PAY_AT_STORE'"
+              [attr.aria-pressed]="paymentMethod()==='PAY_AT_STORE'" (click)="selectPayment('PAY_AT_STORE')">
+              Tại phòng khám
+            </button>
+            <button type="button" [class.payment-tabs__active]="paymentMethod()==='ONLINE_MOCK'"
+              [attr.aria-pressed]="paymentMethod()==='ONLINE_MOCK'" (click)="selectPayment('ONLINE_MOCK')">
+              Trực tuyến
+            </button>
+          </div>
+          @if (paymentMethod()==='ONLINE_MOCK') {
+            <div class="online-methods" aria-label="Cổng thanh toán trực tuyến">
+              @for (option of onlineChoices; track option.key) {
+                <button type="button" [class.online-methods__active]="onlineProvider()===option.key"
+                  [attr.aria-pressed]="onlineProvider()===option.key" (click)="onlineProvider.set(option.key)">
+                  <img [src]="option.icon" width="25" height="25" alt="">{{option.name}}
+                </button>
+              }
+            </div>
+          }
+          <label class="form-label" for="appointment-voucher">Thẻ quà tặng / Mã giảm giá</label>
+          <div class="voucher-row">
+            <input id="appointment-voucher" type="text" placeholder="Nhập mã" [value]="voucherCode()"
+              (input)="voucherCode.set($any($event.target).value);voucherNotice.set('')">
+            <button type="button" class="btn btn--outline" (click)="checkVoucher()">Áp dụng</button>
+          </div>
+          @if (voucherNotice()) {<p class="hint hint--notice" role="status">{{voucherNotice()}}</p>}
+          <label class="form-label" for="appointment-note">Ghi chú lịch hẹn</label>
+          <textarea id="appointment-note" rows="2" placeholder="Thêm lưu ý cho nhân viên..."
+            [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
+        </div>
+        <div class="payment-summary">
+          <div class="payment-summary__rows">
+            <div><span>Tạm tính</span><strong>{{money(estimatedSubtotal())}}</strong></div>
+            <div><span>Phụ thu</span><span>Chờ BE xác nhận</span></div>
+            <div><span>Giảm giá</span><span>Chưa áp dụng</span></div>
+          </div>
+          <div class="payment-summary__total">
+            <span><strong>Tổng cộng</strong><small>(Đã bao gồm thuế VAT nếu áp dụng)</small></span>
+            <strong>{{money(estimatedSubtotal())}}</strong>
+          </div>
+          <p class="payment-summary__disclaimer">Số tiền trên chỉ là giá tham khảo từ catalog. Số tiền phải thu và cọc 30%/thanh toán 100% do BE báo giá xác nhận.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="appointment-create__footer">
+      <button type="button" class="btn btn--outline" (click)="requestCancel()">Hủy</button>
+      <button type="button" class="btn btn--primary" (click)="confirmAppointment()">Xác nhận lịch hẹn</button>
+    </footer>
+
+    @if (reviewErrors().length) {
+      <div class="panel review-errors" role="alert">
+        <strong>Chưa thể xác nhận lịch hẹn</strong>
+        @for (error of reviewErrors(); track error) {<p>{{error}}</p>}
+      </div>
+    }
+
+    @if (cancellationOpen()) {
+      <div class="overlay">
+        <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="appointment-discard-title">
+          <h2 id="appointment-discard-title">Hủy tạo lịch hẹn?</h2>
+          <p>Dữ liệu đang nhập chưa được lưu. Bạn có chắc chắn muốn hủy?</p>
+          <div class="confirm-dialog__actions">
+            <button type="button" class="btn btn--outline" (click)="cancellationOpen.set(false)">Tiếp tục nhập</button>
+            <button type="button" class="btn btn--primary" (click)="discard()">Hủy tạo lịch hẹn</button>
+          </div>
+        </div>
+      </div>
+    }
+  </main>
+</app-admin-catalog-shell>
