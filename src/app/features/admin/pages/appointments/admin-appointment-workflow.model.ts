@@ -194,7 +194,10 @@ export function appointmentWindow(
   appointment: AppointmentView, action: 'cancel' | 'reschedule', nowMs: number,
   isManagerOrAdmin: boolean,
 ): AppointmentWindowDecision {
-  if (['CANCELLED','COMPLETED','NO_SHOW','IN_PROGRESS','UNKNOWN','PENDING_PAYMENT'].includes(appointment.status))
+  if (['CANCELLED','COMPLETED','NO_SHOW','IN_PROGRESS','UNKNOWN'].includes(appointment.status))
+    return {status:'terminal',hoursRemaining:null,canRequest:false,overrideRequiresAudit:false};
+  // BE reschedule only accepts CONFIRMED; PAY_PREPAYMENT/CANCEL may exist during hold.
+  if (action === 'reschedule' && appointment.status !== 'CONFIRMED')
     return {status:'terminal',hoursRemaining:null,canRequest:false,overrideRequiresAudit:false};
   if (action === 'reschedule' && appointment.rescheduleCount === null)
     return {status:'missing-count',hoursRemaining:null,canRequest:false,overrideRequiresAudit:false};
