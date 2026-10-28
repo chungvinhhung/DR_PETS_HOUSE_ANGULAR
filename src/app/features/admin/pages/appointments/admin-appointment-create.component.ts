@@ -9,6 +9,9 @@ import { AdminToastService, adminErrorMessage } from '../../../../shared/service
 import { AdminOrderCreateLookupService, OrderCustomerLookup } from '../../orders/services/admin-order-create-lookup.service';
 import { CatalogBranch, CatalogService } from '../../service-catalog/models/service-catalog.model';
 import { ServiceCatalogApiService } from '../../service-catalog/services/service-catalog-api.service';
+import { AdminStaffApiService } from '../../staff/services/admin-staff-api.service';
+import { StaffPreview } from '../../staff/models/staff-preview.model';
+import { buildAppointmentSegments, ExtraPetService, hasDuplicatePetService, segmentReferenceSubtotal } from './admin-appointment-segments.utils';
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'empty' | 'error' | 'unsupported';
 type CustomerLookupState = 'idle' | 'loading' | 'found' | 'not-found' | 'error';
@@ -92,6 +95,7 @@ export class AdminAppointmentCreateComponent {
   private readonly api = inject(ApiClientService);
   private readonly lookupApi = inject(AdminOrderCreateLookupService);
   private readonly catalog = inject(ServiceCatalogApiService);
+  readonly staffDirectory = inject(AdminStaffApiService);
   private readonly toast = inject(AdminToastService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -100,6 +104,7 @@ export class AdminAppointmentCreateComponent {
   private slotRequest = 0;
   private serviceRequest = 0;
   private petSequence = 0;
+  private extraServiceSequence = 0;
 
   readonly today = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit',
@@ -117,6 +122,9 @@ export class AdminAppointmentCreateComponent {
   readonly petsLoadState = signal<LoadState>('idle');
   readonly selectedPetIds = signal<string[]>([]);
   readonly newPets = signal<PetDraft[]>([]);
+  readonly extraServices = signal<ExtraPetService[]>([]);
+  readonly multiServiceOpen = signal(false);
+  readonly assignedStaff = signal<Record<string, string>>({});
   readonly branches = signal<CatalogBranch[]>([]);
   readonly services = signal<CatalogService[]>([]);
   readonly branchId = signal('');
@@ -146,23 +154,25 @@ export class AdminAppointmentCreateComponent {
     { key: 'CARD', name: 'Thẻ tín dụng/ghi nợ', icon: '/assets/admin-order/payment-card.svg' },
   ];
   readonly chosenService = computed(() => this.services().find(s => s.id === this.serviceId()) ?? null);
-  readonly petCount = computed(() => this.selectedPetIds().length + this.newPets().filter(p => p.selected).length);
-  readonly estimatedUnitPrice = computed(() => {
-    const service = this.chosenService();
-    return service?.pricingDataWarning ? null : safeNumber(service?.referencePrice);
-  });
-  readonly estimatedSubtotal = computed(() => {
-    const unitPrice = this.estimatedUnitPrice();
-    return unitPrice === null ? null : unitPrice * this.petCount();
-  });
+  readonly selectedPets = computed(() => [
+    ...this.pets().filter(pet => this.selectedPetIds().includes(pet.id)),
+    ...this.newPets().filter(pet => pet.selected),
+  ]);
+  readonly petCount = computed(() => this.selectedPets().length);
+  readonly plannedSegments = computed(() =>
+    buildAppointmentSegments(this.selectedPets(), this.serviceId(), this.extraServices(), this.services()));
+  readonly estimatedSubtotal = computed(() => segmentReferenceSubtotal(this.plannedSegments()));
+  readonly requiresVetReview = computed(() => this.plannedSegments().some(s => s.requiresVeterinarianReview));
+  readonly complexBooking = computed(() => this.petCount() > 1 || this.plannedSegments().length > 1 || this.requiresVetReview());
   readonly hasUnsavedChanges = computed(() => Boolean(
     this.lookupPhone().trim() || this.customerName().trim() || this.selectedPetIds().length ||
-    this.newPets().length || this.branchId() || this.serviceId() || this.appointmentDate() ||
+    this.newPets().length || this.extraServices().length || this.branchId() || this.serviceId() || this.appointmentDate() ||
     this.selectedSlotId() || this.voucherCode().trim() || this.note().trim(),
   ));
 
   constructor() {
     this.loadBranches();
+    this.staffDirectory.loadRoster();
     this.destroyRef.onDestroy(() => {
       this.customerRequest++;
       this.petRequest++;
@@ -190,7 +200,9 @@ export class AdminAppointmentCreateComponent {
     this.petsLoadState.set('idle');
     this.selectedPetIds.set([]);
     this.newPets.set([]);
-    this.clearReview();
+    this.extraServices.set([]);
+    this.assignedStaff.set({});
+    this.resetSlots();
   }
 
   editCustomerPhone(value: string): void {
@@ -236,6 +248,8 @@ export class AdminAppointmentCreateComponent {
     this.lookupResults.set([]);
     this.selectedPetIds.set([]);
     this.newPets.set([]);
+    this.extraServices.set([]);
+    this.assignedStaff.set({});
     this.pets.set([]);
     this.petsLoadState.set('loading');
     this.clearReview();
