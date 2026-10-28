@@ -1,97 +1,482 @@
+import { HttpParams } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
+
+import { ApiClientService } from '../../../../core/services/api-client.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
-import { AdminOrderCreateLookupService, OrderCustomerLookup } from '../../orders/services/admin-order-create-lookup.service';
-import { ServiceCatalogApiService } from '../../service-catalog/services/service-catalog-api.service';
-import { CatalogBranch, CatalogService } from '../../service-catalog/models/service-catalog.model';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
+import { AdminOrderCreateLookupService, OrderCustomerLookup } from '../../orders/services/admin-order-create-lookup.service';
+import { CatalogBranch, CatalogService } from '../../service-catalog/models/service-catalog.model';
+import { ServiceCatalogApiService } from '../../service-catalog/services/service-catalog-api.service';
 
-interface PetDraft { id: string; name: string; species: string; }
-type LookupState = 'idle'|'loading'|'found'|'not-found'|'error';
-const normalizePhone=(raw:string)=>{const p=raw.replace(/\D/g,'');return p.startsWith('84')&&p.length>=11?'0'+p.slice(2):p;};
+type LoadState = 'idle' | 'loading' | 'ready' | 'empty' | 'error' | 'unsupported';
+type CustomerLookupState = 'idle' | 'loading' | 'found' | 'not-found' | 'error';
+type PaymentMethod = 'PAY_AT_STORE' | 'ONLINE_MOCK';
+type OnlineProvider = 'MOMO' | 'ZALOPAY' | 'VNPAY' | 'BANK_TRANSFER' | 'ATM' | 'CARD';
+interface PetOption {
+  id: string;
+  name: string;
+  species: string;
+  breed: string;
+  age: string;
+  weightKg: string;
+  health: string;
+}
+interface PetDraft extends Omit<PetOption, 'id'> {
+  id: string;
+  selected: boolean;
+}
+interface AppointmentSlot {
+  id: string;
+  label: string;
+  available: boolean;
+}
+const PHONE = (value: string): string => {
+  const digits = value.replace(/\D/g, '');
+  return digits.startsWith('84') && digits.length >= 11 ? '0' + digits.slice(2) : digits;
+};
+const objectOf = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : null;
+const textOf = (value: unknown): string => value == null ? '' : String(value);
+const safeNumber = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) ? value : null;
+const clockOf = (value: unknown): string => {
+  const input = textOf(value);
+  if (/^\d{2}:\d{2}/.test(input)) return input.slice(0, 5);
+  if (!input) return '';
+  const parsed = new Date(input);
+  return Number.isNaN(parsed.getTime()) ? '' : new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(parsed);
+};
+function unwrap(value: unknown): unknown {
+  const outer = objectOf(value);
+  if (!outer) return value;
+  if (outer['EC'] !== undefined && outer['EC'] !== 0) throw new Error(textOf(outer['EM']) || 'Không tải được dữ liệu.');
+  return outer['DT'] ?? outer['data'] ?? value;
+}
+function petFromWire(input: unknown): PetOption | null {
+  const pet = objectOf(input);
+  if (!pet) return null;
+  const id = textOf(pet['id'] ?? pet['petId'] ?? pet['_id'] ?? pet['pet_id']);
+  if (!id) return null;
+  const species = objectOf(pet['species']);
+  const breed = objectOf(pet['breed']);
+  return {
+    id,
+    name: textOf(pet['name'] ?? pet['petName'] ?? pet['pet_name']),
+    species: textOf(species?.['name'] ?? species?.['species_name'] ?? pet['speciesName'] ?? pet['species_name'] ?? pet['species']),
+    breed: textOf(breed?.['name'] ?? breed?.['breed_name'] ?? pet['breedName'] ?? pet['breed_name'] ?? pet['breed']),
+    age: textOf(pet['age'] ?? ''),
+    weightKg: textOf(pet['weightKg'] ?? pet['weight_kg'] ?? ''),
+    health: textOf(pet['healthStatus'] ?? pet['health_status'] ?? ''),
+  };
+}
 
+/**
+ * WBS 4.3 / Figma A02,A03,A13: Admin appointment creation preview.
+ * Only read endpoints already used elsewhere in this repository are requested.
+ * Admin booking, customer-scoped pets, slot quote, and checkout contracts must
+ * be confirmed before a production mutation is enabled. No fake success.
+ */
 @Component({
- selector:'app-admin-appointment-create',
- standalone:true,
- imports:[RouterLink,AdminCatalogShellComponent],
- template:`
- <app-admin-catalog-shell activeItem="appointments"><main class="create-appointment">
- <nav class="breadcrumbs"><a routerLink="/admin/appointments">Lịch hẹn</a><span>›</span><strong>Tạo lịch hẹn</strong></nav>
- <header><h1>Tạo lịch hẹn</h1></header>
- <div class="notice" role="status">Chức năng tạo lịch hẹn hộ khách đang chờ xác nhận API Backend. Có thể tra cứu và điền bản nháp nhưng chưa thể gửi lịch hẹn thật.</div>
- <section class="panel"><h2>Tra cứu khách hàng</h2><label>Số điện thoại khách hàng <b>*</b></label>
- <div class="lookup-row"><input type="tel" placeholder="Nhập số điện thoại..." [value]="phone()" (input)="updatePhone($any($event.target).value)" (keydown.enter)="lookup()" />
- <button class="primary" type="button" [disabled]="lookupState()==='loading'" (click)="lookup()">{{lookupState()==='loading'?'Đang tra cứu...':'Tra cứu'}}</button></div>
- @if(lookupState()==='not-found'){<p class="helper">Không tìm thấy khách hàng có số điện thoại này. Có thể nhập thông tin khách vãng lai; chưa tạo tài khoản tự động.</p>}
- @if(lookupState()==='error'){<p class="helper error">Không xác minh được khách hàng. Vui lòng thử lại.</p>}
- @if(customer();as current){<div class="selected"><strong>{{current.fullName||current.phone}}</strong> · {{current.activationStatus==='ACTIVATED'?'Đã kích hoạt':current.activationStatus==='PENDING_ACTIVATION'?'Chờ kích hoạt':'Chưa có tài khoản'}}
- @if(current.accountStatus==='BLOCKED'){<p class="error">Tài khoản bị chặn — không thể tạo lịch.</p>}
- <button type="button" class="link" (click)="updatePhone('')">Đổi khách hàng</button></div>}
- </section>
- <section class="panel"><h2>Thông tin khách hàng</h2><div class="fields">
- <label>Họ và tên <b>*</b><input [value]="fullName()" (input)="fullName.set($any($event.target).value)" [readOnly]="!!customer()"/></label>
- <label>Số điện thoại <b>*</b><input type="tel" [value]="phone()" (input)="updatePhone($any($event.target).value)"/></label>
- <label>Email<input type="email" [value]="email()" (input)="email.set($any($event.target).value)" [readOnly]="!!customer()"/></label>
- </div></section>
- <section class="panel"><div class="section-header"><h2>Thú cưng trong lịch hẹn</h2><button type="button" class="secondary" (click)="addPet()">+ Thêm thú cưng</button></div>
- @if(pets().length===0){<p class="helper">Chưa chọn thú cưng. Cần xác nhận hồ sơ thú cưng qua Backend trước khi đặt lịch thật.</p>}
- @for(pet of pets();track pet.id){<div class="pet-row"><input aria-label="Tên thú cưng" placeholder="Tên thú cưng" [value]="pet.name" (input)="setPet(pet.id,'name',$any($event.target).value)"/>
- <select aria-label="Loài" [value]="pet.species" (change)="setPet(pet.id,'species',$any($event.target).value)"><option value="">Chọn loài</option><option value="DOG">Chó</option><option value="CAT">Mèo</option><option value="OTHER">Khác</option></select>
- <button class="secondary" type="button" (click)="removePet(pet.id)">Xóa</button></div>}
- </section>
- <section class="panel"><h2>Dịch vụ và lịch hẹn</h2>
- <div class="fields"><label>Chi nhánh <b>*</b><select [value]="branchId()" (change)="selectBranch($any($event.target).value)">
- <option value="">Chọn chi nhánh</option>@for(branch of branches();track branch.id){<option [value]="branch.id">{{branch.name}}</option>}</select></label>
- <label>Dịch vụ <b>*</b><select [value]="serviceId()" (change)="serviceId.set($any($event.target).value)">
- <option value="">Chọn dịch vụ</option>@for(service of services();track service.id){<option [value]="service.id">{{service.name}}</option>}</select></label>
- <label>Ngày hẹn <b>*</b><input type="date" [min]="today" [value]="date()" (input)="date.set($any($event.target).value)"/></label>
- <label>Giờ hẹn <b>*</b><input type="time" [value]="time()" (input)="time.set($any($event.target).value)"/></label></div>
- <p class="helper">Khung giờ và sức chứa đồng thời phải được Backend xác nhận theo chi nhánh, dịch vụ, nhân sự và những lịch đã đặt. Giờ nhập ở đây chưa được giữ chỗ.</p>
- @if(dataError()){<p class="helper error">{{dataError()}} <button type="button" class="link" (click)="loadCatalog()">Thử lại</button></p>}
- </section>
- <section class="panel"><h2>Thanh toán</h2><p class="helper">Tổng tiền, phương thức thanh toán, cọc 30% và voucher phải tính từ kết quả Booking API, không được tự suy ra từ giá catalog.</p>
- <label>Ghi chú lịch hẹn<textarea rows="3" placeholder="Nhập ghi chú (nếu có)" [value]="note()" (input)="note.set($any($event.target).value)"></textarea></label></section>
- <div class="footer"><button type="button" class="secondary" (click)="cancel()">Hủy bỏ</button><button type="button" class="primary" (click)="review()">Xác nhận lịch hẹn</button></div>
- @if(reviewErrors().length){<div class="panel error-box" role="alert"><strong>Chưa thể xác nhận lịch hẹn</strong>@for(error of reviewErrors();track error){<p>• {{error}}</p>}</div>}
- @if(showCancel()){<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-label="Hủy tạo lịch hẹn"><h2>Hủy tạo lịch hẹn?</h2><p>Dữ liệu chưa lưu sẽ bị mất.</p><div class="footer"><button type="button" class="secondary" (click)="showCancel.set(false)">Tiếp tục nhập</button><button type="button" class="primary" (click)="leave()">Hủy bỏ</button></div></div></div>}
- </main></app-admin-catalog-shell>`,
- styles:[`
- :host{display:block;color:#25324a}.create-appointment{padding:32px;max-width:1160px;margin:auto}.breadcrumbs{display:flex;gap:10px;color:#728096;font-size:13px;margin-bottom:12px}.breadcrumbs a{color:#64748b;text-decoration:none}.breadcrumbs strong{color:#25324a}h1{font-size:25px;margin:0 0 20px}h2{font-size:17px;margin:0 0 16px}.panel{border:1px solid #e1e7ef;background:#fff;border-radius:12px;padding:20px;margin-bottom:18px}.notice{border-radius:8px;background:#fff7e6;border:1px solid #f7db93;color:#86550b;padding:13px 16px;margin:0 0 18px;font-size:13px}.fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.fields label,.panel>label{display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:600}.panel b{color:#d33}.panel input,.panel select,.panel textarea{width:100%;min-width:0;box-sizing:border-box;border:1px solid #d6dfeb;border-radius:7px;padding:10px 12px;min-height:40px;font:inherit;font-weight:400;color:#334155;background:white}.panel textarea{resize:vertical}.lookup-row{display:flex;gap:10px;max-width:450px;margin-top:10px}.lookup-row input{flex:1}.primary,.secondary{padding:10px 16px;border-radius:7px;font-size:13px;white-space:nowrap;cursor:pointer;min-height:38px}.primary{background:#0d47a1;color:white;border:1px solid #0d47a1}.secondary{background:#fff;color:#0d47a1;border:1px solid #cad7e7}.section-header{display:flex;justify-content:space-between;align-items:center}.section-header h2{margin:0}.helper{color:#718096;font-size:13px;line-height:1.5}.error{color:#bd3d3d}.selected{border:1px solid #badac6;background:#f4faf6;padding:12px;margin-top:14px;border-radius:8px;font-size:13px}.link{color:#0d47a1;text-decoration:underline;border:0;background:none;cursor:pointer}.pet-row{display:flex;gap:12px;margin-top:12px}.pet-row input{flex:1}.pet-row select{max-width:160px}.footer{display:flex;justify-content:flex-end;gap:12px;margin:20px 0}.error-box{color:#b33}.overlay{position:fixed;inset:0;background:#17243b8c;display:grid;place-items:center;z-index:9999}.dialog{background:white;border-radius:12px;padding:24px;max-width:450px;width:90%}@media(max-width:800px){.create-appointment{padding:16px}.fields{grid-template-columns:1fr}.pet-row{flex-wrap:wrap}}
- `],
- changeDetection:ChangeDetectionStrategy.OnPush
+  selector: 'app-admin-appointment-create',
+  standalone: true,
+  imports: [RouterLink, AdminCatalogShellComponent],
+  templateUrl: './admin-appointment-create.component.html',
+  styleUrl: './admin-appointment-create.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminAppointmentCreateComponent{
- private readonly lookupApi=inject(AdminOrderCreateLookupService);
- private readonly catalog=inject(ServiceCatalogApiService);
- private readonly toast=inject(AdminToastService);
- private readonly router=inject(Router);
- private readonly destroyRef=inject(DestroyRef);
- private requestVersion=0;private petSequence=0;
- readonly today=new Date().toLocaleDateString('en-CA');
- readonly phone=signal('');readonly fullName=signal('');readonly email=signal('');
- readonly customer=signal<OrderCustomerLookup|null>(null);readonly lookupState=signal<LookupState>('idle');
- readonly pets=signal<PetDraft[]>([]);readonly branchId=signal('');readonly serviceId=signal('');
- readonly branches=signal<CatalogBranch[]>([]);readonly services=signal<CatalogService[]>([]);
- readonly date=signal('');readonly time=signal('');readonly note=signal('');
- readonly dataError=signal('');readonly reviewErrors=signal<string[]>([]);readonly showCancel=signal(false);
- readonly dirty=computed(()=>Boolean(this.phone()||this.fullName()||this.pets().length||this.branchId()||this.serviceId()||this.date()||this.time()||this.note()));
- constructor(){this.loadCatalog();}
- loadCatalog():void{this.dataError.set('');this.catalog.listBranches().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({next:x=>this.branches.set(x),error:e=>this.dataError.set(adminErrorMessage(e,'Không tải được chi nhánh.'))});}
- selectBranch(value:string):void{this.branchId.set(value);this.serviceId.set('');this.services.set([]);if(!value)return;
- this.catalog.list({search:'',branchId:value,mode:'BOOKABLE',status:'ACTIVE',page:1,pageSize:100}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({next:x=>this.services.set(x.items.filter(s=>s.bookingMode==='BOOKABLE'&&s.status==='ACTIVE')),error:e=>this.dataError.set(adminErrorMessage(e,'Không tải được dịch vụ.'))});}
- updatePhone(value:string):void{this.requestVersion++;this.phone.set(value);this.customer.set(null);this.lookupState.set('idle');this.fullName.set('');this.email.set('');this.pets.set([]);}
- lookup():void{const phone=normalizePhone(this.phone());if(phone.length<9||phone.length>15){this.toast.show('Vui lòng nhập số điện thoại hợp lệ.');return;}
- const version=++this.requestVersion;this.lookupState.set('loading');
- this.lookupApi.searchCustomers(phone).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({next:res=>{if(version!==this.requestVersion)return;const matches=res.items.filter(c=>normalizePhone(c.phone||'')===phone);if(!matches.length&&res.nextCursor){this.lookupState.set('error');return;}const customer=matches.length===1?matches[0]:null;this.customer.set(customer);this.lookupState.set(customer?'found':matches.length?'error':'not-found');if(customer){this.fullName.set(customer.fullName||'');this.email.set(customer.email||'');}},error:e=>{if(version!==this.requestVersion)return;this.lookupState.set('error');this.toast.show(adminErrorMessage(e,'Không tra cứu được khách hàng.'));}});}
- addPet():void{this.pets.update(x=>[...x,{id:String(++this.petSequence),name:'',species:''}]);}
- removePet(id:string):void{this.pets.update(x=>x.filter(p=>p.id!==id));}
- setPet(id:string,key:'name'|'species',value:string):void{this.pets.update(x=>x.map(p=>p.id===id?{...p,[key]:value}:p));}
- review():void{const errors:string[]=[];if(!this.fullName().trim())errors.push('Nhập họ tên khách hàng.');if(!['found','not-found'].includes(this.lookupState()))errors.push('Tra cứu khách hàng bằng số điện thoại trước.');if(this.customer()?.accountStatus==='BLOCKED')errors.push('Không thể đặt cho tài khoản bị chặn.');
- if(!this.pets().length||this.pets().some(p=>!p.name.trim()||!p.species))errors.push('Nhập đầy đủ thông tin thú cưng.');if(!this.branchId()||!this.serviceId())errors.push('Chọn chi nhánh và dịch vụ.');if(!this.date()||!this.time())errors.push('Chọn ngày và giờ hẹn.');else if(new Date(this.date()+'T'+this.time()).getTime()<=Date.now())errors.push('Ngày giờ hẹn phải ở tương lai.');
- errors.push('Backend chưa xác nhận API tạo lịch hẹn hộ, kiểm tra slot, hồ sơ thú cưng và thanh toán. Chưa thể lưu lịch hẹn thật.');this.reviewErrors.set(errors);}
- cancel():void{if(this.dirty())this.showCancel.set(true);else this.leave();}
- leave():void{this.showCancel.set(false);void this.router.navigateByUrl('/admin/appointments');}
- canLeavePage():boolean|Promise<boolean>{if(!this.dirty())return true;return window.confirm('Bạn có thay đổi chưa lưu. Rời trang và bỏ dữ liệu?');}
- @HostListener('window:beforeunload',['$event']) preventUnload(event:BeforeUnloadEvent):void{if(this.dirty()){event.preventDefault();event.returnValue='';}}
+export class AdminAppointmentCreateComponent {
+  private readonly api = inject(ApiClientService);
+  private readonly lookupApi = inject(AdminOrderCreateLookupService);
+  private readonly catalog = inject(ServiceCatalogApiService);
+  private readonly toast = inject(AdminToastService);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  private customerRequest = 0;
+  private petRequest = 0;
+  private slotRequest = 0;
+  private serviceRequest = 0;
+  private petSequence = 0;
+
+  readonly today = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date());
+
+  readonly lookupPhone = signal('');
+  readonly lookupState = signal<CustomerLookupState>('idle');
+  readonly lookupIncomplete = signal(false);
+  readonly lookupResults = signal<OrderCustomerLookup[]>([]);
+  readonly selectedCustomer = signal<OrderCustomerLookup | null>(null);
+  readonly customerName = signal('');
+  readonly customerPhone = signal('');
+  readonly customerEmail = signal('');
+  readonly pets = signal<PetOption[]>([]);
+  readonly petsLoadState = signal<LoadState>('idle');
+  readonly selectedPetIds = signal<string[]>([]);
+  readonly newPets = signal<PetDraft[]>([]);
+  readonly branches = signal<CatalogBranch[]>([]);
+  readonly services = signal<CatalogService[]>([]);
+  readonly branchId = signal('');
+  readonly serviceId = signal('');
+  readonly branchLoadState = signal<LoadState>('loading');
+  readonly serviceLoadState = signal<LoadState>('idle');
+  readonly serviceError = signal('');
+  readonly appointmentDate = signal('');
+  readonly slots = signal<AppointmentSlot[]>([]);
+  readonly slotsState = signal<LoadState>('idle');
+  readonly selectedSlotId = signal('');
+  readonly slotsError = signal('');
+  readonly paymentMethod = signal<PaymentMethod>('PAY_AT_STORE');
+  readonly onlineProvider = signal<OnlineProvider | null>(null);
+  readonly voucherCode = signal('');
+  readonly voucherNotice = signal('');
+  readonly note = signal('');
+  readonly reviewErrors = signal<string[]>([]);
+  readonly cancellationOpen = signal(false);
+
+  readonly onlineChoices: ReadonlyArray<{ key: OnlineProvider; name: string; icon: string }> = [
+    { key: 'MOMO', name: 'MoMo', icon: '/assets/admin-order/payment-momo.svg' },
+    { key: 'ZALOPAY', name: 'ZaloPay', icon: '/assets/admin-order/payment-zalopay.svg' },
+    { key: 'VNPAY', name: 'VNPay', icon: '/assets/admin-order/payment-vnpay.svg' },
+    { key: 'BANK_TRANSFER', name: 'Chuyển khoản', icon: '/assets/admin-order/payment-bank.svg' },
+    { key: 'ATM', name: 'Thẻ ATM', icon: '/assets/admin-order/payment-atm.svg' },
+    { key: 'CARD', name: 'Thẻ tín dụng/ghi nợ', icon: '/assets/admin-order/payment-card.svg' },
+  ];
+  readonly chosenService = computed(() => this.services().find(s => s.id === this.serviceId()) ?? null);
+  readonly petCount = computed(() => this.selectedPetIds().length + this.newPets().filter(p => p.selected).length);
+  readonly estimatedUnitPrice = computed(() => {
+    const service = this.chosenService();
+    return service?.pricingDataWarning ? null : safeNumber(service?.referencePrice);
+  });
+  readonly estimatedSubtotal = computed(() => {
+    const unitPrice = this.estimatedUnitPrice();
+    return unitPrice === null ? null : unitPrice * this.petCount();
+  });
+  readonly hasUnsavedChanges = computed(() => Boolean(
+    this.lookupPhone().trim() || this.customerName().trim() || this.selectedPetIds().length ||
+    this.newPets().length || this.branchId() || this.serviceId() || this.appointmentDate() ||
+    this.selectedSlotId() || this.voucherCode().trim() || this.note().trim(),
+  ));
+
+  constructor() {
+    this.loadBranches();
+    this.destroyRef.onDestroy(() => {
+      this.customerRequest++;
+      this.petRequest++;
+      this.slotRequest++;
+      this.serviceRequest++;
+    });
+  }
+
+  money(value: number | null): string {
+    return value === null ? 'Chờ BE xác nhận' : new Intl.NumberFormat('vi-VN').format(value) + 'đ';
+  }
+
+  editLookupPhone(value: string): void {
+    this.customerRequest++;
+    this.petRequest++;
+    this.lookupPhone.set(value);
+    this.customerPhone.set(value);
+    this.lookupState.set('idle');
+    this.lookupResults.set([]);
+    this.lookupIncomplete.set(false);
+    this.selectedCustomer.set(null);
+    this.customerName.set('');
+    this.customerEmail.set('');
+    this.pets.set([]);
+    this.petsLoadState.set('idle');
+    this.selectedPetIds.set([]);
+    this.newPets.set([]);
+    this.clearReview();
+  }
+
+  editCustomerPhone(value: string): void {
+    if (value === this.customerPhone() && value === this.lookupPhone()) return;
+    this.editLookupPhone(value);
+  }
+
+  searchCustomer(): void {
+    const phone = PHONE(this.lookupPhone());
+    if (phone.length < 9 || phone.length > 15) {
+      this.toast.show('Vui lòng nhập số điện thoại khách hàng hợp lệ.');
+      return;
+    }
+    const version = ++this.customerRequest;
+    this.lookupState.set('loading');
+    this.lookupResults.set([]);
+    this.lookupIncomplete.set(false);
+    this.lookupApi.searchCustomers(phone).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: result => {
+        if (version !== this.customerRequest) return;
+        const matches = result.items.filter(c => PHONE(c.phone ?? '') === phone);
+        this.lookupResults.set(matches);
+        this.lookupIncomplete.set(!matches.length && !!result.nextCursor);
+        this.lookupState.set(matches.length ? 'found' : result.nextCursor ? 'error' : 'not-found');
+        if (matches.length === 1) this.selectCustomer(matches[0]);
+      },
+      error: error => {
+        if (version !== this.customerRequest) return;
+        this.lookupState.set('error');
+        this.toast.show(adminErrorMessage(error, 'Chưa tra cứu được khách hàng.'));
+      },
+    });
+  }
+
+  selectCustomer(customer: OrderCustomerLookup): void {
+    this.customerRequest++;
+    this.petRequest++;
+    this.selectedCustomer.set(customer);
+    this.customerName.set(customer.fullName ?? '');
+    this.customerPhone.set(customer.phone ?? this.lookupPhone());
+    this.lookupPhone.set(customer.phone ?? this.lookupPhone());
+    this.customerEmail.set(customer.email ?? '');
+    this.lookupState.set('found');
+    this.lookupResults.set([]);
+    this.selectedPetIds.set([]);
+    this.newPets.set([]);
+    this.pets.set([]);
+    this.petsLoadState.set('loading');
+    this.clearReview();
+
+    // GET /customers/:id is already documented by the Order module.
+    // If that DTO does not embed pets, we must not query /my-pets (Admin's own pets)
+    // or manufacture pet records. An Admin-scoped customer pets API is required.
+    const version = ++this.petRequest;
+    this.api.get<unknown>('/customers/' + encodeURIComponent(customer.id))
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: wire => {
+          if (version !== this.petRequest) return;
+          const root = objectOf(unwrap(wire));
+          const inner = objectOf(root?.['customer']) ?? root;
+          const rawPets = inner?.['pets'];
+          if (!Array.isArray(rawPets)) {
+            this.petsLoadState.set('unsupported');
+            return;
+          }
+          const pets = rawPets.map(petFromWire).filter((p): p is PetOption => p !== null);
+          this.pets.set(pets);
+          this.petsLoadState.set(pets.length ? 'ready' : 'empty');
+        },
+        error: () => {
+          if (version !== this.petRequest) return;
+          this.petsLoadState.set('unsupported');
+        },
+      });
+  }
+
+  addPet(): void {
+    this.newPets.update(items => [...items, {
+      id: 'draft-' + ++this.petSequence,
+      name: '', species: '', breed: '', age: '', weightKg: '', health: '',
+      selected: true,
+    }]);
+    this.clearReview();
+  }
+
+  removePet(id: string): void {
+    this.newPets.update(items => items.filter(p => p.id !== id));
+    this.clearReview();
+  }
+
+  updatePet(id: string, field: keyof Omit<PetDraft, 'id' | 'selected'>, value: string): void {
+    this.newPets.update(items => items.map(p => p.id === id ? { ...p, [field]: value } : p));
+    this.clearReview();
+  }
+
+  toggleNewPet(id: string, checked: boolean): void {
+    this.newPets.update(items => items.map(p => p.id === id ? { ...p, selected: checked } : p));
+    this.clearReview();
+  }
+
+  togglePet(id: string, checked: boolean): void {
+    this.selectedPetIds.update(ids => checked ? [...ids.filter(v => v !== id), id] : ids.filter(v => v !== id));
+    this.clearReview();
+  }
+
+  loadBranches(): void {
+    this.branchLoadState.set('loading');
+    this.catalog.listBranches().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: rows => {
+        this.branches.set(rows);
+        this.branchLoadState.set(rows.length ? 'ready' : 'empty');
+      },
+      error: err => {
+        this.branchLoadState.set('error');
+        this.serviceError.set(adminErrorMessage(err, 'Không tải được chi nhánh.'));
+      },
+    });
+  }
+
+  selectBranch(branchId: string): void {
+    this.branchId.set(branchId);
+    this.serviceId.set('');
+    this.services.set([]);
+    this.serviceError.set('');
+    this.serviceRequest++;
+    this.resetSlots();
+    if (!branchId) {
+      this.serviceLoadState.set('idle');
+      return;
+    }
+    const version = ++this.serviceRequest;
+    this.serviceLoadState.set('loading');
+    this.catalog.list({ branchId, search: '', mode: 'BOOKABLE', status: 'ACTIVE', page: 1, pageSize: 100 })
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: result => {
+          if (version !== this.serviceRequest) return;
+          const entries = result.items.filter(s => s.bookingMode === 'BOOKABLE' && s.status === 'ACTIVE');
+          this.services.set(entries);
+          this.serviceLoadState.set(entries.length ? 'ready' : 'empty');
+        },
+        error: err => {
+          if (version !== this.serviceRequest) return;
+          this.serviceLoadState.set('error');
+          this.serviceError.set(adminErrorMessage(err, 'Không tải được dịch vụ tại chi nhánh.'));
+        },
+      });
+  }
+
+  selectService(id: string): void {
+    this.serviceId.set(id);
+    this.resetSlots();
+    this.loadSlots();
+  }
+
+  selectDate(value: string): void {
+    this.appointmentDate.set(value);
+    this.resetSlots();
+    this.loadSlots();
+  }
+
+  private resetSlots(): void {
+    this.slotRequest++;
+    this.slots.set([]);
+    this.slotsState.set('idle');
+    this.selectedSlotId.set('');
+    this.slotsError.set('');
+    this.clearReview();
+  }
+
+  loadSlots(): void {
+    const service = this.chosenService();
+    if (!service || !this.branchId() || !this.appointmentDate()) return;
+    const version = ++this.slotRequest;
+    this.slotsState.set('loading');
+    const params = new HttpParams()
+      .set('date', this.appointmentDate())
+      .set('branch_id', this.branchId())
+      .set('service_type', service.category === 'GROOMING' ? 'grooming' : 'exam');
+    // Read-only Customer booking slot route exists in BookingApiService.
+    // A returned slot is NOT a reservation; BE must revalidate at create.
+    this.api.get<unknown>('/appointments/slots', { params })
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: wire => {
+          if (version !== this.slotRequest) return;
+          try {
+            const body = unwrap(wire);
+            const container = objectOf(body);
+            const list = Array.isArray(body) ? body :
+              Array.isArray(container?.['slots']) ? container['slots'] :
+              Array.isArray(container?.['items']) ? container['items'] : null;
+            if (!list) throw new Error('API không trả về danh sách khung giờ hợp lệ.');
+            const slots = list.map(item => {
+              const raw = objectOf(item);
+              if (!raw) return null;
+              const id = textOf(raw['slot_id'] ?? raw['id']);
+              const start = clockOf(raw['start_time'] ?? raw['startAt'] ?? raw['start']);
+              const end = clockOf(raw['end_time'] ?? raw['endAt'] ?? raw['end']);
+              if (!id || !start || !end) return null;
+              const capacity = Number(raw['max_booking'] ?? raw['capacity'] ?? 1);
+              const booked = Number(raw['booked_count'] ?? raw['bookedCount'] ?? 0);
+              return {
+                id, label: start + ' - ' + end,
+                available: raw['status'] !== 'blocked' && raw['status'] !== 'unavailable' &&
+                  raw['status'] !== 'full' && Number.isFinite(capacity) && booked < capacity,
+              } satisfies AppointmentSlot;
+            }).filter((slot): slot is AppointmentSlot => slot !== null);
+            this.slots.set(slots);
+            this.slotsState.set(slots.length ? 'ready' : 'empty');
+          } catch (error) {
+            this.slotsState.set('error');
+            this.slotsError.set(error instanceof Error ? error.message : 'Không đọc được khung giờ.');
+          }
+        },
+        error: error => {
+          if (version !== this.slotRequest) return;
+          this.slotsState.set('error');
+          this.slotsError.set(adminErrorMessage(error, 'Chưa tải được khung giờ khả dụng.'));
+        },
+      });
+  }
+
+  chooseSlot(id: string): void {
+    const selected = this.slots().find(s => s.id === id && s.available);
+    this.selectedSlotId.set(selected?.id ?? '');
+    this.clearReview();
+  }
+
+  selectPayment(mode: PaymentMethod): void {
+    this.paymentMethod.set(mode);
+    if (mode === 'PAY_AT_STORE') this.onlineProvider.set(null);
+    this.clearReview();
+  }
+
+  checkVoucher(): void {
+    if (!this.voucherCode().trim()) {
+      this.voucherNotice.set('Nhập mã giảm giá trước khi áp dụng.');
+      return;
+    }
+    this.voucherNotice.set('Cần API báo giá lịch hẹn dành cho Admin để xác minh voucher. Mã chưa được áp dụng.');
+  }
+
+  private clearReview(): void { this.reviewErrors.set([]); }
+
+  confirmAppointment(): void {
+    const errors: string[] = [];
+    const customer = this.selectedCustomer();
+    const phone = PHONE(this.customerPhone());
+    if (phone.length < 9 || phone.length > 15 || !['found', 'not-found'].includes(this.lookupState()))
+      errors.push('Tra cứu số điện thoại khách hàng hợp lệ trước khi tiếp tục.');
+    if (this.lookupState() === 'found' && !customer) errors.push('Chọn khách hàng trong danh sách tra cứu.');
+    if (customer?.accountStatus === 'BLOCKED') errors.push('Tài khoản đang bị chặn, không thể tạo lịch hẹn.');
+    if (!this.customerName().trim()) errors.push('Nhập họ tên khách hàng.');
+    if (this.customerEmail().trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.customerEmail().trim()))
+      errors.push('Email chưa đúng định dạng.');
+    if (!this.petCount()) errors.push('Chọn hoặc thêm ít nhất một thú cưng.');
+    if (this.newPets().filter(p => p.selected).some(p => !p.name.trim() || !p.species))
+      errors.push('Nhập tên và loài cho tất cả thú cưng mới được chọn.');
+    if (customer && this.petsLoadState() === 'unsupported' && !this.newPets().some(p => p.selected))
+      errors.push('BE chưa cung cấp danh sách thú cưng của khách hàng.');
+    if (!this.branchId() || !this.serviceId()) errors.push('Chọn chi nhánh và dịch vụ.');
+    if (!this.appointmentDate() || !this.selectedSlotId()) errors.push('Chọn ngày và khung giờ còn chỗ.');
+    else if (this.appointmentDate() < this.today) errors.push('Không thể đặt lịch vào ngày đã qua.');
+    if (this.paymentMethod() === 'ONLINE_MOCK' && !this.onlineProvider())
+      errors.push('Chọn cổng thanh toán trực tuyến.');
+    // A slot read/price hint never authorizes a booking mutation.
+    errors.push('Chưa có hợp đồng API tạo lịch hẹn hộ khách, kiểm tra toàn bộ segment, áp voucher, thu cọc và xác nhận thanh toán. Chưa tạo lịch hẹn thật.');
+    this.reviewErrors.set(errors);
+  }
+
+  requestCancel(): void {
+    if (this.hasUnsavedChanges()) this.cancellationOpen.set(true);
+    else void this.router.navigateByUrl('/admin/appointments');
+  }
+  discard(): void {
+    this.cancellationOpen.set(false);
+    void this.router.navigateByUrl('/admin/appointments');
+  }
+
+  canLeavePage(): boolean | Promise<boolean> {
+    if (!this.hasUnsavedChanges()) return true;
+    return window.confirm('Bạn có thay đổi chưa lưu. Rời trang và bỏ dữ liệu?');
+  }
+  @HostListener('window:beforeunload', ['$event'])
+  preventUnsavedReload(event: BeforeUnloadEvent): void {
+    if (!this.hasUnsavedChanges()) return;
+    event.preventDefault();
+    event.returnValue = '';
+  }
 }
