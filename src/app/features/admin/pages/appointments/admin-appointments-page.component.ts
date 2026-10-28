@@ -24,7 +24,7 @@ import {
       <img src="/assets/service-catalog/search.svg" width="16" height="16" alt="" />
       <span class="sr">Tìm lịch hẹn hoặc khách hàng</span>
       <input type="search" placeholder="Tìm khách hàng..." [value]="search()"
-        (input)="search.set($any($event.target).value)" (keydown.enter)="lookup()">
+        (input)="onSearch($any($event.target).value)" (keydown.enter)="lookup()">
     </label>
     <div class="filter-actions web2-management-actions">
       <label class="filter-control web2-management-control">
@@ -103,7 +103,7 @@ import {
       </div>
       <footer class="list-footer">
         <p>Đang hiển thị {{rows().length}} trên tổng số {{total()}} lịch hẹn
-          @if(partial()){<span class="data-scope"> (trong 100 lịch hẹn gần nhất đã tải)</span>}
+          @if(partial()){<span class="data-scope"> (trong 100 lịch hẹn đã tải)</span>}
         </p>
         @if (pageCount() > 1) {
           <nav class="pagination" aria-label="Phân trang lịch hẹn">
@@ -195,6 +195,7 @@ export class AdminAppointmentsPageComponent {
   readonly rows=computed(()=>this.filteredRows().slice((this.page()-1)*this.limit,this.page()*this.limit));
 
   constructor(){this.load();}
+  onSearch(value:string):void{this.search.set(value);this.page.set(1);}
   lookup():void{this.page.set(1);}
   changeStatus(value:string):void{this.status.set(value);this.page.set(1);}
   changeDateRange(value:string):void{this.dateRange.set(value);this.page.set(1);}
