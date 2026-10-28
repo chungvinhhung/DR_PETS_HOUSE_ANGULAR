@@ -1,0 +1,52 @@
+:host{display:block;color:#283348}
+.appointment-detail{max-width:1130px;margin:auto;padding:32px;font-family:inherit}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;color:#718096;margin-bottom:12px}
+.breadcrumb a{color:#718096;text-decoration:none}
+.breadcrumb a:hover{color:#0d47a1;text-decoration:underline}
+.breadcrumb strong{color:#2a374d;font-weight:600}
+.heading{display:flex;justify-content:space-between;align-items:start;gap:14px;margin-bottom:22px}
+h1{font-size:24px;margin:0 0 8px;color:#26334b}
+h2{font-size:17px;margin:0;font-weight:650;color:#26334b}
+.subtitle{color:#728198;font-size:13px;margin:0}
+.panel{border:1px solid #dce5f1;border-radius:11px;padding:20px;background:#fff;margin-bottom:18px}
+.section-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
+.panel>h2{margin-bottom:18px}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 24px}
+.facts>div{display:flex;flex-direction:column;gap:8px;min-width:0}
+.facts label{font-size:12px;color:#728198}
+.facts strong{font-size:13px;color:#2e3b50;font-weight:600;overflow-wrap:anywhere}
+.facts__wide{grid-column:span 2}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:39px;padding:9px 16px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;text-decoration:none;cursor:pointer;white-space:nowrap}
+.btn--outline{background:#fff;border:1px solid #d8e1ee;color:#0d47a1}
+.btn--outline:hover{background:#f2f7ff}
+.btn--primary{background:#0d47a1;border:1px solid #0d47a1;color:#fff}
+.btn--danger{border:1px solid #d64949;background:#fff;color:#bf3030}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.status-badge{border-radius:20px;padding:6px 11px;font-size:12px;background:#eff2f7;color:#5c677a}
+.status-badge[data-status=warning]{background:#fff2db;color:#aa690f}
+.status-badge[data-status=success]{background:#e3f5e7;color:#247642}
+.status-badge[data-status=danger]{background:#ffe1e1;color:#b53131}
+.hint{color:#718096;font-size:12px;line-height:1.6;margin:14px 0 0}
+.hint--info{background:#f1f6ff;border:1px solid #d9e7fd;padding:9px;border-radius:7px;color:#244f88}
+.hint--warning{background:#fff7e7;border:1px solid #f2d49d;padding:9px;border-radius:7px;color:#895b11}
+.feedback{padding:40px;text-align:center;font-size:13px;color:#66758e}
+.feedback .btn{margin-top:10px}
+.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:20px}
+.history{list-style:none;border-left:2px solid #d9e6f5;margin:0 0 0 8px;padding:0 0 0 22px}
+.history li{position:relative;border-bottom:1px solid #edf1f5;padding:6px 0 14px;margin-bottom:13px}
+.history li:before{position:absolute;content:'';width:9px;height:9px;border-radius:50%;background:#0d47a1;left:-28px;top:10px}
+.history li>div{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.history strong{font-size:13px}
+.history small{color:#8190a3;font-size:12px}
+.history p{margin:10px 0;color:#526076;font-size:12px}
+.overlay{position:fixed;inset:0;z-index:9999;background:#0d1c336b;display:grid;place-items:center;padding:20px}
+.modal{width:min(100%,540px);background:white;border-radius:12px;padding:24px;max-height:88vh;overflow:auto;box-shadow:0 25px 70px #0b1a3438}
+.close{background:transparent;border:0;font-size:26px;line-height:1;cursor:pointer;color:#66758c}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.modal-label,.modal-grid label{display:flex;flex-direction:column;gap:8px;margin-top:18px;font-size:12px;font-weight:600;color:#2c3b4f}
+.modal-label span,.modal-grid span{color:#bd3434}
+.modal input,.modal select,.modal textarea{box-sizing:border-box;width:100%;border-radius:7px;border:1px solid #d8e1ee;padding:10px;font-size:13px;font-family:inherit;color:#2e3d50;background:white}
+.modal textarea{resize:vertical}
+.modal-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:22px}
+@media(max-width:730px){.appointment-detail{padding:18px}.facts{grid-template-columns:1fr 1fr}.facts__wide{grid-column:span 2}.heading{flex-wrap:wrap}.modal-grid{grid-template-columns:1fr}}
+@media(max-width:460px){.facts{grid-template-columns:1fr}.facts__wide{grid-column:span 1}.actions{flex-direction:column;align-items:stretch}.modal-actions{flex-wrap:wrap}}
