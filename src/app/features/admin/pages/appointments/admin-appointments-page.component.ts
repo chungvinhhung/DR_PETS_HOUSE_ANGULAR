@@ -159,7 +159,7 @@ import {
  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
  @media(max-width:1120px){.filters{flex-wrap:wrap}.filter-actions{flex-wrap:wrap;justify-content:flex-start;width:100%}}
  @media(max-width:650px){.appointments{padding:16px}.filter-control{flex:1;min-width:130px}.list-footer{flex-wrap:wrap}}
- `]]
+ `]
 })
 export class AdminAppointmentsPageComponent {
   private readonly api=inject(ApiClientService);
