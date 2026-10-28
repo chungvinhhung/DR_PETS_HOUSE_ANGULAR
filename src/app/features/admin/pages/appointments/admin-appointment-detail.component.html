@@ -74,6 +74,61 @@
       </section>
 
       <section class="panel">
+        <h2>Hồ sơ dịch vụ và MEDICAL review</h2>
+        @if (appointment.serviceRecordRefs.length) {
+          <div class="facts">
+            @for (record of appointment.serviceRecordRefs; track record.id) {
+              <div><label>{{record.type || 'Hồ sơ dịch vụ'}}</label>
+                <a [routerLink]="['/admin/service-records',record.id]">
+                  {{record.code}} · {{record.status || 'Chưa có trạng thái'}}
+                </a>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="hint">BE chưa trả về liên kết ServiceRecord cho lịch hẹn này. Không suy đoán đã tạo hoặc hoàn tất hồ sơ.</p>
+        }
+        <p class="hint">Với MEDICAL có Nurse segment, BE phải kiểm tra Veterinarian review trước khi finalize ServiceRecord. Hoàn tất Appointment không tự đồng nghĩa hoàn tất hồ sơ y tế.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Hoàn tiền mô phỏng (refund)</h2>
+        @if (appointment.refund; as refund) {
+          <div class="facts">
+            <div><label>Mã hoàn tiền</label><strong>{{refund.id || 'Chưa có dữ liệu'}}</strong></div>
+            <div><label>Trạng thái hoàn tiền</label><strong>{{refund.status || 'Chưa có dữ liệu'}}</strong></div>
+            <div><label>Tiền yêu cầu hoàn</label><strong>{{amount(refund.requestedAmount)}}</strong></div>
+            <div><label>Hoàn thực tế</label><strong>{{amount(refund.settledAmount)}}</strong></div>
+            <div><label>Ngày yêu cầu</label><strong>{{displayTime(refund.requestedAt)}}</strong></div>
+            <div><label>Ngày thực hiện</label><strong>{{displayTime(refund.settledAt)}}</strong></div>
+            <div class="facts__wide"><label>Ghi chú</label><strong>{{refund.note || '—'}}</strong></div>
+          </div>
+        } @else {
+          <p class="hint">Chưa có dữ liệu Refund được BE xác nhận. Không suy ra đã hoàn tiền từ việc lịch hẹn bị hủy.</p>
+        }
+        <p class="hint">Refund trong WBS 4.3 là mô phỏng; không xác nhận tiền thật đã chuyển. Phải theo dõi riêng trạng thái Payment, Refund và việc hoàn quota Voucher.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Nhật ký thao tác / Override</h2>
+        @if (appointment.audit.length) {
+          <ol class="history">
+            @for (event of appointment.audit; track $index) {
+              <li><div><strong>{{event.action}}
+                @if (event.isOverride) { · Override}</strong>
+                @else {</strong>}
+                <small>{{displayTime(event.at)}}</small></div>
+                @if (event.actor) {<small>Người thực hiện: {{event.actor}}</small>}
+                @if (event.reason) {<p>Lý do: {{event.reason}}</p>}
+              </li>
+            }
+          </ol>
+        } @else {
+          <p class="hint">BE chưa trả về nhật ký thao tác. Không tự dựng lịch sử override hoặc thời điểm xử lý.</p>
+        }
+      </section>
+
+      <section class="panel">
         <h2>Đổi lịch / Hủy lịch</h2>
         <div class="facts">
           <div><label>Số lần đã đổi lịch</label><strong>{{appointment.rescheduleCount === null ? 'BE chưa cung cấp' : appointment.rescheduleCount + '/2'}}</strong></div>
