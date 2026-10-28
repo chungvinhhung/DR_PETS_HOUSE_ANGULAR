@@ -1,6 +1,6 @@
 /** WBS 4.3 and Figma 6336:25285 / 6336:25795. Read-only adapters; contracts pending BE. */
 export type ServiceRecordCategory = 'MEDICAL' | 'GROOMING' | 'UNKNOWN';
-export type ServiceRecordStatus = 'IN_PROGRESS' | 'AWAITING_VET_REVIEW' | 'COMPLETED' | 'UNKNOWN';
+export type ServiceRecordStatus = 'DRAFT' | 'IN_PROGRESS' | 'AWAITING_VET_REVIEW' | 'COMPLETED' | 'REOPENED' | 'UNKNOWN';
 export interface MaterialUsage {
   name: string;
   templateQuantity: string;
@@ -32,6 +32,10 @@ export interface ServiceRecord {
   reviewedAt: string | null;
   allowedActions: string[] | null;
   materials: MaterialUsage[];
+  recordVersion: number | null;
+  version: number | null;
+  reviewerStaffId: string;
+  professional: {diagnosis:string;treatment:string;result:string;professionalNote:string} | null;
   history: {action: string; at: string | null; actor: string; note: string}[];
 }
 export interface ServiceRecordsPage { items: ServiceRecord[]; total: number; }
@@ -50,13 +54,15 @@ export function categoryOf(v:unknown):ServiceRecordCategory {
 export function statusOf(v:unknown):ServiceRecordStatus {
   const s=str(v).toUpperCase();
   if(['COMPLETED','FINALIZED','FINALISED'].includes(s))return 'COMPLETED';
-  if(['PENDING_VET_REVIEW','AWAITING_VET_REVIEW','WAITING_REVIEW'].includes(s))return 'AWAITING_VET_REVIEW';
+  if(['PENDING_VET_REVIEW','AWAITING_VET_REVIEW','WAITING_VET_REVIEW','WAITING_REVIEW'].includes(s))return 'AWAITING_VET_REVIEW';
   if(['IN_PROGRESS','PROCESSING','OPEN'].includes(s))return 'IN_PROGRESS';
+  if(s==='REOPENED')return 'REOPENED';
+  if(s==='DRAFT')return 'DRAFT';
   return 'UNKNOWN';
 }
 export function serviceRecordStatusLabel(s:ServiceRecordStatus, raw=''):string {
   return s==='COMPLETED'?'Hoàn thành':s==='AWAITING_VET_REVIEW'?'Chờ BS duyệt':
-    s==='IN_PROGRESS'?'Đang thực hiện':raw||'Chưa xác định';
+    s==='IN_PROGRESS'?'Đang thực hiện':s==='REOPENED'?'Đã mở lại':s==='DRAFT'?'Bản nháp':raw||'Chưa xác định';
 }
 export function normalizeServiceRecord(raw:unknown):ServiceRecord {
   const r=record(raw);if(!r)throw new Error('Dữ liệu hồ sơ không hợp lệ.');
@@ -75,14 +81,18 @@ export function normalizeServiceRecord(raw:unknown):ServiceRecord {
   const vet:'DONE'|'PENDING'|'UNKNOWN' =
     (reviewStatus==='APPROVED'||reviewStatus==='REVIEWED'||reviewStatus==='DONE')?'DONE':
     (reviewStatus==='PENDING'||reviewStatus==='REQUESTED')?'PENDING':'UNKNOWN';
-  const rawMaterials=r['materials']??r['usedMaterials']??r['materialUsage'];
+  const rawMaterials=r['actualMaterials']??r['materials']??r['usedMaterials']??r['materialUsage'];
+  const planned=Array.isArray(r['plannedMaterials']) ? r['plannedMaterials'] : [];
+  const plannedById=new Map(planned.map(v=>{const x=record(v)||{};return [first(x['inventoryItemId'],x['materialId']),x];}));
+  const prof=record(r['professional']);
   const materials=Array.isArray(rawMaterials)?rawMaterials.map(v=>{
     const m=record(v)||{};const product=record(m['material'])||{};
-    return {name:first(m['name'],m['materialName'],product['name']),
-      templateQuantity:String(m['templateQuantity']??m['plannedQuantity']??''),
+    const plannedRow=plannedById.get(first(m['inventoryItemId'],m['materialId']))||{};
+    return {name:first(m['name'],m['materialName'],product['name'],m['inventoryItemId'],m['materialId']),
+      templateQuantity:String(m['templateQuantity']??m['plannedQuantity']??plannedRow['quantity']??''),
       actualQuantity:String(m['actualQuantity']??m['quantity']??''),
       unit:first(m['unit'],product['unit']),
-      note:first(m['note'],m['remark'])};
+      note:first(m['note'],m['notes'],m['remark'])};
   }):[];
   const rawHistory=r['statusHistory']??r['auditHistory']??r['history'];
   const history=Array.isArray(rawHistory)?rawHistory.map(v=>{const h=record(v)||{};return {
@@ -95,8 +105,8 @@ export function normalizeServiceRecord(raw:unknown):ServiceRecord {
     id,code:first(r['code'],r['recordCode'],r['service_record_code'])||id,
     appointmentId:first(r['appointmentId'],r['appointment_id'],appointment['id']),
     appointmentCode:first(r['appointmentCode'],appointment['code']),
-    date:date(r['date']??r['createdAt']??r['performedAt']),
-    completedAt:date(r['completedAt']??r['finalizedAt']),
+    date:date(r['date']??r['actualStartAt']??r['createdAt']??r['performedAt']),
+    completedAt:date(r['completedAt']??r['actualEndAt']??r['finalizedAt']),
     petName:first(r['petName'],pet['name']),
     petDescription:first(r['petDescription'],pet['description']),
     serviceName:first(r['serviceName'],service['name']),
@@ -105,12 +115,19 @@ export function normalizeServiceRecord(raw:unknown):ServiceRecord {
     primaryStaff:first(r['primaryStaffName'],r['staffName'],staff['fullName'],staff['name']),
     primaryRole:first(r['primaryRole'],staff['role'],staff['jobRole']),
     category:cat,status:statusOf(rawStatus),rawStatus,
-    note:first(r['resultNote'],r['result'],r['notes'],r['clinicalNotes']),
+    note:first(r['resultNote'],r['result'],r['notes'],r['clinicalNotes'],prof?.['result'],prof?.['professionalNote']),
     nurseSegment:typeof nurse==='boolean'?nurse:null,
-    veterinarianReview:vet,reviewedBy:first(review?.['reviewedBy'],review?.['reviewerName'],r['veterinarianName']),
+    veterinarianReview:vet,reviewedBy:first(review?.['reviewedBy'],review?.['reviewerName'],r['veterinarianName'],r['reviewerStaffId']),
     reviewedAt,
     allowedActions:Array.isArray(actions)?actions.filter((a):a is string=>typeof a==='string'):null,
     materials,history,
+    recordVersion:typeof r['recordVersion']==='number'?r['recordVersion'] as number:null,
+    version:typeof r['version']==='number'?r['version'] as number:null,
+    reviewerStaffId:first(r['reviewerStaffId']),
+    professional:prof?{
+      diagnosis:first(prof['diagnosis']),treatment:first(prof['treatment']),
+      result:first(prof['result']),professionalNote:first(prof['professionalNote']),
+    }:null,
   };
 }
 export function normalizeServiceRecordsPage(raw:unknown):ServiceRecordsPage {
