@@ -12,6 +12,7 @@ import { ServiceCatalogApiService } from '../../service-catalog/services/service
 import { AdminStaffApiService } from '../../staff/services/admin-staff-api.service';
 import { StaffPreview } from '../../staff/models/staff-preview.model';
 import { buildAppointmentSegments, ExtraPetService, hasDuplicatePetService, overlappingAssignedStaff, segmentReferenceSubtotal } from './admin-appointment-segments.utils';
+import { AdminAppointmentPricingPreviewService, AppointmentDraftPricing, estimateAppointmentPayment } from './admin-appointment-pricing-preview.service';
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'empty' | 'error' | 'unsupported';
 type CustomerLookupState = 'idle' | 'loading' | 'found' | 'not-found' | 'error';
@@ -96,6 +97,7 @@ export class AdminAppointmentCreateComponent {
   private readonly lookupApi = inject(AdminOrderCreateLookupService);
   private readonly catalog = inject(ServiceCatalogApiService);
   readonly staffDirectory = inject(AdminStaffApiService);
+  private readonly pricingPreviewService = inject(AdminAppointmentPricingPreviewService);
   private readonly toast = inject(AdminToastService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -105,6 +107,7 @@ export class AdminAppointmentCreateComponent {
   private serviceRequest = 0;
   private petSequence = 0;
   private extraServiceSequence = 0;
+  private priceRequestVersion = 0;
 
   readonly today = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit',
@@ -141,6 +144,10 @@ export class AdminAppointmentCreateComponent {
   readonly onlineProvider = signal<OnlineProvider | null>(null);
   readonly voucherCode = signal('');
   readonly voucherNotice = signal('');
+  readonly pricingStatus = signal<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  readonly pricingError = signal('');
+  readonly pricingSnapshot = signal<AppointmentDraftPricing | null>(null);
+  private readonly pricingKeyAtResponse = signal('');
   readonly note = signal('');
   readonly reviewErrors = signal<string[]>([]);
   readonly cancellationOpen = signal(false);
@@ -162,6 +169,21 @@ export class AdminAppointmentCreateComponent {
   readonly plannedSegments = computed(() =>
     buildAppointmentSegments(this.selectedPets(), this.serviceId(), this.extraServices(), this.services()));
   readonly estimatedSubtotal = computed(() => segmentReferenceSubtotal(this.plannedSegments()));
+  readonly pricingRequestKey = computed(() => JSON.stringify({
+    branch: this.branchId(),
+    pets: this.selectedPets().map(pet => [pet.id, pet.name, pet.weightKg]),
+    services: this.plannedSegments().map(segment => [segment.petId, segment.serviceId]),
+    pending: this.extraServices().filter(row => !row.serviceId).map(row => row.id),
+  }));
+  readonly currentPreview = computed(() =>
+    this.pricingStatus() === 'ready' && this.pricingKeyAtResponse() === this.pricingRequestKey()
+      ? this.pricingSnapshot() : null);
+  readonly previewOutdated = computed(() =>
+    this.pricingStatus() === 'ready' && this.pricingKeyAtResponse() !== this.pricingRequestKey());
+  readonly paymentEstimate = computed(() => {
+    const current = this.currentPreview();
+    return current ? estimateAppointmentPayment(current.total, this.paymentMethod()) : null;
+  });
   readonly requiresVetReview = computed(() => this.plannedSegments().some(s => s.requiresVeterinarianReview));
   readonly draftStaffConflicts = computed(() =>
     overlappingAssignedStaff(this.plannedSegments(), this.assignedStaff()));
@@ -180,6 +202,7 @@ export class AdminAppointmentCreateComponent {
       this.petRequest++;
       this.slotRequest++;
       this.serviceRequest++;
+      this.priceRequestVersion++;
     });
   }
 
