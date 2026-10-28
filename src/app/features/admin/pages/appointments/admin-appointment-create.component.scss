@@ -89,4 +89,5 @@ button:disabled{cursor:not-allowed;opacity:.55}
 .field select{appearance:none;-webkit-appearance:none;background:#fff url('/assets/admin-product/expand_more.svg') no-repeat right 12px center;background-size:18px 18px;padding-right:40px;cursor:pointer}
 .field select:disabled{background-color:#f7f9fb}
 .appointment-create:is(input,select,textarea,button,a):focus-visible{outline:2px solid #0d47a1;outline-offset:2px}
+.appointment-create__breadcrumb{margin:0 0 18px}
 .appointment-create__breadcrumb strong{color:#0d47a1;font-weight:600}
