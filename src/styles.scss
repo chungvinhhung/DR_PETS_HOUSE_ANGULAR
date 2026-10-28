@@ -1705,23 +1705,32 @@ app-admin-order-management .order-admin__filter-warning {color:#ad394a}
 .create-order__address-actions strong {font-size:13px;font-weight:500}
 .create-order__address > small {display:block;color:var(--muted);margin:7px 0 0}
 .create-order__address-fields {display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px;margin-top:15px}
-.create-order__payment-grid {display:grid;grid-template-columns:1.15fr .85fr;gap:32px}
-.create-order__payment-fields {min-width:0}
-.create-order__payment-toggle {display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-bottom:16px;background:#f3f6fa;border-radius:8px}
-.create-order__payment-toggle button {height:37px;border:1px solid transparent;border-radius:7px;background:transparent;color:#617694}
-.create-order__payment-toggle button.is-active {background:#fff;color:var(--blue);border-color:var(--border);font-weight:500}
-.create-order__voucher-row {display:flex;gap:8px;margin-bottom:14px}
-.create-order__voucher-row input {flex:1;width:100%;min-width:0;height:42px;padding:0 12px}
-.create-order__payment-fields textarea {display:block;width:100%;padding:10px 12px;resize:vertical;min-height:62px}
-.create-order__summary {min-width:0}
-.create-order__breakdown,.create-order__total {margin:0;padding:15px;border-radius:8px;background:#f5f7fb}
-.create-order__breakdown div {display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
-.create-order__breakdown div:last-child {margin-bottom:0}
-.create-order__breakdown dt {color:var(--muted)}
-.create-order__breakdown dd {margin:0;font-weight:500;white-space:nowrap}
-.create-order__total {display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;background:#eaf2ff;color:var(--blue)}
-.create-order__total strong {font-size:15px}
-.create-order__total small {display:block;font-size:11px;font-weight:400}
+/* Keep Create Order payment visually aligned with the Appointment payment panel. */
+app-admin-order-create .create-order__payment-heading{display:flex;align-items:center;justify-content:flex-start;gap:12px;margin-bottom:15px}
+app-admin-order-create .create-order__payment-heading h2{margin:0}
+app-admin-order-create .create-order__payment-badge{display:inline-flex;align-items:center;border-radius:14px;background:#fff1c8;color:#9a6a15;font-size:11px;padding:5px 10px;white-space:nowrap}
+.create-order__payment-grid{display:grid;grid-template-columns:1.12fr .88fr;gap:30px}
+.create-order__payment-fields{min-width:0}
+.create-order__payment-toggle{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:0;padding:4px;border-radius:7px;background:#f4f6fa;margin-bottom:16px}
+.create-order__payment-toggle button{min-height:38px;padding:10px 6px;border:1px solid transparent;border-radius:6px;background:transparent;color:#8190a7;font-size:12px}
+.create-order__payment-toggle button.is-active{background:#fff;color:#0d47a1;border-color:#dde5f2;box-shadow:0 1px 3px #d6dfea;font-weight:600}
+.create-order__voucher-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.create-order__voucher-row input{flex:1;width:100%;min-width:0;height:44px;padding:0 12px}
+.create-order__voucher-row .create-order__button--voucher{min-height:44px;border-color:#d8e3f0;color:#0d47a1;background:#fff;font-weight:600}
+.create-order__voucher-row .create-order__button--voucher:hover{background:#f4f8ff}
+.create-order__payment-fields textarea{display:block;width:100%;padding:10px 12px;resize:vertical;min-height:66px}
+.create-order__summary{min-width:0}
+.create-order__breakdown,.create-order__total{margin:0;padding:16px;border-radius:7px;background:#f5f7fa}
+.create-order__breakdown{display:grid;gap:17px}
+.create-order__breakdown div{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;font-size:12px;color:#7d8fa9}
+.create-order__breakdown div:last-child{margin:0}
+.create-order__breakdown dt{color:#7d8fa9}
+.create-order__breakdown dd{margin:0;font-weight:600;color:#516b8f;white-space:nowrap}
+.create-order__total{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;background:#e9f2ff;color:#0d47a1}
+.create-order__total>div{display:flex;flex-direction:column;gap:2px}
+.create-order__total strong{font-size:18px}
+.create-order__total>div strong{font-size:13px;color:#22354b}
+.create-order__total small{display:block;font-size:11px;font-weight:400}
 .create-order__pending {padding:11px 14px;margin:0 0 16px;border:1px solid #f0d6a1;border-radius:8px;background:#fffaf0;color:#825c26;font-size:12px}
 .create-order__footer {display:flex;justify-content:flex-end;align-items:center;gap:10px}
 @media (max-width:1100px) {
@@ -1839,27 +1848,21 @@ app-admin-order-create .create-order__sr-only {
   position:absolute; width:1px; height:1px; padding:0; margin:-1px;
   overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
 }
-app-admin-order-create .create-order__online-methods {
-  display:flex; flex-direction:column; gap:5px; padding:8px;
-  margin:0 0 12px; border:0; border-radius:9px;
-  background:#f6f8fb; min-width:0;
+app-admin-order-create .create-order__online-methods{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+  padding:0;margin:12px 0;border:0;background:transparent;min-width:0
 }
-app-admin-order-create .create-order__online-method {
-  display:flex; align-items:center; gap:12px; min-height:40px;
-  padding:7px 12px; border:1px solid transparent; border-radius:7px;
-  background:#fff; color:#212e45; font-size:13px; cursor:pointer;
+app-admin-order-create .create-order__online-method{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:7px;min-height:68px;padding:8px 6px;border:1px solid #dbe5f0;
+  border-radius:6px;background:#fff;color:#24344c;font-size:11px;
+  font-family:inherit;cursor:pointer;text-align:center
 }
-app-admin-order-create .create-order__online-method:hover {
-  background:#f7fbff; border-color:#c9dbee;
+app-admin-order-create .create-order__online-method:hover{background:#f7fbff;border-color:#a9c6eb}
+app-admin-order-create .create-order__online-method.is-selected{
+  background:#f2f8ff;border-color:#0d47a1;color:#0d47a1;font-weight:600
 }
-app-admin-order-create .create-order__online-method.is-selected {
-  background:#edf4ff; border-color:#0e4aa8;
-  font-weight:500; color:#0e4aa8;
-}
-app-admin-order-create .create-order__online-method input {
-  width:18px; height:18px; margin:0; accent-color:#0e4aa8; flex:0 0 18px;
-}
-app-admin-order-create .create-order__online-provider-label { min-width:0; overflow-wrap:anywhere; }
+app-admin-order-create .create-order__online-provider-label{min-width:0;overflow-wrap:anywhere;line-height:1.25}
 app-admin-order-create .create-order__voucher-row {position:relative;align-items:center;}
 app-admin-order-create .create-order__voucher-row input {padding-right:35px;}
 app-admin-order-create .create-order__voucher-clear {
@@ -1891,7 +1894,7 @@ app-admin-order-create .create-order__review p {margin:6px 0 0;}
   app-admin-order-create .create-order__voucher-clear {right:118px;}
 }
 
-app-admin-order-create .create-order__provider-icon {width:32px;height:32px;object-fit:contain;flex:0 0 32px}
+app-admin-order-create .create-order__provider-icon {width:25px;height:25px;object-fit:contain;flex:0 0 25px}
 
 /* QA refinements for Admin Create Order */
 app-admin-order-create .create-order__search-error {
@@ -4793,3 +4796,5 @@ app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__group 
     transition:none !important;
   }
 }
+
+@media(max-width:550px){app-admin-order-create .create-order__online-methods{grid-template-columns:repeat(2,minmax(0,1fr))}}
