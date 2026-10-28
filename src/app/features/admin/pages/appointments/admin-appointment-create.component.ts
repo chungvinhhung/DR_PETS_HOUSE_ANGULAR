@@ -11,7 +11,7 @@ import { CatalogBranch, CatalogService } from '../../service-catalog/models/serv
 import { ServiceCatalogApiService } from '../../service-catalog/services/service-catalog-api.service';
 import { AdminStaffApiService } from '../../staff/services/admin-staff-api.service';
 import { StaffPreview } from '../../staff/models/staff-preview.model';
-import { buildAppointmentSegments, ExtraPetService, hasDuplicatePetService, segmentReferenceSubtotal } from './admin-appointment-segments.utils';
+import { buildAppointmentSegments, ExtraPetService, hasDuplicatePetService, overlappingAssignedStaff, segmentReferenceSubtotal } from './admin-appointment-segments.utils';
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'empty' | 'error' | 'unsupported';
 type CustomerLookupState = 'idle' | 'loading' | 'found' | 'not-found' | 'error';
@@ -163,7 +163,9 @@ export class AdminAppointmentCreateComponent {
     buildAppointmentSegments(this.selectedPets(), this.serviceId(), this.extraServices(), this.services()));
   readonly estimatedSubtotal = computed(() => segmentReferenceSubtotal(this.plannedSegments()));
   readonly requiresVetReview = computed(() => this.plannedSegments().some(s => s.requiresVeterinarianReview));
-  readonly complexBooking = computed(() => this.petCount() > 1 || this.plannedSegments().length > 1 || this.requiresVetReview());
+  readonly draftStaffConflicts = computed(() =>
+    overlappingAssignedStaff(this.plannedSegments(), this.assignedStaff()));
+  readonly complexBooking = computed(() => this.petCount() > 1 || this.plannedSegments().length > 1 || this.extraServices().length > 0 || this.requiresVetReview());
   readonly hasUnsavedChanges = computed(() => Boolean(
     this.lookupPhone().trim() || this.customerName().trim() || this.selectedPetIds().length ||
     this.newPets().length || this.extraServices().length || this.branchId() || this.serviceId() || this.appointmentDate() ||
@@ -558,6 +560,8 @@ export class AdminAppointmentCreateComponent {
       errors.push('Có dịch vụ chưa có thời lượng được xác nhận.');
     if (this.requiresVetReview())
       errors.push('MEDICAL có Nurse segment phải được BE kiểm tra Veterinarian review trước khi xác nhận.');
+    if (this.draftStaffConflicts().length)
+      errors.push('Một nhân viên đang được xếp vào các segment trùng giờ của nhiều thú cưng.');
     if (this.newPets().filter(p => p.selected).some(p => !p.name.trim() || !p.species))
       errors.push('Nhập tên và loài cho tất cả thú cưng mới được chọn.');
     if (customer && this.petsLoadState() === 'unsupported' && !this.newPets().some(p => p.selected))
