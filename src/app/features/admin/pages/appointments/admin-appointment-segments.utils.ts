@@ -82,3 +82,26 @@ export function hasDuplicatePetService(
   return primaryServiceId === serviceId ||
     extras.some(row => row.id !== exceptRowId && row.petId === petId && row.serviceId === serviceId);
 }
+
+/** Detect definite same-staff overlaps within this draft. BE must still check shifts and external appointments. */
+export function overlappingAssignedStaff(
+  segments: readonly AppointmentSegmentPreview[],
+  assignments: Readonly<Record<string, string>>,
+): string[] {
+  const rows = segments.filter(segment => assignments[segment.key]
+    && segment.startOffsetMinutes !== null && segment.durationMinutes !== null);
+  const conflicts = new Set<string>();
+  for (let i = 0; i < rows.length; i++) {
+    const left = rows[i];
+    const staffId = assignments[left.key];
+    for (let j = i + 1; j < rows.length; j++) {
+      const right = rows[j];
+      if (left.petId === right.petId || assignments[right.key] !== staffId) continue;
+      const leftStart = left.startOffsetMinutes!;
+      const rightStart = right.startOffsetMinutes!;
+      if (leftStart < rightStart + right.durationMinutes! &&
+          rightStart < leftStart + left.durationMinutes!) conflicts.add(staffId);
+    }
+  }
+  return [...conflicts];
+}
