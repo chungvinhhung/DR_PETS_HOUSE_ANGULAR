@@ -299,7 +299,7 @@
           <label class="form-label" for="appointment-voucher">Thẻ quà tặng / Mã giảm giá</label>
           <div class="voucher-row">
             <input id="appointment-voucher" type="text" placeholder="Nhập mã" [value]="voucherCode()"
-              (input)="voucherCode.set($any($event.target).value);voucherNotice.set('')">
+              (input)="updateVoucher($any($event.target).value)">
             <button type="button" class="btn btn--outline" (click)="checkVoucher()">Áp dụng</button>
           </div>
           @if (voucherNotice()) {<p class="hint hint--notice" role="status">{{voucherNotice()}}</p>}
@@ -309,15 +309,46 @@
         </div>
         <div class="payment-summary">
           <div class="payment-summary__rows">
-            <div><span>Tạm tính</span><strong>{{money(estimatedSubtotal())}}</strong></div>
-            <div><span>Phụ thu</span><span>Chờ BE xác nhận</span></div>
-            <div><span>Giảm giá</span><span>Chưa áp dụng</span></div>
+            <div><span>Tạm tính</span><strong>{{money(currentPreview()?.subtotal ?? estimatedSubtotal())}}</strong></div>
+            <div><span>Phụ thu</span>
+              <strong>{{currentPreview() ? money(currentPreview()!.surchargeAmount) : 'Chưa xác minh'}}</strong></div>
+            <div><span>Giảm giá dịch vụ</span>
+              <strong>{{currentPreview() ? money(currentPreview()!.discountAmount) : 'Chưa xác minh'}}</strong></div>
+            @if (voucherCode().trim()) {
+              <div><span>Voucher</span><strong>Chưa áp dụng</strong></div>
+            }
           </div>
           <div class="payment-summary__total">
-            <span><strong>Tổng cộng</strong><small>(Đã bao gồm thuế VAT nếu áp dụng)</small></span>
-            <strong>Chờ báo giá</strong>
+            <span><strong>Tổng cộng</strong>
+              <small>{{currentPreview() ? 'Tạm tính từ API, chưa chốt voucher và thuế' : 'Chưa có báo giá'}}</small>
+            </span>
+            <strong>{{currentPreview() ? money(currentPreview()!.total) : 'Chờ báo giá'}}</strong>
           </div>
-          <p class="payment-summary__disclaimer">Số tiền trên chỉ là giá tham khảo từ catalog. Số tiền phải thu và cọc 30%/thanh toán 100% do BE báo giá xác nhận.</p>
+          @if (paymentEstimate(); as amounts) {
+            <div class="payment-summary__rows" style="margin-top:10px">
+              <div>
+                <span>{{paymentMethod()==='PAY_AT_STORE' ? 'Cọc dự kiến 30% (ONLINE_MOCK)' : 'Thanh toán dự kiến 100% (ONLINE_MOCK)'}}</span>
+                <strong>{{money(amounts.dueNow)}}</strong>
+              </div>
+              @if (paymentMethod()==='PAY_AT_STORE') {
+                <div><span>Còn lại tại phòng khám 70%</span><strong>{{money(amounts.dueAtClinic)}}</strong></div>
+              }
+            </div>
+          }
+          <button type="button" class="btn btn--outline" style="margin-top:12px;width:100%"
+            [disabled]="pricingStatus()==='loading'" (click)="requestPricingPreview()">
+            {{pricingStatus()==='loading' ? 'Đang lấy giá từ Backend...' : 'Xem giá tham khảo' }}
+          </button>
+          @if (pricingStatus()==='error' && pricingError()) {
+            <p class="inline-error" role="alert">{{pricingError()}}</p>
+          }
+          @if (previewOutdated()) {
+            <p class="hint hint--notice" role="status">Thông tin đặt lịch đã thay đổi. Kết quả giá cũ không còn hiệu lực, vui lòng xem giá lại.</p>
+          }
+          @if (pricingStatus()==='ready' && currentPreview()) {
+            <p class="hint" role="status">Đã nhận kết quả tham khảo cho {{currentPreview()!.petCount}} thú cưng. Chưa giữ slot, chưa áp dụng voucher, chưa tạo thanh toán.</p>
+          }
+          <p class="payment-summary__disclaimer">Số liệu hiển thị chỉ dùng để tham khảo. BE phải báo giá lại khi xác nhận lịch; quy tắc cọc 30% và thanh toán 100% là tỷ lệ minh họa theo WBS 4.3, chưa phải số tiền đã thu. Chưa tạo giao dịch.</p>
         </div>
       </div>
     </section>
