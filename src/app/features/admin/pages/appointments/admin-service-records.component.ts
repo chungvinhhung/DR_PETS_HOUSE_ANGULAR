@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -32,6 +32,8 @@ import {
     <select aria-label="Trạng thái hồ sơ" [value]="status()" (change)="status.set($any($event.target).value);applyFilters()">
       <option value="">Trạng thái</option>
       <option value="COMPLETED">Hoàn thành</option>
+      <option value="REOPENED">Đã mở lại</option>
+      <option value="DRAFT">Bản nháp</option>
       <option value="AWAITING_VET_REVIEW">Chờ BS duyệt</option>
       <option value="IN_PROGRESS">Đang thực hiện</option>
     </select>
@@ -61,7 +63,7 @@ import {
       </tr>
      } @empty {<tr><td colspan="9" class="message">Không có hồ sơ phù hợp.</td></tr>}
     </tbody></table></div>
-    <footer><span>Đang hiển thị {{rows().length}} trên tổng số {{total()}} hồ sơ dịch vụ</span>
+    <footer><span>Đang hiển thị {{rows().length}} / {{total()}} hồ sơ đã tải @if(partial()){ (giới hạn 100 bản ghi) }</span>
      <div class="pages"><button type="button" (click)="go(page()-1)" [disabled]="page()===1" aria-label="Trang trước">‹</button>
        <span>Trang {{page()}}</span>
        <button type="button" (click)="go(page()+1)" [disabled]="page()*size>=total()" aria-label="Trang sau">›</button>
@@ -93,10 +95,20 @@ export class AdminServiceRecordsComponent {
   private readonly api=inject(ApiClientService);
   private readonly destroyRef=inject(DestroyRef);
   private request=0;
-  readonly rows=signal<ServiceRecord[]>([]);
+  private readonly fetched=signal<ServiceRecord[]>([]);
+  readonly partial=computed(()=>this.fetched().length>=100);
+  readonly filtered=computed(()=>{
+    const q=this.search().trim().toLocaleLowerCase('vi');
+    return this.fetched().filter(r=>
+      (!this.category() || r.category===this.category()) &&
+      (!this.status() || r.status===this.status()) &&
+      (!q || [r.id,r.code,r.appointmentId,r.petName,r.serviceName,r.branchName,r.primaryStaff]
+        .some(value=>value.toLocaleLowerCase('vi').includes(q))));
+  });
+  readonly rows=computed(()=>this.filtered().slice((this.page()-1)*this.size,this.page()*this.size));
   readonly loading=signal(false);
   readonly error=signal('');
-  readonly total=signal(0);
+  readonly total=computed(()=>this.filtered().length);
   readonly page=signal(1);
   readonly size=7;
   readonly search=signal('');
@@ -104,23 +116,22 @@ export class AdminServiceRecordsComponent {
   readonly status=signal('');
   readonly serviceRecordStatusLabel=serviceRecordStatusLabel;
   constructor(){this.load();}
-  applyFilters(){this.page.set(1);this.load();}
+  applyFilters(){this.page.set(1);}
   go(value:number){if(value<1||value>Math.max(1,Math.ceil(this.total()/this.size)))return;this.page.set(value);this.load();}
   load(){
-    let params=new HttpParams().set('page',this.page()).set('limit',this.size);
-    if(this.search().trim())params=params.set('search',this.search().trim());
-    if(this.category())params=params.set('type',this.category());
-    if(this.status())params=params.set('status',this.status());
+    // BE list accepts recordType/status, but does not implement page/search.
+    // Download the first bounded batch and label the UI as a subset.
+    const params=new HttpParams().set('limit',100);
     const req=++this.request;
     this.loading.set(true);this.error.set('');
-    // Proposed GET /service-records; BE contract/role scope not yet verified.
+    // Confirmed source route in BE foundation-v6: GET /api/v1/service-records.
     this.api.get<unknown>('/service-records',{params}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next:raw=>{if(req!==this.request)return;try{
           const result=normalizeServiceRecordsPage(raw);
-          this.rows.set(result.items);this.total.set(result.total);this.loading.set(false);
-        }catch(err){this.error.set(err instanceof Error?err.message:'Dữ liệu không hợp lệ.');this.loading.set(false);}
+          this.fetched.set(result.items);this.loading.set(false);
+        }catch(err){this.fetched.set([]);this.error.set(err instanceof Error?err.message:'Dữ liệu không hợp lệ.');this.loading.set(false);}
       },
-      error:err=>{if(req!==this.request)return;this.error.set(adminErrorMessage(err,'Chưa tải được hồ sơ dịch vụ từ BE.'));this.loading.set(false);}
+      error:err=>{if(req!==this.request)return;this.fetched.set([]);this.error.set(adminErrorMessage(err,'Chưa tải được hồ sơ dịch vụ từ BE.'));this.loading.set(false);}
     });
   }
   color(r:ServiceRecord){return r.status==='COMPLETED'?'success':r.status==='AWAITING_VET_REVIEW'?'warning':'info';}
