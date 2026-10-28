@@ -160,6 +160,7 @@ export class AdminAppointmentDetailComponent {
     switch(decision.status) {
       case 'eligible':return 'Còn tối thiểu 24 giờ trước lịch hẹn. BE vẫn phải xác nhận điều kiện tại thời điểm xử lý.';
       case 'too-late':return 'Còn dưới 24 giờ. Chỉ Manager/Admin có thể đề nghị override kèm lý do và audit.';
+      case 'missing-count':return 'BE chưa cung cấp số lần đổi lịch; không thể xác minh giới hạn 2 lần.';
       case 'limit-reached':return 'Đã đạt giới hạn 2 lần đổi lịch. Chỉ Manager/Admin có thể đề nghị override có audit.';
       case 'terminal':return 'Lịch đã kết thúc hoặc không còn được phép thay đổi.';
       case 'missing-time':return 'Thiếu thời gian hẹn thực tế. Không thể tính thời hạn 24 giờ.';
