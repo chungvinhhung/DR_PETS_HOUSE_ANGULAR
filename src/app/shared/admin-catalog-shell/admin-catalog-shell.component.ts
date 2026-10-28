@@ -23,7 +23,7 @@ export class AdminCatalogShellComponent {
   readonly pendingReturnCount = this.returnNotifications.pendingCount;
   private readonly accordion = inject(AdminSidebarAccordionService);
 
-  @Input({ required: true }) activeItem!: 'categories' | 'products' | 'orders' | 'vouchers' | 'services' | 'branches' | 'staff' | 'inventory';
+  @Input({ required: true }) activeItem!: 'categories' | 'products' | 'orders' | 'vouchers' | 'services' | 'appointments' | 'branches' | 'staff' | 'inventory';
 
   // Animation is intentionally disabled on each newly mounted shell. Route
   // initialization should NEVER replay the previous group's close animation.
@@ -49,6 +49,7 @@ export class AdminCatalogShellComponent {
       case 'vouchers':
         return 'sales';
       case 'services':
+      case 'appointments':
         return 'services';
       case 'branches':
       case 'staff':
