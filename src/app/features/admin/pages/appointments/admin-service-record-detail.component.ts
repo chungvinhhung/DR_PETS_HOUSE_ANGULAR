@@ -68,6 +68,18 @@ import {
     <p class="hint" role="status">{{finalization().reason}}</p>
    </section>
   }
+  @if(r.category==='MEDICAL'){
+    <section class="panel">
+      <h2>Nội dung chuyên môn của Bác sĩ thú y</h2>
+      <div class="facts">
+        <div><label>Chẩn đoán</label><strong>{{r.professional?.diagnosis || 'Chưa có dữ liệu'}}</strong></div>
+        <div><label>Điều trị</label><strong>{{r.professional?.treatment || 'Chưa có dữ liệu'}}</strong></div>
+        <div><label>Kết quả</label><strong>{{r.professional?.result || 'Chưa có dữ liệu'}}</strong></div>
+        <div><label>Ghi chú chuyên môn</label><strong>{{r.professional?.professionalNote || 'Chưa có dữ liệu'}}</strong></div>
+      </div>
+      <p class="hint">Nội dung chuyên môn lấy từ ServiceRecord BE; chỉ Veterinarian được phân quyền mới có thể cập nhật theo hợp đồng.</p>
+    </section>
+  }
   <section class="panel">
    <h2>Vật liệu thực tế đã dùng</h2>
    @if(r.materials.length){
