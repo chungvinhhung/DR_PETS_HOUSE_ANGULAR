@@ -286,12 +286,13 @@ export class AdminAppointmentCreateComponent {
       name: '', species: '', breed: '', age: '', weightKg: '', health: '',
       selected: true,
     }]);
-    this.clearReview();
+    this.recalculateSlots();
   }
 
   removePet(id: string): void {
     this.newPets.update(items => items.filter(p => p.id !== id));
-    this.clearReview();
+    this.extraServices.update(rows => rows.filter(row => row.petId !== id));
+    this.recalculateSlots();
   }
 
   updatePet(id: string, field: keyof Omit<PetDraft, 'id' | 'selected'>, value: string): void {
@@ -301,13 +302,91 @@ export class AdminAppointmentCreateComponent {
 
   toggleNewPet(id: string, checked: boolean): void {
     this.newPets.update(items => items.map(p => p.id === id ? { ...p, selected: checked } : p));
-    this.clearReview();
+    if (!checked) this.extraServices.update(rows => rows.filter(row => row.petId !== id));
+    this.recalculateSlots();
   }
 
   togglePet(id: string, checked: boolean): void {
     this.selectedPetIds.update(ids => checked ? [...ids.filter(v => v !== id), id] : ids.filter(v => v !== id));
-    this.clearReview();
+    if (!checked) this.extraServices.update(rows => rows.filter(row => row.petId !== id));
+    this.recalculateSlots();
   }
+
+  addExtraService(petId: string): void {
+    if (!this.serviceId()) {
+      this.toast.show('Chọn dịch vụ chính trước khi thêm dịch vụ.');
+      return;
+    }
+    if (!this.selectedPets().some(pet => pet.id === petId)) return;
+    this.extraServices.update(rows => [...rows, {
+      id: 'extra-' + ++this.extraServiceSequence, petId, serviceId: '',
+    }]);
+    this.multiServiceOpen.set(true);
+    this.recalculateSlots();
+  }
+
+  changeExtraService(id: string, serviceId: string): void {
+    const target = this.extraServices().find(row => row.id === id);
+    if (!target) return;
+    const service = this.services().find(row => row.id === serviceId);
+    if (serviceId && (!service || service.bookingMode !== 'BOOKABLE' || service.status !== 'ACTIVE')) {
+      this.toast.show('Chỉ chọn dịch vụ BOOKABLE đang hoạt động tại chi nhánh.');
+      return;
+    }
+    if (hasDuplicatePetService(target.petId, serviceId, this.serviceId(), this.extraServices(), id)) {
+      this.toast.show('Thú cưng đã được thêm dịch vụ này.');
+      return;
+    }
+    this.extraServices.update(rows => rows.map(row => row.id === id ? { ...row, serviceId } : row));
+    this.assignedStaff.update(map => {
+      const copy = { ...map }; delete copy[target.petId + ':' + target.serviceId]; return copy;
+    });
+    this.recalculateSlots();
+  }
+
+  removeExtraService(id: string): void {
+    const target = this.extraServices().find(row => row.id === id);
+    this.extraServices.update(rows => rows.filter(row => row.id !== id));
+    if (target) this.assignedStaff.update(map => {
+      const copy = { ...map }; delete copy[target.petId + ':' + target.serviceId]; return copy;
+    });
+    this.recalculateSlots();
+  }
+
+  requiredRoleLabel(role: string): string {
+    switch (role) {
+      case 'CARE_STAFF_GROOMER': return 'Nhân viên chăm sóc';
+      case 'NURSE': return 'Y tá';
+      case 'VETERINARIAN': return 'Bác sĩ thú y';
+      default: return 'Chưa xác định';
+    }
+  }
+
+  /** Roster candidates only; shift and booking availability still require authoritative BE checks. */
+  eligibleStaff(role: string): readonly StaffPreview[] {
+    const jobRole = role === 'CARE_STAFF_GROOMER' ? 'CARE_STAFF' : role;
+    return this.staffDirectory.staff().filter(person =>
+      person.jobRole === jobRole && person.accountStatus === 'ACTIVE' &&
+      (person.branchIds ?? []).includes(this.branchId()));
+  }
+
+  assignStaff(key: string, staffId: string): void {
+    const segment = this.plannedSegments().find(row => row.key === key);
+    if (!segment) return;
+    if (staffId && !this.eligibleStaff(segment.requiredStaffRole).some(row => row.id === staffId)) {
+      this.toast.show('Nhân viên không phù hợp vai trò/chi nhánh hoặc đang bị chặn.');
+      return;
+    }
+    this.assignedStaff.update(map => ({ ...map, [key]: staffId }));
+    this.recalculateSlots();
+  }
+
+  private recalculateSlots(): void {
+    this.resetSlots();
+    this.loadSlots();
+  }
+
+
 
   loadBranches(): void {
     this.branchLoadState.set('loading');
@@ -327,6 +406,8 @@ export class AdminAppointmentCreateComponent {
     this.branchId.set(branchId);
     this.serviceId.set('');
     this.services.set([]);
+    this.extraServices.set([]);
+    this.assignedStaff.set({});
     this.serviceError.set('');
     this.serviceRequest++;
     this.resetSlots();
@@ -354,8 +435,9 @@ export class AdminAppointmentCreateComponent {
 
   selectService(id: string): void {
     this.serviceId.set(id);
-    this.resetSlots();
-    this.loadSlots();
+    this.extraServices.update(rows => rows.filter(row => row.serviceId !== id));
+    this.assignedStaff.set({});
+    this.recalculateSlots();
   }
 
   selectDate(value: string): void {
@@ -376,6 +458,13 @@ export class AdminAppointmentCreateComponent {
   loadSlots(): void {
     const service = this.chosenService();
     if (!service || !this.branchId() || !this.appointmentDate()) return;
+    // Legacy /appointments/slots only filters service_type/date/branch. It cannot
+    // validate per-pet segments, capacity, staff shifts, or MEDICAL vet review.
+    if (this.complexBooking()) {
+      this.slotsState.set('unsupported');
+      this.slotsError.set('Cần API khả dụng cho toàn bộ thú cưng, dịch vụ, segment và nhân sự. Khung giờ đơn giản không đủ để xác nhận lịch này còn chỗ.');
+      return;
+    }
     const version = ++this.slotRequest;
     this.slotsState.set('loading');
     const params = new HttpParams()
@@ -460,12 +549,20 @@ export class AdminAppointmentCreateComponent {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.customerEmail().trim()))
       errors.push('Email chưa đúng định dạng.');
     if (!this.petCount()) errors.push('Chọn hoặc thêm ít nhất một thú cưng.');
+    if (this.extraServices().some(row => !row.serviceId)) errors.push('Chọn dịch vụ cho tất cả các dòng dịch vụ bổ sung.');
+    if (this.plannedSegments().some(row => row.durationMinutes === null))
+      errors.push('Có dịch vụ chưa có thời lượng được xác nhận.');
+    if (this.requiresVetReview())
+      errors.push('MEDICAL có Nurse segment phải được BE kiểm tra Veterinarian review trước khi xác nhận.');
     if (this.newPets().filter(p => p.selected).some(p => !p.name.trim() || !p.species))
       errors.push('Nhập tên và loài cho tất cả thú cưng mới được chọn.');
     if (customer && this.petsLoadState() === 'unsupported' && !this.newPets().some(p => p.selected))
       errors.push('BE chưa cung cấp danh sách thú cưng của khách hàng.');
     if (!this.branchId() || !this.serviceId()) errors.push('Chọn chi nhánh và dịch vụ.');
-    if (!this.appointmentDate() || !this.selectedSlotId()) errors.push('Chọn ngày và khung giờ còn chỗ.');
+    if (this.complexBooking())
+      errors.push('Chưa có API kiểm tra đồng thời các segment của nhiều dịch vụ/thú cưng.');
+    if (!this.appointmentDate() || (!this.selectedSlotId() && !this.complexBooking()))
+      errors.push('Chọn ngày và khung giờ còn chỗ.');
     else if (this.appointmentDate() < this.today) errors.push('Không thể đặt lịch vào ngày đã qua.');
     if (this.paymentMethod() === 'ONLINE_MOCK' && !this.onlineProvider())
       errors.push('Chọn cổng thanh toán trực tuyến.');
