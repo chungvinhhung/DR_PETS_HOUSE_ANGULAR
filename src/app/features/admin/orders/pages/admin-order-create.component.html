@@ -248,31 +248,35 @@
       }
     </section>
 
-    <section class="create-order__panel" aria-labelledby="payment-title">
-      <h2 id="payment-title">Thanh toán và tổng đơn</h2>
+    <section class="create-order__panel create-order__payment-panel" aria-labelledby="payment-title">
+      <div class="create-order__payment-heading">
+        <h2 id="payment-title">Thanh toán</h2>
+        <span class="create-order__payment-badge">Chưa thanh toán</span>
+      </div>
       <div class="create-order__payment-grid">
         <div class="create-order__payment-fields">
           <div class="create-order__payment-toggle" role="group" aria-label="Phương thức thanh toán">
             <button type="button" [class.is-active]="paymentMethod() === 'COD'"
-              [attr.aria-pressed]="paymentMethod() === 'COD'" (click)="togglePayment('COD')">Khi nhận hàng</button>
+              [attr.aria-pressed]="paymentMethod() === 'COD'"
+              (click)="togglePayment('COD')">Khi nhận hàng</button>
             <button type="button" [class.is-active]="paymentMethod() === 'ONLINE_MOCK'"
               [attr.aria-pressed]="paymentMethod() === 'ONLINE_MOCK'"
               (click)="togglePayment('ONLINE_MOCK')">Trực tuyến</button>
           </div>
           @if (paymentMethod() === 'ONLINE_MOCK') {
-            <fieldset class="create-order__online-methods">
-              <legend class="create-order__sr-only">Chọn hình thức thanh toán trực tuyến</legend>
+            <div class="create-order__online-methods" role="group" aria-label="Chọn hình thức thanh toán trực tuyến">
               @for (method of onlineProviderChoices; track method.key) {
-                <label class="create-order__online-method"
-                  [class.is-selected]="onlineProvider() === method.key">
-                  <input type="radio" name="order-online-provider" [checked]="onlineProvider() === method.key"
-                    [value]="method.key" (change)="chooseOnlineProvider(method.key)">
-                  <img class="create-order__provider-icon" [src]="providerIcon(method.key)" alt="" width="32" height="32">
+                <button type="button" class="create-order__online-method"
+                  [class.is-selected]="onlineProvider() === method.key"
+                  [attr.aria-pressed]="onlineProvider() === method.key"
+                  (click)="chooseOnlineProvider(method.key)">
+                  <img class="create-order__provider-icon" [src]="providerIcon(method.key)"
+                    alt="" width="25" height="25">
                   <span class="create-order__online-provider-label">{{ method.label }}</span>
-                </label>
+                </button>
               }
-            </fieldset>
-            <p class="create-order__helper">Đơn chưa được thanh toán. Việc thanh toán trực tuyến sẽ cần xác nhận ở bước xử lý đơn.</p>
+            </div>
+            <p class="create-order__helper">Đơn chưa được thanh toán. Thanh toán trực tuyến sẽ được xác nhận khi xử lý đơn.</p>
           }
           <label class="create-order__label" for="order-voucher-code">Thẻ quà tặng / Mã giảm giá</label>
           <div class="create-order__voucher-row">
@@ -282,13 +286,13 @@
               <button class="create-order__voucher-clear" type="button"
                 aria-label="Xóa mã giảm giá" (click)="clearVoucher()">×</button>
             }
-            <button type="button" class="create-order__button create-order__button--primary"
+            <button type="button" class="create-order__button create-order__button--voucher"
               (click)="explainVoucher()">Áp dụng</button>
           </div>
           @if (voucherPreviewState() === 'unverified') {
             <p class="create-order__voucher-status" role="status">
-              Mã {{ voucherCode() }} đã được ghi nhận trong bản nháp nhưng chưa được xác nhận đủ điều kiện;
-              số tiền giảm sẽ do hệ thống tính trước khi tạo đơn.
+              Mã {{ voucherCode() }} đã được ghi nhận nhưng chưa được áp dụng.
+              Số tiền giảm giá sẽ được xác nhận khi tạo đơn.
             </p>
           }
           <label class="create-order__label" for="order-note">Ghi chú đơn hàng</label>
