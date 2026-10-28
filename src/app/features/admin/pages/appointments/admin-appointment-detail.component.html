@@ -144,9 +144,9 @@
         <p class="hint">Chính sách WBS 4.3: đổi/hủy trước 24 giờ, đổi lịch tối đa 2 lần. Manager/Admin có thể cần luồng override có lý do và audit. Kết quả cuối do BE quyết định.</p>
         @if (canInspectActions()) {
           <div class="actions">
-            <button type="button" class="btn btn--outline" [disabled]="appointment.status==='CANCELLED' || appointment.status==='COMPLETED' || appointment.status==='NO_SHOW' || appointment.status==='PENDING_PAYMENT'"
+            <button type="button" class="btn btn--outline" [disabled]="appointment.status!=='CONFIRMED'"
               (click)="startAction('reschedule')">Đổi lịch</button>
-            <button type="button" class="btn btn--danger" [disabled]="appointment.status==='CANCELLED' || appointment.status==='COMPLETED' || appointment.status==='NO_SHOW' || appointment.status==='PENDING_PAYMENT'"
+            <button type="button" class="btn btn--danger" [disabled]="appointment.status==='CANCELLED' || appointment.status==='COMPLETED' || appointment.status==='NO_SHOW'"
               (click)="startAction('cancel')">Hủy lịch</button>
             <button type="button" class="btn btn--primary" [disabled]="!proposedActions().length"
               (click)="startAction('status')">Cập nhật trạng thái</button>
