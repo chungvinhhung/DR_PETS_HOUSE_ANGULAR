@@ -215,7 +215,6 @@ export class AdminAppointmentCreateComponent {
         this.lookupResults.set(matches);
         this.lookupIncomplete.set(!matches.length && !!result.nextCursor);
         this.lookupState.set(matches.length ? 'found' : result.nextCursor ? 'error' : 'not-found');
-        if (matches.length === 1) this.selectCustomer(matches[0]);
       },
       error: error => {
         if (version !== this.customerRequest) return;
@@ -393,8 +392,8 @@ export class AdminAppointmentCreateComponent {
               const booked = Number(raw['booked_count'] ?? raw['bookedCount'] ?? 0);
               return {
                 id, label: start + ' - ' + end,
-                available: raw['status'] !== 'blocked' && raw['status'] !== 'unavailable' &&
-                  raw['status'] !== 'full' && Number.isFinite(capacity) && booked < capacity,
+                available: (raw['status'] === 'available' || raw['available'] === true) &&
+                  Number.isFinite(capacity) && capacity > 0 && booked < capacity,
               } satisfies AppointmentSlot;
             }).filter((slot): slot is AppointmentSlot => slot !== null);
             this.slots.set(slots);
@@ -443,7 +442,8 @@ export class AdminAppointmentCreateComponent {
     if (this.lookupState() === 'found' && !customer) errors.push('Chọn khách hàng trong danh sách tra cứu.');
     if (customer?.accountStatus === 'BLOCKED') errors.push('Tài khoản đang bị chặn, không thể tạo lịch hẹn.');
     if (!this.customerName().trim()) errors.push('Nhập họ tên khách hàng.');
-    if (this.customerEmail().trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.customerEmail().trim()))
+    if (!this.customerEmail().trim()) errors.push('Nhập email khách hàng theo trường bắt buộc trong Figma.');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.customerEmail().trim()))
       errors.push('Email chưa đúng định dạng.');
     if (!this.petCount()) errors.push('Chọn hoặc thêm ít nhất một thú cưng.');
     if (this.newPets().filter(p => p.selected).some(p => !p.name.trim() || !p.species))
