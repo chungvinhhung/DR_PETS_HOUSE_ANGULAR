@@ -30,6 +30,10 @@ export interface AppointmentView {
   allowedActions: string[] | null;
   history: AppointmentHistoryEvent[];
   cancellationReason: string | null;
+  serviceRecordRefs: {id:string; code:string; type:string; status:string}[];
+  refund: {id:string; status:string; requestedAmount:number|null; settledAmount:number|null;
+    requestedAt:string|null; settledAt:string|null; note:string} | null;
+  audit: {action:string; actor:string; at:string|null; reason:string; isOverride:boolean}[];
 }
 export interface AppointmentListPage {
   items: AppointmentView[];
@@ -99,6 +103,9 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
   const date = isDate(start) ? start : isDate(combined) ? combined : null;
   const historyRows = item['statusHistory'] ?? item['history'] ?? item['auditHistory'];
   const reschedules = item['rescheduleCount'] ?? item['reschedule_count'];
+  const refundRaw = obj(item['refund']) ?? obj(item['refundSummary']);
+  const referenceRows = item['serviceRecords'] ?? item['serviceRecordRefs'];
+  const auditRows = item['auditHistory'] ?? item['auditLog'];
   return {
     id, code:firstString(item['code'], item['appointmentCode'], item['appointment_code']) || id,
     customerName:firstString(item['customerName'], item['customer_name_snapshot'], customer['fullName'], customer['full_name'], contact['fullName']),
@@ -127,6 +134,31 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
         note:firstString(event['note'],event['reason']) || null};
     }).filter(row=>!!row.status) : [],
     cancellationReason:firstString(item['cancellationReason'], item['cancelReason']) || null,
+    serviceRecordRefs:Array.isArray(referenceRows) ? referenceRows.map(raw=>{
+      const r=obj(raw);if(!r)return null;
+      const id=firstString(r['id'],r['serviceRecordId'],r['_id']);
+      return id?{id,code:firstString(r['code'],r['recordCode'])||id,
+        type:firstString(r['recordType'],r['type']),status:firstString(r['status'])}:null;
+    }).filter((v):v is {id:string;code:string;type:string;status:string}=>v!==null):[],
+    refund:refundRaw ? {
+      id:firstString(refundRaw['id'],refundRaw['refundId']),
+      status:firstString(refundRaw['status']),
+      requestedAmount:toMoney(refundRaw['requestedAmount']??refundRaw['amount']),
+      settledAmount:toMoney(refundRaw['settledAmount']??refundRaw['refundedAmount']),
+      requestedAt:isDate(firstString(refundRaw['requestedAt'],refundRaw['createdAt']))?
+        firstString(refundRaw['requestedAt'],refundRaw['createdAt']):null,
+      settledAt:isDate(firstString(refundRaw['settledAt'],refundRaw['refundedAt']))?
+        firstString(refundRaw['settledAt'],refundRaw['refundedAt']):null,
+      note:firstString(refundRaw['note'],refundRaw['reason']),
+    }:null,
+    audit:Array.isArray(auditRows) ? auditRows.map(raw=>{
+      const row=obj(raw)??{};
+      return {action:firstString(row['action'],row['type']),
+        actor:firstString(row['actorName'],row['actorId']),
+        at:isDate(firstString(row['at'],row['createdAt']))?firstString(row['at'],row['createdAt']):null,
+        reason:firstString(row['reason'],row['note']),
+        isOverride:row['isOverride']===true || row['override']===true};
+    }).filter(row=>row.action):[],
   };
 }
 export function normalizeAppointmentPage(raw: unknown): AppointmentListPage {
