@@ -73,7 +73,7 @@ export function normalizeServiceRecord(raw:unknown):ServiceRecord {
   const reviewStatus=first(review?.['status'],r['vetReviewStatus'],r['review_status']).toUpperCase();
   const reviewedAt=date(review?.['reviewedAt']??r['veterinarianReviewedAt']);
   const vet:'DONE'|'PENDING'|'UNKNOWN' =
-    (reviewStatus==='APPROVED'||reviewStatus==='REVIEWED'||reviewStatus==='DONE'||reviewedAt!==null)?'DONE':
+    (reviewStatus==='APPROVED'||reviewStatus==='REVIEWED'||reviewStatus==='DONE')?'DONE':
     (reviewStatus==='PENDING'||reviewStatus==='REQUESTED')?'PENDING':'UNKNOWN';
   const rawMaterials=r['materials']??r['usedMaterials']??r['materialUsage'];
   const materials=Array.isArray(rawMaterials)?rawMaterials.map(v=>{
