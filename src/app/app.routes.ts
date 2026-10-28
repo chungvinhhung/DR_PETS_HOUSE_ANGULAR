@@ -20,6 +20,14 @@ const confirmOrderCreateLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promi
 
 export const routes: Routes = [
   {
+    path: 'admin/appointments',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: BACKOFFICE_ROLES },
+    loadComponent: () =>
+      import('./features/admin/pages/appointments/admin-appointments-page.component')
+        .then(component => component.AdminAppointmentsPageComponent),
+  },
+  {
     path: 'admin/appointments/new',
     canActivate: [authGuard, roleGuard],
     canDeactivate: [confirmAppointmentCreateLeave],
@@ -293,13 +301,6 @@ export const routes: Routes = [
           import(
             './features/admin/pages/dashboard/admin-dashboard-page.component'
           ).then((component) => component.AdminDashboardPageComponent),
-      },
-      {
-        path: 'appointments',
-        loadComponent: () =>
-          import(
-            './features/admin/pages/appointments/admin-appointments-page.component'
-          ).then((component) => component.AdminAppointmentsPageComponent),
       },
       {
         path: 'users',
