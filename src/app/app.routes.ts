@@ -28,6 +28,13 @@ export const routes: Routes = [
       .then(c => c.AdminAppointmentCreateComponent),
   },
   {
+    path: 'admin/appointments/:id',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+    loadComponent: () => import('./features/admin/pages/appointments/admin-appointment-detail.component')
+      .then(c => c.AdminAppointmentDetailComponent),
+  },
+  {
     path: 'admin/staff/schedule',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
