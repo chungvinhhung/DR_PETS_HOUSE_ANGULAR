@@ -335,10 +335,7 @@
               }
             </div>
           }
-          <button type="button" class="btn btn--outline" style="margin-top:12px;width:100%"
-            [disabled]="pricingStatus()==='loading'" (click)="requestPricingPreview()">
-            {{pricingStatus()==='loading' ? 'Đang lấy giá từ Backend...' : 'Xem giá tham khảo' }}
-          </button>
+          <p class="hint hint--notice" role="status">Chỉ có giá tham khảo từ danh mục. BE foundation-v6 chưa cung cấp API báo giá riêng không tạo lịch; giá cuối cùng, voucher và cọc chỉ xác nhận khi Backend tạo giao dịch thật.</p>
           @if (pricingStatus()==='error' && pricingError()) {
             <p class="inline-error" role="alert">{{pricingError()}}</p>
           }
