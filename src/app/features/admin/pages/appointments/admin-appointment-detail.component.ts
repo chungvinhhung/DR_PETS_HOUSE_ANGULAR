@@ -52,7 +52,7 @@ export class AdminAppointmentDetailComponent {
   });
   readonly proposedActions = computed(() => {
     const item = this.item();
-    if (!item || ['COMPLETED','CANCELLED','NO_SHOW'].includes(item.status)) return [];
+    if (!item || ['COMPLETED','CANCELLED','NO_SHOW','PENDING_PAYMENT'].includes(item.status)) return [];
     if (item.status === 'PENDING') return ['CONFIRMED','CANCELLED'];
     if (item.status === 'CONFIRMED') return ['IN_PROGRESS','NO_SHOW','CANCELLED'];
     if (item.status === 'IN_PROGRESS') return ['COMPLETED'];
@@ -133,7 +133,7 @@ export class AdminAppointmentDetailComponent {
   statusBadge(): string {
     const st=this.item()?.status;
     return st==='CANCELLED'||st==='NO_SHOW'?'danger':
-      st==='COMPLETED'||st==='CONFIRMED'?'success':st==='PENDING'?'warning':'neutral';
+      st==='COMPLETED'||st==='CONFIRMED'?'success':(st==='PENDING'||st==='PENDING_PAYMENT')?'warning':'neutral';
   }
 
   startAction(action: Exclude<DialogAction,null>): void {
