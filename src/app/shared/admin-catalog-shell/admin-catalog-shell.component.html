@@ -56,7 +56,7 @@
         </div>
 
         <button type="button" class="catalog-sidebar__group"
-          [class.catalog-sidebar__group--active]="activeItem === 'services'"
+          [class.catalog-sidebar__group--active]="activeItem === 'services' || activeItem === 'appointments'"
           [attr.aria-expanded]="servicesExpanded" aria-controls="admin-services-submenu"
           (click)="toggleServices()">
           <img src="/assets/admin-product/icon-services.svg" alt="" width="20" height="20">
@@ -72,7 +72,7 @@
             [attr.aria-current]="activeItem === 'services' ? 'page' : null">
             Danh mục dịch vụ
           </a>
-          <a class="catalog-sidebar__sub" routerLink="/admin/appointments">Lịch hẹn</a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/appointments" [class.catalog-sidebar__sub--active]="activeItem === 'appointments'" [attr.aria-current]="activeItem === 'appointments' ? 'page' : null">Lịch hẹn</a>
           <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Hồ sơ dịch vụ</span>
         </div>
 
