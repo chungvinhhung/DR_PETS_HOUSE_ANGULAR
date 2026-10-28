@@ -1,5 +1,5 @@
 export type AppointmentStatus =
-  'PENDING' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'UNKNOWN';
+  'PENDING' | 'PENDING_PAYMENT' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'UNKNOWN';
 
 export interface AppointmentHistoryEvent {
   status: string;
@@ -68,7 +68,7 @@ function namesFrom(value: unknown, singular: string): string[] {
 export function appointmentStatus(raw: unknown): AppointmentStatus {
   const key = valueText(raw).toUpperCase();
   const statuses: Record<string, AppointmentStatus> = {
-    PENDING:'PENDING', PENDING_PAYMENT:'PENDING', REQUESTED:'PENDING',
+    PENDING:'PENDING', PENDING_PAYMENT:'PENDING_PAYMENT', REQUESTED:'PENDING', 
     CONFIRMED:'CONFIRMED', IN_PROGRESS:'IN_PROGRESS', PROCESSING:'IN_PROGRESS',
     COMPLETED:'COMPLETED', CANCELLED:'CANCELLED', CANCELED:'CANCELLED',
     NO_SHOW:'NO_SHOW', MISSED:'NO_SHOW',
@@ -77,7 +77,7 @@ export function appointmentStatus(raw: unknown): AppointmentStatus {
 }
 export function statusLabel(status: AppointmentStatus, rawStatus = ''): string {
   return ({
-    PENDING:'Chờ xác nhận', CONFIRMED:'Đã xác nhận', IN_PROGRESS:'Đang thực hiện',
+    PENDING:'Chờ xác nhận', PENDING_PAYMENT:'Chờ thanh toán', CONFIRMED:'Đã xác nhận', IN_PROGRESS:'Đang thực hiện',
     COMPLETED:'Hoàn tất', CANCELLED:'Đã hủy', NO_SHOW:'Không đến',
     UNKNOWN: rawStatus || 'Chưa xác định',
   } as Record<AppointmentStatus, string>)[status];
@@ -160,7 +160,7 @@ export function appointmentWindow(
   appointment: AppointmentView, action: 'cancel' | 'reschedule', nowMs: number,
   isManagerOrAdmin: boolean,
 ): AppointmentWindowDecision {
-  if (['CANCELLED','COMPLETED','NO_SHOW','IN_PROGRESS','UNKNOWN'].includes(appointment.status))
+  if (['CANCELLED','COMPLETED','NO_SHOW','IN_PROGRESS','UNKNOWN','PENDING_PAYMENT'].includes(appointment.status))
     return {status:'terminal',hoursRemaining:null,canRequest:false,overrideRequiresAudit:false};
   if (action === 'reschedule' && appointment.rescheduleCount === null)
     return {status:'missing-count',hoursRemaining:null,canRequest:false,overrideRequiresAudit:false};
