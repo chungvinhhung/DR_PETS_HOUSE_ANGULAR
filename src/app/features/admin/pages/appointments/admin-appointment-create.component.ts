@@ -1,5 +1,5 @@
 import { HttpParams } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 
@@ -106,6 +106,8 @@ export class AdminAppointmentCreateComponent {
   private serviceRequest = 0;
   private petSequence = 0;
   private extraServiceSequence = 0;
+  private leaveResolver: ((leave: boolean) => void) | null = null;
+  private allowDiscardNavigation = false;
   private priceRequestVersion = 0;
 
   readonly today = new Intl.DateTimeFormat('en-CA', {
@@ -207,7 +209,7 @@ export class AdminAppointmentCreateComponent {
   }
 
   money(value: number | null): string {
-    return value === null ? 'Chờ BE xác nhận' : new Intl.NumberFormat('vi-VN').format(value) + 'đ';
+    return value === null ? 'Chờ xác nhận' : new Intl.NumberFormat('vi-VN').format(value) + 'đ';
   }
 
   editLookupPhone(value: string): void {
@@ -499,7 +501,7 @@ export class AdminAppointmentCreateComponent {
     }
     if (this.complexBooking()) {
       this.slotsState.set('unsupported');
-      this.slotsError.set('Booking nhiều thú cưng hoặc MEDICAL cần bác sĩ review phải được BE xác nhận toàn bộ lịch và nhân sự trước khi đặt.');
+      this.slotsError.set('Lịch có nhiều thú cưng hoặc dịch vụ khám cần được kiểm tra thêm. Vui lòng thử lịch đơn giản hơn.');
       return;
     }
     const serviceIds=this.plannedSegments().map(row=>row.serviceId);
@@ -519,7 +521,7 @@ export class AdminAppointmentCreateComponent {
           try{
             const body=objectOf(unwrap(wire));
             const list=body?.['slots'];
-            if(!Array.isArray(list))throw new Error('BE không trả về slots theo hợp đồng Availability v7.');
+            if(!Array.isArray(list))throw new Error('Chưa tải được danh sách khung giờ. Vui lòng thử lại.');
             const slots=list.map(item=>{
               const raw=objectOf(item);
               if(!raw)return null;
@@ -541,7 +543,7 @@ export class AdminAppointmentCreateComponent {
         error:err=>{
           if(version!==this.slotRequest)return;
           this.slotsState.set('error');
-          this.slotsError.set(adminErrorMessage(err,'Không tra cứu được khung giờ BE.'));
+          this.slotsError.set(adminErrorMessage(err,'Không tải được khung giờ. Vui lòng thử lại.'));
         }
       });
   }
@@ -558,7 +560,7 @@ export class AdminAppointmentCreateComponent {
   requestPricingPreview(): void {
     this.pricingSnapshot.set(null);
     this.pricingStatus.set('error');
-    this.pricingError.set('Backend hiện chưa có API báo giá chỉ đọc. Tạm tính catalog không phải số tiền chốt; chưa áp dụng voucher hoặc giữ lịch.');
+    this.pricingError.set('Chưa thể xem tổng tiền chính xác lúc này. Vui lòng thử lại sau.');
   }
 
   updateVoucher(value: string): void {
@@ -578,7 +580,7 @@ export class AdminAppointmentCreateComponent {
       this.voucherNotice.set('Nhập mã giảm giá trước khi áp dụng.');
       return;
     }
-    this.voucherNotice.set('Cần API báo giá lịch hẹn dành cho Admin để xác minh voucher. Mã chưa được áp dụng.');
+    this.voucherNotice.set('Chưa thể áp dụng mã giảm giá lúc này. Vui lòng thử lại sau.');
   }
 
   private clearReview(): void { this.reviewErrors.set([]); }
@@ -592,7 +594,7 @@ export class AdminAppointmentCreateComponent {
     if (this.lookupState() === 'found' && !customer) errors.push('Chọn khách hàng trong danh sách tra cứu.');
     if (customer?.accountStatus === 'BLOCKED') errors.push('Tài khoản đang bị chặn, không thể tạo lịch hẹn.');
     if (!this.customerName().trim()) errors.push('Nhập họ tên khách hàng.');
-    if (!this.customerEmail().trim()) errors.push('Nhập email khách hàng theo trường bắt buộc trong Figma.');
+    if (!this.customerEmail().trim()) errors.push('Vui lòng nhập email khách hàng.');
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.customerEmail().trim()))
       errors.push('Email chưa đúng định dạng.');
     if (!this.petCount()) errors.push('Chọn hoặc thêm ít nhất một thú cưng.');
@@ -600,45 +602,62 @@ export class AdminAppointmentCreateComponent {
     if (this.plannedSegments().some(row => row.durationMinutes === null))
       errors.push('Có dịch vụ chưa có thời lượng được xác nhận.');
     if (this.requiresVetReview())
-      errors.push('MEDICAL có Nurse segment phải được BE kiểm tra Veterinarian review trước khi xác nhận.');
+      errors.push('Dịch vụ khám này cần bác sĩ thú y kiểm tra trước khi hoàn tất.');
     if (this.draftStaffConflicts().length)
-      errors.push('Một nhân viên đang được xếp vào các segment trùng giờ của nhiều thú cưng.');
+      errors.push('Có nhân viên được phân công trùng thời gian. Vui lòng chọn lại.');
     if (this.newPets().filter(p => p.selected).some(p => !p.name.trim() || !p.species))
       errors.push('Nhập tên và loài cho tất cả thú cưng mới được chọn.');
     if (customer && this.petsLoadState() === 'unsupported' && !this.newPets().some(p => p.selected))
-      errors.push('BE chưa cung cấp danh sách thú cưng của khách hàng.');
+      errors.push('Chưa tải được hồ sơ thú cưng. Vui lòng thêm thú cưng mới hoặc thử lại sau.');
     if (!this.branchId() || !this.serviceId()) errors.push('Chọn chi nhánh và dịch vụ.');
     if (this.complexBooking())
-      errors.push('Chưa có API kiểm tra đồng thời các segment của nhiều dịch vụ/thú cưng.');
+      errors.push('Chưa thể kiểm tra lịch cho nhiều thú cưng cùng lúc. Vui lòng thử lại sau.');
     if (!this.appointmentDate() || (!this.selectedSlotId() && !this.complexBooking()))
       errors.push('Chọn ngày và khung giờ còn chỗ.');
     else if (this.appointmentDate() < this.today) errors.push('Không thể đặt lịch vào ngày đã qua.');
     if (this.paymentMethod() === 'ONLINE_MOCK' && !this.onlineProvider())
       errors.push('Chọn cổng thanh toán trực tuyến.');
     if (!this.currentPreview())
-      errors.push('Chưa có kết quả giá tham khảo còn hiệu lực. Vui lòng xem giá lại.');
+      errors.push('Chưa thể xác định tổng tiền cho lịch hẹn này.');
     // A slot read/price hint never authorizes a booking mutation.
-    errors.push('Chưa có hợp đồng API tạo lịch hẹn hộ khách, kiểm tra toàn bộ segment, áp voucher, thu cọc và xác nhận thanh toán. Chưa tạo lịch hẹn thật.');
+    errors.push('Chức năng xác nhận lịch hẹn hiện chưa khả dụng. Thông tin của bạn chưa được lưu thành lịch hẹn.');
     this.reviewErrors.set(errors);
+    if (errors.length) this.toast.show(errors[0]);
   }
 
   requestCancel(): void {
-    if (this.hasUnsavedChanges()) this.cancellationOpen.set(true);
-    else void this.router.navigateByUrl('/admin/appointments');
-  }
-  discard(): void {
-    this.cancellationOpen.set(false);
+    if (this.hasUnsavedChanges()) {
+      this.cancellationOpen.set(true);
+      return;
+    }
     void this.router.navigateByUrl('/admin/appointments');
   }
 
-  canLeavePage(): boolean | Promise<boolean> {
-    if (!this.hasUnsavedChanges()) return true;
-    return window.confirm('Bạn có thay đổi chưa lưu. Rời trang và bỏ dữ liệu?');
+  closeCancellation(): void {
+    this.cancellationOpen.set(false);
+    const resolve = this.leaveResolver;
+    this.leaveResolver = null;
+    resolve?.(false);
   }
-  @HostListener('window:beforeunload', ['$event'])
-  preventUnsavedReload(event: BeforeUnloadEvent): void {
-    if (!this.hasUnsavedChanges()) return;
-    event.preventDefault();
-    event.returnValue = '';
+
+  discard(): void {
+    this.cancellationOpen.set(false);
+    this.allowDiscardNavigation = true;
+    const resolve = this.leaveResolver;
+    this.leaveResolver = null;
+    if (resolve) {
+      resolve(true);
+    } else {
+      void this.router.navigateByUrl('/admin/appointments');
+    }
+  }
+
+  // The same Web2 modal handles sidebar links and browser Back within Angular.
+  canLeavePage(): boolean | Promise<boolean> {
+    if (this.allowDiscardNavigation || !this.hasUnsavedChanges()) return true;
+    return new Promise<boolean>(resolve => {
+      this.leaveResolver = resolve;
+      this.cancellationOpen.set(true);
+    });
   }
 }
