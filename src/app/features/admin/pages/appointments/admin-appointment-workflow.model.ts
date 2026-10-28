@@ -148,7 +148,7 @@ export function normalizeAppointmentDetail(raw: unknown): AppointmentView {
   return normalizeAppointment(root?.['appointment'] ?? payload);
 }
 
-export type WindowEligibility = 'eligible' | 'too-late' | 'missing-time' | 'limit-reached' | 'terminal';
+export type WindowEligibility = 'eligible' | 'too-late' | 'missing-time' | 'missing-count' | 'limit-reached' | 'terminal';
 export interface AppointmentWindowDecision {
   status: WindowEligibility;
   hoursRemaining: number | null;
@@ -160,8 +160,10 @@ export function appointmentWindow(
   appointment: AppointmentView, action: 'cancel' | 'reschedule', nowMs: number,
   isManagerOrAdmin: boolean,
 ): AppointmentWindowDecision {
-  if (['CANCELLED','COMPLETED','NO_SHOW','IN_PROGRESS'].includes(appointment.status))
+  if (['CANCELLED','COMPLETED','NO_SHOW','IN_PROGRESS','UNKNOWN'].includes(appointment.status))
     return {status:'terminal',hoursRemaining:null,canRequest:false,overrideRequiresAudit:false};
+  if (action === 'reschedule' && appointment.rescheduleCount === null)
+    return {status:'missing-count',hoursRemaining:null,canRequest:false,overrideRequiresAudit:false};
   if (action === 'reschedule' && appointment.rescheduleCount !== null && appointment.rescheduleCount >= 2)
     return {status:'limit-reached',hoursRemaining:null,canRequest:isManagerOrAdmin,overrideRequiresAudit:isManagerOrAdmin};
   if (!appointment.appointmentAt)
