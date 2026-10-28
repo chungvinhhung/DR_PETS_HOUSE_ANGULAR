@@ -186,12 +186,80 @@
           </select>
         </label>
       </div>
+      @if (serviceId() && selectedPets().length) {
+        <div class="appointment-create__segment-toggle">
+          <button type="button" class="btn btn--outline btn--small"
+            [attr.aria-expanded]="multiServiceOpen()" (click)="multiServiceOpen.set(!multiServiceOpen())">
+            {{ multiServiceOpen() ? 'Ẩn phân công dịch vụ' : '+ Thêm dịch vụ / Phân công nhân viên' }}
+          </button>
+        </div>
+      }
+      @if (multiServiceOpen() && selectedPets().length && serviceId()) {
+        <div class="pet-picker">
+          @for (pet of selectedPets(); track pet.id) {
+            <article class="pet-new">
+              <div class="pet-new__title">
+                <strong>{{pet.name || 'Thú cưng mới'}} · Dịch vụ bổ sung</strong>
+                <button type="button" class="btn btn--outline btn--small" (click)="addExtraService(pet.id)">
+                  + Thêm dịch vụ
+                </button>
+              </div>
+              @for (extra of extrasForPet(pet.id); track extra.id) {
+                <div class="segment-line">
+                  <label class="field">Dịch vụ tiếp theo
+                    <select [value]="extra.serviceId"
+                      (change)="changeExtraService(extra.id,$any($event.target).value)">
+                      <option value="">Chọn dịch vụ</option>
+                      @for (option of services(); track option.id) {
+                        <option [value]="option.id" [disabled]="option.id===serviceId()">
+                          {{option.name}} · {{option.durationMinutes || '?'}} phút
+                        </option>
+                      }
+                    </select>
+                  </label>
+                  <button type="button" class="btn btn--outline btn--small" (click)="removeExtraService(extra.id)">Xóa</button>
+                </div>
+              }
+            </article>
+          }
+        </div>
+        <h3 class="appointment-create__subheading">Các segment dự kiến theo thứ tự thực hiện</h3>
+        <div class="pet-picker">
+          @for (segment of plannedSegments(); track segment.key) {
+            <div class="pet-picker__row segment-assignment">
+              <span class="pet-picker__details">
+                <strong>{{segment.petName}} · {{segment.sequence}}. {{segment.serviceName}}</strong>
+                <small>{{segment.durationMinutes===null?'Chưa có thời lượng':segment.durationMinutes+' phút'}}
+                  · {{requiredRoleLabel(segment.requiredStaffRole)}}
+                  · {{segment.startOffsetMinutes===null?'Chưa xác định thứ tự thời gian':'Bắt đầu sau '+segment.startOffsetMinutes+' phút'}}
+                </small>
+                @if (segment.requiresVeterinarianReview) {
+                  <small class="inline-error">MEDICAL cần Veterinarian review sau Nurse segment — chờ BE xác nhận.</small>
+                }
+              </span>
+              <label class="field">Nhân viên dự kiến
+                <select [value]="assignedStaff()[segment.key] || ''"
+                  (change)="assignStaff(segment.key,$any($event.target).value)">
+                  <option value="">BE tự phân công / Chưa chọn</option>
+                  @for (person of eligibleStaff(segment.requiredStaffRole); track person.id) {
+                    <option [value]="person.id">{{person.fullName}}</option>
+                  }
+                </select>
+              </label>
+            </div>
+          }
+        </div>
+        <p class="hint">Chỉ gợi ý nhân viên thuộc đúng chi nhánh và vai trò, tài khoản ACTIVE. Chưa xác minh ca làm, trùng lịch và capacity. BE sẽ kiểm tra toàn bộ segment khi đặt lịch thật.</p>
+        @if (staffDirectory.loading()) { <p class="hint" role="status">Đang tải danh sách nhân sự...</p> }
+        @if (staffDirectory.error()) { <p class="hint hint--notice">{{staffDirectory.error()}}</p> }
+      }
       @if (branchLoadState()==='error' || serviceLoadState()==='error') {
         <p class="inline-error">{{serviceError()}} <button type="button" class="text-action"
           (click)="branchLoadState()==='error'?loadBranches():selectBranch(branchId())">Thử lại</button></p>
       }
       @if (serviceLoadState()==='empty') {<p class="hint">Không có dịch vụ BOOKABLE đang hoạt động tại chi nhánh.</p>}
       @if (slotsState()==='empty') {<p class="hint">Không còn khung giờ phù hợp trong ngày đã chọn.</p>}
+      @if (slotsState()==='unsupported') { <p class="hint hint--notice">{{slotsError()}}</p> }
       @if (slotsState()==='error') {
         <p class="inline-error">{{slotsError()}} <button type="button" class="text-action" (click)="loadSlots()">Thử lại</button></p>
       }
