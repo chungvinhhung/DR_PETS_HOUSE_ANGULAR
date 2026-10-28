@@ -50,16 +50,16 @@ import {
   </section>
   <section class="panel">
    <h2>Kết quả / Ghi chú</h2>
-   <p class="notes">{{r.note||'BE chưa cung cấp kết quả hoặc ghi chú.'}}</p>
+   <p class="notes">{{r.note||'Chưa có kết quả hoặc ghi chú.'}}</p>
    @if(r.category==='GROOMING' && r.status==='COMPLETED'){
-    <p class="finalization">Hồ sơ đã được đánh dấu hoàn tất bởi Backend.</p>
+    <p class="finalization">Hồ sơ đã hoàn tất.</p>
    }
   </section>
   @if(r.category==='MEDICAL'){
    <section class="panel">
     <h2>Kiểm tra MEDICAL — Nurse / Veterinarian review</h2>
     <div class="facts">
-     <div><label>Có Nurse segment</label><strong>{{r.nurseSegment===null?'BE chưa xác nhận':r.nurseSegment?'Có':'Không'}}</strong></div>
+     <div><label>Có Nurse segment</label><strong>{{r.nurseSegment===null?'Chưa xác định':r.nurseSegment?'Có':'Không'}}</strong></div>
      <div><label>Trạng thái BS thú y review</label>
       <strong>{{r.veterinarianReview==='DONE'?'Đã review':r.veterinarianReview==='PENDING'?'Chờ review':'Chưa xác minh'}}</strong></div>
      <div><label>BS review</label><strong>{{r.reviewedBy||'Chưa có dữ liệu'}}</strong></div>
@@ -77,7 +77,7 @@ import {
         <div><label>Kết quả</label><strong>{{r.professional?.result || 'Chưa có dữ liệu'}}</strong></div>
         <div><label>Ghi chú chuyên môn</label><strong>{{r.professional?.professionalNote || 'Chưa có dữ liệu'}}</strong></div>
       </div>
-      <p class="hint">Nội dung chuyên môn lấy từ ServiceRecord BE; chỉ Veterinarian được phân quyền mới có thể cập nhật theo hợp đồng.</p>
+      <p class="hint">Chỉ bác sĩ thú y được phân quyền mới có thể cập nhật nội dung chuyên môn.</p>
     </section>
   }
   <section class="panel">
@@ -88,7 +88,7 @@ import {
        <tr><td>{{m.name||'—'}}</td><td>{{m.templateQuantity?m.templateQuantity+' '+m.unit:'—'}}</td>
         <td>{{m.actualQuantity?m.actualQuantity+' '+m.unit:'—'}}</td><td>{{m.note||'—'}}</td></tr>
       }</tbody></table></div>
-   }@else{<p class="hint">BE chưa cung cấp thông tin vật tư đã sử dụng.</p>}
+   }@else{<p class="hint">Chưa có thông tin vật tư đã sử dụng.</p>}
    <p class="hint">Số vật liệu thực tế phải được xác nhận qua ServiceRecord và nghiệp vụ kho; FE không tự trừ tồn kho.</p>
   </section>
   <section class="panel">
@@ -100,7 +100,7 @@ import {
           @if(event.note){<p>{{event.note}}</p>}
         </li>
       }</ol>
-    }@else{<p class="hint">Chưa có lịch sử thao tác được BE xác nhận. Không tạo timeline mẫu.</p>}
+    }@else{<p class="hint">Chưa có lịch sử thao tác.</p>}
   </section>
   <div class="actions">
     @if(r.status==='COMPLETED'){
@@ -176,8 +176,8 @@ export class AdminServiceRecordDetailComponent{
  explainFinalize(){
    const check=this.finalization();
    this.actionMessage.set(check.allowed ?
-    'Điều kiện FE sơ bộ hợp lệ. Chưa có API finalize được xác minh, không ghi thay đổi vào hồ sơ.' :
+    'Hồ sơ đã đáp ứng các điều kiện hiển thị. Chức năng hoàn tất hồ sơ hiện chưa khả dụng.' :
     check.reason);
  }
- explainReopen(){this.actionMessage.set('Cần quyền BE và lý do audit để mở lại hồ sơ. Chưa có API đã xác minh nên không cập nhật trạng thái thật.');}
+ explainReopen(){this.actionMessage.set('Chức năng mở lại hồ sơ hiện chưa khả dụng. Hồ sơ chưa có thay đổi.');}
 }
