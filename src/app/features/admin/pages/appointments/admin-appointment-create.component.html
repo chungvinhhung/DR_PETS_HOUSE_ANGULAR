@@ -249,6 +249,9 @@
             </div>
           }
         </div>
+        @if (draftStaffConflicts().length) {
+          <p class="inline-error" role="alert">Phân công trùng giờ: {{draftStaffConflicts().length}} nhân viên đang được chọn cho nhiều thú cưng cùng lúc. Hãy đổi nhân viên hoặc lịch.</p>
+        }
         <p class="hint">Chỉ gợi ý nhân viên thuộc đúng chi nhánh và vai trò, tài khoản ACTIVE. Chưa xác minh ca làm, trùng lịch và capacity. BE sẽ kiểm tra toàn bộ segment khi đặt lịch thật.</p>
         @if (staffDirectory.loading()) { <p class="hint" role="status">Đang tải danh sách nhân sự...</p> }
         @if (staffDirectory.error()) { <p class="hint hint--notice">{{staffDirectory.error()}}</p> }
