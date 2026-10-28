@@ -75,18 +75,21 @@
 
       <section class="panel">
         <h2>Hồ sơ dịch vụ và MEDICAL review</h2>
-        @if (appointment.serviceRecordRefs.length) {
+        @if (recordsLoading()) { <p class="hint" role="status">Đang lấy ServiceRecord liên quan...</p> }
+        @else if (recordsError()) {
+          <p class="hint" role="alert">Không đọc được ServiceRecord: {{recordsError()}}</p>
+        } @else if (linkedRecords().length) {
           <div class="facts">
-            @for (record of appointment.serviceRecordRefs; track record.id) {
-              <div><label>{{record.type || 'Hồ sơ dịch vụ'}}</label>
+            @for (record of linkedRecords(); track record.id) {
+              <div><label>{{record.category === 'UNKNOWN' ? 'Hồ sơ dịch vụ' : record.category}}</label>
                 <a [routerLink]="['/admin/service-records',record.id]">
-                  {{record.code}} · {{record.status || 'Chưa có trạng thái'}}
+                  {{record.code}} · {{serviceRecordStatusLabel(record.status,record.rawStatus)}}
                 </a>
               </div>
             }
           </div>
         } @else {
-          <p class="hint">BE chưa trả về liên kết ServiceRecord cho lịch hẹn này. Không suy đoán đã tạo hoặc hoàn tất hồ sơ.</p>
+          <p class="hint">BE chưa tìm thấy ServiceRecord thuộc lịch hẹn này.</p>
         }
         <p class="hint">Với MEDICAL có Nurse segment, BE phải kiểm tra Veterinarian review trước khi finalize ServiceRecord. Hoàn tất Appointment không tự đồng nghĩa hoàn tất hồ sơ y tế.</p>
       </section>
