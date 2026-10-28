@@ -187,7 +187,8 @@ export class AdminAppointmentCreateComponent {
   readonly requiresVetReview = computed(() => this.plannedSegments().some(s => s.requiresVeterinarianReview));
   readonly draftStaffConflicts = computed(() =>
     overlappingAssignedStaff(this.plannedSegments(), this.assignedStaff()));
-  readonly complexBooking = computed(() => this.petCount() > 1 || this.plannedSegments().length > 1 || this.extraServices().length > 0 || this.requiresVetReview());
+  // BE /availability supports sequential services for ONE pet. Multi-pet still requires separate atomic bookings.
+  readonly complexBooking = computed(() => this.petCount() > 1 || this.requiresVetReview());
   readonly hasUnsavedChanges = computed(() => Boolean(
     this.lookupPhone().trim() || this.customerName().trim() || this.selectedPetIds().length ||
     this.newPets().length || this.extraServices().length || this.branchId() || this.serviceId() || this.appointmentDate() ||
@@ -362,6 +363,11 @@ export class AdminAppointmentCreateComponent {
       this.toast.show('Chỉ chọn dịch vụ BOOKABLE đang hoạt động tại chi nhánh.');
       return;
     }
+    const base = this.chosenService();
+    if (service && base && service.category !== base.category) {
+      this.toast.show('Các dịch vụ trong một lịch hẹn phải cùng nhóm MEDICAL hoặc GROOMING.');
+      return;
+    }
     if (hasDuplicatePetService(target.petId, serviceId, this.serviceId(), this.extraServices(), id)) {
       this.toast.show('Thú cưng đã được thêm dịch vụ này.');
       return;
@@ -486,60 +492,58 @@ export class AdminAppointmentCreateComponent {
 
   loadSlots(): void {
     const service = this.chosenService();
-    if (!service || !this.branchId() || !this.appointmentDate()) return;
-    // Legacy /appointments/slots only filters service_type/date/branch. It cannot
-    // validate per-pet segments, capacity, staff shifts, or MEDICAL vet review.
-    if (this.complexBooking()) {
+    if (!service || !this.branchId() || !this.appointmentDate() || !this.petCount()) return;
+    if (this.extraServices().some(row=>!row.serviceId)) {
       this.slotsState.set('unsupported');
-      this.slotsError.set('Cần API khả dụng cho toàn bộ thú cưng, dịch vụ, segment và nhân sự. Khung giờ đơn giản không đủ để xác nhận lịch này còn chỗ.');
+      this.slotsError.set('Chọn đủ dịch vụ bổ sung trước khi tra cứu giờ.');
       return;
     }
-    const version = ++this.slotRequest;
+    if (this.complexBooking()) {
+      this.slotsState.set('unsupported');
+      this.slotsError.set('Booking nhiều thú cưng hoặc MEDICAL cần bác sĩ review phải được BE xác nhận toàn bộ lịch và nhân sự trước khi đặt.');
+      return;
+    }
+    const serviceIds=this.plannedSegments().map(row=>row.serviceId);
+    if(!serviceIds.length)return;
+    const version=++this.slotRequest;
     this.slotsState.set('loading');
-    const params = new HttpParams()
-      .set('date', this.appointmentDate())
-      .set('branch_id', this.branchId())
-      .set('service_type', service.category === 'GROOMING' ? 'grooming' : 'exam');
-    // Read-only Customer booking slot route exists in BookingApiService.
-    // A returned slot is NOT a reservation; BE must revalidate at create.
-    this.api.get<unknown>('/appointments/slots', { params })
+    const params=new HttpParams().set('date',this.appointmentDate())
+      .set('branchId',this.branchId())
+      .set('serviceIds',serviceIds.join(','))
+      .set('includeFull','true');
+    // Contract confirmed from BE foundation-v6: GET /availability.
+    // This is a read-only check; actual booking must reserve again atomically.
+    this.api.get<unknown>('/availability',{params})
       .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: wire => {
-          if (version !== this.slotRequest) return;
-          try {
-            const body = unwrap(wire);
-            const container = objectOf(body);
-            const list = Array.isArray(body) ? body :
-              Array.isArray(container?.['slots']) ? container['slots'] :
-              Array.isArray(container?.['items']) ? container['items'] : null;
-            if (!list) throw new Error('API không trả về danh sách khung giờ hợp lệ.');
-            const slots = list.map(item => {
-              const raw = objectOf(item);
-              if (!raw) return null;
-              const id = textOf(raw['slot_id'] ?? raw['id']);
-              const start = clockOf(raw['start_time'] ?? raw['startAt'] ?? raw['start']);
-              const end = clockOf(raw['end_time'] ?? raw['endAt'] ?? raw['end']);
-              if (!id || !start || !end) return null;
-              const capacity = Number(raw['max_booking'] ?? raw['capacity'] ?? 1);
-              const booked = Number(raw['booked_count'] ?? raw['bookedCount'] ?? 0);
-              return {
-                id, label: start + ' - ' + end,
-                available: (raw['status'] === 'available' || raw['available'] === true) &&
-                  Number.isFinite(capacity) && capacity > 0 && booked < capacity,
-              } satisfies AppointmentSlot;
-            }).filter((slot): slot is AppointmentSlot => slot !== null);
+        next: wire=>{
+          if(version!==this.slotRequest)return;
+          try{
+            const body=objectOf(unwrap(wire));
+            const list=body?.['slots'];
+            if(!Array.isArray(list))throw new Error('BE không trả về slots theo hợp đồng Availability v7.');
+            const slots=list.map(item=>{
+              const raw=objectOf(item);
+              if(!raw)return null;
+              const id=textOf(raw['start']);
+              const start=clockOf(raw['start']);
+              const end=clockOf(raw['end']);
+              const remaining=Number(raw['remaining']);
+              if(!id||!start||!end)return null;
+              return {id,label:start+' - '+end,
+                available:raw['status']==='AVAILABLE'&&Number.isFinite(remaining)&&remaining>0} satisfies AppointmentSlot;
+            }).filter((slot):slot is AppointmentSlot=>slot!==null);
             this.slots.set(slots);
-            this.slotsState.set(slots.length ? 'ready' : 'empty');
-          } catch (error) {
+            this.slotsState.set(slots.length?'ready':'empty');
+          }catch(err){
             this.slotsState.set('error');
-            this.slotsError.set(error instanceof Error ? error.message : 'Không đọc được khung giờ.');
+            this.slotsError.set(err instanceof Error?err.message:'Không đọc được dữ liệu Availability.');
           }
         },
-        error: error => {
-          if (version !== this.slotRequest) return;
+        error:err=>{
+          if(version!==this.slotRequest)return;
           this.slotsState.set('error');
-          this.slotsError.set(adminErrorMessage(error, 'Chưa tải được khung giờ khả dụng.'));
-        },
+          this.slotsError.set(adminErrorMessage(err,'Không tra cứu được khung giờ BE.'));
+        }
       });
   }
 
