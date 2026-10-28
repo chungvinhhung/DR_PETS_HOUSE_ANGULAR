@@ -12,7 +12,7 @@ import { ServiceCatalogApiService } from '../../service-catalog/services/service
 import { AdminStaffApiService } from '../../staff/services/admin-staff-api.service';
 import { StaffPreview } from '../../staff/models/staff-preview.model';
 import { buildAppointmentSegments, ExtraPetService, hasDuplicatePetService, overlappingAssignedStaff, segmentReferenceSubtotal } from './admin-appointment-segments.utils';
-import { AdminAppointmentPricingPreviewService, AppointmentDraftPricing, estimateAppointmentPayment } from './admin-appointment-pricing-preview.service';
+import { AppointmentDraftPricing, estimateAppointmentPayment } from './admin-appointment-pricing-preview.service';
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'empty' | 'error' | 'unsupported';
 type CustomerLookupState = 'idle' | 'loading' | 'found' | 'not-found' | 'error';
@@ -97,7 +97,6 @@ export class AdminAppointmentCreateComponent {
   private readonly lookupApi = inject(AdminOrderCreateLookupService);
   private readonly catalog = inject(ServiceCatalogApiService);
   readonly staffDirectory = inject(AdminStaffApiService);
-  private readonly pricingPreviewService = inject(AdminAppointmentPricingPreviewService);
   private readonly toast = inject(AdminToastService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -553,59 +552,13 @@ export class AdminAppointmentCreateComponent {
     this.clearReview();
   }
 
-  /** Read-only Customer preview-pricing; no voucher quota, slot reservation, or payment mutation. */
+  /** The deployed BE booking API has no non-mutating quote endpoint.
+   * Never probe a nonexistent preview route or estimate a final voucher/penalty.
+   */
   requestPricingPreview(): void {
-    if (this.pricingStatus() === 'loading') return;
-    const selectedPets = this.selectedPets();
-    const planned = this.plannedSegments();
-    const invalidExtras = this.extraServices().some(item => !item.serviceId);
-    if (!this.branchId() || !selectedPets.length || !this.serviceId() ||
-        invalidExtras || planned.length < selectedPets.length ||
-        selectedPets.some(pet => !pet.name.trim())) {
-      this.pricingStatus.set('error');
-      this.pricingSnapshot.set(null);
-      this.pricingError.set('Chọn đầy đủ chi nhánh, thú cưng và tất cả dịch vụ trước khi xem giá.');
-      return;
-    }
-    const payload = selectedPets.map(pet => {
-      const weight = Number(String(pet.weightKg).replace(',', '.'));
-      return {
-        petId: pet.id,
-        weightKg: String(pet.weightKg).trim() && Number.isFinite(weight) && weight > 0 ? weight : null,
-        serviceIds: planned.filter(item => item.petId === pet.id).map(item => item.serviceId),
-      };
-    });
-    const key = this.pricingRequestKey();
-    const version = ++this.priceRequestVersion;
     this.pricingSnapshot.set(null);
-    this.pricingStatus.set('loading');
-    this.pricingError.set('');
-    try {
-      this.pricingPreviewService.preview(payload)
-        .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-          next: preview => {
-            if (version !== this.priceRequestVersion) return;
-            if (key !== this.pricingRequestKey()) {
-              this.pricingSnapshot.set(null);
-              this.pricingStatus.set('error');
-              this.pricingError.set('Dữ liệu đã thay đổi trong lúc báo giá. Vui lòng xem giá lại.');
-              return;
-            }
-            this.pricingKeyAtResponse.set(key);
-            this.pricingSnapshot.set(preview);
-            this.pricingStatus.set('ready');
-          },
-          error: err => {
-            if (version !== this.priceRequestVersion) return;
-            this.pricingSnapshot.set(null);
-            this.pricingStatus.set('error');
-            this.pricingError.set(adminErrorMessage(err, 'API xem giá chưa khả dụng cho Admin. Chưa có báo giá được xác nhận.'));
-          },
-        });
-    } catch (err) {
-      this.pricingStatus.set('error');
-      this.pricingError.set(err instanceof Error ? err.message : 'Không thể chuẩn bị báo giá.');
-    }
+    this.pricingStatus.set('error');
+    this.pricingError.set('Backend hiện chưa có API báo giá chỉ đọc. Tạm tính catalog không phải số tiền chốt; chưa áp dụng voucher hoặc giữ lịch.');
   }
 
   updateVoucher(value: string): void {
