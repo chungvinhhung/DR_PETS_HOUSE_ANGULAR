@@ -1,9 +1,5 @@
 :host{display:block;color:#283348}
 .appointment-create{width:100%;max-width:none;padding:32px;margin:0;font:400 13px/1.5 Roboto,Arial,sans-serif}
-.appointment-create__breadcrumb{display:flex;align-items:center;gap:10px;margin:0 0 12px;color:#738097;font-size:13px}
-.appointment-create__breadcrumb a{color:#6e7a8b;text-decoration:none}
-.appointment-create__breadcrumb strong{font-weight:600;color:#2e394d}
-.appointment-create__page-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
 h1{font-size:24px;line-height:1.25;margin:0;font-weight:700;color:#273247}
 h2{font-size:17px;font-weight:650;line-height:1.5;margin:0 0 16px;color:#273247}
 .panel{background:#fff;border:1px solid #dfe6f1;border-radius:11px;margin-bottom:18px;padding:20px}
@@ -27,14 +23,12 @@ button:disabled{cursor:not-allowed;opacity:.55}
 .form-grid--4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .field{display:block;min-width:0;font-size:13px;font-weight:400;line-height:20px;color:#344154}
 .field input,.field select,.payment-form input,.payment-form textarea{box-sizing:border-box;width:100%;min-height:44px;border:1px solid #dee5f0;border-radius:8px;background:#fff;color:#344154;padding:10px 12px;font:400 13px/20px Roboto,Arial,sans-serif;min-width:0}
-.field input:focus,.field select:focus,.payment-form input:focus,.payment-form textarea:focus{outline:2px solid #bbd8ff;border-color:#0d47a1}
 .field input.field--identified{background:#fff6d1;border-color:#f6e5ac}
 .field select:disabled{color:#8793a5;background:#f7f9fb}
 .lookup-results{margin-top:12px;border:1px solid #dbe4ee;border-radius:7px;overflow:hidden;max-width:560px}
 .lookup-results__item{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;border:0;background:white;text-align:left;padding:12px 14px;cursor:pointer}
 .lookup-results__item span:first-child{display:flex;flex-direction:column;gap:5px;font-size:13px}
 .lookup-selected{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:#345779}
-.lookup-selected__meta{border-radius:12px;background:#e8f5ed;padding:5px 10px;color:#347453}
 .inline-error{font-size:12px;color:#bd3535;margin:12px 0 0}
 .hint{font-size:12px;color:#697b93;line-height:1.6;margin:12px 0 0}
 .hint--notice{background:#fffaf0;border:1px solid #f4e1ac;border-radius:6px;padding:8px 10px;color:#98650e}
