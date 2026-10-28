@@ -1,15 +1,14 @@
 <app-admin-catalog-shell activeItem="appointments">
   <main class="appointment-create">
-    <nav class="appointment-create__breadcrumb" aria-label="Đường dẫn">
+    <nav class="breadcrumb appointment-create__breadcrumb" aria-label="Đường dẫn">
       <a routerLink="/admin/appointments">Lịch hẹn</a><span aria-hidden="true">›</span><strong aria-current="page">Tạo lịch hẹn</strong>
     </nav>
     <div class="appointment-create__page-title">
       <h1>Tạo lịch hẹn</h1>
-      <button type="button" class="btn btn--outline" (click)="requestCancel()">Hủy</button>
     </div>
 
     <div class="appointment-create__warning" role="status">
-      Bản nháp: Backend chưa xác nhận API tạo lịch hẹn hộ khách. Thông tin dưới đây chưa được đặt chỗ hoặc thanh toán.
+      Bạn có thể chuẩn bị thông tin lịch hẹn tại đây. Chức năng xác nhận đặt lịch đang được hoàn thiện.
     </div>
 
     <section class="panel" aria-labelledby="customer-search-heading">
@@ -84,7 +83,7 @@
         <p class="hint" role="status">Đang tải hồ sơ thú cưng của khách hàng...</p>
       }
       @if (petsLoadState()==='unsupported') {
-        <p class="hint hint--notice">Backend chưa cung cấp danh sách thú cưng trong hồ sơ khách này. Không dùng thú cưng của tài khoản Admin. Có thể nhập thông tin thú cưng mới vào bản nháp.</p>
+        <p class="hint hint--notice">Hiện chưa tải được danh sách thú cưng của khách hàng. Bạn có thể thêm thú cưng mới để tiếp tục.</p>
       }
       @if (petsLoadState()==='empty') {
         <p class="hint">Khách hàng chưa có thú cưng trong dữ liệu trả về.</p>
@@ -223,7 +222,7 @@
             </article>
           }
         </div>
-        <h3 class="appointment-create__subheading">Các segment dự kiến theo thứ tự thực hiện</h3>
+        <h3 class="appointment-create__subheading">Thứ tự thực hiện dịch vụ</h3>
         <div class="pet-picker">
           @for (segment of plannedSegments(); track segment.key) {
             <div class="pet-picker__row segment-assignment">
@@ -234,13 +233,13 @@
                   · {{segment.startOffsetMinutes===null?'Chưa xác định thứ tự thời gian':'Bắt đầu sau '+segment.startOffsetMinutes+' phút'}}
                 </small>
                 @if (segment.requiresVeterinarianReview) {
-                  <small class="inline-error">MEDICAL cần Veterinarian review sau Nurse segment — chờ BE xác nhận.</small>
+                  <small class="inline-error">Dịch vụ y tế này cần bác sĩ thú y kiểm tra trước khi hoàn tất.</small>
                 }
               </span>
               <label class="field">Nhân viên dự kiến
                 <select [value]="assignedStaff()[segment.key] || ''"
                   (change)="assignStaff(segment.key,$any($event.target).value)">
-                  <option value="">BE tự phân công / Chưa chọn</option>
+                  <option value="">Chưa chọn nhân viên</option>
                   @for (person of eligibleStaff(segment.requiredStaffRole); track person.id) {
                     <option [value]="person.id">{{person.fullName}}</option>
                   }
@@ -252,7 +251,7 @@
         @if (draftStaffConflicts().length) {
           <p class="inline-error" role="alert">Phân công trùng giờ: {{draftStaffConflicts().length}} nhân viên đang được chọn cho nhiều thú cưng cùng lúc. Hãy đổi nhân viên hoặc lịch.</p>
         }
-        <p class="hint">Chỉ gợi ý nhân viên thuộc đúng chi nhánh và vai trò, tài khoản ACTIVE. Chưa xác minh ca làm, trùng lịch và capacity. BE sẽ kiểm tra toàn bộ segment khi đặt lịch thật.</p>
+        <p class="hint">Nhân viên trong danh sách phù hợp với chi nhánh và chuyên môn. Lịch làm việc sẽ được kiểm tra khi xác nhận.</p>
         @if (staffDirectory.loading()) { <p class="hint" role="status">Đang tải danh sách nhân sự...</p> }
         @if (staffDirectory.error()) { <p class="hint hint--notice">{{staffDirectory.error()}}</p> }
       }
@@ -266,7 +265,7 @@
       @if (slotsState()==='error') {
         <p class="inline-error">{{slotsError()}} <button type="button" class="text-action" (click)="loadSlots()">Thử lại</button></p>
       }
-      <p class="hint">Khung giờ hiển thị từ API tra cứu, chưa được giữ chỗ. Khi xác nhận, BE phải kiểm tra lại sức chứa đồng thời, ca nhân viên và các lịch trùng thời gian.</p>
+      <p class="hint">Khung giờ đang hiển thị chỉ mang tính tham khảo, chưa được giữ chỗ.</p>
     </section>
 
     <section class="panel" aria-labelledby="payment-heading">
@@ -335,7 +334,7 @@
               }
             </div>
           }
-          <p class="hint hint--notice" role="status">Chỉ có giá tham khảo từ danh mục. BE foundation-v6 chưa cung cấp API báo giá riêng không tạo lịch; giá cuối cùng, voucher và cọc chỉ xác nhận khi Backend tạo giao dịch thật.</p>
+          <p class="hint hint--notice" role="status">Số tiền hiện tại chỉ là giá tham khảo. Tổng thanh toán và ưu đãi sẽ được xác nhận khi đặt lịch.</p>
           @if (pricingStatus()==='error' && pricingError()) {
             <p class="inline-error" role="alert">{{pricingError()}}</p>
           }
@@ -345,7 +344,7 @@
           @if (pricingStatus()==='ready' && currentPreview()) {
             <p class="hint" role="status">Đã nhận kết quả tham khảo cho {{currentPreview()!.petCount}} thú cưng. Chưa giữ slot, chưa áp dụng voucher, chưa tạo thanh toán.</p>
           }
-          <p class="payment-summary__disclaimer">Số liệu hiển thị chỉ dùng để tham khảo. BE phải báo giá lại khi xác nhận lịch; quy tắc cọc 30% và thanh toán 100% là tỷ lệ minh họa theo WBS 4.3, chưa phải số tiền đã thu. Chưa tạo giao dịch.</p>
+          <p class="payment-summary__disclaimer">Số tiền cọc và thanh toán được hiển thị để tham khảo. Chưa có giao dịch nào được thực hiện.</p>
         </div>
       </div>
     </section>
@@ -368,7 +367,7 @@
           <h2 id="appointment-discard-title">Hủy tạo lịch hẹn?</h2>
           <p>Dữ liệu đang nhập chưa được lưu. Bạn có chắc chắn muốn hủy?</p>
           <div class="confirm-dialog__actions">
-            <button type="button" class="btn btn--outline" (click)="cancellationOpen.set(false)">Tiếp tục nhập</button>
+            <button type="button" class="btn btn--outline" (click)="closeCancellation()">Tiếp tục nhập</button>
             <button type="button" class="btn btn--primary" (click)="discard()">Hủy tạo lịch hẹn</button>
           </div>
         </div>
