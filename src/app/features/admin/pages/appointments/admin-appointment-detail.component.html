@@ -1,0 +1,155 @@
+<app-admin-catalog-shell activeItem="appointments">
+  <main class="appointment-detail">
+    <nav class="breadcrumb" aria-label="Đường dẫn">
+      <a routerLink="/admin/appointments">Lịch hẹn</a>
+      <span aria-hidden="true">›</span><strong>Chi tiết lịch hẹn</strong>
+    </nav>
+    <header class="heading">
+      <div><h1>Chi tiết lịch hẹn</h1>
+        <p class="subtitle">Theo dõi thông tin, trạng thái và lịch sử xử lý</p></div>
+      <a class="btn btn--outline" routerLink="/admin/appointments">Quay lại danh sách</a>
+    </header>
+    @if (loading()) {
+      <section class="panel feedback" role="status">Đang tải chi tiết lịch hẹn...</section>
+    } @else if (error()) {
+      <section class="panel feedback" role="alert">
+        <p>{{error()}}</p>
+        <button type="button" class="btn btn--outline" (click)="refresh()">Thử lại</button>
+      </section>
+    } @else if (item(); as appointment) {
+      <section class="panel">
+        <div class="section-heading">
+          <h2>{{appointment.code}}</h2>
+          <span class="status-badge" [attr.data-status]="statusBadge()">
+            {{statusLabel(appointment.status)}}
+          </span>
+        </div>
+        <div class="facts">
+          <div><label>Ngày tạo</label><strong>{{displayTime(appointment.createdAt)}}</strong></div>
+          <div><label>Ngày giờ hẹn</label><strong>{{displayTime(appointment.appointmentAt)}}</strong></div>
+          <div><label>Chi nhánh</label><strong>{{appointment.branchName || 'Chưa có dữ liệu'}}</strong></div>
+          <div><label>Mã định danh</label><strong>{{appointment.id}}</strong></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Thông tin khách hàng và thú cưng</h2>
+        <div class="facts">
+          <div><label>Khách hàng</label><strong>{{appointment.customerName || 'Chưa có dữ liệu'}}</strong></div>
+          <div><label>Số điện thoại</label><strong>{{appointment.customerPhone || 'Chưa có dữ liệu'}}</strong></div>
+          <div><label>Email</label><strong>{{appointment.customerEmail || 'Chưa có dữ liệu'}}</strong></div>
+          <div><label>Thú cưng</label><strong>{{appointment.petNames.length ? appointment.petNames.join(', ') : 'Chưa có dữ liệu'}}</strong></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Dịch vụ và thanh toán</h2>
+        <div class="facts">
+          <div class="facts__wide"><label>Dịch vụ</label>
+            <strong>{{appointment.serviceNames.length ? appointment.serviceNames.join(' · ') : 'Chưa có dữ liệu'}}</strong>
+          </div>
+          <div><label>Phương thức thanh toán</label><strong>{{appointment.paymentMethod || 'Chưa có dữ liệu'}}</strong></div>
+          <div><label>Trạng thái thanh toán</label><strong>{{appointment.paymentStatus || 'Chưa có dữ liệu'}}</strong></div>
+          <div><label>Tổng tiền</label><strong>{{amount(appointment.totalAmount)}}</strong></div>
+          <div><label>Đã đặt cọc</label><strong>{{amount(appointment.depositAmount)}}</strong></div>
+          <div><label>Còn phải thu</label><strong>{{amount(appointment.balanceDue)}}</strong></div>
+        </div>
+        <p class="hint">Chỉ hiển thị số tiền BE trả về. Không tự suy ra đã thanh toán hay đã hoàn tiền từ trạng thái lịch hẹn.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Trạng thái và lịch sử xử lý</h2>
+        @if (appointment.history.length) {
+          <ol class="history">
+            @for (event of appointment.history; track $index) {
+              <li><div><strong>{{event.status}}</strong><small>{{displayTime(event.at)}}</small></div>
+                @if (event.note) {<p>{{event.note}}</p>}
+                @if (event.actor) {<small>Người thao tác: {{event.actor}}</small>}
+              </li>
+            }
+          </ol>
+        } @else {
+          <p class="hint">BE chưa cung cấp lịch sử trạng thái hoặc nhật ký thao tác; không tự tạo các mốc thời gian giả.</p>
+        }
+      </section>
+
+      <section class="panel">
+        <h2>Đổi lịch / Hủy lịch</h2>
+        <div class="facts">
+          <div><label>Số lần đã đổi lịch</label><strong>{{appointment.rescheduleCount === null ? 'BE chưa cung cấp' : appointment.rescheduleCount + '/2'}}</strong></div>
+          <div><label>Điều kiện thời hạn</label>
+            <strong>{{cancellationWindow()?.status==='eligible' ? 'Còn từ 24 giờ trở lên' : cancellationWindow()?.status==='too-late' ? 'Còn dưới 24 giờ' : 'Cần BE xác minh'}}</strong>
+          </div>
+          <div><label>Hành động được BE cấp</label>
+            <strong>{{appointment.allowedActions === null ? 'Chưa có danh sách quyền thao tác' : (appointment.allowedActions.join(', ') || 'Không có')}}</strong>
+          </div>
+          <div><label>Lý do hủy</label><strong>{{appointment.cancellationReason || '—'}}</strong></div>
+        </div>
+        <p class="hint">Chính sách WBS 4.3: đổi/hủy trước 24 giờ, đổi lịch tối đa 2 lần. Manager/Admin có thể cần luồng override có lý do và audit. Kết quả cuối do BE quyết định.</p>
+        @if (canInspectActions()) {
+          <div class="actions">
+            <button type="button" class="btn btn--outline" [disabled]="appointment.status==='CANCELLED' || appointment.status==='COMPLETED' || appointment.status==='NO_SHOW'"
+              (click)="startAction('reschedule')">Đổi lịch</button>
+            <button type="button" class="btn btn--danger" [disabled]="appointment.status==='CANCELLED' || appointment.status==='COMPLETED' || appointment.status==='NO_SHOW'"
+              (click)="startAction('cancel')">Hủy lịch</button>
+            <button type="button" class="btn btn--primary" [disabled]="!proposedActions().length"
+              (click)="startAction('status')">Cập nhật trạng thái</button>
+          </div>
+          <p class="hint">Các thao tác hiện chỉ mở form kiểm tra. Chưa gửi thay đổi khi BE chưa xác nhận quyền và endpoint Admin.</p>
+        } @else {
+          <p class="hint">Tài khoản hiện tại chỉ có quyền xem trong giao diện này; mọi quyền truy cập dữ liệu vẫn do BE kiểm soát.</p>
+        }
+      </section>
+    }
+  </main>
+
+  @if (dialog(); as action) {
+    <div class="overlay">
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="appointment-action-heading">
+        <div class="section-heading">
+          <h2 id="appointment-action-heading">
+            {{action==='reschedule'?'Đề nghị đổi lịch':action==='cancel'?'Đề nghị hủy lịch':'Cập nhật trạng thái'}}
+          </h2>
+          <button class="close" type="button" aria-label="Đóng" (click)="closeDialog()">×</button>
+        </div>
+        @if (action==='cancel'||action==='reschedule') {
+          <p class="hint hint--info">{{showPolicyMessage()}}</p>
+          @if (selectedWindow()?.overrideRequiresAudit) {
+            <p class="hint hint--warning">Override chỉ dành cho Manager/Admin, cần lý do bắt buộc và ghi nhật ký BE. FE không tự bỏ qua điều kiện 24 giờ hoặc giới hạn 2 lần.</p>
+          }
+        }
+        @if (action==='reschedule') {
+          <div class="modal-grid">
+            <label>Ngày hẹn mới <span>*</span>
+              <input type="date" [value]="targetDate()" (input)="targetDate.set($any($event.target).value)" />
+            </label>
+            <label>Giờ bắt đầu mới <span>*</span>
+              <input type="time" [value]="targetTime()" (input)="targetTime.set($any($event.target).value)" />
+            </label>
+          </div>
+          <p class="hint">Giờ mới chưa được xác minh capacity, ca nhân viên, segment và thời lượng dịch vụ. Không được coi là slot đã giữ.</p>
+        }
+        @if (action==='status') {
+          <label class="modal-label">Trạng thái đề nghị
+            <select [value]="statusTarget()" (change)="statusTarget.set($any($event.target).value)">
+              <option value="">Chọn trạng thái</option>
+              @for (target of proposedActions(); track target) {
+                <option [value]="target">{{statusLabel(target)}}</option>
+              }
+            </select>
+          </label>
+          <p class="hint">Các trạng thái này chỉ là lựa chọn dự kiến. Cần BE cung cấp allowedActions và state machine chính thức.</p>
+        }
+        <label class="modal-label">Lý do / ghi chú xử lý <span>*</span>
+          <textarea rows="4" [value]="reason()" (input)="reason.set($any($event.target).value)"
+            placeholder="Nêu rõ lý do và thông tin cần ghi nhật ký..."></textarea>
+        </label>
+        @if (actionError()) {<p class="hint hint--warning" role="alert">{{actionError()}}</p>}
+        <div class="modal-actions">
+          <button class="btn btn--outline" type="button" (click)="closeDialog()">Đóng</button>
+          <button class="btn btn--primary" type="button" (click)="inspectRequest()">Kiểm tra yêu cầu</button>
+        </div>
+      </section>
+    </div>
+  }
+</app-admin-catalog-shell>
