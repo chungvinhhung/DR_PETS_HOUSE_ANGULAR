@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { HttpParams } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
@@ -9,6 +10,7 @@ import { adminErrorMessage } from '../../../../shared/services/admin-toast.servi
 import {
   AppointmentView, appointmentWindow, normalizeAppointmentDetail, statusLabel,
 } from './admin-appointment-workflow.model';
+import { ServiceRecord, normalizeServiceRecordsPage, serviceRecordStatusLabel } from './admin-service-record.model';
 
 type DialogAction = 'cancel' | 'reschedule' | 'status' | null;
 
@@ -32,6 +34,10 @@ export class AdminAppointmentDetailComponent {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly item = signal<AppointmentView | null>(null);
+  readonly linkedRecords=signal<ServiceRecord[]>([]);
+  readonly recordsLoading=signal(false);
+  readonly recordsError=signal('');
+  readonly serviceRecordStatusLabel=serviceRecordStatusLabel;
   readonly dialog = signal<DialogAction>(null);
   readonly reason = signal('');
   readonly targetDate = signal('');
@@ -53,7 +59,7 @@ export class AdminAppointmentDetailComponent {
   readonly proposedActions = computed(() => {
     const item = this.item();
     if (!item || ['COMPLETED','CANCELLED','NO_SHOW','PENDING_PAYMENT'].includes(item.status)) return [];
-    if (item.status === 'PENDING') return ['CONFIRMED','CANCELLED'];
+    if (item.status === 'PENDING_CONFIRMATION') return ['CONFIRMED','CANCELLED'];
     if (item.status === 'CONFIRMED') return ['IN_PROGRESS','NO_SHOW','CANCELLED'];
     if (item.status === 'IN_PROGRESS') return ['COMPLETED'];
     return [];
@@ -92,7 +98,8 @@ export class AdminAppointmentDetailComponent {
     if (!id) { this.error.set('Thiếu mã định danh lịch hẹn.'); return; }
     const version=++this.requestVersion;
     this.loading.set(true);this.error.set('');this.item.set(null);
-    // Read-only GET detail is a proposed query shape; show errors instead of demo data.
+    this.linkedRecords.set([]);this.recordsError.set('');
+    // Confirmed read-only GET detail on BE /appointments/:id. Never bypass BE scope checks.
     this.api.get<unknown>('/appointments/' + encodeURIComponent(id))
       .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: response => {
@@ -101,6 +108,7 @@ export class AdminAppointmentDetailComponent {
             const parsed=normalizeAppointmentDetail(response);
             if (parsed.id !== id) throw new Error('API trả về lịch hẹn không khớp mã được yêu cầu.');
             this.item.set(parsed);this.loading.set(false);
+            this.loadLinkedRecords(id,version);
           } catch (err) {
             this.error.set(err instanceof Error ? err.message : 'Không đọc được chi tiết lịch hẹn.');
             this.loading.set(false);
@@ -112,6 +120,29 @@ export class AdminAppointmentDetailComponent {
           this.loading.set(false);
         },
       });
+  }
+
+  private loadLinkedRecords(appointmentId:string,version:number):void{
+    this.recordsLoading.set(true);
+    // GET /service-records?appointmentId is supported in BE foundation-v6.
+    const params=new HttpParams().set('appointmentId',appointmentId).set('limit','100');
+    this.api.get<unknown>('/service-records',{params}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:response=>{
+        if(version!==this.requestVersion)return;
+        try{
+          this.linkedRecords.set(normalizeServiceRecordsPage(response).items);
+          this.recordsError.set('');
+        }catch(err){
+          this.recordsError.set(err instanceof Error?err.message:'Không đọc được hồ sơ dịch vụ liên quan.');
+        }
+        this.recordsLoading.set(false);
+      },
+      error:err=>{
+        if(version!==this.requestVersion)return;
+        this.recordsError.set(adminErrorMessage(err,'Chưa thể lấy ServiceRecord của lịch hẹn.'));
+        this.recordsLoading.set(false);
+      }
+    });
   }
 
   statusLabel(value: string): string {
