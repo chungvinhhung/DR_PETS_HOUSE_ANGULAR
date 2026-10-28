@@ -1,0 +1,70 @@
+<header class="fixed inset-x-0 top-0 z-[70] h-12 border-b border-[#ECEFF1] bg-white pr-[10px] md:h-16 md:min-w-[744px] md:border md:px-[15px] md:py-[10px] lg:hidden">
+  <div class="flex h-full w-full items-center justify-between">
+    <a appCustomerLink="/" class="flex h-12 min-w-[100px] items-center md:h-[44px] md:min-w-[145px]">
+      <img
+        [attr.src]="homeImages.logo"
+        alt="Dr. Pet's House"
+        class="h-9 w-[82px] object-contain md:h-[52px] md:w-[120px]"
+      />
+    </a>
+    <button app-tablet-search-trigger (onOpen)="activePanel.set('search')"></button>
+    <div [class]="`${rightGroupClass()} max-w-[250px] min-w-[120px]`">
+      <button
+        type="button"
+        (click)="activePanel.set('search')"
+        class="flex size-[22px] items-center justify-center md:hidden"
+        aria-label="Tìm kiếm"
+      >
+        <img app-search-asset-icon />
+      </button>
+      @if (isAuthenticated()) {
+        <app-notification-bell
+          [className]="'inline-flex'"
+          [buttonClassName]="'p-0'"
+          [iconClassName]="'h-[22px] w-[22px] md:h-[30px] md:w-[30px]'"
+          [badgeClassName]="'hidden'"
+        />
+      }
+      <button
+        type="button"
+        (click)="openMobileCart()"
+        class="relative flex size-[22px] items-center justify-center md:size-[30px]"
+        aria-label="Giỏ hàng"
+      >
+        <img
+          [attr.src]="isAuthenticated() ? navbarImages.cartYellow : cartIcon"
+          alt=""
+          class="size-[18px] md:size-[30px]"
+        />
+      </button>
+      @if (isAuthenticated()) {
+        <a
+          appCustomerLink="/thong-tin-nguoi-dung"
+          class="flex size-[18px] items-center justify-center overflow-hidden rounded-full border border-black/80 md:h-[31px] md:w-[30px]"
+          aria-label="Tài khoản"
+        >
+          <img [attr.src]="avatar()" alt="" class="size-full object-cover" />
+        </a>
+      } @else {
+        <button
+          type="button"
+          (click)="authService.openAuth('login')"
+          class="flex h-[22px] w-[76px] items-center justify-center rounded bg-[#FDD835] px-[22px] py-2 shadow-elevation md:h-[30px] md:w-[102px]"
+        >
+          <span class="whitespace-nowrap font-['Roboto'] text-[9px] font-bold leading-[14.94px] tracking-[0.4px] text-black/87 md:text-[12px] md:leading-[19.92px]">ĐĂNG NHẬP</span>
+        </button>
+      }
+      <button
+        type="button"
+        (click)="activePanel.set('menu')"
+        class="flex h-[22px] w-[21px] items-center justify-center md:h-[40px] md:w-[40px]"
+        aria-label="Mở menu"
+      >
+        <span class="flex h-[17px] w-5 items-center justify-center md:h-[30px] md:w-[25px]"><app-figma-menu-icon /></span>
+      </button>
+    </div>
+  </div>
+</header>
+<div class="h-12 shrink-0 md:h-16 lg:hidden" aria-hidden="true"></div>
+<app-mobile-search-panel [open]="activePanel() === 'search'" (onClose)="closePanel()" />
+<app-mobile-menu-panel [open]="activePanel() === 'menu'" (onClose)="closePanel()" />

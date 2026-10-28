@@ -1,0 +1,50 @@
+<h2>Câu hỏi thường gặp</h2>
+<div class="pet-care-faq__icon"><img [attr.src]="assets().icon" alt="" aria-hidden="true" /></div>
+<div class="pet-care-faq__list" [appStyle]="{ top: listTop() }">
+  @for (faq of faqs(); track $index) {
+    @let isOpen = openId() === faq.id;
+    <article [class]="`pet-care-faq__item ${isOpen ? 'is-open' : ''}`">
+      <button
+        type="button"
+        (click)="openId.set(isOpen ? null : faq.id)"
+        [attr.aria-expanded]="isOpen"
+        [attr.aria-controls]="`pet-care-faq-answer-${faq.id}`"
+      >
+        <span>{{ faq.id }}.</span>
+        <strong>{{ faq.question }}</strong>
+        <b aria-hidden="true">
+          @if (isOpen) {
+            −
+          } @else {
+            +
+          }
+        </b>
+      </button>
+      <div
+        class="pet-care-faq__answer"
+        [attr.id]="`pet-care-faq-answer-${faq.id}`"
+        [attr.aria-hidden]="!isOpen"
+      >
+        <div>
+          @if (renderAnswer()) {
+            <ng-container *ngTemplateOutlet="renderAnswer(); context: { $implicit: faq }" />
+          } @else {
+            <p>
+              @if (cond1(faq)) {
+                {{ faq.answer.join(' ') }}
+              } @else {
+                {{ faq.answer }}
+              }
+            </p>
+          }
+        </div>
+      </div>
+    </article>
+  }
+</div>
+<div class="pet-care-faq__gallery">
+  <img [attr.src]="assets().topLeft" alt="" />
+  <img [attr.src]="assets().topRight" alt="" />
+  <img [attr.src]="assets().main" alt="" />
+</div>
+<img class="pet-care-faq__ornament" [attr.src]="assets().ornament" alt="" />

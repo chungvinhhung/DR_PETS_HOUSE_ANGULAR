@@ -1,0 +1,36 @@
+<div [class]="`notification-bell shrink-0 ${className()}`" #rootRef>
+  <button
+    type="button"
+    [class]="`notification-bell__button btn-icon ${buttonClassName()}`"
+    [attr.aria-label]="`Thông báo${notificationService.unreadCount() > 0 ? `, ${notificationService.unreadCount()} chưa đọc` : ''}`"
+    [attr.aria-expanded]="isOpen()"
+    aria-haspopup="dialog"
+    (click)="handle1()"
+  >
+    <img [attr.src]="navbarImages.notificationIcon" alt="" [class]="iconClassName()" />
+    @if (notificationService.unreadCount() > 0) {
+      <span [class]="`notification-bell__badge ${badgeClassName()}`" aria-hidden="true">
+        @if (notificationService.unreadCount() > 9) {
+          9+
+        } @else {
+          {{ notificationService.unreadCount() }}
+        }
+      </span>
+    }
+  </button>
+  @if (isOpen()) {
+    <section
+      app-notification-popup
+      [readIds]="readIds()"
+      [activeFilter]="activeFilter()"
+      [searchValue]="searchValue()"
+      [filteredItems]="filteredItems()"
+      [unreadCount]="notificationService.unreadCount()"
+      (onClose)="closeAfterViewing()"
+      (onFilterChange)="activeFilter.set($event)"
+      (onSearchChange)="searchValue.set($event)"
+      (onRead)="notificationService.markAsRead($any($event))"
+      (onReadAll)="notificationService.markAllAsRead()"
+    ></section>
+  }
+</div>

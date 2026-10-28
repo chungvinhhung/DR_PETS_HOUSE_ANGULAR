@@ -1,0 +1,9 @@
+<input
+  [attr.id]="id()"
+  [attr.type]="type()"
+  [class]="`h-10 rounded-2xl border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none focus:border-blue-900 ${className()}`"
+  [attr.name]="name()"
+  [attr.autocomplete]="autoComplete()"
+  [value]="value() ?? ''"
+  (input)="onChange.emit($event)"
+/>

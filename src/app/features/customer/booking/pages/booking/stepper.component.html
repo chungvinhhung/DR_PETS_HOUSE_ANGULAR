@@ -1,0 +1,28 @@
+@for (label of steps(); track $index; let index = $index) {
+  @let current = index + 1;
+  @let complete = current < step();
+  @let active = current === step();
+  <div class="flex min-w-0 items-start">
+    <div class="flex min-w-0 flex-1 flex-col items-center md:min-w-[94px] lg:min-w-[104px]">
+      <span [class]="`flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-bold ${
+                complete
+                  ? 'border-blue-900 bg-blue-900 text-white'
+                  : active
+                    ? 'border-blue-900 bg-white text-blue-900'
+                    : 'border-slate-300 bg-white text-slate-400'
+              }`">
+        @if (complete) {
+          <img app-asset-icon [src]="informationStepCheck" [className]="'h-4 w-4'" />
+        }
+      </span>
+      <span [class]="`mt-2 max-w-[94px] text-center text-xs font-bold leading-4 ${
+                active || complete ? 'text-blue-900' : 'text-slate-500'
+              }`">{{ label }}</span>
+    </div>
+    @if (index < steps().length - 1) {
+      <span [class]="`mx-1 mt-3 h-[3px] w-5 md:mx-[10px] md:w-[100px] lg:w-28 ${
+                current < step() ? 'bg-blue-900' : 'bg-[#e5e1f0]'
+              }`"></span>
+    }
+  </div>
+}

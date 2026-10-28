@@ -292,49 +292,14 @@ export const routes: Routes = [
     ],
   },
   {
+    // Customer UI is isolated in its own lazy-loaded layout and routes.
     path: '',
     loadComponent: () =>
-      import('./layouts/customer-layout/customer-layout.component').then(
+      import('./layouts/customer/customer-layout/customer-layout.component').then(
         (component) => component.CustomerLayoutComponent,
       ),
-    children: [
-      {
-        path: '',
-        pathMatch: 'full',
-        loadComponent: () =>
-          import('./features/home/home-page.component').then(
-            (component) => component.HomePageComponent,
-          ),
-      },
-      {
-        path: 'products',
-        loadComponent: () =>
-          import('./features/products/products-page.component').then(
-            (component) => component.ProductsPageComponent,
-          ),
-      },
-      {
-        path: 'booking',
-        loadComponent: () =>
-          import('./features/booking/booking-page.component').then(
-            (component) => component.BookingPageComponent,
-          ),
-      },
-      {
-        path: 'pets',
-        loadComponent: () =>
-          import('./features/pets/pets-page.component').then(
-            (component) => component.PetsPageComponent,
-          ),
-      },
-      {
-        path: 'orders',
-        loadComponent: () =>
-          import('./features/orders/orders-page.component').then(
-            (component) => component.OrdersPageComponent,
-          ),
-      },
-    ],
+    loadChildren: () =>
+      import('./features/customer/customer.routes').then((m) => m.CUSTOMER_ROUTES),
   },
   {
     path: '**',

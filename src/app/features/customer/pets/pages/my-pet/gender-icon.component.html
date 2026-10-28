@@ -1,0 +1,30 @@
+@if (isMale()) {
+  <svg
+    class="w-5 h-5 text-blue-500"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    viewBox="0 0 24 24"
+    title="Đực"
+  >
+    <circle cx="10" cy="14" r="6" />
+    <path d="M14.24 9.76L21 3M15 3h6v6" />
+  </svg>
+} @else if (isFemale()) {
+  <svg
+    class="w-5 h-5 text-pink-500"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    viewBox="0 0 24 24"
+    title="Cái"
+  >
+    <circle cx="12" cy="10" r="6" />
+    <path d="M12 16v6M9 19h6" />
+  </svg>
+} @else {
+}

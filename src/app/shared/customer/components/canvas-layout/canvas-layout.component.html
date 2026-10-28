@@ -1,0 +1,6 @@
+<div
+  [class]="`relative mx-auto w-[1440px] shrink-0 ${className()}`"
+  [appStyle]="minHeight() ? { minHeight: minHeight() } : undefined"
+>
+  <ng-content />
+</div>

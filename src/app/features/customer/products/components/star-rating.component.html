@@ -1,0 +1,20 @@
+@for (_ of range1(); track $index; let index = $index) {
+  @let star = index + 1;
+  @let filled = star <= value();
+  <button
+    type="button"
+    role="radio"
+    [attr.aria-checked]="filled"
+    [attr.aria-label]="`${star} sao`"
+    (click)="onChange.emit(star)"
+    class="focus-ring-brand flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-sm text-[#FFB400] transition-transform duration-micro hover:scale-110"
+  >
+    <app-customer-icon
+      name="star"
+      [size]="18"
+      [strokeWidth]="2"
+      [color]="filled ? '#FFB400' : 'rgba(0,0,0,0.23)'"
+      [fill]="filled ? '#FFB400' : 'transparent'"
+    />
+  </button>
+}

@@ -1,0 +1,47 @@
+<app-product-rating [value]="review().rating ?? 5" [size]="16" [gap]="8" [fillColor]="'#FF9D00'" />
+<div
+  class="h-[118px] text-justify text-[#333]"
+  [appStyle]="{
+        fontFamily: 'Roboto, sans-serif',
+        fontWeight: 400,
+        fontSize: 16,
+        lineHeight: 1.75,
+        letterSpacing: '0.15px'
+      }"
+>
+  @for (line of review().lines; track $index; let index = $index) {
+    <p class="mb-0">
+      @if (index === 0) {
+        {{ `"${line}` }}
+      } @else {
+        {{ line }}
+      }
+      @if (index === review().lines.length - 1) {
+        "
+      }
+    </p>
+  }
+</div>
+<div class="flex items-center gap-4">
+  <img [attr.src]="groomingImages.feedbackAvatar" alt="" class="size-[44px] rounded-full object-cover" />
+  <div class="flex w-[149.936px] flex-col gap-[2px]">
+    <span
+      class="text-[#02000F]"
+      [appStyle]="{
+            fontFamily: 'Fredoka, sans-serif',
+            fontWeight: 500,
+            fontSize: 24,
+            lineHeight: '24px'
+          }"
+    >{{ review().author }}</span>
+    <span
+      class="text-[#6C6D71]"
+      [appStyle]="{
+            fontFamily: 'Onest, sans-serif',
+            fontWeight: 400,
+            fontSize: 16,
+            lineHeight: '28px'
+          }"
+    >{{ review().company }}</span>
+  </div>
+</div>

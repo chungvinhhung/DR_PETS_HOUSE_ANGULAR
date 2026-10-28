@@ -1,0 +1,102 @@
+<section app-card [className]="'p-5 md:p-8'">
+  <h2 class="mb-5 text-xl font-black text-blue-900">PHƯƠNG THỨC THANH TOÁN</h2>
+  <div class="mb-6 grid rounded-2xl bg-[#f2f4f6] p-1.5 text-center text-sm font-bold">
+    <div class="grid grid-cols-2">
+      <button
+        type="button"
+        (click)="selectPaymentMode('store')"
+        [class]="`rounded-2xl px-2 py-3 transition ${
+              paymentMode() === 'store' ? 'bg-white text-blue-900 shadow-elevation' : 'text-slate-500 hover:text-blue-900'
+            }`"
+      >Tại phòng khám</button>
+      <button
+        type="button"
+        (click)="selectPaymentMode('online')"
+        [class]="`rounded-2xl px-2 py-3 transition ${
+              online() ? 'bg-white text-blue-900 shadow-elevation' : 'text-slate-500 hover:text-blue-900'
+            }`"
+      >Trực tuyến</button>
+    </div>
+  </div>
+  @if (online()) {
+    <div
+      [class]="`mb-5 space-y-3 rounded-2xl bg-[#f2f4f6] p-4 ${
+            paymentError() ? 'ring-2 ring-red-500 ring-offset-2' : ''
+          }`"
+      [attr.data-booking-error]="paymentError() ? 'true' : undefined"
+      [attr.tabindex]="paymentError() ? -1 : undefined"
+    >
+      <p class="text-sm font-bold text-slate-900">Phương thức thanh toán trực tuyến <span class="text-red-500">*</span></p>
+      @for (method of BOOKING_PAYMENT_METHODS; track method.id) {
+        <button
+          type="button"
+          (click)="selectPaymentMode(method.id)"
+          [class]="`flex w-full items-center gap-4 rounded-2xl border-2 p-3 text-left transition ${
+                selectedMethod() === method.id
+                  ? 'border-blue-900 bg-[#d5e4f3]'
+                  : 'border-transparent bg-white hover:border-blue-900'
+              }`"
+        >
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow">
+            <img [attr.src]="method.icon" alt="" class="h-6 w-6 object-contain" />
+          </span>
+          <span class="flex-1 font-bold text-slate-900">{{ method.label }}</span>
+          @if (selectedMethod() === method.id) {
+            <span class="text-base font-black text-blue-900">✓</span>
+          }
+        </button>
+      }
+      @if (paymentError()) {
+        <p class="pt-1 text-sm font-medium text-red-600">{{ paymentError() }}</p>
+      }
+    </div>
+  }
+  <div class="flex w-full flex-col gap-3 border-t border-solid border-slate-200 pt-5">
+    <p class="whitespace-nowrap text-sm font-bold text-slate-900">Thẻ quà tặng / Mã giảm giá</p>
+    <div class="flex flex-row items-start gap-3">
+      <div class="flex min-w-0 flex-1 flex-col">
+        <div class="flex h-10 w-full items-center rounded-2xl border border-slate-300 bg-white px-4 focus-within:border-blue-900">
+          <input
+            type="text"
+            [value]="couponCode() ?? ''"
+            (input)="handle1($any($event))"
+            placeholder="Nhập mã"
+            class="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+          />
+        </div>
+        @if (couponError()) {
+          <p class="w-full px-4 pt-1 text-xs font-medium text-red-600" role="alert">{{ couponError() }}</p>
+        }
+      </div>
+      <button
+        type="button"
+        (click)="handleApplyCoupon()"
+        class="flex h-10 w-[104px] items-center justify-center rounded bg-secondary text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition-all duration-micro hover:bg-[#ffe454] active:scale-[0.98]"
+      >Áp dụng</button>
+    </div>
+  </div>
+  <div class="my-5 space-y-3 rounded-2xl bg-[#f2f4f6] p-5 text-sm">
+    <div app-price-row [label]="'Tạm tính'" [value]="formatMoney(subtotal())"></div>
+    <div app-price-row [label]="'Phụ thu'" [value]="formatMoney(surchargeTotal())"></div>
+    <div app-price-row [label]="'Giảm giá'" [value]="formatMoney(discountTotal())"></div>
+    @if (pricingLoading()) {
+      <p class="text-xs font-medium text-blue-900">Đang cập nhật phụ thu cân nặng...</p>
+    }
+    @if (pricingError()) {
+      <p class="text-xs font-medium text-amber-700">{{ pricingError() }}</p>
+    }
+  </div>
+  <div class="mb-5 flex items-end justify-between gap-3 rounded-2xl bg-[#d5e4f3] p-5">
+    <div>
+      <p class="text-xl font-black text-blue-900">Tổng cộng</p>
+      <p class="text-xs text-slate-500">(Đã bao gồm thuế VAT)</p>
+    </div>
+    <p class="text-xl font-black text-blue-900 md:text-2xl">{{ formatMoney(total()) }}</p>
+  </div>
+  <button
+    type="button"
+    (click)="handleConfirm()"
+    class="w-full rounded bg-secondary py-3 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition-all duration-micro hover:bg-[#ffe454] active:bg-[#F9A825]"
+  >Xác nhận đặt lịch</button>
+  <p class="mt-5 text-center text-xs text-slate-500">Bằng cách nhấn xác nhận, bạn đồng ý với    <a class="text-blue-900 underline">Điều khoản dịch vụ</a> và    <a class="text-blue-900 underline">Chính sách bảo mật</a> của chúng tôi.</p>
+</section>

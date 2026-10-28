@@ -1,0 +1,33 @@
+<div class="relative h-[513px] w-full max-w-[338px] overflow-hidden rounded-t-[189px]">
+  <img
+    [attr.src]="image()"
+    [attr.alt]="title()"
+    class="h-full w-full object-cover transition-transform duration-component ease-premium group-hover:scale-[1.02]"
+  />
+  <div class="absolute bottom-[30px] left-[33px] h-[244px] w-[272px]">
+    <!-- Background shape -->
+    <svg
+      class="absolute inset-0 h-full w-full"
+      viewBox="0 0 272 244"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path
+        opacity="0.9"
+        d="M0 136C0 60.8893 60.8893 0 136 0C211.111 0 272 60.8893 272 136V244H0V136Z"
+        fill="white"
+      />
+    </svg>
+    <!-- Content -->
+    <div class="relative flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
+      <h3 class="text-xl font-medium text-black">{{ title() }}</h3>
+      <p class="text-sm leading-snug tracking-wide text-black">{{ description() }}</p>
+      <a
+        [appCustomerLink]="href()"
+        class="btn-icon mt-2 flex h-12 w-[60px] items-center justify-center bg-secondary text-xl font-bold text-black hover:bg-[#FFEE58]"
+        [attr.aria-label]="`Xem thêm ${title()}`"
+      >→</a>
+    </div>
+  </div>
+</div>

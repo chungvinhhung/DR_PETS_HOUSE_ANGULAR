@@ -1,0 +1,36 @@
+<div app-search-results-section-heading>
+  @if (allMode()) {
+    Cẩm nang sơ cứu liên quan
+  } @else {
+    Cẩm nang sơ cứu
+  }
+</div>
+<div class="grid grid-cols-2 gap-x-[10.75px] gap-y-8">
+  @for (post of results().firstAid; track post.id; let index = $index) {
+    <article app-search-results-first-aid-card [post]="post" [featured]="index === 0"></article>
+  }
+</div>
+<div app-search-results-section-heading>
+  @if (allMode()) {
+    Bài viết kiến thức thú cưng liên quan
+  } @else {
+    Kiến thức thú cưng
+  }
+</div>
+<div class="grid grid-cols-3 gap-x-[10.75px] gap-y-8">
+  @for (post of results().knowledge; track post.id) {
+    <article app-blog-card [post]="post"></article>
+  }
+</div>
+<div app-search-results-section-heading>
+  @if (allMode()) {
+    Bài đăng cộng đồng liên quan
+  } @else {
+    Cộng đồng chia sẻ
+  }
+</div>
+<div class="flex flex-col gap-8">
+  @for (post of results().community; track post.id) {
+    <article app-community-post-card [post]="post"></article>
+  }
+</div>

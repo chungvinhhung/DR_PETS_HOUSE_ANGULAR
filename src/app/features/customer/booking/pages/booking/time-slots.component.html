@@ -1,0 +1,42 @@
+<app-booking-card
+  [className]="`flex h-full min-h-0 flex-col p-6 ${invalid() ? 'ring-2 ring-red-500' : ''}`"
+  [title]="invalid() ? 'Vui lòng điền thông tin' : undefined"
+  [data-booking-error]="invalid() ? 'true' : undefined"
+  [tabIndex]="invalid() ? -1 : undefined"
+>
+  <h3 class="mb-5 flex items-center gap-2 text-xl font-bold text-blue-900"><span>◷</span> Khung giờ trống</h3>
+  <div class="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+    @for (slot of timeSlots(); track $index) {
+      @let disabled = !slot.available || !selectedDate() || isBeforeToday(selectedDate()) || isSlotInPast(slot.value, selectedDate());
+      @let active = selectedSlot() === slot.value;
+      <button
+        type="button"
+        [disabled]="disabled"
+        (click)="onSelect.emit(slot.value)"
+        [class]="`flex w-full items-center justify-between rounded-2xl px-5 py-3 text-left text-sm font-semibold transition ${
+                active
+                  ? 'bg-blue-900 text-white shadow'
+                  : disabled
+                    ? 'bg-slate-50 text-slate-300'
+                    : 'bg-slate-100 text-slate-900 hover:bg-slate-200'
+              }`"
+      >
+        <span>{{ slot.value }}</span>
+        @if (disabled) {
+          <span class="text-[10px] uppercase text-red-600">
+            @if (slot.bookedCount >= slot.maxAppointments) {
+              Hết chỗ
+            } @else {
+              Không khả dụng
+            }
+          </span>
+        } @else {
+          <span class="text-[10px] uppercase opacity-80">Còn {{ slot.maxAppointments - slot.bookedCount }}/{{ slot.maxAppointments }}</span>
+        }
+        @if (active) {
+          <span>✓</span>
+        }
+      </button>
+    }
+  </div>
+</app-booking-card>

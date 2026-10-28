@@ -1,0 +1,15 @@
+@if (category() === 'all') {
+  <app-customer-icon name="layout-grid" [className]="className()" />
+} @else if (category() === 'health') {
+  <app-customer-icon name="cross" [className]="className()" />
+} @else if (category() === 'nutrition') {
+  <app-customer-icon name="sparkles" [className]="className()" />
+} @else if (category() === 'psychology') {
+  <app-customer-icon name="heart-plus" [className]="className()" />
+} @else if (category() === 'grooming') {
+  <app-customer-icon name="bubbles" [className]="className()" />
+} @else if (category() === 'care') {
+  <app-customer-icon name="paw-print" [className]="className()" />
+} @else {
+  <span [class]="`${className()} inline-block rounded-full border border-current`"></span>
+}

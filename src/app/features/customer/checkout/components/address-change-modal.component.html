@@ -1,0 +1,42 @@
+@if (mode() !== 'list') {
+  <div
+    app-address-form-modal
+    [mode]="mode()"
+    [address]="editingAddress()"
+    (onClose)="mode.set('list')"
+    (onSave)="handle1($any($event))"
+  ></div>
+} @else {
+  <div
+    class="fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(6,16,90,0.2)] p-6 backdrop-blur-[2px]"
+    (click)="handle2($any($event))"
+  >
+    <div class="flex max-h-[calc(100vh-48px)] w-[737px] flex-col items-center gap-[10px] overflow-y-auto bg-white p-[24px]">
+      <section class="flex w-full flex-col gap-[16px] rounded-[8px] bg-white p-[10px]">
+        <div class="flex h-[37px] items-center gap-2">
+          <img [attr.src]="checkoutImages.locationPin" alt="" class="h-5 w-4 shrink-0" />
+          <h3 class="flex-1 text-[20px] font-bold leading-[32px] tracking-[0.15px] text-[#00355F]">Danh sách địa chỉ</h3>
+          <button
+            type="button"
+            (click)="onClose.emit($event)"
+            aria-label="Đóng"
+            class="flex h-[30px] w-[30px] items-center justify-center rounded-full text-[24px] font-light leading-none text-[#727780] hover:bg-slate-100 hover:text-[#00355F]"
+          >×</button>
+        </div>
+        <app-address-list
+          [addresses]="addresses()"
+          (onEdit)="openForm($any($event))"
+          (onSelect)="onSelect.emit($event)"
+        />
+        @if (saveError()) {
+          <p class="text-[14px] text-red-600">{{ saveError() }}</p>
+        }
+      </section>
+      <button
+        type="button"
+        (click)="openForm(null)"
+        class="h-[42px] rounded-[4px] bg-[#FFF176] px-[22px] text-[15px] font-medium uppercase leading-[26px] tracking-[0.46px] text-[rgba(0,0,0,0.87)] shadow-elevation hover:bg-[#FDD835]"
+      >+ Thêm mới</button>
+    </div>
+  </div>
+}

@@ -1,0 +1,30 @@
+<app-booking-card
+  [className]="`h-full p-6 ${invalid() ? 'ring-2 ring-red-500' : ''}`"
+  [title]="invalid() ? 'Vui lòng điền thông tin' : undefined"
+  [data-booking-error]="invalid() ? 'true' : undefined"
+  [tabIndex]="invalid() ? -1 : undefined"
+>
+  <label class="block">
+    <span class="mb-4 flex items-center gap-2 text-xl font-bold text-blue-900">
+      <app-customer-icon name="map-pin" [size]="22" [strokeWidth]="2.2" />Chi nhánh</span>
+    <span class="relative block">
+      <select
+        [selectValue]="selectedBranch()"
+        (change)="onSelect.emit($any($event).target.value)"
+        [class]="`h-12 w-full appearance-none rounded-2xl border bg-[#f2f4f6] px-4 pr-12 text-sm font-semibold text-slate-800 outline-none transition ${
+              invalid() ? 'border-red-500 ring-1 ring-red-500' : 'border-transparent focus:border-blue-900'
+            }`"
+      >
+        <option value="" disabled>Chọn chi nhánh</option>
+        @for (branch of branches(); track $index) {
+          <option [value]="(branch.id || branch) ?? ''">{{ branch.label || branch }}</option>
+        }
+      </select>
+      <app-customer-icon
+        name="chevron-down"
+        [size]="18"
+        className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"
+      />
+    </span>
+  </label>
+</app-booking-card>

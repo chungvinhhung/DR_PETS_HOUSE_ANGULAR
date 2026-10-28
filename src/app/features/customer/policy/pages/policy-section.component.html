@@ -1,0 +1,25 @@
+@if (section().heading) {
+  <h2
+    class="policy-article__section-title"
+    [appStyle]="section().headingColor ? { color: section().headingColor } : undefined"
+  >{{ section().heading }}</h2>
+}
+@for (paragraph of section().paragraphs; track $index; let index = $index) {
+  <p app-rich-text [parts]="paragraph" [className]="'policy-article__paragraph'"></p>
+}
+@if (section().bullets) {
+  <div class="policy-article__list">
+    @for (bullet of section().bullets; track $index; let index = $index) {
+      <ul>
+        <li>
+          @for (part of bullet; track $index; let partIndex = $index) {
+            <span [class]="`${part.strong ? 'font-bold' : ''} ${part.italic ? 'italic' : ''}`.trim() || undefined">{{ part.text }}</span>
+          }
+        </li>
+      </ul>
+    }
+  </div>
+}
+@for (paragraph of section().paragraphsAfter; track $index; let index = $index) {
+  <p app-rich-text [parts]="paragraph" [className]="'policy-article__paragraph'"></p>
+}

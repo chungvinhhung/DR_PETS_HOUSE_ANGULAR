@@ -1,0 +1,8 @@
+@if (hasOnClick()) {
+  <button type="button" [class]="className()" (click)="onClick.emit($event)"><ng-container [ngTemplateOutlet]="projectedContent" /></button>
+} @else {
+  <a [appCustomerLink]="to()" [class]="className()"><ng-container [ngTemplateOutlet]="projectedContent" /></a>
+}
+
+<!-- Nội dung được truyền vào component (children trong React) -->
+<ng-template #projectedContent><ng-content /></ng-template>

@@ -1,0 +1,47 @@
+<img
+  [attr.src]="homeImages.doctorBg"
+  alt=""
+  class="absolute inset-0 h-full w-full object-cover"
+  aria-hidden="true"
+/>
+<div class="relative flex flex-col items-center gap-6">
+  <svg
+    class="absolute top-[50px] h-[15px] w-[500px]"
+    viewBox="0 0 182 8"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <path
+      d="M0.213867 5.64588C23.7047 3.62998 109.211 -0.290806 179.214 5.6459C142.876 5.6459 106.198 6.7462 75.7139 13"
+      stroke="#FDD835"
+      stroke-width="3"
+      stroke-linejoin="round"
+    />
+  </svg>
+  <div
+    app-section-title
+    [subtitle]="'Đội ngũ bác sĩ tại Dr.Pet\'s House luôn đặt sức khỏe và sự an toàn của thú cưng lên hàng đầu. Với kiến thức chuyên môn cùng sự tận tình trong chăm sóc, chúng tôi mang đến trải nghiệm thăm khám đáng tin cậy cho mọi khách hàng.'"
+  >
+    <span class="font-bold">Đội ngũ bác sĩ thú y</span>
+  </div>
+  <div class="flex flex-wrap items-center justify-center gap-4">
+    <div class="flex flex-wrap items-center justify-center gap-4 pb-10">
+      <app-yellow-button [to]="'/dat-lich'" [className]="'h-12 px-4 text-xl'">ĐẶT LỊCH NGAY</app-yellow-button>
+      <app-yellow-button
+        [variant]="'outline'"
+        [className]="'h-12 px-4'"
+        (onClick)="authService.openAuth('register')"
+      >ĐĂNG KÝ TÀI KHOẢN</app-yellow-button>
+      <a
+        appCustomerLink="/ve-chung-toi"
+        class="px-2 py-3 text-base font-medium text-blue-900 hover:underline"
+      >TÌM HIỂU THÊM →</a>
+    </div>
+  </div>
+  <div class="grid w-full grid-cols-1 gap-10 sm:grid-cols-2 xl:grid-cols-4 xl:gap-8">
+    @for (doctor of HOME_DOCTORS; track doctor.name) {
+      <article app-doctor-card [image]="doctor.image" [name]="doctor.name"></article>
+    }
+  </div>
+</div>

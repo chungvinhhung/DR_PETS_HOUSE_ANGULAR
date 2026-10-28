@@ -1,0 +1,12 @@
+<img [attr.src]="medicalAssets.statsBg" alt="" />
+<h2>Hiểu chúng tôi hơn qua <span>những con số</span></h2>
+<div class="medical-stats__grid">
+  @for (__item1 of medicalStats; track $index) {
+    @let value = __item1[0];
+    @let label = __item1[1];
+    <div>
+      <strong>{{ value }}</strong>
+      <p>{{ label }}</p>
+    </div>
+  }
+</div>

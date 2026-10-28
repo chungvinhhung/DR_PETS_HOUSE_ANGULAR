@@ -1,0 +1,69 @@
+<div class="notification-popover__header" data-node-id="3075:10755">
+  <div class="notification-popover__header-main" data-node-id="3075:12006">
+    <h2 class="notification-popover__title" data-node-id="3075:10757">Thông báo</h2>
+    <button
+      type="button"
+      class="notification-popover__read-all"
+      (click)="onReadAll.emit($event)"
+      [disabled]="unreadCount() === 0"
+      data-node-id="3075:10759"
+    >Đánh dấu tất cả là đã đọc</button>
+  </div>
+  <button
+    type="button"
+    class="notification-popover__close"
+    (click)="onClose.emit($event)"
+    aria-label="Đóng thông báo"
+    data-node-id="3075:12003"
+  >
+    <img [attr.src]="notificationImages.iconClose" alt="" />
+  </button>
+</div>
+<div class="notification-popover__toolbar" data-node-id="3075:10760">
+  <label class="notification-popover__search" data-node-id="3075:10761">
+    <img
+      [attr.src]="notificationImages.iconSearchPaw"
+      alt=""
+      class="notification-popover__search-icon"
+      data-node-id="3075:10763"
+    />
+    <input
+      class="notification-popover__search-input"
+      [value]="searchValue() ?? ''"
+      (input)="onSearchChange.emit($any($event).target.value)"
+      placeholder="Tìm tên thú cưng..."
+      aria-label="Tìm tên thú cưng"
+      data-node-id="3075:10768"
+    />
+  </label>
+  <div class="notification-popover__filters" data-node-id="3075:10769">
+    @for (filter of NOTIFICATION_FILTERS; track filter.id) {
+      <button
+        type="button"
+        [class]="`notification-popover__filter ${
+              activeFilter() === filter.id ? 'notification-popover__filter--active' : ''
+            }`"
+        (click)="onFilterChange.emit(filter.id)"
+      >{{ filter.label }}</button>
+    }
+  </div>
+</div>
+<div class="notification-popover__body" data-node-id="3075:10776">
+  <div class="notification-popover__list">
+    @if (filteredItems().length > 0) {
+      @for (item of filteredItems(); track item.id) {
+        <button
+          app-notification-item
+          [item]="item"
+          [read]="readIds().includes(item.id)"
+          (onRead)="onRead.emit($event)"
+        ></button>
+      }
+    } @else {
+      <div class="notification-popover__empty">Không có thông báo phù hợp.</div>
+    }
+  </div>
+  <div class="notification-popover__scroll" aria-hidden="true" data-node-id="3075:10817">
+    <div class="notification-popover__scroll-thumb" data-node-id="3075:10818"></div>
+  </div>
+</div>

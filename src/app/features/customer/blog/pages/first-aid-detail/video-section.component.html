@@ -1,0 +1,19 @@
+<div class="w-[532px]">
+  <h2 class="text-[32px] font-semibold leading-10">{{ video().title }}</h2>
+  <p class="mt-4 text-[16px] leading-6">{{ video().description }}</p>
+  <ul class="mt-4 space-y-2">
+    @for (item of video().highlights; track item) {
+      <li class="flex items-center gap-2 text-[16px] leading-6"><app-customer-icon name="check-circle-2" className="h-4 w-4" /> {{ item }}</li>
+    }
+  </ul>
+</div>
+<button
+  type="button"
+  (click)="handle1()"
+  class="ml-10 flex h-[281px] w-[500px] items-center justify-center rounded-[32px] border border-[#C1C6D5] bg-black"
+  [attr.aria-label]="playing() ? 'Tạm dừng video' : 'Phát video hướng dẫn'"
+>
+  <span [class]="`flex h-20 w-20 items-center justify-center rounded-full bg-[#FDD835] text-black transition-transform ${playing() ? 'scale-90' : 'hover:scale-105'}`">
+    <app-customer-icon name="play" className="ml-1 h-7 w-7 fill-current" />
+  </span>
+</button>

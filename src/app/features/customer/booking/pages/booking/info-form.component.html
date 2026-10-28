@@ -1,0 +1,98 @@
+<div class="grid gap-5 md:gap-8 lg:grid-cols-[minmax(0,2fr)_390px]">
+  <div class="space-y-6">
+    <div class="grid gap-3 md:grid-cols-2 md:gap-6">
+      <button
+        app-pet-summary-card
+        [selectedPets]="selectedPets()"
+        [active]="profileMode()"
+        (onClick)="showPetPicker.set(true)"
+      ></button>
+      <button
+        type="button"
+        (click)="chooseOtherPet()"
+        [class]="`relative min-h-[116px] rounded-2xl bg-white p-5 text-left shadow-[0_4px_13px_rgba(144,202,249,0.85)] md:p-6 ${
+                !profileMode() ? 'border-2 border-blue-900' : 'border-2 border-transparent'
+              }`"
+      >
+        @if (!profileMode()) {
+          <img [attr.src]="serviceSelectedCheck" alt="" class="absolute right-4 top-4 h-5 w-5" />
+        }
+        <strong [class]="`block text-xl ${!profileMode() ? 'text-blue-900' : 'text-slate-900'}`">Thú cưng khác</strong>
+        <span class="mt-3 block text-base text-slate-600">Bạn chưa tạo Hồ sơ thú cưng cho bé này</span>
+      </button>
+    </div>
+    <div class="space-y-6">
+      @for (petInfo of activePetInfos(); track petInfo.id; let index = $index) {
+        <app-pet-info-card
+          [petInfo]="petInfo"
+          [index]="index"
+          [showIndex]="activePetInfos().length > 1"
+          [canRemove]="!profileMode() && activePetInfos().length > 1"
+          [validationAttempted]="validationAttempted()"
+          (onChange)="updatePetInfo($any($event)[0], $any($event)[1], $any($event)[2])"
+          (onRemove)="removeOtherPetInfo($any($event))"
+        />
+      }
+      @if (!profileMode()) {
+        <button
+          type="button"
+          (click)="addOtherPetInfo()"
+          class="w-full rounded-2xl border-2 border-blue-900 bg-white px-6 py-4 text-base font-bold text-blue-900 shadow-[0_4px_13px_rgba(144,202,249,0.5)] transition hover:bg-blue-50"
+        >+ Thêm một bé nữa</button>
+      }
+    </div>
+  </div>
+  <app-booking-card [className]="'p-5 md:p-8'">
+    <h2 class="mb-5 text-xl font-black text-blue-900">THÔNG TIN CHỦ THÚ CƯNG</h2>
+    <div class="grid gap-5">
+      <label
+        app-booking-field
+        [label]="'Họ và tên'"
+        [required]="true"
+        [showError]="validationAttempted()"
+        [value]="ownerInfo().name"
+        (onChange)="updateOwnerInfo('name', $any($event).target.value)"
+      ></label>
+      <label
+        app-booking-field
+        [label]="'Số điện thoại'"
+        [required]="true"
+        [showError]="validationAttempted()"
+        [value]="ownerInfo().phone"
+        (onChange)="updateOwnerInfo('phone', $any($event).target.value)"
+      ></label>
+      <label
+        app-booking-field
+        [label]="'Email'"
+        [value]="ownerInfo().email"
+        (onChange)="updateOwnerInfo('email', $any($event).target.value)"
+      ></label>
+      <label
+        [class]="`flex items-start gap-3 rounded-lg text-sm text-slate-700 ${validationAttempted() && !ownerInfo().agreed ? 'ring-2 ring-red-500' : ''}`"
+        [attr.title]="validationAttempted() && !ownerInfo().agreed ? 'Vui lòng điền thông tin' : undefined"
+        [attr.data-booking-error]="validationAttempted() && !ownerInfo().agreed ? 'true' : undefined"
+        [attr.tabindex]="validationAttempted() && !ownerInfo().agreed ? -1 : undefined"
+      >
+        <input
+          type="checkbox"
+          [checked]="ownerInfo().agreed"
+          (change)="updateOwnerInfo('agreed', $any($event).target.checked)"
+          class="mt-1"
+        />
+        <span>Tôi đồng ý với <a class="text-blue-900 underline">Chính sách Huỷ/Đổi lịch hẹn</a> tại Dr.Pet’s House</span>
+      </label>
+    </div>
+  </app-booking-card>
+</div>
+<div app-flow-buttons (onBack)="onBack.emit($event)" (onNext)="handleNext()"></div>
+@if (showPetPicker()) {
+  <div
+    app-pet-selection-modal
+    [pets]="pets()"
+    [loading]="petsLoading()"
+    [error]="petsError()"
+    [selectedPets]="selectedPets()"
+    (onClose)="showPetPicker.set(false)"
+    (onConfirm)="handle1($any($event))"
+  ></div>
+}

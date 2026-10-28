@@ -1,0 +1,42 @@
+<span class="mb-2 block text-sm font-medium text-slate-900 md:text-base lg:text-sm">{{ label() }} @if (required()) {
+    <span class="text-red-600">*</span>
+  }
+</span>
+<span class="relative block">
+  @if (asProp() === 'select') {
+    <select
+      [selectValue]="value() ?? defaultValue()"
+      (change)="onChange.emit($event)"
+      [required]="required()"
+      [attr.data-booking-error]="invalid() ? 'true' : undefined"
+      [class]="`h-10 w-full appearance-none rounded-2xl border bg-white px-4 pr-12 text-sm outline-none md:h-[42px] md:text-base lg:h-10 lg:text-sm ${
+              invalid() ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300 focus:border-blue-900'
+            }`"
+    >
+      <option value="" disabled>Chọn thông tin</option>
+      @for (option of options(); track option) {
+        <option [value]="option ?? ''">{{ option }}</option>
+      }
+    </select>
+    <app-customer-icon
+      name="chevron-down"
+      [size]="18"
+      className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-slate-500"
+    />
+  } @else {
+    <input
+      [attr.type]="type()"
+      [value]="value() ?? ''"
+      [attr.defaultValue]="value() === undefined ? defaultValue() : undefined"
+      (input)="onChange.emit($event)"
+      [required]="required()"
+      [attr.data-booking-error]="invalid() ? 'true' : undefined"
+      [class]="`h-10 w-full rounded-2xl border px-4 pr-10 text-sm outline-none md:h-[42px] md:text-base lg:h-10 lg:text-sm ${
+            invalid() ? 'border-red-500 ring-1 ring-red-500' : 'border-slate-300 focus:border-blue-900'
+          }`"
+    />
+  }
+  @if (suffix()) {
+    <span class="absolute right-4 top-2.5 text-sm text-slate-600">{{ suffix() }}</span>
+  }
+</span>

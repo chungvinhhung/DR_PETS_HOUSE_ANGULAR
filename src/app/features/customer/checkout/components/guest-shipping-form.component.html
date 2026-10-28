@@ -1,0 +1,67 @@
+<div class="flex items-center gap-2">
+  <img [attr.src]="checkoutImages.locationPin" alt="" class="h-5 w-4 shrink-0" aria-hidden="true" />
+  <h2 class="text-xl font-black text-blue-900">ĐỊA CHỈ NHẬN HÀNG</h2>
+</div>
+<div class="grid gap-5 md:grid-cols-2">
+  <div class="flex flex-col gap-2">
+    <label app-field-label [required]="true">Họ tên</label>
+    <app-pill-input
+      [id]="'guest-full-name'"
+      [name]="'fullName'"
+      [autoComplete]="'name'"
+      [value]="value()?.fullName || ''"
+      (onChange)="update('fullName')($event)"
+    />
+  </div>
+  <div class="flex flex-col gap-2">
+    <label app-field-label [required]="true">Số điện thoại</label>
+    <app-pill-input
+      [id]="'guest-phone'"
+      [name]="'phone'"
+      [type]="'tel'"
+      [autoComplete]="'tel'"
+      [value]="value()?.phone || ''"
+      (onChange)="update('phone')($event)"
+    />
+  </div>
+  <div class="flex flex-col gap-2">
+    <label app-field-label>Email</label>
+    <app-pill-input
+      [id]="'guest-email'"
+      [name]="'email'"
+      [type]="'email'"
+      [autoComplete]="'email'"
+      [value]="value()?.email || ''"
+      (onChange)="update('email')($event)"
+    />
+  </div>
+  <div class="flex flex-col gap-2">
+    <label app-field-label [required]="true">Quốc gia</label>
+    <app-pill-input
+      [id]="'guest-country'"
+      [name]="'country'"
+      [value]="value()?.country || 'Việt Nam'"
+      (onChange)="update('country')($event)"
+    />
+  </div>
+  <div class="flex flex-col gap-2 md:col-span-2">
+    <label app-field-label [required]="true">Địa chỉ cụ thể</label>
+    <app-pill-input
+      [id]="'guest-address'"
+      [name]="'address'"
+      [autoComplete]="'street-address'"
+      [value]="value()?.address || ''"
+      (onChange)="update('address')($event)"
+    />
+  </div>
+  <div class="flex flex-col gap-2 md:col-span-2">
+    <label app-field-label [required]="true">Tỉnh/Thành phố</label>
+    <app-pill-input
+      [id]="'guest-city'"
+      [name]="'city'"
+      [autoComplete]="'address-level1'"
+      [value]="value()?.city || ''"
+      (onChange)="update('city')($event)"
+    />
+  </div>
+</div>

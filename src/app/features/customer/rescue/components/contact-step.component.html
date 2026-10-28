@@ -1,0 +1,11 @@
+@for (field of CONTACT_FIELDS; track field.name) {
+  <app-contact-field
+    [field]="field"
+    [value]="values()[field.name]"
+    (onChange)="onChange.emit($event)"
+    [error]="errors().includes(field.name)"
+    [addresses]="addresses()"
+    [addressMode]="addressMode()"
+    (onAddressModeChange)="onAddressModeChange.emit($event)"
+  />
+}

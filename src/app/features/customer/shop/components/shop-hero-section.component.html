@@ -1,0 +1,46 @@
+<div class="relative mx-auto h-[729.48px] w-[1380px] overflow-hidden rounded-[100px]">
+  <div class="absolute left-1/2 top-0 h-[729.48px] w-[1440px] -translate-x-1/2">
+    @for (slide of HERO_SLIDES; track slide.id; let index = $index) {
+      <div app-hero-slide-layer [slide]="slide" [isActive]="index === activeIndex()"></div>
+    }
+  </div>
+  <div class="pointer-events-none relative z-10 h-full w-full">
+    <img
+      [attr.src]="FLOWER_ICON"
+      alt=""
+      class="absolute left-[60px] top-[195px] h-[30px] w-[30px] object-contain"
+    />
+    <p class="absolute left-[100px] top-[200px] w-[202.34px] font-['Roboto'] text-[20px] font-bold leading-6 text-[#02000F]">Thức ăn hữu cơ</p>
+    <h1 class="absolute left-[60px] top-[250px] w-[562.73px] font-bold font-display text-4xl leading-tight text-[#02000f] md:text-[56px] md:leading-[68px]">Sản phẩm tốt nhất<br />cho thú cưng của bạn</h1>
+    <p class="absolute left-[60px] top-[382.48px] w-[448.9px] font-['Roboto'] text-[20px] font-normal leading-[35px] text-[#4E4E4E]">Các thành phần hữu cơ chất lượng cao nhất, tốt nhất để tạo ra dòng sản phẩm vật nuôi 100% tự nhiên</p>
+    <button
+      type="button"
+      (click)="handle1()"
+      class="btn-hero-cta pointer-events-auto absolute left-[60px] top-[510.48px] h-16 w-[203.61px]"
+    >Khám phá ngay</button>
+  </div>
+  <div
+    class="absolute bottom-[83.48px] left-[75px] z-20 flex items-center gap-[12px]"
+    role="tablist"
+    aria-label="Chọn slide"
+  >
+    @for (_ of range2(); track $index; let index = $index) {
+      @let isActive = index === activeIndex();
+      @let width = isActive
+            ? INDICATOR_ACTIVE_WIDTH
+            : INDICATOR_INACTIVE_WIDTH;
+      <button
+        type="button"
+        role="tab"
+        (click)="goToSlide(index)"
+        class="focus-ring-brand h-[10px] rounded-[20px] transition-all duration-component ease-premium hover:opacity-80"
+        [appStyle]="{
+                width: `${width}px`,
+                backgroundColor: isActive ? '#02000F' : '#999999'
+              }"
+        [attr.aria-label]="`Slide ${index + 1}`"
+        [attr.aria-selected]="isActive"
+      ></button>
+    }
+  </div>
+</div>

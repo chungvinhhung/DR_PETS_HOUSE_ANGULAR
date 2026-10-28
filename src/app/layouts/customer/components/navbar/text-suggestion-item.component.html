@@ -1,0 +1,11 @@
+<img
+  [attr.src]="active() ? searchSuggestionImages.searchActive : searchSuggestionImages.searchDefault"
+  alt=""
+  class="size-[18px] shrink-0"
+/>
+<span [class]="[
+        'min-w-0 truncate font-[\'Roboto\'] text-[14px] italic leading-6',
+        active() ? 'text-[#0D47A1]' : 'text-black/87'
+      ].join(' ')">
+  <app-highlighted-text [text]="suggestion().label" [keyword]="query()" />
+</span>

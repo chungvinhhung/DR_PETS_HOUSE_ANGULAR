@@ -1,0 +1,14 @@
+<h2 class="mb-[10px] font-['Roboto'] text-[17px] font-bold uppercase leading-[1.25] text-[#0D47A1]">{{ title() }}</h2>
+<ul class="flex flex-col gap-[10px]">
+  @for (__item1 of links(); track $index) {
+    @let label = __item1[0];
+    @let to = __item1[1];
+    <li>
+      <app-tablet-footer-link
+        [to]="to"
+        (onClick)="label === 'Bảng giá dịch vụ' ? onPricingOpen.emit($event) : null"
+        [hasOnClick]="!!(label === 'Bảng giá dịch vụ')"
+      >{{ label }}</app-tablet-footer-link>
+    </li>
+  }
+</ul>

@@ -1,0 +1,72 @@
+<div app-canvas-layout>
+  <app-nav-bar />
+  <main class="flex min-h-[1900px] flex-col items-center bg-[#E5F6FD] pb-12">
+    <nav app-first-aid-tabs></nav>
+    <section class="w-[1200px] pt-6">
+      <div class="flex items-end justify-between">
+        <div>
+          <h1 class="flex items-center gap-2 text-[40px] font-bold leading-[48px] tracking-[-0.8px]">Cẩm nang <span class="text-[#0D47A1]">sơ cứu</span>
+            <img [attr.src]="blogImages.firstAidTitle" alt="" class="h-12 w-12 object-contain" />
+          </h1>
+          <p class="mt-2 text-[16px] leading-6 text-[#4B5563]">Tra cứu các triệu chứng và quy trình sơ cứu cơ bản để bảo vệ boss của bạn</p>
+        </div>
+        <div class="flex gap-3">
+          @for (item of categories(); track item.id) {
+            <button
+              type="button"
+              (click)="chooseCategory(item.id)"
+              [class]="`rounded-full border px-5 py-2 text-[16px] transition-colors ${
+                    category() === item.id ? 'border-[#0D47A1] bg-[#0D47A1] font-bold text-white shadow-md' : 'border-[#0D47A1] bg-white hover:bg-[#E3F2FD]'
+                  }`"
+            >{{ item.label }}</button>
+          }
+        </div>
+      </div>
+      <label class="mt-10 flex h-14 w-full items-center rounded-full border border-[rgba(25,118,210,0.5)] bg-white py-2 pl-6 pr-2">
+        <input
+          [value]="search() ?? ''"
+          (input)="search.set($any($event).target.value)"
+          placeholder="Tìm kiếm triệu chứng hoặc tình huống..."
+          class="min-w-0 flex-1 bg-transparent text-[16px] outline-none"
+        />
+        @if (search()) {
+          <button
+            type="button"
+            (click)="handle1()"
+            class="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E3F2FD] text-[28px] font-semibold leading-none text-[#0D47A1] transition-colors hover:bg-[#BBDEFB]"
+            aria-label="Xóa tìm kiếm sơ cứu"
+          >×</button>
+        }
+        <img [attr.src]="productImages.searchIcon" alt="" class="h-7 w-7 shrink-0" />
+      </label>
+      @if (loadError()) {
+        <p class="mt-4 text-[14px] text-[#D32F2F]">{{ loadError() }}</p>
+      }
+      @if (apiEmptyMessage() && !loadError()) {
+        <p class="mt-4 text-[14px] text-[#0D47A1]">{{ apiEmptyMessage() }}</p>
+      }
+      @if (isLoading()) {
+        <div class="mt-12 flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">Đang tải cẩm nang sơ cứu...</div>
+      } @else if (visiblePosts().length) {
+        <div class="mt-12 grid grid-cols-12 auto-rows-auto gap-6">
+          @for (post of visiblePosts(); track post.id) {
+            <app-first-aid-card [post]="post" />
+          }
+        </div>
+      } @else {
+        <div class="mt-12 flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#414753]">Không tìm thấy cẩm nang phù hợp.</div>
+      }
+      <div app-support-cards></div>
+      @if (visiblePosts().length < filteredPosts().length) {
+        <div class="mt-8 flex justify-center">
+          <button
+            type="button"
+            (click)="handle2()"
+            class="rounded-[4px] bg-[#FFF176] px-8 py-3 text-[15px] font-medium uppercase tracking-[0.46px] shadow-md hover:bg-[#FDD835]"
+          >Xem thêm</button>
+        </div>
+      }
+    </section>
+  </main>
+  <app-footer [variant]="'white'" />
+</div>

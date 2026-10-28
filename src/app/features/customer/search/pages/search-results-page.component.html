@@ -1,0 +1,44 @@
+<app-nav-bar />
+<main
+  class="bg-gradient-to-b from-white to-[#E5F6FD] px-[120px] pt-6"
+  [appStyle]="{ minHeight: pageMinHeight() }"
+>
+  <div class="mx-auto flex w-full max-w-[1200px] items-start gap-6">
+    <aside
+      app-search-sidebar
+      [activeType]="activeType()"
+      [facets]="searchResponse().facets"
+      [selectedFilters]="selectedFilters()"
+      (onFilterToggle)="handleFilterToggle($any($event)[0], $any($event)[1])"
+      (onClear)="selectedFilters.set({})"
+      (onTypeChange)="handleTypeChange($any($event))"
+    ></aside>
+    <section class="flex w-[893px] shrink-0 flex-col gap-8 pb-[75px]">
+      <header
+        app-results-header
+        [query]="query()"
+        [activeType]="activeType()"
+        [activeSort]="activeSort()"
+        [counts]="filteredSearchResponse().counts"
+        [total]="filteredSearchResponse().total"
+        [emptyState]="filteredSearchResponse().emptyState"
+        (onSortChange)="handleSortChange($any($event))"
+        [isEmpty]="!hasResults()"
+      ></header>
+      @if (isLoading()) {
+        <div class="py-20 text-center text-[18px] font-semibold text-[#0D47A1]">Đang tải kết quả tìm kiếm...</div>
+      } @else if (loadError()) {
+        <div class="py-20 text-center text-[18px] font-semibold text-[#D32F2F]">{{ loadError() }}</div>
+      } @else if (hasResults()) {
+        <app-search-results-content [activeType]="activeType()" [results]="filteredSearchResponse().results" />
+      } @else {
+        <section
+          app-empty-results-content
+          [emptyState]="filteredSearchResponse().emptyState"
+          (onRetry)="handleRetrySearch()"
+        ></section>
+      }
+    </section>
+  </div>
+</main>
+<app-footer [variant]="'white'" />

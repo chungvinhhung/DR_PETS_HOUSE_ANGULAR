@@ -1,0 +1,15 @@
+<div
+  [class]="`flex shrink-0 items-center ${className()}`"
+  [appStyle]="{ gap: gap() }"
+  [attr.aria-label]="`${rating()} sao`"
+>
+  @for (_ of list1(); track $index; let index = $index) {
+    @let fillPercent = compute2(index);
+    <app-rating-star
+      [fillPercent]="fillPercent"
+      [size]="size()"
+      [fillColor]="fillColor()"
+      [emptyColor]="emptyColor()"
+    />
+  }
+</div>

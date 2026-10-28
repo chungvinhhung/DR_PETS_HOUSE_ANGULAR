@@ -1,0 +1,27 @@
+<div class="medical-section-title medical-services__title">
+  <h2>Dịch vụ<br />chúng tôi cung cấp</h2>
+  <img [attr.src]="medicalAssets.servicesTitleShape" alt="" />
+</div>
+<div class="medical-services__decor"><img [attr.src]="medicalAssets.servicesDecor" alt="" /></div>
+<div class="medical-services__grid">
+  @for (service of services(); track service.title; let index = $index) {
+    <article class="medical-service-card">
+      <div
+        class="medical-service-card__media"
+        [appStyle]="{
+              WebkitMaskImage: `url(${medicalAssets.serviceCardMask})`,
+              maskImage: `url(${medicalAssets.serviceCardMask})`
+            }"
+      >
+        <img [attr.src]="service.image" alt="" />
+        <div class="medical-service-card__shade"></div>
+      </div>
+      <div class="medical-service-card__number" aria-hidden="true"><div><span>{{ index + 1 }}</span></div></div>
+      <div class="medical-service-card__copy">
+        <h3>{{ service.title }}</h3>
+        <em>{{ service.price }}</em>
+        <p>{{ service.description }}</p>
+      </div>
+    </article>
+  }
+</div>

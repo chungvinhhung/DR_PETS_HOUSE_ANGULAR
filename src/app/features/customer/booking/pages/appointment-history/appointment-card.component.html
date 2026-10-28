@@ -1,0 +1,36 @@
+<div class="flex min-w-0 items-start gap-4">
+  <img
+    [attr.src]="appointment().pet.image || appointmentImages.pets.lulu"
+    [attr.alt]="appointment().pet.name"
+    [class]="`h-16 w-16 shrink-0 rounded-xl object-cover ${status().value === 'cancelled' ? 'grayscale' : ''}`"
+  />
+  <div class="min-w-0">
+    <div class="flex flex-wrap items-center gap-3">
+      <h3 class="font-['Roboto'] text-xl font-bold leading-7 text-[#031635]">{{ appointment().pet.name }}</h3>
+      <span [class]="`rounded-full px-3 py-1 text-xs font-semibold leading-4 ${status().badge}`">{{ status().label }}</span>
+    </div>
+    <p class="mt-1 text-sm leading-5 text-[#44474e]">Dịch vụ: {{ appointment().service.name }}</p>
+    <div class="mt-1 flex flex-wrap items-center gap-4 text-xs leading-4 text-[#75777f]">
+      <span class="inline-flex items-center gap-1">
+        <img app-small-icon [src]="appointmentImages.calendarIcon" />{{ appointment().service.date }}</span>
+      <span class="inline-flex items-center gap-1">
+        <img app-small-icon [src]="appointmentImages.timeIcon" />{{ appointment().service.time }}</span>
+    </div>
+  </div>
+</div>
+<div class="ml-6 flex shrink-0 flex-col items-end gap-3">
+  <div class="text-xl font-bold leading-7 text-[#031635]">{{ formatMoney(appointment().service.price) }}</div>
+  @if (status().value === 'pending_payment') {
+    <span app-payment-countdown [remainingSeconds]="remainingSeconds()"></span>
+  }
+  <div class="flex flex-wrap justify-end gap-2">
+    @for (action of actions(); track action.key) {
+      <button
+        app-action-button
+        [action]="action"
+        (onClick)="onAction.emit([$any($event), appointment()])"
+        [disabled]="actionLoading() || (action.key === 'pay' && paymentExpired())"
+      ></button>
+    }
+  </div>
+</div>

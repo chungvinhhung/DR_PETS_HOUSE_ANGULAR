@@ -1,0 +1,20 @@
+<span class="relative inline-flex shrink-0" [appStyle]="{ width: size(), height: size() }" aria-hidden="true">
+  <app-customer-icon
+    name="star"
+    [size]="size()"
+    [strokeWidth]="2"
+    className="absolute inset-0"
+    [color]="emptyColor()"
+    fill="transparent"
+  />
+  <span class="absolute inset-y-0 left-0 overflow-hidden" [appStyle]="{ width: `${fillPercent()}%` }">
+    <app-customer-icon
+      name="star"
+      [size]="size()"
+      [strokeWidth]="2"
+      [color]="fillColor()"
+      [fill]="fillColor()"
+      [svgStyle]="{ minWidth: size() }"
+    />
+  </span>
+</span>

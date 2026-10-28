@@ -1,0 +1,56 @@
+<p class="contact-form__intro">Chúng tôi luôn sẵn sàng lắng nghe góp ý của bạn. Hãy để lại lời nhắn bằng cách điền biểu mẫu dưới đây:</p>
+<div class="contact-form__row contact-form__row--name">
+  <label>
+    <span>Tên của bạn</span>
+    <input type="text" [value]="form().name ?? ''" (input)="updateField('name')($event)" required />
+  </label>
+  <label class="contact-form__gender">
+    <span>Giới tính</span>
+    <span class="contact-form__select">
+      <select [selectValue]="form().gender" (change)="updateField('gender')($event)" aria-label="Giới tính">
+        <option value="" aria-label="Chưa chọn"></option>
+        <option value="female">Nữ</option>
+        <option value="male">Nam</option>
+        <option value="other">Khác</option>
+      </select>
+      <img [attr.src]="contactAssets.chevron" alt="" />
+    </span>
+  </label>
+</div>
+<div class="contact-form__row">
+  <label>
+    <span>Số điện thoại</span>
+    <input type="tel" [value]="form().phone ?? ''" (input)="updateField('phone')($event)" required />
+  </label>
+  <label>
+    <span>Địa chỉ email</span>
+    <input type="email" [value]="form().email ?? ''" (input)="updateField('email')($event)" required />
+  </label>
+</div>
+<label class="contact-form__message">
+  <span>Nội dung</span>
+  <textarea
+    [value]="form().message ?? ''"
+    (input)="updateField('message')($event)"
+    placeholder="Hãy để lại lời nhắn ở đây..."
+    required
+  ></textarea>
+</label>
+<button type="submit" [disabled]="loading()">
+  @if (loading()) {
+    ĐANG GỬI...
+  } @else {
+    GỬI CHO CHÚNG TÔI
+  }
+</button>
+@if (error()) {
+  <p
+    class="contact-form__error"
+    role="alert"
+    [appStyle]="{ color: 'red', marginTop: '1rem', fontSize: '1.4rem' }"
+  >{{ error() }}</p>
+}
+@if (submitted()) {
+  <p class="contact-form__success" role="status">Cảm ơn bạn! Dr.Pet's House đã nhận được lời nhắn.</p>
+}
+<img class="contact-form__letter" [attr.src]="contactAssets.letterSend" alt="" />

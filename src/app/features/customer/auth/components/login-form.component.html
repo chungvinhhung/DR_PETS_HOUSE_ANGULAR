@@ -1,0 +1,46 @@
+<label
+  app-field
+  [label]="'Số điện thoại / Email'"
+  [name]="'phone'"
+  [value]="form().phone"
+  (onChange)="update($any($event))"
+  [icon]="'phone'"
+  [required]="true"
+  [error]="validationAttempted() ? errors().phone : ''"
+></label>
+<label
+  app-field
+  [label]="'Mật khẩu'"
+  [name]="'password'"
+  [value]="form().password"
+  (onChange)="update($any($event))"
+  [icon]="'lock-keyhole'"
+  [type]="'password'"
+  [required]="true"
+  [error]="validationAttempted() ? errors().password : ''"
+></label>
+@if (submitError()) {
+  <p class="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{{ submitError() }}</p>
+}
+<div class="flex items-center justify-between pb-2 text-sm">
+  <label class="flex items-center gap-2">
+    <input
+      name="remember"
+      type="checkbox"
+      [checked]="form().remember"
+      (change)="update($any($event))"
+      class="size-4"
+    />Ghi nhớ đăng nhập</label>
+  <button type="button" (click)="changeScreen()('forgot')" class="font-semibold text-blue-900">Quên mật khẩu?</button>
+</div>
+<button app-primary-button [disabled]="submitting()">
+  @if (submitting()) {
+    ĐANG ĐĂNG NHẬP...
+  } @else {
+    ĐĂNG NHẬP
+  }
+</button>
+<div app-divider></div>
+<button app-google-button></button>
+<p class="text-center text-sm">Chưa có tài khoản?    <button type="button" (click)="changeScreen()('register')" class="font-semibold text-blue-900">Đăng ký ngay</button>
+</p>

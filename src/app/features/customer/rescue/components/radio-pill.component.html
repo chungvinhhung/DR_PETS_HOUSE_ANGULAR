@@ -1,0 +1,11 @@
+<input
+  type="radio"
+  [attr.name]="question().name"
+  [value]="option() ?? ''"
+  [checked]="checked()"
+  (change)="onChange.emit([question().name, $any($event).target.value])"
+  [attr.aria-invalid]="invalid() || undefined"
+  [attr.data-adoption-error]="invalid() ? 'true' : undefined"
+  class="h-5 w-5 shrink-0 accent-[#0058BE]"
+/>
+<span>{{ option() }}</span>

@@ -1,0 +1,32 @@
+@for (item of NAV_LINKS; track item.label) {
+  <div class="group relative">
+    <a
+      [appCustomerLink]="item.href"
+      [class]="`nav-link ${navLink1.isActive() ? 'nav-link-active' : ''}`"
+      #navLink1="customerLink"
+      [exact]="item.href === '/'"
+    >{{ item.label }}</a>
+    @if (item.children) {
+      <div class="invisible absolute left-1/2 top-full z-50 min-w-[260px] -translate-x-1/2 translate-y-3 rounded-2xl border border-gray-100 bg-white p-4 opacity-0 shadow-lg transition-all duration-component ease-premium group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
+        <ul class="space-y-1">
+          @for (child of item.children; track $index) {
+            @let hideProductCategoryActive = item.label === 'Mua sắm' &&
+                  ['/products', '/san-pham'].includes(navService.location().pathname);
+            <li>
+              <a
+                [appCustomerLink]="child.href"
+                [class]="[
+                          'block rounded-xl px-4 py-3 text-[15px] transition-colors duration-micro',
+                          navLink2.isActive() && !hideProductCategoryActive
+                            ? 'bg-[#E3F2FD] font-medium text-blue-900'
+                            : 'text-gray-700 hover:bg-yellow-50 hover:text-blue-900'
+                        ].join(' ')"
+                #navLink2="customerLink"
+              >{{ child.label }}</a>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  </div>
+}

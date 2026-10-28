@@ -1,0 +1,78 @@
+<button
+  type="button"
+  class="fixed inset-x-0 bottom-0 top-[88px] z-[60] cursor-default bg-transparent"
+  (click)="onClose.emit($event)"
+  aria-label="Đóng gợi ý tìm kiếm"
+></button>
+<aside
+  id="site-search-suggestions"
+  class="panel-slide-in absolute right-0 top-[41px] z-[80] flex w-[466px] flex-col items-start overflow-hidden rounded-[4px] pt-5 shadow-[0px_10px_7.5px_rgba(0,0,0,0.1),0px_4px_3px_rgba(0,0,0,0.1)]"
+  role="dialog"
+  aria-label="Gợi ý tìm kiếm"
+>
+  <img
+    [attr.src]="searchSuggestionImages.triangleRight"
+    alt=""
+    class="absolute right-[-2px] top-0 size-6"
+    aria-hidden="true"
+  />
+  <div class="flex w-[466px] flex-col bg-[#FFFDE7] pt-1">
+    <section class="flex w-full flex-col gap-3 px-4 py-[10px]">
+      <h3 class="font-['Roboto'] text-[16px] font-bold leading-6 tracking-[0.15px] text-[#353535]">Gợi ý phù hợp</h3>
+      <div [class]="[
+                'flex w-full flex-col items-start',
+                shouldUseFigmaListHeight() ? 'h-[172px] justify-between' : 'gap-2'
+              ].join(' ')">
+        @if (isLoading()) {
+          <div app-search-suggestion-status>Đang tải gợi ý...</div>
+        }
+        @if (!isLoading() && error()) {
+          <div app-search-suggestion-status>{{ error() }}</div>
+        }
+        @if (!isLoading() && !error() && !hasResults()) {
+          <div app-search-suggestion-status>Không tìm thấy kết quả phù hợp</div>
+        }
+        @if (!isLoading() && !error()) {
+          @for (suggestion of suggestions(); track suggestion.id) {
+            <button
+              app-text-suggestion-item
+              [suggestion]="suggestion"
+              [query]="query()"
+              [active]="activeItemId() === suggestion.id"
+              (onSelect)="onSuggestionSelect.emit($event)"
+              (onHover)="onItemHover.emit(suggestion.id)"
+            ></button>
+          }
+        }
+      </div>
+    </section>
+    @if (!isLoading() && !error() && products().length > 0) {
+      <section class="flex w-full flex-col gap-3 px-4 py-[10px]">
+        <h3 class="font-['Roboto'] text-[16px] font-bold leading-6 tracking-[0.15px] text-[#353535]">Sản phẩm liên quan</h3>
+        <div class="flex w-full items-start justify-center gap-3">
+          @for (product of products(); track product.id; let index = $index) {
+            <button
+              app-product-suggestion-card
+              [product]="product"
+              [query]="query()"
+              [active]="activeItemId() === `product-${product.id}`"
+              (onSelect)="onProductSelect.emit($event)"
+              (onHover)="onItemHover.emit(`product-${product.id}`)"
+            ></button>
+          }
+        </div>
+      </section>
+    }
+    <div class="flex w-full flex-col items-center px-4 py-[10px]">
+      <button
+        type="button"
+        (click)="onSeeAll.emit($event)"
+        (mouseenter)="onItemHover.emit('all-results')"
+        [class]="[
+                'flex h-[35px] w-full items-center justify-center rounded-[4px] px-6 text-center font-[\'Roboto\'] text-[14px] font-semibold leading-5 tracking-[0.28px] text-[#0D47A1] transition-colors',
+                activeItemId() === 'all-results' ? 'bg-[#FFF59D]' : 'bg-[#F5F5F5] hover:bg-[#EEEEEE]'
+              ].join(' ')"
+      >{{ `Xem tất cả kết quả cho "${query().trim()}"` }}</button>
+    </div>
+  </div>
+</aside>

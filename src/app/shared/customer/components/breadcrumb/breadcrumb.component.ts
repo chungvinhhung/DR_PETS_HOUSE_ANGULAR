@@ -1,0 +1,36 @@
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+
+import { CustomerLinkDirective } from '../../directives/customer-link.directive';
+import { productImages } from '../../assets/product-images';
+
+/**
+ * Breadcrumb — chuyển từ React: src/components/layout/Breadcrumb.jsx
+ */
+@Component({
+  selector: 'nav[app-breadcrumb]',
+  standalone: true,
+  imports: [CustomerLinkDirective],
+  templateUrl: './breadcrumb.component.html',
+  host: {
+    'aria-label': 'Breadcrumb',
+    '[class]': '`flex ${ isBlog() ? \'h-7 items-center bg-transparent text-[12px] font-medium leading-4\' : \'h-[56px] items-end bg-white px-[120px] text-[16px] leading-[24px]\' } ${className()}`',
+  },
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class BreadcrumbComponent {
+  // --- Input / Output (props của React) ---
+  readonly items = input<any>(undefined);
+  readonly className = input<any>("");
+  readonly listClassName = input<any>("");
+  readonly linkClassName = input<any>("");
+  readonly currentClassName = input<any>("");
+  readonly separatorClassName = input<any>("");
+  readonly variant = input<any>("default");
+
+  // --- Dữ liệu & hàm dùng trong template ---
+  protected readonly productImages: any = productImages;
+
+  // --- Giá trị tính toán (computed) ---
+  readonly isBlog = computed<any>(() => this.variant() === "blog");
+
+}

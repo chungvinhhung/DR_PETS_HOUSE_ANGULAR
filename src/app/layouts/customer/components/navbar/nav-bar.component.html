@@ -1,0 +1,7 @@
+@if (authService.isAuthenticated()) {
+  <app-mobile-nav-bar [isAuthenticated]="true" [avatarSrc]="avatarSrc()" />
+  <app-nav-bar-authenticated [avatarSrc]="avatarSrc()" (onLogout)="onLogout.emit($event)" />
+} @else {
+  <app-mobile-nav-bar [isAuthenticated]="false" [avatarSrc]="avatarSrc()" />
+  <app-nav-bar-guest />
+}

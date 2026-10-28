@@ -1,0 +1,59 @@
+<!-- Khối background xanh -->
+<svg
+  class="absolute bottom-[-11.03px] left-1/2 h-[933px] w-[1440px] -translate-x-1/2"
+  viewBox="0 0 1440 922"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+>
+  <path
+    d="M0 878.464V76.4969C0 76.4969 186.895 5.12668e-05 698.348 0C1209.8 -5.12668e-05 1440 76.4969 1440 76.4969V878.464C1440 878.464 1206.61 939.315 698.348 932.462C190.085 925.608 0 878.464 0 878.464Z"
+    fill="#E5F6FD"
+  />
+</svg>
+<img
+  [attr.src]="homeImages.catDeco"
+  alt=""
+  class="pointer-events-none absolute right-4 top-2 hidden h-[140px] w-auto lg:block xl:right-[calc((100vw-1440px)/2+80px)]"
+  aria-hidden="true"
+/>
+<div class="relative mx-auto flex max-w-page flex-col items-center gap-14 px-6 md:px-20">
+  <div class="flex flex-col items-center gap-6">
+    <div class="relative">
+      <!-- Vector vàng -->
+      <svg
+        class="absolute left-1/2 top-[50px] z-0 h-[15px] w-[179px] -translate-x-1/2"
+        viewBox="0 0 182 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <path
+          d="M0.213867 5.64588C23.7047 3.62998 109.211 -0.290806 179.214 5.6459C142.876 5.6459 106.198 6.7462 75.7139 13"
+          stroke="#FDD835"
+          stroke-width="5"
+          stroke-linejoin="round"
+        />
+      </svg>
+      <div
+        app-section-title
+        [subtitle]="'Dr.Pet\'s House mang đến hệ sinh thái chăm sóc thú cưng hiện đại với đầy đủ dịch vụ từ khám chữa bệnh, chăm sóc làm đẹp đến mua sắm sản phẩm chất lượng. Chúng tôi luôn hướng đến sự tiện lợi, an toàn và trải nghiệm tốt nhất cho cả thú cưng và chủ nuôi.'"
+        [className]="'relative z-10'"
+      >
+        <span class="font-bold block">Dịch vụ</span>
+        <span class="font-bold block">chúng tôi cung cấp</span>
+      </div>
+    </div>
+  </div>
+  <div class="grid w-full gap-8 md:grid-cols-2 xl:grid-cols-3">
+    @for (service of HOME_SERVICES; track service.title) {
+      <article
+        app-service-section-service-card
+        [image]="service.image"
+        [title]="service.title"
+        [description]="service.description"
+        [href]="service.href"
+      ></article>
+    }
+  </div>
+</div>

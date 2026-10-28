@@ -1,0 +1,10 @@
+<app-notification-visual [item]="item()" />
+<span class="notification-item__content">
+  <p app-notification-message [parts]="item().messageParts"></p>
+  <span class="notification-item__meta">
+    <span>{{ item().relativeTime }}</span>
+    @if (item().dateTime) {
+      <span>{{ item().dateTime }}</span>
+    }
+  </span>
+</span>

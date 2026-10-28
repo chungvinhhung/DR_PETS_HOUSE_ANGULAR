@@ -1,0 +1,62 @@
+<div class="absolute inset-0 h-[422px] w-[355px]" [appStyle]="mask()">
+  <img
+    [attr.src]="service().image"
+    [attr.alt]="service().title"
+    class="size-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.025]"
+  />
+</div>
+<div
+  class="absolute inset-0 bg-gradient-to-b from-[rgba(2,0,15,0)] to-[rgba(2,0,15,0.72)] transition-colors duration-300"
+  [appStyle]="mask()"
+></div>
+<div
+  class="absolute flex items-center justify-center"
+  [appStyle]="{
+        right: 0,
+        top: 8,
+        width: 79,
+        height: 59,
+        transform: 'rotate(-36.71deg) skewX(16.58deg)'
+      }"
+>
+  <div class="flex size-full items-center justify-center rounded-[28px] border border-[#A1A4B1] px-[7px] py-1">
+    <span
+      class="rotate-45 text-center text-[#A1A4B1]"
+      [appStyle]="{
+            fontFamily: 'Roboto, sans-serif',
+            fontWeight: 400,
+            fontSize: 24,
+            lineHeight: 1.334
+          }"
+    >{{ service().id }}</span>
+  </div>
+</div>
+<div class="absolute inset-x-0 bottom-0 h-[124px] text-white">
+  <p
+    class="absolute left-[28px] top-0"
+    [appStyle]="{
+          fontFamily: 'Roboto, sans-serif',
+          fontWeight: 400,
+          fontSize: 24,
+          lineHeight: '34.01px'
+        }"
+  >{{ service().title }}</p>
+  <p
+    class="absolute right-[20px] top-[32px] text-right italic"
+    [appStyle]="{
+          fontFamily: 'Roboto, sans-serif',
+          fontWeight: 300,
+          fontSize: 16,
+          lineHeight: '28px'
+        }"
+  >{{ service().price }}</p>
+  <p
+    class="absolute left-[28px] top-[62px] w-[291px]"
+    [appStyle]="{
+          fontFamily: 'Roboto, sans-serif',
+          fontWeight: 400,
+          fontSize: 16,
+          lineHeight: '28px'
+        }"
+  >{{ service().description }}</p>
+</div>

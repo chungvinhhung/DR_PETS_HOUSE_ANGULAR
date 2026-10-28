@@ -1,0 +1,13 @@
+<div class="policy-related__heading flex h-7 w-[282px] items-center justify-center gap-4">
+  <h2 class="whitespace-nowrap text-[20px] font-semibold uppercase leading-7 text-[#002D62]">CÓ LIÊN QUAN</h2>
+</div>
+<nav class="mt-6 flex w-[282px] flex-col gap-6" aria-label="Chính sách liên quan">
+  @for (item of relatedPolicies(); track item.label) {
+    <a
+      [appCustomerLink]="item.href"
+      [class]="`flex h-[46px] items-center justify-center rounded-[8px] text-center text-[14px] font-semibold leading-5 text-[#1e293b] transition-colors hover:bg-[#FFF9C4] hover:text-[#005AB4] ${
+            item.active ? 'bg-[#FFF9C4] text-[#005AB4]' : ''
+          }`"
+    >{{ item.label }}</a>
+  }
+</nav>

@@ -1,0 +1,21 @@
+<div app-canvas-layout>
+  <app-nav-bar />
+  <main>
+    <section class="contact-hero">
+      <div class="contact-hero__details">
+        <h1>Nếu bạn cần <span>hỗ trợ</span>?<br />
+          <b>Hãy <em>liên hệ</em> ngay!</b>
+        </h1>
+        <p>Nếu bạn cần hỗ trợ ngay, hãy liên hệ với chúng tôi qua các kênh liên lạc dưới đây:</p>
+        <div class="contact-channels">
+          @for (channel of CONTACT_CHANNELS; track channel.id) {
+            <a app-contact-channel [channel]="channel"></a>
+          }
+        </div>
+      </div>
+      <form app-contact-form></form>
+    </section>
+    <section app-branch-directory></section>
+  </main>
+  <app-footer [variant]="'white'" />
+</div>

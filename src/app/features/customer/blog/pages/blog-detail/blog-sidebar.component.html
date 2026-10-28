@@ -1,0 +1,30 @@
+<section class="rounded-[12px] bg-white p-6 shadow-sm">
+  <div app-sidebar-heading>XEM NHANH</div>
+  <div class="mt-6 flex flex-col gap-4">
+    @for (post of QUICK_READ_POSTS; track post.id) {
+      <a [appCustomerLink]="`/blog/${post.id}`" class="group flex gap-3">
+        <img [attr.src]="post.image" alt="" class="h-20 w-20 shrink-0 rounded-lg object-cover" />
+        <div class="flex min-w-0 flex-col justify-center">
+          <h3 class="line-clamp-2 text-[14px] font-semibold leading-5 text-[#1A1C1C] group-hover:text-[#0D47A1]">{{ post.title }}</h3>
+          <p class="mt-1 text-[12px] font-medium leading-4 text-[#414753]/75">{{ post.publishedAt }}</p>
+        </div>
+      </a>
+    }
+  </div>
+</section>
+<section class="rounded-[12px] bg-white p-6 shadow-sm">
+  <div app-sidebar-heading>CHỦ ĐỀ</div>
+  <div class="mt-6 flex flex-col gap-6">
+    @for (item of list1(); track item.id) {
+      <a
+        [appCustomerLink]="`/blog?category=${item.id}#latest-posts`"
+        [class]="`flex h-11 items-center justify-center gap-2 rounded-[12px] text-[14px] font-semibold tracking-[0.14px] transition-colors hover:bg-[#FFF9C4] hover:text-[#005AB4] ${
+              selectedCategory() === item.id
+                ? 'bg-[#FFF9C4] text-[#005AB4]'
+                : 'text-[rgba(0,0,0,0.87)]'
+            }`"
+      >
+        <app-category-icon [category]="item.id" [className]="'h-4 w-4'" />{{ item.label }}</a>
+    }
+  </div>
+</section>

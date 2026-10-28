@@ -1,0 +1,60 @@
+<app-nav-bar />
+<div app-scaled-canvas-layout [className]="'bg-white'">
+  <nav
+    app-breadcrumb
+    [items]="[
+          { label: 'Mua sắm', to: '/petshop' },
+          { label: 'Danh mục sản phẩm' }
+        ]"
+  ></nav>
+  <main class="min-h-[1607px] bg-[linear-gradient(180deg,#FFFFFF_0%,#E5F6FD_100%)] px-[120px] pt-[24px]">
+    <div class="flex gap-[24px]">
+      <aside
+        app-filter-sidebar
+        [categoryOptions]="categoryOptions()"
+        [selectedCategories]="selectedCategories()"
+        [selectedPrices]="selectedPrices()"
+        (onCategoryChange)="toggleCategory($any($event))"
+        (onPriceChange)="togglePrice($any($event))"
+        (onClear)="clearFilters()"
+      ></aside>
+      <section class="w-[893px] shrink-0">
+        <h1 class="text-[36px] font-bold leading-[42px] text-[#3D3D3D]">Danh mục sản phẩm của chúng tôi</h1>
+        <div class="mt-[32px]">
+          <form
+            app-product-search-and-sort
+            [search]="search()"
+            (onSearchChange)="search.set($event)"
+            (onSearch)="resetDisplayCount(setSearchQueryFn, search().trim())"
+            (onClearSearch)="clearSearch()"
+            [sortOrder]="sortOrder()"
+            (onSortChange)="resetDisplayCount(setSortOrderFn, $any($event))"
+          ></form>
+        </div>
+        @if (searchQuery()) {
+          <p class="mt-[27px] text-[16px] leading-[27px] text-[#414141]">Kết quả tìm kiếm cho "{{ searchQuery() }}"</p>
+        }
+        <div class="mt-[32px]">
+          @if (isLoadingProducts()) {
+            <div class="flex h-[532px] items-center justify-center text-[18px] text-[#0D47A1]">Đang tải sản phẩm...</div>
+          } @else if (loadError()) {
+            <div class="flex h-[532px] items-center justify-center text-center text-[18px] text-[#D32F2F]">{{ loadError() }}</div>
+          } @else {
+            <app-product-grid [products]="products()" />
+          }
+        </div>
+        @if (!isLoadingProducts() && !loadError()) {
+          <div
+            app-load-more
+            [shown]="products().length"
+            [total]="totalProducts()"
+            [hasMore]="currentPage() < totalPages()"
+            [isLoading]="isLoading()"
+            (onLoadMore)="loadMore()"
+          ></div>
+        }
+      </section>
+    </div>
+  </main>
+  <app-footer [variant]="'white'" />
+</div>
