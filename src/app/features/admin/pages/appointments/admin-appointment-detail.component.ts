@@ -116,7 +116,7 @@ export class AdminAppointmentDetailComponent {
         },
         error: err => {
           if (version!==this.requestVersion)return;
-          this.error.set(adminErrorMessage(err,'Chưa có hoặc chưa được cấp quyền API chi tiết lịch hẹn.'));
+          this.error.set(adminErrorMessage(err,'Không thể tải chi tiết lịch hẹn. Vui lòng thử lại.'));
           this.loading.set(false);
         },
       });
@@ -189,9 +189,9 @@ export class AdminAppointmentDetailComponent {
     const decision=this.selectedWindow();
     if (!decision)return '';
     switch(decision.status) {
-      case 'eligible':return 'Còn tối thiểu 24 giờ trước lịch hẹn. BE vẫn phải xác nhận điều kiện tại thời điểm xử lý.';
+      case 'eligible':return 'Lịch hẹn còn từ 24 giờ trở lên. Bạn có thể gửi yêu cầu thay đổi.';
       case 'too-late':return 'Còn dưới 24 giờ. Chỉ Manager/Admin có thể đề nghị override kèm lý do và audit.';
-      case 'missing-count':return 'BE chưa cung cấp số lần đổi lịch; không thể xác minh giới hạn 2 lần.';
+      case 'missing-count':return 'Chưa xác định được số lần đổi lịch. Vui lòng thử lại sau.';
       case 'limit-reached':return 'Đã đạt giới hạn 2 lần đổi lịch. Chỉ Manager/Admin có thể đề nghị override có audit.';
       case 'terminal':return 'Lịch đã kết thúc hoặc không còn được phép thay đổi.';
       case 'missing-time':return 'Thiếu thời gian hẹn thực tế. Không thể tính thời hạn 24 giờ.';
@@ -214,6 +214,6 @@ export class AdminAppointmentDetailComponent {
     if(win && !win.canRequest) {this.actionError.set(this.showPolicyMessage());return;}
     if (!this.reason().trim()) {this.actionError.set('Nhập lý do và ghi chú xử lý.');return;}
     // These methods are intentionally not wired to unverified mutation APIs.
-    this.actionError.set('Đã kiểm tra bản nháp. Chưa có hợp đồng API Admin cho thao tác này; không thay đổi trạng thái, không đổi lịch và không tạo refund.');
+    this.actionError.set('Chức năng này đang được hoàn thiện. Lịch hẹn của bạn chưa thay đổi.');
   }
 }
