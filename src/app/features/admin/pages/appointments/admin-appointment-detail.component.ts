@@ -6,7 +6,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiClientService } from '../../../../core/services/api-client.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
-import { adminErrorMessage } from '../../../../shared/services/admin-toast.service';
+import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import {
   AppointmentView, appointmentWindow, normalizeAppointmentDetail, statusLabel,
 } from './admin-appointment-workflow.model';
@@ -24,6 +24,7 @@ type DialogAction = 'cancel' | 'reschedule' | 'status' | null;
 })
 export class AdminAppointmentDetailComponent {
   private readonly api = inject(ApiClientService);
+  private readonly toast = inject(AdminToastService);
   private readonly session = inject(AuthSessionService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -197,23 +198,28 @@ export class AdminAppointmentDetailComponent {
       case 'missing-time':return 'Thiếu thời gian hẹn thực tế. Không thể tính thời hạn 24 giờ.';
     }
   }
+  private showActionMessage(message: string): void {
+    this.actionError.set(message);
+    this.toast.show(message, 'info');
+  }
+
   inspectRequest(): void {
     if (!this.dialog())return;
-    if (!this.canInspectActions()) {this.actionError.set('Bạn không có quyền xử lý lịch hẹn.');return;}
+    if (!this.canInspectActions()) {this.showActionMessage('Bạn không có quyền xử lý lịch hẹn.');return;}
     if (this.dialog()==='status'&&!this.statusTarget())
-      {this.actionError.set('Chọn trạng thái muốn cập nhật.');return;}
+      {this.showActionMessage('Vui lòng chọn trạng thái muốn cập nhật.');return;}
     if (this.dialog()==='reschedule') {
       if (!this.targetDate()||!this.targetTime()) {
-        this.actionError.set('Chọn ngày và giờ đề nghị đổi lịch.');return;
+        this.showActionMessage('Vui lòng chọn ngày và giờ hẹn mới.');return;
       }
       if(new Date(this.targetDate()+'T'+this.targetTime()).getTime()<=Date.now()) {
-        this.actionError.set('Thời gian mới phải ở tương lai.');return;
+        this.showActionMessage('Thời gian mới phải ở tương lai.');return;
       }
     }
     const win=this.selectedWindow();
-    if(win && !win.canRequest) {this.actionError.set(this.showPolicyMessage());return;}
-    if (!this.reason().trim()) {this.actionError.set('Nhập lý do và ghi chú xử lý.');return;}
+    if(win && !win.canRequest) {this.showActionMessage(this.showPolicyMessage());return;}
+    if (!this.reason().trim()) {this.showActionMessage('Vui lòng nhập lý do xử lý.');return;}
     // These methods are intentionally not wired to unverified mutation APIs.
-    this.actionError.set('Chức năng này đang được hoàn thiện. Lịch hẹn của bạn chưa thay đổi.');
+    this.showActionMessage('Chức năng này đang được hoàn thiện. Lịch hẹn của bạn chưa thay đổi.');
   }
 }
