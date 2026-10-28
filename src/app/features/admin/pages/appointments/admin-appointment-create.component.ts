@@ -582,7 +582,8 @@ export class AdminAppointmentCreateComponent {
           next: preview => {
             if (version !== this.priceRequestVersion) return;
             if (key !== this.pricingRequestKey()) {
-              this.pricingStatus.set('idle');
+              this.pricingSnapshot.set(null);
+              this.pricingStatus.set('error');
               this.pricingError.set('Dữ liệu đã thay đổi trong lúc báo giá. Vui lòng xem giá lại.');
               return;
             }
