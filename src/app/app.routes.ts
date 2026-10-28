@@ -15,9 +15,18 @@ const confirmProductLeave: CanDeactivateFn<ProductLeaveAware> = (component) => c
 
 const confirmStaffLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
 const confirmVoucherLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
+const confirmAppointmentCreateLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
 const confirmOrderCreateLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
 
 export const routes: Routes = [
+  {
+    path: 'admin/appointments/new',
+    canActivate: [authGuard, roleGuard],
+    canDeactivate: [confirmAppointmentCreateLeave],
+    data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+    loadComponent: () => import('./features/admin/pages/appointments/admin-appointment-create.component')
+      .then(c => c.AdminAppointmentCreateComponent),
+  },
   {
     path: 'admin/staff/schedule',
     canActivate: [authGuard, roleGuard],
