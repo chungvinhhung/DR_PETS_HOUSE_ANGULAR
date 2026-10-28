@@ -7,14 +7,7 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
-
-function assertSuccess(response: any) {
-  if (response?.EC !== undefined && response.EC !== 0) {
-    throw new Error(response.EM || "Yeu cau dat lich khong thanh cong");
-  }
-  return response?.DT ?? response;
-}
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 
 function formatTime(value: any) {
   if (!value) return "";
@@ -233,14 +226,19 @@ export class BookingApiService {
   private readonly http = inject(CustomerHttpService);
 
   async getBranches() {
-    const response = await this.http.get("/branches");
-    return assertSuccess(response).map(normalizeBranch);
+    const response = await this.http.get("/branches", { params: { status: 'ACTIVE' } });
+    const data = assertSuccess(response);
+    const items = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : [];
+    return items.map(normalizeBranch);
   }
 
   async getServices(params: any = {}) {
-    const response = await this.http.get("/services", { params: { limit: 100, ...params } });
+    const response = await this.http.get("/catalog/services", { params: { limit: 100, ...params } }).catch(() => 
+      this.http.get("/services", { params: { limit: 100, ...params } })
+    );
     const payload = assertSuccess(response);
-    return (payload?.services || payload || []).map(normalizeBookingService);
+    const items = Array.isArray(payload?.items) ? payload.items : Array.isArray(payload?.services) ? payload.services : Array.isArray(payload) ? payload : [];
+    return items.map(normalizeBookingService);
   }
 
   async getAppointmentSlots({ date, branchId, serviceType }: any) {
@@ -248,32 +246,74 @@ export class BookingApiService {
       params: {
         date,
         branch_id: branchId || undefined,
+        branchId: branchId || undefined,
         service_type: serviceType === "grooming" ? "grooming" : "exam",
       },
     });
-    return groupSlotsByTime(assertSuccess(response).map(normalizeSlot));
+    const slots = assertSuccess(response);
+    const slotsList = Array.isArray(slots) ? slots : Array.isArray(slots?.slots) ? slots.slots : [];
+    return groupSlotsByTime(slotsList.map(normalizeSlot));
   }
 
-  async bookAppointment(payload: any) {
-    const response = await this.http.post("/appointments/book", payload);
-    return assertSuccess(response);
+  async bookAppointment(bookingData: any) {
+    const formattedPayload = {
+      branchId: bookingData.branchId || bookingData.branch_id,
+      customerId: bookingData.customerId || null,
+      petId: bookingData.petId || bookingData.pet_id || null,
+      serviceIds: bookingData.serviceIds || (bookingData.serviceId ? [bookingData.serviceId] : []),
+      appointmentDate: bookingData.appointmentDate || bookingData.date,
+      startTime: bookingData.startTime || bookingData.start_time,
+      contactSnapshot: bookingData.contactSnapshot || {
+        fullName: bookingData.customerName || bookingData.fullName || bookingData.contact_name,
+        phone: bookingData.customerPhone || bookingData.phone || bookingData.contact_phone,
+        email: bookingData.customerEmail || bookingData.email || undefined,
+      },
+      note: bookingData.note || undefined,
+    };
+    try {
+      const response = await this.http.post("/appointments", formattedPayload);
+      return assertSuccess(response);
+    } catch (err: any) {
+      if (err?.status === 404) {
+        const response = await this.http.post("/appointments/book", bookingData);
+        return assertSuccess(response);
+      }
+      throw err;
+    }
   }
 
   async previewAppointmentPricing(payload: any) {
-    const response = await this.http.post("/appointments/preview-pricing", payload);
-    return assertSuccess(response);
+    try {
+      const response = await this.http.post("/appointments/quote", {
+        serviceIds: payload.serviceIds || (payload.serviceId ? [payload.serviceId] : []),
+        petWeightKg: Number(payload.petWeight || payload.petWeightKg || 3),
+        branchId: payload.branchId,
+        voucherCode: payload.voucherCode || undefined,
+      });
+      return assertSuccess(response);
+    } catch {
+      const response = await this.http.post("/appointments/preview-pricing", payload);
+      return assertSuccess(response);
+    }
   }
 
   async getAppointmentHistory() {
     const response = await this.http.get("/appointments/my-history");
     const data = assertSuccess(response);
-    const appointmentsArray = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+    const appointmentsArray = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
     return appointmentsArray.map(normalizeAppointmentHistoryItem);
   }
 
   async cancelAppointment(appointmentId: any) {
-    const response = await this.http.patch(`/appointments/${appointmentId}/cancel`);
-    return assertSuccess(response);
+    try {
+      const response = await this.http.post(`/appointments/${appointmentId}/cancel`, {
+        reason: 'Khách hàng yêu cầu hủy lịch'
+      });
+      return assertSuccess(response);
+    } catch {
+      const response = await this.http.patch(`/appointments/${appointmentId}/cancel`);
+      return assertSuccess(response);
+    }
   }
 
   async checkoutAppointment(appointmentId: any, { paymentMethod = "store", voucherCode }: any = {}) {

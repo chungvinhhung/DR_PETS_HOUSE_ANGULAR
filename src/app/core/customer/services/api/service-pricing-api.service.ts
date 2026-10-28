@@ -7,14 +7,7 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
-
-function assertSuccess(response: any) {
-  if (response?.EC !== undefined && response.EC !== 0) {
-    throw new Error(response.EM || "Khong the tai bang gia dich vu");
-  }
-  return response?.DT ?? response;
-}
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 
 const iconByServiceName = [
   [/tắm|sấy/i, "bath", "#2d63c8", "#cce1fe"],
@@ -78,19 +71,25 @@ export class ServicePricingApiService {
   private readonly http = inject(CustomerHttpService);
 
   async getServicePricingMatrix() {
-    const response = await this.http.get("/services/pricing-matrix");
-    const categories = assertSuccess(response).map(normalizeCategory);
-  
-    return categories.reduce(
-      (result: any, category: any) => ({
-        ...result,
-        [category.value]: {
-          label: category.label,
-          columns: category.columns,
-          rows: [...((result as any)[category.value]?.rows || []), ...category.rows],
-        },
-      }),
-      {},
-    );
+    try {
+      const response = await this.http.get("/services/pricing-matrix");
+      const data = assertSuccess(response);
+      const list = Array.isArray(data) ? data : Array.isArray(data?.categories) ? data.categories : [];
+      const categories = list.map(normalizeCategory);
+    
+      return categories.reduce(
+        (result: any, category: any) => ({
+          ...result,
+          [category.value]: {
+            label: category.label,
+            columns: category.columns,
+            rows: [...((result as any)[category.value]?.rows || []), ...category.rows],
+          },
+        }),
+        {},
+      );
+    } catch {
+      return {};
+    }
   }
 }

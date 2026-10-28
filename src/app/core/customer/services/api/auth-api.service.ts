@@ -7,15 +7,8 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 import { environment } from '../../../../../environments/environment';
-
-function assertSuccess(response: any) {
-  if (response?.EC !== undefined && response.EC !== 0) {
-    throw new Error(response.EM || "Yeu cau khong thanh cong");
-  }
-  return response?.DT ?? response;
-}
 
 function canUseFrontendAuthFallback(error: any) {
   return !environment.production && (error?.status === null || error?.status === undefined);
@@ -30,10 +23,12 @@ function buildFrontendAuthSession({ loginId, fullName, phone, email }: any = {})
     frontendFallback: true,
     user: {
       user_id: "frontend-dev-user",
-      full_name: fullName || "Khach hang Dr. Pet",
+      full_name: fullName || "Khách hàng Dr. Pet",
       email: email || (accountIsEmail ? account : "customer@example.com"),
       phone: phone || (accountIsEmail ? "0901234567" : account),
       role_code: "CUSTOMER",
+      fullName: fullName || "Khách hàng Dr. Pet",
+      userId: "frontend-dev-user",
     },
   };
 }
@@ -45,24 +40,32 @@ export class AuthApiService {
   async login({ loginId, password, remember = false }: any) {
     try {
       try {
-        // Hợp đồng API chung của dự án (xem docs/TASK-3.5-PHASE-2-LOGIN-API.md): { identifier, password } -> { accessToken, user }
-        const response: any = await this.http.post("/auth/login", { identifier: loginId, password });
+        const response: any = await this.http.post("/auth/login", {
+          identifier: loginId,
+          password
+        });
+        const payload: any = assertSuccess(response);
+        const user = payload?.user || payload;
         return {
-          access_token: response?.accessToken,
-          user: response?.user
+          access_token: payload?.accessToken || payload?.access_token,
+          user: user
             ? {
-                user_id: response.user.id,
-                full_name: response.user.fullName,
-                email: response.user.email,
-                phone: response.user.phone,
-                role_code: response.user.systemRole,
+                user_id: user.id || user.user_id,
+                full_name: user.fullName || user.full_name,
+                email: user.email || '',
+                phone: user.phone || '',
+                role_code: user.systemRole || user.role_code || 'CUSTOMER',
+                customerId: user.customerId || user.id,
+                fullName: user.fullName || user.full_name,
+                userId: user.id || user.user_id,
               }
             : null,
         };
       } catch (error: any) {
         if (error?.status !== 404) throw error;
       }
-      // API cũ (WEB2_BACKEND) mà bản React đang dùng
+
+      // Fallback API cũ
       const response = await this.http.post("/login", {
         login_id: loginId,
         password,
@@ -79,12 +82,13 @@ export class AuthApiService {
 
   async register({ fullName, phone, email, password }: any) {
     try {
-      const response = await this.http.post("/register", {
-        full_name: fullName,
+      const payload: any = {
+        fullName: fullName || '',
         phone: phone || undefined,
         email: email || undefined,
-        password,
-      });
+        password: password,
+      };
+      const response = await this.http.post("/auth/register", payload);
       return assertSuccess(response);
     } catch (error: any) {
       if (canUseFrontendAuthFallback(error)) {
@@ -92,6 +96,21 @@ export class AuthApiService {
       }
       throw error;
     }
+  }
+
+  async refreshToken() {
+    const response = await this.http.post("/auth/refresh-token");
+    return assertSuccess(response);
+  }
+
+  async requestGuestOtp(phone: string) {
+    const response = await this.http.post("/auth/guest-otp", { phone });
+    return assertSuccess(response);
+  }
+
+  async activateGuestAccount(token: string, password: string) {
+    const response = await this.http.post("/auth/activate-guest", { token, password });
+    return assertSuccess(response);
   }
 
   async verifyRegisterOtp({ loginId, otpCode }: any) {
@@ -132,7 +151,11 @@ export class AuthApiService {
   }
 
   async logout() {
-    const response = await this.http.post("/logout");
-    return assertSuccess(response);
+    try {
+      const response = await this.http.post("/auth/logout");
+      return assertSuccess(response);
+    } catch {
+      return { success: true };
+    }
   }
 }

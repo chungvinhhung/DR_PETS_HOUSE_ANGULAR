@@ -7,24 +7,32 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
-
-function assertSuccess(response: any) {
-  if (response?.EC !== 0) {
-    throw new Error(response?.EM || "Request failed");
-  }
-  return response.DT;
-}
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 
 @Injectable({ providedIn: 'root' })
 export class LoyaltyApiService {
   private readonly http = inject(CustomerHttpService);
 
-  async applyVoucher({ code, orderValue }: any) {
-    const response = await this.http.post("/vouchers/apply", {
-      code,
-      order_value: orderValue,
-    });
-    return assertSuccess(response);
+  async applyVoucher({ code, orderValue, branchId }: any) {
+    try {
+      const response = await this.http.post("/vouchers/validate", {
+        code,
+        scope: "ORDER",
+        branchId: branchId || undefined,
+      });
+      const data = assertSuccess(response);
+      return {
+        ...data,
+        discount: data?.discount ?? data?.discount_amount ?? 0,
+        valid: data?.valid ?? true,
+        reason: data?.reason ?? "",
+      };
+    } catch {
+      const response = await this.http.post("/vouchers/apply", {
+        code,
+        order_value: orderValue,
+      });
+      return assertSuccess(response);
+    }
   }
 }
