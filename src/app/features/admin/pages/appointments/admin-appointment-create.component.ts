@@ -578,9 +578,11 @@ export class AdminAppointmentCreateComponent {
   checkVoucher(): void {
     if (!this.voucherCode().trim()) {
       this.voucherNotice.set('Nhập mã giảm giá trước khi áp dụng.');
+      this.toast.show('Vui lòng nhập mã giảm giá.');
       return;
     }
     this.voucherNotice.set('Chưa thể áp dụng mã giảm giá lúc này. Vui lòng thử lại sau.');
+    this.toast.show('Chưa thể áp dụng mã giảm giá lúc này. Vui lòng thử lại sau.', 'info');
   }
 
   private clearReview(): void { this.reviewErrors.set([]); }
