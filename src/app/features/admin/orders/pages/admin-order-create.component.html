@@ -325,7 +325,7 @@
         <p class="create-order__pending">Một số sản phẩm đã hết tồn kho tại chi nhánh đang chọn. Vui lòng điều chỉnh đơn hàng.</p>
       }
       @if(quoteState()==='error') {<p class="create-order__pending" role="alert">{{quoteError()}}</p>}
-      @if(session.user()?.systemRole!=='ADMIN') {
+      @if(!isAdmin()) {
         <p class="create-order__pending">Tính năng xác nhận đơn hàng đang được mở cho quản trị viên. Các vai trò khác có thể tiếp tục xem bản nháp.</p>
       } @else if(!selectedCustomer()) {
         <p class="create-order__pending">Đơn khách vãng lai đang chờ hoàn thiện bước kích hoạt tài khoản. Bạn vẫn có thể xem báo giá.</p>
@@ -345,7 +345,7 @@
         <div class="create-order__dialog-head">
           <div>
             <h2 id="confirm-order-title">Xác nhận tạo đơn hàng?</h2>
-            <p>Đơn sẽ được lưu thật và trừ tồn kho tại chi nhánh {{branches().find(b=>b.id===branchId())?.name||''}}.</p>
+            <p>Đơn sẽ được lưu thật và trừ tồn kho tại chi nhánh {{selectedBranchName()}}.</p>
           </div>
           <button type="button" class="create-order__dialog-close" aria-label="Đóng"
             [disabled]="saving()" (click)="closeCreate()">×</button>
