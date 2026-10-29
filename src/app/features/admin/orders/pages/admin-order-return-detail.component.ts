@@ -233,12 +233,29 @@ export class AdminOrderReturnDetailComponent {
     return ({ process: 'Tiếp nhận xử lý', receive: 'Xác nhận nhận hàng',
       approve: 'Phê duyệt hoàn tiền', refund: 'Xác nhận hoàn tiền' } as const)[action];
   }
+  approvedQuantity():number {
+    return (this.data()?.items??[]).reduce((sum,item)=>sum+(item.receivedQty??item.requestedQty),0);
+  }
+  approvedPreviewAmount():number {
+    return (this.data()?.items??[]).reduce((sum,item)=>{
+      const quantity=item.receivedQty??item.requestedQty;
+      return sum+Math.round((item.refundAmount/(item.requestedQty||1))*quantity);
+    },0);
+  }
+  returnDialogTitle(action:WorkflowAction):string {
+    if(action==='reject')return this.data()?.status==='RECEIVED'
+      ? 'Từ chối phê duyệt hoàn tiền':'Từ chối yêu cầu trả hàng';
+    if(action==='approve')return 'Phê duyệt hoàn tiền';
+    if(action==='receive')return 'Xác nhận nhận hàng';
+    if(action==='process')return 'Tiếp nhận xử lý yêu cầu';
+    return 'Xác nhận hoàn tiền';
+  }
   actionExplanation(action: WorkflowAction): string {
     return ({
       process: 'Yêu cầu chuyển sang Đang xử lý. Chưa tiếp nhận hàng thực tế.',
-      receive: 'Xác nhận chi nhánh đã nhận và kiểm tra sản phẩm khách gửi. Việc nhận hàng KHÔNG tự động nhập lại tồn kho.',
-      approve: 'Phê duyệt số tiền hoàn dựa trên số tiền thực trả sau giảm giá. Khoản hoàn sẽ được xử lý ở bước tiếp theo.',
-      reject: 'Yêu cầu sẽ bị từ chối và BE giải phóng số lượng trả hàng đã giữ. Vui lòng ghi lý do rõ ràng.',
+      receive: 'Đối chiếu số lượng và tình trạng sản phẩm thực nhận trước khi xác nhận.'
+      approve: 'Kiểm tra lại số lượng thực nhận và số tiền hoàn trước khi phê duyệt.',
+      reject: 'Lý do từ chối phải được ghi nhận trước khi hoàn tất.'
       refund: 'Xác nhận hoàn tiền trong môi trường mô phỏng. Thao tác này không chuyển tiền thật cho khách hàng.',
     })[action];
   }
