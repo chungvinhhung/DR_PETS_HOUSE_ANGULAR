@@ -174,6 +174,9 @@ export class AdminProductListPageComponent implements OnInit {
     this.applyFilters();
   }
   clearAdvancedFilters():void{
+    // On narrow screens the advanced panel also contains Category and Status.
+    this.categoryFilters=[];
+    this.statusFilters=[];
     this.usageFilters=[];
     this.priceFilters=[];
     this.daysFilter=0;
@@ -282,11 +285,17 @@ export class AdminProductListPageComponent implements OnInit {
           if(n>MAX_PAGES*pageSize)throw new Error('Có quá nhiều sản phẩm. Vui lòng thu hẹp bộ lọc.');
         }
       }
+      let added=0;
       for(const product of response.items){
         if(ids.has(product.id))continue;
+        added++;
         ids.add(product.id);
         if(this.matchesExtraFilters(product))found.push(product);
       }
+      // If an older BE ignores the page parameter it may repeat page 1.
+      // Never claim that incomplete repeated rows form the entire result.
+      if(response.items.length&&added===0&&count!==null&&ids.size<count)
+        throw new Error('Chưa thể tải đầy đủ sản phẩm. Vui lòng thử lại sau.');
       if(!response.items.length ||
          (count!==null && page*pageSize>=count) ||
          (count===null && response.items.length<pageSize))return found;
