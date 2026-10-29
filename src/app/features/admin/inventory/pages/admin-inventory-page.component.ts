@@ -1,3 +1,4 @@
+import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -166,7 +167,7 @@ export class AdminInventoryPageComponent implements OnInit {
   readonly currentRows = computed(() => this.stockFiltered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
   readonly currentHistory = computed(() => this.historyFiltered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
   readonly totalPages = computed(() => Math.max(1, Math.ceil((this.tab() === 'stock' ? this.stockFiltered().length : this.historyFiltered().length) / this.pageSize)));
-  readonly pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+  readonly pageNumbers = computed(() => adminPageWindow(this.page(), this.totalPages()));
   readonly visibleCount = computed(() => this.tab() === 'stock' ? this.currentRows().length : this.currentHistory().length);
   readonly totalCount = computed(() => this.tab() === 'stock' ? this.stockFiltered().length : this.historyFiltered().length);
   readonly currentQuantity = computed(() => this.modal() === 'receipt' ? this.receiptStock()?.quantity ?? 0 : this.activeItem()?.quantity ?? 0);
