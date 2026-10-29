@@ -1,3 +1,4 @@
+import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
@@ -64,10 +65,14 @@ import {
      } @empty {<tr><td colspan="9" class="message">Không có hồ sơ phù hợp.</td></tr>}
     </tbody></table></div>
     <footer><span>Đang hiển thị {{rows().length}} / {{total()}} hồ sơ đã tải @if(partial()){ (giới hạn 100 bản ghi) }</span>
-     <div class="pages"><button type="button" (click)="go(page()-1)" [disabled]="page()===1" aria-label="Trang trước">‹</button>
-       <span>Trang {{page()}}</span>
-       <button type="button" (click)="go(page()+1)" [disabled]="page()*size>=total()" aria-label="Trang sau">›</button>
-     </div>
+     <nav class="pages" aria-label="Phân trang hồ sơ dịch vụ">
+       <button type="button" (click)="go(page()-1)" [disabled]="page()===1" aria-label="Trang trước">‹</button>
+       @for (index of pageNumbers(); track $index) {
+         @if(index==='…'){<span aria-hidden="true">…</span>}
+         @else {<button type="button" [class.page-active]="index===page()" [attr.aria-current]="index===page()?'page':null" (click)="go(index)">{{index}}</button>}
+       }
+       <button type="button" (click)="go(page()+1)" [disabled]="page()>=pageCount()" aria-label="Trang sau">›</button>
+     </nav>
     </footer>
    }
   </section>
@@ -84,7 +89,7 @@ import {
   .code{font-weight:650;color:#263349}.scroll{overflow-x:auto}.badge{display:inline-flex;align-items:center;padding:4px 9px;border-radius:99px;background:#ebf3ff;color:#2561af;white-space:nowrap;font-size:11px}
   .badge[data-status=success]{background:#e5f6e9;color:#287b40}.badge[data-status=warning]{background:#fff3df;color:#ae7210}
   .view{display:inline-flex;align-items:center;justify-content:center;color:#111;padding:4px;border-radius:6px}.view:hover{background:#ecf4ff;color:#0d47a1}
-  footer{display:flex;justify-content:space-between;align-items:center;padding:15px 18px;border-top:1px solid #e2e8f0;color:#6c7a90;font-size:12px}.pages{display:flex;gap:12px;align-items:center}.pages button{background:#fff;border:1px solid #d4dfeb;border-radius:5px;padding:6px 13px;cursor:pointer}.pages button:disabled{opacity:.35;cursor:not-allowed}
+  footer{display:flex;justify-content:space-between;align-items:center;padding:15px 18px;border-top:1px solid #e2e8f0;color:#6c7a90;font-size:12px}.pages{display:flex;gap:12px;align-items:center}.pages button{background:#fff;border:1px solid #d4dfeb;border-radius:5px;padding:6px 13px;cursor:pointer}.pages button:disabled{opacity:.35;cursor:not-allowed}.pages button.page-active{background:#e6f2ff;border-color:#0d47a1;color:#0d47a1;font-weight:700}.pages>span{padding:0 3px}
   .message{padding:26px;text-align:center;color:#64748b}.message button{padding:8px 14px;border:1px solid #cad9eb;border-radius:6px;background:white;color:#0d47a1;cursor:pointer}
   .note{font-size:12px;color:#7b899c;line-height:1.6}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
   @media(max-width:720px){.record-list{padding:16px}footer{flex-wrap:wrap}.filter select{flex:1}}
@@ -109,6 +114,8 @@ export class AdminServiceRecordsComponent {
   readonly loading=signal(false);
   readonly error=signal('');
   readonly total=computed(()=>this.filtered().length);
+  readonly pageCount=computed(()=>Math.max(1,Math.ceil(this.total()/this.size)));
+  readonly pageNumbers=computed(()=>adminPageWindow(this.page(),this.pageCount()));
   readonly page=signal(1);
   readonly size=7;
   readonly search=signal('');
@@ -117,7 +124,7 @@ export class AdminServiceRecordsComponent {
   readonly serviceRecordStatusLabel=serviceRecordStatusLabel;
   constructor(){this.load();}
   applyFilters(){this.page.set(1);}
-  go(value:number){if(value<1||value>Math.max(1,Math.ceil(this.total()/this.size)))return;this.page.set(value);this.load();}
+  go(value:number){if(value<1||value>this.pageCount())return;this.page.set(value);}
   load(){
     // BE list accepts recordType/status, but does not implement page/search.
     // Download the first bounded batch and label the UI as a subset.
