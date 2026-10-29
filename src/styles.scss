@@ -5173,12 +5173,19 @@ app-admin-product-list-page .product-filter-toolbar.product-filter-toolbar {
 }
 app-admin-product-list-page .product-filter-toolbar .product-filter-search.product-filter-search {
   flex:0 0 430px !important;width:430px !important;min-width:430px !important;
-  max-width:430px !important;margin:0 !important;
+  max-width:430px !important;margin:0 8px 0 0 !important;
+  box-sizing:border-box !important;
 }
 app-admin-product-list-page .product-filter-toolbar .product-filter-actions.product-filter-actions {
   display:flex !important;flex:1 1 auto !important;min-width:0 !important;
   align-items:center !important;justify-content:flex-end !important;
   flex-wrap:nowrap !important;gap:8px !important;margin:0 0 0 auto !important;
+}
+/* Keep the search input strictly inside its 430px column; reserve a real
+   gutter before the first dropdown instead of allowing touching borders. */
+app-admin-product-list-page .product-filter-toolbar .product-filter-search input {
+  box-sizing:border-box !important;width:100% !important;max-width:100% !important;
+  min-width:0 !important;
 }
 app-admin-product-list-page .product-filter-choices {
   display:flex;align-items:center;justify-content:flex-end;gap:8px;
@@ -5186,7 +5193,7 @@ app-admin-product-list-page .product-filter-choices {
 }
 app-admin-product-list-page .product-filter-control {position:relative;flex:0 0 auto;z-index:3}
 app-admin-product-list-page .product-filter-control--category {width:160px;flex:0 0 160px}
-app-admin-product-list-page .product-filter-control--status {width:178px;flex:0 0 178px}
+app-admin-product-list-page .product-filter-control--status {width:156px;flex:0 0 156px}
 app-admin-product-list-page .product-filter-control--more {width:143px}
 app-admin-product-list-page .product-filter-toolbar .product-filter-trigger.product-filter-trigger {
   display:flex;align-items:center;justify-content:space-between;gap:6px;
