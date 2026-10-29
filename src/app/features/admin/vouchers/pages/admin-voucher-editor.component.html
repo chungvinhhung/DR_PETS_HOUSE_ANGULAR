@@ -8,7 +8,7 @@
       <h1>{{ mode === 'create' ? 'Tạo voucher' : mode === 'edit' ? 'Chỉnh sửa voucher ' + (original()?.code || '') : 'Chi tiết voucher ' + (original()?.code || '') }}</h1>
       <div class="voucher-editor__heading-actions">
         @if (mode === 'view' && canWrite() && original(); as voucher) {
-          <button type="button" class="voucher-editor__button voucher-editor__button--outline"
+          <button type="button" class="voucher-editor__button voucher-editor__button--outline voucher-editor__button--danger-outline"
             (click)="openDisableDialog()" [disabled]="saving()">
             {{ voucher.status === 'ACTIVE' ? 'Tắt voucher' : 'Bật voucher' }}
           </button>
