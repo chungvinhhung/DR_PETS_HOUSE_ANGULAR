@@ -75,7 +75,7 @@
               <button type="button" class="outline-btn product-filter-trigger product-filter-trigger--more"
                 [attr.aria-expanded]="openPanel==='more'"
                 aria-controls="product-other-options" (click)="togglePanel('more')">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15" aria-hidden="true"><path d="M4 5h16l-6.5 7.5V19l-3 1.5v-8L4 5z"/></svg>
+                <img class="product-filter-funnel-icon" src="/assets/admin-product/figma-filter.svg" alt="" aria-hidden="true">
                 Bộ lọc khác
                 @if(activeCount('usage')+activeCount('price')+activeCount('days')){
                   <span class="product-filter-count">{{activeCount('usage')+activeCount('price')+activeCount('days')}}</span>
