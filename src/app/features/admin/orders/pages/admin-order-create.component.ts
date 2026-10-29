@@ -136,8 +136,10 @@ export class AdminOrderCreateComponent {
     if (this.lines().length === 0) issues.push('Thêm ít nhất một sản phẩm vào đơn hàng.');
     if (this.hasInvalidQuantities()) issues.push('Kiểm tra lại số lượng sản phẩm trong đơn.');
     if (this.missingShippingAddress()) issues.push('Nhập đầy đủ địa chỉ giao hàng.');
-    if (this.selectedCustomer() && !this.addressWasConfirmed())
-      issues.push('Chọn hoặc xác nhận địa chỉ nhận hàng.');
+    if (!/^\d{9,15}$/.test(normalizePhone(this.shippingRecipientPhone() || this.customerPhone())))
+      issues.push('Số điện thoại người nhận hàng chưa hợp lệ.');
+    if (!(this.shippingRecipientName() || this.customerName()).trim())
+      issues.push('Nhập tên người nhận hàng.');
     if (this.paymentMethod() === 'ONLINE_MOCK' && !this.onlineProvider())
       issues.push('Chọn một hình thức thanh toán trực tuyến.');
     return issues;
