@@ -201,40 +201,68 @@
           role="dialog" aria-modal="true" [attr.aria-label]="returnDialogTitle(action)" (click)="$event.stopPropagation()">
           <div class="return-detail__dialog-heading">
             <div><h2>{{ returnDialogTitle(action) }}</h2>
-              <p>{{ data()?.code || data()?.id }} · {{ label(data()!.status) }}</p></div>
+              <p>{{ modalSubtitle(action) }}</p></div>
             <button type="button" class="return-detail__close" (click)="close()" [disabled]="busy()" aria-label="Đóng">×</button>
           </div>
-          @if(action!=='approve') {
+          @if(action!=='approve' && action!=='receive') {
             <div class="return-detail__notice">
               <strong>Lưu ý</strong><p>{{actionExplanation(action)}}</p>
             </div>
           }
           @if(action==='receive' && data(); as ret){
-            <div class="return-detail__inspection">
-              @for(item of ret.items;track item.orderItemId){
-                <div class="return-detail__inspection-item">
-                  <strong>{{item.productName}}</strong>
-                  <small>Khách yêu cầu trả: {{item.requestedQty}}</small>
-                  <label>Số lượng thực nhận
-                    <input type="number" min="0" step="1" [max]="item.requestedQty"
-                      [value]="inspection()[item.orderItemId]?.receivedQty??''"
-                      (input)="editInspection(item.orderItemId,'receivedQty',$any($event.target).value)" />
-                  </label>
-                  <label>Chất lượng
-                    <select [value]="inspection()[item.orderItemId]?.quality??''"
-                      (change)="editInspection(item.orderItemId,'quality',$any($event.target).value)">
-                      <option value="">Chọn chất lượng</option>
-                      <option value="RESELLABLE">Còn bán được</option>
-                      <option value="DAMAGED">Hư hỏng</option>
-                      <option value="DISCARDED">Loại bỏ</option>
-                    </select>
-                  </label>
+            <div class="return-detail__receive-form">
+              <div class="return-detail__receive-overview">
+                <label>Ngày nhận *
+                  <input type="text" [value]="todayLocal" readOnly
+                    title="Ngày được hệ thống ghi nhận khi xác nhận" />
+                </label>
+                <div class="return-detail__receive-count">
+                  <span>Tổng thực nhận *</span>
+                  <strong>{{totalReceivedPreview()}}</strong>
                 </div>
-              }
-              <label class="return-detail__field">Ghi chú kiểm hàng
-                <textarea rows="2" maxlength="500" [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
+              </div>
+              <div class="return-detail__inspection">
+                @for(item of ret.items;track item.orderItemId){
+                  <div class="return-detail__receive-item">
+                    <strong>{{item.productName}}</strong>
+                    <div class="return-detail__receive-item-grid">
+                      <label>Số lượng thực nhận *
+                        <div class="return-detail__stepper">
+                          <button type="button" [disabled]="receiveQuantity(item.orderItemId)===0"
+                            [attr.aria-label]="'Giảm số lượng của '+item.productName"
+                            (click)="stepReceive(item.orderItemId,-1,item.requestedQty)">−</button>
+                          <input type="number" min="0" step="1" [max]="item.requestedQty"
+                            [value]="inspection()[item.orderItemId]?.receivedQty??''"
+                            [attr.aria-label]="'Số lượng thực nhận '+item.productName"
+                            (input)="editInspection(item.orderItemId,'receivedQty',$any($event.target).value)"/>
+                          <button type="button" [disabled]="receiveQuantity(item.orderItemId)>=item.requestedQty"
+                            [attr.aria-label]="'Tăng số lượng của '+item.productName"
+                            (click)="stepReceive(item.orderItemId,1,item.requestedQty)">+</button>
+                        </div>
+                      </label>
+                      <label>Số lượng nhập kho
+                        <output class="return-detail__stock-preview">
+                          {{inspection()[item.orderItemId]?.quality==='RESELLABLE'?receiveQuantity(item.orderItemId):0}}
+                        </output>
+                      </label>
+                    </div>
+                    <label class="return-detail__receive-quality">Tình trạng sản phẩm *
+                      <select [value]="inspection()[item.orderItemId]?.quality??''"
+                        (change)="editInspection(item.orderItemId,'quality',$any($event.target).value)">
+                        <option value="">Chọn tình trạng</option>
+                        <option value="RESELLABLE">Còn bán được</option>
+                        <option value="DAMAGED">Hư hỏng</option>
+                        <option value="DISCARDED">Loại bỏ</option>
+                      </select>
+                    </label>
+                  </div>
+                }
+              </div>
+              <label class="return-detail__field">Ghi chú
+                <textarea rows="2" maxlength="500" placeholder="Nhập ghi chú nếu cần"
+                  [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
               </label>
-              @if(!inspectionValid()){<p class="return-detail__invalid">Nhập số lượng hợp lệ và chất lượng cho tất cả sản phẩm trước khi xác nhận.</p>}
+              @if(!inspectionValid()){<p class="return-detail__invalid">Chọn tình trạng và kiểm tra số lượng thực nhận trước khi xác nhận.</p>}
             </div>
           }
           @if (action === 'approve') {
