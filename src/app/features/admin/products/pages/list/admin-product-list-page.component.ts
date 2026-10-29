@@ -51,14 +51,22 @@ export class AdminProductListPageComponent implements OnInit {
   readonly countUnavailable = signal(false);
 
   searchTerm = '';
-  categoryFilter = '';
-  usageFilter: ProductUsageType | '' = '';
-  priceFilter = '';
+  // Draft selections live in the popovers; the applied snapshot drives every API request.
+  categoryFilters: string[] = [];
+  usageFilters: ProductUsageType[] = [];
+  priceFilters: Array<'LOW'|'MID'|'HIGH'> = [];
+  statusFilters: Array<'ACTIVE'|'INACTIVE'> = [];
   daysFilter = 0;
-  statusFilter: ProductStatus | '' = '';
   sort: ProductSort = 'NEWEST';
   archiveView = false;
-  filterOpen = false;
+  openPanel: 'category'|'status'|'more'|null = null;
+  readonly activeChips = signal<Array<{group:'category'|'usage'|'price'|'status'|'days';label:string}>>([]);
+  private appliedCategories: string[] = [];
+  private appliedUsage: ProductUsageType[] = [];
+  private appliedPrices: Array<'LOW'|'MID'|'HIGH'> = [];
+  private appliedStatuses: Array<'ACTIVE'|'INACTIVE'> = [];
+  private appliedDays = 0;
+  private aggregateProducts: AdminProduct[] | null = null;
   // Offset is within one BE cursor page, NOT a product variant index.
   // A BE page may contain archived products removed from the current tab,
   // so we resume at the exact raw product position after collecting 6 visible ones.
@@ -71,7 +79,7 @@ export class AdminProductListPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.archiveView = this.route.snapshot.queryParamMap.get('view') === 'archived';
-    this.statusFilter = this.archiveView ? 'ARCHIVED' : '';
+    this.statusFilters = [];
     const navState = window.history.state as { productNotice?: unknown } | null;
     if (typeof navState?.productNotice === 'string') {
       this.toast.show(navState.productNotice, 'success');
@@ -86,7 +94,7 @@ export class AdminProductListPageComponent implements OnInit {
     if (typeof navState?.productNotice === 'string') {
       setTimeout(() => {
         if (!this.destroyRef.destroyed && this.pageNumber() === 1 && !this.archiveView &&
-            !this.searchTerm && !this.categoryFilter) this.applyFilters();
+            !this.searchTerm && !this.categoryFilters.length) this.applyFilters();
       }, 900);
     }
   }
@@ -106,58 +114,209 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
   toggleCategory(id: string): void {
-    this.categoryFilter = this.categoryFilter === id ? '' : id;
+    this.categoryFilters=this.toggleArrayValue(this.categoryFilters,id);
   }
-
   toggleUsage(value: ProductUsageType): void {
-    this.usageFilter = this.usageFilter === value ? '' : value;
+    this.usageFilters=this.toggleArrayValue(this.usageFilters,value);
   }
-
-  togglePrice(value: string): void {
-    this.priceFilter = this.priceFilter === value ? '' : value;
+  togglePrice(value: 'LOW'|'MID'|'HIGH'): void {
+    this.priceFilters=this.toggleArrayValue(this.priceFilters,value);
   }
-
   toggleDays(value: number): void {
-    this.daysFilter = this.daysFilter === value ? 0 : value;
+    this.daysFilter=this.daysFilter===value?0:value;
   }
-
-  toggleStatus(status: 'ACTIVE' | 'INACTIVE'): void {
-    this.statusFilter = this.statusFilter === status ? '' : status;
+  toggleStatus(value: 'ACTIVE'|'INACTIVE'): void {
+    this.statusFilters=this.toggleArrayValue(this.statusFilters,value);
   }
-
-  clearFilters(): void {
-    this.categoryFilter = '';
-    this.usageFilter = '';
-    this.priceFilter = '';
-    this.daysFilter = 0;
-    this.statusFilter = this.archiveView ? 'ARCHIVED' : '';
-    this.searchTerm = '';
-    this.sort = 'NEWEST';
+  private toggleArrayValue<T>(values:T[],value:T):T[]{
+    return values.includes(value)?values.filter(v=>v!==value):[...values,value];
+  }
+  private copyAppliedToDraft():void{
+    this.categoryFilters=[...this.appliedCategories];
+    this.usageFilters=[...this.appliedUsage];
+    this.priceFilters=[...this.appliedPrices];
+    this.statusFilters=[...this.appliedStatuses];
+    this.daysFilter=this.appliedDays;
+  }
+  togglePanel(panel:'category'|'status'|'more'):void{
+    if(this.openPanel===panel){this.closePanel();return;}
+    this.copyAppliedToDraft();
+    this.openPanel=panel;
+  }
+  closePanel():void{
+    this.openPanel=null;
+    this.copyAppliedToDraft();
+  }
+  onFilterEscape():void{this.closePanel();}
+  activeCount(group:'category'|'usage'|'price'|'status'|'days'):number{
+    return group==='category'?this.appliedCategories.length:
+      group==='usage'?this.appliedUsage.length:
+      group==='price'?this.appliedPrices.length:
+      group==='status'?this.appliedStatuses.length:
+      this.appliedDays?1:0;
+  }
+  private updateFilterChips():void{
+    const chips:Array<{group:'category'|'usage'|'price'|'status'|'days';label:string}>=[];
+    if(this.appliedCategories.length)chips.push({group:'category',label:'Danh mục: '+this.appliedCategories.length});
+    if(this.appliedStatuses.length)chips.push({group:'status',label:'Trạng thái: '+this.appliedStatuses.length});
+    if(this.appliedUsage.length)chips.push({group:'usage',label:'Loại sử dụng: '+this.appliedUsage.length});
+    if(this.appliedPrices.length)chips.push({group:'price',label:'Khoảng giá: '+this.appliedPrices.length});
+    if(this.appliedDays)chips.push({group:'days',label:'Ngày tạo: '+this.appliedDays+' ngày'});
+    this.activeChips.set(chips);
+  }
+  removeFilter(group:'category'|'usage'|'price'|'status'|'days'):void{
+    this.copyAppliedToDraft();
+    if(group==='category')this.categoryFilters=[];
+    if(group==='usage')this.usageFilters=[];
+    if(group==='price')this.priceFilters=[];
+    if(group==='status')this.statusFilters=[];
+    if(group==='days')this.daysFilter=0;
     this.applyFilters();
-    this.filterOpen = false;
   }
-
-  applyFilters(): void {
+  clearAdvancedFilters():void{
+    this.usageFilters=[];
+    this.priceFilters=[];
+    this.daysFilter=0;
+  }
+  clearQuickFilter(group:'category'|'status'):void{
+    if(group==='category')this.categoryFilters=[];
+    else this.statusFilters=[];
+  }
+  clearFilters():void{
+    this.categoryFilters=[];
+    this.usageFilters=[];
+    this.priceFilters=[];
+    this.statusFilters=[];
+    this.daysFilter=0;
+    this.searchTerm='';
+    this.sort='NEWEST';
+    this.applyFilters();
+  }
+  applyFilters():void{
+    this.appliedCategories=[...this.categoryFilters];
+    this.appliedUsage=[...this.usageFilters];
+    this.appliedPrices=[...this.priceFilters];
+    this.appliedStatuses=[...this.statusFilters];
+    this.appliedDays=this.daysFilter;
+    this.updateFilterChips();
+    this.openPanel=null;
+    this.aggregateProducts=null;
     ++this.countGeneration;
-    this.countRequested = false;
+    this.countRequested=false;
     this.totalProducts.set(null);
     this.countingPages.set(false);
     this.countUnavailable.set(false);
-    this.cursors = [{ cursor: null, offset: 0 }];
+    this.cursors=[{cursor:null,offset:0}];
     this.hasNextPage.set(false);
     this.pageNumber.set(1);
     this.loadPage(1);
   }
-
-  selectArchiveView(archived: boolean): void {
-    if (this.archiveView === archived) return;
-    this.archiveView = archived;
-    this.statusFilter = archived ? 'ARCHIVED' : '';
-    this.filterOpen = false;
+  selectArchiveView(archived:boolean):void{
+    if(this.archiveView===archived)return;
+    this.archiveView=archived;
+    this.statusFilters=[];
+    this.openPanel=null;
     this.applyFilters();
   }
 
+  // The current BE accepts multiple categoryIds separated by commas, but
+  // usageType and price are singular. For non-contiguous OR selections,
+  // read the complete bounded result set before applying client pagination.
+  private needsAggregatedFiltering():boolean{
+    return (this.appliedUsage.length>1&&this.appliedUsage.length<3) ||
+      (this.appliedPrices.length===2&&
+       this.appliedPrices.includes('LOW')&&this.appliedPrices.includes('HIGH'));
+  }
+  private priceBounds():{minPrice?:number;maxPrice?:number}{
+    const bands=this.appliedPrices;
+    if(!bands.length||bands.length===3)return {};
+    if(bands.length===1){
+      if(bands[0]==='LOW')return {maxPrice:99999};
+      if(bands[0]==='MID')return {minPrice:100000,maxPrice:500000};
+      return {minPrice:500001};
+    }
+    if(bands.includes('LOW')&&bands.includes('MID'))return {maxPrice:500000};
+    if(bands.includes('MID')&&bands.includes('HIGH'))return {minPrice:100000};
+    return {};
+  }
+  private buildQuery():ProductQuery{
+    return {
+      limit:20,
+      q:this.searchTerm.trim()||undefined,
+      categoryId:this.appliedCategories.join(',')||undefined,
+      usageType:this.appliedUsage.length===1?this.appliedUsage[0]:undefined,
+      createdWithinDays:this.appliedDays||undefined,
+      ...this.priceBounds(),
+      status:this.archiveView?'ARCHIVED':
+        this.appliedStatuses.length===1?this.appliedStatuses[0]:undefined,
+      sort:this.sort,
+    };
+  }
+  private matchesExtraFilters(product:AdminProduct):boolean{
+    if(this.appliedUsage.length>1&&this.appliedUsage.length<3 &&
+       !this.appliedUsage.includes(product.usageType))return false;
+    if(this.appliedPrices.length===2&&this.appliedPrices.includes('LOW')&&this.appliedPrices.includes('HIGH')){
+      return product.variants.some(v=>{
+        const price=Number(v.price);
+        return Number.isFinite(price)&&(price<100000||price>500000);
+      });
+    }
+    return true;
+  }
+  private async fetchAggregatedProducts(query:ProductQuery, serial:number):Promise<AdminProduct[]>{
+    const found:AdminProduct[]=[];
+    const ids=new Set<string>();
+    // Refuse to show a partial result if the server set exceeds the safe cap.
+    const MAX_PAGES=50;
+    const pageSize=100;
+    let count:number|null=null;
+    for(let page=1;page<=MAX_PAGES;page++){
+      const response=await firstValueFrom(this.productsApi.listProducts({
+        ...query,limit:pageSize,page,cursor:null,
+      }).pipe(timeout({first:30000}),takeUntilDestroyed(this.destroyRef)));
+      if(serial!==this.requestNumber||this.destroyRef.destroyed)throw new Error('Đã thay đổi bộ lọc.');
+      if(count===null){
+        const n=response.totalItems??response.totalCount??response.total;
+        if(typeof n==='number'&&Number.isSafeInteger(n)&&n>=0){
+          count=n;
+          if(n>MAX_PAGES*pageSize)throw new Error('Có quá nhiều sản phẩm. Vui lòng thu hẹp bộ lọc.');
+        }
+      }
+      for(const product of response.items){
+        if(ids.has(product.id))continue;
+        ids.add(product.id);
+        if(this.matchesExtraFilters(product))found.push(product);
+      }
+      if(!response.items.length ||
+         (count!==null && page*pageSize>=count) ||
+         (count===null && response.items.length<pageSize))return found;
+      if(page===MAX_PAGES)throw new Error('Có quá nhiều sản phẩm. Vui lòng thu hẹp bộ lọc.');
+    }
+    return found;
+  }
+  private loadAggregatedPage(page:number):void{
+    const serial=++this.requestNumber;
+    this.loading.set(true);this.error.set('');
+    const obtain=this.aggregateProducts?Promise.resolve(this.aggregateProducts):
+      this.fetchAggregatedProducts(this.buildQuery(),serial);
+    void obtain.then(items=>{
+      if(serial!==this.requestNumber||this.destroyRef.destroyed)return;
+      this.aggregateProducts=items;
+      this.totalProducts.set(items.length);
+      this.products.set(items.slice((page-1)*this.pageSize,page*this.pageSize));
+      this.pageNumber.set(page);
+      this.hasNextPage.set(page*this.pageSize<items.length);
+    }).catch(error=>{
+      if(serial!==this.requestNumber||this.destroyRef.destroyed)return;
+      this.products.set([]);this.totalProducts.set(null);
+      this.error.set(adminErrorMessage(error,'Không thể lọc sản phẩm. Vui lòng thử lại.'));
+    }).finally(()=>{
+      if(serial===this.requestNumber&&!this.destroyRef.destroyed)this.loading.set(false);
+    });
+  }
+
   loadPage(page: number): void {
+    if(this.needsAggregatedFiltering()){this.loadAggregatedPage(page);return;}
     const position = this.cursors[page - 1];
     if (page < 1 || !position) return;
 
@@ -165,19 +324,7 @@ export class AdminProductListPageComponent implements OnInit {
     this.loading.set(true);
     this.error.set('');
 
-    const query: ProductQuery = {
-      // A backend chunk is not a visual page: archived products may be mixed in.
-      // Read chunks, then paginate only the filtered parent Product records.
-      limit: 20,
-      q: this.searchTerm.trim() || undefined,
-      categoryId: this.categoryFilter || undefined,
-      usageType: this.usageFilter || undefined,
-      createdWithinDays: this.daysFilter || undefined,
-      minPrice: this.priceFilter === 'MID' ? 100000 : this.priceFilter === 'HIGH' ? 500001 : undefined,
-      maxPrice: this.priceFilter === 'LOW' ? 99999 : this.priceFilter === 'MID' ? 500000 : undefined,
-      status: this.archiveView ? 'ARCHIVED' : this.statusFilter || undefined,
-      sort: this.sort,
-    };
+    const query=this.buildQuery();
 
     void this.loadVisibleProductPage(query, position)
       .then(({ items, nextPosition, apiTotal }) => {
@@ -333,22 +480,18 @@ export class AdminProductListPageComponent implements OnInit {
 
   async goToPage(page: number): Promise<void> {
     const total = this.totalProducts();
+    if(this.needsAggregatedFiltering()){
+      if(page>=1&&total!==null&&page<=Math.max(1,Math.ceil(total/this.pageSize)))
+        this.loadAggregatedPage(page);
+      return;
+    }
     if (!Number.isInteger(page) || page < 1 ||
         (total !== null && page > Math.max(1, Math.ceil(total / this.pageSize))) ||
         this.loading() || page === this.pageNumber()) return;
     if (this.cursors[page - 1]) { this.loadPage(page); return; }
     // BE uses cursors rather than offsets; discover boundaries before jumping.
     const generation = this.requestNumber;
-    const query: ProductQuery = {
-      limit: 20, q: this.searchTerm.trim() || undefined,
-      categoryId: this.categoryFilter || undefined,
-      usageType: this.usageFilter || undefined,
-      createdWithinDays: this.daysFilter || undefined,
-      minPrice: this.priceFilter === 'MID' ? 100000 : this.priceFilter === 'HIGH' ? 500001 : undefined,
-      maxPrice: this.priceFilter === 'LOW' ? 99999 : this.priceFilter === 'MID' ? 500000 : undefined,
-      status: this.archiveView ? 'ARCHIVED' : this.statusFilter || undefined,
-      sort: this.sort,
-    };
+    const query=this.buildQuery();
     this.loading.set(true);
     try {
       while (this.cursors.length < page) {
@@ -369,11 +512,11 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
   previous(): void {
-    if (this.pageNumber() > 1) this.loadPage(this.pageNumber() - 1);
+    if(this.pageNumber()>1)this.loadPage(this.pageNumber()-1);
   }
 
   next(): void {
-    if (this.hasNextPage()) this.loadPage(this.pageNumber() + 1);
+    if(this.hasNextPage())this.loadPage(this.pageNumber()+1);
   }
 
   categoryName(id: string): string {
