@@ -36,7 +36,7 @@
                 <th scope="row">
                   <strong>{{ shift.name }}</strong>
                   <small>{{ shift.start }}–{{ shift.end }}{{ shift.end < shift.start ? ' (+1)' : '' }}</small>
-                  <button type="button" class="bulk-shift-row-select" [disabled]="loading() || saving()"
+                  <button type="button" class="bulk-shift-row-select" [disabled]="loading() || !checkReady() || saving()"
                     (click)="toggleRow(shift)">{{ rowAllChecked(shift) ? 'Bỏ chọn cả hàng' : 'Chọn cả hàng' }}</button>
                   <button type="button" class="bulk-shift-row-delete" [attr.aria-label]="'Xóa dòng '+shift.name"
                     [disabled]="saving()" (click)="removeTemplate(shift.id)">Xóa ca</button>
@@ -45,7 +45,7 @@
                   <td>
                     @if (available(shift,date)) {
                       <button type="button" class="bulk-shift-cell" [class.bulk-shift-cell--checked]="checked(shift,date)"
-                        [disabled]="loading() || saving() || !!conflict()"
+                        [disabled]="loading() || !checkReady() || saving() || !!conflict()"
                         [attr.aria-pressed]="checked(shift,date)"
                         [attr.aria-label]="shift.name+' ngày '+dayLabel(date)+(checked(shift,date)?' đã chọn':' chưa chọn')"
                         (click)="toggleCell(shift,date)">
@@ -111,7 +111,7 @@
       <span class="bulk-shift-count"><b>{{ selectedCount() }} ca được chọn</b><small>{{ affectedDays() }} ngày có phân công</small></span>
       <div class="bulk-shift-footer-actions">
         <button type="button" class="bulk-shift-secondary" [disabled]="saving()" (click)="askClose()">Hủy</button>
-        <button type="button" class="bulk-shift-primary" [disabled]="loading() || saving() || !selectedCount() || !!conflict()"
+        <button type="button" class="bulk-shift-primary" [disabled]="loading() || !checkReady() || saving() || !selectedCount() || !!conflict()"
           (click)="save()">{{ saving() ? 'Đang lưu...' : 'Lưu phân ca' }}</button>
       </div>
     </footer>
