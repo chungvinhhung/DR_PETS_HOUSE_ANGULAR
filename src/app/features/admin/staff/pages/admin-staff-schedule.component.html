@@ -36,17 +36,31 @@
         </div>
       </div>
     </section>
+    @if (bulkStaff(); as chosenEmployee) {
+      <div class="schedule-bulk-bar" role="status">
+        <span><strong>Đang chọn: {{ displayName(chosenEmployee) }}</strong><small>{{ bulkDates().length }} ngày trong tuần</small></span>
+        <div>
+          <button type="button" class="schedule-bulk-cancel" (click)="clearBulk()">Hủy chọn</button>
+          <button type="button" class="schedule-bulk-action" [disabled]="!bulkDates().length" (click)="openBulk()">Phân ca ({{ bulkDates().length }})</button>
+        </div>
+      </div>
+    }
     <section class="schedule-panel" aria-label="Bảng lịch làm việc">
       <div class="schedule-scroller"><table>
         <colgroup><col class="schedule-col-staff">@for (day of days(); track day.iso) { <col class="schedule-col-day"> }</colgroup>
         <thead><tr><th>Nhân viên</th>@for (day of days(); track day.iso) { <th><span class="schedule-day"><span>{{ day.weekday }}</span><small>{{ day.dayMonth }}</small></span></th> }</tr></thead>
         <tbody>
         @for (staff of rows(); track staff.id) {
-          <tr><th scope="row"><a [routerLink]="['/admin/staff',staff.id]">{{ displayName(staff) }}</a><small>{{ roleLabel(staff) }}</small></th>
+          <tr [class.schedule-row--muted]="!!bulkStaff() && bulkStaff()?.id !== staff.id"><th scope="row"><a [routerLink]="['/admin/staff',staff.id]">{{ displayName(staff) }}</a><small>{{ roleLabel(staff) }}</small></th>
             @for (day of days(); track day.iso) {
               <td>
-                <button type="button" class="schedule-cell" [attr.aria-label]="'Phân công ca cho '+displayName(staff)+' ngày '+day.iso"
-                  [disabled]="!branch() || staffApi.shiftLoading() || !!staffApi.shiftError()" (click)="openDay(staff,day.iso)">
+                <button type="button" class="schedule-cell"
+                  [class.schedule-cell--bulk-selected]="bulkSelected(staff.id,day.iso)"
+                  [attr.aria-pressed]="bulkStaff()?.id === staff.id ? bulkSelected(staff.id,day.iso) : null"
+                  [attr.aria-label]="(bulkSelected(staff.id,day.iso)?'Đã chọn ':'Phân công ca cho ')+displayName(staff)+' ngày '+day.iso"
+                  [disabled]="!branch() || staffApi.shiftLoading() || !!staffApi.shiftError() || (!!bulkStaff() && bulkStaff()?.id !== staff.id)"
+                  (click)="onCellClick(staff,day.iso,$event.shiftKey)">
+                  @if (bulkSelected(staff.id,day.iso)) { <span class="schedule-cell-bulk-tick" aria-hidden="true">✓</span> }
                   @for (shift of shifts(staff.id,day.iso); track shift.shiftId || $index) {
                     <span class="schedule-shift"><strong>{{ shift.time }}</strong></span>
                   } @empty { <span class="schedule-cell-plus">+</span> }
@@ -59,6 +73,13 @@
       </table></div>
     </section>
     </div>
+    @if (bulkDialog()) {
+      @if (bulkStaff(); as selectedEmployee) {
+        <app-staff-bulk-shift-dialog [employee]="selectedEmployee"
+          [dates]="bulkDates()" [branchId]="branch()" [branchName]="activeBranch()?.name || ''"
+          (closed)="closeBulk()" (saved)="savedBulk()" (updated)="refreshBulk()"/>
+      }
+    }
     @if (dialog(); as selected) {
       <app-staff-shift-assignment-dialog [employee]="selected.employee" [isoDate]="selected.date"
         [branchName]="activeBranch()?.name || ''" [existing]="forDay()" [otherBranchShifts]="otherBranches()"
