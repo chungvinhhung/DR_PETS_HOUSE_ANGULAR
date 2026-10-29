@@ -52,6 +52,7 @@ export class StaffBulkShiftDialogComponent implements OnInit {
   readonly existing = signal<StaffShiftRecord[]>([]);
   readonly conflict = signal<MatrixConflict | null>(null);
   readonly loading = signal(true);
+  readonly checkReady = signal(false);
   readonly saving = signal(false);
   readonly error = signal('');
   readonly info = signal('');
@@ -71,6 +72,7 @@ export class StaffBulkShiftDialogComponent implements OnInit {
   private async reloadExisting(): Promise<void> {
     const serial = ++this.serial;
     this.loading.set(true);
+    this.checkReady.set(false);
     this.error.set('');
     try {
       // Search the adjacent days as well so overnight assignments are detected.
@@ -79,6 +81,7 @@ export class StaffBulkShiftDialogComponent implements OnInit {
       ));
       if (serial !== this.serial) return;
       this.existing.set(rows);
+      this.checkReady.set(true);
     } catch {
       if (serial !== this.serial) return;
       this.error.set('Không tải được lịch đã phân của nhân viên. Không thể kiểm tra trùng giờ an toàn.');
@@ -122,13 +125,13 @@ export class StaffBulkShiftDialogComponent implements OnInit {
     this.replacePlans.update(plans=>Object.fromEntries(Object.entries(plans).filter(([key])=>!key.startsWith(id+'|'))));
   }
   toggleCell(shift: MatrixShift, date: string): void {
-    if (this.loading() || this.saving() || !this.available(shift,date) || this.conflict()) return;
+    if (this.loading() || !this.checkReady() || this.saving() || !this.available(shift,date) || this.conflict()) return;
     const key = this.cellKey(shift,date);
     if (this.chosen().includes(key)) { this.uncheck([key]);return; }
     this.trySelect([key]);
   }
   toggleRow(shift: MatrixShift): void {
-    if (this.loading() || this.saving() || this.conflict()) return;
+    if (this.loading() || !this.checkReady() || this.saving() || this.conflict()) return;
     const keys=shift.dates.map(date=>this.cellKey(shift,date));
     if (keys.every(key=>this.chosen().includes(key))) this.uncheck(keys);
     else this.trySelect(keys.filter(key=>!this.chosen().includes(key)));
@@ -204,7 +207,7 @@ export class StaffBulkShiftDialogComponent implements OnInit {
     else this.closed.emit();
   }
   async save(): Promise<void> {
-    if (this.loading() || this.saving() || this.conflict() || !this.chosen().length) return;
+    if (this.loading() || !this.checkReady() || this.saving() || this.conflict() || !this.chosen().length) return;
     this.saving.set(true);this.error.set('');this.info.set('');
     const payload = this.chosen().map(key=>{
       const item=this.toPeriod(key);
@@ -232,8 +235,8 @@ export class StaffBulkShiftDialogComponent implements OnInit {
             if (created) {
               const completed = this.chosen().slice(0,created);
               this.uncheck(completed);this.updated.emit();
-              this.error.set('Đã lưu '+created+'/'+payload.length+' ca. Các ca còn lại chưa được lưu; hãy kiểm tra lịch trước khi thử lại.');
               await this.reloadExisting();
+              this.error.set('Đã lưu '+created+'/'+payload.length+' ca. Các ca còn lại chưa được lưu; hãy kiểm tra lịch trước khi thử lại.');
               return;
             }
             throw err;
@@ -248,8 +251,8 @@ export class StaffBulkShiftDialogComponent implements OnInit {
       } else if (status===403) {
         this.error.set('Tài khoản không có quyền phân ca hoặc sửa lịch tại một trong các chi nhánh liên quan.');
       } else if (status===409) {
-        this.error.set('Lịch đã thay đổi hoặc bị trùng giờ trên hệ thống. Vui lòng xử lý lại xung đột trước khi lưu.');
         await this.reloadExisting();
+        this.error.set('Lịch đã thay đổi hoặc bị trùng giờ trên hệ thống. Vui lòng xử lý lại xung đột trước khi lưu.');
       } else {
         this.error.set('Chưa thể lưu phân công. Hệ thống giữ nguyên các lựa chọn để bạn thử lại.');
       }
