@@ -197,6 +197,7 @@
     @if (dialog(); as action) {
       <div class="return-detail__overlay" (click)="close()">
         <section class="return-detail__dialog" [class.return-detail__dialog--receive]="action==='receive'"
+          [class.return-detail__dialog--receive-single]="action==='receive' && data()?.items?.length===1"
           [class.return-detail__dialog--process]="action==='process'"
           role="dialog" aria-modal="true" [attr.aria-label]="returnDialogTitle(action)" (click)="$event.stopPropagation()">
           <div class="return-detail__dialog-heading">
@@ -285,7 +286,7 @@
               <div class="return-detail__field">Thông tin hoàn tiền</div>
               <div class="return-detail__refund-destination-row">
                 <span>Phương thức hoàn tiền</span>
-                <strong>Qua hệ thống thanh toán</strong>
+                <strong>{{refund()?.provider==='MOCK'?'Thanh toán mô phỏng':'Chưa có thông tin'}}</strong>
               </div>
             </div>
           }
