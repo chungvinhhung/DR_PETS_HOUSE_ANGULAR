@@ -101,7 +101,7 @@
         </table>
       </div>
       <footer class="voucher-list__pagination">
-        <span>Đang hiển thị {{ filtered().length }} trên tổng số {{ totalCount()===null?'chưa xác định':totalCount() }} voucher</span>
+        <span>Đang hiển thị {{ filtered().length }} trên tổng số {{ totalCount()===null?'chưa xác định':totalCount() }} voucher @if(countingPages()){(đang tính tổng số trang...)}</span>
         <div>
           <button type="button" [disabled]="!previous().length || loading()" (click)="prev()" aria-label="Trang trước">‹</button>
           @for (index of visiblePageNumbers(); track $index) {
