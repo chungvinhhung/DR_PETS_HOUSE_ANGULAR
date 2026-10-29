@@ -4956,3 +4956,78 @@ app-admin-order-return-detail .return-detail__inspection-item small{
  app-admin-order-return-detail .return-detail__inspection-item strong,
  app-admin-order-return-detail .return-detail__inspection-item small{grid-column:1 / -1}
 }
+
+/* Figma RR-02: compact one-item receive modal; more items use adaptive width. */
+app-admin-order-return-detail .return-detail__dialog--receive-single{width:min(100%,377px);padding:22px 24px}
+app-admin-order-return-detail .return-detail__dialog--receive-single .return-detail__dialog-heading{margin-bottom:12px}
+app-admin-order-return-detail .return-detail__receive-form{display:flex;flex-direction:column;gap:14px}
+app-admin-order-return-detail .return-detail__receive-overview{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;
+  align-items:end;border-bottom:1px solid #e2e8f0;padding-bottom:14px;
+}
+app-admin-order-return-detail .return-detail__receive-overview label,
+app-admin-order-return-detail .return-detail__receive-item-grid label,
+app-admin-order-return-detail .return-detail__receive-quality{
+  display:flex;flex-direction:column;gap:7px;min-width:0;
+  font:500 12px Roboto,Arial,sans-serif;color:#475569;
+}
+app-admin-order-return-detail .return-detail__receive-overview input{
+  box-sizing:border-box;height:40px;width:100%;min-width:0;
+  border:1px solid #dce5f0;border-radius:9px;padding:0 10px;
+  color:#475569;background:white;font:400 12px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__receive-count{display:flex;flex-direction:column;gap:7px;font-size:12px;color:#475569}
+app-admin-order-return-detail .return-detail__receive-count strong{
+  min-height:40px;display:grid;place-items:center;border:1px solid #dce5f0;
+  border-radius:9px;color:#1d2a42;font-weight:500;
+}
+app-admin-order-return-detail .return-detail__receive-form .return-detail__inspection{max-height:42vh;gap:12px}
+app-admin-order-return-detail .return-detail__receive-item{
+  display:flex;flex-direction:column;gap:10px;border-bottom:1px solid #e2e8f0;padding:0 0 12px;
+}
+app-admin-order-return-detail .return-detail__receive-item>strong{font-size:12px;color:#1d2a42;font-weight:500}
+app-admin-order-return-detail .return-detail__receive-item-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;
+}
+app-admin-order-return-detail .return-detail__stepper{
+  display:grid;grid-template-columns:36px minmax(0,1fr) 36px;
+  border:1px solid #dce5f0;border-radius:8px;overflow:hidden;height:39px;
+}
+app-admin-order-return-detail .return-detail__stepper button{
+  border:0;background:#fff;color:#334155;font-size:18px;
+  font-weight:400;cursor:pointer;
+}
+app-admin-order-return-detail .return-detail__stepper button:disabled{cursor:not-allowed;color:#94a3b8}
+app-admin-order-return-detail .return-detail__stepper input{
+  box-sizing:border-box;min-width:0;min-height:0;width:100%;height:39px;
+  text-align:center;border:0;border-left:1px solid #dce5f0;border-right:1px solid #dce5f0;
+  font:400 12px Roboto,Arial,sans-serif;background:#fff;color:#334155;
+  appearance:textfield;-moz-appearance:textfield;
+}
+app-admin-order-return-detail .return-detail__stepper input::-webkit-inner-spin-button,
+app-admin-order-return-detail .return-detail__stepper input::-webkit-outer-spin-button{
+  -webkit-appearance:none;margin:0
+}
+app-admin-order-return-detail .return-detail__stepper:focus-within{
+  border-color:#0d47a1;box-shadow:0 0 0 2px rgba(13,71,161,.12)
+}
+app-admin-order-return-detail .return-detail__stepper input:focus-visible{box-shadow:none!important}
+app-admin-order-return-detail .return-detail__stock-preview{
+  display:grid;place-items:center;height:39px;border:1px solid #dce5f0;
+  border-radius:8px;color:#334155;font-weight:500;background:#fff;
+}
+app-admin-order-return-detail .return-detail__receive-quality select{
+  display:block;box-sizing:border-box;width:100%;height:39px;
+  border:1px solid #dce5f0;border-radius:9px;
+  padding:0 36px 0 12px;color:#334155;font:400 12px Roboto,Arial,sans-serif;
+  appearance:none;background:#fff url('/assets/admin-product/expand_more.svg') no-repeat right 11px center;
+  background-size:18px 18px;
+}
+app-admin-order-return-detail .return-detail__receive-form .return-detail__field{margin:0;font-weight:500}
+app-admin-order-return-detail .return-detail__receive-form .return-detail__field textarea{
+  min-height:42px;max-height:95px;margin-top:7px;
+}
+@media(max-width:430px){
+ app-admin-order-return-detail .return-detail__receive-overview,
+ app-admin-order-return-detail .return-detail__receive-item-grid{grid-template-columns:1fr}
+}
