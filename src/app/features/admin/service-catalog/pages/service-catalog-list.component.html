@@ -211,24 +211,13 @@
         <nav class="service-catalog__pages" aria-label="Phân trang danh sách dịch vụ">
           <button type="button" (click)="goToPage(currentPage() - 1)"
             [disabled]="currentPage() === 1" aria-label="Trang trước">‹</button>
-          @if (pageNumbers()[0] > 1) {
-            <button type="button" (click)="goToPage(1)">1</button>
-            @if (pageNumbers()[0] > 2) {
-              <span aria-hidden="true">…</span>
+          @for (number of pageNumbers(); track $index) {
+            @if(number === '…') {<span aria-hidden="true">…</span>}
+            @else {
+              <button type="button" (click)="goToPage(number)"
+                [attr.aria-current]="currentPage()===number?'page':null"
+                [class.service-catalog__page--selected]="currentPage()===number">{{number}}</button>
             }
-          }
-          @for (page of pageNumbers(); track page) {
-            <button type="button" (click)="goToPage(page)"
-              [attr.aria-current]="currentPage() === page ? 'page' : null"
-              [class.service-catalog__page--selected]="currentPage() === page">
-              {{ page }}
-            </button>
-          }
-          @if (pageNumbers()[pageNumbers().length - 1] < pageCount()) {
-            @if (pageNumbers()[pageNumbers().length - 1] < pageCount() - 1) {
-              <span aria-hidden="true">…</span>
-            }
-            <button type="button" (click)="goToPage(pageCount())">{{ pageCount() }}</button>
           }
           <button type="button" (click)="goToPage(currentPage() + 1)"
             [disabled]="currentPage() === pageCount()" aria-label="Trang tiếp">›</button>
