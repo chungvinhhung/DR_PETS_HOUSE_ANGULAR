@@ -108,10 +108,13 @@
           <div class="pagination-controls">
             <button type="button" (click)="previousPage()"
               [disabled]="!hasPreviousPage || loading()" aria-label="Trang trước">‹</button>
-            @for (index of visiblePageNumbers; track index) {
-              <button type="button" class="pagination-page" [class.current-page]="index === pageNumber"
-                [attr.aria-current]="index === pageNumber ? 'page' : null"
-                [disabled]="loading()" (click)="goToPage(index)">{{ index }}</button>
+            @for (index of visiblePageNumbers; track $index) {
+              @if(index==='…') { <span class="pagination-ellipsis" aria-hidden="true">…</span> }
+              @else {
+                <button type="button" class="pagination-page" [class.current-page]="index === pageNumber"
+                  [attr.aria-current]="index === pageNumber ? 'page' : null"
+                  [disabled]="loading()" (click)="goToPage(index)">{{ index }}</button>
+              }
             }
             <button type="button" (click)="nextPage()"
               [disabled]="!nextCursor() || loading()" aria-label="Trang tiếp theo">›</button>
