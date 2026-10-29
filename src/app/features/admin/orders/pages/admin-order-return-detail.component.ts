@@ -90,6 +90,8 @@ export class AdminOrderReturnDetailComponent {
   rejectionStage(ret:OrderReturnSummary):ReturnStatus {
     if(ret.history?.some(event=>event.status==='RECEIVED') ||
        ret.items.some(item=>typeof item.receivedQty==='number'))return 'RECEIVED';
+    if(ret.status==='CANCELLED' && !ret.history?.some(event=>event.status==='PROCESSING'))
+      return 'REQUESTED';
     return 'PROCESSING';
   }
   terminalStageLabel(ret:OrderReturnSummary):string {
@@ -105,7 +107,7 @@ export class AdminOrderReturnDetailComponent {
     .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()));
 
   requestSubmittedAt(ret: OrderReturnSummary): string | undefined {
-    return ret.history?.find(event => event.status === 'REQUESTED')?.at ?? ret.history?.[0]?.at;
+    return ret.history?.find(event => event.status === 'REQUESTED')?.at ?? ret.createdAt;
   }
   progressLabel(ret: OrderReturnSummary, step: ReturnStatus): string {
     const at = ret.history?.find(event => event.status === step)?.at;
