@@ -68,7 +68,7 @@
         <div class="create-order__field">
           <label for="order-customer-phone">Số điện thoại <span aria-hidden="true">*</span></label>
           <input id="order-customer-phone" type="tel" autocomplete="off"
-            placeholder="Nhập số điện thoại khách hàng" [value]="customerPhone()"
+            placeholder="Nhập số điện thoại khách hàng" [readOnly]="!!selectedCustomer()" [value]="customerPhone()"
             (input)="updateCustomerPhone($any($event.target).value)">
         </div>
         <div class="create-order__field">
@@ -185,6 +185,20 @@
 
     <section class="create-order__panel" aria-labelledby="shipping-title">
       <h2 id="shipping-title">Thông tin nhận hàng</h2>
+        <div class="create-order__region-fields create-order__region-fields--two create-order__recipient-row">
+          <div class="create-order__field">
+            <label for="order-shipping-recipient-name">Người nhận <span aria-hidden="true">*</span></label>
+            <input id="order-shipping-recipient-name" type="text" placeholder="Nhập tên người nhận"
+              [value]="shippingRecipientName()"
+              (input)="shippingRecipientName.set($any($event.target).value)">
+          </div>
+          <div class="create-order__field">
+            <label for="order-shipping-recipient-phone">Số điện thoại nhận hàng <span aria-hidden="true">*</span></label>
+            <input id="order-shipping-recipient-phone" type="tel" placeholder="Nhập số điện thoại"
+              [value]="shippingRecipientPhone()"
+              (input)="shippingRecipientPhone.set($any($event.target).value)">
+          </div>
+        </div>
       @if (selectedCustomer() && addressWasConfirmed()) {
         <p class="create-order__label">Địa chỉ nhận hàng</p>
         <div class="create-order__address-card">
@@ -207,20 +221,6 @@
           </div>
         </div>
       } @else {
-        <div class="create-order__region-fields create-order__region-fields--two create-order__recipient-row">
-          <div class="create-order__field">
-            <label for="order-shipping-recipient-name">Người nhận <span aria-hidden="true">*</span></label>
-            <input id="order-shipping-recipient-name" type="text" placeholder="Nhập tên người nhận"
-              [value]="shippingRecipientName() || customerName()"
-              (input)="shippingRecipientName.set($any($event.target).value)">
-          </div>
-          <div class="create-order__field">
-            <label for="order-shipping-recipient-phone">Số điện thoại nhận hàng <span aria-hidden="true">*</span></label>
-            <input id="order-shipping-recipient-phone" type="tel" placeholder="Nhập số điện thoại"
-              [value]="shippingRecipientPhone() || customerPhone()"
-              (input)="shippingRecipientPhone.set($any($event.target).value)">
-          </div>
-        </div>
         <div class="create-order__region-fields">
           <div class="create-order__field">
             <label for="order-address-city">Tỉnh/Thành phố <span aria-hidden="true">*</span></label>
