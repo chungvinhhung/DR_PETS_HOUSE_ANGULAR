@@ -23,14 +23,10 @@ export interface OrderCustomerLookupResponse {
 export class AdminOrderCreateLookupService {
   private readonly api = inject(ApiClientService);
 
-  /**
-   * Search the existing customer API by phone. The caller must match the
-   * normalized phone exactly, because BE currently searches phones *and*
-   * emails with a partial search regex.
-   */
+  /** Backend now supports exactPhone server-side. FE also verifies normalized phones. */
   searchCustomers(phone: string): Observable<OrderCustomerLookupResponse> {
     return this.api.get<OrderCustomerLookupResponse>('/customers', {
-      params: new HttpParams().set('search', phone.trim()).set('limit', '100'),
+      params: new HttpParams().set('exactPhone', phone.trim()).set('limit', '100'),
     });
   }
 
