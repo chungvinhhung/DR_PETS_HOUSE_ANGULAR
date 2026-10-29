@@ -188,12 +188,13 @@ export class AdminProductListPageComponent implements OnInit {
         this.cursors = this.cursors.slice(0, page);
         if (nextPosition) this.cursors[page] = nextPosition;
 
-        // Count parent Product records, not entries in product.variants.
-        // Unfiltered BE totals may include ARCHIVED products excluded from this tab.
-        if (
-          (this.archiveView || !!this.statusFilter) &&
-          typeof apiTotal === 'number' && Number.isSafeInteger(apiTotal) && apiTotal >= 0
-        ) {
+        // Foundation-v6 BE /products defaults to excluding ARCHIVED for staff,
+        // and explicitly filters ARCHIVED on the archive tab. Its totalItems
+        // already counts parent Products (not variants), matching this view.
+        // Previous code discarded this valid count on the standard tab, causing
+        // a permanent "unknown pages" footer even when the server returned totals.
+        if (typeof apiTotal === 'number' && Number.isSafeInteger(apiTotal) &&
+            apiTotal >= (page - 1) * this.pageSize + items.length) {
           this.totalProducts.set(apiTotal);
         } else if (!nextPosition) {
           this.totalProducts.set((page - 1) * this.pageSize + items.length);
