@@ -1,4 +1,4 @@
-import { HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { catchError, expand, forkJoin, map, Observable, of, reduce, throwError } from 'rxjs';
 
@@ -233,7 +233,9 @@ export class AdminStaffApiService {
   createShift(payload: {
     staffId: string; branchId: string; startAt: string; endAt: string;
   }): Observable<unknown> {
-    return this.api.post<unknown>('/shifts', payload);
+    return this.api.post<unknown>('/shifts', payload, {
+      headers: new HttpHeaders().set('Idempotency-Key', crypto.randomUUID()),
+    });
   }
 
   /** Fresh, employee-scoped shifts for overlap checks, including other visible branches. */
