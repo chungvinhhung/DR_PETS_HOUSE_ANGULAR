@@ -4,7 +4,7 @@ import { map, Observable } from 'rxjs';
 import { ApiClientService } from '../../../../core/services/api-client.service';
 
 export interface AdminOrderQuoteRequest {
-  branchId: string;
+  branchId?: string;
   customerId?: string;
   items: Array<{ productId: string; variantId: string; quantity: number }>;
   voucherCode?: string;
