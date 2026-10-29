@@ -119,7 +119,10 @@
         </table>
       </div>
       <footer class="pagination">
-        <span>Đang hiển thị {{ products().length }} trên tổng số {{ totalProducts() === null ? 'chưa xác định' : totalProducts() }} sản phẩm</span>
+        <span>
+          @if(totalProducts() === null) {Đang hiển thị {{products().length}} sản phẩm}
+          @else {Đang hiển thị {{products().length}} trên tổng số {{totalProducts()}} sản phẩm}
+        </span>
         <div class="pagination-buttons">
           <button type="button" (click)="previous()" [disabled]="loading() || pageNumber() === 1" aria-label="Trang trước">‹</button>
           @for (page of visiblePageNumbers(); track $index) {
