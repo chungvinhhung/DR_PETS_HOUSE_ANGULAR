@@ -5052,3 +5052,38 @@ app-admin-order-return-detail .return-detail__refund-destination-row--three stro
 @media(max-width:550px){
   app-admin-order-return-detail .return-detail__refund-destination-row--three{grid-template-columns:1fr}
 }
+
+
+/* WEB2 2026-10-29: customer lookup and address form visibility. */
+app-admin-order-create .create-order__dialog-actions .create-order__button--primary{
+  display:inline-flex!important;visibility:visible!important;opacity:1!important;
+  background:#0d47a1!important;border:1px solid #0d47a1!important;color:white!important;
+  min-height:42px;min-width:155px;align-items:center;justify-content:center;
+}
+app-admin-order-create .create-order__dialog-actions .create-order__button--primary:hover{background:#093875!important}
+app-admin-order-create .create-order__dialog-actions{min-height:66px;flex-wrap:wrap}
+app-admin-order-create .create-order__recipient-row{margin:4px 0 20px!important}
+app-admin-order-create .create-order__recipient-row input,
+app-admin-order-create .create-order__region-fields .create-order__region-input{
+  width:100%;height:40px;box-sizing:border-box;border:1px solid #dce5f0;
+  border-radius:8px;background-color:#fff;color:#253248;padding:0 12px;
+}
+app-admin-order-create .create-order__region-fields .create-order__region-input{
+  padding-right:36px;background-image:url('/assets/admin-product/expand_more.svg');
+  background-repeat:no-repeat;background-position:right 11px center;background-size:18px;
+}
+app-admin-order-create .create-order__table th:nth-child(4){text-align:center}
+app-admin-order-create .create-order__qty{margin-inline:auto}
+app-admin-order-create .create-order__lookup-feedback{color:#64748b;font-size:12px;margin:8px 0 0}
+app-admin-order-create .create-order__suggestions{display:flex;flex-direction:column;gap:6px;padding:8px 0}
+app-admin-order-create .create-order__suggestion{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  gap:6px;padding:8px 12px;border:1px solid #dce5f0;border-radius:8px;background:#fff;
+}
+app-admin-order-create .create-order__suggestion:hover{background:#f3f8ff;border-color:#0d47a1}
+app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[data-status="PENDING"]{background:#fff3e0!important;color:#a1660a!important}
+app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[data-status="CONFIRMED"]{background:#e3f2fd!important;color:#1976d2!important}
+app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[data-status="PROCESSING"]{background:#f1e7ff!important;color:#7c3fc8!important}
+app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[data-status="SHIPPED"]{background:#e5f6fd!important;color:#0c6095!important}
+app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[data-status="COMPLETED"]{background:#e8f5e9!important;color:#2e7d32!important}
+app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[data-status="CANCELLED"]{background:#ffebeb!important;color:#cb3e48!important}
