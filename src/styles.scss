@@ -5256,7 +5256,8 @@ app-admin-product-list-page .product-filter-clear-all {
 }
 app-admin-product-list-page .product-filter-chip:focus-visible,
 app-admin-product-list-page .product-filter-clear-all:focus-visible {outline:2px solid #0d47a1;outline-offset:2px}
-@media(max-width:1390px){
+/* Keep the trailing Add action visible even after the sidebar reduces space. */
+@media(max-width:1500px){
   app-admin-product-list-page .product-filter-control--status {display:none}
   app-admin-product-list-page .product-filter-compact-status {display:block}
 }
