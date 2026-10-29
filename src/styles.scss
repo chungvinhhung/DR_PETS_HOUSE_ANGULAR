@@ -4797,3 +4797,13 @@ app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__group 
 }
 
 @media(max-width:550px){app-admin-order-create .create-order__online-methods{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* WEB2: inspection details inside return-confirmation modal. */
+app-admin-order-return-detail .return-detail__inspection{display:grid;gap:12px;max-height:48vh;overflow:auto;padding-right:3px}
+app-admin-order-return-detail .return-detail__inspection-item{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;align-items:end;border:1px solid #dce5f0;border-radius:8px;padding:12px}
+app-admin-order-return-detail .return-detail__inspection-item strong{font-size:13px}
+app-admin-order-return-detail .return-detail__inspection-item small{font-size:11px;color:#64748b}
+app-admin-order-return-detail .return-detail__inspection-item label{display:flex;flex-direction:column;gap:6px;font-size:12px}
+app-admin-order-return-detail .return-detail__inspection-item input,
+app-admin-order-return-detail .return-detail__inspection-item select{height:38px;padding:6px;border:1px solid #dce5f0;border-radius:6px;width:100%;min-width:0}
+@media(max-width:680px){app-admin-order-return-detail .return-detail__inspection-item{grid-template-columns:1fr 1fr}app-admin-order-return-detail .return-detail__inspection-item strong,app-admin-order-return-detail .return-detail__inspection-item small{grid-column:1/-1}}
