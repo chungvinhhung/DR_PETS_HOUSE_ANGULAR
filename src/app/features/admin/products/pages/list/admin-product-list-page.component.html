@@ -120,8 +120,13 @@
       </div>
       <footer class="pagination">
         <span>
-          @if(totalProducts() === null) {Đang hiển thị {{products().length}} sản phẩm}
-          @else {Đang hiển thị {{products().length}} trên tổng số {{totalProducts()}} sản phẩm}
+          @if(totalProducts() === null) {
+            Đang hiển thị {{products().length}} sản phẩm
+            @if(countingPages()){ · Đang tính tổng số trang...}
+            @else if(countUnavailable()){ · Chưa xác định tổng số trang}
+          } @else {
+            Đang hiển thị {{products().length}} trên tổng số {{totalProducts()}} sản phẩm
+          }
         </span>
         <div class="pagination-buttons">
           <button type="button" (click)="previous()" [disabled]="loading() || pageNumber() === 1" aria-label="Trang trước">‹</button>
