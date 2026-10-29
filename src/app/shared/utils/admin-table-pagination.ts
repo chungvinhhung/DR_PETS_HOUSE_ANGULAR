@@ -55,7 +55,8 @@ export function adminPageWindow(current: number, total: number): AdminPageItem[]
   const count = Math.max(1, Math.floor(total));
   const page = Math.min(count, Math.max(1, Math.floor(current)));
   if (count <= 5) return Array.from({length:count}, (_,i)=>i+1);
-  if (page <= count-3) return [page,page+1,page+2,'…',count];
+  // Insert ellipsis only when at least one page is actually omitted.
+  if (page+3 < count) return [page,page+1,page+2,'…',count];
   const start = Math.max(1,count-4);
   return Array.from({length:count-start+1},(_,i)=>start+i);
 }
