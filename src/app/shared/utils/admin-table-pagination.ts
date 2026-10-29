@@ -43,3 +43,19 @@ export async function countCursorItems<T>(
 
   return null;
 }
+
+/**
+ * Common visible pagination model. Show at most five numbered buttons.
+ * Example (6 pages): page 1 -> [1,2,3,'…',6],
+ * page 2 -> [2,3,4,'…',6]. Near the last page, show the final window.
+ * The ellipsis is an indicator, not a navigable page.
+ */
+export type AdminPageItem = number | '…';
+export function adminPageWindow(current: number, total: number): AdminPageItem[] {
+  const count = Math.max(1, Math.floor(total));
+  const page = Math.min(count, Math.max(1, Math.floor(current)));
+  if (count <= 5) return Array.from({length:count}, (_,i)=>i+1);
+  if (page <= count-3) return [page,page+1,page+2,'…',count];
+  const start = Math.max(1,count-4);
+  return Array.from({length:count-start+1},(_,i)=>start+i);
+}
