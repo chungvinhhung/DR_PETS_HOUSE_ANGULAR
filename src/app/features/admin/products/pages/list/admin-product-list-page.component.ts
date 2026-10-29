@@ -293,7 +293,9 @@ export class AdminProductListPageComponent implements OnInit {
       timeout({ first: 20000 }),
       takeUntilDestroyed(this.destroyRef),
     )).then(async result => {
-      const rawCount = result.totalItems ?? result.totalCount ?? result.total;
+      // This request uses limit=1, so BE totalPages equals the number of items.
+      const rawCount = result.totalItems ?? result.totalCount ?? result.total ??
+        result.totalPages;
       if (typeof rawCount === 'number' && Number.isSafeInteger(rawCount) && rawCount >= 0) {
         return rawCount;
       }
