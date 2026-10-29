@@ -92,10 +92,13 @@
       <span>Đang hiển thị {{visibleCount()}} trên tổng số {{totalCount()}} {{tab() === 'stock' ? 'sản phẩm' : 'giao dịch'}}</span>
       <nav class="pagination-buttons" aria-label="Phân trang danh sách kho">
         <button type="button" aria-label="Trang trước" (click)="setPage(page()-1)" [disabled]="page()===1">‹</button>
-        @for (n of pageNumbers();track n) {
-          <button type="button" class="pagination-page" [class.pagination-page--active]="page()===n"
-            [attr.aria-current]="page() === n ? 'page' : null" [attr.aria-label]="'Đến trang ' + n"
-            (click)="setPage(n)">{{n}}</button>
+        @for (n of pageNumbers();track $index) {
+          @if (n==='…') { <span class="pagination-ellipsis" aria-hidden="true">…</span> }
+          @else {
+            <button type="button" class="pagination-page" [class.pagination-page--active]="page()===n"
+              [attr.aria-current]="page() === n ? 'page' : null" [attr.aria-label]="'Đến trang ' + n"
+              (click)="setPage(n)">{{n}}</button>
+          }
         }
         <button type="button" aria-label="Trang sau" (click)="setPage(page()+1)" [disabled]="page()===totalPages()">›</button>
       </nav>
