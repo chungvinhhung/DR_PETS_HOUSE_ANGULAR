@@ -5163,3 +5163,115 @@ app-admin-order-return-detail .return-detail__badge[data-status="CANCELLED"]{
     overflow-x:auto;grid-template-columns:repeat(6,minmax(110px,1fr));
   }
 }
+
+
+/* Product Management hybrid filter bar. Keeps Add Product on the same toolbar row. */
+app-admin-product-list-page .product-filter-toolbar.product-filter-toolbar {
+  position:relative;z-index:30;display:flex !important;flex-wrap:nowrap !important;
+  align-items:center !important;gap:12px !important;min-height:84px !important;
+  grid-template-columns:none !important;overflow:visible !important;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-search.product-filter-search {
+  flex:0 0 430px !important;width:430px !important;min-width:430px !important;
+  max-width:430px !important;margin:0 !important;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-actions.product-filter-actions {
+  display:flex !important;flex:1 1 auto !important;min-width:0 !important;
+  align-items:center !important;justify-content:flex-end !important;
+  flex-wrap:nowrap !important;gap:8px !important;margin:0 0 0 auto !important;
+}
+app-admin-product-list-page .product-filter-choices {
+  display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  flex:0 1 auto;min-width:0;white-space:nowrap;
+}
+app-admin-product-list-page .product-filter-control {position:relative;flex:0 0 auto;z-index:3}
+app-admin-product-list-page .product-filter-control--category {width:132px}
+app-admin-product-list-page .product-filter-control--status {width:130px}
+app-admin-product-list-page .product-filter-control--more {width:143px}
+app-admin-product-list-page .product-filter-toolbar .product-filter-trigger.product-filter-trigger {
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  width:100%;height:40px !important;min-height:40px !important;
+  padding:0 10px !important;border:1px solid #dce5f0;border-radius:8px;
+  background:#fff;color:#26364a;font:500 13px/20px Roboto,Arial,sans-serif !important;
+  cursor:pointer;white-space:nowrap;
+}
+app-admin-product-list-page .product-filter-trigger:hover:not(:disabled),
+app-admin-product-list-page .product-filter-trigger[aria-expanded="true"] {background:#f5f9ff;border-color:#adc8ec}
+app-admin-product-list-page .product-filter-trigger:disabled {color:#8b98aa;cursor:not-allowed}
+app-admin-product-list-page .product-filter-count {
+  display:inline-flex;justify-content:center;align-items:center;
+  min-width:19px;height:19px;border-radius:10px;padding:0 5px;
+  background:#e4f0fe;color:#0d47a1;font:600 11px/18px Roboto,Arial,sans-serif;
+}
+app-admin-product-list-page .product-filter-chevron {color:#64748b;font-size:17px;line-height:1;margin-left:auto}
+app-admin-product-list-page .product-filter-toolbar .product-add-button.product-add-button {
+  display:inline-flex !important;align-items:center;justify-content:center;
+  flex:0 0 auto !important;min-width:176px;white-space:nowrap !important;
+  position:relative;z-index:2;margin:0 0 0 auto !important;
+}
+app-admin-product-list-page .product-filter-dismiss {
+  position:fixed;inset:0;border:0;background:transparent;z-index:1;cursor:default;
+}
+app-admin-product-list-page .product-filter-popover {
+  box-sizing:border-box;position:absolute;top:calc(100% + 9px);right:0;
+  z-index:4;width:285px;max-width:calc(100vw - 32px);
+  background:#fff;border:1px solid #dbe4ef;border-radius:10px;
+  padding:16px;box-shadow:0 12px 32px #172a491f;
+  white-space:normal;color:#26364a;
+}
+app-admin-product-list-page .product-filter-popover--more {width:390px;padding:18px}
+app-admin-product-list-page .product-filter-popover h2,
+app-admin-product-list-page .product-filter-popover>strong {
+  display:block;margin:0 0 12px;font:600 15px/22px Roboto,Arial,sans-serif;
+}
+app-admin-product-list-page .product-filter-options {max-height:260px;overflow-y:auto}
+app-admin-product-list-page .product-filter-popover fieldset {min-width:0;margin:0;padding:0;border:0}
+app-admin-product-list-page .product-filter-popover legend {
+  font:600 13px/20px Roboto,Arial,sans-serif;margin:0 0 9px;
+}
+app-admin-product-list-page .product-filter-popover .check {font:400 13px/19px Roboto,Arial,sans-serif;margin-bottom:9px;gap:8px}
+app-admin-product-list-page .product-filter-popover .check input {width:15px;height:15px;flex:0 0 15px;accent-color:#0d47a1;margin:2px 0 0}
+app-admin-product-list-page .product-filter-popover .filter-footer {display:flex;align-items:center;justify-content:flex-end;gap:8px}
+app-admin-product-list-page .product-filter-popover .filter-footer button {height:36px !important;min-height:36px !important;padding:0 14px}
+app-admin-product-list-page .product-filter-groups {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 14px;
+  max-height:340px;overflow-y:auto;
+}
+app-admin-product-list-page .product-filter-compact-category,
+app-admin-product-list-page .product-filter-compact-status {display:none}
+app-admin-product-list-page .product-filter-chips {
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:-8px 0 18px;
+  min-height:28px;color:#62738b;font:400 12px/18px Roboto,Arial,sans-serif;
+}
+app-admin-product-list-page .product-filter-chip {
+  display:inline-flex;align-items:center;gap:9px;height:28px;padding:0 10px;
+  border:1px solid #dce5f0;border-radius:6px;background:#f3f7fc;
+  color:#344154;cursor:pointer;font:500 12px/18px Roboto,Arial,sans-serif;
+}
+app-admin-product-list-page .product-filter-chip:hover {background:#e9f2ff;border-color:#bcd0e8}
+app-admin-product-list-page .product-filter-chip span {color:#66758c;font-size:17px}
+app-admin-product-list-page .product-filter-clear-all {
+  padding:4px 7px;background:transparent;border:0;cursor:pointer;
+  color:#0d47a1;font:500 12px/18px Roboto,Arial,sans-serif;
+}
+app-admin-product-list-page .product-filter-chip:focus-visible,
+app-admin-product-list-page .product-filter-clear-all:focus-visible {outline:2px solid #0d47a1;outline-offset:2px}
+@media(max-width:1390px){
+  app-admin-product-list-page .product-filter-control--status {display:none}
+  app-admin-product-list-page .product-filter-compact-status {display:block}
+}
+@media(max-width:1220px){
+  app-admin-product-list-page .product-filter-control--category {display:none}
+  app-admin-product-list-page .product-filter-compact-category {display:block}
+}
+@media(max-width:990px){
+  app-admin-product-list-page .product-filter-toolbar.product-filter-toolbar {
+    display:flex !important;flex-wrap:nowrap !important;min-width:0;
+    overflow-x:auto !important;overflow-y:visible !important;
+  }
+  app-admin-product-list-page .product-filter-toolbar .product-filter-search.product-filter-search {
+    flex:0 0 430px !important;max-width:430px !important;
+  }
+  app-admin-product-list-page .product-filter-toolbar .product-filter-actions.product-filter-actions {flex:0 0 auto !important}
+  app-admin-product-list-page .product-filter-popover {position:fixed;top:140px;left:16px;right:16px;width:auto;max-width:390px;margin-left:auto;max-height:70vh;overflow-y:auto}
+}
