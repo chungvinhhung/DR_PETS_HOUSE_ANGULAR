@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { BranchApiRecord, BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
+import { AdminOrderCheckoutService, AdminOrderQuote, AdminOrderQuoteRequest, AdminOrderCommitRequest } from '../services/admin-order-checkout.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import {
@@ -46,6 +49,9 @@ const normalizePhone = (value: string): string => {
 })
 export class AdminOrderCreateComponent {
   private readonly api = inject(AdminOrderCreateLookupService);
+  private readonly checkout = inject(AdminOrderCheckoutService);
+  private readonly branchesApi = inject(BranchManagementApiService);
+  private readonly session = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -54,6 +60,21 @@ export class AdminOrderCreateComponent {
   private pendingExitDecision: ((allow: boolean) => void) | null = null;
   private productTimer: ReturnType<typeof setTimeout> | null = null;
 
+  readonly branches=signal<BranchApiRecord[]>([]);
+  readonly branchId=signal('');
+  readonly branchLoadError=signal(false);
+  readonly quoteState=signal<'idle'|'loading'|'ready'|'error'>('idle');
+  readonly quoteError=signal('');
+  readonly quote=signal<AdminOrderQuote|null>(null);
+  readonly quoteFingerprint=signal('');
+  readonly confirmCreateOpen=signal(false);
+  readonly saving=signal(false);
+  readonly created=signal(false);
+  private quoteRequest=0;
+  private createKey: string|null=null;
+  readonly canQuote=computed(()=>this.session.user()?.systemRole==='ADMIN' && this.lines().length>0 && !this.hasInvalidQuantities() && !!this.branchId());
+  readonly quoteIsCurrent=computed(()=>!!this.quote() && this.quoteState()==='ready' && this.quoteFingerprint()===this.getQuoteFingerprint() && Date.now()<Date.parse(this.quote()!.quoteExpiresAt));
+  readonly canSubmit=computed(()=>this.quoteIsCurrent() && this.isDraftValid() && this.quote()!.eligible && this.quote()!.availability.canFulfillEntireCart && (!this.voucherCode().trim() || this.quote()!.pricing.voucherDiscount>0) && this.session.user()?.systemRole==='ADMIN' && !!this.selectedCustomer() && !this.saving());
   readonly lookupPhone = signal('');
   readonly lookupState = signal<LookupState>('idle');
   readonly lookupIncomplete = signal(false);
@@ -136,6 +157,7 @@ export class AdminOrderCreateComponent {
   ));
 
   constructor() {
+    this.loadBranches();
     this.destroyRef.onDestroy(() => {
       if (this.productTimer !== null) clearTimeout(this.productTimer);
       this.customerRequest += 1;
@@ -156,6 +178,7 @@ export class AdminOrderCreateComponent {
   editLookupPhone(value: string): void {
     // Changing the search number invalidates previously selected customer and address.
     this.customerRequest += 1;
+    this.invalidateDraftPricing();
     this.lookupPhone.set(value);
     this.customerPhone.set(value);
     this.selectedCustomer.set(null);
@@ -203,6 +226,7 @@ export class AdminOrderCreateComponent {
 
   selectCustomer(customer: OrderCustomerLookup): void {
     this.customerRequest += 1;
+    this.invalidateDraftPricing();
     this.selectedCustomer.set(customer);
     this.customerName.set(customer.fullName ?? '');
     this.customerPhone.set(customer.phone ?? this.lookupPhone());
@@ -224,6 +248,7 @@ export class AdminOrderCreateComponent {
     // A changed phone must invalidate any previously verified lookup result.
     const priorCustomer = this.selectedCustomer();
     this.customerRequest += 1;
+    this.invalidateDraftPricing();
     this.customerPhone.set(value);
     this.lookupPhone.set(value);
     this.selectedCustomer.set(null);
@@ -479,16 +504,24 @@ export class AdminOrderCreateComponent {
   }
 
   updateVoucher(value: string): void {
+    this.invalidateDraftPricing();
     this.voucherCode.set(value.toUpperCase().trimStart());
     this.voucherPreviewState.set('idle');
   }
 
   clearVoucher(): void {
+    this.invalidateDraftPricing();
     this.voucherCode.set('');
     this.voucherPreviewState.set('idle');
   }
 
   private invalidateDraftPricing(): void {
+    ++this.quoteRequest;
+    this.createKey=null;
+    this.quote.set(null);
+    this.quoteFingerprint.set('');
+    this.quoteState.set('idle');
+    this.quoteError.set('');
     this.voucherPreviewState.set('idle');
   }
 
@@ -501,13 +534,114 @@ export class AdminOrderCreateComponent {
       this.toast.show('Vui lòng chọn sản phẩm và kiểm tra số lượng trước khi áp dụng mã.');
       return;
     }
-    // The current /vouchers/validate evaluates the authenticated Customer's cart.
-    // Never call it using the Admin session as that could validate the wrong cart.
-    this.voucherPreviewState.set('unverified');
+    this.requestQuote();
+  }
+
+  private loadBranches():void {
+    this.branchesApi.listBranches().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:branches=>{
+        this.branches.set(branches.filter(b=>b.status==='ACTIVE'));
+        this.branchLoadError.set(false);
+      },
+      error:()=>this.branchLoadError.set(true),
+    });
+  }
+  selectBranch(id:string):void {
+    if(this.branchId()===id)return;
+    this.branchId.set(id);this.invalidateDraftPricing();
+  }
+  private getQuoteFingerprint():string {
+    return JSON.stringify({
+      branchId:this.branchId(),customerId:this.selectedCustomer()?.id||null,
+      items:this.lines().map(l=>[l.productId,l.variantId,l.quantity]),
+      voucherCode:this.voucherCode().trim(),
+    });
+  }
+  private quoteBody():AdminOrderQuoteRequest {
+    return {
+      branchId:this.branchId(),
+      ...(this.selectedCustomer()?{customerId:this.selectedCustomer()!.id}:{}),
+      items:this.lines().map(l=>({productId:l.productId,variantId:l.variantId,quantity:l.quantity})),
+      ...(this.voucherCode().trim()?{voucherCode:this.voucherCode().trim()}:{}),
+    };
+  }
+  requestQuote():void {
+    if(!this.canQuote() || this.quoteState()==='loading') {
+      this.toast.show('Vui lòng chọn chi nhánh và sản phẩm hợp lệ trước khi xem báo giá.');
+      return;
+    }
+    const version=++this.quoteRequest;
+    const fingerprint=this.getQuoteFingerprint();
+    this.quote.set(null);this.quoteState.set('loading');this.quoteError.set('');
+    this.checkout.quote(this.quoteBody()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:quote=>{
+        if(version!==this.quoteRequest || fingerprint!==this.getQuoteFingerprint())return;
+        this.quote.set(quote);this.quoteFingerprint.set(fingerprint);
+        this.quoteState.set('ready');
+        if(!quote.eligible || !quote.availability.canFulfillEntireCart)
+          this.toast.show('Một số sản phẩm không đủ tồn kho tại chi nhánh. Vui lòng kiểm tra lại.');
+        else if(this.voucherCode().trim() && quote.pricing.voucherDiscount===0)
+          this.toast.show('Mã giảm giá chưa đủ điều kiện áp dụng.');
+        else this.toast.show('Đã cập nhật báo giá từ hệ thống.','success');
+      },
+      error:err=>{
+        if(version!==this.quoteRequest)return;
+        this.quoteState.set('error');
+        this.quoteError.set(adminErrorMessage(err,'Chưa lấy được báo giá. Vui lòng thử lại.'));
+        this.toast.show(this.quoteError(),'error');
+      },
+    });
+  }
+  reviewCreate():void {
+    if(!this.canSubmit()){
+      if(!this.selectedCustomer())this.toast.show('Hiện chỉ hỗ trợ tạo đơn cho khách đã có tài khoản. Khách vãng lai sẽ được mở sau khi xác minh luồng kích hoạt.');
+      else if(this.session.user()?.systemRole!=='ADMIN')this.toast.show('Chức năng tạo đơn hiện đang giới hạn cho quản trị viên.');
+      else if(!this.isDraftValid())this.toast.show(this.reviewIssues()[0]||'Vui lòng kiểm tra thông tin đơn hàng.');
+      else this.toast.show('Vui lòng lấy báo giá hợp lệ, còn hiệu lực trước khi tạo đơn.');
+      return;
+    }
+    this.confirmCreateOpen.set(true);
+  }
+  closeCreate():void{if(!this.saving())this.confirmCreateOpen.set(false);}
+  submitCreate():void {
+    if(!this.confirmCreateOpen() || !this.canSubmit() || this.saving())return;
+    const q=this.quote()!;
+    if(q.fulfillmentBranchId!==this.branchId()){
+      this.toast.show('Chi nhánh báo giá chưa khớp. Vui lòng kiểm tra lại.');return;
+    }
+    const body:AdminOrderCommitRequest={
+      ...this.quoteBody(),paymentMethod:this.paymentMethod(),
+      shippingAddress:{
+        recipientName:this.shippingRecipientName()||this.customerName(),
+        phone:this.shippingRecipientPhone()||this.customerPhone(),
+        line1:this.shippingLine1(),ward:this.shippingWard(),
+        district:this.shippingDistrict(),city:this.shippingCity(),
+      },
+      note:this.note().trim(),
+    };
+    this.createKey??=crypto.randomUUID();
+    this.saving.set(true);
+    this.checkout.commit(body,this.createKey).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:response=>{
+        this.saving.set(false);this.confirmCreateOpen.set(false);
+        if(!response?.order?.id || !response.order.code){
+          this.toast.show('Đơn đã được gửi nhưng chưa xác nhận được kết quả. Vui lòng kiểm tra danh sách đơn trước khi thử lại.','error');
+          return;
+        }
+        this.created.set(true);
+        this.toast.show('Tạo đơn '+response.order.code+' thành công.','success');
+        void this.router.navigateByUrl('/admin/orders/'+encodeURIComponent(response.order.id));
+      },
+      error:err=>{
+        this.saving.set(false);
+        this.toast.show(adminErrorMessage(err,'Chưa xác nhận được kết quả tạo đơn. Vui lòng kiểm tra danh sách đơn trước khi thử lại.'),'error');
+        // Reuse the same idempotency key on retry, never create a second key.
+      },
+    });
   }
 
   canLeavePage(): boolean | Promise<boolean> {
-    if (!this.hasUnsavedChanges()) return true;
+    if (this.created() || !this.hasUnsavedChanges()) return true;
     // A single in-app confirmation applies to Cancel, Back and sidebar links.
     if (this.pendingExitDecision) return false;
     this.cancelDialogOpen.set(true);
