@@ -1,3 +1,4 @@
+import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -187,11 +188,7 @@ export class AdminAppointmentsPageComponent {
   });
   readonly total=computed(()=>this.filteredRows().length);
   readonly pageCount=computed(()=>Math.max(1,Math.ceil(this.total()/this.limit)));
-  readonly pageNumbers=computed(()=>{
-    const count=this.pageCount();
-    const start=Math.max(1,Math.min(this.page()-2,count-4));
-    return Array.from({length:Math.min(5,count)},(_,i)=>start+i);
-  });
+  readonly pageNumbers=computed(()=>adminPageWindow(this.page(),this.pageCount()));
   readonly rows=computed(()=>this.filteredRows().slice((this.page()-1)*this.limit,this.page()*this.limit));
 
   constructor(){this.load();}
