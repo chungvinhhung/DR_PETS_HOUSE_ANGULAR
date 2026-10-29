@@ -85,6 +85,9 @@ export class AdminOrderCreateComponent {
   readonly shippingWard = signal('');
   readonly shippingRecipientName = signal('');
   readonly shippingRecipientPhone = signal('');
+  // Recipient auto-fills from lookup until the employee edits either field.
+  private recipientNameEdited = false;
+  private recipientPhoneEdited = false;
   readonly addressDialog = signal<AddressDialogMode | null>(null);
   readonly addressDialogError = signal('');
   readonly addressDraft = signal<ShippingAddressDraft>(this.emptyAddress());
@@ -178,6 +181,8 @@ export class AdminOrderCreateComponent {
     this.invalidateDraftPricing();
     this.lookupPhone.set(value);
     this.customerPhone.set(value);
+    if (!this.recipientPhoneEdited) this.shippingRecipientPhone.set(value);
+    if (!this.recipientNameEdited) this.shippingRecipientName.set('');
     this.selectedCustomer.set(null);
     this.lookupResults.set([]);
     this.lookupIncomplete.set(false);
@@ -232,8 +237,8 @@ export class AdminOrderCreateComponent {
     this.lookupResults.set([]);
     this.lookupState.set('found');
     this.clearShippingAddress();
-    this.shippingRecipientName.set(customer.fullName ?? '');
-    this.shippingRecipientPhone.set(customer.phone ?? this.lookupPhone());
+    if (!this.recipientNameEdited) this.shippingRecipientName.set(customer.fullName ?? '');
+    if (!this.recipientPhoneEdited) this.shippingRecipientPhone.set(customer.phone ?? this.lookupPhone());
     // /customers currently exposes no saved/default address; do not fabricate one.
   }
 
@@ -250,6 +255,14 @@ export class AdminOrderCreateComponent {
   updateCustomerEmail(value: string): void {
     if (this.selectedCustomer()) return;
     this.customerEmail.set(value);
+  }
+  updateShippingRecipientName(value: string): void {
+    this.recipientNameEdited = true;
+    this.shippingRecipientName.set(value);
+  }
+  updateShippingRecipientPhone(value: string): void {
+    this.recipientPhoneEdited = true;
+    this.shippingRecipientPhone.set(value);
   }
   updateShippingLine1(value: string): void { this.shippingLine1.set(value); this.addressWasConfirmed.set(false); }
   updateShippingCity(value: string): void { this.shippingCity.set(value); this.addressWasConfirmed.set(false); }
