@@ -5185,8 +5185,8 @@ app-admin-product-list-page .product-filter-choices {
   flex:0 1 auto;min-width:0;white-space:nowrap;
 }
 app-admin-product-list-page .product-filter-control {position:relative;flex:0 0 auto;z-index:3}
-app-admin-product-list-page .product-filter-control--category {width:132px}
-app-admin-product-list-page .product-filter-control--status {width:130px}
+app-admin-product-list-page .product-filter-control--category {width:160px;flex:0 0 160px}
+app-admin-product-list-page .product-filter-control--status {width:178px;flex:0 0 178px}
 app-admin-product-list-page .product-filter-control--more {width:143px}
 app-admin-product-list-page .product-filter-toolbar .product-filter-trigger.product-filter-trigger {
   display:flex;align-items:center;justify-content:space-between;gap:6px;
@@ -5335,4 +5335,44 @@ app-admin-product-list-page .product-filter-toolbar img.product-filter-add-icon 
 app-admin-product-list-page .product-filter-toolbar img.product-filter-funnel-icon {
   display:block !important;position:static !important;flex:0 0 17px !important;
   width:17px !important;height:14px !important;object-fit:contain;margin:0 !important;
+}
+
+/* Product filters — consistent trailing icons and single-select Status. */
+app-admin-product-list-page .product-filter-toolbar .product-filter-trigger-label {
+  display:block;white-space:nowrap;flex:1 1 auto;min-width:0;text-align:left;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-trigger-trailing {
+  display:inline-flex;align-items:center;justify-content:flex-end;
+  flex:0 0 auto;gap:8px;margin-left:auto;min-width:18px;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-trigger-trailing img.product-filter-chevron {
+  display:block !important;margin:0 !important;width:18px !important;height:18px !important;
+  flex:0 0 18px !important;object-fit:contain;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-trigger-trailing .product-filter-count {
+  flex:0 0 auto;white-space:nowrap;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-native-status,
+app-admin-product-list-page .product-filter-popover .product-filter-advanced-select {
+  box-sizing:border-box;display:block;width:100%;height:40px;
+  border:1px solid #dce5f0;border-radius:8px;
+  color:#26364a;background-color:#fff;
+  font:500 13px/20px Roboto,Arial,sans-serif;
+  appearance:none;-webkit-appearance:none;
+  padding:0 39px 0 14px;
+  background-image:url('/assets/admin-product/icon-chevron-down.svg');
+  background-repeat:no-repeat;background-position:right 14px center;
+  background-size:18px 18px;
+  cursor:pointer;text-overflow:ellipsis;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-native-status:hover:not(:disabled),
+app-admin-product-list-page .product-filter-toolbar .product-filter-native-status:focus-visible,
+app-admin-product-list-page .product-filter-popover .product-filter-advanced-select:focus-visible {
+  border-color:#adc8ec;background-color:#f5f9ff;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-native-status:disabled {
+  color:#8b98aa;background-color:#f8fafc;cursor:not-allowed;
+}
+app-admin-product-list-page .product-filter-popover .product-filter-advanced-select {
+  font-size:13px;height:38px;
 }
