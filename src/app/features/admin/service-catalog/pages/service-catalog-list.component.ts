@@ -1,3 +1,4 @@
+import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -77,13 +78,7 @@ export class ServiceCatalogListComponent {
   readonly pageCount = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
   readonly rangeStart = computed(() => this.total() === 0 ? 0 : (this.currentPage() - 1) * this.pageSize + 1);
   readonly rangeEnd = computed(() => Math.min(this.total(), this.currentPage() * this.pageSize));
-  readonly pageNumbers = computed(() => {
-    const total = this.pageCount();
-    const active = this.currentPage();
-    const start = Math.max(1, Math.min(active - 2, total - 4));
-    const end = Math.min(total, Math.max(5, active + 2));
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  });
+  readonly pageNumbers = computed(() => adminPageWindow(this.currentPage(),this.pageCount()));
 
   constructor() {
     if (this.canConfigure()) {
