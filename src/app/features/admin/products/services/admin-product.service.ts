@@ -22,6 +22,7 @@ export class AdminProductService {
     if (query.status) params = params.set('status', query.status);
     if (query.sort) params = params.set('sort', query.sort);
     if (query.cursor) params = params.set('cursor', query.cursor);
+    if (query.page !== undefined) params = params.set('page', String(query.page));
     return this.api.get<ProductPageResponse>('/products', { params });
   }
 
