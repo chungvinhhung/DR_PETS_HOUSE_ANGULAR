@@ -47,6 +47,8 @@ export class AdminProductListPageComponent implements OnInit {
   readonly pageNumber = signal(1);
   readonly hasNextPage = signal(false);
   readonly totalProducts = signal<number | null>(null);
+  readonly countingPages = signal(false);
+  readonly countUnavailable = signal(false);
 
   searchTerm = '';
   categoryFilter = '';
@@ -139,6 +141,8 @@ export class AdminProductListPageComponent implements OnInit {
     ++this.countGeneration;
     this.countRequested = false;
     this.totalProducts.set(null);
+    this.countingPages.set(false);
+    this.countUnavailable.set(false);
     this.cursors = [{ cursor: null, offset: 0 }];
     this.hasNextPage.set(false);
     this.pageNumber.set(1);
@@ -275,6 +279,7 @@ export class AdminProductListPageComponent implements OnInit {
   private countDisplayedProducts(query: ProductQuery): void {
     if (this.countRequested || this.totalProducts() !== null) return;
     this.countRequested = true;
+    this.countingPages.set(true);
     const generation = this.countGeneration;
     const archiveView = this.archiveView;
     void countCursorItems(
@@ -283,18 +288,21 @@ export class AdminProductListPageComponent implements OnInit {
         ? product.status === 'ARCHIVED'
         : product.status !== 'ARCHIVED',
     ).then((total) => {
-      if (generation === this.countGeneration && total !== null) {
-        this.totalProducts.set(total);
-      }
+      if (generation !== this.countGeneration || this.destroyRef.destroyed) return;
+      this.countingPages.set(false);
+      if (total !== null) this.totalProducts.set(total);
+      else this.countUnavailable.set(true);
     });
   }
 
 
   visiblePageNumbers() {
     const total = this.totalProducts();
-    const count = total === null ? this.pageNumber() + (this.hasNextPage() ? 1 : 0)
-      : Math.max(1, Math.ceil(total / this.pageSize));
-    return adminPageWindow(this.pageNumber(), count);
+    // Never fabricate an apparent total while the server-side count is unknown.
+    // Numeric window is complete as soon as BE exposes an exact total or
+    // the bounded full cursor count succeeds.
+    if (total === null) return [this.pageNumber()];
+    return adminPageWindow(this.pageNumber(), Math.max(1, Math.ceil(total / this.pageSize)));
   }
 
   async goToPage(page: number): Promise<void> {
