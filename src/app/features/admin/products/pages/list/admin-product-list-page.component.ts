@@ -280,21 +280,44 @@ export class AdminProductListPageComponent implements OnInit {
     if (this.countRequested || this.totalProducts() !== null) return;
     this.countRequested = true;
     this.countingPages.set(true);
+    this.countUnavailable.set(false);
     const generation = this.countGeneration;
     const archiveView = this.archiveView;
-    void countCursorItems(
-      (cursor) => this.productsApi.listProducts({ ...query, cursor, limit: 100 }),
-      (product: AdminProduct) => archiveView
-        ? product.status === 'ARCHIVED'
-        : product.status !== 'ARCHIVED',
-    ).then((total) => {
+
+    // Source-verified BE catalog returns totalItems/totalCount/total for a
+    // query independent of its cursor, as well as totalPages. Query just
+    // one item first: this is much cheaper than counting enriched pages.
+    const countQuery: ProductQuery = { ...query, cursor: null, limit: 1 };
+    void firstValueFrom(this.productsApi.listProducts(countQuery).pipe(
+      timeout({ first: 20000 }),
+      takeUntilDestroyed(this.destroyRef),
+    )).then(async result => {
+      const rawCount = result.totalItems ?? result.totalCount ?? result.total;
+      if (typeof rawCount === 'number' && Number.isSafeInteger(rawCount) && rawCount >= 0) {
+        return rawCount;
+      }
+      // For older deployments without totalItems, exhaust cursor pages.
+      // Use 20 rows/chunk to avoid long timeouts enriching 100 products at once.
+      return countCursorItems(
+        cursor => this.productsApi.listProducts({ ...query, cursor, limit: 20 }),
+        (product: AdminProduct) => archiveView
+          ? product.status === 'ARCHIVED' : product.status !== 'ARCHIVED',
+      );
+    }).catch(async () => {
+      // The one-item count endpoint may be unavailable on an older backend;
+      // continue with cursor counting rather than displaying guessed pages.
+      return countCursorItems(
+        cursor => this.productsApi.listProducts({ ...query, cursor, limit: 20 }),
+        (product: AdminProduct) => archiveView
+          ? product.status === 'ARCHIVED' : product.status !== 'ARCHIVED',
+      );
+    }).then(total => {
       if (generation !== this.countGeneration || this.destroyRef.destroyed) return;
       this.countingPages.set(false);
       if (total !== null) this.totalProducts.set(total);
       else this.countUnavailable.set(true);
     });
   }
-
 
   visiblePageNumbers() {
     const total = this.totalProducts();
