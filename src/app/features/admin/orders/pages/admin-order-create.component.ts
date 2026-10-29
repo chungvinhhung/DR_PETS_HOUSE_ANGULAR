@@ -209,7 +209,7 @@ export class AdminOrderCreateComponent {
         }
         this.lookupResults.set(matches);
         this.lookupState.set(matches.length ? 'found' : 'not-found');
-        if (matches.length === 1) this.selectCustomer(matches[0]);
+        // Even a unique match must be explicitly selected by the employee.
       },
       error: error => {
         if (version !== this.customerRequest) return;
