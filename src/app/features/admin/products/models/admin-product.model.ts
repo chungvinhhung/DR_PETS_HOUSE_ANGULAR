@@ -93,4 +93,5 @@ export interface ProductQuery {
   sort?: ProductSort;
   limit?: number;
   cursor?: string | null;
+  page?: number;
 }
