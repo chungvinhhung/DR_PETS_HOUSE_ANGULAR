@@ -53,18 +53,18 @@ export class AdminProductListPageComponent implements OnInit {
   searchTerm = '';
   // Draft selections live in the popovers; the applied snapshot drives every API request.
   categoryFilters: string[] = [];
-  usageFilters: ProductUsageType[] = [];
+  usageFilter: ProductUsageType | '' = '';
   priceFilters: Array<'LOW'|'MID'|'HIGH'> = [];
-  statusFilters: Array<'ACTIVE'|'INACTIVE'> = [];
+  statusFilter: 'ALL' | 'ACTIVE' | 'INACTIVE' = 'ALL';
   daysFilter = 0;
   sort: ProductSort = 'NEWEST';
   archiveView = false;
-  openPanel: 'category'|'status'|'more'|null = null;
+  openPanel: 'category'|'more'|null = null;
   readonly activeChips = signal<Array<{group:'category'|'usage'|'price'|'status'|'days';label:string}>>([]);
   private appliedCategories: string[] = [];
-  private appliedUsage: ProductUsageType[] = [];
+  private appliedUsage: ProductUsageType | '' = '';
   private appliedPrices: Array<'LOW'|'MID'|'HIGH'> = [];
-  private appliedStatuses: Array<'ACTIVE'|'INACTIVE'> = [];
+  private appliedStatus: 'ALL' | 'ACTIVE' | 'INACTIVE' = 'ALL';
   private appliedDays = 0;
   private aggregateProducts: AdminProduct[] | null = null;
   // Offset is within one BE cursor page, NOT a product variant index.
@@ -79,7 +79,7 @@ export class AdminProductListPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.archiveView = this.route.snapshot.queryParamMap.get('view') === 'archived';
-    this.statusFilters = [];
+    this.statusFilter = 'ALL';
     const navState = window.history.state as { productNotice?: unknown } | null;
     if (typeof navState?.productNotice === 'string') {
       this.toast.show(navState.productNotice, 'success');
@@ -116,8 +116,8 @@ export class AdminProductListPageComponent implements OnInit {
   toggleCategory(id: string): void {
     this.categoryFilters=this.toggleArrayValue(this.categoryFilters,id);
   }
-  toggleUsage(value: ProductUsageType): void {
-    this.usageFilters=this.toggleArrayValue(this.usageFilters,value);
+  setUsageFilter(value: ProductUsageType | ''): void {
+    this.usageFilter = value;
   }
   togglePrice(value: 'LOW'|'MID'|'HIGH'): void {
     this.priceFilters=this.toggleArrayValue(this.priceFilters,value);
@@ -125,20 +125,31 @@ export class AdminProductListPageComponent implements OnInit {
   toggleDays(value: number): void {
     this.daysFilter=this.daysFilter===value?0:value;
   }
-  toggleStatus(value: 'ACTIVE'|'INACTIVE'): void {
-    this.statusFilters=this.toggleArrayValue(this.statusFilters,value);
+  /** A normal single-select Status dropdown applies as soon as it changes. */
+  setStatusFilter(value: 'ALL' | 'ACTIVE' | 'INACTIVE'): void {
+    if (this.archiveView) return;
+    this.copyAppliedToDraft();
+    this.statusFilter = value;
+    this.applyFilters();
+  }
+  /** Compact Status select in the advanced panel keeps its value as a draft. */
+  setDraftStatusFilter(value: 'ALL' | 'ACTIVE' | 'INACTIVE'): void {
+    this.statusFilter = value;
+  }
+  selectedStatus(): 'ALL' | 'ACTIVE' | 'INACTIVE' {
+    return this.appliedStatus;
   }
   private toggleArrayValue<T>(values:T[],value:T):T[]{
     return values.includes(value)?values.filter(v=>v!==value):[...values,value];
   }
   private copyAppliedToDraft():void{
     this.categoryFilters=[...this.appliedCategories];
-    this.usageFilters=[...this.appliedUsage];
+    this.usageFilter=this.appliedUsage;
     this.priceFilters=[...this.appliedPrices];
-    this.statusFilters=[...this.appliedStatuses];
+    this.statusFilter=this.appliedStatus;
     this.daysFilter=this.appliedDays;
   }
-  togglePanel(panel:'category'|'status'|'more'):void{
+  togglePanel(panel:'category'|'more'):void{
     if(this.openPanel===panel){this.closePanel();return;}
     this.copyAppliedToDraft();
     this.openPanel=panel;
@@ -150,16 +161,18 @@ export class AdminProductListPageComponent implements OnInit {
   onFilterEscape():void{this.closePanel();}
   activeCount(group:'category'|'usage'|'price'|'status'|'days'):number{
     return group==='category'?this.appliedCategories.length:
-      group==='usage'?this.appliedUsage.length:
+      group==='usage'?(this.appliedUsage ? 1 : 0):
       group==='price'?this.appliedPrices.length:
-      group==='status'?this.appliedStatuses.length:
+      group==='status'?(this.appliedStatus === 'ALL' ? 0 : 1):
       this.appliedDays?1:0;
   }
   private updateFilterChips():void{
     const chips:Array<{group:'category'|'usage'|'price'|'status'|'days';label:string}>=[];
     if(this.appliedCategories.length)chips.push({group:'category',label:'Danh mục: '+this.appliedCategories.length});
-    if(this.appliedStatuses.length)chips.push({group:'status',label:'Trạng thái: '+this.appliedStatuses.length});
-    if(this.appliedUsage.length)chips.push({group:'usage',label:'Loại sử dụng: '+this.appliedUsage.length});
+    if(this.appliedStatus !== 'ALL')chips.push({group:'status',label:'Trạng thái: '+(this.appliedStatus==='ACTIVE'?'Đang hoạt động':'Tạm ngưng')});
+    if(this.appliedUsage)chips.push({group:'usage',label:'Loại sử dụng: '+(
+      this.appliedUsage==='SALE'?'Hàng bán':
+      this.appliedUsage==='SHARED'?'Dùng chung':'Vật tư dịch vụ')});
     if(this.appliedPrices.length)chips.push({group:'price',label:'Khoảng giá: '+this.appliedPrices.length});
     if(this.appliedDays)chips.push({group:'days',label:'Ngày tạo: '+this.appliedDays+' ngày'});
     this.activeChips.set(chips);
@@ -167,29 +180,28 @@ export class AdminProductListPageComponent implements OnInit {
   removeFilter(group:'category'|'usage'|'price'|'status'|'days'):void{
     this.copyAppliedToDraft();
     if(group==='category')this.categoryFilters=[];
-    if(group==='usage')this.usageFilters=[];
+    if(group==='usage')this.usageFilter='';
     if(group==='price')this.priceFilters=[];
-    if(group==='status')this.statusFilters=[];
+    if(group==='status')this.statusFilter='ALL';
     if(group==='days')this.daysFilter=0;
     this.applyFilters();
   }
   clearAdvancedFilters():void{
     // On narrow screens the advanced panel also contains Category and Status.
     this.categoryFilters=[];
-    this.statusFilters=[];
-    this.usageFilters=[];
+    this.statusFilter='ALL';
+    this.usageFilter='';
     this.priceFilters=[];
     this.daysFilter=0;
   }
-  clearQuickFilter(group:'category'|'status'):void{
-    if(group==='category')this.categoryFilters=[];
-    else this.statusFilters=[];
+  clearQuickFilter():void {
+    this.categoryFilters=[];
   }
   clearFilters():void{
     this.categoryFilters=[];
-    this.usageFilters=[];
+    this.usageFilter='';
     this.priceFilters=[];
-    this.statusFilters=[];
+    this.statusFilter='ALL';
     this.daysFilter=0;
     this.searchTerm='';
     this.sort='NEWEST';
@@ -197,9 +209,9 @@ export class AdminProductListPageComponent implements OnInit {
   }
   applyFilters():void{
     this.appliedCategories=[...this.categoryFilters];
-    this.appliedUsage=[...this.usageFilters];
+    this.appliedUsage=this.usageFilter;
     this.appliedPrices=[...this.priceFilters];
-    this.appliedStatuses=[...this.statusFilters];
+    this.appliedStatus=this.statusFilter;
     this.appliedDays=this.daysFilter;
     this.updateFilterChips();
     this.openPanel=null;
@@ -217,18 +229,16 @@ export class AdminProductListPageComponent implements OnInit {
   selectArchiveView(archived:boolean):void{
     if(this.archiveView===archived)return;
     this.archiveView=archived;
-    this.statusFilters=[];
+    this.statusFilter='ALL';
     this.openPanel=null;
     this.applyFilters();
   }
 
-  // The current BE accepts multiple categoryIds separated by commas, but
-  // usageType and price are singular. For non-contiguous OR selections,
-  // read the complete bounded result set before applying client pagination.
+  // BE supports one usageType. Only non-contiguous price bands need
+  // a complete bounded result set before exact client-side pagination.
   private needsAggregatedFiltering():boolean{
-    return (this.appliedUsage.length>1&&this.appliedUsage.length<3) ||
-      (this.appliedPrices.length===2&&
-       this.appliedPrices.includes('LOW')&&this.appliedPrices.includes('HIGH'));
+    return this.appliedPrices.length===2&&
+      this.appliedPrices.includes('LOW')&&this.appliedPrices.includes('HIGH');
   }
   private priceBounds():{minPrice?:number;maxPrice?:number}{
     const bands=this.appliedPrices;
@@ -247,17 +257,15 @@ export class AdminProductListPageComponent implements OnInit {
       limit:20,
       q:this.searchTerm.trim()||undefined,
       categoryId:this.appliedCategories.join(',')||undefined,
-      usageType:this.appliedUsage.length===1?this.appliedUsage[0]:undefined,
+      usageType:this.appliedUsage||undefined,
       createdWithinDays:this.appliedDays||undefined,
       ...this.priceBounds(),
       status:this.archiveView?'ARCHIVED':
-        this.appliedStatuses.length===1?this.appliedStatuses[0]:undefined,
+        this.appliedStatus==='ALL'?undefined:this.appliedStatus,
       sort:this.sort,
     };
   }
   private matchesExtraFilters(product:AdminProduct):boolean{
-    if(this.appliedUsage.length>1&&this.appliedUsage.length<3 &&
-       !this.appliedUsage.includes(product.usageType))return false;
     if(this.appliedPrices.length===2&&this.appliedPrices.includes('LOW')&&this.appliedPrices.includes('HIGH')){
       return product.variants.some(v=>{
         const price=Number(v.price);
