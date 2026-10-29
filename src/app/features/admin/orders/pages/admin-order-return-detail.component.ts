@@ -51,6 +51,16 @@ export class AdminOrderReturnDetailComponent {
   readonly dialog = signal<WorkflowAction | null>(null);
   readonly busy = signal(false);
   readonly note = signal('');
+  readonly inspection = signal<Record<string,{receivedQty:string;quality:string}>>({});
+  readonly inspectionValid = computed(()=>{
+    const data=this.data();
+    return !!data?.items.length && data.items.every(item=>{
+      const row=this.inspection()[item.orderItemId];
+      if(!row || row.receivedQty.trim()==='' || !['RESELLABLE','DAMAGED','DISCARDED'].includes(row.quality))return false;
+      const q=Number(row.receivedQty);
+      return Number.isSafeInteger(q) && q>=0 && q<=item.requestedQty;
+    });
+  });
   readonly evidencePreview = signal<string | null>(null);
   readonly statusSteps: ReturnStatus[] = ['REQUESTED', 'PROCESSING', 'RECEIVED', 'APPROVED', 'COMPLETED'];
 
@@ -119,7 +129,8 @@ export class AdminOrderReturnDetailComponent {
     return Math.max(0, Math.min(quantity, item.requestedQty));
   }
   receivedTotal(ret: OrderReturnSummary): string {
-    if (!ret.items.length || ret.items.some(item => typeof item.receivedQty !== 'number')) return 'BE chưa cung cấp';
+    if (!['RECEIVED','APPROVED','COMPLETED'].includes(ret.status))return 'Chưa kiểm hàng';
+    if (!ret.items.length || ret.items.some(item => typeof item.receivedQty !== 'number')) return 'Chưa có dữ liệu';
     return ret.items.reduce((total, item) => total + (item.receivedQty ?? 0), 0) + ' sản phẩm';
   }
 
@@ -231,20 +242,32 @@ export class AdminOrderReturnDetailComponent {
   open(action: WorkflowAction): void {
     if (!this.availableActions().includes(action) || this.busy()) return;
     this.note.set('');
+    this.inspection.set({});
     this.dialog.set(action);
   }
   close(): void { if (!this.busy()) this.dialog.set(null); }
+  editInspection(id:string,field:'receivedQty'|'quality',value:string):void{
+    this.inspection.update(all=>({...all,[id]:{receivedQty:all[id]?.receivedQty??'',quality:all[id]?.quality??'',[field]:value}}));
+  }
   submit(): void {
     const action = this.dialog(), data = this.data();
     if (!action || !data || this.busy() || !this.availableActions().includes(action)) return;
     if (action === 'reject' && this.note().trim().length < 5) return;
+    if(action==='receive' && !this.inspectionValid()){
+      this.toast.show('Vui lòng nhập số lượng thực nhận và chất lượng của từng sản phẩm.');return;
+    }
     this.busy.set(true);
     const request: Observable<unknown> = action === 'refund'
       ? this.api.processRefund(data.refundId!, 'order-refund-' + data.refundId)
       : action === 'approve' || action === 'reject'
         ? this.api.returnManagerAction(data.id, action as ReturnManagerAction,
           action === 'approve' ? { note: this.note().trim() } : { reason: this.note().trim() })
-        : this.api.returnStaffAction(data.id, action as ReturnStaffAction);
+        : this.api.returnStaffAction(data.id, action as ReturnStaffAction,
+          action==='receive' ? {items:data.items.map(item=>({
+            orderItemId:item.orderItemId,
+            receivedQty:Number(this.inspection()[item.orderItemId].receivedQty),
+            quality:this.inspection()[item.orderItemId].quality as 'RESELLABLE'|'DAMAGED'|'DISCARDED',
+          })),note:this.note().trim()||undefined} : undefined);
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.busy.set(false); this.dialog.set(null);
