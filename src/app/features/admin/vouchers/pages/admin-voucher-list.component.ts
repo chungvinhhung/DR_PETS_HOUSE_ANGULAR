@@ -1,3 +1,5 @@
+import { firstValueFrom } from 'rxjs';
+import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -34,15 +36,12 @@ export class AdminVoucherListComponent {
   readonly error = signal('');
   readonly cursor = signal<string | null>(null);
   readonly nextCursor = signal<string | null>(null);
+  readonly totalCount = signal<number | null>(null);
+  readonly totalPages = computed(()=>this.totalCount()===null?null:Math.max(1,Math.ceil(this.totalCount()!/this.pageSize)));
   readonly previous = signal<(string | null)[]>([]);
   readonly page = computed(() => this.previous().length + 1);
-  // Cursor pagination exposes reachable page numbers, not fabricated total pages.
-  readonly visiblePageNumbers = computed(() => {
-    const current = this.page();
-    const from = Math.max(1, current - 2);
-    const end = current + (this.nextCursor() ? 1 : 0);
-    return Array.from({ length: end - from + 1 }, (_, i) => from + i);
-  });
+  readonly visiblePageNumbers = computed(() =>
+    adminPageWindow(this.page(),this.totalPages() ?? (this.page()+(this.nextCursor()?1:0))));
   readonly canEdit = computed(() => this.session.user()?.systemRole === 'ADMIN');
   readonly hasActiveFilters = computed(() =>
     Boolean(this.search().trim()) || this.scope() !== 'ALL' || this.status() !== 'ALL' ||
@@ -75,6 +74,7 @@ export class AdminVoucherListComponent {
         if (request !== this.requestVersion) return;
         this.all.set(Array.isArray(result.items) ? result.items : []);
         this.nextCursor.set(result.nextCursor || null);
+        this.totalCount.set(typeof result.totalCount==='number' ? result.totalCount:null);
         this.loading.set(false);
       },
       error: err => {
@@ -82,6 +82,7 @@ export class AdminVoucherListComponent {
         if (request !== this.requestVersion) return;
         this.loading.set(false); this.all.set([]);
         this.nextCursor.set(null);
+        this.totalCount.set(null);
         this.error.set(adminErrorMessage(err, 'Không tải được danh sách voucher.'));
       },
     });
@@ -121,15 +122,41 @@ export class AdminVoucherListComponent {
     this.previous.set(prev.slice(0,-1));
     this.fetch();
   }
-  goToPage(target: number): void {
-    if (!Number.isSafeInteger(target) || target < 1 || this.loading()) return;
-    if (target === this.page()) return;
-    if (target === this.page() + 1) { this.next(); return; }
-    if (target > this.previous().length) return;
-    const previous = this.previous();
-    this.cursor.set(previous[target - 1] ?? null);
-    this.previous.set(previous.slice(0, target - 1));
-    this.fetch();
+  async goToPage(target: number): Promise<void> {
+    const count=this.totalPages();
+    if(!Number.isSafeInteger(target)||target<1||(count!==null&&target>count)||this.loading())return;
+    if(target===this.page())return;
+    if(target===this.page()+1){this.next();return;}
+    if(target<=this.previous().length){
+      const previous=this.previous();
+      this.cursor.set(previous[target-1]??null);
+      this.previous.set(previous.slice(0,target-1));
+      this.fetch();return;
+    }
+    // Cursor API: discover the intermediate page boundaries before jumping.
+    // Unlike offset pagination, a page number cannot be converted to a cursor.
+    const requestVersion=++this.requestVersion;
+    const startPage=this.page();
+    let cursor=this.cursor();
+    let previous=[...this.previous()];
+    this.loading.set(true);this.error.set('');
+    try{
+      for(let page=startPage;page<target;page++){
+        const result=await firstValueFrom(this.api.list({
+          ...(this.scope()!=='ALL'?{scope:this.scope() as VoucherScope}:{}),
+          ...(this.status()!=='ALL'?{status:this.status() as VoucherStatus}:{}),
+          ...(this.search().trim()?{search:this.search().trim()}:{}),
+          ...(cursor?{cursor}:{}),limit:this.pageSize,
+        }));
+        if(requestVersion!==this.requestVersion||this.destroyRef.destroyed)return;
+        if(!result.nextCursor)throw new Error('Trang này không còn dữ liệu.');
+        previous=[...previous,cursor];cursor=result.nextCursor;
+      }
+      this.previous.set(previous);this.cursor.set(cursor);this.fetch();
+    }catch{
+      if(requestVersion!==this.requestVersion)return;
+      this.loading.set(false);this.toast.show('Không thể mở trang này. Vui lòng thử lại.','error');
+    }
   }
   date(value: string): string { return voucherDate(value); }
   offer(value: AdminVoucher): string { return voucherOffer(value); }
