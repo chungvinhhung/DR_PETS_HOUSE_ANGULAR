@@ -5331,3 +5331,8 @@ app-admin-product-list-page .product-filter-toolbar img.product-filter-add-icon 
   height:12px !important;
   filter:brightness(0) invert(1);
 }
+
+app-admin-product-list-page .product-filter-toolbar img.product-filter-funnel-icon {
+  display:block !important;position:static !important;flex:0 0 17px !important;
+  width:17px !important;height:14px !important;object-fit:contain;margin:0 !important;
+}
