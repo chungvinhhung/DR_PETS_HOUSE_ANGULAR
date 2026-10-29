@@ -1,3 +1,4 @@
+import { adminPageWindow } from '../../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
@@ -293,7 +294,7 @@ export class AdminProductListPageComponent implements OnInit {
     const total = this.totalProducts();
     const count = total === null ? this.pageNumber() + (this.hasNextPage() ? 1 : 0)
       : Math.max(1, Math.ceil(total / this.pageSize));
-    return Array.from({ length: count }, (_, index) => index + 1);
+    return adminPageWindow(this.pageNumber(), count);
   }
 
   async goToPage(page: number): Promise<void> {
