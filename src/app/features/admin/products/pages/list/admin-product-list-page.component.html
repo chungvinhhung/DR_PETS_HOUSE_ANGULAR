@@ -26,8 +26,11 @@
                 [attr.aria-expanded]="openPanel==='category'"
                 aria-controls="product-category-options"
                 (click)="togglePanel('category')">
-                Danh mục @if(activeCount('category')){<span class="product-filter-count">{{activeCount('category')}}</span>}
-                <img class="product-filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
+                <span class="product-filter-trigger-label">Danh mục</span>
+                <span class="product-filter-trigger-trailing">
+                  @if(activeCount('category')){<span class="product-filter-count">{{activeCount('category')}}</span>}
+                  <img class="product-filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
+                </span>
               </button>
               @if(openPanel==='category'){
                 <div class="product-filter-popover product-filter-popover--quick" id="product-category-options" role="group" aria-label="Chọn danh mục sản phẩm">
@@ -47,29 +50,14 @@
               }
             </div>
             <div class="product-filter-control product-filter-control--status" data-product-filter-ui>
-              <button type="button" class="outline-btn product-filter-trigger"
-                [class.has-filter]="activeCount('status')>0"
-                [attr.aria-expanded]="openPanel==='status'"
-                [disabled]="archiveView" aria-controls="product-status-options"
-                (click)="togglePanel('status')">
-                Trạng thái @if(activeCount('status')){<span class="product-filter-count">{{activeCount('status')}}</span>}
-                <img class="product-filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
-              </button>
-              @if(openPanel==='status'){
-                <div class="product-filter-popover product-filter-popover--quick" id="product-status-options" role="group" aria-label="Chọn trạng thái sản phẩm">
-                  <strong>Trạng thái</strong>
-                  <div class="product-filter-options">
-                    <label class="check"><input type="checkbox" [checked]="statusFilters.includes('ACTIVE')"
-                      (change)="toggleStatus('ACTIVE')">Đang hoạt động</label>
-                    <label class="check"><input type="checkbox" [checked]="statusFilters.includes('INACTIVE')"
-                      (change)="toggleStatus('INACTIVE')">Tạm ngưng</label>
-                  </div>
-                  <div class="filter-footer">
-                    <button type="button" class="outline-btn" (click)="clearQuickFilter('status')">Xóa</button>
-                    <button type="button" class="primary-btn" (click)="applyFilters()">Áp dụng</button>
-                  </div>
-                </div>
-              }
+              <select class="product-filter-native-status"
+                aria-label="Lọc theo trạng thái sản phẩm"
+                [value]="selectedStatus()" [disabled]="archiveView"
+                (change)="setStatusFilter($any($event.target).value)">
+                <option value="ALL">Tất cả trạng thái</option>
+                <option value="ACTIVE">Đang hoạt động</option>
+                <option value="INACTIVE">Tạm ngưng</option>
+              </select>
             </div>
             <div class="product-filter-control product-filter-control--more" data-product-filter-ui>
               <button type="button" class="outline-btn product-filter-trigger product-filter-trigger--more"
@@ -95,20 +83,24 @@
                     @if(!archiveView){
                       <fieldset class="product-filter-compact-status">
                         <legend>Trạng thái</legend>
-                        <label class="check"><input type="checkbox" [checked]="statusFilters.includes('ACTIVE')"
-                          (change)="toggleStatus('ACTIVE')">Đang hoạt động</label>
-                        <label class="check"><input type="checkbox" [checked]="statusFilters.includes('INACTIVE')"
-                          (change)="toggleStatus('INACTIVE')">Tạm ngưng</label>
+                        <select class="product-filter-advanced-select" aria-label="Lọc theo trạng thái sản phẩm"
+                          [value]="statusFilter" (change)="setDraftStatusFilter($any($event.target).value)">
+                          <option value="ALL">Tất cả trạng thái</option>
+                          <option value="ACTIVE">Đang hoạt động</option>
+                          <option value="INACTIVE">Tạm ngưng</option>
+                        </select>
                       </fieldset>
                     }
                     <fieldset>
                       <legend>Loại sử dụng</legend>
-                      <label class="check"><input type="checkbox" [checked]="usageFilters.includes('SALE')"
-                        (change)="toggleUsage('SALE')">Hàng bán</label>
-                      <label class="check"><input type="checkbox" [checked]="usageFilters.includes('SHARED')"
-                        (change)="toggleUsage('SHARED')">Dùng chung</label>
-                      <label class="check"><input type="checkbox" [checked]="usageFilters.includes('SERVICE_SUPPLY')"
-                        (change)="toggleUsage('SERVICE_SUPPLY')">Vật tư dịch vụ</label>
+                      <label class="check"><input type="radio" name="product-usage-filter" [checked]="usageFilter===''"
+                        (change)="setUsageFilter('')">Tất cả loại sử dụng</label>
+                      <label class="check"><input type="radio" name="product-usage-filter" [checked]="usageFilter==='SALE'"
+                        (change)="setUsageFilter('SALE')">Hàng bán</label>
+                      <label class="check"><input type="radio" name="product-usage-filter" [checked]="usageFilter==='SHARED'"
+                        (change)="setUsageFilter('SHARED')">Dùng chung</label>
+                      <label class="check"><input type="radio" name="product-usage-filter" [checked]="usageFilter==='SERVICE_SUPPLY'"
+                        (change)="setUsageFilter('SERVICE_SUPPLY')">Vật tư dịch vụ</label>
                     </fieldset>
                     <fieldset>
                       <legend>Khoảng giá</legend>
