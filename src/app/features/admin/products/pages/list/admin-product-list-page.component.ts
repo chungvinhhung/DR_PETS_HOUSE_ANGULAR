@@ -53,7 +53,7 @@ export class AdminProductListPageComponent implements OnInit {
   searchTerm = '';
   // Draft selections live in the popovers; the applied snapshot drives every API request.
   categoryFilters: string[] = [];
-  usageFilter: ProductUsageType | '' = '';
+  usageFilters: ProductUsageType[] = [];
   priceFilters: Array<'LOW'|'MID'|'HIGH'> = [];
   statusFilter: 'ALL' | 'ACTIVE' | 'INACTIVE' = 'ALL';
   daysFilter = 0;
@@ -62,7 +62,7 @@ export class AdminProductListPageComponent implements OnInit {
   openPanel: 'category'|'more'|null = null;
   readonly activeChips = signal<Array<{group:'category'|'usage'|'price'|'status'|'days';label:string}>>([]);
   private appliedCategories: string[] = [];
-  private appliedUsage: ProductUsageType | '' = '';
+  private appliedUsage: ProductUsageType[] = [];
   private appliedPrices: Array<'LOW'|'MID'|'HIGH'> = [];
   private appliedStatus: 'ALL' | 'ACTIVE' | 'INACTIVE' = 'ALL';
   private appliedDays = 0;
@@ -116,8 +116,8 @@ export class AdminProductListPageComponent implements OnInit {
   toggleCategory(id: string): void {
     this.categoryFilters=this.toggleArrayValue(this.categoryFilters,id);
   }
-  setUsageFilter(value: ProductUsageType | ''): void {
-    this.usageFilter = value;
+  toggleUsage(value: ProductUsageType): void {
+    this.usageFilters = this.toggleArrayValue(this.usageFilters, value);
   }
   togglePrice(value: 'LOW'|'MID'|'HIGH'): void {
     this.priceFilters=this.toggleArrayValue(this.priceFilters,value);
@@ -144,7 +144,7 @@ export class AdminProductListPageComponent implements OnInit {
   }
   private copyAppliedToDraft():void{
     this.categoryFilters=[...this.appliedCategories];
-    this.usageFilter=this.appliedUsage;
+    this.usageFilters=[...this.appliedUsage];
     this.priceFilters=[...this.appliedPrices];
     this.statusFilter=this.appliedStatus;
     this.daysFilter=this.appliedDays;
@@ -161,7 +161,7 @@ export class AdminProductListPageComponent implements OnInit {
   onFilterEscape():void{this.closePanel();}
   activeCount(group:'category'|'usage'|'price'|'status'|'days'):number{
     return group==='category'?this.appliedCategories.length:
-      group==='usage'?(this.appliedUsage ? 1 : 0):
+      group==='usage'?this.appliedUsage.length:
       group==='price'?this.appliedPrices.length:
       group==='status'?(this.appliedStatus === 'ALL' ? 0 : 1):
       this.appliedDays?1:0;
@@ -170,9 +170,7 @@ export class AdminProductListPageComponent implements OnInit {
     const chips:Array<{group:'category'|'usage'|'price'|'status'|'days';label:string}>=[];
     if(this.appliedCategories.length)chips.push({group:'category',label:'Danh mục: '+this.appliedCategories.length});
     if(this.appliedStatus !== 'ALL')chips.push({group:'status',label:'Trạng thái: '+(this.appliedStatus==='ACTIVE'?'Đang hoạt động':'Tạm ngưng')});
-    if(this.appliedUsage)chips.push({group:'usage',label:'Loại sử dụng: '+(
-      this.appliedUsage==='SALE'?'Hàng bán':
-      this.appliedUsage==='SHARED'?'Dùng chung':'Vật tư dịch vụ')});
+    if(this.appliedUsage.length)chips.push({group:'usage',label:'Loại sử dụng: '+this.appliedUsage.length});
     if(this.appliedPrices.length)chips.push({group:'price',label:'Khoảng giá: '+this.appliedPrices.length});
     if(this.appliedDays)chips.push({group:'days',label:'Ngày tạo: '+this.appliedDays+' ngày'});
     this.activeChips.set(chips);
@@ -180,7 +178,7 @@ export class AdminProductListPageComponent implements OnInit {
   removeFilter(group:'category'|'usage'|'price'|'status'|'days'):void{
     this.copyAppliedToDraft();
     if(group==='category')this.categoryFilters=[];
-    if(group==='usage')this.usageFilter='';
+    if(group==='usage')this.usageFilters=[];
     if(group==='price')this.priceFilters=[];
     if(group==='status')this.statusFilter='ALL';
     if(group==='days')this.daysFilter=0;
@@ -190,7 +188,7 @@ export class AdminProductListPageComponent implements OnInit {
     // On narrow screens the advanced panel also contains Category and Status.
     this.categoryFilters=[];
     this.statusFilter='ALL';
-    this.usageFilter='';
+    this.usageFilters=[];
     this.priceFilters=[];
     this.daysFilter=0;
   }
@@ -199,7 +197,7 @@ export class AdminProductListPageComponent implements OnInit {
   }
   clearFilters():void{
     this.categoryFilters=[];
-    this.usageFilter='';
+    this.usageFilters=[];
     this.priceFilters=[];
     this.statusFilter='ALL';
     this.daysFilter=0;
@@ -209,7 +207,7 @@ export class AdminProductListPageComponent implements OnInit {
   }
   applyFilters():void{
     this.appliedCategories=[...this.categoryFilters];
-    this.appliedUsage=this.usageFilter;
+    this.appliedUsage=[...this.usageFilters];
     this.appliedPrices=[...this.priceFilters];
     this.appliedStatus=this.statusFilter;
     this.appliedDays=this.daysFilter;
@@ -234,11 +232,12 @@ export class AdminProductListPageComponent implements OnInit {
     this.applyFilters();
   }
 
-  // BE supports one usageType. Only non-contiguous price bands need
-  // a complete bounded result set before exact client-side pagination.
+  // BE accepts a single usageType. For two selected values, load the bounded
+  // full result set and filter their union before presenting numbered pages.
   private needsAggregatedFiltering():boolean{
-    return this.appliedPrices.length===2&&
-      this.appliedPrices.includes('LOW')&&this.appliedPrices.includes('HIGH');
+    return (this.appliedUsage.length===2) ||
+      (this.appliedPrices.length===2 &&
+        this.appliedPrices.includes('LOW') && this.appliedPrices.includes('HIGH'));
   }
   private priceBounds():{minPrice?:number;maxPrice?:number}{
     const bands=this.appliedPrices;
@@ -257,7 +256,7 @@ export class AdminProductListPageComponent implements OnInit {
       limit:20,
       q:this.searchTerm.trim()||undefined,
       categoryId:this.appliedCategories.join(',')||undefined,
-      usageType:this.appliedUsage||undefined,
+      usageType:this.appliedUsage.length===1?this.appliedUsage[0]:undefined,
       createdWithinDays:this.appliedDays||undefined,
       ...this.priceBounds(),
       status:this.archiveView?'ARCHIVED':
@@ -266,6 +265,8 @@ export class AdminProductListPageComponent implements OnInit {
     };
   }
   private matchesExtraFilters(product:AdminProduct):boolean{
+    if(this.appliedUsage.length===2 &&
+       !this.appliedUsage.includes(product.usageType))return false;
     if(this.appliedPrices.length===2&&this.appliedPrices.includes('LOW')&&this.appliedPrices.includes('HIGH')){
       return product.variants.some(v=>{
         const price=Number(v.price);
