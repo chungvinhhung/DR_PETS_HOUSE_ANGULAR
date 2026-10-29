@@ -109,17 +109,12 @@ import {
         @if (pageCount() > 1) {
           <nav class="pagination" aria-label="Phân trang lịch hẹn">
             <button type="button" [disabled]="page()===1" (click)="goto(page()-1)" aria-label="Trang trước">‹</button>
-            @if(pageNumbers()[0] > 1) {
-              <button type="button" (click)="goto(1)">1</button>
-              @if(pageNumbers()[0] > 2) {<span aria-hidden="true">…</span>}
-            }
-            @for(n of pageNumbers();track n) {
-              <button type="button" [attr.aria-current]="page()===n?'page':null"
-                [class.selected]="page()===n" (click)="goto(n)">{{n}}</button>
-            }
-            @if(pageNumbers()[pageNumbers().length-1] < pageCount()) {
-              @if(pageNumbers()[pageNumbers().length-1] < pageCount()-1){<span aria-hidden="true">…</span>}
-              <button type="button" (click)="goto(pageCount())">{{pageCount()}}</button>
+            @for(n of pageNumbers(); track $index) {
+              @if(n==='…'){<span aria-hidden="true">…</span>}
+              @else {
+                <button type="button" [attr.aria-current]="page()===n?'page':null"
+                  [class.selected]="page()===n" (click)="goto(n)">{{n}}</button>
+              }
             }
             <button type="button" [disabled]="page()===pageCount()" (click)="goto(page()+1)" aria-label="Trang sau">›</button>
           </nav>
