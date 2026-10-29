@@ -5470,3 +5470,15 @@ app-admin-product-list-page .product-filter-popover .product-filter-advanced-sel
   outline: 2px solid var(--web2-focus-color) !important;
   outline-offset: 2px !important;
 }
+
+/* Consistent click/open focus for filter controls across all Admin modules. */
+:root app-admin-catalog-shell .web2-filterbar :is(
+  select:not(:disabled):focus,
+  button[aria-expanded="true"]:not(:disabled)
+) {
+  border-color: var(--web2-focus-border) !important;
+  background-color: var(--web2-focus-surface) !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: var(--web2-focus-halo) !important;
+}
