@@ -184,7 +184,7 @@
         <div class="return-detail__stock-row">
           <div class="return-detail__stock-fields">
             <div><span>Số lượng thực nhận</span><strong>{{ receivedTotal(ret) }}</strong></div>
-            <div><span>Kết quả kiểm tra</span><strong>{{ret.items.some(item=>item.quality==='DAMAGED'||item.quality==='DISCARDED')?'Có hàng không đủ điều kiện bán lại':(ret.status==='RECEIVED'||ret.status==='APPROVED'||ret.status==='COMPLETED'?'Đủ điều kiện theo kiểm hàng':'Chưa kiểm hàng')}}</strong></div>
+            <div><span>Kết quả kiểm tra</span><strong>{{hasNonResellable(ret)?'Có hàng không đủ điều kiện bán lại':(ret.status==='RECEIVED'||ret.status==='APPROVED'||ret.status==='COMPLETED'?'Đủ điều kiện theo kiểm hàng':'Chưa kiểm hàng')}}</strong></div>
             <div><span>Số lượng nhập lại kho</span><strong>BE chưa cung cấp</strong></div>
             <div><span>Giao dịch kho</span><strong>BE chưa cung cấp</strong></div>
           </div>
