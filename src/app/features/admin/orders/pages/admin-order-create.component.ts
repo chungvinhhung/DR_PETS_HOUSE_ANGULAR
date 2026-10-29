@@ -237,32 +237,20 @@ export class AdminOrderCreateComponent {
     // /customers currently exposes no saved/default address; do not fabricate one.
   }
 
-  updateCustomerName(value: string): void { this.customerName.set(value); }
-  updateCustomerPhone(value: string): void {
-    const previousPhone = this.customerPhone();
-    if (value === previousPhone && value === this.lookupPhone()) return;
-    // Both the lookup field and customer form represent the same contact number.
-    // A changed phone must invalidate any previously verified lookup result.
-    const priorCustomer = this.selectedCustomer();
-    this.customerRequest += 1;
-    this.invalidateDraftPricing();
-    this.customerPhone.set(value);
-    this.lookupPhone.set(value);
-    this.selectedCustomer.set(null);
-    this.lookupResults.set([]);
-    this.lookupIncomplete.set(false);
-    this.lookupState.set('idle');
-    if (priorCustomer) {
-      // Do not retain another customer's read-only profile or confirmed address.
-      this.customerName.set('');
-      this.customerEmail.set('');
-      this.clearShippingAddress();
-    } else if (this.shippingRecipientPhone() === previousPhone) {
-      this.shippingRecipientPhone.set(value);
-      this.addressWasConfirmed.set(false);
-    }
+  // Customer identity is immutable after a lookup result has been selected.
+  // Before selection, contact fields are an independent draft: only lookup -> contact syncs.
+  updateCustomerName(value: string): void {
+    if (this.selectedCustomer()) return;
+    this.customerName.set(value);
   }
-  updateCustomerEmail(value: string): void { this.customerEmail.set(value); }
+  updateCustomerPhone(value: string): void {
+    if (this.selectedCustomer()) return;
+    this.customerPhone.set(value);
+  }
+  updateCustomerEmail(value: string): void {
+    if (this.selectedCustomer()) return;
+    this.customerEmail.set(value);
+  }
   updateShippingLine1(value: string): void { this.shippingLine1.set(value); this.addressWasConfirmed.set(false); }
   updateShippingCity(value: string): void { this.shippingCity.set(value); this.addressWasConfirmed.set(false); }
   updateShippingDistrict(value: string): void { this.shippingDistrict.set(value); this.addressWasConfirmed.set(false); }
@@ -604,8 +592,8 @@ export class AdminOrderCreateComponent {
     const body:AdminOrderCommitRequest={
       ...this.quoteBody(),branchId:q.fulfillmentBranchId,paymentMethod:this.paymentMethod(),
       shippingAddress:{
-        recipientName:this.shippingRecipientName()||this.customerName(),
-        phone:this.shippingRecipientPhone()||this.customerPhone(),
+        recipientName:this.shippingRecipientName(),
+        phone:this.shippingRecipientPhone(),
         line1:this.shippingLine1(),ward:this.shippingWard(),
         district:this.shippingDistrict(),city:this.shippingCity(),
       },
