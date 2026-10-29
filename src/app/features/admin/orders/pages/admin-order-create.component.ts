@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed,
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
-import { BranchApiRecord, BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
 import { AdminOrderCheckoutService, AdminOrderQuote, AdminOrderQuoteRequest, AdminOrderCommitRequest } from '../services/admin-order-checkout.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
@@ -50,7 +49,6 @@ const normalizePhone = (value: string): string => {
 export class AdminOrderCreateComponent {
   private readonly api = inject(AdminOrderCreateLookupService);
   private readonly checkout = inject(AdminOrderCheckoutService);
-  private readonly branchesApi = inject(BranchManagementApiService);
   private readonly session = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
   private readonly router = inject(Router);
@@ -60,9 +58,6 @@ export class AdminOrderCreateComponent {
   private pendingExitDecision: ((allow: boolean) => void) | null = null;
   private productTimer: ReturnType<typeof setTimeout> | null = null;
 
-  readonly branches=signal<BranchApiRecord[]>([]);
-  readonly branchId=signal('');
-  readonly branchLoadError=signal(false);
   readonly quoteState=signal<'idle'|'loading'|'ready'|'error'>('idle');
   readonly quoteError=signal('');
   readonly quote=signal<AdminOrderQuote|null>(null);
@@ -73,8 +68,7 @@ export class AdminOrderCreateComponent {
   private quoteRequest=0;
   private createKey: string|null=null;
   readonly isAdmin=computed(()=>this.session.user()?.systemRole==='ADMIN');
-  readonly selectedBranchName=computed(()=>this.branches().find(b=>b.id===this.branchId())?.name||'');
-  readonly canQuote=computed(()=>this.isAdmin() && this.lines().length>0 && !this.hasInvalidQuantities() && !!this.branchId());
+  readonly canQuote=computed(()=>this.isAdmin() && this.lines().length>0 && !this.hasInvalidQuantities());
   readonly quoteIsCurrent=computed(()=>!!this.quote() && this.quoteState()==='ready' && this.quoteFingerprint()===this.getQuoteFingerprint() && Date.now()<Date.parse(this.quote()!.quoteExpiresAt));
   readonly canSubmit=computed(()=>this.quoteIsCurrent() && this.isDraftValid() && this.quote()!.eligible && this.quote()!.availability.canFulfillEntireCart && (!this.voucherCode().trim() || this.quote()!.pricing.voucherDiscount>0) && this.session.user()?.systemRole==='ADMIN' && !!this.selectedCustomer() && !this.saving());
   readonly lookupPhone = signal('');
@@ -159,7 +153,6 @@ export class AdminOrderCreateComponent {
   ));
 
   constructor() {
-    this.loadBranches();
     this.destroyRef.onDestroy(() => {
       if (this.productTimer !== null) clearTimeout(this.productTimer);
       this.customerRequest += 1;
@@ -539,37 +532,23 @@ export class AdminOrderCreateComponent {
     this.requestQuote();
   }
 
-  private loadBranches():void {
-    this.branchesApi.listBranches().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next:branches=>{
-        this.branches.set(branches.filter(b=>b.status==='ACTIVE'));
-        this.branchLoadError.set(false);
-      },
-      error:()=>this.branchLoadError.set(true),
-    });
-  }
-  selectBranch(id:string):void {
-    if(this.branchId()===id)return;
-    this.branchId.set(id);this.invalidateDraftPricing();
-  }
   private getQuoteFingerprint():string {
     return JSON.stringify({
-      branchId:this.branchId(),customerId:this.selectedCustomer()?.id||null,
+      customerId:this.selectedCustomer()?.id||null,
       items:this.lines().map(l=>[l.productId,l.variantId,l.quantity]),
       voucherCode:this.voucherCode().trim(),
     });
   }
   private quoteBody():AdminOrderQuoteRequest {
     return {
-      branchId:this.branchId(),
       ...(this.selectedCustomer()?{customerId:this.selectedCustomer()!.id}:{}),
       items:this.lines().map(l=>({productId:l.productId,variantId:l.variantId,quantity:l.quantity})),
       ...(this.voucherCode().trim()?{voucherCode:this.voucherCode().trim()}:{}),
     };
   }
-  requestQuote():void {
+  requestQuote(openConfirmation=false):void {
     if(!this.canQuote() || this.quoteState()==='loading') {
-      this.toast.show('Vui lòng chọn chi nhánh và sản phẩm hợp lệ trước khi xem báo giá.');
+      this.toast.show('Vui lòng chọn sản phẩm hợp lệ trước khi xác nhận.');
       return;
     }
     const version=++this.quoteRequest;
@@ -584,7 +563,11 @@ export class AdminOrderCreateComponent {
           this.toast.show('Một số sản phẩm không đủ tồn kho tại chi nhánh. Vui lòng kiểm tra lại.');
         else if(this.voucherCode().trim() && quote.pricing.voucherDiscount===0)
           this.toast.show('Mã giảm giá chưa đủ điều kiện áp dụng.');
-        else this.toast.show('Đã cập nhật báo giá từ hệ thống.','success');
+        else if(openConfirmation) {
+          if(!this.isDraftValid()) this.toast.show(this.reviewIssues()[0]||'Vui lòng kiểm tra thông tin đơn hàng.');
+          else if(!this.selectedCustomer()) this.toast.show('Hiện chưa thể tạo đơn cho khách chưa có tài khoản.');
+          else this.confirmCreateOpen.set(true);
+        } else this.toast.show('Đã cập nhật báo giá từ hệ thống.','success');
       },
       error:err=>{
         if(version!==this.quoteRequest)return;
@@ -595,9 +578,10 @@ export class AdminOrderCreateComponent {
     });
   }
   reviewCreate():void {
-    if(this.quote() && Date.now()>=Date.parse(this.quote()!.quoteExpiresAt)){
-      this.invalidateDraftPricing();this.toast.show('Báo giá đã hết hạn. Vui lòng xem báo giá mới.');return;
-    }
+    if (!this.isDraftValid()) {this.toast.show(this.reviewIssues()[0]||'Vui lòng kiểm tra thông tin đơn hàng.');return;}
+    if (!this.selectedCustomer()) {this.toast.show('Hiện chưa thể tạo đơn cho khách chưa có tài khoản.');return;}
+    if(this.quote() && Date.now()>=Date.parse(this.quote()!.quoteExpiresAt)) this.invalidateDraftPricing();
+    if (!this.quoteIsCurrent()) {this.requestQuote(true);return;}
     if(!this.canSubmit()){
       if(!this.selectedCustomer())this.toast.show('Hiện chỉ hỗ trợ tạo đơn cho khách đã có tài khoản. Khách vãng lai sẽ được mở sau khi xác minh luồng kích hoạt.');
       else if(this.session.user()?.systemRole!=='ADMIN')this.toast.show('Chức năng tạo đơn hiện đang giới hạn cho quản trị viên.');
@@ -615,11 +599,8 @@ export class AdminOrderCreateComponent {
       this.toast.show('Báo giá đã hết hạn. Vui lòng xem báo giá mới.');return;
     }
     const q=this.quote()!;
-    if(q.fulfillmentBranchId!==this.branchId()){
-      this.toast.show('Chi nhánh báo giá chưa khớp. Vui lòng kiểm tra lại.');return;
-    }
     const body:AdminOrderCommitRequest={
-      ...this.quoteBody(),paymentMethod:this.paymentMethod(),
+      ...this.quoteBody(),branchId:q.fulfillmentBranchId,paymentMethod:this.paymentMethod(),
       shippingAddress:{
         recipientName:this.shippingRecipientName()||this.customerName(),
         phone:this.shippingRecipientPhone()||this.customerPhone(),
