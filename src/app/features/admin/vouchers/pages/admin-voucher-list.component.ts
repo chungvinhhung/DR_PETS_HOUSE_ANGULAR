@@ -48,14 +48,15 @@ export class AdminVoucherListComponent {
     Boolean(this.search().trim()) || this.scope() !== 'ALL' || this.status() !== 'ALL' ||
     this.availabilityFilter() !== 'ALL' || this.cursor() !== null);
   readonly filtered = computed(() => {
-    const q = this.search().trim().toLocaleLowerCase('vi');
     return this.all().filter(item =>
-      (this.availabilityFilter() === 'ALL' || voucherAvailability(item) === this.availabilityFilter()) &&
-      (!q || [item.code, item.name].some(v => v.toLocaleLowerCase('vi').includes(q))));
+      this.availabilityFilter() === 'ALL' || voucherAvailability(item) === this.availabilityFilter());
   });
   readonly scopeLabels = VOUCHER_SCOPE_LABELS;
 
-  constructor() { this.fetch(); }
+  constructor() {
+    this.destroyRef.onDestroy(()=>{if(this.searchTimer)clearTimeout(this.searchTimer);});
+    this.fetch();
+  }
   fetch(): void {
     const request = ++this.requestVersion;
     const current = this.cursor();
@@ -63,6 +64,7 @@ export class AdminVoucherListComponent {
       ...(this.scope() !== 'ALL' ? {scope: this.scope() as VoucherScope} : {}),
       ...(this.status() !== 'ALL' ? {status: this.status() as VoucherStatus} : {}),
       ...(current ? {cursor:current} : {}),
+      ...(this.search().trim() ? {search:this.search().trim()} : {}),
       limit: this.pageSize,
     };
     this.loading.set(true);
@@ -84,7 +86,14 @@ export class AdminVoucherListComponent {
       },
     });
   }
-  setSearch(value: string): void { this.search.set(value); }
+  private searchTimer: ReturnType<typeof setTimeout> | null = null;
+  setSearch(value: string): void {
+    this.search.set(value);
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+    this.searchTimer=setTimeout(()=>{
+      this.previous.set([]); this.cursor.set(null); this.fetch();
+    },300);
+  }
   setAvailability(value: string): void { this.availabilityFilter.set(value); }
   setScope(value: string): void {
     if (value !== 'ALL' && !['ORDER','PRODUCT','SERVICE'].includes(value)) return;
