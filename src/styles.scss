@@ -5087,3 +5087,77 @@ app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[
 app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[data-status="SHIPPED"]{background:#e5f6fd!important;color:#0c6095!important}
 app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[data-status="COMPLETED"]{background:#e8f5e9!important;color:#2e7d32!important}
 app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[data-status="CANCELLED"]{background:#ffebeb!important;color:#cb3e48!important}
+
+
+/* WEB2 Return workflow: terminal position and state-specific status history. */
+app-admin-order-return-detail .return-detail__progress:has(.return-detail__progress--terminal){
+  grid-template-columns:repeat(6,minmax(0,1fr));
+}
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--terminal .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--terminal .return-detail__progress-bar{
+  background:#cb3e48!important;border-color:#cb3e48!important;
+}
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--terminal .return-detail__progress-head{
+  color:#cb3e48!important;font-weight:600;
+}
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--terminal[data-terminal="CANCELLED"] .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--terminal[data-terminal="CANCELLED"] .return-detail__progress-bar{
+  background:#64748b!important;border-color:#64748b!important;
+}
+app-admin-order-return-detail .return-detail__terminal-description{
+  margin:7px 0 0;color:#cb3e48;font-size:12px;font-weight:500;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li[data-status="REJECTED"] .return-detail__timeline-dot{
+  background:#cb3e48!important;border-color:#cb3e48!important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li[data-status="CANCELLED"] .return-detail__timeline-dot{
+  background:#64748b!important;border-color:#64748b!important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li[data-status="REJECTED"]>strong{
+  color:#cb3e48!important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline .return-detail__history-phase{
+  color:#cb3e48!important;font-weight:500;
+}
+app-admin-order-return-detail .return-detail__required{color:#dc2626!important;font-weight:600;}
+app-admin-order-return-detail .return-detail__summary--approve label input[readonly]{
+  background:#e5f6fd!important;color:#334155!important;
+}
+app-admin-order-return-detail .return-detail__backend-limit{
+  margin:10px 0;color:#697f97;font-size:12px;line-height:1.4;
+}
+app-admin-order-return-detail .return-detail__refund-confirm{
+  font-size:14px;color:#253248;font-weight:500;margin:4px 0 16px;
+}
+app-admin-order-return-detail .return-detail__dialog--receive-single{
+  width:min(100%,377px)!important;max-height:min(90vh,650px);padding:22px 24px!important;
+}
+app-admin-order-return-detail .return-detail__dialog--receive .return-detail__receive-form .return-detail__field textarea{
+  height:58px!important;min-height:58px!important;max-height:100px!important;
+}
+app-admin-order-return-detail .return-detail__dialog--receive .return-detail__receive-item{gap:8px}
+app-admin-order-return-detail .return-detail__dialog--receive .return-detail__receive-form{gap:12px}
+app-admin-order-return-detail .return-detail__dialog--receive .return-detail__receive-overview{gap:12px}
+app-admin-order-return-detail .return-detail__dialog--receive .return-detail__receive-overview input{height:40px}
+app-admin-order-return-detail .return-detail__dialog--receive .return-detail__dialog-actions{margin-top:14px}
+app-admin-order-return-detail .return-detail__summary--approve~.return-detail__field textarea{min-height:48px}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="APPROVED"],
+app-admin-order-management .order-admin__badge--return[data-status="APPROVED"],
+app-admin-order-return-detail .return-detail__badge[data-status="APPROVED"]{
+  background:#f1e7ff!important;color:#7c3fc8!important;border-color:#e7d7ff!important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="COMPLETED"],
+app-admin-order-management .order-admin__badge--return[data-status="COMPLETED"],
+app-admin-order-return-detail .return-detail__badge[data-status="COMPLETED"]{
+  background:#e8f5e9!important;color:#2e7d32!important;border-color:#d6eada!important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="CANCELLED"],
+app-admin-order-management .order-admin__badge--return[data-status="CANCELLED"],
+app-admin-order-return-detail .return-detail__badge[data-status="CANCELLED"]{
+  background:#eceff1!important;color:#607080!important;border-color:#dce3e9!important;
+}
+@media(max-width:760px){
+  app-admin-order-return-detail .return-detail__progress:has(.return-detail__progress--terminal){
+    overflow-x:auto;grid-template-columns:repeat(6,minmax(110px,1fr));
+  }
+}
