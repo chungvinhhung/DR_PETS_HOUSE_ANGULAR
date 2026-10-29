@@ -42,6 +42,15 @@ interface ShiftWire {
   id?: string; _id?: string; staffId?: string; branchId?: string;
   startAt?: string; endAt?: string; status?: string;
 }
+export interface StaffShiftRecord {
+  id: string;
+  staffId: string;
+  branchId: string;
+  branch: string;
+  startAt: string;
+  endAt: string;
+}
+
 
 export interface StaffBranchOption { id: string; name: string; }
 
@@ -225,6 +234,30 @@ export class AdminStaffApiService {
     staffId: string; branchId: string; startAt: string; endAt: string;
   }): Observable<unknown> {
     return this.api.post<unknown>('/shifts', payload);
+  }
+
+  /** Fresh, employee-scoped shifts for overlap checks, including other visible branches. */
+  listStaffShiftRecords(staffId: string, dateFrom: string, dateTo: string): Observable<StaffShiftRecord[]> {
+    const params = new HttpParams().set('staffId', staffId)
+      .set('dateFrom', dateFrom).set('dateTo', dateTo);
+    return this.getAll<ShiftWire>('/shifts', params).pipe(map(rows => {
+      const branches = new Map(this.branches().map(b => [b.id, b.name]));
+      return rows.filter(row => row.status !== 'CANCELLED' && !!row.startAt && !!row.endAt)
+        .map(row => ({
+          id: idOf(row.id ?? row._id), staffId: idOf(row.staffId),
+          branchId: idOf(row.branchId), branch: branches.get(idOf(row.branchId)) ?? idOf(row.branchId),
+          startAt: row.startAt!, endAt: row.endAt!,
+        }));
+    }));
+  }
+
+  /** Atomic replacement is deliberately delegated to BE; no cancel-then-create partial writes. */
+  replaceShiftsAtomically(payload: {
+    staffId: string; branchId: string;
+    create: {startAt: string; endAt: string}[];
+    cancelShiftIds: string[];
+  }): Observable<unknown> {
+    return this.api.post('/shifts/bulk-assign', payload);
   }
 
   loadWeek(monday: string, force = false): void {
