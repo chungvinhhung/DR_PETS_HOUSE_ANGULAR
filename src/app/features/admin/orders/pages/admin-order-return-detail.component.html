@@ -142,7 +142,7 @@
               }
             </div>
           } @else {
-            <p class="return-detail__muted">Backend chưa cung cấp URL minh chứng trong API chi tiết yêu cầu.</p>
+            <p class="return-detail__muted">Chưa có ảnh minh chứng.</p>
           }
         </section>
         <section class="return-detail__panel">
@@ -172,10 +172,10 @@
         </div>
         <div class="return-detail__refund-account-title">Thông tin tài khoản hoàn tiền</div>
         <div class="return-detail__reconcile return-detail__reconcile--account">
-          <div><span>Phương thức hoàn tiền</span><strong>{{ refund()?.provider === 'MOCK' ? 'Mô phỏng (không chuyển khoản thật)' : 'BE chưa cung cấp' }}</strong></div>
-          <div><span>Ngân hàng</span><strong>BE chưa cung cấp</strong></div>
-          <div><span>Số thẻ / Số tài khoản / Số ví</span><strong>BE chưa cung cấp</strong></div>
-          <div><span>Tên chủ tài khoản</span><strong>BE chưa cung cấp</strong></div>
+          <div><span>Phương thức hoàn tiền</span><strong>{{ refund()?.provider === 'MOCK' ? 'Mô phỏng (không chuyển khoản thật)' : 'Chưa có thông tin' }}</strong></div>
+          <div><span>Ngân hàng</span><strong>Chưa có thông tin</strong></div>
+          <div><span>Số thẻ / Số tài khoản / Số ví</span><strong>Chưa có thông tin</strong></div>
+          <div><span>Tên chủ tài khoản</span><strong>Chưa có thông tin</strong></div>
         </div>
       </section>
 
@@ -185,11 +185,11 @@
           <div class="return-detail__stock-fields">
             <div><span>Số lượng thực nhận</span><strong>{{ receivedTotal(ret) }}</strong></div>
             <div><span>Kết quả kiểm tra</span><strong>{{hasNonResellable(ret)?'Có hàng không đủ điều kiện bán lại':(ret.status==='RECEIVED'||ret.status==='APPROVED'||ret.status==='COMPLETED'?'Đủ điều kiện theo kiểm hàng':'Chưa kiểm hàng')}}</strong></div>
-            <div><span>Số lượng nhập lại kho</span><strong>BE chưa cung cấp</strong></div>
-            <div><span>Giao dịch kho</span><strong>BE chưa cung cấp</strong></div>
+            <div><span>Số lượng nhập lại kho</span><strong>Chưa có thông tin</strong></div>
+            <div><span>Giao dịch kho</span><strong>Chưa có thông tin</strong></div>
           </div>
           <button type="button" class="return-detail__button return-detail__button--stock" disabled
-            title="Chưa có mã phiếu nhập kho do BE cung cấp">Xem trong Kho</button>
+            title="Chưa có phiếu nhập kho để xem">Xem trong Kho</button>
         </div>
       </section>
     }
@@ -284,9 +284,10 @@
             <p class="return-detail__muted">Số tiền được tính theo hàng thực nhận; kết quả chính thức sẽ được xác nhận khi phê duyệt.</p>
             <div class="return-detail__refund-destination">
               <div class="return-detail__field">Thông tin hoàn tiền</div>
-              <div class="return-detail__refund-destination-row">
-                <span>Phương thức hoàn tiền</span>
-                <strong>{{refund()?.provider==='MOCK'?'Thanh toán mô phỏng':'Chưa có thông tin'}}</strong>
+              <div class="return-detail__refund-destination-row return-detail__refund-destination-row--three">
+                <div><span>Ngân hàng</span><strong>—</strong></div>
+                <div><span>Số tài khoản</span><strong>—</strong></div>
+                <div><span>Chủ tài khoản</span><strong>—</strong></div>
               </div>
             </div>
           }
