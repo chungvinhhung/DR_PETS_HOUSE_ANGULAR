@@ -4807,3 +4807,96 @@ app-admin-order-return-detail .return-detail__inspection-item label{display:flex
 app-admin-order-return-detail .return-detail__inspection-item input,
 app-admin-order-return-detail .return-detail__inspection-item select{height:38px;padding:6px;border:1px solid #dce5f0;border-radius:6px;width:100%;min-width:0}
 @media(max-width:680px){app-admin-order-return-detail .return-detail__inspection-item{grid-template-columns:1fr 1fr}app-admin-order-return-detail .return-detail__inspection-item strong,app-admin-order-return-detail .return-detail__inspection-item small{grid-column:1/-1}}
+
+
+/* Web 2 consistency: one visible focus border for whole search-field surface. */
+app-admin-order-create .create-order__search-field:focus-within{
+  border-color:#0d47a1!important;
+  box-shadow:0 0 0 2px rgba(13,71,161,.14);
+}
+app-admin-order-create .create-order__search-field input:focus-visible{
+  outline:none!important;outline-offset:0!important;box-shadow:none!important;
+}
+app-admin-order-management .order-admin__transition-fields{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end;gap:16px;
+}
+app-admin-order-management .order-admin__transition-fields .order-admin__field{margin:12px 0;min-width:0}
+app-admin-order-management .order-admin__transition-fields .order-admin__field-value{
+  min-height:40px;display:flex;align-items:center;margin-top:8px;
+  border:1px solid #e2e8f0;border-radius:8px;padding:0 12px;color:#334155;font-weight:500;
+}
+app-admin-order-management .order-admin__modal .order-admin__field select{
+  appearance:none;-webkit-appearance:none;
+  background:#fff url('/assets/admin-product/expand_more.svg') no-repeat right 12px center;
+  background-size:18px 18px;
+  padding-right:40px;
+  outline:0;box-sizing:border-box;
+}
+app-admin-order-management .order-admin__modal .order-admin__field select:focus-visible{
+  border-color:#0d47a1;
+  box-shadow:0 0 0 2px rgba(13,71,161,.14);
+}
+app-admin-order-management .order-admin__page-ellipsis{
+  width:44px;min-width:44px;height:42px;display:grid;place-items:center;
+  border-left:1px solid #e2e8f0;color:#475569;font-size:14px;
+}
+app-admin-product-list-page .pagination-ellipsis{display:grid;place-items:center;color:#475569}
+@media(max-width:560px){
+  app-admin-order-management .order-admin__transition-fields{grid-template-columns:1fr}
+}
+/* Figma return status tokens. APPROVED and COMPLETED are both success. */
+app-admin-order-return-detail .return-detail__heading-badge[data-status="APPROVED"],
+app-admin-order-management .order-admin__badge[data-status="APPROVED"]{
+  background:#e8f5e9!important;color:#2e7d32!important;border-color:#d6eada!important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="COMPLETED"],
+app-admin-order-management .order-admin__badge[data-status="COMPLETED"]{
+  background:#e8f5e9!important;color:#2e7d32!important;border-color:#d6eada!important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="REQUESTED"],
+app-admin-order-management .order-admin__badge[data-status="REQUESTED"]{
+  background:#eeeeee!important;color:#757575!important;border-color:#dfdfdf!important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="PROCESSING"],
+app-admin-order-management .order-admin__badge[data-status="PROCESSING"]{
+  background:#fff3e0!important;color:#df8108!important;border-color:#f9e3bd!important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="RECEIVED"],
+app-admin-order-management .order-admin__badge[data-status="RECEIVED"]{
+  background:#e3f2fd!important;color:#1976d2!important;border-color:#d3eaff!important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="REJECTED"],
+app-admin-order-management .order-admin__badge[data-status="REJECTED"],
+app-admin-order-return-detail .return-detail__heading-badge[data-status="CANCELLED"],
+app-admin-order-management .order-admin__badge[data-status="CANCELLED"]{
+  background:#ffebeb!important;color:#cb3e48!important;border-color:#ffdada!important;
+}
+/* Return dialog follows Figma modal spacing and width by workflow state. */
+app-admin-order-return-detail .return-detail__dialog{
+  width:min(100%,636px);padding:25px;max-height:88vh;
+  border:1px solid #e2e8f0;border-radius:12px;
+  box-shadow:0 16px 45px rgba(15,23,42,.2);
+}
+app-admin-order-return-detail .return-detail__dialog--receive{width:min(100%,580px)}
+app-admin-order-return-detail .return-detail__dialog--process{width:min(100%,440px)}
+app-admin-order-return-detail .return-detail__dialog-heading{
+  padding:0 0 14px;margin:0 0 16px;align-items:start;
+}
+app-admin-order-return-detail .return-detail__dialog-heading h2{font-size:20px;font-weight:500}
+app-admin-order-return-detail .return-detail__notice{
+  background:#fff3e0;border-radius:9px;font-size:12px;line-height:1.5;
+  padding:13px;margin:0 0 16px;
+}
+app-admin-order-return-detail .return-detail__summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+app-admin-order-return-detail .return-detail__dialog .return-detail__field{font-weight:500;color:#475569}
+app-admin-order-return-detail .return-detail__dialog :is(textarea,input,select):focus-visible{
+  outline:none;border-color:#0d47a1;box-shadow:0 0 0 2px rgba(13,71,161,.14);
+}
+app-admin-order-return-detail .return-detail__dialog-actions{
+  padding:0;border:0;margin-top:18px;gap:8px;
+}
+app-admin-order-return-detail .return-detail__dialog-actions button{min-height:39px;border-radius:8px}
+@media(max-width:640px){
+  app-admin-order-return-detail .return-detail__summary{grid-template-columns:1fr}
+}
+
