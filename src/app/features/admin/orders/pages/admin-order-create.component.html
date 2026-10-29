@@ -190,13 +190,13 @@
             <label for="order-shipping-recipient-name">Người nhận <span aria-hidden="true">*</span></label>
             <input id="order-shipping-recipient-name" type="text" placeholder="Nhập tên người nhận"
               [value]="shippingRecipientName()"
-              (input)="shippingRecipientName.set($any($event.target).value)">
+              (input)="updateShippingRecipientName($any($event.target).value)">
           </div>
           <div class="create-order__field">
             <label for="order-shipping-recipient-phone">Số điện thoại nhận hàng <span aria-hidden="true">*</span></label>
             <input id="order-shipping-recipient-phone" type="tel" placeholder="Nhập số điện thoại"
               [value]="shippingRecipientPhone()"
-              (input)="shippingRecipientPhone.set($any($event.target).value)">
+              (input)="updateShippingRecipientPhone($any($event.target).value)">
           </div>
         </div>
       @if (selectedCustomer() && addressWasConfirmed()) {
