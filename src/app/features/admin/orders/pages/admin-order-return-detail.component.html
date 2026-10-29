@@ -13,6 +13,10 @@
         }
       </div>
       <div class="return-detail__actions">
+        @if(data()?.status==='APPROVED' && isManager()){
+          <button type="button" class="return-detail__button return-detail__button--outline-danger"
+            disabled title="Backend chưa hỗ trợ từ chối yêu cầu sau khi đã phê duyệt">Từ chối hoàn tiền</button>
+        }
         @for (action of availableActions(); track action) {
           <button type="button" class="return-detail__button"
             [class.return-detail__button--outline-danger]="action === 'reject'"
@@ -52,10 +56,9 @@
       <section class="return-detail__panel" aria-label="Tiến trình xử lý yêu cầu">
         <h2>Luồng xử lý yêu cầu</h2>
         <ol class="return-detail__progress" [attr.data-status]="ret.status">
-          @for (step of statusSteps; track step; let index = $index) {
+          @for (step of statusSteps; track step) {
             <li [class.return-detail__progress--done]="isStepReached(ret, step)"
-                [class.return-detail__progress--current]="ret.status === step"
-                [class.return-detail__progress--rejected]="ret.status === 'REJECTED' || ret.status === 'CANCELLED'">
+                [class.return-detail__progress--current]="ret.status === step">
               <div class="return-detail__progress-head">
                 <span class="return-detail__progress-dot" aria-hidden="true"></span>
                 <span>{{ label(step) }}</span>
@@ -63,10 +66,20 @@
               <div class="return-detail__progress-bar" aria-hidden="true"></div>
               <small>{{ progressLabel(ret, step) }}</small>
             </li>
+            @if((ret.status==='REJECTED'||ret.status==='CANCELLED') && rejectionStage(ret)===step){
+              <li class="return-detail__progress--terminal" [attr.data-terminal]="ret.status">
+                <div class="return-detail__progress-head">
+                  <span class="return-detail__progress-dot" aria-hidden="true"></span>
+                  <span>{{label(ret.status)}}</span>
+                </div>
+                <div class="return-detail__progress-bar" aria-hidden="true"></div>
+                <small>Sau bước {{label(step).toLowerCase()}}</small>
+              </li>
+            }
           }
         </ol>
         @if (ret.status === 'REJECTED' || ret.status === 'CANCELLED') {
-          <p class="return-detail__muted">Yêu cầu đã {{ label(ret.status).toLowerCase() }}. Lịch sử xử lý được giữ nguyên bên dưới.</p>
+          <p class="return-detail__terminal-description" role="status">{{label(ret.status)}} sau bước {{terminalStageLabel(ret)}}.</p>
         }
       </section>
 
@@ -149,10 +162,13 @@
           <h2>Tiến trình xử lý</h2>
           <ol class="return-detail__timeline">
             @for (history of returnHistory(); track $index; let first = $first) {
-              <li [class.return-detail__timeline--latest]="first">
+              <li [class.return-detail__timeline--latest]="first" [attr.data-status]="history.status">
                 <div class="return-detail__timeline-dot" aria-hidden="true"></div>
                 <strong>{{ label(history.status) }}</strong>
                 <small>{{ when(history.at) }}</small>
+                @if(history.status==='REJECTED'||history.status==='CANCELLED'){
+                  <p class="return-detail__history-phase">Sau bước {{terminalStageLabel(ret)}}</p>
+                }
                 @if (history.note) { <p>{{ history.note }}</p> }
               </li>
             } @empty {
@@ -205,7 +221,10 @@
               <p>{{ modalSubtitle(action) }}</p></div>
             <button type="button" class="return-detail__close" (click)="close()" [disabled]="busy()" aria-label="Đóng">×</button>
           </div>
-          @if(action!=='approve' && action!=='receive') {
+          @if(action==='refund'){
+            <p class="return-detail__refund-confirm">Xác nhận hoàn tiền cho yêu cầu {{data()?.code || data()?.id}}?</p>
+            <p class="return-detail__backend-limit">Backend chưa hỗ trợ chuyển khoản thực tế. Thao tác hiện chỉ ghi nhận giao dịch hoàn tiền trong hệ thống.</p>
+          } @else if(action!=='approve' && action!=='receive') {
             <div class="return-detail__notice">
               <strong>Lưu ý</strong><p>{{actionExplanation(action)}}</p>
             </div>
@@ -241,21 +260,21 @@
                             (click)="stepReceive(item.orderItemId,1,item.requestedQty)">+</button>
                         </div>
                       </label>
-                      <label>Số lượng nhập kho
-                        <output class="return-detail__stock-preview">
-                          {{inspection()[item.orderItemId]?.quality==='RESELLABLE'?receiveQuantity(item.orderItemId):0}}
-                        </output>
+                      <label>Số lượng nhập kho *
+                        <div class="return-detail__stepper">
+                          <button type="button" [disabled]="restockQuantity(item.orderItemId)===0"
+                            [attr.aria-label]="'Giảm số lượng nhập kho '+item.productName"
+                            (click)="stepRestock(item.orderItemId,-1)">−</button>
+                          <input type="number" min="0" step="1" [max]="receiveQuantity(item.orderItemId)"
+                            [value]="inspection()[item.orderItemId]?.restockQty??''"
+                            [attr.aria-label]="'Số lượng nhập kho '+item.productName"
+                            (input)="editInspection(item.orderItemId,'restockQty',$any($event.target).value)"/>
+                          <button type="button" [disabled]="restockQuantity(item.orderItemId)>=receiveQuantity(item.orderItemId)"
+                            [attr.aria-label]="'Tăng số lượng nhập kho '+item.productName"
+                            (click)="stepRestock(item.orderItemId,1)">+</button>
+                        </div>
                       </label>
                     </div>
-                    <label class="return-detail__receive-quality">Tình trạng sản phẩm *
-                      <select [value]="inspection()[item.orderItemId]?.quality??''"
-                        (change)="editInspection(item.orderItemId,'quality',$any($event.target).value)">
-                        <option value="">Chọn tình trạng</option>
-                        <option value="RESELLABLE">Còn bán được</option>
-                        <option value="DAMAGED">Hư hỏng</option>
-                        <option value="DISCARDED">Loại bỏ</option>
-                      </select>
-                    </label>
                   </div>
                 }
               </div>
@@ -263,12 +282,12 @@
                 <textarea rows="2" maxlength="500" placeholder="Nhập ghi chú nếu cần"
                   [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
               </label>
-              @if(!inspectionValid()){<p class="return-detail__invalid">Chọn tình trạng và kiểm tra số lượng thực nhận trước khi xác nhận.</p>}
+              @if(!inspectionValid()){<p class="return-detail__invalid">Nhập số lượng thực nhận và số lượng nhập kho hợp lệ cho từng sản phẩm.</p>}
             </div>
           }
           @if (action === 'approve') {
             <div class="return-detail__summary return-detail__summary--approve">
-              <label>SL duyệt hoàn *
+              <label>SL duyệt hoàn
                 <input type="number" [value]="approvedQuantity()" readOnly
                   aria-label="Số lượng duyệt hoàn do hệ thống tính" />
               </label>
@@ -276,12 +295,12 @@
                 <input type="text" [value]="money(data()?.refundBreakdown?.total)" readOnly
                   aria-label="Số tiền hoàn dự kiến" class="return-detail__readonly"/>
               </label>
-              <label>Tiền hoàn cuối cùng *
+              <label>Tiền hoàn cuối cùng
                 <input type="text" [value]="money(approvedPreviewAmount())" readOnly
                   aria-label="Số tiền hoàn dự kiến theo hàng thực nhận"/>
               </label>
             </div>
-            <p class="return-detail__muted">Số tiền được tính theo hàng thực nhận; kết quả chính thức sẽ được xác nhận khi phê duyệt.</p>
+            <p class="return-detail__backend-limit">Backend chưa hỗ trợ thay đổi số tiền hoàn cuối cùng khi phê duyệt.</p>
             <div class="return-detail__refund-destination">
               <div class="return-detail__field">Thông tin hoàn tiền</div>
               <div class="return-detail__refund-destination-row return-detail__refund-destination-row--three">
@@ -293,9 +312,9 @@
           }
           @if (action === 'reject' || action === 'approve') {
             <label class="return-detail__field">
-              {{ action === 'reject' ? (data()?.status==='RECEIVED'?'Lý do từ chối hoàn tiền *':'Lý do từ chối *') : 'Ghi chú phê duyệt (nếu cần)' }}
-              <textarea #noteInput rows="3" maxlength="500" [value]="note()" (input)="note.set(noteInput.value)"
-                [placeholder]="action === 'reject' ? 'Ví dụ: Không đủ điều kiện trả hàng' : 'Nhập ghi chú nếu cần'"></textarea>
+              {{ action === 'reject' ? (data()?.status==='RECEIVED'?'Lý do từ chối hoàn tiền *':'Lý do từ chối *') : 'Ghi chú phê duyệt' }}
+              <textarea #noteInput [rows]="action==='approve'?2:3" maxlength="500" [value]="note()" (input)="note.set(noteInput.value)"
+                [placeholder]="action === 'reject' ? 'Ví dụ: Không đủ điều kiện trả hàng' : 'Nhập ghi chú'"></textarea>
             </label>
             @if (action === 'reject' && note().trim().length > 0 && note().trim().length < 5) {
               <p class="return-detail__invalid">Lý do từ chối cần ít nhất 5 ký tự.</p>
