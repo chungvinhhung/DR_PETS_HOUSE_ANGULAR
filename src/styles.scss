@@ -5041,3 +5041,14 @@ app-admin-order-return-detail .return-detail__badge[data-status="REJECTED"],
 app-admin-order-return-detail .return-detail__badge[data-status="CANCELLED"]{
   background:#ffebeb!important;color:#cb3e48!important;
 }
+
+app-admin-order-return-detail .return-detail__refund-destination-row--three{
+  display:grid;grid-template-columns:150fr 210fr 176fr;gap:12px;align-items:stretch;
+}
+app-admin-order-return-detail .return-detail__refund-destination-row--three>div{
+  display:flex;flex-direction:column;gap:6px;min-width:0;
+}
+app-admin-order-return-detail .return-detail__refund-destination-row--three strong{font-size:12px}
+@media(max-width:550px){
+  app-admin-order-return-detail .return-detail__refund-destination-row--three{grid-template-columns:1fr}
+}
