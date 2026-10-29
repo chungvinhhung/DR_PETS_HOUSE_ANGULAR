@@ -259,7 +259,9 @@ export class AdminStaffApiService {
     create: {startAt: string; endAt: string}[];
     cancelShiftIds: string[];
   }): Observable<unknown> {
-    return this.api.post('/shifts/bulk-assign', payload);
+    return this.api.post('/shifts/bulk-assign', payload, {
+      headers: new HttpHeaders().set('Idempotency-Key', crypto.randomUUID()),
+    });
   }
 
   loadWeek(monday: string, force = false): void {
