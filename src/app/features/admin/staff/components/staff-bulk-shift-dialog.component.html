@@ -4,7 +4,7 @@
     <header class="bulk-shift-heading">
       <div>
         <h2 id="bulk-shift-title">Phân ca nhiều ngày</h2>
-        <p>{{ displayName(employee) }} · {{ branchName }} · Đã chọn {{ dates.length }} ngày</p>
+        <p>{{ displayName(employee) }} · {{ branchName }}</p>
       </div>
       <button type="button" aria-label="Đóng" class="bulk-shift-close" [disabled]="saving()" (click)="askClose()">×</button>
     </header>
@@ -19,7 +19,6 @@
       @if (loading()) {
         <p class="bulk-shift-note" role="status">Đang kiểm tra lịch làm việc của nhân viên tại các chi nhánh bạn có quyền xem...</p>
       }
-      <p class="bulk-shift-note">Chọn nhiều ca trong cùng ngày hoặc nhấn <b>Chọn cả hàng</b> để áp dụng một ca cho nhiều ngày. Các ca trùng giờ sẽ được cảnh báo ngay.</p>
       <div class="bulk-shift-scroller">
         <table class="bulk-shift-matrix">
           <thead>
@@ -76,7 +75,7 @@
         <div class="bulk-shift-add-head">
           <strong>Ca làm việc trong ma trận</strong>
           <button type="button" class="bulk-shift-add-toggle" [disabled]="saving()"
-            (click)="adding.set(!adding())">{{ adding() ? 'Thu gọn' : '+ Thêm ca' }}</button>
+            (click)="adding.set(!adding())">{{ adding() ? 'Thu gọn' : '+ Tạo ca làm việc mới' }}</button>
         </div>
         @if (adding()) {
           <div class="bulk-shift-add-form">
