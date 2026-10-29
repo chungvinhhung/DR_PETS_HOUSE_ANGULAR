@@ -278,8 +278,6 @@ export class AdminOrderCreateComponent {
     this.shippingCity.set('');
     this.shippingDistrict.set('');
     this.shippingWard.set('');
-    this.shippingRecipientName.set('');
-    this.shippingRecipientPhone.set('');
     this.addressWasConfirmed.set(false);
     this.addressDialog.set(null);
     this.addressDraft.set(this.emptyAddress());
@@ -323,8 +321,8 @@ export class AdminOrderCreateComponent {
       this.addressDialogError.set('Vui lòng nhập đầy đủ người nhận, số điện thoại và địa chỉ giao hàng.');
       return;
     }
-    this.shippingRecipientName.set(draft.recipientName.trim());
-    this.shippingRecipientPhone.set(draft.recipientPhone.trim());
+    this.updateShippingRecipientName(draft.recipientName.trim());
+    this.updateShippingRecipientPhone(draft.recipientPhone.trim());
     this.shippingCity.set(draft.city.trim());
     this.shippingDistrict.set(draft.district.trim());
     this.shippingWard.set(draft.ward.trim());
@@ -662,6 +660,10 @@ export class AdminOrderCreateComponent {
     this.voucherCode.set('');
     this.note.set('');
     this.clearShippingAddress();
+    this.shippingRecipientName.set('');
+    this.shippingRecipientPhone.set('');
+    this.recipientNameEdited=false;
+    this.recipientPhoneEdited=false;
     const decide = this.pendingExitDecision;
     this.pendingExitDecision = null;
     if (decide) decide(true);
