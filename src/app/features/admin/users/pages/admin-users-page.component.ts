@@ -19,7 +19,7 @@ import {
   AdminUser,
 } from '../models/admin-user.model';
 import { AdminUsersService } from '../services/admin-users.service';
-import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagination';
+import { ADMIN_TABLE_PAGE_SIZE, adminPageWindow, AdminPageItem } from '../../../../shared/utils/admin-table-pagination';
 
 @Component({
   selector: 'app-admin-users-page',
@@ -220,9 +220,12 @@ import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagi
             <nav aria-label="Phân trang tài khoản">
               <button type="button" aria-label="Trang trước"
                 [disabled]="page() === 1" (click)="goToPage(page() - 1)">‹</button>
-              @for (number of visiblePageNumbers; track number) {
-                <button type="button" class="users-page-number" [attr.aria-current]="page() === number ? 'page' : null"
-                  [disabled]="loading()" (click)="goToPage(number)">{{ number }}</button>
+              @for (number of visiblePageNumbers; track $index) {
+                @if(number==='…') { <span class="users-pagination__ellipsis" aria-hidden="true">…</span> }
+                @else {
+                  <button type="button" class="users-page-number" [attr.aria-current]="page() === number ? 'page' : null"
+                    [disabled]="loading()" (click)="goToPage(number)">{{ number }}</button>
+                }
               }
               <button type="button" aria-label="Trang tiếp"
                 [disabled]="page() >= pageCount" (click)="goToPage(page() + 1)">›</button>
@@ -565,11 +568,8 @@ export class AdminUsersPageComponent {
   get pageCount(): number {
     return Math.max(1, Math.ceil(this.total() / this.pageSize));
   }
-  get visiblePageNumbers(): number[] {
-    const total = this.pageCount;
-    const current = this.page();
-    const start = Math.max(1, Math.min(current - 1, total - 2));
-    return Array.from({length: Math.min(3, total)}, (_, i) => start + i);
+  get visiblePageNumbers(): AdminPageItem[] {
+    return adminPageWindow(this.page(), this.pageCount);
   }
 
   goToPage(target: number): void {
