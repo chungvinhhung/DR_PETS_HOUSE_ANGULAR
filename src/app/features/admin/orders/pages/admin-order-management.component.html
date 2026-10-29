@@ -438,15 +438,16 @@
               <p class="order-admin__invalid">Vui lòng nhập lý do ít nhất 5 ký tự.</p>
             }
           } @else {
-            <p>{{ actionDescription(action) }}</p>
-            <label class="order-admin__field">Hiện tại
-              <span class="order-admin__field-value">{{ statusLabel(selected()!.status) }}</span>
-            </label>
-            <label class="order-admin__field">Trạng thái tiếp theo <span aria-hidden="true">*</span>
-              <select [value]="nextStatusLabel(action)" aria-label="Trạng thái tiếp theo">
-                <option [value]="nextStatusLabel(action)">{{ nextStatusLabel(action) }}</option>
-              </select>
-            </label>
+            <div class="order-admin__transition-fields">
+              <div class="order-admin__field">Hiện tại
+                <span class="order-admin__field-value">{{ statusLabel(selected()!.status) }}</span>
+              </div>
+              <label class="order-admin__field">Trạng thái tiếp theo <span aria-hidden="true">*</span>
+                <select [value]="nextStatusLabel(action)" aria-label="Trạng thái tiếp theo">
+                  <option [value]="nextStatusLabel(action)">{{ nextStatusLabel(action) }}</option>
+                </select>
+              </label>
+            </div>
             @if (action === 'ship') {
               <label class="order-admin__field">Đơn vị vận chuyển
                 <input #carrierInput type="text" maxlength="120" placeholder="Tên đơn vị vận chuyển" [value]="carrier()" (input)="carrier.set(carrierInput.value)">
