@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.component';
@@ -6,6 +6,7 @@ import { formatStaffWeekRange } from '../utils/staff-week-range';
 import { AdminStaffApiService, staffTodayISO } from '../services/admin-staff-api.service';
 import { JOB_LABELS, JobRole, StaffPreview, displayStaffName } from '../models/staff-preview.model';
 import { DayShiftDraft, ShiftOption, StaffShiftAssignmentDialogComponent, overlaps } from '../components/staff-shift-assignment-dialog.component';
+import { StaffBulkShiftDialogComponent } from '../components/staff-bulk-shift-dialog.component';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 
 const DAY = 86_400_000;
@@ -27,7 +28,7 @@ const readable = (iso: string): string => iso.slice(8, 10) + '/' + iso.slice(5, 
 @Component({
   selector: 'app-admin-staff-schedule',
   standalone: true,
-  imports: [AdminCatalogShellComponent, RouterLink, AdminStaffWeekNavComponent, StaffShiftAssignmentDialogComponent],
+  imports: [AdminCatalogShellComponent, RouterLink, AdminStaffWeekNavComponent, StaffShiftAssignmentDialogComponent, StaffBulkShiftDialogComponent],
   templateUrl: './admin-staff-schedule.component.html',
   styleUrl: './admin-staff-schedule.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,6 +49,9 @@ export class AdminStaffScheduleComponent {
   }
   readonly branch = signal('');
   readonly dialog = signal<{employee: StaffPreview; date: string} | null>(null);
+  readonly bulkStaff = signal<StaffPreview | null>(null);
+  readonly bulkDates = signal<string[]>([]);
+  readonly bulkDialog = signal(false);
   readonly createdOptions = signal<ShiftOption[]>([]);
   readonly showCreateTemplate = signal(false);
   readonly templateName = signal('');
@@ -82,17 +86,47 @@ export class AdminStaffScheduleComponent {
       shift.staffId === staffId && shift.isoDate === iso &&
       shift.branchId === this.branch()).sort((a,b)=>a.time.localeCompare(b.time));
   }
-  selectRole(value: string) { this.role.set(value); }
-  selectBranch(value: string) { if (!this.branches().some(b=>b.id===value)) return; this.branch.set(value); this.createdOptions.set([]); }
-  changeWeek(delta: number) { this.monday.set(dateFor(this.monday(), delta * 7)); }
-  goToday(): void { this.monday.set(mondayOf(todayIso())); }
+  selectRole(value: string) { this.clearBulk(); this.role.set(value); }
+  selectBranch(value: string) { if (!this.branches().some(b=>b.id===value)) return; this.clearBulk(); this.branch.set(value); this.createdOptions.set([]); }
+  changeWeek(delta: number) { this.clearBulk(); this.monday.set(dateFor(this.monday(), delta * 7)); }
+  goToday(): void { this.clearBulk(); this.monday.set(mondayOf(todayIso())); }
 
   selectDate(value: string): void {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return;
     const parsed = new Date(value + 'T00:00:00Z');
     if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) return;
+    this.clearBulk();
     this.monday.set(mondayOf(value));
   }
+  clearBulk(): void {
+    this.bulkDates.set([]);
+    this.bulkStaff.set(null);
+    this.bulkDialog.set(false);
+  }
+  @HostListener('document:keydown.escape')
+  onEscape(): void { if (!this.bulkDialog() && this.bulkStaff()) this.clearBulk(); }
+  bulkSelected(staffId: string, date: string): boolean {
+    return this.bulkStaff()?.id === staffId && this.bulkDates().includes(date);
+  }
+  onCellClick(employee: StaffPreview, date: string, shiftKey: boolean): void {
+    if (!this.branch() || this.staffApi.shiftLoading() || !!this.staffApi.shiftError() || this.bulkDialog()) return;
+    const locked = this.bulkStaff();
+    if (locked && locked.id !== employee.id) return;
+    if (!locked && !shiftKey) { this.openDay(employee,date); return; }
+    if (!locked) this.bulkStaff.set(employee);
+    this.bulkDates.update(days => days.includes(date) ? days.filter(d=>d!==date) : [...days,date].sort());
+    if (!this.bulkDates().length) this.clearBulk();
+  }
+  openBulk(): void {
+    if (this.bulkStaff() && this.bulkDates().length) this.bulkDialog.set(true);
+  }
+  savedBulk(): void {
+    this.clearBulk();
+    this.staffApi.loadWeek(this.monday(), true);
+    this.toast.show('Đã lưu phân ca làm việc.', 'success');
+  }
+  closeBulk(): void { this.bulkDialog.set(false); }
+  refreshBulk(): void { this.staffApi.loadWeek(this.monday(), true); }
   openDay(employee: StaffPreview, date: string): void {
     if (!this.branch() || this.staffApi.shiftLoading() || !!this.staffApi.shiftError()) return;
     this.dialog.set({employee,date});
