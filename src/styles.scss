@@ -5383,3 +5383,90 @@ app-admin-product-list-page .product-filter-toolbar .product-filter-native-statu
 app-admin-product-list-page .product-filter-popover .product-filter-advanced-select {
   font-size:13px;height:38px;
 }
+
+
+/* ==========================================================================
+   WEB 2 — Unified focus design system (Admin + Customer)
+   All controls get one accessible blue focus indication. Search components
+   highlight their outer shell only; Product filter popovers and native select
+   use exactly the same click/open presentation.
+   ========================================================================== */
+:root {
+  --web2-focus-color: #0d47a1;
+  --web2-focus-border: #a9c5ed;
+  --web2-focus-surface: #f5f9ff;
+  --web2-focus-halo: 0 0 0 2px rgba(13, 71, 161, .18);
+}
+/* Keyboard focus: one consistent, accessible outline across modules. */
+:root :is(
+  button:not(:disabled), a[href], input:not(:disabled),
+  select:not(:disabled), textarea:not(:disabled),
+  summary, [role="button"], [role="combobox"], [role="tab"],
+  [tabindex]:not([tabindex="-1"])
+):focus-visible {
+  outline: 2px solid var(--web2-focus-color) !important;
+  outline-offset: 2px !important;
+}
+/* Text controls keep their existing background and error state, but use one
+   focus border/ring instead of browser-dependent native outlines/shadows. */
+:root :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  select, textarea
+):focus:not([aria-invalid="true"]):not(.input-invalid) {
+  border-color: var(--web2-focus-border) !important;
+}
+:root :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  select, textarea
+):focus-visible {
+  box-shadow: none !important;
+}
+/* A composite search / numeric field has a single focus surface — the shell.
+   The inner input should not receive a duplicate outline. */
+:root :is(
+  .web2-management-search, .order-admin__search,
+  .voucher-list__search, .branch-v2-page__search,
+  .staff-search, .service-catalog__search,
+  .create-order__search-field, .search-field,
+  .staff-reset-input, .return-detail__stepper,
+  .variant-currency-input, .currency-input
+):focus-within {
+  outline: 2px solid var(--web2-focus-color) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+}
+:root :is(
+  .web2-management-search, .order-admin__search,
+  .voucher-list__search, .branch-v2-page__search,
+  .staff-search, .service-catalog__search,
+  .create-order__search-field, .search-field,
+  .staff-reset-input, .return-detail__stepper,
+  .variant-currency-input, .currency-input
+) input:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+/* Retain an error-colored focus indicator instead of masking invalid fields. */
+:root :is([aria-invalid="true"], .input-invalid):focus-visible {
+  outline-color: #dc2626 !important;
+}
+/* Popover-button and native select have the SAME active/focus treatment,
+   with only one subtle halo, and no double blue browser outline. */
+:root app-admin-product-list-page .product-filter-toolbar :is(
+  .product-filter-trigger:focus,
+  .product-filter-trigger[aria-expanded="true"],
+  .product-filter-native-status:focus
+) {
+  border-color: var(--web2-focus-border) !important;
+  background-color: var(--web2-focus-surface) !important;
+  box-shadow: var(--web2-focus-halo) !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+}
+:root app-admin-product-list-page .product-filter-popover :is(
+  button, input, select
+):focus-visible {
+  outline: 2px solid var(--web2-focus-color) !important;
+  outline-offset: 2px !important;
+}
