@@ -375,7 +375,7 @@
                       <td class="order-admin__final-refund web2-cell-center">
                         {{ finalRefundAmount(ret) === null ? '—' : price(finalRefundAmount(ret)!) }}
                       </td>
-                      <td><span class="order-admin__badge" [attr.data-status]="ret.status">{{ returnStatusLabel(ret.status) }}</span></td>
+                      <td><span class="order-admin__badge order-admin__badge--return" [attr.data-status]="ret.status">{{ returnStatusLabel(ret.status) }}</span></td>
                       <td class="order-admin__action-head">
                         <a [routerLink]="['/admin/order-returns',ret.id]" class="order-admin__icon-link"
                           [attr.aria-label]="'Xem chi tiết yêu cầu ' + ret.id" title="Xem yêu cầu trả hàng">
