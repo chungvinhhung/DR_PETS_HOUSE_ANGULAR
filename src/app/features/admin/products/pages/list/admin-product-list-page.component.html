@@ -119,12 +119,17 @@
         </table>
       </div>
       <footer class="pagination">
-        <span>Đang hiển thị {{ products().length }} trên tổng số {{ totalProducts() === null ? '…' : totalProducts() }} sản phẩm</span>
+        <span>Đang hiển thị {{ products().length }} trên tổng số {{ totalProducts() === null ? 'chưa xác định' : totalProducts() }} sản phẩm</span>
         <div class="pagination-buttons">
           <button type="button" (click)="previous()" [disabled]="loading() || pageNumber() === 1" aria-label="Trang trước">‹</button>
-          @for (page of visiblePageNumbers(); track page) {
-  <button type="button" class="pagination-page" [class.pagination-page--active]="page === pageNumber()" [attr.aria-current]="page === pageNumber() ? 'page' : null" [attr.aria-label]="'Đến trang ' + page" [disabled]="loading()" (click)="goToPage(page)">{{ page }}</button>
-}
+          @for (page of visiblePageNumbers(); track $index) {
+            @if(page==='…'){<span class="pagination-ellipsis" aria-hidden="true">…</span>}
+            @else {
+              <button type="button" class="pagination-page" [class.pagination-page--active]="page === pageNumber()"
+                [attr.aria-current]="page === pageNumber() ? 'page' : null"
+                [attr.aria-label]="'Đến trang ' + page" [disabled]="loading()" (click)="goToPage(page)">{{page}}</button>
+            }
+          }
           <button type="button" (click)="next()" [disabled]="loading() || !hasNextPage()" aria-label="Trang tiếp">›</button>
         </div>
       </footer>
