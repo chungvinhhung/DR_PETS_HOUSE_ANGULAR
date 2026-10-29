@@ -290,7 +290,7 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
 
-  visiblePageNumbers(): number[] {
+  visiblePageNumbers() {
     const total = this.totalProducts();
     const count = total === null ? this.pageNumber() + (this.hasNextPage() ? 1 : 0)
       : Math.max(1, Math.ceil(total / this.pageSize));
