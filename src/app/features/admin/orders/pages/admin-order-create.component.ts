@@ -595,6 +595,9 @@ export class AdminOrderCreateComponent {
     });
   }
   reviewCreate():void {
+    if(this.quote() && Date.now()>=Date.parse(this.quote()!.quoteExpiresAt)){
+      this.invalidateDraftPricing();this.toast.show('Báo giá đã hết hạn. Vui lòng xem báo giá mới.');return;
+    }
     if(!this.canSubmit()){
       if(!this.selectedCustomer())this.toast.show('Hiện chỉ hỗ trợ tạo đơn cho khách đã có tài khoản. Khách vãng lai sẽ được mở sau khi xác minh luồng kích hoạt.');
       else if(this.session.user()?.systemRole!=='ADMIN')this.toast.show('Chức năng tạo đơn hiện đang giới hạn cho quản trị viên.');
@@ -607,6 +610,10 @@ export class AdminOrderCreateComponent {
   closeCreate():void{if(!this.saving())this.confirmCreateOpen.set(false);}
   submitCreate():void {
     if(!this.confirmCreateOpen() || !this.canSubmit() || this.saving())return;
+    if(Date.now()>=Date.parse(this.quote()!.quoteExpiresAt)){
+      this.closeCreate();this.invalidateDraftPricing();
+      this.toast.show('Báo giá đã hết hạn. Vui lòng xem báo giá mới.');return;
+    }
     const q=this.quote()!;
     if(q.fulfillmentBranchId!==this.branchId()){
       this.toast.show('Chi nhánh báo giá chưa khớp. Vui lòng kiểm tra lại.');return;
