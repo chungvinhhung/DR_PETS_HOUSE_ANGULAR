@@ -70,8 +70,10 @@
         <span>Đang hiển thị {{ rows().length }} trên tổng số {{ filtered().length }} nhân viên</span>
         <nav aria-label="Phân trang nhân viên">
           <button type="button" aria-label="Trang trước" [disabled]="page() === 1" (click)="changePage(page() - 1)">‹</button>
-          @for (number of pageNumbers(); track number) {
-            @if (number <= pages()) {
+          @for (number of pageNumbers(); track $index) {
+            @if (number === '…') {
+              <span class="staff-pagination__ellipsis" aria-hidden="true">…</span>
+            } @else {
               <button type="button" [class.staff-page-selected]="number === page()" [attr.aria-current]="number === page() ? 'page' : null" (click)="changePage(number)">{{ number }}</button>
             }
           }
