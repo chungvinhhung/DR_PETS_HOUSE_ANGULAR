@@ -22,10 +22,7 @@
         </button>
       </div>
       @if (lookupState() === 'not-found') {
-        <p class="create-order__helper create-order__helper--warning" role="status">
-          Không tìm thấy hồ sơ trùng số điện thoại trong kết quả tra cứu. Vui lòng nhập thông tin khách bên dưới.
-          Bạn có thể kiểm tra lại số điện thoại hoặc nhập thông tin khách bên dưới.
-        </p>
+        <p class="create-order__lookup-feedback" role="status">Không tìm thấy khách hàng. Vui lòng kiểm tra số điện thoại hoặc nhập thông tin khách hàng.</p>
       }
       @if (lookupState() === 'error') {
         <p class="create-order__helper create-order__helper--warning" role="status">
@@ -188,19 +185,14 @@
 
     <section class="create-order__panel" aria-labelledby="shipping-title">
       <h2 id="shipping-title">Thông tin nhận hàng</h2>
-      @if (selectedCustomer()) {
+      @if (selectedCustomer() && addressWasConfirmed()) {
         <p class="create-order__label">Địa chỉ nhận hàng</p>
         <div class="create-order__address-card">
           <div class="create-order__address-top">
             <div class="create-order__address-preview">
-              @if (addressWasConfirmed()) {
-                <span class="create-order__address-tag">Đang sử dụng</span>
-                <strong>{{ shippingAddressDescription() }}</strong>
-                <small>{{ shippingRecipientName() }} · {{ shippingRecipientPhone() }}</small>
-              } @else {
-                <strong>Chưa chọn địa chỉ nhận hàng</strong>
-                <small>Chưa thể tải địa chỉ đã lưu. Có thể nhập địa chỉ giao hàng cho đơn này.</small>
-              }
+              <span class="create-order__address-tag">Đang sử dụng</span>
+              <strong>{{ shippingAddressDescription() }}</strong>
+              <small>{{ shippingRecipientName() }} · {{ shippingRecipientPhone() }}</small>
             </div>
             <div class="create-order__address-buttons">
               @if (addressWasConfirmed()) {
@@ -215,30 +207,50 @@
           </div>
         </div>
       } @else {
+        <div class="create-order__region-fields create-order__region-fields--two create-order__recipient-row">
+          <div class="create-order__field">
+            <label for="order-shipping-recipient-name">Người nhận <span aria-hidden="true">*</span></label>
+            <input id="order-shipping-recipient-name" type="text" placeholder="Nhập tên người nhận"
+              [value]="shippingRecipientName() || customerName()"
+              (input)="shippingRecipientName.set($any($event.target).value)">
+          </div>
+          <div class="create-order__field">
+            <label for="order-shipping-recipient-phone">Số điện thoại nhận hàng <span aria-hidden="true">*</span></label>
+            <input id="order-shipping-recipient-phone" type="tel" placeholder="Nhập số điện thoại"
+              [value]="shippingRecipientPhone() || customerPhone()"
+              (input)="shippingRecipientPhone.set($any($event.target).value)">
+          </div>
+        </div>
         <div class="create-order__region-fields">
           <div class="create-order__field">
             <label for="order-address-city">Tỉnh/Thành phố <span aria-hidden="true">*</span></label>
-            <input id="order-address-city" type="text" autocomplete="off"
-              placeholder="Nhập tỉnh/thành phố" [value]="shippingCity()"
+            <input id="order-address-city" class="create-order__region-input" type="text"
+              list="order-shipping-provinces" autocomplete="address-level1"
+              placeholder="Chọn tỉnh/thành phố" [value]="shippingCity()"
               (input)="updateShippingCity($any($event.target).value)">
+            <datalist id="order-shipping-provinces">
+              <option value="TP. Hồ Chí Minh"></option><option value="Hà Nội"></option>
+              <option value="Đà Nẵng"></option><option value="Cần Thơ"></option>
+              <option value="Đồng Nai"></option><option value="Tây Ninh"></option>
+            </datalist>
           </div>
           <div class="create-order__field">
             <label for="order-address-district">Quận/Huyện <span aria-hidden="true">*</span></label>
-            <input id="order-address-district" type="text" autocomplete="off"
-              placeholder="Nhập quận/huyện" [value]="shippingDistrict()"
-              (input)="updateShippingDistrict($any($event.target).value)">
+            <input id="order-address-district" class="create-order__region-input" type="text"
+              autocomplete="address-level2" placeholder="Chọn quận/huyện"
+              [value]="shippingDistrict()" (input)="updateShippingDistrict($any($event.target).value)">
           </div>
           <div class="create-order__field">
             <label for="order-address-ward">Phường/Xã</label>
-            <input id="order-address-ward" type="text" autocomplete="off"
-              placeholder="Nhập phường/xã" [value]="shippingWard()"
-              (input)="updateShippingWard($any($event.target).value)">
+            <input id="order-address-ward" class="create-order__region-input" type="text"
+              autocomplete="address-level3" placeholder="Chọn phường/xã"
+              [value]="shippingWard()" (input)="updateShippingWard($any($event.target).value)">
           </div>
         </div>
         <div class="create-order__field create-order__address-line">
           <label for="order-address-line">Địa chỉ cụ thể <span aria-hidden="true">*</span></label>
-          <input id="order-address-line" type="text" autocomplete="off"
-            placeholder="Số nhà, tên đường..." [value]="shippingLine1()"
+          <input id="order-address-line" type="text" autocomplete="street-address"
+            placeholder="Nhập địa chỉ cụ thể" [value]="shippingLine1()"
             (input)="updateShippingLine1($any($event.target).value)">
         </div>
       }
@@ -309,11 +321,7 @@
         <p class="create-order__pending">Một số sản phẩm hiện không đủ hàng. Vui lòng điều chỉnh số lượng.</p>
       }
       @if(quoteState()==='error') {<p class="create-order__pending" role="alert">{{quoteError()}}</p>}
-      @if(!isAdmin()) {
-        <p class="create-order__pending">Tính năng xác nhận đơn hàng đang được mở cho quản trị viên. Các vai trò khác có thể tiếp tục xem bản nháp.</p>
-      } @else if(!selectedCustomer()) {
-        <p class="create-order__pending">Đơn khách vãng lai đang chờ hoàn thiện bước kích hoạt tài khoản. Bạn vẫn có thể xem báo giá.</p>
-      }
+
     </div>
     <div class="create-order__footer">
       <button type="button" class="create-order__button create-order__button--outline" (click)="askCancel()">Hủy</button>
