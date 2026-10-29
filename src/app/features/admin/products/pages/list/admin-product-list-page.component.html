@@ -93,14 +93,12 @@
                     }
                     <fieldset>
                       <legend>Loại sử dụng</legend>
-                      <label class="check"><input type="radio" name="product-usage-filter" [checked]="usageFilter===''"
-                        (change)="setUsageFilter('')">Tất cả loại sử dụng</label>
-                      <label class="check"><input type="radio" name="product-usage-filter" [checked]="usageFilter==='SALE'"
-                        (change)="setUsageFilter('SALE')">Hàng bán</label>
-                      <label class="check"><input type="radio" name="product-usage-filter" [checked]="usageFilter==='SHARED'"
-                        (change)="setUsageFilter('SHARED')">Dùng chung</label>
-                      <label class="check"><input type="radio" name="product-usage-filter" [checked]="usageFilter==='SERVICE_SUPPLY'"
-                        (change)="setUsageFilter('SERVICE_SUPPLY')">Vật tư dịch vụ</label>
+                      <label class="check"><input type="checkbox" [checked]="usageFilters.includes('SALE')"
+                        (change)="toggleUsage('SALE')">Hàng bán</label>
+                      <label class="check"><input type="checkbox" [checked]="usageFilters.includes('SHARED')"
+                        (change)="toggleUsage('SHARED')">Dùng chung</label>
+                      <label class="check"><input type="checkbox" [checked]="usageFilters.includes('SERVICE_SUPPLY')"
+                        (change)="toggleUsage('SERVICE_SUPPLY')">Vật tư dịch vụ</label>
                     </fieldset>
                     <fieldset>
                       <legend>Khoảng giá</legend>
