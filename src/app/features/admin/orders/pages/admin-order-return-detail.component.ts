@@ -128,6 +128,9 @@ export class AdminOrderReturnDetailComponent {
       ? approved : item.requestedQty;
     return Math.max(0, Math.min(quantity, item.requestedQty));
   }
+  hasNonResellable(ret: OrderReturnSummary):boolean{
+    return ret.items.some(item=>item.quality==='DAMAGED'||item.quality==='DISCARDED');
+  }
   receivedTotal(ret: OrderReturnSummary): string {
     if (!['RECEIVED','APPROVED','COMPLETED'].includes(ret.status))return 'Chưa kiểm hàng';
     if (!ret.items.length || ret.items.some(item => typeof item.receivedQty !== 'number')) return 'Chưa có dữ liệu';
