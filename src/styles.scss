@@ -4846,29 +4846,29 @@ app-admin-product-list-page .pagination-ellipsis{display:grid;place-items:center
 }
 /* Figma return status tokens. APPROVED and COMPLETED are both success. */
 app-admin-order-return-detail .return-detail__heading-badge[data-status="APPROVED"],
-app-admin-order-management .order-admin__badge[data-status="APPROVED"]{
+app-admin-order-management .order-admin__badge--return[data-status="APPROVED"]{
   background:#e8f5e9!important;color:#2e7d32!important;border-color:#d6eada!important;
 }
 app-admin-order-return-detail .return-detail__heading-badge[data-status="COMPLETED"],
-app-admin-order-management .order-admin__badge[data-status="COMPLETED"]{
+app-admin-order-management .order-admin__badge--return[data-status="COMPLETED"]{
   background:#e8f5e9!important;color:#2e7d32!important;border-color:#d6eada!important;
 }
 app-admin-order-return-detail .return-detail__heading-badge[data-status="REQUESTED"],
-app-admin-order-management .order-admin__badge[data-status="REQUESTED"]{
+app-admin-order-management .order-admin__badge--return[data-status="REQUESTED"]{
   background:#eeeeee!important;color:#757575!important;border-color:#dfdfdf!important;
 }
 app-admin-order-return-detail .return-detail__heading-badge[data-status="PROCESSING"],
-app-admin-order-management .order-admin__badge[data-status="PROCESSING"]{
+app-admin-order-management .order-admin__badge--return[data-status="PROCESSING"]{
   background:#fff3e0!important;color:#df8108!important;border-color:#f9e3bd!important;
 }
 app-admin-order-return-detail .return-detail__heading-badge[data-status="RECEIVED"],
-app-admin-order-management .order-admin__badge[data-status="RECEIVED"]{
+app-admin-order-management .order-admin__badge--return[data-status="RECEIVED"]{
   background:#e3f2fd!important;color:#1976d2!important;border-color:#d3eaff!important;
 }
 app-admin-order-return-detail .return-detail__heading-badge[data-status="REJECTED"],
-app-admin-order-management .order-admin__badge[data-status="REJECTED"],
+app-admin-order-management .order-admin__badge--return[data-status="REJECTED"],
 app-admin-order-return-detail .return-detail__heading-badge[data-status="CANCELLED"],
-app-admin-order-management .order-admin__badge[data-status="CANCELLED"]{
+app-admin-order-management .order-admin__badge--return[data-status="CANCELLED"]{
   background:#ffebeb!important;color:#cb3e48!important;border-color:#ffdada!important;
 }
 /* Return dialog follows Figma modal spacing and width by workflow state. */
@@ -5030,4 +5030,14 @@ app-admin-order-return-detail .return-detail__receive-form .return-detail__field
 @media(max-width:430px){
  app-admin-order-return-detail .return-detail__receive-overview,
  app-admin-order-return-detail .return-detail__receive-item-grid{grid-template-columns:1fr}
+}
+
+/* Consistent success/destructive badges in return detail cards and lists. */
+app-admin-order-return-detail .return-detail__badge[data-status="APPROVED"],
+app-admin-order-return-detail .return-detail__badge[data-status="COMPLETED"]{
+  background:#e8f5e9!important;color:#2e7d32!important;
+}
+app-admin-order-return-detail .return-detail__badge[data-status="REJECTED"],
+app-admin-order-return-detail .return-detail__badge[data-status="CANCELLED"]{
+  background:#ffebeb!important;color:#cb3e48!important;
 }
