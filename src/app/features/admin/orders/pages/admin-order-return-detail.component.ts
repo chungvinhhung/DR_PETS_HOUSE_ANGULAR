@@ -253,9 +253,9 @@ export class AdminOrderReturnDetailComponent {
   actionExplanation(action: WorkflowAction): string {
     return ({
       process: 'Yêu cầu chuyển sang Đang xử lý. Chưa tiếp nhận hàng thực tế.',
-      receive: 'Đối chiếu số lượng và tình trạng sản phẩm thực nhận trước khi xác nhận.'
+      receive: 'Đối chiếu số lượng và tình trạng sản phẩm thực nhận trước khi xác nhận.',
       approve: 'Kiểm tra lại số lượng thực nhận và số tiền hoàn trước khi phê duyệt.',
-      reject: 'Lý do từ chối phải được ghi nhận trước khi hoàn tất.'
+      reject: 'Lý do từ chối phải được ghi nhận trước khi hoàn tất.',
       refund: 'Xác nhận hoàn tiền trong môi trường mô phỏng. Thao tác này không chuyển tiền thật cho khách hàng.',
     })[action];
   }
