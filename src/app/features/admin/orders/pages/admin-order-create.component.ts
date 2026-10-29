@@ -72,7 +72,9 @@ export class AdminOrderCreateComponent {
   readonly created=signal(false);
   private quoteRequest=0;
   private createKey: string|null=null;
-  readonly canQuote=computed(()=>this.session.user()?.systemRole==='ADMIN' && this.lines().length>0 && !this.hasInvalidQuantities() && !!this.branchId());
+  readonly isAdmin=computed(()=>this.session.user()?.systemRole==='ADMIN');
+  readonly selectedBranchName=computed(()=>this.branches().find(b=>b.id===this.branchId())?.name||'');
+  readonly canQuote=computed(()=>this.isAdmin() && this.lines().length>0 && !this.hasInvalidQuantities() && !!this.branchId());
   readonly quoteIsCurrent=computed(()=>!!this.quote() && this.quoteState()==='ready' && this.quoteFingerprint()===this.getQuoteFingerprint() && Date.now()<Date.parse(this.quote()!.quoteExpiresAt));
   readonly canSubmit=computed(()=>this.quoteIsCurrent() && this.isDraftValid() && this.quote()!.eligible && this.quote()!.availability.canFulfillEntireCart && (!this.voucherCode().trim() || this.quote()!.pricing.voucherDiscount>0) && this.session.user()?.systemRole==='ADMIN' && !!this.selectedCustomer() && !this.saving());
   readonly lookupPhone = signal('');
