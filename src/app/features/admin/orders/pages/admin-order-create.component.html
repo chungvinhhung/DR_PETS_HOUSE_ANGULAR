@@ -5,8 +5,7 @@
     </nav>
     <h1>Tạo đơn hàng</h1>
     <p class="create-order__helper create-order__helper--warning" role="status">
-      Chức năng tạo đơn hàng hộ khách chưa được Backend hỗ trợ.
-      Bạn có thể điền và rà soát thông tin bản nháp, nhưng chưa thể gửi tạo đơn thật.
+      Chọn chi nhánh, sản phẩm và xem báo giá trước khi xác nhận. Giao dịch tạo đơn đang được mở thử nghiệm cho quản trị viên với khách có tài khoản.
     </p>
 
     <section class="create-order__panel" aria-labelledby="lookup-title">
@@ -89,6 +88,14 @@
 
     <section class="create-order__panel" aria-labelledby="products-title">
       <h2 id="products-title">Sản phẩm trong đơn hàng</h2>
+      <div class="create-order__branch-row">
+        <label class="create-order__label" for="order-fulfillment-branch">Chi nhánh xử lý đơn <span aria-hidden="true">*</span></label>
+        <select id="order-fulfillment-branch" [value]="branchId()" (change)="selectBranch($any($event.target).value)">
+          <option value="">Chọn chi nhánh</option>
+          @for(b of branches(); track b.id){<option [value]="b.id">{{b.name}}</option>}
+        </select>
+        @if(branchLoadError()){<p class="create-order__error">Chưa tải được chi nhánh. Vui lòng tải lại trang.</p>}
+      </div>
       <div class="create-order__products-lookup">
         <div class="create-order__search-field create-order__search-field--product">
           <img src="/assets/service-catalog/search.svg" alt="" width="18" height="18">
@@ -288,11 +295,8 @@
             <button type="button" class="create-order__button create-order__button--voucher"
               (click)="explainVoucher()">Áp dụng</button>
           </div>
-          @if (voucherPreviewState() === 'unverified') {
-            <p class="create-order__voucher-status" role="status">
-              Mã {{ voucherCode() }} đã được ghi nhận nhưng chưa được áp dụng.
-              Số tiền giảm giá sẽ được xác nhận khi tạo đơn.
-            </p>
+          @if (voucherCode().trim() && quoteIsCurrent() && quote()!.pricing.voucherDiscount===0) {
+            <p class="create-order__voucher-status" role="status">Mã này chưa đủ điều kiện giảm giá. Vui lòng chọn mã khác hoặc xóa mã.</p>
           }
           <label class="create-order__label" for="order-note">Ghi chú đơn hàng</label>
           <textarea id="order-note" rows="2" placeholder="Ghi chú giao hàng (nếu có)..."
@@ -300,27 +304,65 @@
         </div>
         <div class="create-order__summary">
           <dl class="create-order__breakdown">
-            <div><dt>Tạm tính <small>(Giá sản phẩm hiện tại)</small></dt><dd>{{ price(subtotal()) }}</dd></div>
-            <div><dt>Phí vận chuyển</dt><dd>—</dd></div>
-            <div><dt>Giảm giá <small>(Voucher)</small></dt><dd>—</dd></div>
+            <div><dt>Tạm tính</dt><dd>{{ quoteIsCurrent() ? price(quote()!.pricing.merchandiseSubtotal) : '—' }}</dd></div>
+            <div><dt>Phí vận chuyển</dt><dd>{{ quoteIsCurrent() ? price(quote()!.pricing.shippingFee) : '—' }}</dd></div>
+            <div><dt>Giảm giá (Voucher)</dt><dd>{{ quoteIsCurrent() ? price(quote()!.pricing.voucherDiscount) : '—' }}</dd></div>
           </dl>
           <div class="create-order__total">
-            <div><strong>Tổng cộng</strong><small>(Cần xác nhận phí vận chuyển và giảm giá)</small></div>
-            <strong>Chờ xác nhận</strong>
+            <div><strong>Tổng cộng</strong><small>{{quoteIsCurrent() ? 'Báo giá còn hiệu lực 15 phút' : 'Cần kiểm tra giá và tồn kho'}}</small></div>
+            <strong>{{ quoteIsCurrent() ? price(quote()!.pricing.totalAmount) : 'Chờ báo giá' }}</strong>
           </div>
         </div>
       </div>
     </section>
 
-    <p class="create-order__pending">
-      Chưa thể xác nhận tạo đơn cho đến khi hệ thống hỗ trợ tính tổng và lưu đơn hộ khách.
-    </p>
+    <div class="create-order__quote-actions">
+      <button type="button" class="create-order__button create-order__button--outline"
+        [disabled]="!canQuote() || quoteState()==='loading' || saving()" (click)="requestQuote()">
+        {{quoteState()==='loading' ? 'Đang tính báo giá...' : 'Xem báo giá & kiểm tra kho'}}
+      </button>
+      @if (quoteIsCurrent() && !quote()!.eligible) {
+        <p class="create-order__pending">Một số sản phẩm đã hết tồn kho tại chi nhánh đang chọn. Vui lòng điều chỉnh đơn hàng.</p>
+      }
+      @if(quoteState()==='error') {<p class="create-order__pending" role="alert">{{quoteError()}}</p>}
+      @if(session.user()?.systemRole!=='ADMIN') {
+        <p class="create-order__pending">Tính năng xác nhận đơn hàng đang được mở cho quản trị viên. Các vai trò khác có thể tiếp tục xem bản nháp.</p>
+      } @else if(!selectedCustomer()) {
+        <p class="create-order__pending">Đơn khách vãng lai đang chờ hoàn thiện bước kích hoạt tài khoản. Bạn vẫn có thể xem báo giá.</p>
+      }
+    </div>
     <div class="create-order__footer">
       <button type="button" class="create-order__button create-order__button--outline" (click)="askCancel()">Hủy</button>
-<button type="button" class="create-order__button create-order__button--primary" disabled
-        title="Chưa thể xác nhận tạo đơn">Xác nhận tạo đơn</button>
+<button type="button" class="create-order__button create-order__button--primary"
+        [disabled]="!canSubmit()" (click)="reviewCreate()">Xác nhận tạo đơn</button>
     </div>
   </main>
+  @if(confirmCreateOpen()){
+    <div class="create-order__overlay" (click)="closeCreate()">
+      <section class="create-order__dialog create-order__dialog--confirm"
+        role="dialog" aria-modal="true" aria-labelledby="confirm-order-title"
+        (click)="$event.stopPropagation()">
+        <div class="create-order__dialog-head">
+          <div>
+            <h2 id="confirm-order-title">Xác nhận tạo đơn hàng?</h2>
+            <p>Đơn sẽ được lưu thật và trừ tồn kho tại chi nhánh {{branches().find(b=>b.id===branchId())?.name||''}}.</p>
+          </div>
+          <button type="button" class="create-order__dialog-close" aria-label="Đóng"
+            [disabled]="saving()" (click)="closeCreate()">×</button>
+        </div>
+        <p><strong>Tổng đơn: {{price(quote()!.pricing.totalAmount)}}</strong></p>
+        <p>{{paymentMethod()==='ONLINE_MOCK' ? 'Thanh toán trực tuyến sẽ được đánh dấu đã thanh toán trên môi trường mô phỏng.' : 'Đơn sẽ chờ thu tiền khi giao hàng.'}}</p>
+        <div class="create-order__dialog-actions">
+          <button type="button" class="create-order__button create-order__button--outline"
+            [disabled]="saving()" (click)="closeCreate()">Quay lại</button>
+          <button type="button" class="create-order__button create-order__button--primary"
+            [disabled]="saving() || !canSubmit()" (click)="submitCreate()">
+            {{saving()?'Đang tạo đơn...':'Xác nhận và tạo đơn'}}
+          </button>
+        </div>
+      </section>
+    </div>
+  }
   @if (cancelDialogOpen()) {
     <div class="create-order__overlay" (click)="closeCancel()">
       <section class="create-order__dialog create-order__dialog--confirm"
