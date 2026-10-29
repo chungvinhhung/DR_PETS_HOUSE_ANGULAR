@@ -250,6 +250,31 @@ export class AdminOrderReturnDetailComponent {
     if(action==='process')return 'Tiếp nhận xử lý yêu cầu';
     return 'Xác nhận hoàn tiền';
   }
+  readonly todayLocal = new Intl.DateTimeFormat('vi-VN',{
+    timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric',
+  }).format(new Date());
+  receiveQuantity(id:string):number {
+    const raw=this.inspection()[id]?.receivedQty;
+    return raw!==undefined && raw!=='' && Number.isFinite(Number(raw))?Number(raw):0;
+  }
+  totalReceivedPreview():number {
+    return (this.data()?.items||[]).reduce((sum,item)=>sum+this.receiveQuantity(item.orderItemId),0);
+  }
+  restockPreview():number {
+    return (this.data()?.items||[]).reduce((sum,item)=>
+      sum+(this.inspection()[item.orderItemId]?.quality==='RESELLABLE'?this.receiveQuantity(item.orderItemId):0),0);
+  }
+  stepReceive(id:string,delta:number,max:number):void {
+    const next=Math.min(max,Math.max(0,this.receiveQuantity(id)+delta));
+    this.editInspection(id,'receivedQty',String(next));
+  }
+  modalSubtitle(action:WorkflowAction):string {
+    const r=this.data();if(!r)return '';
+    const code=r.code||r.id;
+    if(action==='receive')return code+' | '+r.items.length+' sản phẩm cần kiểm tra';
+    if(action==='approve')return code+' · '+r.items.map(i=>i.productName).join(', ')+' · Đã nhận '+this.approvedQuantity();
+    return code+' · '+this.label(r.status);
+  }
   actionExplanation(action: WorkflowAction): string {
     return ({
       process: 'Yêu cầu chuyển sang Đang xử lý. Chưa tiếp nhận hàng thực tế.',
@@ -262,7 +287,11 @@ export class AdminOrderReturnDetailComponent {
   open(action: WorkflowAction): void {
     if (!this.availableActions().includes(action) || this.busy()) return;
     this.note.set('');
-    this.inspection.set({});
+    this.inspection.set(action==='receive'
+      ? Object.fromEntries((this.data()?.items||[]).map(item=>[
+          item.orderItemId,{receivedQty:String(item.requestedQty),quality:''}
+        ]))
+      : {});
     this.dialog.set(action);
   }
   close(): void { if (!this.busy()) this.dialog.set(null); }
