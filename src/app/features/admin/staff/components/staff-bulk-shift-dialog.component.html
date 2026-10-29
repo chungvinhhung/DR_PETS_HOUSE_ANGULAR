@@ -101,7 +101,7 @@
       </div>
 
       @if (replacedIds().length) {
-        <p class="bulk-shift-replace-note" role="status">{{ replacedIds().length }} ca hiện có đang chờ được thay thế. Lịch cũ chưa bị xóa.</p>
+        <p class="bulk-shift-replace-note" role="status">{{ replacedIds().length }} ca hiện có đang chờ được thay thế. Lịch cũ chưa bị xóa. Chức năng lưu thay thế cần API atomic từ BE.</p>
       }
       @if (info()) { <p class="bulk-shift-info" role="status">{{ info() }}</p> }
       @if (error()) { <p class="bulk-shift-error" role="alert">{{ error() }}</p> }
