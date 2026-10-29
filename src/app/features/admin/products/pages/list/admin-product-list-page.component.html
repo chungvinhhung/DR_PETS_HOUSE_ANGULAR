@@ -13,7 +13,7 @@
     <section class="product-panel" aria-label="Danh sách sản phẩm">
       <div class="toolbar web2-management-toolbar web2-filterbar product-filter-toolbar">
         <label class="search web2-management-search product-filter-search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.2 4.2"/></svg>
+          <img class="product-filter-search-icon" src="/assets/service-catalog/search.svg" alt="" aria-hidden="true">
           <input type="search" [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput($event)"
             (keyup.enter)="applyFilters()" placeholder="Tìm kiếm tên sản phẩm hoặc SKU..."
             aria-label="Tìm sản phẩm theo tên hoặc SKU">
@@ -27,7 +27,7 @@
                 aria-controls="product-category-options"
                 (click)="togglePanel('category')">
                 Danh mục @if(activeCount('category')){<span class="product-filter-count">{{activeCount('category')}}</span>}
-                <span class="product-filter-chevron" aria-hidden="true">⌄</span>
+                <img class="product-filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
               </button>
               @if(openPanel==='category'){
                 <div class="product-filter-popover product-filter-popover--quick" id="product-category-options" role="group" aria-label="Chọn danh mục sản phẩm">
@@ -53,7 +53,7 @@
                 [disabled]="archiveView" aria-controls="product-status-options"
                 (click)="togglePanel('status')">
                 Trạng thái @if(activeCount('status')){<span class="product-filter-count">{{activeCount('status')}}</span>}
-                <span class="product-filter-chevron" aria-hidden="true">⌄</span>
+                <img class="product-filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
               </button>
               @if(openPanel==='status'){
                 <div class="product-filter-popover product-filter-popover--quick" id="product-status-options" role="group" aria-label="Chọn trạng thái sản phẩm">
@@ -138,7 +138,7 @@
             </div>
           </div>
           <a class="primary-btn web2-add-button product-add-button" routerLink="/admin/products/new">
-            <span class="web2-add-icon" aria-hidden="true">+</span><span>Thêm sản phẩm</span>
+            <img class="web2-add-icon product-filter-add-icon" src="/assets/admin-product/icon-add.svg" alt="" aria-hidden="true"><span>Thêm sản phẩm</span>
           </a>
         </div>
         @if(openPanel){
