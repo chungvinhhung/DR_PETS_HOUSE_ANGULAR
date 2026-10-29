@@ -1,5 +1,5 @@
 import { firstValueFrom } from 'rxjs';
-import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
+import { adminPageWindow, countCursorItems } from '../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -25,6 +25,9 @@ export class AdminVoucherListComponent {
   private readonly session = inject(AuthSessionService);
   private readonly destroyRef = inject(DestroyRef);
   private requestVersion = 0;
+  private countGeneration = 0;
+  private countRequested = false;
+  readonly countingPages = signal(false);
 
   readonly pageSize = 6;
   readonly all = signal<AdminVoucher[]>([]);
@@ -41,7 +44,7 @@ export class AdminVoucherListComponent {
   readonly previous = signal<(string | null)[]>([]);
   readonly page = computed(() => this.previous().length + 1);
   readonly visiblePageNumbers = computed(() =>
-    adminPageWindow(this.page(),this.totalPages() ?? (this.page()+(this.nextCursor()?1:0))));
+    this.totalPages()===null ? [this.page()] : adminPageWindow(this.page(),this.totalPages()!));
   readonly canEdit = computed(() => this.session.user()?.systemRole === 'ADMIN');
   readonly hasActiveFilters = computed(() =>
     Boolean(this.search().trim()) || this.scope() !== 'ALL' || this.status() !== 'ALL' ||
@@ -74,7 +77,8 @@ export class AdminVoucherListComponent {
         if (request !== this.requestVersion) return;
         this.all.set(Array.isArray(result.items) ? result.items : []);
         this.nextCursor.set(result.nextCursor || null);
-        this.totalCount.set(typeof result.totalCount==='number' ? result.totalCount:null);
+        if (typeof result.totalCount==='number') this.totalCount.set(result.totalCount);
+        else if (this.totalCount()===null) this.countVoucherPages();
         this.loading.set(false);
       },
       error: err => {
@@ -87,11 +91,37 @@ export class AdminVoucherListComponent {
       },
     });
   }
+  private invalidateCount():void {
+    this.countGeneration++;
+    this.countRequested=false;
+    this.totalCount.set(null);
+    this.countingPages.set(false);
+  }
+  private countVoucherPages():void {
+    if(this.countRequested || this.totalCount()!==null)return;
+    this.countRequested=true;
+    this.countingPages.set(true);
+    const generation=this.countGeneration;
+    const filters={
+      ...(this.scope()!=='ALL'?{scope:this.scope() as VoucherScope}:{}),
+      ...(this.status()!=='ALL'?{status:this.status() as VoucherStatus}:{}),
+      ...(this.search().trim()?{search:this.search().trim()}:{}),
+      limit:100,
+    };
+    void countCursorItems((cursor)=>
+      this.api.list({...filters,...(cursor?{cursor}:{})})
+    ).then(total=>{
+      if(generation!==this.countGeneration || this.destroyRef.destroyed)return;
+      this.countingPages.set(false);
+      if(total!==null)this.totalCount.set(total);
+    });
+  }
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
   setSearch(value: string): void {
     this.search.set(value);
     if (this.searchTimer) clearTimeout(this.searchTimer);
     this.searchTimer=setTimeout(()=>{
+      this.invalidateCount();
       this.previous.set([]); this.cursor.set(null); this.fetch();
     },300);
   }
@@ -105,6 +135,7 @@ export class AdminVoucherListComponent {
     this.status.set(value as VoucherStatus | 'ALL'); this.resetAndFetch();
   }
   resetAndFetch(): void {
+    this.invalidateCount();
     this.previous.set([]);
     this.cursor.set(null);
     this.fetch();
