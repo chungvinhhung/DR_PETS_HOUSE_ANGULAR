@@ -5509,3 +5509,91 @@ app-staff-bulk-shift-dialog .bulk-shift-add-toggle:disabled {
   opacity:.55;
   cursor:not-allowed;
 }
+
+/* WEB2 Product archive: same ellipsis/action-menu affordance as Service Catalog.
+   The menu uses viewport positioning to stay visible inside horizontally scrollable tables. */
+app-admin-product-list-page .product-archive-action-cell {
+  text-align:center;
+}
+app-admin-product-list-page .actions button.product-archive-more-button {
+  display:inline-grid;
+  place-items:center;
+  width:32px;
+  height:32px;
+  min-width:32px;
+  margin:0;
+  padding:0;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#25354e;
+  cursor:pointer;
+}
+app-admin-product-list-page .product-archive-more-button svg {
+  display:block;
+  width:24px;
+  height:24px;
+}
+app-admin-product-list-page .actions button.product-archive-more-button:hover:not(:disabled),
+app-admin-product-list-page .actions button.product-archive-more-button[aria-expanded="true"] {
+  background:#edf3fd;
+}
+app-admin-product-list-page .product-archive-action-menu {
+  position:fixed;
+  z-index:9500;
+  width:195px;
+  padding:5px 0;
+  border:1px solid #dfe5ee;
+  border-radius:10px;
+  background:#fff;
+  box-shadow:0 8px 24px rgb(15 23 42 / 16%);
+  text-align:left;
+}
+app-admin-product-list-page .product-archive-action-menu button {
+  display:block;
+  width:100%;
+  min-height:34px;
+  padding:7px 14px;
+  border:0;
+  background:#fff;
+  color:#25354e;
+  font:400 12px/20px Roboto,Arial,sans-serif;
+  text-align:left;
+  cursor:pointer;
+}
+app-admin-product-list-page .product-archive-action-menu button:hover,
+app-admin-product-list-page .product-archive-action-menu button:focus-visible {
+  background:#eaf3ff;
+}
+app-admin-product-list-page .product-archive-action-menu .product-archive-danger-action {
+  color:#c12b2b;
+}
+app-admin-product-list-page .product-archive-action-menu .product-archive-danger-action:hover,
+app-admin-product-list-page .product-archive-action-menu .product-archive-danger-action:focus-visible {
+  background:#fff1f0;
+}
+app-admin-product-list-page .product-permanent-delete-confirm {
+  cursor:pointer;
+  min-height:42px;
+  padding:10px 14px;
+  border:1px solid #c62828;
+  border-radius:8px;
+  background:#c62828;
+  color:#fff;
+  font:600 14px Roboto,Arial,sans-serif;
+}
+app-admin-product-list-page .product-permanent-delete-confirm:hover:not(:disabled) {
+  background:#aa2424;
+}
+app-admin-product-list-page .product-permanent-delete-confirm:disabled {
+  opacity:.5;
+  cursor:not-allowed;
+}
+app-admin-product-list-page .product-permanent-delete-error {
+  color:#b42318;
+  background:#fff1f0;
+  border:1px solid #ffd1ce;
+  border-radius:8px;
+  padding:10px 12px;
+  font-size:13px;
+}
