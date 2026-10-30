@@ -140,7 +140,12 @@ import {
  td{border-top:1px solid #e2e8f0;height:58px;padding:11px 12px;line-height:1.5;overflow-wrap:anywhere}
  th:nth-child(1){width:12%}th:nth-child(2){width:13%}th:nth-child(3){width:13%}
  th:nth-child(4){width:18%}th:nth-child(5){width:20%}th:nth-child(6){width:15%}th:nth-child(7){width:9%}
- td:nth-last-child(-n+2),th:nth-last-child(-n+2){text-align:center}.code{font-weight:600;color:#29354b}
+ /* Align each column heading and its values on the same vertical axis.
+    Service names remain left-aligned for easier scanning of long descriptions. */
+ .scroll table :is(th,td):not(:nth-child(5)){text-align:center}
+ .scroll table :is(th,td):nth-child(5){text-align:left}
+ .scroll table :is(th,td){vertical-align:middle}
+ .code{font-weight:600;color:#29354b}
  .badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 9px;border-radius:99px;white-space:nowrap;background:#edf2f8;color:#556174;font-size:12px}
  .badge[data-status=warning]{background:#fff2dd;color:#bc790e}.badge[data-status=success]{background:#e5f5e6;color:#317744}
  .badge[data-status=danger]{background:#ffdddd;color:#b93131}.actions{display:flex;justify-content:center;gap:12px;align-items:center}
