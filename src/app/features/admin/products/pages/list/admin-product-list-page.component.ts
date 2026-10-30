@@ -1,4 +1,4 @@
-import { adminPageWindow } from '../../../../../shared/utils/admin-table-pagination';
+import { adminPageWindowWithEdges } from '../../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, OnInit, signal, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
@@ -404,11 +404,10 @@ export class AdminProductListPageComponent implements OnInit {
 
   visiblePageNumbers() {
     const total = this.totalProducts();
-    // Never fabricate an apparent total while the server-side count is unknown.
-    // Numeric window is complete as soon as BE exposes an exact total or
-    // the bounded full cursor count succeeds.
+    // Show page 1 and the last page even when the user is at the opposite end.
+    // Only show validated page numbers from the backend's actual total.
     if (total === null) return [this.pageNumber()];
-    return adminPageWindow(this.pageNumber(), Math.max(1, Math.ceil(total / this.pageSize)));
+    return adminPageWindowWithEdges(this.pageNumber(), Math.max(1, Math.ceil(total / this.pageSize)));
   }
 
   goToPage(page: number): void {
