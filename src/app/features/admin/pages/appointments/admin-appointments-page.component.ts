@@ -45,9 +45,9 @@ import {
         <span class="sr" id="appointment-date-label">Khoảng thời gian</span>
         <select id="appointment-date-filter" aria-labelledby="appointment-date-label"
           [value]="dateRange()" (change)="changeDateRange($any($event.target).value)">
+          <option value="all">Tất cả thời gian</option>
           <option value="30">30 ngày qua</option>
           <option value="90">90 ngày qua</option>
-          <option value="all">Tất cả thời gian</option>
         </select>
       </label>
       <a routerLink="/admin/appointments/new" class="primary web2-add-button">
@@ -130,8 +130,8 @@ import {
  .panel{border:1px solid #dee5f0;border-radius:10px;background:#fff;margin-bottom:18px;overflow:hidden}
  .filters{margin-bottom:18px}.search{min-width:0}.search input{color:#26364a;font-size:13px}
  .filter-actions{display:flex;align-items:center;gap:12px}.filter-control{width:170px;height:40px}
- .filters .filter-control select{box-sizing:border-box;appearance:none;-webkit-appearance:none;width:100%;height:40px;padding:0 38px 0 12px;
-   border:1px solid #dee5f0;border-radius:8px;background:#fff url('/assets/admin-product/expand_more.svg') no-repeat right 11px center;
+ .filters .filter-control select{box-sizing:border-box;appearance:none;-webkit-appearance:none;width:100%;height:40px;padding:0 42px 0 12px;
+   border:1px solid #dee5f0;border-radius:8px;background:#fff url('/assets/admin-product/icon-chevron-down.svg') no-repeat right 14px center;
    background-size:18px 18px;color:#26364a;font:400 13px Roboto,Arial,sans-serif;cursor:pointer}
  .primary{background:#0d47a1;border:1px solid #0d47a1;color:#fff;text-decoration:none;font-weight:600}
  .primary:hover{background:#083a89}.secondary{padding:9px 15px;border:1px solid #d5deeb;border-radius:8px;color:#0d47a1;background:#fff;cursor:pointer}
@@ -163,7 +163,7 @@ export class AdminAppointmentsPageComponent {
   private requestVersion=0;
   readonly search=signal('');
   readonly status=signal('');
-  readonly dateRange=signal('30');
+  readonly dateRange=signal('all');
   readonly page=signal(1);
   readonly limit=7;
   readonly loading=signal(false);
