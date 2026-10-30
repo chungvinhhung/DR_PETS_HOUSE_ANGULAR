@@ -137,7 +137,8 @@ import {
  /* Date, time and customer are center-aligned on equal-width columns.
     Keep service names left-aligned, but inset that column's heading and
     values together so their visible starting edge does not crowd Customer. */
- .scroll table :is(th,td):not(:nth-child(5)){text-align:center}
+ .scroll table :is(th,td):not(:nth-child(1)):not(:nth-child(5)){text-align:center}
+ .scroll table :is(th,td):nth-child(1){text-align:left}
  .scroll table :is(th,td):nth-child(5){
    text-align:left;
    padding-left:clamp(28px,4.2vw,60px);
