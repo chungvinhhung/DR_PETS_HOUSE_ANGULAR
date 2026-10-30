@@ -82,7 +82,10 @@ import {
   styles:[`
   :host{display:block;color:#273449}.record-list{padding:32px;max-width:1190px;margin:auto}h1{font-size:24px;margin:4px 0 26px}
   .panel{background:#fff;border:1px solid #dce5ef;border-radius:11px;margin-bottom:18px;overflow:hidden}
-  .filter{padding:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.filter select{height:40px;border:1px solid #d7e2ee;border-radius:8px;padding:0 12px;font:inherit;font-size:13px;color:#34445a;background:white;min-width:130px}.filter select:disabled{opacity:.6}
+  .filter{padding:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.filter select{box-sizing:border-box;appearance:none;-webkit-appearance:none;height:40px;border:1px solid #d7e2ee;border-radius:8px;
+    padding:0 42px 0 12px;font:inherit;font-size:13px;color:#34445a;min-width:130px;cursor:pointer;
+    background:#fff url('/assets/admin-product/icon-chevron-down.svg') no-repeat right 14px center;background-size:18px 18px}
+  .filter select:disabled{opacity:.6;cursor:not-allowed;background-color:#f8fafc}
   .search{height:40px;border:1px solid #cfd8e6;border-radius:8px;display:flex;align-items:center;gap:9px;padding:0 12px;flex:1;min-width:235px}
   .search input{border:0;outline:0;min-width:0;width:100%;font:inherit;font-size:13px}table{width:100%;border-collapse:collapse;min-width:1050px;font-size:12px}th{background:#f8fafc;color:#2f3c4f;text-align:left;padding:14px 11px;white-space:nowrap}
   td{padding:15px 11px;border-top:1px solid #e1e7ef;line-height:1.5;color:#44536c}td:nth-last-child(-n+2),th:nth-last-child(-n+2){text-align:center}
