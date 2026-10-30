@@ -72,3 +72,20 @@ th:nth-child(10),td:nth-child(10) { width: 85px; text-align: center; }
 .pagination-buttons .pagination-page:hover:not(:disabled):not(.pagination-page--active){background:#f1f5f9}
 .pagination-buttons .pagination-page:focus-visible{outline:2px solid #0d47a1;outline-offset:-3px}
 .pagination-buttons{flex-wrap:wrap}
+
+/* Keep failed-page retry legible without shifting the selected pagination page. */
+.product-list-load-error {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+  margin:0 0 12px;
+  padding:10px 14px;
+  border:1px solid #f2c9c6;
+  border-radius:8px;
+  background:#fff7f6;
+  color:#a42620;
+  font-size:13px;
+}
+.product-list-load-error .outline-btn { min-height:34px; padding:6px 12px; }
