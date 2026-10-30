@@ -80,19 +80,10 @@ import {
                   {{label(item)}}</span></td>
                 <td>
                   <div class="actions">
-                    <a [routerLink]="['/admin/appointments',item.id]" title="Xem / xử lý lịch hẹn" [attr.aria-label]="'Xem lịch hẹn '+item.code">
-                      <img src="/assets/admin-staff/icon-edit.svg" width="16" height="16" alt="" />
+                    <a [routerLink]="['/admin/appointments',item.id]" title="Xem chi tiết"
+                      [attr.aria-label]="'Xem chi tiết lịch hẹn '+item.code">
+                      <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="" />
                     </a>
-                    @if (item.status!=='CANCELLED' && item.status!=='COMPLETED' && item.status!=='NO_SHOW') {
-                      <a [routerLink]="['/admin/appointments',item.id]" [queryParams]="{action:'cancel'}"
-                        title="Xem điều kiện yêu cầu hủy (không xóa dữ liệu)" [attr.aria-label]="'Xem điều kiện hủy '+item.code">
-                        <img src="/assets/service-catalog/delete_outline.svg" width="16" height="16" alt="" />
-                      </a>
-                    } @else {
-                      <span class="disabled-action" title="Lịch này không thể hủy">
-                        <img src="/assets/service-catalog/delete_outline.svg" width="16" height="16" alt="" />
-                      </span>
-                    }
                   </div>
                 </td>
               </tr>
@@ -138,28 +129,44 @@ import {
  .scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:800px;font-size:12px;color:#41506a}
  th{height:44px;background:#f8fafc;color:#26364a;text-align:left;font-weight:650;padding:10px 12px;white-space:nowrap}
  td{border-top:1px solid #e2e8f0;height:58px;padding:11px 12px;line-height:1.5;overflow-wrap:anywhere}
- th:nth-child(1){width:12%}th:nth-child(2){width:13%}th:nth-child(3){width:13%}
- th:nth-child(4){width:18%}th:nth-child(5){width:20%}th:nth-child(6){width:15%}th:nth-child(7){width:9%}
+ /* Mã lịch 14% + five equally spaced fields (5 × 15.4%) + Thao tác 9% = 100%.
+    Date, time, customer, service and status have equal column widths. */
+ th:nth-child(1){width:14%}
+ th:nth-child(2),th:nth-child(3),th:nth-child(4),th:nth-child(5),th:nth-child(6){width:15.4%}
+ th:nth-child(7){width:9%}
  /* Align each column heading and its values on the same vertical axis.
     Service names remain left-aligned for easier scanning of long descriptions. */
  .scroll table :is(th,td):not(:nth-child(5)){text-align:center}
- .scroll table :is(th,td):nth-child(5){text-align:left}
+ .scroll table :is(th,td):nth-child(5){text-align:left;padding-left:20px}
  .scroll table :is(th,td){vertical-align:middle}
  .code{font-weight:600;color:#29354b}
  .badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 9px;border-radius:99px;white-space:nowrap;background:#edf2f8;color:#556174;font-size:12px}
  .badge[data-status=warning]{background:#fff2dd;color:#bc790e}.badge[data-status=success]{background:#e5f5e6;color:#317744}
  .badge[data-status=danger]{background:#ffdddd;color:#b93131}.actions{display:flex;justify-content:center;gap:12px;align-items:center}
- .actions a,.disabled-action{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px}
- .actions a:hover{background:#eef5ff;border-radius:5px}.disabled-action{opacity:.3}.message{text-align:center;color:#718096;padding:26px}
+ .actions a{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px}
+ .actions a img{display:block;width:20px;height:20px}
+ .actions a:hover{background:#eef5ff}.message{text-align:center;color:#718096;padding:26px}
  .list-footer{min-height:60px;display:flex;justify-content:space-between;gap:12px;align-items:center;padding:8px 12px;color:#6c7c93;font-size:12px;border-top:1px solid #e2e8f0}
  .list-footer p{margin:0;font-size:12px}.data-scope{color:#64748b}
- .pagination{display:flex;align-items:center;gap:6px}
- .pagination button{height:32px;min-width:32px;background:#fff;border:1px solid #d8e1ed;border-radius:6px;cursor:pointer;color:#0d47a1;font:500 12px Roboto,Arial,sans-serif}
- .pagination button:hover:not(:disabled){background:#eef5ff}.pagination button.selected{background:#0d47a1;color:#fff;border-color:#0d47a1}
- .pagination button:disabled{opacity:.4;cursor:not-allowed}
+ /* Product Management pagination: joined 44px rectangular cells and
+    light-blue active number, never disconnected round blue buttons. */
+ .pagination{display:flex;align-items:stretch;gap:0;max-width:100%;overflow-x:auto;
+   border:1px solid #e2e8f0;border-radius:8px;scrollbar-width:thin}
+ .pagination :is(button,span){box-sizing:border-box;display:grid;place-items:center;
+   flex:0 0 44px;width:44px;min-width:44px;height:44px;padding:0;
+   border:0;border-right:1px solid #e2e8f0;border-radius:0;
+   background:#fff;color:#475569;font:400 14px/20px Roboto,Arial,sans-serif}
+ .pagination :is(button,span):last-child{border-right:0}
+ .pagination button{cursor:pointer}
+ .pagination button:hover:not(:disabled):not(.selected){background:#f1f5f9}
+ .pagination button.selected{background:#e5f6fd;color:#0d47a1;
+   box-shadow:inset 0 0 0 1px #0d47a1;font-weight:700}
+ .pagination button:disabled{color:#bac8d9;cursor:not-allowed}
+ .pagination button:focus-visible{outline:2px solid #0d47a1;outline-offset:-3px}
  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
  @media(max-width:1120px){.filters{flex-wrap:wrap}.filter-actions{flex-wrap:wrap;justify-content:flex-start;width:100%}}
- @media(max-width:650px){.appointments{padding:16px}.filter-control{flex:1;min-width:130px}.list-footer{flex-wrap:wrap}}
+ @media(max-width:650px){.appointments{padding:16px}.filter-control{flex:1;min-width:130px}.list-footer{flex-wrap:wrap}
+   .pagination{margin-left:auto}}
  `]
 })
 export class AdminAppointmentsPageComponent {
