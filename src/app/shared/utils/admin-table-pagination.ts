@@ -45,37 +45,29 @@ export async function countCursorItems<T>(
 }
 
 /**
- * Common visible pagination model. Show at most five numbered buttons.
- * Example (6 pages): page 1 -> [1,2,3,'…',6],
- * page 2 -> [2,3,4,'…',6]. Near the last page, show the final window.
- * The ellipsis is an indicator, not a navigable page.
+ * Shared numbered pagination for all Web 2 management tables.
+ *
+ * Always include both first and last page; show nearby pages and decorative
+ * ellipses for skipped ranges. At most seven items, including ellipses:
+ * 19 pages: at 1  => [1,2,3,4,5,'…',19]
+ *           at 10 => [1,'…',9,10,11,'…',19]
+ *           at 19 => [1,'…',15,16,17,18,19]
+ *
+ * This is display logic only; each module retains its own data-loading method.
+ * The ellipsis is not a navigable page.
  */
 export type AdminPageItem = number | '…';
-export function adminPageWindow(current: number, total: number): AdminPageItem[] {
-  const count = Math.max(1, Math.floor(total));
-  const page = Math.min(count, Math.max(1, Math.floor(current)));
-  if (count <= 5) return Array.from({length:count}, (_,i)=>i+1);
-  // Insert ellipsis only when at least one page is actually omitted.
-  if (page+3 < count) return [page,page+1,page+2,'…',count];
-  const start = Math.max(1,count-4);
-  return Array.from({length:count-start+1},(_,i)=>start+i);
-}
 
-/**
- * Numbered pagination with persistent first/last page shortcuts.
- * Examples for 19 pages:
- *  - at 1:  [1,2,3,4,5,'…',19]
- *  - at 10: [1,'…',9,10,11,'…',19]
- *  - at 19: [1,'…',15,16,17,18,19]
- *
- * The ellipsis is decorative, and is never a clickable button.
- * Kept separate from adminPageWindow so existing module layouts are unaffected.
- */
-export function adminPageWindowWithEdges(current: number, total: number): AdminPageItem[] {
+export function adminPageWindow(current: number, total: number): AdminPageItem[] {
   const count = Math.max(1, Math.floor(total));
   const page = Math.min(count, Math.max(1, Math.floor(current)));
   if (count <= 7) return Array.from({ length: count }, (_, i) => i + 1);
   if (page <= 4) return [1, 2, 3, 4, 5, '…', count];
   if (page >= count - 3) return [1, '…', count - 4, count - 3, count - 2, count - 1, count];
   return [1, '…', page - 1, page, page + 1, '…', count];
+}
+
+/** Backward-compatible helper from Product pagination, now shared by all lists. */
+export function adminPageWindowWithEdges(current: number, total: number): AdminPageItem[] {
+  return adminPageWindow(current, total);
 }
