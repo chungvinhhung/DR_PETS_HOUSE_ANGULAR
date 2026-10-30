@@ -10,7 +10,7 @@
         @if (selected(); as order) {
           <div class="order-admin__heading-actions">
             @if (canCancel()) {
-              <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="openAction('cancel')">Hủy đơn</button>
+              <button class="order-admin__btn order-admin__btn--outline-danger" type="button" (click)="openAction('cancel')">Hủy đơn</button>
             }
             @if (availableAction(); as action) {
               <button class="order-admin__btn order-admin__btn--primary" type="button" (click)="openAction(action)">Cập nhật trạng thái</button>
