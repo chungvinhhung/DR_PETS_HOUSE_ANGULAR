@@ -107,7 +107,7 @@
 }
 .catalog-layout {
   display: grid;
-  grid-template-columns: 342px minmax(0, 1fr);
+  grid-template-columns: 300px minmax(0, 1fr);
   align-items: start;
   min-height: calc(100vh - 88px);
 }
@@ -119,7 +119,7 @@
   height: calc(100dvh - 88px);
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 24px 16px;
+  padding: 24px 12px;
   background: #e5f6fd;
   border-right: 1px solid #e2e8f0;
   scrollbar-width: thin;
@@ -128,10 +128,10 @@
 .catalog-sidebar__group {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-height: 48px;
   margin-bottom: 4px;
-  padding: 8px 16px;
+  padding: 8px 12px;
   border-radius: 8px;
   color: #1b273b;
   font-size: 16px;
