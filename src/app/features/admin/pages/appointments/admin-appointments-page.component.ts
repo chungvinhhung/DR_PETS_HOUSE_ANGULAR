@@ -140,7 +140,7 @@ import {
  .scroll table :is(th,td):not(:nth-child(5)){text-align:center}
  .scroll table :is(th,td):nth-child(5){
    text-align:left;
-   padding-left:clamp(32px,6vw,86px);
+   padding-left:clamp(28px,4.2vw,60px);
  }
  .scroll table :is(th,td){vertical-align:middle}
  .code{font-weight:600;color:#29354b}
