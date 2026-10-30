@@ -10,7 +10,7 @@ import { AdminCategoryService } from '../../../categories/services/admin-categor
 import { AdminCategory } from '../../../categories/models/admin-category.model';
 import { AdminProductService } from '../../services/admin-product.service';
 import { AdminProduct, ProductQuery, ProductSort, ProductStatus, ProductUsageType } from '../../models/admin-product.model';
-import { ADMIN_TABLE_PAGE_SIZE, countCursorItems } from '../../../../../shared/utils/admin-table-pagination';
+import { ADMIN_TABLE_PAGE_SIZE } from '../../../../../shared/utils/admin-table-pagination';
 import { AdminToastService, adminErrorMessage } from '../../../../../shared/services/admin-toast.service';
 
 @Component({
@@ -52,8 +52,8 @@ export class AdminProductListPageComponent implements OnInit {
   readonly pageNumber = signal(1);
   readonly hasNextPage = signal(false);
   readonly totalProducts = signal<number | null>(null);
-  readonly countingPages = signal(false);
   readonly countUnavailable = signal(false);
+  readonly failedPage = signal<number | null>(null);
 
   searchTerm = '';
   // Draft selections live in the popovers; the applied snapshot drives every API request.
@@ -72,15 +72,7 @@ export class AdminProductListPageComponent implements OnInit {
   private appliedStatus: 'ALL' | 'ACTIVE' | 'INACTIVE' = 'ALL';
   private appliedDays = 0;
   private aggregateProducts: AdminProduct[] | null = null;
-  // Offset is within one BE cursor page, NOT a product variant index.
-  // A BE page may contain archived products removed from the current tab,
-  // so we resume at the exact raw product position after collecting 6 visible ones.
-  private cursors: Array<{ cursor: string | null; offset: number }> = [
-    { cursor: null, offset: 0 },
-  ];
   private requestNumber = 0;
-  private countGeneration = 0;
-  private countRequested = false;
 
   ngOnInit(): void {
     this.archiveView = this.route.snapshot.queryParamMap.get('view') === 'archived';
@@ -220,12 +212,11 @@ export class AdminProductListPageComponent implements OnInit {
     this.updateFilterChips();
     this.openPanel=null;
     this.aggregateProducts=null;
-    ++this.countGeneration;
-    this.countRequested=false;
+    // Invalidate any in-flight pagination request and reset the visible page.
     this.totalProducts.set(null);
-    this.countingPages.set(false);
     this.countUnavailable.set(false);
-    this.cursors=[{cursor:null,offset:0}];
+    this.failedPage.set(null);
+    this.products.set([]);
     this.hasNextPage.set(false);
     this.pageNumber.set(1);
     this.loadPage(1);
@@ -331,167 +322,83 @@ export class AdminProductListPageComponent implements OnInit {
       this.products.set(items.slice((page-1)*this.pageSize,page*this.pageSize));
       this.pageNumber.set(page);
       this.hasNextPage.set(page*this.pageSize<items.length);
+      this.failedPage.set(null);
     }).catch(error=>{
       if(serial!==this.requestNumber||this.destroyRef.destroyed)return;
-      this.products.set([]);this.totalProducts.set(null);
       this.error.set(adminErrorMessage(error,'Không thể lọc sản phẩm. Vui lòng thử lại.'));
+      this.failedPage.set(page);
     }).finally(()=>{
       if(serial===this.requestNumber&&!this.destroyRef.destroyed)this.loading.set(false);
     });
   }
 
+  /**
+   * Use the BE's native page/limit with its stable createdAt + _id sort.
+   * An _id-only cursor does not preserve createdAt sort order and requires
+   * walking through every prior page to jump to the final page.
+   */
   loadPage(page: number): void {
     this.closeArchiveMenu();
-    if(this.needsAggregatedFiltering()){this.loadAggregatedPage(page);return;}
-    const position = this.cursors[page - 1];
-    if (page < 1 || !position) return;
+    if (this.needsAggregatedFiltering()) { this.loadAggregatedPage(page); return; }
+    if (!Number.isInteger(page) || page < 1) return;
 
     const serial = ++this.requestNumber;
+    const query: ProductQuery = {
+      ...this.buildQuery(), page, limit: this.pageSize, cursor: null,
+    };
     this.loading.set(true);
     this.error.set('');
+    this.failedPage.set(null);
 
-    const query=this.buildQuery();
-
-    void this.loadVisibleProductPage(query, position)
-      .then(({ items, nextPosition, apiTotal }) => {
-        if (serial !== this.requestNumber || this.destroyRef.destroyed) return;
-        this.products.set(items);
-        this.pageNumber.set(page);
-        this.hasNextPage.set(nextPosition !== null);
-        this.cursors = this.cursors.slice(0, page);
-        if (nextPosition) this.cursors[page] = nextPosition;
-
-        // Foundation-v6 BE /products defaults to excluding ARCHIVED for staff,
-        // and explicitly filters ARCHIVED on the archive tab. Its totalItems
-        // already counts parent Products (not variants), matching this view.
-        // Previous code discarded this valid count on the standard tab, causing
-        // a permanent "unknown pages" footer even when the server returned totals.
-        if (typeof apiTotal === 'number' && Number.isSafeInteger(apiTotal) &&
-            apiTotal >= (page - 1) * this.pageSize + items.length) {
-          this.totalProducts.set(apiTotal);
-        } else if (!nextPosition) {
-          this.totalProducts.set((page - 1) * this.pageSize + items.length);
-        } else {
-          this.countDisplayedProducts(query);
-        }
-      })
-      .catch((error: unknown) => {
-        if (serial !== this.requestNumber || this.destroyRef.destroyed) return;
-        this.error.set(adminErrorMessage(error, 'Không thể tải danh sách sản phẩm.'));
-        this.products.set([]);
-        this.hasNextPage.set(false);
-      })
-      .finally(() => {
-        if (serial === this.requestNumber && !this.destroyRef.destroyed) {
-          this.loading.set(false);
-        }
-      });
-  }
-
-  /**
-   * Cursor points to the NEXT backend chunk, not to the next visible Product.
-   * Look ahead for a seventh non-archived Product so that Next is only enabled
-   * if the following UI page has an actual parent record.
-   */
-  private async loadVisibleProductPage(
-    query: ProductQuery,
-    initial: { cursor: string | null; offset: number },
-  ): Promise<{
-    items: AdminProduct[];
-    nextPosition: { cursor: string | null; offset: number } | null;
-    apiTotal: number | null;
-  }> {
-    const items: AdminProduct[] = [];
-    const knownCursors = new Set<string>();
-    let cursor = initial.cursor;
-    let offset = initial.offset;
-    let apiTotal: number | null = null;
-
-    // Guard against an invalid cursor loop; never silently misreport the count.
-    for (let chunk = 0; chunk < 100; chunk++) {
-      if (cursor !== null) {
-        if (knownCursors.has(cursor)) throw new Error('Backend trả về cursor phân trang lặp.');
-        knownCursors.add(cursor);
-      }
-      const result = await firstValueFrom(
-        this.productsApi.listProducts({ ...query, cursor }).pipe(
-          timeout({ first: 30000 }),
-          takeUntilDestroyed(this.destroyRef),
-        ),
-      );
-
-      if (apiTotal === null) {
-        const reported = result.totalItems ?? result.totalCount ?? result.total;
-        if (typeof reported === 'number' && Number.isSafeInteger(reported) && reported >= 0) {
-          apiTotal = reported;
-        }
-      }
-
-      // Every item is one Product Master (variants are nested inside it).
-      for (let index = offset; index < result.items.length; index++) {
-        const product = result.items[index];
-        const visible = this.archiveView
-          ? product.status === 'ARCHIVED'
-          : product.status !== 'ARCHIVED';
-        if (!visible) continue;
-
-        if (items.length === this.pageSize) {
-          return { items, nextPosition: { cursor, offset: index }, apiTotal };
-        }
-        items.push(product);
-      }
-
-      if (!result.nextCursor) {
-        return { items, nextPosition: null, apiTotal };
-      }
-      cursor = result.nextCursor;
-      offset = 0;
-    }
-    throw new Error('Danh sách quá dài để phân trang tại giao diện. Vui lòng thu hẹp bộ lọc.');
-  }
-
-  private countDisplayedProducts(query: ProductQuery): void {
-    if (this.countRequested || this.totalProducts() !== null) return;
-    this.countRequested = true;
-    this.countingPages.set(true);
-    this.countUnavailable.set(false);
-    const generation = this.countGeneration;
-    const archiveView = this.archiveView;
-
-    // Source-verified BE catalog returns totalItems/totalCount/total for a
-    // query independent of its cursor, as well as totalPages. Query just
-    // one item first: this is much cheaper than counting enriched pages.
-    const countQuery: ProductQuery = { ...query, cursor: null, limit: 1 };
-    void firstValueFrom(this.productsApi.listProducts(countQuery).pipe(
-      timeout({ first: 20000 }),
+    void firstValueFrom(this.productsApi.listProducts(query).pipe(
+      timeout({ first: 30000 }),
       takeUntilDestroyed(this.destroyRef),
-    )).then(async result => {
-      // This request uses limit=1, so BE totalPages equals the number of items.
-      const rawCount = result.totalItems ?? result.totalCount ?? result.total ??
-        result.totalPages;
-      if (typeof rawCount === 'number' && Number.isSafeInteger(rawCount) && rawCount >= 0) {
-        return rawCount;
+    )).then(result => {
+      if (serial !== this.requestNumber || this.destroyRef.destroyed) return;
+
+      // Never present page 1 as page N if a stale BE ignores page=.
+      if (typeof result.page === 'number' && result.page !== page) {
+        throw new Error('Backend trả về trang không đúng. Vui lòng kiểm tra hỗ trợ phân trang page/limit.');
       }
-      // For older deployments without totalItems, exhaust cursor pages.
-      // Use 20 rows/chunk to avoid long timeouts enriching 100 products at once.
-      return countCursorItems(
-        cursor => this.productsApi.listProducts({ ...query, cursor, limit: 20 }),
-        (product: AdminProduct) => archiveView
-          ? product.status === 'ARCHIVED' : product.status !== 'ARCHIVED',
-      );
-    }).catch(async () => {
-      // The one-item count endpoint may be unavailable on an older backend;
-      // continue with cursor counting rather than displaying guessed pages.
-      return countCursorItems(
-        cursor => this.productsApi.listProducts({ ...query, cursor, limit: 20 }),
-        (product: AdminProduct) => archiveView
-          ? product.status === 'ARCHIVED' : product.status !== 'ARCHIVED',
-      );
-    }).then(total => {
-      if (generation !== this.countGeneration || this.destroyRef.destroyed) return;
-      this.countingPages.set(false);
-      if (total !== null) this.totalProducts.set(total);
-      else this.countUnavailable.set(true);
+      const reported = result.totalItems ?? result.totalCount ?? result.total;
+      const total = typeof reported === 'number' &&
+        Number.isSafeInteger(reported) && reported >= 0 ? reported : null;
+
+      // Records may have been archived/deleted in another session. Move to
+      // the new final page instead of displaying an empty stale page.
+      if (total !== null && page > Math.max(1, Math.ceil(total / this.pageSize))) {
+        this.totalProducts.set(total);
+        this.loadPage(Math.max(1, Math.ceil(total / this.pageSize)));
+        return;
+      }
+      if (total !== null && result.items.length === 0 &&
+          (page - 1) * this.pageSize < total) {
+        throw new Error('Backend trả về trang trống dù vẫn còn sản phẩm.');
+      }
+      // The BE applies archived status filters before page/limit.
+      if (result.items.some(product => this.archiveView
+          ? product.status !== 'ARCHIVED' : product.status === 'ARCHIVED')) {
+        throw new Error('Backend trả về sản phẩm không đúng trạng thái lọc.');
+      }
+
+      this.products.set(result.items);
+      this.pageNumber.set(page);
+      this.totalProducts.set(total);
+      this.countUnavailable.set(total === null);
+      this.hasNextPage.set(total !== null
+        ? page * this.pageSize < total
+        : !!result.nextCursor);
+      this.failedPage.set(null);
+    }).catch((error: unknown) => {
+      if (serial !== this.requestNumber || this.destroyRef.destroyed) return;
+      // Failed navigation never clears already loaded products or their
+      // page/total; the retry button reloads the attempted page.
+      this.error.set(adminErrorMessage(error, 'Không thể tải danh sách sản phẩm.'));
+      this.failedPage.set(page);
+    }).finally(() => {
+      if (serial === this.requestNumber && !this.destroyRef.destroyed) {
+        this.loading.set(false);
+      }
     });
   }
 
@@ -504,45 +411,20 @@ export class AdminProductListPageComponent implements OnInit {
     return adminPageWindow(this.pageNumber(), Math.max(1, Math.ceil(total / this.pageSize)));
   }
 
-  async goToPage(page: number): Promise<void> {
+  goToPage(page: number): void {
     const total = this.totalProducts();
-    if(this.needsAggregatedFiltering()){
-      if(page>=1&&total!==null&&page<=Math.max(1,Math.ceil(total/this.pageSize)))
-        this.loadAggregatedPage(page);
-      return;
-    }
     if (!Number.isInteger(page) || page < 1 ||
         (total !== null && page > Math.max(1, Math.ceil(total / this.pageSize))) ||
         this.loading() || page === this.pageNumber()) return;
-    if (this.cursors[page - 1]) { this.loadPage(page); return; }
-    // BE uses cursors rather than offsets; discover boundaries before jumping.
-    const generation = this.requestNumber;
-    const query=this.buildQuery();
-    this.loading.set(true);
-    try {
-      while (this.cursors.length < page) {
-        const position = this.cursors[this.cursors.length - 1];
-        const result = await this.loadVisibleProductPage(query, position);
-        if (generation !== this.requestNumber || this.destroyRef.destroyed) return;
-        if (!result.nextPosition) return;
-        this.cursors.push(result.nextPosition);
-      }
-    } catch (error) {
-      if (generation === this.requestNumber && !this.destroyRef.destroyed)
-        this.error.set(adminErrorMessage(error, 'Không thể chuyển đến trang này.'));
-      return;
-    } finally {
-      if (generation === this.requestNumber && !this.destroyRef.destroyed) this.loading.set(false);
-    }
-    if (generation === this.requestNumber && !this.destroyRef.destroyed) this.loadPage(page);
+    this.loadPage(page);
   }
 
   previous(): void {
-    if(this.pageNumber()>1)this.loadPage(this.pageNumber()-1);
+    if (!this.loading() && this.pageNumber() > 1) this.loadPage(this.pageNumber() - 1);
   }
 
   next(): void {
-    if(this.hasNextPage())this.loadPage(this.pageNumber()+1);
+    if (!this.loading() && this.hasNextPage()) this.loadPage(this.pageNumber() + 1);
   }
 
   categoryName(id: string): string {
