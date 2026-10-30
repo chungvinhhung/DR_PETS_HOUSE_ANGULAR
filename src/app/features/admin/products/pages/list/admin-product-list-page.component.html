@@ -153,7 +153,7 @@
         
         <button type="button" class="outline-btn" (click)="loadPage(pageNumber())">Thử lại</button>
       }
-      <div class="table-scroll">
+      <div class="table-scroll" (scroll)="closeArchiveMenu()">
         <table>
           <thead><tr>
             <th scope="col">STT</th><th scope="col">Hình ảnh</th><th scope="col">Tên sản phẩm</th><th scope="col">SKU / Biến thể</th><th scope="col">Danh mục</th><th scope="col">Giá</th><th scope="col" class="web2-cell-center">Tổng tồn kho</th><th scope="col" class="web2-cell-center">Ngày tạo</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th>
@@ -184,16 +184,26 @@
                   <td class="status-cell">
                     <span class="status" [class.active]="product.status === 'ACTIVE'" [class.archived]="product.status === 'ARCHIVED'">{{ product.status === 'ACTIVE' ? 'Đang hoạt động' : product.status === 'ARCHIVED' ? 'Đã lưu trữ' : 'Tạm ngưng' }}</span>
                   </td>
-                  <td class="actions">
-                    <a [routerLink]="['/admin/products', product.id, 'edit']" [queryParams]="product.status === 'ARCHIVED' ? { view: 'archived' } : null" title="Chỉnh sửa" [attr.aria-label]="'Chỉnh sửa ' + product.name">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m13 6 5 5M4 20l4.6-1 10.9-10.9a2.1 2.1 0 0 0-3-3L5.6 16z"/></svg>
-                    </a>
+                  <td class="actions" [class.product-archive-action-cell]="product.status === 'ARCHIVED'">
                     @if (product.status === 'ARCHIVED') {
-                      <button type="button" class="archive-action restore-action" [disabled]="!!updatingId()" (click)="requestRestore(product)" [attr.title]="'Khôi phục ' + product.name" [attr.aria-label]="'Khôi phục ' + product.name">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>
+                      <button type="button" class="product-archive-more-button"
+                        aria-haspopup="menu"
+                        [attr.aria-expanded]="archiveMenuProduct()?.id === product.id"
+                        [attr.aria-label]="'Thao tác với ' + product.name"
+                        [disabled]="!!updatingId()"
+                        (click)="toggleArchiveMenu($event, product)">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+                          <circle cx="6" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="18" cy="12" r="2"></circle>
+                        </svg>
                       </button>
                     } @else {
-                      <button type="button" class="archive-action" [disabled]="!!updatingId()" (click)="requestArchive(product)" title="Lưu trữ sản phẩm" [attr.aria-label]="'Lưu trữ ' + product.name">
+                      <a [routerLink]="['/admin/products', product.id, 'edit']" title="Chỉnh sửa"
+                        [attr.aria-label]="'Chỉnh sửa ' + product.name">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m13 6 5 5M4 20l4.6-1 10.9-10.9a2.1 2.1 0 0 0-3-3L5.6 16z"/></svg>
+                      </a>
+                      <button type="button" class="archive-action" [disabled]="!!updatingId()"
+                        (click)="requestArchive(product)" title="Lưu trữ sản phẩm"
+                        [attr.aria-label]="'Lưu trữ ' + product.name">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="1"/><path d="M3 4h18v4H3zM12 11v6m-3-3 3 3 3-3"/></svg>
                       </button>
                     }
@@ -231,6 +241,20 @@
   </main>
 </app-admin-catalog-shell>
 
+@if (archiveMenuProduct(); as menuProduct) {
+  <!-- Keep the popup outside the scrolling table so bottom-row actions aren't clipped. -->
+  <div class="product-archive-action-menu" role="menu" id="product-archive-action-menu"
+    [attr.aria-label]="'Thao tác với ' + menuProduct.name"
+    [style.top.px]="archiveMenuPosition().top"
+    [style.left.px]="archiveMenuPosition().left"
+    (click)="$event.stopPropagation()">
+    <button type="button" role="menuitem" (click)="chooseArchiveAction('restore')">Khôi phục</button>
+    <button type="button" role="menuitem" (click)="chooseArchiveAction('edit')">Chỉnh sửa</button>
+    <button type="button" role="menuitem" class="product-archive-danger-action"
+      (click)="chooseArchiveAction('delete')">Xóa vĩnh viễn</button>
+  </div>
+}
+
 @if (archiveTarget(); as target) {
   <div class="product-leave-overlay" (keydown.escape)="closeArchiveDialog()">
     <section class="product-leave-dialog" role="alertdialog" aria-modal="true"
@@ -256,6 +280,29 @@
       <div class="product-leave-actions">
         <button type="button" class="product-leave-stay" [disabled]="!!updatingId()" (click)="closeRestoreDialog()">Hủy bỏ</button>
         <button type="button" class="product-leave-exit" [disabled]="!!updatingId()" (click)="confirmRestore()">{{ updatingId() ? 'Đang khôi phục...' : 'Khôi phục sản phẩm' }}</button>
+      </div>
+    </section>
+  </div>
+}
+
+@if (deleteTarget(); as target) {
+  <div class="product-leave-overlay" (keydown.escape)="closeDeleteDialog()">
+    <section class="product-leave-dialog" role="alertdialog" aria-modal="true"
+      aria-labelledby="delete-product-title" aria-describedby="delete-product-desc" tabindex="-1">
+      <h2 id="delete-product-title">Xóa vĩnh viễn sản phẩm?</h2>
+      <p id="delete-product-desc">
+        Bạn đang yêu cầu xóa vĩnh viễn <strong>{{ target.name }}</strong>.
+        Thao tác này <strong>không thể hoàn tác</strong>. Chỉ nên tiếp tục nếu sản phẩm
+        không còn liên quan đến đơn hàng, tồn kho hoặc lịch sử giao dịch.
+      </p>
+      @if (deleteError()) {
+        <p class="product-permanent-delete-error" role="alert">{{ deleteError() }}</p>
+      }
+      <div class="product-leave-actions">
+        <button type="button" class="product-leave-stay" [disabled]="!!updatingId()"
+          (click)="closeDeleteDialog()">Hủy bỏ</button>
+        <button type="button" class="product-permanent-delete-confirm" [disabled]="!!updatingId()"
+          (click)="confirmDelete()">{{ updatingId() ? 'Đang xóa...' : 'Xác nhận xóa vĩnh viễn' }}</button>
       </div>
     </section>
   </div>
