@@ -5597,3 +5597,37 @@ app-admin-product-list-page .product-permanent-delete-error {
   padding:10px 12px;
   font-size:13px;
 }
+
+/*
+ * All Admin management paginators now display both edge pages.
+ * On narrower layouts, allow the numeric strip to scroll without shrinking
+ * the 44px targets or overflowing the page. Native button behavior stays intact.
+ */
+@media (max-width: 700px) {
+  app-admin-catalog-shell :is(
+    .pagination,
+    .service-catalog__pagination,
+    .order-admin__pagination,
+    .staff-pagination,
+    .voucher-list__pagination,
+    .branch-v2-page__pagination,
+    .users-pagination
+  ) {
+    flex-wrap: wrap;
+  }
+  app-admin-catalog-shell :is(
+    .pagination-controls,
+    .pagination-buttons,
+    .service-catalog__pages,
+    .staff-pagination nav,
+    .voucher-list__pagination > div,
+    .order-admin__pagination > div,
+    .branch-v2-page__pagination nav,
+    .users-pagination nav,
+    .pages
+  ) {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+}
