@@ -134,10 +134,14 @@ import {
  th:nth-child(1){width:14%}
  th:nth-child(2),th:nth-child(3),th:nth-child(4),th:nth-child(5),th:nth-child(6){width:15.4%}
  th:nth-child(7){width:9%}
- /* Align each column heading and its values on the same vertical axis.
-    Service names remain left-aligned for easier scanning of long descriptions. */
+ /* Date, time and customer are center-aligned on equal-width columns.
+    Keep service names left-aligned, but inset that column's heading and
+    values together so their visible starting edge does not crowd Customer. */
  .scroll table :is(th,td):not(:nth-child(5)){text-align:center}
- .scroll table :is(th,td):nth-child(5){text-align:left;padding-left:20px}
+ .scroll table :is(th,td):nth-child(5){
+   text-align:left;
+   padding-left:clamp(32px,6vw,86px);
+ }
  .scroll table :is(th,td){vertical-align:middle}
  .code{font-weight:600;color:#29354b}
  .badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 9px;border-radius:99px;white-space:nowrap;background:#edf2f8;color:#556174;font-size:12px}
@@ -165,6 +169,7 @@ import {
  .pagination button:focus-visible{outline:2px solid #0d47a1;outline-offset:-3px}
  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
  @media(max-width:1120px){.filters{flex-wrap:wrap}.filter-actions{flex-wrap:wrap;justify-content:flex-start;width:100%}}
+ @media(max-width:1050px){.scroll table :is(th,td):nth-child(5){padding-left:32px}}
  @media(max-width:650px){.appointments{padding:16px}.filter-control{flex:1;min-width:130px}.list-footer{flex-wrap:wrap}
    .pagination{margin-left:auto}}
  `]
