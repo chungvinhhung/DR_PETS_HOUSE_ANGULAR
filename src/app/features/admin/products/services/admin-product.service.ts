@@ -78,6 +78,15 @@ export class AdminProductService {
     );
   }
 
+  /**
+   * Permanent product removal is a separate destructive operation from archiving.
+   * BE foundation-v6 does not yet expose DELETE /products/:id; never fake success.
+   */
+  deleteProductPermanently(id: string, idempotencyKey: string): Observable<unknown> {
+    const headers = new HttpHeaders({ 'Idempotency-Key': idempotencyKey });
+    return this.api.delete<unknown>('/products/' + encodeURIComponent(id), { headers });
+  }
+
   archiveProduct(id: string, idempotencyKey: string): Observable<AdminProduct> {
     const headers = new HttpHeaders({ 'Idempotency-Key': idempotencyKey });
     return this.api.post<AdminProduct, Record<string, never>>(
