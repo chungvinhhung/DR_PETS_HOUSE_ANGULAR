@@ -1,5 +1,5 @@
 import { adminPageWindow } from '../../../../../shared/utils/admin-table-pagination';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, OnInit, signal, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -43,6 +43,11 @@ export class AdminProductListPageComponent implements OnInit {
   readonly archiveError = signal('');
   readonly restoreTarget = signal<AdminProduct | null>(null);
   readonly restoreError = signal('');
+  readonly deleteTarget = signal<AdminProduct | null>(null);
+  readonly deleteError = signal('');
+  readonly archiveMenuProduct = signal<AdminProduct | null>(null);
+  readonly archiveMenuPosition = signal({ top: 0, left: 0 });
+  private readonly deleteKeys = new Map<string, string>();
   private readonly archiveKeys = new Map<string, string>();
   readonly pageNumber = signal(1);
   readonly hasNextPage = signal(false);
@@ -206,6 +211,7 @@ export class AdminProductListPageComponent implements OnInit {
     this.applyFilters();
   }
   applyFilters():void{
+    this.closeArchiveMenu();
     this.appliedCategories=[...this.categoryFilters];
     this.appliedUsage=[...this.usageFilters];
     this.appliedPrices=[...this.priceFilters];
@@ -226,6 +232,7 @@ export class AdminProductListPageComponent implements OnInit {
   }
   selectArchiveView(archived:boolean):void{
     if(this.archiveView===archived)return;
+    this.closeArchiveMenu();
     this.archiveView=archived;
     this.statusFilter='ALL';
     this.openPanel=null;
@@ -334,6 +341,7 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
   loadPage(page: number): void {
+    this.closeArchiveMenu();
     if(this.needsAggregatedFiltering()){this.loadAggregatedPage(page);return;}
     const position = this.cursors[page - 1];
     if (page < 1 || !position) return;
@@ -618,6 +626,91 @@ export class AdminProductListPageComponent implements OnInit {
           adminErrorMessage(error, 'Không thể lưu trữ sản phẩm.') +
           ' Nếu kết quả chưa rõ, hãy kiểm tra tab Đã lưu trữ trước khi thử lại.',
         );
+      },
+    });
+  }
+
+  toggleArchiveMenu(event: MouseEvent, product: AdminProduct): void {
+    event.stopPropagation();
+    if (!this.archiveView || product.status !== 'ARCHIVED' || this.updatingId()) return;
+    if (this.archiveMenuProduct()?.id === product.id) { this.closeArchiveMenu(); return; }
+    const button = event.currentTarget as HTMLElement;
+    const rect = button.getBoundingClientRect();
+    // Fixed positioning keeps the dropdown out of the horizontally scrolling
+    // table's clipping container, including when the archived row is last.
+    const width = 195;
+    const height = 122;
+    const gutter = 4;
+    this.archiveMenuPosition.set({
+      left: Math.max(8, Math.min(window.innerWidth - width - 8, rect.right - width)),
+      top: rect.bottom + height + gutter <= window.innerHeight - 8
+        ? rect.bottom + gutter : Math.max(8, rect.top - height - gutter),
+    });
+    this.archiveMenuProduct.set(product);
+  }
+
+  @HostListener('document:click')
+  @HostListener('window:resize')
+  @HostListener('window:scroll')
+  closeArchiveMenu(): void { this.archiveMenuProduct.set(null); }
+
+  @HostListener('document:keydown.escape')
+  closeArchiveMenuOnEscape(): void { this.closeArchiveMenu(); }
+
+  chooseArchiveAction(action: 'restore' | 'edit' | 'delete'): void {
+    const product = this.archiveMenuProduct();
+    this.closeArchiveMenu();
+    if (!product || !this.archiveView || product.status !== 'ARCHIVED' || this.updatingId()) return;
+    if (action === 'restore') { this.requestRestore(product); return; }
+    if (action === 'delete') { this.requestDelete(product); return; }
+    void this.router.navigate(['/admin/products', product.id, 'edit'], {
+      queryParams: { view: 'archived' },
+    });
+  }
+
+  requestDelete(product: AdminProduct): void {
+    if (product.status !== 'ARCHIVED' || this.updatingId()) return;
+    this.deleteError.set('');
+    this.deleteTarget.set(product);
+  }
+
+  closeDeleteDialog(): void {
+    if (this.updatingId()) return;
+    this.deleteTarget.set(null);
+    this.deleteError.set('');
+  }
+
+  confirmDelete(): void {
+    const product = this.deleteTarget();
+    if (!product || product.status !== 'ARCHIVED' || this.updatingId()) return;
+    const key = this.deleteKeys.get(product.id) ?? crypto.randomUUID();
+    this.deleteKeys.set(product.id, key);
+    this.updatingId.set(product.id);
+    this.deleteError.set('');
+    this.productsApi.deleteProductPermanently(product.id, key).pipe(
+      timeout({ first: 30000 }),
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.updatingId.set(null)),
+    ).subscribe({
+      next: () => {
+        this.deleteKeys.delete(product.id);
+        this.deleteTarget.set(null);
+        this.toast.show('Đã xóa vĩnh viễn sản phẩm.', 'success');
+        this.applyFilters();
+      },
+      error: (error: unknown) => {
+        const status = (error as { status?: number } | null)?.status;
+        if (status === 404 || status === 405 || status === 501) {
+          this.deleteError.set(
+            'Backend chưa hỗ trợ API xóa vĩnh viễn (DELETE /products/:id), hoặc sản phẩm không còn tồn tại. Không có thao tác xóa nào được xác nhận.',
+          );
+        } else if (status === 409 || status === 422) {
+          this.deleteError.set(
+            'Không thể xóa vĩnh viễn vì sản phẩm đang có dữ liệu liên quan. Vui lòng kiểm tra đơn hàng, tồn kho và phản hồi từ Backend.',
+          );
+        } else {
+          this.deleteError.set(adminErrorMessage(error, 'Không thể xóa vĩnh viễn sản phẩm.'));
+        }
       },
     });
   }
