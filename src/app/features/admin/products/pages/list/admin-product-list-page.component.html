@@ -150,8 +150,13 @@
       }
 
       @if (error()) {
-        
-        <button type="button" class="outline-btn" (click)="loadPage(pageNumber())">Thử lại</button>
+        <div class="product-list-load-error" role="alert">
+          <span>{{ error() }}</span>
+          <button type="button" class="outline-btn" [disabled]="loading()"
+            (click)="loadPage(failedPage() ?? pageNumber())">
+            Thử lại
+          </button>
+        </div>
       }
       <div class="table-scroll" (scroll)="closeArchiveMenu()">
         <table>
@@ -218,8 +223,7 @@
         <span>
           @if(totalProducts() === null) {
             Đang hiển thị {{products().length}} sản phẩm
-            @if(countingPages()){ · Đang tính tổng số trang...}
-            @else if(countUnavailable()){ · Chưa xác định tổng số trang}
+            @if(countUnavailable()){ · Chưa xác định tổng số trang}
           } @else {
             Đang hiển thị {{products().length}} trên tổng số {{totalProducts()}} sản phẩm
           }
