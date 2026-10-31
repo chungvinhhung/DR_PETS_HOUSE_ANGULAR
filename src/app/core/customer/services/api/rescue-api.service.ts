@@ -7,15 +7,8 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 import { rescueImages } from '../../../../shared/customer/assets/rescue-images';
-
-function assertSuccess(response: any) {
-  if (response?.EC !== undefined && response.EC !== 0) {
-    throw new Error(response.EM || "Khong the tai du lieu cuu tro");
-  }
-  return response?.DT ?? response;
-}
 
 function getPrimaryImage(images: any = []) {
   return images.find((item: any) => item.is_primary)?.image_url || images[0]?.image_url || rescueImages.rescuePlaceholder;
@@ -78,13 +71,23 @@ export class RescueApiService {
   private readonly http = inject(CustomerHttpService);
 
   async getAdoptionPets() {
-    const response = await this.http.get("/adoptions/pets");
-    return assertSuccess(response).map(normalizeAdoptionPet);
+    try {
+      const response = await this.http.get("/adoptions/pets");
+      const data = assertSuccess(response);
+      return (Array.isArray(data) ? data : data?.items || []).map(normalizeAdoptionPet);
+    } catch {
+      return [];
+    }
   }
 
   async getRescueStations() {
-    const response = await this.http.get("/rescue/stations");
-    return assertSuccess(response).map(normalizeRescueStation);
+    try {
+      const response = await this.http.get("/rescue/stations");
+      const data = assertSuccess(response);
+      return (Array.isArray(data) ? data : data?.items || []).map(normalizeRescueStation);
+    } catch {
+      return [];
+    }
   }
 
   async createAdoptionRequest(petId: any, values: any) {

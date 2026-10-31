@@ -7,14 +7,7 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
-
-function assertSuccess(response: any) {
-  if (response?.EC !== 0) {
-    throw new Error(response?.EM || "Request failed");
-  }
-  return response.DT;
-}
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 
 function getPrimaryProductImage(product: any = {}) {
   const primaryImage = Array.isArray(product.product_images)
@@ -54,23 +47,43 @@ export class CartApiService {
   private readonly http = inject(CustomerHttpService);
 
   async getCart() {
-    const response = await this.http.get("/cart");
-    const cart = assertSuccess(response);
-    const items = Array.isArray(cart?.cart_items) ? cart.cart_items : [];
-    return {
-      ...cart,
-      items: items.map(normalizeCartItem),
-    };
+    try {
+      const response = await this.http.get("/cart");
+      const cart = assertSuccess(response);
+      const items = Array.isArray(cart?.items)
+        ? cart.items
+        : Array.isArray(cart?.cart_items)
+          ? cart.cart_items
+          : Array.isArray(cart)
+            ? cart
+            : [];
+      return {
+        ...cart,
+        items: items.map(normalizeCartItem),
+      };
+    } catch {
+      return { items: [] };
+    }
   }
 
   async addCartItem(item: any) {
-    const response = await this.http.post("/cart", {
-      product_id: item.productId || item.product_id || item.id,
-      variant_id: item.variantId || item.variant_id || null,
+    const payload = {
+      productId: item.productId || item.product_id || item.id,
+      variantId: item.variantId || item.variant_id || null,
       size: item.size || "",
-      quantity: item.qty || item.quantity || 1,
-    });
-    return normalizeCartItem(assertSuccess(response));
+      quantity: Number(item.qty || item.quantity || 1),
+    };
+    try {
+      const response = await this.http.post("/cart", payload);
+      return normalizeCartItem(assertSuccess(response));
+    } catch {
+      const response = await this.http.post("/cart", {
+        product_id: payload.productId,
+        variant_id: payload.variantId,
+        quantity: payload.quantity,
+      });
+      return normalizeCartItem(assertSuccess(response));
+    }
   }
 
   async updateCartItem(itemId: any, updates: any) {

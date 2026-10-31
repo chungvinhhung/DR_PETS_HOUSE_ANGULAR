@@ -7,14 +7,7 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
-
-function assertSuccess(response: any) {
-  if (response?.EC !== undefined && response.EC !== 0) {
-    throw new Error(response.EM || "Dat hang khong thanh cong");
-  }
-  return response?.DT ?? response;
-}
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 
 function normalizeOrderStatus(order: any = {}) {
   const status = order.order_status || order.status;
@@ -109,32 +102,68 @@ export function toCheckoutItems(items: any) {
 export class OrderApiService {
   private readonly http = inject(CustomerHttpService);
 
-  async checkoutOrder({ addressId, paymentMethod, voucherCode, note, items }: any) {
-    const response = await this.http.post("/orders/checkout", {
-      address_id: addressId,
-      payment_method: paymentMethod,
-      voucher_code: voucherCode || undefined,
+  async checkoutOrder({ addressId, selectedAddress, paymentMethod, voucherCode, note, items, cartId }: any) {
+    const address = selectedAddress || {};
+    const payload: any = {
+      addressId: addressId || undefined,
+      cartId: cartId || undefined,
+      shippingAddress: {
+        fullName: address.fullName || address.receiverName || "Khách hàng",
+        phone: address.phone || address.receiverPhone || "0912345678",
+        addressLine: address.addressLine || address.address || address.street || "Địa chỉ nhận hàng",
+        ward: address.ward || "",
+        district: address.district || "",
+        city: address.city || "Hồ Chí Minh",
+      },
+      paymentMethod: paymentMethod === "online" || paymentMethod === "ONLINE" ? "ONLINE_MOCK" : "COD",
+      voucherCode: voucherCode || undefined,
       note: note || undefined,
-      items: toCheckoutItems(items),
-    });
-    return assertSuccess(response);
+      items: toCheckoutItems(items || []),
+    };
+    try {
+      const response = await this.http.post("/orders/checkout", payload);
+      return assertSuccess(response);
+    } catch (err: any) {
+      if (err?.status === 404) {
+        const response = await this.http.post("/checkout", payload);
+        return assertSuccess(response);
+      }
+      throw err;
+    }
   }
 
-  async guestCheckoutOrder({ guest, paymentMethod, voucherCode, note, items }: any) {
-    const response = await this.http.post("/orders/guest-checkout", {
-      full_name: guest.fullName,
-      phone: guest.phone,
-      email: guest.email,
-      address_line: guest.address,
-      ward: guest.ward || undefined,
-      district: guest.district || undefined,
-      province: guest.city,
-      payment_method: paymentMethod,
-      voucher_code: voucherCode || undefined,
+  async guestCheckoutOrder({ guest, paymentMethod, voucherCode, note, items, cartId }: any) {
+    const addressLine = [guest.address, guest.ward, guest.district, guest.city].filter(Boolean).join(", ");
+    const payload: any = {
+      cartId: cartId || undefined,
+      contact: {
+        fullName: guest.fullName || guest.name || "Khách vãng lai",
+        phone: guest.phone,
+        email: guest.email || undefined,
+      },
+      shippingAddress: {
+        fullName: guest.fullName || guest.name || "Khách vãng lai",
+        phone: guest.phone,
+        addressLine: addressLine || guest.address || "Địa chỉ nhận hàng",
+        ward: guest.ward || "",
+        district: guest.district || "",
+        city: guest.city || "Hồ Chí Minh",
+      },
+      paymentMethod: paymentMethod === "online" || paymentMethod === "ONLINE" ? "ONLINE_MOCK" : "COD",
+      voucherCode: voucherCode || undefined,
       note: note || undefined,
-      items: toCheckoutItems(items),
-    });
-    return assertSuccess(response);
+      items: toCheckoutItems(items || []),
+    };
+    try {
+      const response = await this.http.post("/orders/checkout", payload);
+      return assertSuccess(response);
+    } catch (err: any) {
+      if (err?.status === 404) {
+        const response = await this.http.post("/checkout", payload);
+        return assertSuccess(response);
+      }
+      throw err;
+    }
   }
 
   async getMyOrders(params: any = {}) {
@@ -142,7 +171,13 @@ export class OrderApiService {
       params: { page: 1, limit: 100, ...params },
     });
     const payload = assertSuccess(response);
-    const orders = Array.isArray(payload?.orders) ? payload.orders : Array.isArray(payload) ? payload : [];
+    const orders = Array.isArray(payload?.items)
+      ? payload.items
+      : Array.isArray(payload?.orders)
+        ? payload.orders
+        : Array.isArray(payload)
+          ? payload
+          : [];
     return orders.map(normalizeOrder);
   }
 
@@ -151,9 +186,14 @@ export class OrderApiService {
     return normalizeOrder(assertSuccess(response));
   }
 
-  async cancelOrder(orderId: any) {
-    const response = await this.http.patch(`/orders/${orderId}/cancel`);
-    return assertSuccess(response);
+  async cancelOrder(orderId: any, reason: string = 'Khách hàng hủy đơn') {
+    try {
+      const response = await this.http.post(`/orders/${orderId}/cancel`, { reason });
+      return assertSuccess(response);
+    } catch {
+      const response = await this.http.patch(`/orders/${orderId}/cancel`, { reason });
+      return assertSuccess(response);
+    }
   }
 
   async repayOrder(orderId: any, payload: any = {}) {

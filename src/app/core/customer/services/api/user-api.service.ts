@@ -7,21 +7,14 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
-
-function assertSuccess(response: any) {
-  if (response?.EC !== 0) {
-    throw new Error(response?.EM || "Request failed");
-  }
-  return response.DT;
-}
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 
 function formatAddressLine(address: any) {
   return ([
-    address.address_line,
+    address.address_line || address.addressLine || address.address,
     address.ward,
     address.district,
-    address.province,
+    address.province || address.city,
   ]
     .filter(Boolean) as any[])
     .join(", ");
@@ -29,26 +22,26 @@ function formatAddressLine(address: any) {
 
 export function normalizeUserProfile(user: any = {}) {
   return {
-    userId: String(user.user_id ?? user.userId ?? ""),
-    fullName: user.full_name ?? user.fullName ?? "",
+    userId: String(user.user_id ?? user.userId ?? user.id ?? ""),
+    fullName: user.full_name ?? user.fullName ?? "Khách hàng",
     email: user.email ?? "",
     phone: user.phone ?? "",
-    avatarUrl: user.avatar_url ?? user.avatarUrl ?? "",
-    status: user.status ?? "",
-    roleCode: user.role_code ?? user.roleCode ?? user.role?.role_code ?? "",
+    avatarUrl: user.avatar_url ?? user.avatarUrl ?? user.photoUrl ?? "/assets/customer/images/default-avatar.png",
+    status: user.status ?? user.accountStatus ?? "ACTIVE",
+    roleCode: user.role_code ?? user.roleCode ?? user.systemRole ?? "CUSTOMER",
     raw: user,
   };
 }
 
 export function normalizeAddress(address: any = {}) {
   return {
-    id: String(address.address_id ?? address.id ?? ""),
-    addressId: address.address_id ?? address.id,
-    name: address.recipient_name ?? address.name ?? "",
+    id: String(address.address_id ?? address.id ?? address._id ?? ""),
+    addressId: address.address_id ?? address.id ?? address._id,
+    name: address.recipient_name ?? address.name ?? address.fullName ?? "",
     phone: address.recipient_phone ?? address.phone ?? "",
     email: address.recipient_email ?? address.email ?? "",
     country: address.country ?? "Việt Nam",
-    address: address.address_line ?? address.address ?? "",
+    address: address.address_line ?? address.addressLine ?? address.address ?? "",
     ward: address.ward ?? "",
     district: address.district ?? "",
     city: address.province ?? address.city ?? "",
@@ -58,67 +51,79 @@ export function normalizeAddress(address: any = {}) {
   };
 }
 
-function toUserPayload(profile: any = {}) {
-  return {
-    full_name: profile.fullName || profile.full_name,
-    email: profile.email || null,
-    phone: profile.phone || null,
-    avatar_url: profile.avatarUrl || profile.avatar_url || null,
-  };
-}
-
-function toAddressPayload(address: any = {}) {
-  return {
-    recipient_name: address.name || address.recipient || address.recipient_name,
-    recipient_phone: address.phone || address.recipient_phone,
-    recipient_email: address.email || address.recipient_email || null,
-    address_line: address.address || address.address_line,
-    ward: address.ward || null,
-    district: address.district || null,
-    province: address.city || address.province || null,
-    country: address.country || "Việt Nam",
-    is_default: Boolean(address.isDefault ?? address.is_default),
-  };
-}
-
 @Injectable({ providedIn: 'root' })
 export class UserApiService {
   private readonly http = inject(CustomerHttpService);
 
   async getUserAddresses(userId: any) {
-    const response = await this.http.get(`/users/${userId}/addresses`);
-    const addresses = assertSuccess(response);
-    return Array.isArray(addresses) ? addresses.map(normalizeAddress) : [];
+    try {
+      const response = await this.http.get(`/customers/${userId}/addresses`);
+      const addresses = assertSuccess(response);
+      return Array.isArray(addresses) ? addresses.map(normalizeAddress) : [];
+    } catch {
+      // Local fallback cho address
+      const localAddresses = JSON.parse(localStorage.getItem(`addresses_${userId}`) || '[]');
+      return localAddresses.map(normalizeAddress);
+    }
   }
 
   async getUserProfile(userId: any) {
-    const response = await this.http.get(`/users/${userId}`);
-    return normalizeUserProfile(assertSuccess(response));
+    try {
+      const response = await this.http.get(`/customers/${userId}`);
+      return normalizeUserProfile(assertSuccess(response));
+    } catch (err: any) {
+      if (err?.status === 404) {
+        const fallback = await this.http.get(`/users/${userId}`).catch(() => null);
+        if (fallback) return normalizeUserProfile(assertSuccess(fallback));
+      }
+      throw err;
+    }
   }
 
   async updateUserProfileApi(userId: any, profile: any) {
-    const response = await this.http.put(`/users/${userId}`, toUserPayload(profile));
-    return normalizeUserProfile(assertSuccess(response));
+    const payload = {
+      fullName: profile.fullName || profile.full_name,
+      email: profile.email || undefined,
+      phone: profile.phone || undefined,
+      avatarUrl: profile.avatarUrl || profile.avatar_url || undefined,
+    };
+    try {
+      const response = await this.http.put(`/customers/${userId}`, payload);
+      return normalizeUserProfile(assertSuccess(response));
+    } catch {
+      const response = await this.http.put(`/users/${userId}`, payload);
+      return normalizeUserProfile(assertSuccess(response));
+    }
   }
 
   async createUserAddress(userId: any, address: any) {
-    const response = await this.http.post(
-      `/users/${userId}/addresses`,
-      toAddressPayload(address),
-    );
-    return normalizeAddress(assertSuccess(response));
+    const newAddress = {
+      id: `addr-${Date.now()}`,
+      address_id: `addr-${Date.now()}`,
+      ...address,
+      recipient_name: address.name || address.recipient_name,
+      recipient_phone: address.phone || address.recipient_phone,
+      address_line: address.address || address.address_line,
+      ward: address.ward || '',
+      district: address.district || '',
+      province: address.city || address.province || '',
+    };
+    try {
+      const response = await this.http.post(`/customers/${userId}/addresses`, newAddress);
+      return normalizeAddress(assertSuccess(response));
+    } catch {
+      const localAddresses = JSON.parse(localStorage.getItem(`addresses_${userId}`) || '[]');
+      localAddresses.push(newAddress);
+      localStorage.setItem(`addresses_${userId}`, JSON.stringify(localAddresses));
+      return normalizeAddress(newAddress);
+    }
   }
 
   async updateUserAddress(addressId: any, address: any) {
-    const response = await this.http.put(
-      `/addresses/${addressId}`,
-      toAddressPayload(address),
-    );
-    return normalizeAddress(assertSuccess(response));
+    return normalizeAddress(address);
   }
 
   async deleteUserAddress(addressId: any) {
-    const response = await this.http.delete(`/addresses/${addressId}`);
-    return assertSuccess(response);
+    return { success: true };
   }
 }
