@@ -6,7 +6,7 @@
         <h2 id="inventory-transaction-title">Chi tiết giao dịch kho</h2>
         <span>{{ transactionCode || transactions[0]?.transactionCode || transactions[0]?.groupCode || transactions[0]?.code || transactions[0]?.id }}</span>
       </div>
-      <button type="button" aria-label="Đóng chi tiết giao dịch" (click)="closed.emit()">×</button>
+      <button type="button" aria-label="Đóng chi tiết giao dịch" (click)="closed.emit()"><img src="/assets/admin-inventory/close-outlined.svg" alt="" aria-hidden="true"></button>
     </header>
 
     @if (transactions.length) {
