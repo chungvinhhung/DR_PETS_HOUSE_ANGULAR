@@ -5628,3 +5628,35 @@ app-admin-product-list-page .product-permanent-delete-error {
     scrollbar-width: thin;
   }
 }
+
+/* OR-02b: detail-only warehouse card and Figma history layout. */
+app-admin-order-management {
+  .order-admin__inventory-card h2{margin-bottom:15px}
+  .order-admin__inventory-entry{
+    display:flex;align-items:center;gap:14px;min-height:88px;
+    background:#f3f7fc;border-radius:9px;padding:13px 16px
+  }
+  .order-admin__inventory-icon{
+    display:grid;place-items:center;flex:none;width:40px;height:40px;
+    background:#e1f0fc;border-radius:8px;color:#0d47a1;font-size:21px
+  }
+  .order-admin__inventory-info{display:flex;flex:1;flex-direction:column;gap:3px;min-width:0}
+  .order-admin__inventory-info strong{color:#233450;font-size:13px;font-weight:600}
+  .order-admin__inventory-info span{color:#667a94;font-size:12px;overflow-wrap:anywhere}
+  .order-admin__inventory-link{
+    display:inline-flex;align-items:center;justify-content:center;min-height:38px;
+    flex:none;border:1px solid #dbe4ef;border-radius:8px;padding:0 12px;
+    background:#fff;color:#0d47a1;font-size:12px;font-weight:600
+  }
+  .order-admin__inventory-link:hover{background:#eaf3fe}
+  .order-admin__inventory-empty{margin:0;color:#71849c;font-size:12px}
+  .order-admin__history li{display:grid;grid-template-columns:112px minmax(0,1fr);gap:0 12px}
+  .order-admin__history li small{grid-column:1;grid-row:1;margin:0}
+  .order-admin__history-content{grid-column:2;grid-row:1;min-width:0}
+  .order-admin__history-content p{margin:3px 0 0}
+}
+@media(max-width:620px){
+  app-admin-order-management .order-admin__inventory-entry{align-items:flex-start;flex-wrap:wrap}
+  app-admin-order-management .order-admin__inventory-link{margin-left:54px}
+  app-admin-order-management .order-admin__history li{grid-template-columns:95px minmax(0,1fr)}
+}
