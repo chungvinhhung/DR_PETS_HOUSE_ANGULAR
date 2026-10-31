@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { catchError, forkJoin, Observable, finalize, of, switchMap, tap } from 'rxjs';
 import { AdminProduct } from '../../products/models/admin-product.model';
 import { AdminCategoryService } from '../../categories/services/admin-category.service';
@@ -60,6 +61,7 @@ interface StockHistory {
 export class AdminInventoryPageComponent implements OnInit {
   private readonly adminToast = inject(AdminToastService);
   private readonly inventoryApi = inject(AdminInventoryService);
+  private readonly route = inject(ActivatedRoute);
   private readonly categoryApi = inject(AdminCategoryService);
   private readonly auth = inject(AuthSessionService);
   private readonly destroyRef = inject(DestroyRef);
@@ -188,6 +190,7 @@ export class AdminInventoryPageComponent implements OnInit {
   }[this.modal() ?? 'receipt']));
 
   ngOnInit(): void {
+    if (this.route.snapshot.queryParamMap.get('tab') === 'history') this.switchTab('history');
     this.loadAll();
   }
 
