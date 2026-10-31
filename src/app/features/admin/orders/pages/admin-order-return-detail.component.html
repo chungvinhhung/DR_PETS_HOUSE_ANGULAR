@@ -213,8 +213,9 @@
               @if (relatedReceipts().length) {
                 <div class="return-detail__stock-links">
                   @for (tx of relatedReceipts(); track tx.id) {
-                    <a routerLink="/admin/inventory" [queryParams]="{tab:'history'}"
-                      [attr.aria-label]="'Xem giao dịch kho ' + tx.id">{{ tx.id }}</a>
+                    <button type="button" class="return-detail__receipt-code"
+                      (click)="inventoryDrawerOpen.set(true)"
+                      [attr.aria-label]="'Xem chi tiết giao dịch kho ' + tx.id">{{ tx.id }}</button>
                   }
                 </div>
               } @else {
@@ -222,10 +223,7 @@
               }
             </div>
           </div>
-          @if (relatedReceipts().length) {
-            <a class="return-detail__button return-detail__button--stock" routerLink="/admin/inventory"
-              [queryParams]="{tab:'history'}">Xem trong Kho</a>
-          }
+
         </div>
       </section>
     }
@@ -362,3 +360,13 @@
     }
   </main>
 </app-admin-catalog-shell>
+@if (inventoryDrawerOpen()) {
+  @if (data(); as ret) {
+    <app-admin-inventory-transaction-drawer
+      [transactions]="relatedReceipts()"
+      [branch]="branchName(linkedOrder()?.fulfillmentBranchId)"
+      [reference]="ret.code || ret.id"
+      [referenceLink]="'/admin/order-returns/' + ret.id"
+      (closed)="inventoryDrawerOpen.set(false)" />
+  }
+}
