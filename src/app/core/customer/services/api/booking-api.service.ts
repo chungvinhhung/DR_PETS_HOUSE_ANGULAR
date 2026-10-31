@@ -158,14 +158,31 @@ export function normalizeBookingService(service: any) {
   };
 }
 
+export function resolveBranchId(raw: any): string {
+  if (!raw) return "6ad08e4417bf41f5954234c3";
+  if (typeof raw === 'object') {
+    const id = raw.id || raw._id || raw.branch_id || raw.branchId;
+    if (id && /^[0-9a-fA-F]{24}$/.test(String(id))) return String(id);
+    raw = raw.name || raw.branch_name || raw.label || "";
+  }
+  const str = String(raw).trim();
+  if (/^[0-9a-fA-F]{24}$/.test(str)) return str;
+  if (str.includes("3") || str.includes("7")) return "6ad08e4417bf41f5954234c4";
+  if (str.toLowerCase().includes("bình thạnh") || str.toLowerCase().includes("binh thanh")) return "6ad08e4417bf41f5954234c5";
+  return "6ad08e4417bf41f5954234c3";
+}
+
 export function normalizeBranch(branch: any) {
-  const id = branch.id || branch._id || branch.branch_id || branch.branchId || "6ad08e4417bf41f5954234c3";
-  const name = branch.name || branch.branch_name || branch.branchName || "Chi nhánh Dr. Pet";
+  const id = resolveBranchId(branch);
+  const name = (typeof branch === 'object' && branch !== null)
+    ? (branch.name || branch.branch_name || branch.branchName || "Chi nhánh Dr. Pet")
+    : String(branch || "Chi nhánh Dr. Pet");
+  const address = (typeof branch === 'object' && branch !== null) ? branch.address : "";
   return {
-    ...branch,
-    id: String(id),
+    ...(typeof branch === 'object' && branch !== null ? branch : {}),
+    id,
     name,
-    label: branch.address ? `${name} - ${branch.address}` : name,
+    label: address ? `${name} - ${address}` : name,
   };
 }
 
@@ -259,15 +276,14 @@ export class BookingApiService {
 
   async getAppointmentSlots({ date, branchId, serviceType, serviceIds }: any) {
     const dateFormatted = date ? String(date).split("T")[0] : new Date().toISOString().split("T")[0];
+    const resolvedBranch = resolveBranchId(branchId);
     const params: any = {
       date: dateFormatted,
+      branchId: resolvedBranch,
+      serviceIds: (serviceIds && serviceIds.length > 0)
+        ? (Array.isArray(serviceIds) ? serviceIds.join(",") : serviceIds)
+        : "6ad08e4417bf41f5954234c6",
     };
-    if (branchId) {
-      params.branchId = branchId;
-    }
-    if (serviceIds && serviceIds.length > 0) {
-      params.serviceIds = Array.isArray(serviceIds) ? serviceIds.join(",") : serviceIds;
-    }
     try {
       const response = await this.http.get("/appointments/slots", { params });
       const slots = assertSuccess(response);

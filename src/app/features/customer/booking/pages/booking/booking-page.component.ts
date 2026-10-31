@@ -228,6 +228,7 @@ export class BookingPageComponent {
           date: getDateKey(this.selectedDate()),
           branchId: this.ownerInfo().branch,
           serviceType: this.selectedServiceType(),
+          serviceIds: this.selectedServices(),
         })
           .then((slots: any) => {
             if (!active) return;
