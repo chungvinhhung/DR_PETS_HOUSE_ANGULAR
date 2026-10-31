@@ -188,8 +188,8 @@
       <section class="return-detail__panel return-detail__panel--refund">
         <h2>Đối chiếu số tiền hoàn</h2>
         <div class="return-detail__reconcile">
-          <div><span>Tổng tiền khách yêu cầu hoàn</span><strong>{{ money(ret.refundBreakdown.total) }}</strong></div>
-          <div><span>Hoàn dự kiến</span><strong>{{ money(ret.refundBreakdown.total) }}</strong></div>
+          <div><span>Tổng tiền khách yêu cầu hoàn</span><strong>{{ money(requestedRefundAmount(ret)) }}</strong></div>
+          <div><span>Hoàn dự kiến</span><strong>{{ money(expectedRefundAmount(ret)) }}</strong></div>
           <div><span>SL thực nhận</span><strong>{{ receivedTotal(ret) }}</strong></div>
           <div><span>Phí vận chuyển hoàn</span><strong>{{ money(ret.refundBreakdown.shippingRefunded) }}</strong></div>
         </div>
