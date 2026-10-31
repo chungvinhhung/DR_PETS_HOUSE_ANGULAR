@@ -103,7 +103,9 @@
             <p class="order-admin__inventory-empty">Chưa thể tải giao dịch kho liên quan.</p>
           } @else if (orderInventory().length) {
             <div class="order-admin__inventory-entry">
-              <div class="order-admin__inventory-icon" aria-hidden="true">▣</div>
+              <div class="order-admin__inventory-icon" aria-hidden="true">
+                <img src="/assets/admin-inventory/inventory-transaction.svg" width="19" height="19" alt="">
+              </div>
               <div class="order-admin__inventory-info">
                 <strong>Xuất kho · {{ branchName(order.fulfillmentBranchId) }} · {{ orderInventory().length }} dòng vật tư, sản phẩm</strong>
                 @for (tx of orderInventory(); track tx.id) {
