@@ -14,7 +14,7 @@ import { FooterComponent } from '../../../../../layouts/customer/components/foot
 import { BookingSuccessModalComponent } from '../../components/booking-success-modal.component';
 import { BOOKING_SERVICES } from '../../data/booking-data';
 import { reactSetter } from '../../../../../shared/customer/utils/react-setter';
-import { BRANCH_OPTIONS, DEFAULT_SERVICE_TYPE_ID, createEmptyPetInfo, findSpeciesId, toBackendHealthStatus, isPetInfoTouched, getDateKey } from './booking-page.helpers';
+import { BRANCH_OPTIONS, INITIAL_BRANCH_OPTIONS, DEFAULT_SERVICE_TYPE_ID, createEmptyPetInfo, findSpeciesId, toBackendHealthStatus, isPetInfoTouched, getDateKey } from './booking-page.helpers';
 
 /**
  * BookingPage — chuyển từ React: src/pages/Booking/BookingPage.jsx
@@ -55,8 +55,7 @@ export class BookingPageComponent {
   readonly selectedServices = signal<any>([]);
   readonly selectedDate = signal<any>(null);
   readonly selectedSlot = signal<any>(null);
-  readonly branches = signal<any>((() =>
-    BRANCH_OPTIONS.map((branch: any) => ({ id: branch, label: branch })))());
+  readonly branches = signal<any>(INITIAL_BRANCH_OPTIONS);
   readonly services = signal<any>(BOOKING_SERVICES);
   readonly timeSlots = signal<any>([]);
   readonly slotsLoading = signal<any>(false);
@@ -72,7 +71,7 @@ export class BookingPageComponent {
     name: "",
     phone: "",
     email: "",
-    branch: BRANCH_OPTIONS[0],
+    branch: INITIAL_BRANCH_OPTIONS[0].id,
     agreed: false,
   });
   readonly paymentMode = signal<any>("store");

@@ -143,23 +143,29 @@ export function normalizeAppointmentHistoryItem(appointment: any = {}) {
 }
 
 export function normalizeBookingService(service: any) {
+  const id = service.id || service._id || service.service_id || service.serviceId || "6ad08e4417bf41f5954234c6";
+  const name = service.name || service.service_name || service.serviceName || "Dịch vụ Dr. Pet";
+  const price = service.basePrice ?? service.base_price ?? service.price ?? 0;
   return {
     ...service,
-    id: String(service.service_id),
-    serviceId: String(service.service_id),
+    id: String(id),
+    serviceId: String(id),
     serviceTypeId: inferServiceType(service),
-    name: service.service_name,
+    name,
     desc: service.description || "",
-    price: Number(service.base_price || 0),
-    isWeightSurchargeApplied: Boolean(service.is_weight_surcharge_applied),
+    price: Number(price),
+    isWeightSurchargeApplied: Boolean(service.isWeightSurchargeApplied ?? service.is_weight_surcharge_applied),
   };
 }
 
 export function normalizeBranch(branch: any) {
+  const id = branch.id || branch._id || branch.branch_id || branch.branchId || "6ad08e4417bf41f5954234c3";
+  const name = branch.name || branch.branch_name || branch.branchName || "Chi nhánh Dr. Pet";
   return {
     ...branch,
-    id: String(branch.branch_id),
-    label: branch.branch_name ? `${branch.branch_name} - ${branch.address}` : branch.address,
+    id: String(id),
+    name,
+    label: branch.address ? `${name} - ${branch.address}` : name,
   };
 }
 

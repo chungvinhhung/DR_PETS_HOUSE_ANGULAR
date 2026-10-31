@@ -26,12 +26,14 @@ export const petImages = {
   Snow: informationSelectedPetPhoto,
 };
 
+export const INITIAL_BRANCH_OPTIONS = [
+  { id: "6ad08e4417bf41f5954234c3", label: "Chi nhánh Quận 1 - 123 Nguyễn Thị Minh Khai, P. Bến Thành, Q.1, TP.HCM" },
+  { id: "6ad08e4417bf41f5954234c4", label: "Chi nhánh Quận 7 - 456 Nguyễn Thị Thập, P. Tân Quy, Q.7, TP.HCM" },
+];
+
 export const BRANCH_OPTIONS = [
-  "Phường Linh Xuân, TP. Thủ Đức, TP. Hồ Chí Minh",
-  "Quận 1, TP. Hồ Chí Minh",
-  "Quận Gò Vấp, TP. Hồ Chí Minh",
-  "Quận Cầu Giấy, Hà Nội",
-  "Quận Hoàng Mai, Hà Nội",
+  "6ad08e4417bf41f5954234c3",
+  "6ad08e4417bf41f5954234c4",
 ];
 
 export const formatMoney = (value: any) => formatVnd(value);
