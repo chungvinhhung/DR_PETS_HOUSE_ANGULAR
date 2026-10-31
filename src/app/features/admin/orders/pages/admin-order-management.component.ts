@@ -11,6 +11,7 @@ import { AuthSessionService } from '../../../../core/services/auth-session.servi
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
 import { AdminProductService } from '../../products/services/admin-product.service';
 import { AdminInventoryService, InventoryItemDto, InventoryTransactionDto } from '../../inventory/services/admin-inventory.service';
+import { AdminInventoryTransactionDrawerComponent } from '../../inventory/components/admin-inventory-transaction-drawer.component';
 import {
   AdminOrderApiService, OrderRecord, OrderStatus, OrderWriteAction, OrderReturnSummary, ReturnStatus,
 } from '../services/admin-order-api.service';
@@ -31,7 +32,7 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 @Component({
   selector: 'app-admin-order-management',
   standalone: true,
-  imports: [AdminCatalogShellComponent, RouterLink],
+  imports: [AdminCatalogShellComponent, RouterLink, AdminInventoryTransactionDrawerComponent],
   templateUrl: './admin-order-management.component.html',
   styleUrl: './admin-order-management.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -97,6 +98,7 @@ export class AdminOrderManagementComponent {
   readonly orderInventory = signal<InventoryTransactionDto[]>([]);
   readonly orderInventoryLoading = signal(false);
   readonly orderInventoryError = signal(false);
+  readonly inventoryDrawerOpen = signal(false);
   readonly orderInventoryItems = signal<InventoryItemDto[]>([]);
   readonly productThumbs = signal<Record<string,string>>({});
   // Only render actual order audit events. The milestone bar is a separate
@@ -499,6 +501,7 @@ export class AdminOrderManagementComponent {
     this.loading.set(true); this.error.set('');
     this.selected.set(null);
     this.orderInventory.set([]);
+    this.inventoryDrawerOpen.set(false);
     this.productThumbs.set({});
     this.orderInventoryLoading.set(true);
     this.orderInventoryError.set(false);
