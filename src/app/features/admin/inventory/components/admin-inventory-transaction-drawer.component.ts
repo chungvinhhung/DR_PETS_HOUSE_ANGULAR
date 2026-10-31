@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, 
 import { RouterLink } from '@angular/router';
 import { InventoryItemDto, InventoryTransactionDto } from '../services/admin-inventory.service';
 
-/** Read-only, shared Order/Return inventory-detail drawer.
- * Each persisted row is shown independently; BE has not exposed a stable
- * transaction-group code, so the UI never invents a TXK/PNK group ID.
+/** Shared read-only inventory transaction drawer.
+ * Multiple persisted SKU movements can be rendered as one business transaction
+ * when the API exposes a shared code or a stable source/time correlation.
  */
 @Component({
   selector: 'app-admin-inventory-transaction-drawer',
@@ -17,6 +17,7 @@ export class AdminInventoryTransactionDrawerComponent {
   @Input({required:true}) transactions: readonly InventoryTransactionDto[] = [];
   @Input() items: readonly InventoryItemDto[] = [];
   @Input() branch = '';
+  @Input() transactionCode = '';
   @Input() reference = '';
   @Input() referenceLink = '';
   @Output() closed = new EventEmitter<void>();
