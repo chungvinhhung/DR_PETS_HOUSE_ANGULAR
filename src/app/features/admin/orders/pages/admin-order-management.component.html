@@ -71,7 +71,14 @@
               <tbody>
                 @for (item of order.items; track item.orderItemId) {
                   <tr>
-                    <td><span class="order-admin__product-thumb" aria-label="Sản phẩm chưa có ảnh trong API">Chưa có ảnh</span></td>
+                    <td>
+                      @if (productThumbs()[item.productId]; as thumbUrl) {
+                        <img class="order-admin__product-thumb order-admin__product-thumb--image" [src]="thumbUrl"
+                          [alt]="item.name" loading="lazy">
+                      } @else {
+                        <span class="order-admin__product-thumb" aria-label="Sản phẩm chưa có ảnh">Chưa có ảnh</span>
+                      }
+                    </td>
                     <td class="order-admin__item-name">{{ item.name }}</td>
                     <td>{{ item.skuSnapshot || '—' }}</td>
                     <td class="order-admin__qty">{{ item.quantity }}</td>
