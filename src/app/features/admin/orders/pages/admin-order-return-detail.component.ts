@@ -288,6 +288,26 @@ export class AdminOrderReturnDetailComponent {
     return typeof amount === 'number' && Number.isFinite(amount) && amount >= 0
       ? amount : null;
   }
+  /** Preserve the value of the original request after BE overwrites the
+   * aggregate refundBreakdown.total on manager approval. Individual item
+   * refundAmount is immutable for the originally requested quantity. */
+  requestedRefundAmount(ret: OrderReturnSummary): number {
+    return ret.items.reduce((sum,item) => sum + (Number(item.refundAmount) || 0), 0)
+      + (Number(ret.refundBreakdown.shippingRefunded) || 0);
+  }
+
+  /** Before approval this is a projection based on received quantities.
+   * After approval the BE's authoritative adjusted total takes precedence. */
+  expectedRefundAmount(ret: OrderReturnSummary): number {
+    if (ret.status === 'APPROVED' || ret.status === 'COMPLETED') {
+      return ret.refundBreakdown.total;
+    }
+    if (ret.items.some(item => typeof item.receivedQty === 'number')) {
+      return this.approvedPreviewAmount();
+    }
+    return this.requestedRefundAmount(ret);
+  }
+
   money(value?: number | null): string {
     return typeof value === 'number' && Number.isFinite(value)
       ? new Intl.NumberFormat('vi-VN').format(value) + 'đ' : '—';
