@@ -1,0 +1,59 @@
+<div class="inventory-transaction-overlay" (click)="closed.emit()">
+  <aside class="inventory-transaction-drawer" role="dialog" aria-modal="true"
+    aria-labelledby="inventory-transaction-title" (click)="$event.stopPropagation()">
+    <header class="inventory-transaction-header">
+      <div>
+        <h2 id="inventory-transaction-title">Chi tiết giao dịch kho</h2>
+        <span>{{ transactions.length === 1 ? transactions[0].id : transactions.length + ' dòng giao dịch' }}</span>
+      </div>
+      <button type="button" aria-label="Đóng chi tiết giao dịch" (click)="closed.emit()">×</button>
+    </header>
+
+    @if (transactions.length) {
+      <section class="inventory-transaction-section" aria-label="Thông tin chung">
+        <h3>Thông tin chung</h3>
+        <div class="inventory-transaction-metadata">
+          <div><span>Loại giao dịch</span><strong>{{ transactionName() }}</strong></div>
+          <div><span>Thời gian</span><strong>{{ displayTime(transactions[0].createdAt) }}</strong></div>
+          <div><span>Chi nhánh</span><strong>{{ branch || transactions[0].branchId }}</strong></div>
+          <div><span>Người thao tác</span><strong>{{ transactions[0].actorId || '—' }}</strong></div>
+        </div>
+      </section>
+      <section class="inventory-transaction-section">
+        <h3>Sản phẩm &amp; biến động · {{ transactions.length }} dòng</h3>
+        <div class="inventory-transaction-lines">
+          @for (tx of transactions; track tx.id) {
+            <article class="inventory-transaction-item">
+              <div class="inventory-transaction-item-title">
+                <strong>{{ itemFor(tx.inventoryItemId)?.name || tx.inventoryItemId }}</strong>
+                <small>{{ itemFor(tx.inventoryItemId)?.sku || '—' }} · SL: {{ tx.changeQty < 0 ? -tx.changeQty : tx.changeQty }}</small>
+              </div>
+              <div class="inventory-transaction-quantity">
+                <div><span>Tồn trước</span><strong>{{ tx.beforeQty }}</strong></div>
+                <div><span>Thay đổi</span><strong>{{ signedQuantity(tx.changeQty) }}</strong></div>
+                <div><span>Tồn sau</span><strong>{{ tx.afterQty }}</strong></div>
+              </div>
+              <small class="inventory-transaction-code">Mã dòng giao dịch: {{ tx.id }}</small>
+            </article>
+          }
+        </div>
+      </section>
+      <section class="inventory-transaction-section">
+        <h3>Lý do {{ transactionName().toLowerCase() }}</h3>
+        <p class="inventory-transaction-reason">{{ displayReason(transactions[0].reason) }}</p>
+        @if (reference) {
+          <div class="inventory-transaction-reference">
+            <span>Mã tham chiếu</span>
+            @if (referenceLink) {
+              <a [routerLink]="referenceLink" (click)="closed.emit()">{{ reference }}</a>
+            } @else {
+              <strong>{{ reference }}</strong>
+            }
+          </div>
+        }
+      </section>
+    } @else {
+      <p class="inventory-transaction-empty">Chưa có giao dịch kho để hiển thị.</p>
+    }
+  </aside>
+</div>
