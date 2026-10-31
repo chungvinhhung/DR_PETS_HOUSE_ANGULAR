@@ -39,6 +39,7 @@ interface StockHistory {
   id: string;
   groupKey: string;
   transactionCode: string;
+  createdAt: string;
   date: string;
   item: string;
   sku: string;
@@ -110,6 +111,7 @@ export class AdminInventoryPageComponent implements OnInit {
   readonly status = signal('');
   readonly changeType = signal('');
   readonly fromDate = signal(new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10));
+  readonly historyRange = signal<'7' | '30' | '90' | 'all'>('30');
   readonly page = signal(1);
   readonly modal = signal<DialogKind | null>(null);
   readonly activeItem = signal<StockItem | null>(null);
@@ -170,7 +172,7 @@ export class AdminInventoryPageComponent implements OnInit {
   readonly historyFiltered = computed(() => this.history().filter(row => {
     const search = this.search().trim().toLocaleLowerCase('vi');
     const day = row.date.slice(6, 10) + '-' + row.date.slice(3, 5) + '-' + row.date.slice(0, 2);
-    return (!search || `${row.item} ${row.sku}`.toLocaleLowerCase('vi').includes(search)) &&
+    return (!search || `${row.transactionCode} ${row.sourceLabel} ${row.item} ${row.sku}`.toLocaleLowerCase('vi').includes(search)) &&
       (!this.branch() || row.branchId === this.branchId(this.branch())) &&
       (!this.changeType() || row.action === this.changeType()) &&
       (!this.fromDate() || day >= this.fromDate());
@@ -353,6 +355,7 @@ export class AdminInventoryPageComponent implements OnInit {
         id: tx.id,
         groupKey,
         transactionCode,
+        createdAt: tx.createdAt,
         date: formatted,
         item: product?.name || items.get(tx.inventoryItemId)?.name || tx.inventoryItemId,
         sku: items.get(tx.inventoryItemId)?.sku || '—',
@@ -379,7 +382,7 @@ export class AdminInventoryPageComponent implements OnInit {
       return tx.transactionType === this.transactionTypeForAction(row.action)
         && (tx.sourceId || '') === row.sourceId
         && (tx.sourceType || '') === row.sourceType
-        && this.sameTransactionMoment(tx, row);
+        && tx.createdAt === row.createdAt;
     });
     this.selectedHistoryRow.set(row);
     this.selectedTransactionGroup.set(group.length ? group : this.rawTransactions().filter(tx => tx.id === row.id));
@@ -400,15 +403,20 @@ export class AdminInventoryPageComponent implements OnInit {
   }
 
   private transactionTypeForAction(action: string): InventoryTransactionDto['transactionType'] {
-    return ({'Nhập kho':'RECEIPT','Xuất kho':'ISSUE','Điều chỉnh':'ADJUSTMENT','Chuyển kho':'TRANSFER'} as const)[action]
-      ?? 'ADJUSTMENT';
+    switch (action) {
+      case 'Nhập kho': return 'RECEIPT';
+      case 'Xuất kho': return 'ISSUE';
+      case 'Chuyển kho': return 'TRANSFER';
+      default: return 'ADJUSTMENT';
+    }
   }
 
-  private sameTransactionMoment(tx: InventoryTransactionDto, row: StockHistory): boolean {
-    const date = new Date(tx.createdAt);
-    if (Number.isNaN(date.getTime())) return false;
-    const two = (n: number) => String(n).padStart(2, '0');
-    return `${two(date.getDate())}/${two(date.getMonth() + 1)} ${two(date.getHours())}:${two(date.getMinutes())}` === row.date;
+  setHistoryRange(value: string): void {
+    const range = value === '7' || value === '90' || value === 'all' ? value : '30';
+    this.historyRange.set(range);
+    this.fromDate.set(range === 'all' ? '' :
+      new Date(Date.now() - Number(range) * 86400000).toISOString().slice(0, 10));
+    this.onFilter();
   }
 
   shortBranch(value: string): string { return value.replace('Chi nhánh Quận ', 'Q'); }
