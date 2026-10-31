@@ -111,7 +111,14 @@
             <tbody>
               @for (item of ret.items; track item.orderItemId) {
                 <tr [class.return-detail__item--requested]="item.requestedQty > 0">
-                  <td><span class="return-detail__product-thumb" aria-label="Chưa có ảnh sản phẩm">Chưa có ảnh</span></td>
+                  <td>
+                    @if (productImage(item.orderItemId); as thumbUrl) {
+                      <img class="return-detail__product-thumb return-detail__product-thumb--image"
+                        [src]="thumbUrl" [alt]="item.productName" loading="lazy">
+                    } @else {
+                      <span class="return-detail__product-thumb" aria-label="Chưa có ảnh sản phẩm">Chưa có ảnh</span>
+                    }
+                  </td>
                   <td class="return-detail__product-name">
                     <strong>{{ item.productName }}</strong>
                     @if (ret.status === 'COMPLETED' && item.requestedQty > 0) {
