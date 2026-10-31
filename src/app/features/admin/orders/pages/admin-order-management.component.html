@@ -87,6 +87,30 @@
           </div>
         </section>
 
+        <section class="order-admin__card order-admin__card--detail order-admin__inventory-card"
+          aria-label="Giao dịch kho liên quan">
+          <h2>Giao dịch kho liên quan</h2>
+          @if (orderInventoryLoading()) {
+            <p class="order-admin__inventory-empty" role="status">Đang tải giao dịch kho...</p>
+          } @else if (orderInventoryError()) {
+            <p class="order-admin__inventory-empty">Chưa thể tải giao dịch kho liên quan.</p>
+          } @else if (orderInventory().length) {
+            <div class="order-admin__inventory-entry">
+              <div class="order-admin__inventory-icon" aria-hidden="true">▣</div>
+              <div class="order-admin__inventory-info">
+                <strong>Xuất kho · {{ branchName(order.fulfillmentBranchId) }} · {{ orderInventory().length }} dòng vật tư, sản phẩm</strong>
+                @for (tx of orderInventory(); track tx.id) {
+                  <span>{{ inventoryName(tx.inventoryItemId) }} · SL: {{ tx.changeQty < 0 ? -tx.changeQty : tx.changeQty }} · Mã GD: {{ tx.id }}</span>
+                }
+              </div>
+              <a class="order-admin__inventory-link" routerLink="/admin/inventory"
+                [queryParams]="{tab:'history'}" aria-label="Xem lịch sử giao dịch kho">Xem lịch sử kho ›</a>
+            </div>
+          } @else {
+            <p class="order-admin__inventory-empty">Chưa ghi nhận giao dịch kho liên quan đến đơn này.</p>
+          }
+        </section>
+
         <div class="order-admin__grid">
           <section class="order-admin__card order-admin__card--detail" aria-label="Thanh toán">
             <h2>Thanh toán</h2>
@@ -103,17 +127,19 @@
             <h2>Lịch sử xử lý</h2>
             @if (detailHistory().length) {
               <ol class="order-admin__history">
-                @for (event of detailHistory(); track event.status; let first = $first) {
+                @for (event of detailHistory(); track $index; let first = $first) {
                   <li [class.order-admin__history--latest]="first">
-                    <strong>{{ statusLabel(event.status) }}</strong>
-                    <small>{{ event.at ? when(event.at) : 'BE chưa ghi thời gian bước này' }}</small>
-                    @if (event.note) { <p>{{ event.note }}</p> }
+                    <small>{{ when(event.at) }}</small>
+                    <div class="order-admin__history-content">
+                      <strong>{{ statusLabel(event.status) }}</strong>
+                      @if (event.note) { <p>{{ event.note }}</p> }
+                    </div>
                   </li>
                 }
               </ol>
             } @else {
               <div class="order-admin__muted">
-                Hệ thống chưa cung cấp lịch sử xử lý chi tiết. Trạng thái hiện tại: <strong>{{ statusLabel(order.status) }}</strong>.
+                Chưa có thông tin lịch sử xử lý.
               </div>
             }
           </section>
