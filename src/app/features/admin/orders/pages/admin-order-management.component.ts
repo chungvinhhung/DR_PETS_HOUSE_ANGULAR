@@ -9,6 +9,7 @@ import { AdminReturnNotificationService } from '../../../../shared/services/admi
 import { orderErrorMessage } from '../services/admin-order-error-message';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
+import { AdminProductService } from '../../products/services/admin-product.service';
 import { AdminInventoryService, InventoryItemDto, InventoryTransactionDto } from '../../inventory/services/admin-inventory.service';
 import {
   AdminOrderApiService, OrderRecord, OrderStatus, OrderWriteAction, OrderReturnSummary, ReturnStatus,
@@ -39,6 +40,7 @@ export class AdminOrderManagementComponent {
   private readonly api = inject(AdminOrderApiService);
   private readonly branchApi = inject(BranchManagementApiService);
   private readonly inventoryApi = inject(AdminInventoryService);
+  private readonly productApi = inject(AdminProductService);
   private readonly route = inject(ActivatedRoute);
   private readonly session = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
@@ -96,6 +98,7 @@ export class AdminOrderManagementComponent {
   readonly orderInventoryLoading = signal(false);
   readonly orderInventoryError = signal(false);
   readonly orderInventoryItems = signal<InventoryItemDto[]>([]);
+  readonly productThumbs = signal<Record<string,string>>({});
   // Only render actual order audit events. The milestone bar is a separate
   // status visualization and must not create synthetic history records.
   readonly detailHistory = computed(() => {
@@ -447,6 +450,20 @@ export class AdminOrderManagementComponent {
     return item ? item.sku + ' · ' + item.name : 'Mặt hàng ' + id;
   }
 
+  private loadOrderImages(order: OrderRecord): void {
+    this.productThumbs.set({});
+    const ids=[...new Set(order.items.map(item=>item.productId).filter(Boolean))];
+    if(!ids.length)return;
+    forkJoin(ids.map(id=>this.productApi.getProduct(id).pipe(
+      map(product=>[id,product.images.find(img=>img.isPrimary)?.url
+        || product.images[0]?.url || ''] as const),
+      catchError(()=>of([id,''] as const)),
+    ))).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(rows=>{
+      if(this.orderId()!==order.id)return;
+      this.productThumbs.set(Object.fromEntries(rows));
+    });
+  }
+
   private loadOrderInventory(order: OrderRecord): void {
     // The inventory API currently exposes row-level transactions, not a
     // grouped TXK drawer. Show only real ISSUE rows referencing this order.
@@ -482,6 +499,7 @@ export class AdminOrderManagementComponent {
     this.loading.set(true); this.error.set('');
     this.selected.set(null);
     this.orderInventory.set([]);
+    this.productThumbs.set({});
     this.orderInventoryLoading.set(true);
     this.orderInventoryError.set(false);
     this.api.get(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -489,6 +507,7 @@ export class AdminOrderManagementComponent {
         if (this.orderId() !== id || version !== this.detailRequestVersion) return;
         this.selected.set(order); this.loading.set(false);
         this.loadOrderInventory(order);
+        this.loadOrderImages(order);
       },
       error: (error: unknown) => {
         if (this.orderId() !== id || version !== this.detailRequestVersion) return;
