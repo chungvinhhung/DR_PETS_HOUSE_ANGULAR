@@ -104,13 +104,23 @@ export class AuthApiService {
   }
 
   async requestGuestOtp(phone: string) {
-    const response = await this.http.post("/auth/guest-otp", { phone });
-    return assertSuccess(response);
+    try {
+      const response = await this.http.post("/guest/lookup/otp", { phone });
+      return assertSuccess(response);
+    } catch {
+      const response = await this.http.post("/auth/guest-otp", { phone });
+      return assertSuccess(response);
+    }
   }
 
   async activateGuestAccount(token: string, password: string) {
-    const response = await this.http.post("/auth/activate-guest", { token, password });
-    return assertSuccess(response);
+    try {
+      const response = await this.http.post("/activation/complete", { token, password });
+      return assertSuccess(response);
+    } catch {
+      const response = await this.http.post("/auth/activate-guest", { token, password });
+      return assertSuccess(response);
+    }
   }
 
   async verifyRegisterOtp({ loginId, otpCode }: any) {

@@ -13,24 +13,29 @@ import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 export class LoyaltyApiService {
   private readonly http = inject(CustomerHttpService);
 
-  async applyVoucher({ code, orderValue, branchId }: any) {
+  async applyVoucher({ code, orderValue, branchId, serviceIds, cartId }: any) {
+    const formattedCode = String(code || "").trim().toUpperCase();
+    const scope = serviceIds && serviceIds.length > 0 ? "SERVICE" : "ORDER";
     try {
       const response = await this.http.post("/vouchers/validate", {
-        code,
-        scope: "ORDER",
+        code: formattedCode,
+        scope,
         branchId: branchId || undefined,
+        cartId: cartId || undefined,
+        serviceIds: serviceIds || undefined,
       });
       const data = assertSuccess(response);
       return {
         ...data,
-        discount: data?.discount ?? data?.discount_amount ?? 0,
+        discount: data?.discount ?? data?.discount_amount ?? data?.discountValue ?? 0,
         valid: data?.valid ?? true,
         reason: data?.reason ?? "",
       };
     } catch {
       const response = await this.http.post("/vouchers/apply", {
-        code,
-        order_value: orderValue,
+        code: formattedCode,
+        scope,
+        branchId: branchId || undefined,
       });
       return assertSuccess(response);
     }

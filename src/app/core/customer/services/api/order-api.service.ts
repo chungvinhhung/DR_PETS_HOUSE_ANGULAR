@@ -102,32 +102,57 @@ export function toCheckoutItems(items: any) {
 export class OrderApiService {
   private readonly http = inject(CustomerHttpService);
 
-  async checkoutOrder({ addressId, paymentMethod, voucherCode, note, items }: any) {
-    const payload = {
+  async checkoutOrder({ addressId, selectedAddress, paymentMethod, voucherCode, note, items, cartId }: any) {
+    const address = selectedAddress || {};
+    const payload: any = {
       addressId: addressId || undefined,
-      paymentMethod: paymentMethod === "store" ? "STORE" : paymentMethod === "online" ? "ONLINE" : "COD",
+      cartId: cartId || undefined,
+      shippingAddress: {
+        fullName: address.fullName || address.receiverName || "Khách hàng",
+        phone: address.phone || address.receiverPhone || "0912345678",
+        addressLine: address.addressLine || address.address || address.street || "Địa chỉ nhận hàng",
+        ward: address.ward || "",
+        district: address.district || "",
+        city: address.city || "Hồ Chí Minh",
+      },
+      paymentMethod: paymentMethod === "online" || paymentMethod === "ONLINE" ? "ONLINE_MOCK" : "COD",
       voucherCode: voucherCode || undefined,
       note: note || undefined,
-      items: toCheckoutItems(items),
+      items: toCheckoutItems(items || []),
     };
-    const response = await this.http.post("/orders/checkout", payload);
-    return assertSuccess(response);
+    try {
+      const response = await this.http.post("/orders/checkout", payload);
+      return assertSuccess(response);
+    } catch (err: any) {
+      if (err?.status === 404) {
+        const response = await this.http.post("/checkout", payload);
+        return assertSuccess(response);
+      }
+      throw err;
+    }
   }
 
-  async guestCheckoutOrder({ guest, paymentMethod, voucherCode, note, items }: any) {
+  async guestCheckoutOrder({ guest, paymentMethod, voucherCode, note, items, cartId }: any) {
     const addressLine = [guest.address, guest.ward, guest.district, guest.city].filter(Boolean).join(", ");
-    const payload = {
-      customerId: null,
-      contactSnapshot: {
-        fullName: guest.fullName || guest.name,
+    const payload: any = {
+      cartId: cartId || undefined,
+      contact: {
+        fullName: guest.fullName || guest.name || "Khách vãng lai",
         phone: guest.phone,
         email: guest.email || undefined,
-        address: addressLine || guest.address || "Địa chỉ nhận hàng",
       },
-      paymentMethod: paymentMethod === "store" ? "STORE" : paymentMethod === "online" ? "ONLINE" : "COD",
+      shippingAddress: {
+        fullName: guest.fullName || guest.name || "Khách vãng lai",
+        phone: guest.phone,
+        addressLine: addressLine || guest.address || "Địa chỉ nhận hàng",
+        ward: guest.ward || "",
+        district: guest.district || "",
+        city: guest.city || "Hồ Chí Minh",
+      },
+      paymentMethod: paymentMethod === "online" || paymentMethod === "ONLINE" ? "ONLINE_MOCK" : "COD",
       voucherCode: voucherCode || undefined,
       note: note || undefined,
-      items: toCheckoutItems(items),
+      items: toCheckoutItems(items || []),
     };
     try {
       const response = await this.http.post("/orders/checkout", payload);

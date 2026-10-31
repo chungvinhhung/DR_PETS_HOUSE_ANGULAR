@@ -295,15 +295,22 @@ export class BookingPageComponent {
       }
 
       await this.bookingApi.bookAppointment({
+        branchId: this.ownerInfo().branch,
+        date: getDateKey(this.selectedDate()),
+        startTime: selectedSlotRecord.value?.split(" - ")[0] || "09:00",
+        slotStart: selectedSlotRecord.start,
         slot_id: selectedSlotRecord.id,
         pet_id: validPetId,
         pet_data: petData,
         service_ids: servicePayload,
+        serviceIds: servicePayload.map((s: any) => s.service_id),
         customer_name_snapshot: this.ownerInfo().name,
         customer_phone_snapshot: this.ownerInfo().phone,
+        customerEmail: this.ownerInfo().email,
         condition_description: ([firstPetInfo.name, firstPetInfo.status].filter(Boolean) as any[]).join(" - ") || undefined,
         note: firstPetInfo.notes || undefined,
         payment_method: this.paymentMode() === "store" ? "store" : "online",
+        paymentMethod: this.paymentMode() === "store" ? "PAY_AT_STORE" : "ONLINE_MOCK",
       });
       this.success.set(true);
     } catch (error: any) {

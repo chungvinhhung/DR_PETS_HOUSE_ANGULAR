@@ -298,10 +298,11 @@ export class ProductApiService {
   async createProductReview(productId: any, payload: any) {
     return unwrap(
       await this.http.post("/reviews", {
-        target_type: "product",
-        target_id: String(productId),
-        rating: payload.rating,
+        targetType: "PRODUCT",
+        targetId: String(productId),
+        rating: Number(payload.rating || 5),
         comment: payload.comment ?? payload.content ?? payload.review ?? "",
+        anonymous: Boolean(payload.anonymous),
       }),
     );
   }
