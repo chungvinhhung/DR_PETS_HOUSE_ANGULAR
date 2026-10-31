@@ -1,7 +1,7 @@
 import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, from, map, mergeMap, of, toArray } from 'rxjs';
+import { catchError, forkJoin, from, map, mergeMap, of, toArray } from 'rxjs';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
@@ -9,6 +9,7 @@ import { AdminReturnNotificationService } from '../../../../shared/services/admi
 import { orderErrorMessage } from '../services/admin-order-error-message';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
+import { AdminInventoryService, InventoryItemDto, InventoryTransactionDto } from '../../inventory/services/admin-inventory.service';
 import {
   AdminOrderApiService, OrderRecord, OrderStatus, OrderWriteAction, OrderReturnSummary, ReturnStatus,
 } from '../services/admin-order-api.service';
@@ -37,6 +38,7 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 export class AdminOrderManagementComponent {
   private readonly api = inject(AdminOrderApiService);
   private readonly branchApi = inject(BranchManagementApiService);
+  private readonly inventoryApi = inject(AdminInventoryService);
   private readonly route = inject(ActivatedRoute);
   private readonly session = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
@@ -90,25 +92,21 @@ export class AdminOrderManagementComponent {
   readonly awaitingCount = computed(() => this.allOrders().filter(item => item.status === 'PENDING').length);
   readonly shippingCount = computed(() => this.allOrders().filter(item => item.status === 'SHIPPED').length);
   readonly selected = signal<OrderRecord | null>(null);
-  // Display EVERY reached order milestone, newest first. Missing BE audit timestamps
-  // remain explicit rather than being invented from the final delivery time.
+  readonly orderInventory = signal<InventoryTransactionDto[]>([]);
+  readonly orderInventoryLoading = signal(false);
+  readonly orderInventoryError = signal(false);
+  readonly orderInventoryItems = signal<InventoryItemDto[]>([]);
+  // Only render actual order audit events. The milestone bar is a separate
+  // status visualization and must not create synthetic history records.
   readonly detailHistory = computed(() => {
     const order = this.selected();
     if (!order) return [];
-    const flow: OrderStatus[] = ['PENDING', ...this.milestones];
-    const reached = order.status === 'CANCELLED'
-      ? [...flow.filter(status => status === 'PENDING' || order.statusHistory?.some(entry => entry.status === status)),
-          'CANCELLED' as OrderStatus]
-      : flow.slice(0, flow.indexOf(order.status) + 1);
-    return reached.map(status => {
-      const event = order.statusHistory?.find(entry => entry.status === status);
-      return {
-        status,
-        at: event?.at ?? (status === 'PENDING' ? order.createdAt :
-          status === 'COMPLETED' ? order.deliveredAt : null),
-        note: event?.note ?? null,
-      };
-    }).reverse();
+    const history = (order.statusHistory ?? []).filter(event => !!event.at)
+      .map(event => ({status: event.status, at: event.at, note: event.note ?? null}));
+    if (!history.length && order.createdAt) {
+      history.push({status: 'PENDING', at: order.createdAt, note: null});
+    }
+    return history.sort((a,b) => (Date.parse(b.at) || 0) - (Date.parse(a.at) || 0));
   });
   readonly branches = signal<{ id: string; name: string }[]>([]);
   readonly loading = signal(false);
@@ -444,21 +442,59 @@ export class AdminOrderManagementComponent {
       },
     });
   }
+  inventoryName(id: string): string {
+    const item = this.orderInventoryItems().find(entry => entry.id === id);
+    return item ? item.sku + ' · ' + item.name : 'Mặt hàng ' + id;
+  }
+
+  private loadOrderInventory(order: OrderRecord): void {
+    // The inventory API currently exposes row-level transactions, not a
+    // grouped TXK drawer. Show only real ISSUE rows referencing this order.
+    this.orderInventory.set([]);
+    this.orderInventoryItems.set([]);
+    this.orderInventoryError.set(false);
+    this.orderInventoryLoading.set(true);
+    const requestedId = order.id;
+    forkJoin({
+      transactions: this.inventoryApi.listTransactions(),
+      items: this.inventoryApi.listItems(),
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({transactions,items}) => {
+        if (this.orderId() !== requestedId) return;
+        this.orderInventoryItems.set(items);
+        this.orderInventory.set(transactions.filter(tx => tx.transactionType === 'ISSUE' &&
+          tx.sourceType?.toUpperCase() === 'ORDER' &&
+          (tx.sourceId === order.id || tx.sourceId === order.code)));
+        this.orderInventoryLoading.set(false);
+      },
+      error: () => {
+        if (this.orderId() !== requestedId) return;
+        this.orderInventoryError.set(true);
+        this.orderInventoryLoading.set(false);
+      },
+    });
+  }
+
   private loadDetail(): void {
     const id = this.orderId();
     const version = ++this.detailRequestVersion;
     if (!id) return;
     this.loading.set(true); this.error.set('');
     this.selected.set(null);
+    this.orderInventory.set([]);
+    this.orderInventoryLoading.set(true);
+    this.orderInventoryError.set(false);
     this.api.get(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (order) => {
         if (this.orderId() !== id || version !== this.detailRequestVersion) return;
         this.selected.set(order); this.loading.set(false);
+        this.loadOrderInventory(order);
       },
       error: (error: unknown) => {
         if (this.orderId() !== id || version !== this.detailRequestVersion) return;
         this.error.set(orderErrorMessage(error, 'Không tải được chi tiết đơn hàng.'));
         this.loading.set(false);
+        this.orderInventoryLoading.set(false);
       },
     });
   }
@@ -469,7 +505,7 @@ export class AdminOrderManagementComponent {
     const recordedAt = order.statusHistory?.find(entry => entry.status === step)?.at
       ?? (step === 'COMPLETED' ? order.deliveredAt : null);
     if (recordedAt) return this.when(recordedAt);
-    return reached ? 'BE chưa ghi thời gian' : 'Chưa bắt đầu';
+    return reached ? '—' : 'Chưa bắt đầu';
   }
   statusLabel(status: OrderStatus): string { return STATUS_LABELS[status] ?? 'Chưa xác định'; }
   customerName(order: OrderRecord): string {
