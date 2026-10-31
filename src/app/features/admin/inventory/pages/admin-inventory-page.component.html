@@ -8,15 +8,12 @@
     <button type="button" role="tab" [attr.aria-selected]="tab()==='history'" [class.active]="tab()==='history'" (click)="switchTab('history')">Lịch sử kho</button>
   </div>
 
-  <div class="toolbar web2-filterbar">
+  <div class="toolbar web2-filterbar" [class.toolbar--history]="tab()==='history'">
     <div class="search-field">
       <img src="/assets/admin-inventory/search.svg" alt="" aria-hidden="true" />
       <input [ngModel]="search()" (ngModelChange)="search.set($event);onFilter()" aria-label="Tìm kiếm sản phẩm hoặc SKU" placeholder="Tìm sản phẩm / SKU..." />
     </div>
     <div class="toolbar-selects">
-      @if (tab()==='history') {
-        <label class="date-filter"><span>Từ ngày</span><input type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event);onFilter()" aria-label="Lọc lịch sử từ ngày"/></label>
-      }
       <select aria-label="Chi nhánh" [ngModel]="branch()" (ngModelChange)="branch.set($event);onFilter()">
         <option value="">Tất cả chi nhánh</option>
         @for (b of branches(); track b) {<option [value]="b">{{b}}</option>}
@@ -31,7 +28,13 @@
         <button type="button" class="primary-btn inventory-create web2-add-button" (click)="openDialog('receipt')"><span class="web2-add-icon" aria-hidden="true">+</span><span>Nhập kho</span></button>
       } @else {
         <select aria-label="Loại biến động" [ngModel]="changeType()" (ngModelChange)="changeType.set($event);onFilter()">
-          <option value="">Tất cả biến động</option><option>Nhập kho</option><option>Xuất kho</option><option>Điều chỉnh</option><option>Chuyển kho</option><option>Hoàn stock</option>
+          <option value="">Loại biến động</option><option>Nhập kho</option><option>Xuất kho</option><option>Điều chỉnh</option><option>Chuyển kho</option><option>Hoàn stock</option>
+        </select>
+        <select aria-label="Khoảng thời gian" [ngModel]="historyRange()" (ngModelChange)="setHistoryRange($event)">
+          <option value="30">30 ngày qua</option>
+          <option value="7">7 ngày qua</option>
+          <option value="90">90 ngày qua</option>
+          <option value="all">Tất cả thời gian</option>
         </select>
       }
     </div>
@@ -76,20 +79,43 @@
       } @else {
         <table class="history-table">
           <colgroup>
-            <col style="width:12%"/><col style="width:18%"/><col style="width:13%"/><col style="width:14%"/>
-            <col style="width:11%"/><col style="width:10%"/><col style="width:11%"/><col style="width:11%"/>
+            <col style="width:14%"/><col style="width:12%"/><col style="width:18%"/><col style="width:13%"/>
+            <col style="width:16%"/><col style="width:9%"/><col style="width:8%"/><col style="width:10%"/>
           </colgroup>
           <thead><tr>
-          <th>Thời gian</th><th>Sản phẩm | SKU | Biến thể</th><th>Chi nhánh / Tuyến</th><th>Giao dịch & Lý do</th><th>Thay đổi</th><th>Tồn sau</th><th>Tham chiếu</th><th>Người thao tác</th>
-        </tr></thead><tbody>
-          @for (record of currentHistory();track record.reference) {
-            <tr><td>{{record.date}}</td><td><div class="product">{{record.item}}</div><small>{{formatVariantSku(record.sku, record.variant)}}</small></td><td>{{record.branch}}</td><td><strong>{{record.action}}</strong><small>{{record.reason}}</small></td><td class="number" [class.positive]="record.delta.startsWith('+')">{{record.delta}}</td><td>{{record.after}}</td><td>{{record.reference}}</td><td>{{record.actor}}</td></tr>
+            <th>Mã GD / Tham chiếu</th>
+            <th>Thời gian</th>
+            <th>Sản phẩm | Biến thể | SKU</th>
+            <th>Chi nhánh / Tuyến</th>
+            <th>Giao dịch &amp; Lý do</th>
+            <th>Thay đổi</th>
+            <th>Tồn sau</th>
+            <th>Người thao tác</th>
+          </tr></thead><tbody>
+          @for (record of currentHistory(); track record.id) {
+            <tr>
+              <td class="history-code-cell">
+                <button type="button" class="history-code" (click)="openTransactionDrawer(record)">{{record.transactionCode}}</button>
+                @if (record.sourceLabel) { <small>{{record.sourceLabel}}</small> }
+              </td>
+              <td>{{record.date}}</td>
+              <td><div class="product">{{record.item}}</div><small>{{record.variant}} | {{record.sku}}</small></td>
+              <td>{{record.branch}}</td>
+              <td><strong>{{record.action}}</strong><small>{{record.reason}}</small></td>
+              <td class="number" [class.positive]="record.delta.startsWith('+')">{{record.delta}}</td>
+              <td class="number">{{record.after}}</td>
+              <td>{{record.actor}}</td>
+            </tr>
           } @empty {<tr><td colspan="8" class="empty">Không có lịch sử kho phù hợp.</td></tr>}
         </tbody></table>
       }
     </div>
     <div class="table-footer">
-      <span>Đang hiển thị {{visibleCount()}} trên tổng số {{totalCount()}} {{tab() === 'stock' ? 'sản phẩm' : 'giao dịch'}}</span>
+      @if (tab()==='stock') {
+        <span>Đang hiển thị {{visibleCount()}} trên tổng số {{totalCount()}} sản phẩm</span>
+      } @else {
+        <span>Hiển thị {{visibleCount()}} dòng biến động thuộc {{currentHistoryTransactionCount()}} giao dịch</span>
+      }
       <nav class="pagination-buttons" aria-label="Phân trang danh sách kho">
         <button type="button" aria-label="Trang trước" (click)="setPage(page()-1)" [disabled]="page()===1">‹</button>
         @for (n of pageNumbers();track $index) {
@@ -104,6 +130,17 @@
       </nav>
     </div>
   </div>
+
+  @if (selectedHistoryRow(); as row) {
+    <app-admin-inventory-transaction-drawer
+      [transactions]="selectedTransactionGroup()"
+      [items]="inventoryItems()"
+      [branch]="row.branch"
+      [reference]="row.sourceLabel"
+      [referenceLink]="referenceLink(row)"
+      (closed)="closeTransactionDrawer()"
+    />
+  }
 </section>
 
 @if (modal()) {
