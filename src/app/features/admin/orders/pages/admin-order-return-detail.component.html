@@ -7,7 +7,7 @@
 
     <header class="return-detail__heading">
       <div class="return-detail__heading-main">
-        <h1>Chi tiết yêu cầu {{ data()?.id || '' }}</h1>
+        <h1>Chi tiết yêu cầu {{ data()?.code || data()?.id || '' }}</h1>
         @if (data(); as current) {
           <span class="return-detail__badge return-detail__heading-badge" [attr.data-status]="current.status">{{ label(current.status) }}</span>
         }
@@ -15,7 +15,7 @@
       <div class="return-detail__actions">
         @if(data()?.status==='APPROVED' && isManager()){
           <button type="button" class="return-detail__button return-detail__button--outline-danger"
-            disabled title="Backend chưa hỗ trợ từ chối yêu cầu sau khi đã phê duyệt">Từ chối hoàn tiền</button>
+            disabled title="Yêu cầu đã được phê duyệt nên không thể từ chối tại bước này">Từ chối hoàn tiền</button>
         }
         @for (action of availableActions(); track action) {
           <button type="button" class="return-detail__button"
@@ -182,7 +182,7 @@
         <h2>Đối chiếu số tiền hoàn</h2>
         <div class="return-detail__reconcile">
           <div><span>Tổng tiền khách yêu cầu hoàn</span><strong>{{ money(ret.refundBreakdown.total) }}</strong></div>
-          <div><span>Đã hoàn tiền</span><strong>{{ refund()?.status === 'REFUNDED' ? money(refund()?.amount) : (ret.status === 'COMPLETED' ? money(finalRefundAmount()) : '—') }}</strong></div>
+          <div><span>Hoàn dự kiến</span><strong>{{ money(ret.refundBreakdown.total) }}</strong></div>
           <div><span>SL thực nhận</span><strong>{{ receivedTotal(ret) }}</strong></div>
           <div><span>Phí vận chuyển hoàn</span><strong>{{ money(ret.refundBreakdown.shippingRefunded) }}</strong></div>
         </div>
@@ -201,11 +201,24 @@
           <div class="return-detail__stock-fields">
             <div><span>Số lượng thực nhận</span><strong>{{ receivedTotal(ret) }}</strong></div>
             <div><span>Kết quả kiểm tra</span><strong>{{hasNonResellable(ret)?'Có hàng không đủ điều kiện bán lại':(ret.status==='RECEIVED'||ret.status==='APPROVED'||ret.status==='COMPLETED'?'Đủ điều kiện theo kiểm hàng':'Chưa kiểm hàng')}}</strong></div>
-            <div><span>Số lượng nhập lại kho</span><strong>Chưa có thông tin</strong></div>
-            <div><span>Giao dịch kho</span><strong>Chưa có thông tin</strong></div>
+            <div><span>Số lượng nhập lại kho</span><strong>{{ relatedReceiptsLoading() ? 'Đang tải...' : (relatedReceiptsError() || !relatedReceipts().length ? '—' : actualRestockedQty()) }}</strong></div>
+            <div><span>Giao dịch kho</span>
+              @if (relatedReceipts().length) {
+                <div class="return-detail__stock-links">
+                  @for (tx of relatedReceipts(); track tx.id) {
+                    <a routerLink="/admin/inventory" [queryParams]="{tab:'history'}"
+                      [attr.aria-label]="'Xem giao dịch kho ' + tx.id">{{ tx.id }}</a>
+                  }
+                </div>
+              } @else {
+                <strong>{{ relatedReceiptsLoading() ? 'Đang tải...' : '—' }}</strong>
+              }
+            </div>
           </div>
-          <button type="button" class="return-detail__button return-detail__button--stock" disabled
-            title="Chưa có phiếu nhập kho để xem">Xem trong Kho</button>
+          @if (relatedReceipts().length) {
+            <a class="return-detail__button return-detail__button--stock" routerLink="/admin/inventory"
+              [queryParams]="{tab:'history'}">Xem trong Kho</a>
+          }
         </div>
       </section>
     }
