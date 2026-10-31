@@ -9,6 +9,7 @@ import { orderErrorMessage } from '../services/admin-order-error-message';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
 import { AdminInventoryService, InventoryTransactionDto } from '../../inventory/services/admin-inventory.service';
+import { AdminInventoryTransactionDrawerComponent } from '../../inventory/components/admin-inventory-transaction-drawer.component';
 import { AdminProductService } from '../../products/services/admin-product.service';
 import {
   AdminOrderApiService, OrderRecord, OrderReturnSummary, OrderRefundRecord, ReturnStatus,
@@ -28,7 +29,7 @@ const RETURN_LABELS: Record<ReturnStatus, string> = {
 @Component({
   selector: 'app-admin-order-return-detail',
   standalone: true,
-  imports: [AdminCatalogShellComponent, RouterLink],
+  imports: [AdminCatalogShellComponent, RouterLink, AdminInventoryTransactionDrawerComponent],
   templateUrl: './admin-order-return-detail.component.html',
   styleUrl: './admin-order-return-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,6 +54,7 @@ export class AdminOrderReturnDetailComponent {
   readonly relatedReceipts = signal<InventoryTransactionDto[]>([]);
   readonly relatedReceiptsLoading = signal(false);
   readonly relatedReceiptsError = signal(false);
+  readonly inventoryDrawerOpen = signal(false);
   readonly actualRestockedQty = computed(() => this.relatedReceipts().reduce((sum, tx) => sum + Math.max(0, tx.changeQty), 0));
   readonly loading = signal(true);
   readonly refundLoading = signal(false);
@@ -169,6 +171,7 @@ export class AdminOrderReturnDetailComponent {
       this.productThumbs.set({});
       this.refund.set(null);
       this.relatedReceipts.set([]);
+      this.inventoryDrawerOpen.set(false);
       this.dialog.set(null);
       this.load();
     });
