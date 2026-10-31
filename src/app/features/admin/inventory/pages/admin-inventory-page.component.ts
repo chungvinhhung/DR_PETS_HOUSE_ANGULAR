@@ -171,7 +171,8 @@ export class AdminInventoryPageComponent implements OnInit {
   }));
   readonly historyFiltered = computed(() => this.history().filter(row => {
     const search = this.search().trim().toLocaleLowerCase('vi');
-    const day = row.date.slice(6, 10) + '-' + row.date.slice(3, 5) + '-' + row.date.slice(0, 2);
+    const parsedDate = new Date(row.createdAt);
+    const day = Number.isNaN(parsedDate.getTime()) ? '' : parsedDate.toISOString().slice(0, 10);
     return (!search || `${row.transactionCode} ${row.sourceLabel} ${row.item} ${row.sku}`.toLocaleLowerCase('vi').includes(search)) &&
       (!this.branch() || row.branchId === this.branchId(this.branch())) &&
       (!this.changeType() || row.action === this.changeType()) &&
@@ -396,8 +397,8 @@ export class AdminInventoryPageComponent implements OnInit {
   referenceLink(row: StockHistory | null): string {
     if (!row?.sourceId) return '';
     const type = row.sourceType.toUpperCase();
-    if (type.includes('ORDER')) return '/admin/orders/' + encodeURIComponent(row.sourceId);
     if (type.includes('RETURN') || type === 'RT') return '/admin/order-returns/' + encodeURIComponent(row.sourceId);
+    if (type.includes('ORDER')) return '/admin/orders/' + encodeURIComponent(row.sourceId);
     if (type.includes('SERVICE') || type === 'SR') return '/admin/service-records/' + encodeURIComponent(row.sourceId);
     return '';
   }
