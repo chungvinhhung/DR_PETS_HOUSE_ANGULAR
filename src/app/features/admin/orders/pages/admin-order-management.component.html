@@ -112,8 +112,10 @@
                   <span>{{ inventoryName(tx.inventoryItemId) }} · SL: {{ tx.changeQty < 0 ? -tx.changeQty : tx.changeQty }} · Mã GD: {{ tx.id }}</span>
                 }
               </div>
-              <a class="order-admin__inventory-link" routerLink="/admin/inventory"
-                [queryParams]="{tab:'history'}" aria-label="Xem lịch sử giao dịch kho">Xem lịch sử kho ›</a>
+              <button class="order-admin__inventory-link" type="button"
+                (click)="inventoryDrawerOpen.set(true)" aria-label="Xem chi tiết giao dịch kho">
+                {{ orderInventory().length === 1 ? orderInventory()[0].id : 'Xem chi tiết giao dịch' }} ›
+              </button>
             </div>
           } @else {
             <p class="order-admin__inventory-empty">Chưa ghi nhận giao dịch kho liên quan đến đơn này.</p>
@@ -504,3 +506,12 @@
     }
   </main>
 </app-admin-catalog-shell>
+@if (inventoryDrawerOpen()) {
+  @if (selected(); as order) {
+    <app-admin-inventory-transaction-drawer
+      [transactions]="orderInventory()" [items]="orderInventoryItems()"
+      [branch]="branchName(order.fulfillmentBranchId)"
+      [reference]="order.code" [referenceLink]="'/admin/orders/' + order.id"
+      (closed)="inventoryDrawerOpen.set(false)" />
+  }
+}
