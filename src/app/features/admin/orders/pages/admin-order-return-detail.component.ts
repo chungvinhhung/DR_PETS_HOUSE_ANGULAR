@@ -8,6 +8,7 @@ import { AdminReturnNotificationService } from '../../../../shared/services/admi
 import { orderErrorMessage } from '../services/admin-order-error-message';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
+import { AdminInventoryService, InventoryTransactionDto } from '../../inventory/services/admin-inventory.service';
 import {
   AdminOrderApiService, OrderRecord, OrderReturnSummary, OrderRefundRecord, ReturnStatus,
   ReturnStaffAction, ReturnManagerAction,
@@ -36,6 +37,7 @@ export class AdminOrderReturnDetailComponent {
   private readonly api = inject(AdminOrderApiService);
   private readonly session = inject(AuthSessionService);
   private readonly branchApi = inject(BranchManagementApiService);
+  private readonly inventoryApi = inject(AdminInventoryService);
   private readonly toast = inject(AdminToastService);
   private readonly returnNotifications = inject(AdminReturnNotificationService);
   private readonly destroyRef = inject(DestroyRef);
@@ -45,6 +47,10 @@ export class AdminOrderReturnDetailComponent {
   readonly linkedOrder = signal<OrderRecord | null>(null);
   readonly branchNames = signal<Record<string,string>>({});
   readonly refund = signal<OrderRefundRecord | null>(null);
+  readonly relatedReceipts = signal<InventoryTransactionDto[]>([]);
+  readonly relatedReceiptsLoading = signal(false);
+  readonly relatedReceiptsError = signal(false);
+  readonly actualRestockedQty = computed(() => this.relatedReceipts().reduce((sum, tx) => sum + Math.max(0, tx.changeQty), 0));
   readonly loading = signal(true);
   readonly refundLoading = signal(false);
   readonly error = signal('');
@@ -158,6 +164,7 @@ export class AdminOrderReturnDetailComponent {
       this.data.set(null);
       this.linkedOrder.set(null);
       this.refund.set(null);
+      this.relatedReceipts.set([]);
       this.dialog.set(null);
       this.load();
     });
@@ -173,6 +180,7 @@ export class AdminOrderReturnDetailComponent {
         this.loadLinkedOrder(value.id, value.orderId);
         this.loading.set(false);
         this.refreshRefund(value);
+        this.loadRelatedReceipts(value);
       },
       error: err => {
         if (this.id() !== id) return;
@@ -181,6 +189,32 @@ export class AdminOrderReturnDetailComponent {
       },
     });
   }
+  private loadRelatedReceipts(ret: OrderReturnSummary): void {
+    // BE tags return restocks as ORDER receipts, with the return ID in reason.
+    // Only render persisted entries actually referencing this return.
+    this.relatedReceipts.set([]);
+    this.relatedReceiptsLoading.set(true);
+    this.relatedReceiptsError.set(false);
+    const returnId = ret.id;
+    this.inventoryApi.listTransactions().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: records => {
+        if (this.id() !== returnId) return;
+        this.relatedReceipts.set(records.filter(tx =>
+          tx.transactionType === 'RECEIPT' &&
+          tx.sourceType === 'ORDER' &&
+          tx.sourceId === ret.orderId &&
+          tx.reason?.includes(returnId),
+        ));
+        this.relatedReceiptsLoading.set(false);
+      },
+      error: () => {
+        if (this.id() !== returnId) return;
+        this.relatedReceiptsError.set(true);
+        this.relatedReceiptsLoading.set(false);
+      },
+    });
+  }
+
   private loadLinkedOrder(returnId: string, orderId: string): void {
     this.linkedOrder.set(null);
     this.api.get(orderId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
