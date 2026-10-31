@@ -134,7 +134,7 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
       return {status:firstString(event['status'], event['action']), at:firstString(event['at'],event['createdAt']) || null,
         actor:firstString(event['actorName'], event['actorId']) || null,
         note:firstString(event['note'],event['reason']) || null};
-    }).filter(row=>!!row.status) : [],
+    }).filter(row=>!!row.status).sort((a,b) => (Date.parse(b.at || '') || 0) - (Date.parse(a.at || '') || 0)) : [],
     cancellationReason:firstString(item['cancellationReason'], item['cancelReason'], obj(item['cancel'])?.['reason']) || null,
     serviceRecordRefs:Array.isArray(referenceRows) ? referenceRows.map(raw=>{
       const r=obj(raw);if(!r)return null;
