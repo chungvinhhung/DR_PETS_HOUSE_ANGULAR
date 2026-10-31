@@ -7,6 +7,8 @@ export interface MaterialUsage {
   actualQuantity: string;
   unit: string;
   note: string;
+  stockAfter: number | null;
+  inventoryTransactionCode: string;
 }
 export interface ServiceRecord {
   id: string;
@@ -104,14 +106,16 @@ export function normalizeServiceRecord(raw:unknown):ServiceRecord {
       templateQuantity:String(m['templateQuantity']??m['plannedQuantity']??plannedRow['quantity']??''),
       actualQuantity:isActual ? String(m['actualQuantity']??m['quantity']??'') : '',
       unit:first(m['unit'],product['unit']),
-      note:first(m['note'],m['notes'],m['remark'])};
+      note:first(m['note'],m['notes'],m['remark']),
+      stockAfter:typeof (m['stockAfter']??m['afterQty'])==='number' ? Number(m['stockAfter']??m['afterQty']) : null,
+      inventoryTransactionCode:first(m['inventoryTransactionCode'],m['inventoryTransactionId'],m['transactionCode'])};
   });
   const rawHistory=r['statusHistory']??r['auditHistory']??r['history'];
   const history=Array.isArray(rawHistory)?rawHistory.map(v=>{const h=record(v)||{};return {
     action:first(h['action'],h['status'],h['type']),
     at:date(h['at']??h['createdAt']),
     actor:first(h['actorName'],h['actorId']),note:first(h['note'],h['reason'])};
-  }).filter(h=>h.action):[];
+  }).filter(h=>h.action).sort((a,b)=>Date.parse(b.at||'')-Date.parse(a.at||'') || 0):[];
   const actions=r['allowedActions'];
   return {
     id,code:first(r['code'],r['recordCode'],r['service_record_code'])||id,
