@@ -1,6 +1,6 @@
 <app-admin-catalog-shell activeItem="inventory">
 <section class="inventory-page">
-  <div class="page-title"><h1>Kho hàng</h1></div>
+  <div class="page-title"><h1>{{tab()==='history' ? 'Lịch sử kho' : 'Kho hàng'}}</h1></div>
   @if (loading()) { <div class="inventory-state" role="status">Đang tải tồn kho...</div> }
   @if (loadError()) { <div class="inventory-state inventory-state--error" role="alert">{{loadError()}} <button type="button" (click)="loadAll()">Thử lại</button></div> }
   <div class="inventory-tabs" role="tablist" aria-label="Kho">
