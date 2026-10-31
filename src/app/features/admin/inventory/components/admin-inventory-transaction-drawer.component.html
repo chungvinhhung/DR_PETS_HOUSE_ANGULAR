@@ -16,7 +16,7 @@
           <div><span>Loại giao dịch</span><strong>{{ transactionName() }}</strong></div>
           <div><span>Thời gian</span><strong>{{ displayTime(transactions[0].createdAt) }}</strong></div>
           <div><span>Chi nhánh</span><strong>{{ branch || transactions[0].branchId }}</strong></div>
-          <div><span>Người thao tác</span><strong>{{ transactions[0].actorId || '—' }}</strong></div>
+          <div><span>Người thao tác</span><strong>{{ transactions[0].actorName || transactions[0].actorId || 'System' }}</strong></div>
         </div>
       </section>
       <section class="inventory-transaction-section">
