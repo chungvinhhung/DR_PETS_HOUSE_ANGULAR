@@ -5660,3 +5660,17 @@ app-admin-order-management {
   app-admin-order-management .order-admin__inventory-link{margin-left:54px}
   app-admin-order-management .order-admin__history li{grid-template-columns:95px minmax(0,1fr)}
 }
+
+/* Detail tables: preserve the Figma 48px product-image slot for real API photos. */
+app-admin-order-management .order-admin__product-thumb--image,
+app-admin-order-return-detail .return-detail__product-thumb--image {
+  display:block;
+  width:48px;
+  height:48px;
+  max-width:100%;
+  object-fit:contain;
+  padding:2px;
+  background:#fff;
+  border:1px solid #d9e5f0;
+  border-radius:7px;
+}
