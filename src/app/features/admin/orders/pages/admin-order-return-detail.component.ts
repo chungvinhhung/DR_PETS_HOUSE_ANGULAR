@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Observable } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of } from 'rxjs';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { AdminReturnNotificationService } from '../../../../shared/services/admin-return-notification.service';
@@ -9,6 +9,7 @@ import { orderErrorMessage } from '../services/admin-order-error-message';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
 import { AdminInventoryService, InventoryTransactionDto } from '../../inventory/services/admin-inventory.service';
+import { AdminProductService } from '../../products/services/admin-product.service';
 import {
   AdminOrderApiService, OrderRecord, OrderReturnSummary, OrderRefundRecord, ReturnStatus,
   ReturnStaffAction, ReturnManagerAction,
@@ -38,6 +39,7 @@ export class AdminOrderReturnDetailComponent {
   private readonly session = inject(AuthSessionService);
   private readonly branchApi = inject(BranchManagementApiService);
   private readonly inventoryApi = inject(AdminInventoryService);
+  private readonly productApi = inject(AdminProductService);
   private readonly toast = inject(AdminToastService);
   private readonly returnNotifications = inject(AdminReturnNotificationService);
   private readonly destroyRef = inject(DestroyRef);
@@ -45,6 +47,7 @@ export class AdminOrderReturnDetailComponent {
   readonly id = signal('');
   readonly data = signal<OrderReturnSummary | null>(null);
   readonly linkedOrder = signal<OrderRecord | null>(null);
+  readonly productThumbs = signal<Record<string,string>>({});
   readonly branchNames = signal<Record<string,string>>({});
   readonly refund = signal<OrderRefundRecord | null>(null);
   readonly relatedReceipts = signal<InventoryTransactionDto[]>([]);
@@ -163,6 +166,7 @@ export class AdminOrderReturnDetailComponent {
       this.id.set(id);
       this.data.set(null);
       this.linkedOrder.set(null);
+      this.productThumbs.set({});
       this.refund.set(null);
       this.relatedReceipts.set([]);
       this.dialog.set(null);
@@ -219,7 +223,10 @@ export class AdminOrderReturnDetailComponent {
     this.linkedOrder.set(null);
     this.api.get(orderId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: order => {
-        if (this.data()?.id === returnId) this.linkedOrder.set(order);
+        if (this.data()?.id === returnId) {
+          this.linkedOrder.set(order);
+          this.loadProductImages(order, returnId);
+        }
       },
       error: () => {
         // Display a clear placeholder when the order is not available in this role.
@@ -227,6 +234,24 @@ export class AdminOrderReturnDetailComponent {
       },
     });
   }
+  private loadProductImages(order: OrderRecord, returnId: string): void {
+    const ids = [...new Set(order.items.map(item => item.productId).filter(Boolean))];
+    if (!ids.length) return;
+    forkJoin(ids.map(id => this.productApi.getProduct(id).pipe(
+      map(product => [id, product.images.find(img => img.isPrimary)?.url
+        || product.images[0]?.url || ''] as const),
+      catchError(() => of([id, ''] as const)),
+    ))).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(rows => {
+      if (this.data()?.id !== returnId) return;
+      this.productThumbs.set(Object.fromEntries(rows));
+    });
+  }
+
+  productImage(orderItemId: string): string {
+    const item = this.linkedOrder()?.items.find(row => row.orderItemId === orderItemId);
+    return item ? this.productThumbs()[item.productId] || '' : '';
+  }
+
   branchName(id?: string | null): string {
     if (!id) return 'Chưa có dữ liệu';
     return this.branchNames()[id] || id;
