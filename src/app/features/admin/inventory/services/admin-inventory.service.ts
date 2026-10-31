@@ -32,10 +32,16 @@ export interface InventoryTransactionDto {
   changeQty: number;
   afterQty: number;
   actorId: string;
+  actorName?: string | null;
   reason: string;
   createdAt: string;
   sourceType: string;
   sourceId?: string | null;
+  sourceCode?: string | null;
+  referenceCode?: string | null;
+  transactionCode?: string | null;
+  groupCode?: string | null;
+  code?: string | null;
 }
 
 export interface InventoryBranchDto {
