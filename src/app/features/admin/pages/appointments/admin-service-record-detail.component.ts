@@ -83,10 +83,13 @@ import {
   <section class="panel">
    <h2>Vật liệu thực tế đã dùng</h2>
    @if(r.materials.length){
-     <div class="scroll"><table><thead><tr><th>Vật tư</th><th>Template</th><th>Thực tế</th><th>Ghi chú</th></tr></thead>
+     <div class="scroll"><table><thead><tr><th>Vật tư</th><th>Chỉ định</th><th>Thực tế</th><th>Tồn sau dịch vụ</th><th>Mã giao dịch kho</th><th>Ghi chú</th></tr></thead>
       <tbody>@for(m of r.materials;track $index){
-       <tr><td>{{m.name||'—'}}</td><td>{{m.templateQuantity?m.templateQuantity+' '+m.unit:'—'}}</td>
-        <td>{{m.actualQuantity?m.actualQuantity+' '+m.unit:'—'}}</td><td>{{m.note||'—'}}</td></tr>
+       <tr><td>{{m.name||'—'}}</td><td>{{m.templateQuantity!==''?m.templateQuantity+' '+m.unit:'—'}}</td>
+        <td>{{m.actualQuantity!==''?m.actualQuantity+' '+m.unit:'—'}}</td>
+        <td>{{m.stockAfter===null?'—':m.stockAfter}}</td>
+        <td>{{m.inventoryTransactionCode||'—'}}</td>
+        <td>{{m.note||'—'}}</td></tr>
       }</tbody></table></div>
    }@else{<p class="hint">Chưa có thông tin vật tư đã sử dụng.</p>}
    <p class="hint">Số vật liệu thực tế phải được xác nhận qua ServiceRecord và nghiệp vụ kho; FE không tự trừ tồn kho.</p>
