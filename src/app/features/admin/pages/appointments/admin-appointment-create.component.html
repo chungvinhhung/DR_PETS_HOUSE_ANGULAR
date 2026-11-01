@@ -107,11 +107,10 @@
         @for (pet of newPets(); track pet.id; let index=$index) {
           <article class="pet-new" [class.pet-new--unselected]="!pet.selected">
             <div class="pet-new__title">
-              <label><strong>Thú cưng mới {{index+1}}</strong>
+              <label><strong>Thú cưng {{pets().length + index + 1}}</strong>
                 <input type="checkbox" [checked]="pet.selected" (change)="toggleNewPet(pet.id,$any($event.target).checked)"
                   [attr.aria-label]="'Chọn thú cưng mới ' + (index + 1)">
               </label>
-              <button type="button" class="text-action" (click)="removePet(pet.id)">Xóa</button>
             </div>
             <div class="form-grid form-grid--3">
               <label class="field">Tên thú cưng <span class="required">*</span>
@@ -244,18 +243,18 @@
           <div class="payment-summary__rows">
             <div><span>Tạm tính</span><strong>{{money(currentPreview()?.subtotal ?? estimatedSubtotal())}}</strong></div>
             <div><span>Phụ thu</span>
-              <strong>{{currentPreview() ? money(currentPreview()!.surchargeAmount) : 'Chưa xác minh'}}</strong></div>
-            <div><span>Giảm giá dịch vụ</span>
-              <strong>{{currentPreview() ? money(currentPreview()!.discountAmount) : 'Chưa xác minh'}}</strong></div>
+              <strong>{{currentPreview() ? money(currentPreview()!.surchargeAmount) : '—'}}</strong></div>
+            <div><span>Giảm giá</span>
+              <strong>{{currentPreview() ? money(currentPreview()!.discountAmount) : '—'}}</strong></div>
             @if (voucherCode().trim()) {
               <div><span>Voucher</span><strong>Chưa áp dụng</strong></div>
             }
           </div>
           <div class="payment-summary__total">
             <span><strong>Tổng cộng</strong>
-              <small>{{currentPreview() ? 'Tạm tính từ API, chưa chốt voucher và thuế' : 'Chưa có báo giá'}}</small>
+              <small>{{currentPreview() ? 'Tạm tính từ API' : 'Giá tham khảo từ danh mục'}}</small>
             </span>
-            <strong>{{currentPreview() ? money(currentPreview()!.total) : 'Chờ báo giá'}}</strong>
+            <strong>{{money(currentPreview()?.total ?? estimatedSubtotal())}}</strong>
           </div>
           @if (paymentEstimate(); as amounts) {
             <div class="payment-summary__rows" style="margin-top:10px">
@@ -268,17 +267,12 @@
               }
             </div>
           }
-          <p class="hint hint--notice" role="status">Số tiền hiện tại chỉ là giá tham khảo. Tổng thanh toán và ưu đãi sẽ được xác nhận khi đặt lịch.</p>
           @if (pricingStatus()==='error' && pricingError()) {
             <p class="inline-error" role="alert">{{pricingError()}}</p>
           }
           @if (previewOutdated()) {
             <p class="hint hint--notice" role="status">Thông tin đặt lịch đã thay đổi. Kết quả giá cũ không còn hiệu lực, vui lòng xem giá lại.</p>
           }
-          @if (pricingStatus()==='ready' && currentPreview()) {
-            <p class="hint" role="status">Đã nhận kết quả tham khảo cho {{currentPreview()!.petCount}} thú cưng. Chưa giữ slot, chưa áp dụng voucher, chưa tạo thanh toán.</p>
-          }
-          <p class="payment-summary__disclaimer">Số tiền cọc và thanh toán được hiển thị để tham khảo. Chưa có giao dịch nào được thực hiện.</p>
         </div>
       </div>
     </section>
