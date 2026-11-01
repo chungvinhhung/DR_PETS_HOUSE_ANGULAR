@@ -188,7 +188,9 @@ export class AdminAppointmentCreateComponent {
     this.pricingStatus() === 'ready' && this.pricingKeyAtResponse() !== this.pricingRequestKey());
   readonly paymentEstimate = computed(() => {
     const total = this.currentPreview()?.total ?? this.estimatedSubtotal();
-    return total > 0 ? estimateAppointmentPayment(total, this.paymentMethod()) : null;
+    return typeof total === 'number' && total > 0
+      ? estimateAppointmentPayment(total, this.paymentMethod())
+      : null;
   });
   readonly requiresVetReview = computed(() => this.plannedSegments().some(s => s.requiresVeterinarianReview));
   readonly draftStaffConflicts = computed(() =>
