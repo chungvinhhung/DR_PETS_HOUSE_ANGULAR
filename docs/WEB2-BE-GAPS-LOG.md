@@ -109,3 +109,9 @@
    - Current `formatServiceRecordRevision()` also omits the revision document ID.
    - FE therefore cannot safely render/click the Figma TXK code for each material without guessing.
    - BE should expose either `revisionId` + transaction refs on record/revision detail, or a queryable `serviceRecordId/revisionId → inventory transactions` relation, preferably with a shared business transaction code.
+
+20. **Staff assignment ID domain mismatch can break ServiceRecord authorization**
+   - Booking `selectBestStaff()` assigns `StaffProfile._id` into `Appointment.services[].assignedStaffId`.
+   - Execution authorization helpers such as `isAssignedToAppointment(appointment, actor.id)` compare those values against `actor.id`, while `requireExecutionStaff()` clearly treats `actor.id` as `User._id` and resolves `StaffProfile` via `userId: actor.id`.
+   - ServiceRecord `assignedStaffIds` are copied from Appointment segment assignments, but list/detail filters also compare them to `actor.id`.
+   - BE must normalize on one identity domain (prefer explicit `staffProfileId` vs `userId`) and compare consistently; otherwise assigned Nurse/Vet/Groomer may receive false 403 or fail to see their records.
