@@ -486,11 +486,9 @@
               <div class="order-admin__field">Hiện tại
                 <span class="order-admin__field-value">{{ statusLabel(selected()!.status) }}</span>
               </div>
-              <label class="order-admin__field">Trạng thái tiếp theo <span aria-hidden="true">*</span>
-                <select [value]="nextStatusLabel(action)" aria-label="Trạng thái tiếp theo">
-                  <option [value]="nextStatusLabel(action)">{{ nextStatusLabel(action) }}</option>
-                </select>
-              </label>
+              <div class="order-admin__field">Trạng thái tiếp theo
+                <span class="order-admin__field-value order-admin__field-value--next">{{ nextStatusLabel(action) }}</span>
+              </div>
             </div>
             <label class="order-admin__field">Ghi chú
               <textarea #statusNoteField rows="2" maxlength="500"
