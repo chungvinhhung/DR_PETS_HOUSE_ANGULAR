@@ -93,7 +93,6 @@ export class AdminServiceRecordDetailComponent {
 
   readonly canEditMaterials=computed(()=>{
     const r=this.item(); if(!r || r.status==='COMPLETED') return false;
-    if(this.isManagerOrAdmin()) return true;
     if(r.category==='GROOMING') return this.isGroomer();
     if(r.category==='MEDICAL') return this.isNurse() || this.isVet();
     return false;
@@ -101,7 +100,7 @@ export class AdminServiceRecordDetailComponent {
 
   readonly canEditProfessional=computed(()=>{
     const r=this.item(); if(!r || r.category!=='MEDICAL' || r.status==='COMPLETED') return false;
-    return this.currentUser()?.systemRole==='ADMIN' || this.isVet();
+    return this.isVet();
   });
 
   readonly canSubmitReview=computed(()=>{
@@ -189,6 +188,12 @@ export class AdminServiceRecordDetailComponent {
       next:items=>this.inventoryItems.set(items),
       error:()=>this.inventoryItems.set([]),
     });
+  }
+
+  displayRecordCode(r:ServiceRecord):string{
+    const code=(r.code||'').trim();
+    if(!code || code===r.id || /^[a-f0-9]{24}$/i.test(code)) return '';
+    return code.replace(/^#/,'');
   }
 
   displayTime(value:string|null):string{
