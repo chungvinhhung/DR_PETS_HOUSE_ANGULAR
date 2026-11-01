@@ -57,7 +57,7 @@ import {
   </section>
   @if(r.category==='MEDICAL'){
    <section class="panel">
-    <h2>Kiểm tra MEDICAL — Nurse / Veterinarian review</h2>
+    <h2>Kiểm tra MEDICAL — Bác sĩ thú y chốt hồ sơ</h2>
     <div class="facts">
      <div><label>Có Nurse segment</label><strong>{{r.nurseSegment===null?'Chưa xác định':r.nurseSegment?'Có':'Không'}}</strong></div>
      <div><label>Trạng thái BS thú y review</label>
@@ -66,6 +66,7 @@ import {
      <div><label>Thời gian review</label><strong>{{displayTime(r.reviewedAt)}}</strong></div>
     </div>
     <p class="hint" role="status">{{finalization().reason}}</p>
+    <p class="hint">Mọi hồ sơ MEDICAL phải do bác sĩ thú y chịu trách nhiệm chốt cuối. Nếu toàn bộ phần dịch vụ do Y tá thực hiện, hệ thống phải tự chỉ định bác sĩ phù hợp để kiểm tra và chốt hồ sơ.</p>
    </section>
   }
   @if(r.category==='MEDICAL'){
@@ -109,7 +110,7 @@ import {
     @if(r.status==='COMPLETED'){
       <button type="button" class="btn btn--outline" (click)="explainReopen()">Mở lại hồ sơ</button>
     }@else{
-      <button type="button" class="btn btn--primary" (click)="explainFinalize()">Kiểm tra điều kiện hoàn tất</button>
+      <button type="button" class="btn btn--primary" (click)="explainFinalize()">Hoàn tất & chốt hồ sơ</button>
     }
   </div>
   @if(actionMessage()){<p class="notification" role="status">{{actionMessage()}}</p>}
@@ -180,7 +181,7 @@ export class AdminServiceRecordDetailComponent{
  explainFinalize(){
    const check=this.finalization();
    this.actionMessage.set(check.allowed ?
-    'Hồ sơ đã đáp ứng các điều kiện hiển thị. Chức năng hoàn tất hồ sơ hiện chưa khả dụng.' :
+    'Hồ sơ đã đáp ứng điều kiện hiển thị. Khi BE xác nhận chốt thành công, lịch hẹn liên quan phải tự chuyển sang Hoàn tất; FE không cập nhật lịch hẹn thủ công.' :
     check.reason);
    this.toast.show(this.actionMessage(), 'info');
  }
