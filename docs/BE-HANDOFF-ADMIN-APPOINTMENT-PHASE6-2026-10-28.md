@@ -31,12 +31,12 @@ Ngày: 2026-10-28 | Nhánh: `feature/admin-appointments-figma` | PR #33 (Draft)
 - `allowedActions` từ BE sau khi kiểm tra quyền, branch, status, review. `auditHistory` append-only, gồm actor, timestamp, action, before/after, reason, override metadata.
 
 ## 4. MEDICAL Nurse → Veterinarian (P0)
-- Khi một MEDICAL appointment có Nurse segment, phải có bước Veterinarian review theo rule WBS 4.3 trước khi ServiceRecord được finalize.
-- Nurse có thể ghi nhận segment / đề nghị review nhưng **không tự duyệt thay Veterinarian**.
+- Mọi ServiceRecord thuộc nhóm MEDICAL phải có Bác sĩ thú y chịu trách nhiệm chốt cuối. Nếu chính Bác sĩ thú y thực hiện segment, hệ thống ưu tiên một Bác sĩ đã được phân công trong lịch hẹn đó; nếu chỉ có Y tá thực hiện, BE phải tự chỉ định Bác sĩ đủ điều kiện theo rule ca làm/chi nhánh/tải hồ sơ.
+- Nurse có thể ghi nhận segment / đề nghị review nhưng **không tự chốt thay Veterinarian**.
 - Chỉ Veterinarian có thẩm quyền mới approve/reject review. Quyền theo branch, shift/assignment và trạng thái phải được BE xác minh.
 - `POST /api/v1/admin/service-records/:id/submit-review` (đề xuất) → `PENDING_REVIEW`.
 - `POST /api/v1/admin/service-records/:id/vet-review` (đề xuất) → `APPROVED/REJECTED`, note, actor, at.
-- `POST /api/v1/admin/service-records/:id/finalize` (đề xuất) → BE chặn nếu yêu cầu review chưa được approve, hoặc record chưa đầy đủ.
+- `POST /api/v1/admin/service-records/:id/finalize` (đề xuất) → BE chặn nếu record chưa đầy đủ, sai vai trò chốt, thiếu review bắt buộc hoặc vật tư không hợp lệ. Khi finalize cuối cùng thành công và mọi segment của appointment đã hoàn tất, BE tự chuyển appointment sang `COMPLETED`; FE không gọi một API hoàn tất lịch hẹn riêng.
 - `POST /api/v1/admin/service-records/:id/reopen` (đề xuất) → chỉ vai trò được cấp, lý do bắt buộc, audit append-only, không xóa lịch sử đã finalize.
 - BE phải giải thích các trạng thái `IN_PROGRESS`, `AWAITING_VET_REVIEW`, `COMPLETED`, `REOPENED` chính thức. Không dùng nhãn UI tự đặt làm enum BE.
 
