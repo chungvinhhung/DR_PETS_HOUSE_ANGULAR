@@ -62,3 +62,31 @@
 11. **ServiceRecord mutation payloads still need exact schema**
    - Report v7 identifies: `PUT /service-records/{id}/materials`, `PUT /service-records/{id}/professional`, `POST /service-records/{id}/submit-review`, `POST /service-records/{id}/finalize`.
    - FE still needs the exact request/response DTOs, optimistic-concurrency/idempotency fields, allowedActions and error codes before enabling write mutations.
+
+## Appointment lifecycle — leader update: remove PENDING_CONFIRMATION
+
+12. **Remove manual `PENDING_CONFIRMATION` state**
+   - Latest product decision removes the store-manual "Chờ xác nhận" step.
+   - Required lifecycle for ordinary BOOKABLE appointments: `PENDING_PAYMENT → CONFIRMED → IN_PROGRESS → COMPLETED`, with terminal `CANCELLED/NO_SHOW`.
+   - If the required payment amount is zero, the appointment may be created directly as `CONFIRMED`.
+   - Current BE `booking.service.js` still creates `PENDING_CONFIRMATION` for `ONLINE_MOCK`, zero-value PAY_AT_STORE, and after successful deposit payment. It also exposes `confirmAppointment()`. These paths need migration/removal.
+   - FE no longer exposes "Chờ xác nhận"; legacy `PENDING_CONFIRMATION` responses are temporarily normalized to `CONFIRMED`.
+
+13. **Auto-confirm must happen only after required payment succeeds**
+   - ONLINE_MOCK full payment success → `CONFIRMED`.
+   - PAY_AT_STORE deposit success (30%) → `CONFIRMED`; failed/expired payment must cancel/release holds and restore voucher quota as applicable.
+   - Confirmation must atomically convert resource reservations from HELD to CONFIRMED so two customers cannot own the same staff/capacity.
+
+14. **Capacity overlap check is currently segment-incorrect**
+   - Verified in `src/modules/booking/booking.service.js`: during each service segment, BE runs `Appointment.countDocuments` using appointment-level `scheduledStart/scheduledEnd` overlap plus `services.serviceId`.
+   - This can count an appointment as occupying a service during the whole appointment merely because that service appears somewhere in its service list.
+   - Capacity must be checked against the matching service segment's own `scheduledStart/scheduledEnd` (for example via an element-level query/aggregation), together with active holds/reservations.
+
+15. **Hold duration mismatch**
+   - Latest documented/leader flow uses a 15-minute payment hold.
+   - Current `booking.service.js` creates SlotReservation and Appointment `holdExpiresAt` with 10 minutes.
+   - BE contract, cleanup job and UI countdown must use one authoritative duration.
+
+16. **REQUEST_ONLY remains a separate review flow**
+   - Removing `PENDING_CONFIRMATION` from ordinary BOOKABLE appointments must not auto-confirm REQUEST_ONLY services.
+   - Current BE rejects REQUEST_ONLY from normal createAppointment and routes them to `/appointment-requests`; retain a separate review/approval lifecycle there.
