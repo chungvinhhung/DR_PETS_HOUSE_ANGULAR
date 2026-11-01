@@ -32,7 +32,6 @@ import {
         <span class="sr" id="appointment-status-label">Trạng thái lịch hẹn</span>
         <select aria-labelledby="appointment-status-label" id="appointment-status-filter" [value]="status()" (change)="changeStatus($any($event.target).value)">
           <option value="">Tất cả trạng thái</option>
-          <option value="PENDING_CONFIRMATION">Chờ xác nhận</option>
           <option value="PENDING_PAYMENT">Chờ thanh toán</option>
           <option value="CONFIRMED">Đã xác nhận</option>
           <option value="IN_PROGRESS">Đang thực hiện</option>
@@ -243,7 +242,7 @@ export class AdminAppointmentsPageComponent {
   statusColor(row:AppointmentView):string{
     return ['CANCELLED','NO_SHOW'].includes(row.status)?'danger':
       ['CONFIRMED','COMPLETED'].includes(row.status)?'success':
-      (['PENDING','PENDING_CONFIRMATION','PENDING_PAYMENT'].includes(row.status))?'warning':'neutral';
+      (['PENDING','PENDING_PAYMENT'].includes(row.status))?'warning':'neutral';
   }
   formatDate(value:string|null):string{
     if(!value)return '—';const d=new Date(value);
