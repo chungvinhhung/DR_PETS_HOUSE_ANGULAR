@@ -40,16 +40,18 @@
       <section class="inventory-transaction-section">
         <h3>Lý do {{ transactionName().toLowerCase() }}</h3>
         <p class="inventory-transaction-reason">{{ displayReason(transactions[0].reason) }}</p>
-        @if (reference) {
-          <div class="inventory-transaction-reference">
-            <span>Mã tham chiếu</span>
+        <div class="inventory-transaction-reference">
+          <span>Mã tham chiếu</span>
+          @if (reference) {
             @if (referenceLink) {
               <a [routerLink]="referenceLink" (click)="closed.emit()">{{ reference }}</a>
             } @else {
               <strong>{{ reference }}</strong>
             }
-          </div>
-        }
+          } @else {
+            <strong>Không có</strong>
+          }
+        </div>
       </section>
     } @else {
       <p class="inventory-transaction-empty">Chưa có giao dịch kho để hiển thị.</p>
