@@ -115,3 +115,9 @@
    - Execution authorization helpers such as `isAssignedToAppointment(appointment, actor.id)` compare those values against `actor.id`, while `requireExecutionStaff()` clearly treats `actor.id` as `User._id` and resolves `StaffProfile` via `userId: actor.id`.
    - ServiceRecord `assignedStaffIds` are copied from Appointment segment assignments, but list/detail filters also compare them to `actor.id`.
    - BE must normalize on one identity domain (prefer explicit `staffProfileId` vs `userId`) and compare consistently; otherwise assigned Nurse/Vet/Groomer may receive false 403 or fail to see their records.
+
+21. **ServiceRecord detail response lacks display summaries/code required by Figma**
+   - Verified `formatServiceRecord()` on BE `feat/foundation-v6` returns IDs/status/type/materials/professional data but no business `recordCode`, `petName`, `serviceName`, `branchName`, or assigned staff display names.
+   - Figma requires values such as `#SR-0042-A`, pet name, service name, branch name and staff name.
+   - FE now enriches pet/service/branch from the linked Appointment when possible and hides a raw Mongo ObjectId from the page title instead of presenting it as a fake SR code.
+   - BE should expose a stable ServiceRecord business code plus safe display summaries (or a documented expand/include contract). FE must not fabricate `SR-xxxx` codes.
