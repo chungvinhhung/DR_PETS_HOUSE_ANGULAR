@@ -171,12 +171,14 @@
             @for (history of returnHistory(); track $index; let first = $first) {
               <li [class.return-detail__timeline--latest]="first" [attr.data-status]="history.status">
                 <div class="return-detail__timeline-dot" aria-hidden="true"></div>
-                <strong>{{ label(history.status) }}</strong>
-                <small>{{ when(history.at) }}</small>
-                @if(history.status==='REJECTED'||history.status==='CANCELLED'){
-                  <p class="return-detail__history-phase">Sau bước {{terminalStageLabel(ret)}}</p>
-                }
-                @if (history.note) { <p>{{ history.note }}</p> }
+                <small class="return-detail__timeline-time">{{ when(history.at) }}</small>
+                <div class="return-detail__timeline-content">
+                  <strong>{{ label(history.status) }}</strong>
+                  @if(history.status==='REJECTED'||history.status==='CANCELLED'){
+                    <p class="return-detail__history-phase">Sau bước {{terminalStageLabel(ret)}}</p>
+                  }
+                  @if (history.note) { <p>{{ history.note }}</p> }
+                </div>
               </li>
             } @empty {
               <li>Chưa có lịch sử xử lý từ hệ thống.</li>
