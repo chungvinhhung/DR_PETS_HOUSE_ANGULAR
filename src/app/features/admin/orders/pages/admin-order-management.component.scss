@@ -142,3 +142,169 @@
 .order-admin__table-panel{overflow:hidden}
 @media(max-width:800px){.order-admin__card{padding:16px}}
 
+
+
+/* Phase 2 — Order detail, matched to Figma 8357:41326 / 8358:41400. */
+.order-admin__heading:not(.order-admin__heading--list) h1 {
+  font-size: 24px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+.order-admin__heading-actions .order-admin__btn {
+  min-height: 40px;
+  padding-inline: 12px;
+  font-size: 12px;
+}
+
+.order-admin__card--detail {
+  padding: 18px;
+}
+
+.order-admin__card--detail h2 {
+  margin: 0 0 15px;
+  font-size: 15px;
+  line-height: 18px;
+  font-weight: 600;
+}
+
+.order-admin__card--detail[aria-label="Tiến trình xử lý đơn hàng"] h2 {
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.order-admin__inventory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.order-admin__inventory-state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 54px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.order-admin__inventory-state--error {
+  border: 1px solid #f2c9c6;
+  background: #fff7f6;
+  color: #a42620;
+}
+
+.order-admin__inventory-retry {
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid #0d47a1;
+  border-radius: 7px;
+  background: #fff;
+  color: #0d47a1;
+  font: 500 12px Roboto, Arial, sans-serif;
+  cursor: pointer;
+}
+
+.order-admin__inventory-empty {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  color: #71849c;
+  font-size: 12px;
+}
+
+.order-admin__history {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.order-admin__history li {
+  position: relative;
+  padding: 0 0 18px 24px;
+}
+
+.order-admin__history li:last-child {
+  padding-bottom: 0;
+}
+
+.order-admin__history li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 5px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #d7e0ea;
+  z-index: 1;
+}
+
+.order-admin__history li::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 14px;
+  bottom: -5px;
+  width: 1px;
+  background: #dce5ef;
+}
+
+.order-admin__history li:last-child::after {
+  display: none;
+}
+
+.order-admin__history li.order-admin__history--latest::before {
+  background: #2f8f4e;
+}
+
+.order-admin__history li.order-admin__history--latest::after {
+  background: #dce5ef;
+}
+
+.order-admin__history-content strong {
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 600;
+  color: #26364c;
+}
+
+.order-admin__history-content p {
+  line-height: 17px;
+}
+
+.order-admin__grid {
+  align-items: stretch;
+}
+
+.order-admin__grid > .order-admin__card {
+  margin-bottom: 0;
+  height: auto;
+}
+
+.order-admin__field select {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 42px;
+  margin-top: 8px;
+  padding: 0 36px 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff url('/assets/admin-product/expand_more.svg') no-repeat right 10px center / 20px;
+  appearance: none;
+  color: var(--ink);
+}
+
+@media (max-width: 620px) {
+  .order-admin__inventory-state {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
