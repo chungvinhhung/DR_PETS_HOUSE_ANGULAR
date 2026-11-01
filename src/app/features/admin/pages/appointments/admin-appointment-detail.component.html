@@ -150,9 +150,7 @@
               (click)="startAction('cancel')">Hủy lịch</button>
             @if (appointment.status!=='IN_PROGRESS') {
               <button type="button" class="btn btn--primary" [disabled]="!proposedActions().length"
-                (click)="startAction('status')">
-                {{ appointment.status==='PENDING_CONFIRMATION' ? 'Xác nhận lịch hẹn' : 'Cập nhật trạng thái' }}
-              </button>
+                (click)="startAction('status')">Cập nhật trạng thái</button>
             }
           </div>
           @if (appointment.status==='IN_PROGRESS') {
