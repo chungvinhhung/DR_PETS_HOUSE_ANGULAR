@@ -217,7 +217,7 @@ export class AdminAppointmentCreateComponent {
   }
 
   money(value: number | null): string {
-    return value === null ? 'Chờ xác nhận' : new Intl.NumberFormat('vi-VN').format(value) + 'đ';
+    return value === null ? 'Chưa có dữ liệu' : new Intl.NumberFormat('vi-VN').format(value) + 'đ';
   }
 
   editLookupPhone(value: string): void {
