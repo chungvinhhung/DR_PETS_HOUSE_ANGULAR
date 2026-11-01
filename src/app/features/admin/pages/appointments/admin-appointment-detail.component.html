@@ -9,7 +9,9 @@
       </section>
     } @else if (item(); as appointment) {
       <nav class="breadcrumb" aria-label="Đường dẫn">
-        <a routerLink="/admin/appointments">Lịch hẹn</a><span>›</span><strong>Chi tiết lịch hẹn</strong>
+        <a routerLink="/admin/appointments">Lịch hẹn</a>
+        <span class="breadcrumb-separator" aria-hidden="true">›</span>
+        <strong>Chi tiết lịch hẹn</strong>
       </nav>
 
       <header class="heading">
@@ -133,15 +135,45 @@
           </button>
         </div>
         @if (action==='reschedule') {
-          <div class="modal-grid">
-            <label>Ngày hẹn mới <span>*</span><input type="date" [value]="targetDate()" (input)="targetDate.set($any($event.target).value)"></label>
-            <label>Giờ bắt đầu mới <span>*</span><input type="time" [value]="targetTime()" (input)="targetTime.set($any($event.target).value)"></label>
+          <div class="modal-grid modal-grid--reschedule">
+            <label><span class="modal-field-label">Chi nhánh <b>*</b></span>
+              <select [value]="rescheduleBranchId()" (change)="changeRescheduleBranch($any($event.target).value)">
+                <option value="">Chọn chi nhánh</option>
+                @for (branch of rescheduleBranches(); track branch.id) {
+                  <option [value]="branch.id">{{branch.name}}</option>
+                }
+              </select>
+            </label>
+            <label><span class="modal-field-label">Dịch vụ <b>*</b></span>
+              <select [value]="rescheduleServiceId()" [disabled]="!rescheduleBranchId() || rescheduleLoading()"
+                (change)="changeRescheduleService($any($event.target).value)">
+                <option value="">{{rescheduleLoading()?'Đang tải dịch vụ...':'Chọn dịch vụ'}}</option>
+                @for (service of rescheduleServices(); track service.id) {
+                  <option [value]="service.id">{{service.name}}</option>
+                }
+              </select>
+            </label>
+            <label><span class="modal-field-label">Ngày hẹn <b>*</b></span>
+              <input type="date" [value]="targetDate()" (input)="changeRescheduleDate($any($event.target).value)">
+            </label>
+            <label><span class="modal-field-label">Khung giờ <b>*</b></span>
+              <select [value]="rescheduleSlotId()" [disabled]="!rescheduleServiceId() || !targetDate() || rescheduleLoading()"
+                (change)="chooseRescheduleSlot($any($event.target).value)">
+                <option value="">{{rescheduleLoading()?'Đang tải khung giờ...':'Chọn khung giờ'}}</option>
+                @for (slot of rescheduleSlots(); track slot.id) {
+                  <option [value]="slot.id" [disabled]="!slot.available">{{slot.label}}{{slot.available?'':' · Hết chỗ'}}</option>
+                }
+              </select>
+            </label>
           </div>
+          @if (rescheduleLoadError()) {
+            <p class="hint hint--warning" role="alert">{{rescheduleLoadError()}}</p>
+          }
         }
         @if (action==='status') {
           <p class="hint hint--info">Bắt đầu phục vụ sẽ chuyển lịch sang Đang thực hiện. Backend phải đồng thời tạo Hồ sơ dịch vụ tương ứng.</p>
         }
-        <label class="modal-label">Lý do / ghi chú xử lý <span>*</span>
+        <label class="modal-label"><span class="modal-field-label">Lý do / ghi chú xử lý <b>*</b></span>
           <textarea rows="4" [value]="reason()" (input)="reason.set($any($event.target).value)" placeholder="Nhập ghi chú xử lý..."></textarea>
         </label>
         @if (actionError()) {<p class="hint hint--warning" role="alert">{{actionError()}}</p>}
