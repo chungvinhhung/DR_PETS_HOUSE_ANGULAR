@@ -215,7 +215,7 @@ export class AdminServiceRecordDetailComponent {
   }
 
   petLabel(r:ServiceRecord):string{
-    return r.petName || r.petId || 'Chưa có dữ liệu';
+    return r.petName || this.appointment()?.petNames?.[0] || r.petId || 'Chưa có dữ liệu';
   }
 
   petInitial(r:ServiceRecord):string{
@@ -223,7 +223,11 @@ export class AdminServiceRecordDetailComponent {
   }
 
   serviceLabel(r:ServiceRecord):string{
-    return r.serviceName || r.serviceIds.join(', ') || 'Chưa có dữ liệu';
+    return r.serviceName || this.appointment()?.serviceNames?.[0] || r.serviceIds.join(', ') || 'Chưa có dữ liệu';
+  }
+
+  branchLabel(r:ServiceRecord):string{
+    return r.branchName || this.appointment()?.branchName || r.branchId || 'Chưa có dữ liệu';
   }
 
   staffLabel(r:ServiceRecord):string{
