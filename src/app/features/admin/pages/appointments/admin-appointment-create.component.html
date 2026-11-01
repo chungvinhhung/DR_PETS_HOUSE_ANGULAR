@@ -279,12 +279,12 @@
 
     <footer class="appointment-create__footer">
       <button type="button" class="btn btn--outline" (click)="requestCancel()">Hủy</button>
-      <button type="button" class="btn btn--primary" (click)="confirmAppointment()">Xác nhận lịch hẹn</button>
+      <button type="button" class="btn btn--primary" (click)="createAppointment()">Tạo lịch hẹn</button>
     </footer>
 
     @if (reviewErrors().length) {
       <div class="panel review-errors" role="alert">
-        <strong>Chưa thể xác nhận lịch hẹn</strong>
+        <strong>Chưa thể tạo lịch hẹn</strong>
         @for (error of reviewErrors(); track error) {<p>{{error}}</p>}
       </div>
     }
