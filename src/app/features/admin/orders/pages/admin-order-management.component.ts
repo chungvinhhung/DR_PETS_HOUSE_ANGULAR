@@ -474,7 +474,7 @@ export class AdminOrderManagementComponent {
     this.inventoryDrawerOpen.set(true);
   }
   closeInventoryDrawer(): void {
-    this.closeInventoryDrawer();
+    this.inventoryDrawerOpen.set(false);
     this.selectedInventoryCode.set('');
     this.selectedInventoryGroup.set([]);
   }
@@ -536,7 +536,7 @@ export class AdminOrderManagementComponent {
     this.loading.set(true); this.error.set('');
     this.selected.set(null);
     this.orderInventory.set([]);
-    this.inventoryDrawerOpen.set(false);
+    this.closeInventoryDrawer();
     this.productThumbs.set({});
     this.orderInventoryLoading.set(true);
     this.orderInventoryError.set(false);
