@@ -150,10 +150,20 @@ export class AdminOrderApiService {
   get(id: string): Observable<OrderRecord> {
     return this.api.get<OrderRecord>('/orders/' + encodeURIComponent(id));
   }
-  changeStatus(id: string, action: OrderWriteAction, shipping?: { carrier?: string; trackingNumber?: string }): Observable<OrderRecord> {
+  changeStatus(
+    id: string,
+    action: OrderWriteAction,
+    body?: { carrier?: string; trackingNumber?: string; note?: string },
+  ): Observable<OrderRecord> {
+    const payload: { carrier?: string; trackingNumber?: string; note?: string } = {};
+    if (body?.note) payload.note = body.note;
+    if (action === 'ship') {
+      if (body?.carrier) payload.carrier = body.carrier;
+      if (body?.trackingNumber) payload.trackingNumber = body.trackingNumber;
+    }
     return this.api.post<OrderRecord, object>(
       '/orders/' + encodeURIComponent(id) + '/' + action,
-      action === 'ship' ? (shipping ?? {}) : {},
+      payload,
     );
   }
   cancel(id: string, reason: string, idempotencyKey: string): Observable<OrderRecord> {
