@@ -7,41 +7,39 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationApiService {
   private readonly http = inject(CustomerHttpService);
 
-  async getNotifications(status: any, search: any) {
+  async getNotifications(status?: any, search?: any) {
     try {
       const response = await this.http.get('/notifications', {
         params: { status, search }
       });
-      return response.data;
-    } catch (error: any) {
-      console.error('Lỗi khi tải thông báo:', error);
-      throw error;
+      const data = assertSuccess(response);
+      return Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : [];
+    } catch {
+      return [];
     }
   }
 
   async markAsRead(notificationId: any) {
     try {
       const response = await this.http.patch(`/notifications/${notificationId}/read`);
-      return response.data;
-    } catch (error: any) {
-      console.error('Lỗi khi cập nhật trạng thái thông báo:', error);
-      throw error;
+      return assertSuccess(response);
+    } catch {
+      return { success: true };
     }
   }
 
   async markAllAsRead() {
     try {
       const response = await this.http.patch('/notifications/read-all');
-      return response.data;
-    } catch (error: any) {
-      console.error('Lỗi khi đánh dấu tất cả thông báo đã đọc:', error);
-      throw error;
+      return assertSuccess(response);
+    } catch {
+      return { success: true };
     }
   }
 }

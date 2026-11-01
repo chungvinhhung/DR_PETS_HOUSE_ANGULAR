@@ -14,7 +14,7 @@ import { FooterComponent } from '../../../../../layouts/customer/components/foot
 import { BookingSuccessModalComponent } from '../../components/booking-success-modal.component';
 import { BOOKING_SERVICES } from '../../data/booking-data';
 import { reactSetter } from '../../../../../shared/customer/utils/react-setter';
-import { BRANCH_OPTIONS, DEFAULT_SERVICE_TYPE_ID, createEmptyPetInfo, findSpeciesId, toBackendHealthStatus, isPetInfoTouched, getDateKey } from './booking-page.helpers';
+import { BRANCH_OPTIONS, INITIAL_BRANCH_OPTIONS, DEFAULT_SERVICE_TYPE_ID, createEmptyPetInfo, findSpeciesId, toBackendHealthStatus, isPetInfoTouched, getDateKey } from './booking-page.helpers';
 
 /**
  * BookingPage — chuyển từ React: src/pages/Booking/BookingPage.jsx
@@ -55,8 +55,7 @@ export class BookingPageComponent {
   readonly selectedServices = signal<any>([]);
   readonly selectedDate = signal<any>(null);
   readonly selectedSlot = signal<any>(null);
-  readonly branches = signal<any>((() =>
-    BRANCH_OPTIONS.map((branch: any) => ({ id: branch, label: branch })))());
+  readonly branches = signal<any>(INITIAL_BRANCH_OPTIONS);
   readonly services = signal<any>(BOOKING_SERVICES);
   readonly timeSlots = signal<any>([]);
   readonly slotsLoading = signal<any>(false);
@@ -72,7 +71,7 @@ export class BookingPageComponent {
     name: "",
     phone: "",
     email: "",
-    branch: BRANCH_OPTIONS[0],
+    branch: INITIAL_BRANCH_OPTIONS[0].id,
     agreed: false,
   });
   readonly paymentMode = signal<any>("store");
@@ -229,6 +228,7 @@ export class BookingPageComponent {
           date: getDateKey(this.selectedDate()),
           branchId: this.ownerInfo().branch,
           serviceType: this.selectedServiceType(),
+          serviceIds: this.selectedServices(),
         })
           .then((slots: any) => {
             if (!active) return;
@@ -295,15 +295,22 @@ export class BookingPageComponent {
       }
 
       await this.bookingApi.bookAppointment({
+        branchId: this.ownerInfo().branch,
+        date: getDateKey(this.selectedDate()),
+        startTime: selectedSlotRecord.value?.split(" - ")[0] || "09:00",
+        slotStart: selectedSlotRecord.start,
         slot_id: selectedSlotRecord.id,
         pet_id: validPetId,
         pet_data: petData,
         service_ids: servicePayload,
+        serviceIds: servicePayload.map((s: any) => s.service_id),
         customer_name_snapshot: this.ownerInfo().name,
         customer_phone_snapshot: this.ownerInfo().phone,
+        customerEmail: this.ownerInfo().email,
         condition_description: ([firstPetInfo.name, firstPetInfo.status].filter(Boolean) as any[]).join(" - ") || undefined,
         note: firstPetInfo.notes || undefined,
         payment_method: this.paymentMode() === "store" ? "store" : "online",
+        paymentMethod: this.paymentMode() === "store" ? "PAY_AT_STORE" : "ONLINE_MOCK",
       });
       this.success.set(true);
     } catch (error: any) {

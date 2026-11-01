@@ -7,24 +7,37 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
-
-function assertSuccess(response: any) {
-  if (response?.EC !== 0) {
-    throw new Error(response?.EM || "Request failed");
-  }
-  return response.DT;
-}
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 
 @Injectable({ providedIn: 'root' })
 export class LoyaltyApiService {
   private readonly http = inject(CustomerHttpService);
 
-  async applyVoucher({ code, orderValue }: any) {
-    const response = await this.http.post("/vouchers/apply", {
-      code,
-      order_value: orderValue,
-    });
-    return assertSuccess(response);
+  async applyVoucher({ code, orderValue, branchId, serviceIds, cartId }: any) {
+    const formattedCode = String(code || "").trim().toUpperCase();
+    const scope = serviceIds && serviceIds.length > 0 ? "SERVICE" : "ORDER";
+    try {
+      const response = await this.http.post("/vouchers/validate", {
+        code: formattedCode,
+        scope,
+        branchId: branchId || undefined,
+        cartId: cartId || undefined,
+        serviceIds: serviceIds || undefined,
+      });
+      const data = assertSuccess(response);
+      return {
+        ...data,
+        discount: data?.discount ?? data?.discount_amount ?? data?.discountValue ?? 0,
+        valid: data?.valid ?? true,
+        reason: data?.reason ?? "",
+      };
+    } catch {
+      const response = await this.http.post("/vouchers/apply", {
+        code: formattedCode,
+        scope,
+        branchId: branchId || undefined,
+      });
+      return assertSuccess(response);
+    }
   }
 }

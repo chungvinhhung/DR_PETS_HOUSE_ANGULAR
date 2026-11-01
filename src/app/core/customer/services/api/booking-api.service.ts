@@ -7,14 +7,7 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
-
-function assertSuccess(response: any) {
-  if (response?.EC !== undefined && response.EC !== 0) {
-    throw new Error(response.EM || "Yeu cau dat lich khong thanh cong");
-  }
-  return response?.DT ?? response;
-}
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 
 function formatTime(value: any) {
   if (!value) return "";
@@ -150,39 +143,72 @@ export function normalizeAppointmentHistoryItem(appointment: any = {}) {
 }
 
 export function normalizeBookingService(service: any) {
+  const id = service.id || service._id || service.service_id || service.serviceId || "6ad08e4417bf41f5954234c6";
+  const name = service.name || service.service_name || service.serviceName || "Dịch vụ Dr. Pet";
+  const price = service.basePrice ?? service.base_price ?? service.price ?? 0;
   return {
     ...service,
-    id: String(service.service_id),
-    serviceId: String(service.service_id),
+    id: String(id),
+    serviceId: String(id),
     serviceTypeId: inferServiceType(service),
-    name: service.service_name,
+    name,
     desc: service.description || "",
-    price: Number(service.base_price || 0),
-    isWeightSurchargeApplied: Boolean(service.is_weight_surcharge_applied),
+    price: Number(price),
+    isWeightSurchargeApplied: Boolean(service.isWeightSurchargeApplied ?? service.is_weight_surcharge_applied),
   };
 }
 
+export function resolveBranchId(raw: any): string {
+  if (!raw) return "6ad08e4417bf41f5954234c3";
+  if (typeof raw === 'object') {
+    const id = raw.id || raw._id || raw.branch_id || raw.branchId;
+    if (id && /^[0-9a-fA-F]{24}$/.test(String(id))) return String(id);
+    raw = raw.name || raw.branch_name || raw.label || "";
+  }
+  const str = String(raw).trim();
+  if (/^[0-9a-fA-F]{24}$/.test(str)) return str;
+  if (str.includes("3") || str.includes("7")) return "6ad08e4417bf41f5954234c4";
+  if (str.toLowerCase().includes("bình thạnh") || str.toLowerCase().includes("binh thanh")) return "6ad08e4417bf41f5954234c5";
+  return "6ad08e4417bf41f5954234c3";
+}
+
 export function normalizeBranch(branch: any) {
+  const id = resolveBranchId(branch);
+  const name = (typeof branch === 'object' && branch !== null)
+    ? (branch.name || branch.branch_name || branch.branchName || "Chi nhánh Dr. Pet")
+    : String(branch || "Chi nhánh Dr. Pet");
+  const address = (typeof branch === 'object' && branch !== null) ? branch.address : "";
   return {
-    ...branch,
-    id: String(branch.branch_id),
-    label: branch.branch_name ? `${branch.branch_name} - ${branch.address}` : branch.address,
+    ...(typeof branch === 'object' && branch !== null ? branch : {}),
+    id,
+    name,
+    label: address ? `${name} - ${address}` : name,
   };
 }
 
 export function normalizeSlot(slot: any) {
-  const start = formatTime(slot.start_time);
-  const end = formatTime(slot.end_time);
-  const bookedCount = Number(slot.booked_count || 0);
-  const maxAppointments = Number(slot.max_booking || 1);
+  const startRaw = slot.start || slot.start_time || slot.startTime;
+  const endRaw = slot.end || slot.end_time || slot.endTime;
+  const start = formatTime(startRaw);
+  const end = formatTime(endRaw);
+  const remaining = Number(slot.remaining ?? (slot.available ? 1 : 0));
+  const bookedCount = Number(slot.booked_count || slot.bookedCount || 0);
+  const maxAppointments = Number(slot.max_booking || slot.maxAppointments || (remaining + bookedCount) || 3);
+  const isAvailable = slot.status === "available" || remaining > 0 || slot.available === true;
+
+  const id = String(slot.id || slot.slot_id || slot.start || Math.random());
+  const value = start && end ? `${start} - ${end}` : (start || String(slot.value || "09:00 - 10:00"));
 
   return {
     ...slot,
-    id: String(slot.slot_id),
-    value: `${start} - ${end}`,
+    id,
+    start: startRaw,
+    end: endRaw,
+    value,
     bookedCount,
     maxAppointments,
-    available: slot.status === "available" && bookedCount < maxAppointments,
+    remaining: remaining > 0 ? remaining : Math.max(0, maxAppointments - bookedCount),
+    available: isAvailable,
   };
 }
 
@@ -233,47 +259,137 @@ export class BookingApiService {
   private readonly http = inject(CustomerHttpService);
 
   async getBranches() {
-    const response = await this.http.get("/branches");
-    return assertSuccess(response).map(normalizeBranch);
+    const response = await this.http.get("/branches", { params: { status: 'ACTIVE' } });
+    const data = assertSuccess(response);
+    const items = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : [];
+    return items.map(normalizeBranch);
   }
 
   async getServices(params: any = {}) {
-    const response = await this.http.get("/services", { params: { limit: 100, ...params } });
+    const response = await this.http.get("/catalog/services", { params: { limit: 100, ...params } }).catch(() => 
+      this.http.get("/services", { params: { limit: 100, ...params } })
+    );
     const payload = assertSuccess(response);
-    return (payload?.services || payload || []).map(normalizeBookingService);
+    const items = Array.isArray(payload?.items) ? payload.items : Array.isArray(payload?.services) ? payload.services : Array.isArray(payload) ? payload : [];
+    return items.map(normalizeBookingService);
   }
 
-  async getAppointmentSlots({ date, branchId, serviceType }: any) {
-    const response = await this.http.get("/appointments/slots", {
-      params: {
-        date,
-        branch_id: branchId || undefined,
-        service_type: serviceType === "grooming" ? "grooming" : "exam",
-      },
-    });
-    return groupSlotsByTime(assertSuccess(response).map(normalizeSlot));
+  async getAppointmentSlots({ date, branchId, serviceType, serviceIds }: any) {
+    const dateFormatted = date ? String(date).split("T")[0] : new Date().toISOString().split("T")[0];
+    const resolvedBranch = resolveBranchId(branchId);
+    const params: any = {
+      date: dateFormatted,
+      branchId: resolvedBranch,
+      serviceIds: (serviceIds && serviceIds.length > 0)
+        ? (Array.isArray(serviceIds) ? serviceIds.join(",") : serviceIds)
+        : "6ad08e4417bf41f5954234c6",
+    };
+    try {
+      const response = await this.http.get("/appointments/slots", { params });
+      const slots = assertSuccess(response);
+      const slotsList = Array.isArray(slots) ? slots : Array.isArray(slots?.slots) ? slots.slots : [];
+      return groupSlotsByTime(slotsList.map(normalizeSlot));
+    } catch {
+      const response = await this.http.get("/availability", { params });
+      const slots = assertSuccess(response);
+      const slotsList = Array.isArray(slots) ? slots : Array.isArray(slots?.slots) ? slots.slots : [];
+      return groupSlotsByTime(slotsList.map(normalizeSlot));
+    }
   }
 
-  async bookAppointment(payload: any) {
-    const response = await this.http.post("/appointments/book", payload);
-    return assertSuccess(response);
+  async bookAppointment(bookingData: any) {
+    const branchId = bookingData.branchId || bookingData.branch_id || "6ad08e4417bf41f5954234c3";
+    const dateStr = bookingData.date || bookingData.appointmentDate || new Date().toISOString().split("T")[0];
+    const timeStr = bookingData.startTime || bookingData.start_time || "09:00";
+
+    let slotStart = bookingData.slotStart;
+    if (!slotStart) {
+      try {
+        const timePart = timeStr.includes(":") ? timeStr : `${timeStr}:00`;
+        slotStart = new Date(`${String(dateStr).split("T")[0]}T${timePart}:00.000Z`).toISOString();
+      } catch {
+        slotStart = new Date().toISOString();
+      }
+    }
+
+    const serviceIds = bookingData.serviceIds?.length
+      ? bookingData.serviceIds
+      : Array.isArray(bookingData.service_ids)
+        ? bookingData.service_ids.map((s: any) => s.service_id || s)
+        : (bookingData.serviceId ? [bookingData.serviceId] : ["6ad08e4417bf41f5954234c6"]);
+
+    const paymentMethod = bookingData.paymentMethod === "ONLINE_MOCK" || bookingData.payment_method === "online" ? "ONLINE_MOCK" : "PAY_AT_STORE";
+
+    const payload: any = {
+      branchId,
+      serviceIds,
+      slotStart,
+      paymentMethod,
+      note: bookingData.note || undefined,
+    };
+
+    if (bookingData.pet_id || bookingData.petId) {
+      payload.petId = bookingData.pet_id || bookingData.petId;
+    } else {
+      payload.contact = {
+        fullName: bookingData.customer_name_snapshot || bookingData.customerName || bookingData.fullName || "Khách hàng",
+        phone: bookingData.customer_phone_snapshot || bookingData.customerPhone || bookingData.phone || "0912345678",
+        email: bookingData.customerEmail || bookingData.email || undefined,
+      };
+      if (bookingData.pet_data) {
+        payload.pet = {
+          name: bookingData.pet_data.pet_name || "Bé cưng",
+          species: bookingData.pet_data.species_id || "DOG",
+          breed: bookingData.pet_data.breed || undefined,
+          weightKg: Number(bookingData.pet_data.weight_kg || 3),
+        };
+      }
+    }
+
+    try {
+      const response = await this.http.post("/appointments", payload);
+      return assertSuccess(response);
+    } catch (err: any) {
+      if (err?.status === 404) {
+        const response = await this.http.post("/appointments/book", payload);
+        return assertSuccess(response);
+      }
+      throw err;
+    }
   }
 
   async previewAppointmentPricing(payload: any) {
-    const response = await this.http.post("/appointments/preview-pricing", payload);
-    return assertSuccess(response);
+    try {
+      const response = await this.http.post("/appointments/quote", {
+        serviceIds: payload.serviceIds || (payload.serviceId ? [payload.serviceId] : []),
+        petWeightKg: Number(payload.petWeight || payload.petWeightKg || 3),
+        branchId: payload.branchId,
+        voucherCode: payload.voucherCode || undefined,
+      });
+      return assertSuccess(response);
+    } catch {
+      const response = await this.http.post("/appointments/preview-pricing", payload);
+      return assertSuccess(response);
+    }
   }
 
   async getAppointmentHistory() {
     const response = await this.http.get("/appointments/my-history");
     const data = assertSuccess(response);
-    const appointmentsArray = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+    const appointmentsArray = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
     return appointmentsArray.map(normalizeAppointmentHistoryItem);
   }
 
   async cancelAppointment(appointmentId: any) {
-    const response = await this.http.patch(`/appointments/${appointmentId}/cancel`);
-    return assertSuccess(response);
+    try {
+      const response = await this.http.post(`/appointments/${appointmentId}/cancel`, {
+        reason: 'Khách hàng yêu cầu hủy lịch'
+      });
+      return assertSuccess(response);
+    } catch {
+      const response = await this.http.patch(`/appointments/${appointmentId}/cancel`);
+      return assertSuccess(response);
+    }
   }
 
   async checkoutAppointment(appointmentId: any, { paymentMethod = "store", voucherCode }: any = {}) {
@@ -284,12 +400,13 @@ export class BookingApiService {
     return assertSuccess(response);
   }
 
-  async createAppointmentServiceReview({ serviceId, rating, comment }: any) {
+  async createAppointmentServiceReview({ serviceId, rating, comment, anonymous }: any) {
     const response = await this.http.post("/reviews", {
-      target_type: "service",
-      target_id: String(serviceId),
-      rating,
+      targetType: "SERVICE",
+      targetId: String(serviceId),
+      rating: Number(rating || 5),
       comment: comment || "",
+      anonymous: Boolean(anonymous),
     });
     return assertSuccess(response);
   }

@@ -7,7 +7,7 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 
 @Injectable({ providedIn: 'root' })
 export class ContactApiService {
@@ -16,7 +16,7 @@ export class ContactApiService {
   async submitContactMessage(data: any) {
     try {
       const response = await this.http.post('/contacts', data);
-      return response.data;
+      return assertSuccess(response);
     } catch (error: any) {
       console.error('Lỗi khi gửi thông điệp liên hệ:', error);
       throw error;

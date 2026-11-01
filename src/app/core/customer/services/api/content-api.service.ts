@@ -7,15 +7,8 @@
  */
 import { Injectable, inject } from '@angular/core';
 
-import { CustomerHttpService } from '../customer-http.service';
+import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 import { blogImages } from '../../../../shared/customer/assets/blog-images';
-
-function assertSuccess(response: any) {
-  if (response?.EC !== undefined && response.EC !== 0) {
-    throw new Error(response.EM || "Khong the tai noi dung");
-  }
-  return response?.DT ?? response;
-}
 
 function formatDate(value: any) {
   const date = new Date(value);
@@ -199,19 +192,35 @@ export class ContentApiService {
   private readonly http = inject(CustomerHttpService);
 
   async getBlogCategories() {
-    const response = await this.http.get("/post-categories");
-    return [{ id: "all", label: "Tất cả", backendId: "" }, ...assertSuccess(response).map(normalizeBlogCategory)];
+    try {
+      const response = await this.http.get("/post-categories");
+      const data = assertSuccess(response);
+      const list = Array.isArray(data) ? data : [];
+      return [{ id: "all", label: "Tất cả", backendId: "" }, ...list.map(normalizeBlogCategory)];
+    } catch {
+      return [{ id: "all", label: "Tất cả", backendId: "" }];
+    }
   }
 
   async getFeaturedPost() {
-    const response = await this.http.get("/posts/featured");
-    const post = assertSuccess(response);
-    return post ? normalizePost(post) : null;
+    try {
+      const response = await this.http.get("/posts/featured");
+      const post = assertSuccess(response);
+      return post ? normalizePost(post) : null;
+    } catch {
+      return null;
+    }
   }
 
   async getTrendingPosts(limit: any = 5) {
-    const response = await this.http.get("/posts/trending", { params: { limit } });
-    return assertSuccess(response).map(normalizePost);
+    try {
+      const response = await this.http.get("/posts/trending", { params: { limit } });
+      const data = assertSuccess(response);
+      const list = Array.isArray(data) ? data : [];
+      return list.map(normalizePost);
+    } catch {
+      return [];
+    }
   }
 
   async getPostsPage(params: any = {}) {
