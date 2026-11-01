@@ -62,7 +62,7 @@ export class AdminAppointmentDetailComponent {
     if (!item || ['COMPLETED','CANCELLED','NO_SHOW','PENDING_PAYMENT'].includes(item.status)) return [];
     if (item.status === 'PENDING_CONFIRMATION') return ['CONFIRMED','CANCELLED'];
     if (item.status === 'CONFIRMED') return ['IN_PROGRESS','NO_SHOW','CANCELLED'];
-    if (item.status === 'IN_PROGRESS') return ['COMPLETED'];
+    // IN_PROGRESS is completed by the service-record workflow, not manually by Receptionist.
     return [];
   });
   readonly sourceActionIsAllowed = computed(() => {
@@ -74,7 +74,7 @@ export class AdminAppointmentDetailComponent {
       const name=action.toLowerCase();
       return this.dialog()==='cancel' ? name.includes('cancel') :
         this.dialog()==='reschedule' ? name.includes('reschedul') :
-        name.includes('status') || name.includes('confirm') || name.includes('complete');
+        name.includes('status') || name.includes('confirm') || name.includes('start') || name.includes('no_show') || name.includes('noshow');
     });
   });
 
