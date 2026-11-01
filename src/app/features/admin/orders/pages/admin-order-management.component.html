@@ -112,7 +112,7 @@
                     <img src="/assets/admin-inventory/inventory-transaction.svg" width="19" height="19" alt="">
                   </div>
                   <div class="order-admin__inventory-info">
-                    <strong>Xuất kho · {{ branchName(order.fulfillmentBranchId) }} · {{ group.rows.length }} mặt hàng</strong>
+                    <strong>{{ inventoryTransactionLabel(group.rows[0]) }} · {{ inventoryGroupBranch(group) }} · {{ group.rows.length }} mặt hàng</strong>
                     @for (tx of group.rows; track tx.id) {
                       <span>{{ inventorySku(tx.inventoryItemId) }} · {{ inventoryName(tx.inventoryItemId) }} · SL: {{ tx.changeQty < 0 ? -tx.changeQty : tx.changeQty }}</span>
                     }
