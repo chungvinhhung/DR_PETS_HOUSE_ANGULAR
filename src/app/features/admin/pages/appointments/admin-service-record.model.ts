@@ -2,6 +2,7 @@
 export type ServiceRecordCategory = 'MEDICAL' | 'GROOMING' | 'UNKNOWN';
 export type ServiceRecordStatus = 'DRAFT' | 'IN_PROGRESS' | 'AWAITING_VET_REVIEW' | 'COMPLETED' | 'REOPENED' | 'UNKNOWN';
 export interface MaterialUsage {
+  inventoryItemId: string;
   name: string;
   templateQuantity: string;
   actualQuantity: string;
@@ -102,7 +103,9 @@ export function normalizeServiceRecord(raw:unknown):ServiceRecord {
   const materials=materialRows.map(({item,isActual})=>{
     const m=record(item)||{};const product=record(m['material'])||{};
     const plannedRow=plannedById.get(first(m['inventoryItemId'],m['materialId']))||{};
-    return {name:first(m['name'],m['materialName'],product['name'],m['inventoryItemId'],m['materialId']),
+    const inventoryItemId=first(m['inventoryItemId'],m['materialId']);
+    return {inventoryItemId,
+      name:first(m['name'],m['materialName'],product['name'],inventoryItemId),
       templateQuantity:String(m['templateQuantity']??m['plannedQuantity']??plannedRow['quantity']??''),
       actualQuantity:isActual ? String(m['actualQuantity']??m['quantity']??'') : '',
       unit:first(m['unit'],product['unit']),
@@ -163,12 +166,9 @@ export type MedicalFinalizationCheck = {allowed:boolean;reason:string};
 export function canFinalizeServiceRecord(r:ServiceRecord):MedicalFinalizationCheck {
   if(r.status==='COMPLETED')return {allowed:false,reason:'Hồ sơ đã hoàn thành.'};
   if(r.category==='UNKNOWN')return {allowed:false,reason:'BE chưa xác định loại hồ sơ.'};
-  if(r.category==='MEDICAL'){
-    if(r.nurseSegment===null)return {allowed:false,reason:'BE chưa xác nhận segment thực hiện có Y tá hay không.'};
-    if(r.nurseSegment&&r.veterinarianReview!=='DONE')
-      return {allowed:false,reason:'Hồ sơ MEDICAL có Y tá phải được Bác sĩ thú y review trước khi hoàn tất.'};
-  }
-  if(!r.allowedActions?.some(a=>/finaliz|complet/i.test(a)))
-    return {allowed:false,reason:'BE chưa cấp quyền finalize hồ sơ.'};
-  return {allowed:true,reason:'Điều kiện hiển thị sơ bộ phù hợp; BE phải kiểm tra lại khi lưu.'};
+  if(r.category==='MEDICAL' && !['AWAITING_VET_REVIEW','REOPENED'].includes(r.status))
+    return {allowed:false,reason:'Hồ sơ MEDICAL phải ở trạng thái chờ Bác sĩ thú y duyệt hoặc đã mở lại trước khi chốt.'};
+  if(r.category==='GROOMING' && !['IN_PROGRESS','REOPENED'].includes(r.status))
+    return {allowed:false,reason:'Hồ sơ GROOMING chưa ở trạng thái có thể chốt.'};
+  return {allowed:true,reason:'Điều kiện hiển thị phù hợp; Backend vẫn là nguồn quyết định cuối cùng.'};
 }
