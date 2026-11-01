@@ -208,18 +208,18 @@
           <div class="return-detail__stock-fields">
             <div><span>Số lượng thực nhận</span><strong>{{ receivedTotal(ret) }}</strong></div>
             <div><span>Kết quả kiểm tra</span><strong>{{hasNonResellable(ret)?'Có hàng không đủ điều kiện bán lại':(ret.status==='RECEIVED'||ret.status==='APPROVED'||ret.status==='COMPLETED'?'Đủ điều kiện theo kiểm hàng':'Chưa kiểm hàng')}}</strong></div>
-            <div><span>Số lượng nhập lại kho</span><strong>{{ relatedReceiptsLoading() ? 'Đang tải...' : (relatedReceiptsError() || !relatedReceipts().length ? '—' : actualRestockedQty()) }}</strong></div>
+            <div><span>Số lượng nhập lại kho</span><strong>{{ restockedLabel() }}</strong></div>
             <div><span>Giao dịch kho</span>
               @if (relatedReceipts().length) {
                 <div class="return-detail__stock-links">
                   @for (tx of relatedReceipts(); track tx.id) {
                     <button type="button" class="return-detail__receipt-code"
-                      (click)="inventoryDrawerOpen.set(true)"
-                      [attr.aria-label]="'Xem chi tiết giao dịch kho ' + tx.id">{{ tx.id }}</button>
+                      (click)="openReceipt(tx)"
+                      [attr.aria-label]="'Xem chi tiết giao dịch kho ' + receiptCode(tx)">{{ receiptCode(tx) }}</button>
                   }
                 </div>
               } @else {
-                <strong>{{ relatedReceiptsLoading() ? 'Đang tải...' : '—' }}</strong>
+                <strong>{{ receiptStateLabel() }}</strong>
               }
             </div>
           </div>
@@ -237,7 +237,7 @@
           <div class="return-detail__dialog-heading">
             <div><h2>{{ returnDialogTitle(action) }}</h2>
               <p>{{ modalSubtitle(action) }}</p></div>
-            <button type="button" class="return-detail__close" (click)="close()" [disabled]="busy()" aria-label="Đóng">×</button>
+            <button type="button" class="return-detail__close" (click)="close()" [disabled]="busy()" aria-label="Đóng"><img src="/assets/admin-inventory/close-outlined.svg" alt="" aria-hidden="true"></button>
           </div>
           @if(action==='refund'){
             <p class="return-detail__refund-confirm">Xác nhận hoàn tiền cho yêu cầu {{data()?.code || data()?.id}}?</p>
@@ -353,7 +353,7 @@
     @if (evidencePreview(); as url) {
       <div class="return-detail__overlay return-detail__overlay--evidence" (click)="closeEvidence()">
         <section role="dialog" aria-modal="true" aria-label="Xem minh chứng" class="return-detail__viewer" (click)="$event.stopPropagation()">
-          <button type="button" class="return-detail__close" (click)="closeEvidence()" aria-label="Đóng ảnh minh chứng">×</button>
+          <button type="button" class="return-detail__close" (click)="closeEvidence()" aria-label="Đóng ảnh minh chứng"><img src="/assets/admin-inventory/close-outlined.svg" alt="" aria-hidden="true"></button>
           <img [src]="url" alt="Ảnh minh chứng kích thước lớn">
         </section>
       </div>
@@ -363,10 +363,12 @@
 @if (inventoryDrawerOpen()) {
   @if (data(); as ret) {
     <app-admin-inventory-transaction-drawer
-      [transactions]="relatedReceipts()"
+      [transactions]="selectedReceiptRows()"
+      [items]="relatedReceiptItems()"
       [branch]="branchName(linkedOrder()?.fulfillmentBranchId)"
+      [transactionCode]="selectedReceiptCode()"
       [reference]="ret.code || ret.id"
       [referenceLink]="'/admin/order-returns/' + ret.id"
-      (closed)="inventoryDrawerOpen.set(false)" />
+      (closed)="closeInventoryDrawer()" />
   }
 }
