@@ -468,6 +468,18 @@ export class AdminOrderManagementComponent {
   inventorySku(id: string): string {
     return this.orderInventoryItems().find(entry => entry.id === id)?.sku || '—';
   }
+  inventoryTransactionLabel(tx: InventoryTransactionDto): string {
+    if (tx.transactionType === 'ISSUE') return 'Xuất kho';
+    if (tx.transactionType === 'RECEIPT' && /cancel|hủy|compensation/i.test(tx.reason || '')) {
+      return 'Hoàn tồn do hủy đơn';
+    }
+    if (tx.transactionType === 'RECEIPT') return 'Nhập kho';
+    if (tx.transactionType === 'ADJUSTMENT') return 'Điều chỉnh tồn';
+    return 'Giao dịch kho';
+  }
+  inventoryGroupBranch(group: { rows: InventoryTransactionDto[] }): string {
+    return this.branchName(group.rows[0]?.branchId || this.selected()?.fulfillmentBranchId || '');
+  }
   openInventoryGroup(code: string, rows: InventoryTransactionDto[]): void {
     this.selectedInventoryCode.set(code);
     this.selectedInventoryGroup.set(rows);
@@ -498,9 +510,10 @@ export class AdminOrderManagementComponent {
   }
 
   private loadOrderInventory(order: OrderRecord): void {
-    // Inventory presence is independent of Order status. Render only real
-    // ISSUE rows returned by the API and group them only when BE supplies a
-    // stable transaction code.
+    // Current BE creates ORDER/ISSUE during checkout, before the Order enters
+    // later lifecycle states. Cancellation may add ORDER/RECEIPT compensation.
+    // Do not infer inventory from status; render every persisted stock movement
+    // that belongs to this Order.
     this.orderInventory.set([]);
     this.orderInventoryItems.set([]);
     this.orderInventoryError.set(false);
@@ -515,7 +528,7 @@ export class AdminOrderManagementComponent {
         this.orderInventoryItems.set(items);
         this.orderInventory.set(transactions.filter(tx => {
           const sourceType = tx.sourceType?.toUpperCase() || '';
-          return tx.transactionType === 'ISSUE' &&
+          return (tx.transactionType === 'ISSUE' || tx.transactionType === 'RECEIPT') &&
             (sourceType === 'ORDER' || sourceType === 'ORD' || sourceType.includes('ORDER')) &&
             (tx.sourceId === order.id || tx.sourceId === order.code);
         }));
