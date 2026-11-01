@@ -1,9 +1,10 @@
-import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
+import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiClientService } from '../../../../core/services/api-client.service';
+import { AdminInventoryService } from '../../inventory/services/admin-inventory.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import {
@@ -27,8 +28,11 @@ import {
     <select aria-label="Loại hồ sơ" [value]="category()" (change)="category.set($any($event.target).value);applyFilters()">
       <option value="">Loại hồ sơ</option><option value="MEDICAL">MEDICAL</option><option value="GROOMING">GROOMING</option>
     </select>
-    <select aria-label="Chi nhánh" disabled title="Chưa có contract lọc chi nhánh của hồ sơ dịch vụ">
-      <option>Chi nhánh</option>
+    <select aria-label="Chi nhánh" [value]="branch()" (change)="branch.set($any($event.target).value);applyFilters()">
+      <option value="">Chi nhánh</option>
+      @for (item of branches(); track item.id) {
+        <option [value]="item.id">{{ item.name }}</option>
+      }
     </select>
     <select aria-label="Trạng thái hồ sơ" [value]="status()" (change)="status.set($any($event.target).value);applyFilters()">
       <option value="">Trạng thái</option>
@@ -50,21 +54,18 @@ import {
     <tbody>
      @for(r of rows();track r.id) {
       <tr>
-       <td class="code">{{r.code}}</td><td>{{day(r.date)}}</td><td>{{r.petName||'—'}}</td>
-       <td>{{r.serviceName||'—'}}</td><td>{{r.branchName||'—'}}</td>
+       <td class="code">#{{r.code}}</td><td>{{day(r.date)}}</td><td>{{r.petName||r.petId||'—'}}</td>
+       <td>{{r.serviceName||r.serviceIds.join(', ')||'—'}}</td><td>{{r.branchName||branchName(r.branchId)||'—'}}</td>
        <td>{{r.primaryStaff||'—'}}</td><td>{{r.category==='UNKNOWN'?'—':r.category}}</td>
        <td><span class="badge" [attr.data-status]="color(r)">{{serviceRecordStatusLabel(r.status,r.rawStatus)}}</span></td>
        <td><a class="view" [routerLink]="['/admin/service-records',r.id]"
          [attr.aria-label]="'Xem hồ sơ '+r.code" title="Xem chi tiết hồ sơ">
-         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-          <path d="M2 12c2.8-4 6-6 10-6s7.2 2 10 6c-2.8 4-6 6-10 6S4.8 16 2 12Z"/>
-          <circle cx="12" cy="12" r="3"/>
-         </svg>
+         <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="" aria-hidden="true">
        </a></td>
       </tr>
      } @empty {<tr><td colspan="9" class="message">Không có hồ sơ phù hợp.</td></tr>}
     </tbody></table></div>
-    <footer><span>Đang hiển thị {{rows().length}} / {{total()}} hồ sơ đã tải @if(partial()){ (giới hạn 100 bản ghi) }</span>
+    <footer><span>Đang hiển thị {{rows().length}} trên tổng số {{total()}} hồ sơ dịch vụ</span>
      <nav class="pages" aria-label="Phân trang hồ sơ dịch vụ">
        <button type="button" (click)="go(page()-1)" [disabled]="page()===1" aria-label="Trang trước">‹</button>
        @for (index of pageNumbers(); track $index) {
@@ -76,31 +77,40 @@ import {
     </footer>
    }
   </section>
-  <p class="note">Danh sách chỉ lấy dữ liệu từ Backend, không có hồ sơ mẫu. Bộ lọc chi nhánh sẽ được bật sau khi BE xác nhận API và phân quyền.</p>
  </main>
 </app-admin-catalog-shell>`,
   styles:[`
-  :host{display:block;color:#273449}.record-list{padding:32px;max-width:1190px;margin:auto}h1{font-size:24px;margin:4px 0 26px}
-  .panel{background:#fff;border:1px solid #dce5ef;border-radius:11px;margin-bottom:18px;overflow:hidden}
-  .filter{padding:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.filter select{box-sizing:border-box;appearance:none;-webkit-appearance:none;height:40px;border:1px solid #d7e2ee;border-radius:8px;
-    padding:0 42px 0 12px;font:inherit;font-size:13px;color:#34445a;min-width:130px;cursor:pointer;
-    background:#fff url('/assets/admin-product/icon-chevron-down.svg') no-repeat right 14px center;background-size:18px 18px}
-  .filter select:disabled{opacity:.6;cursor:not-allowed;background-color:#f8fafc}
-  .search{height:40px;border:1px solid #cfd8e6;border-radius:8px;display:flex;align-items:center;gap:9px;padding:0 12px;flex:1;min-width:235px}
-  .search input{border:0;outline:0;min-width:0;width:100%;font:inherit;font-size:13px}table{width:100%;border-collapse:collapse;min-width:1050px;font-size:12px}th{background:#f8fafc;color:#2f3c4f;text-align:left;padding:14px 11px;white-space:nowrap}
-  td{padding:15px 11px;border-top:1px solid #e1e7ef;line-height:1.5;color:#44536c}td:nth-last-child(-n+2),th:nth-last-child(-n+2){text-align:center}
-  .code{font-weight:650;color:#263349}.scroll{overflow-x:auto}.badge{display:inline-flex;align-items:center;padding:4px 9px;border-radius:99px;background:#ebf3ff;color:#2561af;white-space:nowrap;font-size:11px}
+  :host{display:block;color:#273449}.record-list{box-sizing:border-box;width:100%;padding:32px}
+  h1{height:48px;display:flex;align-items:center;font-size:20px;line-height:28px;font-weight:600;color:#101828;margin:0 0 8px}
+  .panel{background:#fff;border:1px solid #dce5ef;border-radius:8px;margin-bottom:18px;overflow:hidden}
+  .filter{min-height:54px;padding:10px 12px;display:flex;gap:10px;align-items:center;flex-wrap:nowrap}
+  .filter select{box-sizing:border-box;appearance:none;-webkit-appearance:none;width:150px;height:36px;border:1px solid #d7e2ee;border-radius:8px;padding:0 36px 0 12px;font:400 12px/18px Roboto,Arial,sans-serif;color:#34445a;cursor:pointer;background:#fff url('/assets/admin-product/icon-chevron-down.svg') no-repeat right 10px center;background-size:18px 18px}
+  .filter select:nth-of-type(2){width:160px}.filter select:nth-of-type(3){width:150px}
+  .search{box-sizing:border-box;width:385px;max-width:385px;height:36px;border:1px solid #cfd8e6;border-radius:8px;display:flex;align-items:center;gap:9px;padding:0 12px;margin-right:auto}
+  .search input{border:0;outline:0;min-width:0;width:100%;font:400 12px/18px Roboto,Arial,sans-serif;color:#34445a}
+  table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:1034px;font-size:12px}
+  th{height:44px;box-sizing:border-box;background:#f8fafc;color:#2f3c4f;text-align:left;padding:0 12px;white-space:nowrap;font-weight:650}
+  td{box-sizing:border-box;height:54px;padding:10px 12px;border-top:1px solid #e1e7ef;line-height:1.45;color:#44536c;vertical-align:middle}
+  th:nth-child(1){width:11%}th:nth-child(2){width:10%}th:nth-child(3){width:10%}th:nth-child(4){width:14%}th:nth-child(5){width:12%}th:nth-child(6){width:14%}th:nth-child(7){width:10%}th:nth-child(8){width:12%}th:nth-child(9){width:7%}
+  td:nth-child(8),th:nth-child(8),td:nth-child(9),th:nth-child(9){text-align:center}
+  .code{font-weight:650;color:#263349}.scroll{overflow-x:auto}
+  .badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:99px;background:#e3f3ff;color:#2561af;white-space:nowrap;font-size:11px}
   .badge[data-status=success]{background:#e5f6e9;color:#287b40}.badge[data-status=warning]{background:#fff3df;color:#ae7210}
-  .view{display:inline-flex;align-items:center;justify-content:center;color:#111;padding:4px;border-radius:6px}.view:hover{background:#ecf4ff;color:#0d47a1}
-  footer{display:flex;justify-content:space-between;align-items:center;padding:15px 18px;border-top:1px solid #e2e8f0;color:#6c7a90;font-size:12px}.pages{display:flex;gap:12px;align-items:center}.pages button{background:#fff;border:1px solid #d4dfeb;border-radius:5px;padding:6px 13px;cursor:pointer}.pages button:disabled{opacity:.35;cursor:not-allowed}.pages button.page-active{background:#e6f2ff;border-color:#0d47a1;color:#0d47a1;font-weight:700}.pages>span{padding:0 3px}
+  .view{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px}.view img{display:block;width:20px;height:20px}.view:hover{background:#ecf4ff}
+  footer{min-height:58px;display:flex;justify-content:space-between;align-items:center;padding:8px 18px;border-top:1px solid #e2e8f0;color:#6c7a90;font-size:11px}
+  .pages{display:flex;gap:0;align-items:stretch;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden}
+  .pages :is(button,span){box-sizing:border-box;display:grid;place-items:center;flex:0 0 48px;width:48px;min-width:48px;height:44px;padding:0;border:0;border-right:1px solid #e2e8f0;border-radius:0;background:#fff;color:#475569;font:400 12px/18px Roboto,Arial,sans-serif}
+  .pages :is(button,span):last-child{border-right:0}.pages button:first-child,.pages button:last-child{flex-basis:44px;width:44px;min-width:44px}.pages button{cursor:pointer}.pages button:disabled{color:#bac8d9;cursor:not-allowed}.pages button.page-active{background:#e5f6fd;color:#0d47a1;box-shadow:inset 0 0 0 1px #0d47a1;font-weight:700}
   .message{padding:26px;text-align:center;color:#64748b}.message button{padding:8px 14px;border:1px solid #cad9eb;border-radius:6px;background:white;color:#0d47a1;cursor:pointer}
-  .note{font-size:12px;color:#7b899c;line-height:1.6}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
-  @media(max-width:720px){.record-list{padding:16px}footer{flex-wrap:wrap}.filter select{flex:1}}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+  @media(max-width:900px){.filter{flex-wrap:wrap}.search{width:100%;max-width:none}.filter select{flex:1}.record-list{padding:20px}}
+  @media(max-width:620px){.record-list{padding:16px}footer{flex-wrap:wrap;gap:10px}}
   `],
   changeDetection:ChangeDetectionStrategy.OnPush,
 })
 export class AdminServiceRecordsComponent {
   private readonly api=inject(ApiClientService);
+  private readonly inventoryApi=inject(AdminInventoryService);
   private readonly destroyRef=inject(DestroyRef);
   private request=0;
   private readonly fetched=signal<ServiceRecord[]>([]);
@@ -110,6 +120,7 @@ export class AdminServiceRecordsComponent {
     return this.fetched().filter(r=>
       (!this.category() || r.category===this.category()) &&
       (!this.status() || r.status===this.status()) &&
+      (!this.branch() || r.branchId===this.branch()) &&
       (!q || [r.id,r.code,r.appointmentId,r.petName,r.serviceName,r.branchName,r.primaryStaff]
         .some(value=>value.toLocaleLowerCase('vi').includes(q))));
   });
@@ -118,14 +129,22 @@ export class AdminServiceRecordsComponent {
   readonly error=signal('');
   readonly total=computed(()=>this.filtered().length);
   readonly pageCount=computed(()=>Math.max(1,Math.ceil(this.total()/this.size)));
-  readonly pageNumbers=computed(()=>adminPageWindow(this.page(),this.pageCount()));
+  readonly pageNumbers=computed(()=>adminPageWindowWithEdges(this.page(),this.pageCount()));
   readonly page=signal(1);
   readonly size=7;
   readonly search=signal('');
   readonly category=signal('');
   readonly status=signal('');
+  readonly branch=signal('');
+  readonly branches=signal<{id:string;name:string}[]>([]);
   readonly serviceRecordStatusLabel=serviceRecordStatusLabel;
-  constructor(){this.load();}
+  constructor(){
+    this.inventoryApi.listBranches().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:rows=>this.branches.set(rows.map(row=>({id:row.id,name:row.name}))),
+      error:()=>this.branches.set([]),
+    });
+    this.load();
+  }
   applyFilters(){this.page.set(1);}
   go(value:number){if(value<1||value>this.pageCount())return;this.page.set(value);}
   load(){
@@ -145,6 +164,7 @@ export class AdminServiceRecordsComponent {
     });
   }
   color(r:ServiceRecord){return r.status==='COMPLETED'?'success':r.status==='AWAITING_VET_REVIEW'?'warning':'info';}
+  branchName(id:string){return this.branches().find(item=>item.id===id)?.name||id;}
   day(value:string|null){if(!value)return '—';const d=new Date(value);return Number.isNaN(d.getTime())?'—':
     new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric'}).format(d);}
 }
