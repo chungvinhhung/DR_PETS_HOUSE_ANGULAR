@@ -160,7 +160,9 @@ export class AdminOrderReturnDetailComponent {
     return ret.items.some(item=>item.quality==='DAMAGED'||item.quality==='DISCARDED');
   }
   receivedTotal(ret: OrderReturnSummary): string {
-    if (!['RECEIVED','APPROVED','COMPLETED'].includes(ret.status))return 'Chưa kiểm hàng';
+    // Before RECEIVE no stock has actually been handed back, even though older
+    // BE DTOs may default receivedQty to requestedQty.
+    if (!['RECEIVED','APPROVED','COMPLETED'].includes(ret.status)) return '0 sản phẩm';
     if (!ret.items.length || ret.items.some(item => typeof item.receivedQty !== 'number')) return 'Chưa có dữ liệu';
     return ret.items.reduce((total, item) => total + (item.receivedQty ?? 0), 0) + ' sản phẩm';
   }
