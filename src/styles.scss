@@ -6074,9 +6074,9 @@ app-admin-order-management .order-admin__modal .order-admin__field-value--next {
   min-height:52px;
   margin-top:8px;
   padding:0 15px;
-  border:1px solid #c7dfed;
+  border:1px solid #dee5f0;
   border-radius:8px;
-  background:#e2f4fc;
+  background:#e5f6fd;
   color:#334155;
   font-weight:400;
 }
@@ -6087,4 +6087,20 @@ app-admin-inventory-transaction-drawer .inventory-transaction-reference strong {
   color:#25334b;
   font-size:12px;
   font-weight:500;
+}
+
+
+/* Phase 3 — Return detail: Design System close icon and exact clicked stock receipt. */
+app-admin-order-return-detail .return-detail__close img {
+  display:block;
+  width:24px;
+  height:24px;
+}
+app-admin-order-return-detail .return-detail__close {
+  display:grid;
+  place-items:center;
+  width:32px;
+  min-width:32px;
+  height:32px;
+  padding:4px;
 }
