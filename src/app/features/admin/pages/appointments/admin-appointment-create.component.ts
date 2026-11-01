@@ -606,7 +606,7 @@ export class AdminAppointmentCreateComponent {
 
   private clearReview(): void { this.reviewErrors.set([]); }
 
-  confirmAppointment(): void {
+  createAppointment(): void {
     const errors: string[] = [];
     const customer = this.selectedCustomer();
     const phone = PHONE(this.customerPhone());
@@ -639,7 +639,7 @@ export class AdminAppointmentCreateComponent {
     if (!this.currentPreview())
       errors.push('Chưa thể xác định tổng tiền cho lịch hẹn này.');
     // A slot read/price hint never authorizes a booking mutation.
-    errors.push('Chức năng xác nhận lịch hẹn hiện chưa khả dụng. Thông tin của bạn chưa được lưu thành lịch hẹn.');
+    errors.push('Chức năng tạo lịch hẹn hiện chưa khả dụng. Thông tin của bạn chưa được lưu thành lịch hẹn.');
     this.reviewErrors.set(errors);
     if (errors.length) this.toast.show(errors[0]);
   }
