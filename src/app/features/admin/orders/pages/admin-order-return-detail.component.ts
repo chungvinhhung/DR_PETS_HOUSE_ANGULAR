@@ -8,7 +8,7 @@ import { AdminReturnNotificationService } from '../../../../shared/services/admi
 import { orderErrorMessage } from '../services/admin-order-error-message';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
-import { AdminInventoryService, InventoryTransactionDto } from '../../inventory/services/admin-inventory.service';
+import { AdminInventoryService, InventoryItemDto, InventoryTransactionDto } from '../../inventory/services/admin-inventory.service';
 import { AdminInventoryTransactionDrawerComponent } from '../../inventory/components/admin-inventory-transaction-drawer.component';
 import { AdminProductService } from '../../products/services/admin-product.service';
 import {
@@ -52,9 +52,16 @@ export class AdminOrderReturnDetailComponent {
   readonly branchNames = signal<Record<string,string>>({});
   readonly refund = signal<OrderRefundRecord | null>(null);
   readonly relatedReceipts = signal<InventoryTransactionDto[]>([]);
+  readonly relatedReceiptItems = signal<InventoryItemDto[]>([]);
   readonly relatedReceiptsLoading = signal(false);
   readonly relatedReceiptsError = signal(false);
   readonly inventoryDrawerOpen = signal(false);
+  readonly selectedReceipt = signal<InventoryTransactionDto | null>(null);
+  readonly selectedReceiptRows = computed(() => this.selectedReceipt() ? [this.selectedReceipt()!] : []);
+  readonly selectedReceiptCode = computed(() => {
+    const tx = this.selectedReceipt();
+    return tx ? this.receiptCode(tx) : '';
+  });
   readonly actualRestockedQty = computed(() => this.relatedReceipts().reduce((sum, tx) => sum + Math.max(0, tx.changeQty), 0));
   readonly loading = signal(true);
   readonly refundLoading = signal(false);
@@ -171,7 +178,8 @@ export class AdminOrderReturnDetailComponent {
       this.productThumbs.set({});
       this.refund.set(null);
       this.relatedReceipts.set([]);
-      this.inventoryDrawerOpen.set(false);
+      this.relatedReceiptItems.set([]);
+      this.closeInventoryDrawer();
       this.dialog.set(null);
       this.load();
     });
@@ -200,15 +208,20 @@ export class AdminOrderReturnDetailComponent {
     // BE tags return restocks as ORDER receipts, with the return ID in reason.
     // Only render persisted entries actually referencing this return.
     this.relatedReceipts.set([]);
+    this.relatedReceiptItems.set([]);
     this.relatedReceiptsLoading.set(true);
     this.relatedReceiptsError.set(false);
     const returnId = ret.id;
-    this.inventoryApi.listTransactions().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: records => {
+    forkJoin({
+      transactions: this.inventoryApi.listTransactions(),
+      items: this.inventoryApi.listItems(),
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({transactions, items}) => {
         if (this.id() !== returnId) return;
-        this.relatedReceipts.set(records.filter(tx =>
+        this.relatedReceiptItems.set(items);
+        this.relatedReceipts.set(transactions.filter(tx =>
           tx.transactionType === 'RECEIPT' &&
-          tx.sourceType === 'ORDER' &&
+          tx.sourceType?.toUpperCase() === 'ORDER' &&
           tx.sourceId === ret.orderId &&
           tx.reason?.includes(returnId),
         ));
@@ -220,6 +233,29 @@ export class AdminOrderReturnDetailComponent {
         this.relatedReceiptsLoading.set(false);
       },
     });
+  }
+
+  receiptCode(tx: InventoryTransactionDto): string {
+    return tx.transactionCode || tx.groupCode || tx.code || tx.id;
+  }
+  openReceipt(tx: InventoryTransactionDto): void {
+    this.selectedReceipt.set(tx);
+    this.inventoryDrawerOpen.set(true);
+  }
+  closeInventoryDrawer(): void {
+    this.inventoryDrawerOpen.set(false);
+    this.selectedReceipt.set(null);
+  }
+  restockedLabel(): string {
+    if (this.relatedReceiptsLoading()) return 'Đang tải...';
+    if (this.relatedReceiptsError()) return 'Không thể tải';
+    if (!this.relatedReceipts().length) return '0 sản phẩm';
+    return this.actualRestockedQty() + ' sản phẩm';
+  }
+  receiptStateLabel(): string {
+    if (this.relatedReceiptsLoading()) return 'Đang tải...';
+    if (this.relatedReceiptsError()) return 'Không thể tải';
+    return 'Không phát sinh';
   }
 
   private loadLinkedOrder(returnId: string, orderId: string): void {
