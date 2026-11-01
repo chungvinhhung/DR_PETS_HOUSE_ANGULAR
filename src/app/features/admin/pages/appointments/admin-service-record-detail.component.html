@@ -42,7 +42,7 @@
       <section class="record-card">
         <h2>Thông tin thực hiện</h2>
         <div class="execution-grid">
-          <div><label>Chi nhánh</label><strong>{{ r.branchName || r.branchId || '—' }}</strong></div>
+          <div><label>Chi nhánh</label><strong>{{ branchLabel(r) }}</strong></div>
           <div><label>Nhân viên chính</label><strong>{{ staffLabel(r) }}</strong></div>
           <div><label>Lịch hẹn</label>
             @if (r.appointmentId) {
