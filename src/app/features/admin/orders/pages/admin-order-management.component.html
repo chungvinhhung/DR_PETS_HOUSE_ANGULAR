@@ -100,25 +100,33 @@
           @if (orderInventoryLoading()) {
             <p class="order-admin__inventory-empty" role="status">Đang tải giao dịch kho...</p>
           } @else if (orderInventoryError()) {
-            <p class="order-admin__inventory-empty">Chưa thể tải giao dịch kho liên quan.</p>
-          } @else if (orderInventory().length) {
-            <div class="order-admin__inventory-entry">
-              <div class="order-admin__inventory-icon" aria-hidden="true">
-                <img src="/assets/admin-inventory/inventory-transaction.svg" width="19" height="19" alt="">
-              </div>
-              <div class="order-admin__inventory-info">
-                <strong>Xuất kho · {{ branchName(order.fulfillmentBranchId) }} · {{ orderInventory().length }} dòng vật tư, sản phẩm</strong>
-                @for (tx of orderInventory(); track tx.id) {
-                  <span>{{ inventoryName(tx.inventoryItemId) }} · SL: {{ tx.changeQty < 0 ? -tx.changeQty : tx.changeQty }} · Mã GD: {{ tx.id }}</span>
-                }
-              </div>
-              <button class="order-admin__inventory-link" type="button"
-                (click)="inventoryDrawerOpen.set(true)" aria-label="Xem chi tiết giao dịch kho">
-                {{ orderInventory().length === 1 ? orderInventory()[0].id : 'Xem chi tiết giao dịch' }} ›
-              </button>
+            <div class="order-admin__inventory-state order-admin__inventory-state--error" role="alert">
+              <span>Không thể tải giao dịch kho liên quan.</span>
+              <button type="button" class="order-admin__inventory-retry" (click)="retryOrderInventory()">Thử lại</button>
+            </div>
+          } @else if (orderInventoryGroups().length) {
+            <div class="order-admin__inventory-list">
+              @for (group of orderInventoryGroups(); track group.code) {
+                <div class="order-admin__inventory-entry">
+                  <div class="order-admin__inventory-icon" aria-hidden="true">
+                    <img src="/assets/admin-inventory/inventory-transaction.svg" width="19" height="19" alt="">
+                  </div>
+                  <div class="order-admin__inventory-info">
+                    <strong>Xuất kho · {{ branchName(order.fulfillmentBranchId) }} · {{ group.rows.length }} mặt hàng</strong>
+                    @for (tx of group.rows; track tx.id) {
+                      <span>{{ inventorySku(tx.inventoryItemId) }} · {{ inventoryName(tx.inventoryItemId) }} · SL: {{ tx.changeQty < 0 ? -tx.changeQty : tx.changeQty }}</span>
+                    }
+                  </div>
+                  <button class="order-admin__inventory-link" type="button"
+                    (click)="openInventoryGroup(group.code, group.rows)"
+                    [attr.aria-label]="'Xem giao dịch kho ' + group.code">
+                    {{ group.code }} ›
+                  </button>
+                </div>
+              }
             </div>
           } @else {
-            <p class="order-admin__inventory-empty">Chưa ghi nhận giao dịch kho liên quan đến đơn này.</p>
+            <p class="order-admin__inventory-empty">Chưa phát sinh giao dịch kho</p>
           }
         </section>
 
@@ -142,7 +150,7 @@
                   <li [class.order-admin__history--latest]="first">
                     <small>{{ when(event.at) }}</small>
                     <div class="order-admin__history-content">
-                      <strong>{{ statusLabel(event.status) }}</strong>
+                      <strong>{{ historyEventLabel(event.status) }}</strong>
                       @if (event.note) { <p>{{ event.note }}</p> }
                     </div>
                   </li>
@@ -471,9 +479,6 @@
               <textarea #cancelReason rows="2" maxlength="500" [value]="reason()" (input)="reason.set(cancelReason.value)"
                 [placeholder]="cancelCategory() === 'Khác' ? 'Nhập lý do hủy ít nhất 5 ký tự...' : 'Nhập ghi chú nếu cần'"></textarea>
             </label>
-            @if (cancelCategory() === 'Khác' && reason().trim().length > 0 && reason().trim().length < 5) {
-              <p class="order-admin__invalid">Vui lòng nhập lý do ít nhất 5 ký tự.</p>
-            }
           } @else {
             <div class="order-admin__transition-fields">
               <div class="order-admin__field">Hiện tại
@@ -485,6 +490,11 @@
                 </select>
               </label>
             </div>
+            <label class="order-admin__field">Ghi chú
+              <textarea #statusNoteField rows="2" maxlength="500"
+                [value]="statusNote()" (input)="statusNote.set(statusNoteField.value)"
+                placeholder="Nhập ghi chú nếu cần"></textarea>
+            </label>
             @if (action === 'ship') {
               <label class="order-admin__field">Đơn vị vận chuyển
                 <input #carrierInput type="text" maxlength="120" placeholder="Tên đơn vị vận chuyển" [value]="carrier()" (input)="carrier.set(carrierInput.value)">
@@ -509,9 +519,10 @@
 @if (inventoryDrawerOpen()) {
   @if (selected(); as order) {
     <app-admin-inventory-transaction-drawer
-      [transactions]="orderInventory()" [items]="orderInventoryItems()"
+      [transactions]="selectedInventoryGroup()" [items]="orderInventoryItems()"
       [branch]="branchName(order.fulfillmentBranchId)"
+      [transactionCode]="selectedInventoryCode()"
       [reference]="order.code" [referenceLink]="'/admin/orders/' + order.id"
-      (closed)="inventoryDrawerOpen.set(false)" />
+      (closed)="closeInventoryDrawer()" />
   }
 }
