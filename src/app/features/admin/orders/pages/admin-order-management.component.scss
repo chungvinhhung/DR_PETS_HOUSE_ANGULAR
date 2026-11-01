@@ -227,7 +227,9 @@
 
 .order-admin__history li {
   position: relative;
+  margin: 0;
   padding: 0 0 18px 24px;
+  border-left: 0;
 }
 
 .order-admin__history li:last-child {
@@ -307,4 +309,10 @@
     align-items: flex-start;
     flex-direction: column;
   }
+}
+
+.order-admin__modal-close img {
+  display: block;
+  width: 24px;
+  height: 24px;
 }
