@@ -74,7 +74,7 @@
       </section>
 
       <section class="panel">
-        <h2>Hồ sơ dịch vụ và MEDICAL review</h2>
+        <h2>Hồ sơ dịch vụ</h2>
         @if (recordsLoading()) { <p class="hint" role="status">Đang lấy ServiceRecord liên quan...</p> }
         @else if (recordsError()) {
           <p class="hint" role="alert">Không đọc được ServiceRecord: {{recordsError()}}</p>
@@ -91,7 +91,7 @@
         } @else {
           <p class="hint">Chưa có hồ sơ dịch vụ liên quan đến lịch hẹn này.</p>
         }
-        <p class="hint">Hồ sơ khám có nhân viên y tá thực hiện phải được bác sĩ thú y kiểm tra trước khi hoàn tất.</p>
+        <p class="hint">Khi bắt đầu phục vụ, hệ thống tạo hồ sơ dịch vụ cho phần công việc tương ứng. Nhân viên chuyên môn cập nhật kết quả và vật tư tại Hồ sơ dịch vụ; lịch hẹn tự chuyển sang Hoàn tất khi tất cả phần dịch vụ đã hoàn thành và hồ sơ được chốt đúng điều kiện.</p>
       </section>
 
       <section class="panel">
@@ -148,10 +148,18 @@
               (click)="startAction('reschedule')">Đổi lịch</button>
             <button type="button" class="btn btn--danger" [disabled]="appointment.status==='CANCELLED' || appointment.status==='COMPLETED' || appointment.status==='NO_SHOW'"
               (click)="startAction('cancel')">Hủy lịch</button>
-            <button type="button" class="btn btn--primary" [disabled]="!proposedActions().length"
-              (click)="startAction('status')">Cập nhật trạng thái</button>
+            @if (appointment.status!=='IN_PROGRESS') {
+              <button type="button" class="btn btn--primary" [disabled]="!proposedActions().length"
+                (click)="startAction('status')">
+                {{ appointment.status==='PENDING_CONFIRMATION' ? 'Xác nhận lịch hẹn' : 'Cập nhật trạng thái' }}
+              </button>
+            }
           </div>
-          <p class="hint">Bạn có thể xem trước yêu cầu. Chức năng lưu thay đổi hiện chưa khả dụng.</p>
+          @if (appointment.status==='IN_PROGRESS') {
+            <p class="hint">Lịch đang được phục vụ. Không hoàn tất lịch thủ công tại đây; trạng thái Hoàn tất được cập nhật tự động sau khi các Hồ sơ dịch vụ liên quan được chốt.</p>
+          } @else {
+            <p class="hint">Bạn có thể xem trước yêu cầu. Chức năng lưu thay đổi hiện chưa khả dụng.</p>
+          }
         } @else {
           <p class="hint">Tài khoản của bạn hiện chỉ có quyền xem lịch hẹn này.</p>
         }
@@ -194,7 +202,7 @@
               }
             </select>
           </label>
-          <p class="hint">Trạng thái chỉ được cập nhật sau khi yêu cầu được xác nhận.</p>
+          <p class="hint">Không có thao tác Hoàn tất lịch hẹn thủ công. Khi chọn Đang phục vụ, backend phải đồng thời khởi tạo Hồ sơ dịch vụ; trạng thái Hoàn tất chỉ được cập nhật từ quy trình chốt Hồ sơ dịch vụ.</p>
         }
         <label class="modal-label">Lý do / ghi chú xử lý <span>*</span>
           <textarea rows="4" [value]="reason()" (input)="reason.set($any($event.target).value)"
