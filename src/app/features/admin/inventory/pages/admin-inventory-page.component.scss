@@ -424,12 +424,7 @@ small {
 
 
 /* Phase 1: Inventory History follows the approved Figma history composition. */
-.table-shell--history {
-  order: 4;
-}
-
 .toolbar--history {
-  order: 5;
   margin-top: 0;
 }
 
@@ -438,7 +433,7 @@ small {
 }
 
 .history-table td {
-  height: 58px;
+  height: 76px;
 }
 
 .history-table th:nth-child(1),
@@ -530,4 +525,25 @@ small {
   .toolbar--history {
     flex-wrap: wrap;
   }
+}
+
+/* Keep Inventory pagination identical to Product Management. */
+.pagination-buttons > * {
+  min-width: 44px;
+  width: 44px;
+  height: 44px;
+}
+.pagination-buttons .pagination-ellipsis {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  color: #475569;
+  border-right: 1px solid #e2e8f0;
+  box-sizing: border-box;
+}
+.pagination-buttons .pagination-page--active {
+  font-weight: 700;
 }
