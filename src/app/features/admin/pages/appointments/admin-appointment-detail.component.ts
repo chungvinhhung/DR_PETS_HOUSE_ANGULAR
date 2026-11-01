@@ -7,6 +7,8 @@ import { ApiClientService } from '../../../../core/services/api-client.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
+import { CatalogBranch, CatalogService } from '../../service-catalog/models/service-catalog.model';
+import { ServiceCatalogApiService } from '../../service-catalog/services/service-catalog-api.service';
 import {
   AppointmentView, appointmentWindow, normalizeAppointmentDetail, statusLabel,
 } from './admin-appointment-workflow.model';
@@ -26,6 +28,7 @@ export class AdminAppointmentDetailComponent {
   private readonly api = inject(ApiClientService);
   private readonly toast = inject(AdminToastService);
   private readonly session = inject(AuthSessionService);
+  private readonly catalog = inject(ServiceCatalogApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private requestVersion = 0;
@@ -43,6 +46,14 @@ export class AdminAppointmentDetailComponent {
   readonly reason = signal('');
   readonly targetDate = signal('');
   readonly targetTime = signal('');
+  readonly rescheduleBranchId = signal('');
+  readonly rescheduleServiceId = signal('');
+  readonly rescheduleBranches = signal<CatalogBranch[]>([]);
+  readonly rescheduleServices = signal<CatalogService[]>([]);
+  readonly rescheduleSlots = signal<{id:string;label:string;available:boolean}[]>([]);
+  readonly rescheduleSlotId = signal('');
+  readonly rescheduleLoading = signal(false);
+  readonly rescheduleLoadError = signal('');
   readonly actionError = signal('');
   readonly statusTarget = signal('');
   readonly isManagerOrAdmin = computed(() => this.session.hasAnyRole(['ADMIN','MANAGER']));
@@ -151,6 +162,7 @@ export class AdminAppointmentDetailComponent {
   }
 
   constructor() {
+    this.loadRescheduleBranches();
     this.refresh();
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const id = params.get('id') || '';
@@ -218,6 +230,111 @@ export class AdminAppointmentDetailComponent {
     });
   }
 
+  private loadRescheduleBranches():void{
+    this.catalog.listBranches().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:rows=>this.rescheduleBranches.set(rows),
+      error:()=>this.rescheduleBranches.set([]),
+    });
+  }
+
+  changeRescheduleBranch(branchId:string):void{
+    this.rescheduleBranchId.set(branchId);
+    this.rescheduleServiceId.set('');
+    this.rescheduleServices.set([]);
+    this.rescheduleSlots.set([]);
+    this.rescheduleSlotId.set('');
+    this.targetTime.set('');
+    this.rescheduleLoadError.set('');
+    this.loadRescheduleServices(branchId,'');
+  }
+
+  changeRescheduleService(serviceId:string):void{
+    this.rescheduleServiceId.set(serviceId);
+    this.rescheduleSlots.set([]);
+    this.rescheduleSlotId.set('');
+    this.targetTime.set('');
+    this.loadRescheduleSlots();
+  }
+
+  changeRescheduleDate(value:string):void{
+    this.targetDate.set(value);
+    this.rescheduleSlots.set([]);
+    this.rescheduleSlotId.set('');
+    this.targetTime.set('');
+    this.loadRescheduleSlots();
+  }
+
+  chooseRescheduleSlot(id:string):void{
+    const slot=this.rescheduleSlots().find(row=>row.id===id&&row.available);
+    this.rescheduleSlotId.set(slot?.id||'');
+    if(!slot){this.targetTime.set('');return;}
+    const d=new Date(slot.id);
+    this.targetTime.set(Number.isNaN(d.getTime()) ? slot.label.slice(0,5) :
+      new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit',hour12:false}).format(d));
+  }
+
+  private loadRescheduleServices(branchId:string,preferredName:string):void{
+    if(!branchId){this.rescheduleServices.set([]);return;}
+    this.rescheduleLoading.set(true);this.rescheduleLoadError.set('');
+    this.catalog.list({branchId,search:'',mode:'BOOKABLE',status:'ACTIVE',page:1,pageSize:100})
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next:result=>{
+          const rows=result.items.filter(row=>row.bookingMode==='BOOKABLE'&&row.status==='ACTIVE');
+          this.rescheduleServices.set(rows);
+          const preferred=rows.find(row=>row.name===preferredName);
+          this.rescheduleServiceId.set(preferred?.id||'');
+          this.rescheduleLoading.set(false);
+          if(preferred&&this.targetDate())this.loadRescheduleSlots();
+        },
+        error:err=>{
+          this.rescheduleServices.set([]);this.rescheduleServiceId.set('');
+          this.rescheduleLoading.set(false);
+          this.rescheduleLoadError.set(adminErrorMessage(err,'Không tải được dịch vụ tại chi nhánh.'));
+        }
+      });
+  }
+
+  private loadRescheduleSlots():void{
+    const branchId=this.rescheduleBranchId(), serviceId=this.rescheduleServiceId(), date=this.targetDate();
+    if(!branchId||!serviceId||!date)return;
+    this.rescheduleLoading.set(true);this.rescheduleLoadError.set('');
+    const params=new HttpParams().set('date',date).set('branchId',branchId)
+      .set('serviceIds',serviceId).set('includeFull','true');
+    this.api.get<unknown>('/availability',{params}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:wire=>{
+        const root=this.objectValue(wire);
+        const payload=this.objectValue(root?.['DT']??root?.['data']??wire);
+        const raw=payload?.['slots'];
+        const slots=Array.isArray(raw)?raw.map(value=>{
+          const row=this.objectValue(value);if(!row)return null;
+          const id=String(row['start']??'');
+          const end=String(row['end']??'');
+          if(!id||!end)return null;
+          const remaining=Number(row['remaining']);
+          const label=this.clockLabel(id)+' - '+this.clockLabel(end);
+          return {id,label,available:String(row['status']??'').toUpperCase()==='AVAILABLE'&&Number.isFinite(remaining)&&remaining>0};
+        }).filter((row):row is {id:string;label:string;available:boolean}=>!!row):[];
+        this.rescheduleSlots.set(slots);
+        this.rescheduleLoading.set(false);
+        if(!slots.length)this.rescheduleLoadError.set('Không còn khung giờ phù hợp trong ngày đã chọn.');
+      },
+      error:err=>{
+        this.rescheduleSlots.set([]);this.rescheduleLoading.set(false);
+        this.rescheduleLoadError.set(adminErrorMessage(err,'Không tải được khung giờ mới.'));
+      }
+    });
+  }
+
+  private objectValue(value:unknown):Record<string,unknown>|null{
+    return value!==null&&typeof value==='object'&&!Array.isArray(value)?value as Record<string,unknown>:null;
+  }
+
+  private clockLabel(value:string):string{
+    const d=new Date(value);
+    if(Number.isNaN(d.getTime()))return value.slice(11,16)||value.slice(0,5);
+    return new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit',hour12:false}).format(d);
+  }
+
   statusLabel(value: string): string {
     const a=this.item();
     return statusLabel(value as AppointmentView['status'],a?.rawStatus);
@@ -247,11 +364,30 @@ export class AdminAppointmentDetailComponent {
     this.reason.set('');
     this.targetDate.set('');
     this.targetTime.set('');
+    this.rescheduleSlotId.set('');
+    this.rescheduleSlots.set([]);
+    this.rescheduleLoadError.set('');
     this.statusTarget.set(action==='status' ? (this.proposedActions()[0] || '') : '');
     this.actionError.set('');
+    if(action==='reschedule'){
+      const item=this.item();
+      this.rescheduleBranchId.set(item?.branchId||'');
+      if(item?.appointmentAt){
+        const d=new Date(item.appointmentAt);
+        if(!Number.isNaN(d.getTime())){
+          this.targetDate.set(new Intl.DateTimeFormat('en-CA',{
+            timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'
+          }).format(d));
+        }
+      }
+      this.loadRescheduleServices(item?.branchId||'', item?.serviceNames?.[0]||'');
+    }
   }
   closeDialog(): void {
     this.dialog.set(null);this.reason.set('');this.targetDate.set('');this.targetTime.set('');
+    this.rescheduleBranchId.set('');this.rescheduleServiceId.set('');
+    this.rescheduleServices.set([]);this.rescheduleSlots.set([]);this.rescheduleSlotId.set('');
+    this.rescheduleLoadError.set('');this.rescheduleLoading.set(false);
     this.actionError.set('');this.statusTarget.set('');
   }
   selectedWindow() {
@@ -281,8 +417,8 @@ export class AdminAppointmentDetailComponent {
     if (this.dialog()==='status'&&!this.statusTarget())
       {this.showActionMessage('Vui lòng chọn trạng thái muốn cập nhật.');return;}
     if (this.dialog()==='reschedule') {
-      if (!this.targetDate()||!this.targetTime()) {
-        this.showActionMessage('Vui lòng chọn ngày và giờ hẹn mới.');return;
+      if (!this.rescheduleBranchId()||!this.rescheduleServiceId()||!this.targetDate()||!this.rescheduleSlotId()||!this.targetTime()) {
+        this.showActionMessage('Vui lòng chọn đầy đủ chi nhánh, dịch vụ, ngày hẹn và khung giờ mới.');return;
       }
       if(new Date(this.targetDate()+'T'+this.targetTime()).getTime()<=Date.now()) {
         this.showActionMessage('Thời gian mới phải ở tương lai.');return;
