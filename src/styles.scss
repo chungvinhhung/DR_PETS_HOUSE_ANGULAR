@@ -6141,3 +6141,17 @@ app-admin-order-return-detail .return-detail__timeline-content p {
     grid-template-columns:92px minmax(0,1fr);
   }
 }
+
+
+/* WEB2 Phase 4 — Admin Create Appointment styles scoped globally to stay under Angular component-style budget. */
+app-admin-appointment-create .lookup-results__item:hover{background:#f2f7fd}
+app-admin-appointment-create .pet-picker__existing{background:#fff}
+app-admin-appointment-create .pet-picker__existing+.pet-picker__existing{border-top:1px solid #e0e8f2}
+app-admin-appointment-create .pet-picker__existing--selected{background:#f4f8fe}
+app-admin-appointment-create .pet-picker__avatar{display:grid;place-items:center;width:35px;height:35px;overflow:hidden;border-radius:6px;background:#e7edf5;color:#64748b;font-size:12px;font-weight:600;flex:0 0 auto}
+app-admin-appointment-create .pet-picker__avatar img{width:35px;height:35px;object-fit:cover}
+app-admin-appointment-create .pet-picker__additional{display:block;padding:0 10px 10px;font-size:11px;color:#344154}
+app-admin-appointment-create .pet-picker__additional input{display:block;box-sizing:border-box;width:100%;height:37px;margin-top:6px;border:1px solid #dee5f0;border-radius:5px;background:#fff;padding:8px 12px;font:400 12px/18px Roboto,Arial,sans-serif;color:#344154}
+app-admin-appointment-create .pet-new__additional{margin-top:12px}
+app-admin-appointment-create .appointment-create__page-title{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+app-admin-appointment-create .appointment-create__header-cancel{min-height:39px;padding:8px 16px}
