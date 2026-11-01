@@ -99,7 +99,20 @@ export class AdminOrderManagementComponent {
   readonly orderInventoryLoading = signal(false);
   readonly orderInventoryError = signal(false);
   readonly inventoryDrawerOpen = signal(false);
+  readonly selectedInventoryGroup = signal<InventoryTransactionDto[]>([]);
+  readonly selectedInventoryCode = signal('');
   readonly orderInventoryItems = signal<InventoryItemDto[]>([]);
+  readonly orderInventoryGroups = computed(() => {
+    const groups = new Map<string, { code: string; rows: InventoryTransactionDto[] }>();
+    for (const tx of this.orderInventory()) {
+      const explicit = tx.transactionCode || tx.groupCode || tx.code || '';
+      const key = explicit ? 'code:' + explicit : 'row:' + tx.id;
+      const current = groups.get(key) ?? { code: explicit || tx.id, rows: [] };
+      current.rows.push(tx);
+      groups.set(key, current);
+    }
+    return [...groups.values()];
+  });
   readonly productThumbs = signal<Record<string,string>>({});
   // Only render actual order audit events. The milestone bar is a separate
   // status visualization and must not create synthetic history records.
@@ -108,7 +121,7 @@ export class AdminOrderManagementComponent {
     if (!order) return [];
     const history = (order.statusHistory ?? []).filter(event => !!event.at)
       .map(event => ({status: event.status, at: event.at, note: event.note ?? null}));
-    if (!history.length && order.createdAt) {
+    if (order.createdAt && !history.some(event => event.status === 'PENDING')) {
       history.push({status: 'PENDING', at: order.createdAt, note: null});
     }
     return history.sort((a,b) => (Date.parse(b.at) || 0) - (Date.parse(a.at) || 0));
@@ -127,6 +140,7 @@ export class AdminOrderManagementComponent {
   private cancelRequestKey: string | null = null;
   readonly reason = signal('');
   readonly cancelCategory = signal('');
+  readonly statusNote = signal('');
   readonly carrier = signal('');
   readonly tracking = signal('');
   readonly detailInfo = computed(() => this.selected());
@@ -449,7 +463,24 @@ export class AdminOrderManagementComponent {
   }
   inventoryName(id: string): string {
     const item = this.orderInventoryItems().find(entry => entry.id === id);
-    return item ? item.sku + ' · ' + item.name : 'Mặt hàng ' + id;
+    return item ? item.name : 'Mặt hàng ' + id;
+  }
+  inventorySku(id: string): string {
+    return this.orderInventoryItems().find(entry => entry.id === id)?.sku || '—';
+  }
+  openInventoryGroup(code: string, rows: InventoryTransactionDto[]): void {
+    this.selectedInventoryCode.set(code);
+    this.selectedInventoryGroup.set(rows);
+    this.inventoryDrawerOpen.set(true);
+  }
+  closeInventoryDrawer(): void {
+    this.closeInventoryDrawer();
+    this.selectedInventoryCode.set('');
+    this.selectedInventoryGroup.set([]);
+  }
+  retryOrderInventory(): void {
+    const order = this.selected();
+    if (order) this.loadOrderInventory(order);
   }
 
   private loadOrderImages(order: OrderRecord): void {
@@ -467,8 +498,9 @@ export class AdminOrderManagementComponent {
   }
 
   private loadOrderInventory(order: OrderRecord): void {
-    // The inventory API currently exposes row-level transactions, not a
-    // grouped TXK drawer. Show only real ISSUE rows referencing this order.
+    // Inventory presence is independent of Order status. Render only real
+    // ISSUE rows returned by the API and group them only when BE supplies a
+    // stable transaction code.
     this.orderInventory.set([]);
     this.orderInventoryItems.set([]);
     this.orderInventoryError.set(false);
@@ -481,9 +513,12 @@ export class AdminOrderManagementComponent {
       next: ({transactions,items}) => {
         if (this.orderId() !== requestedId) return;
         this.orderInventoryItems.set(items);
-        this.orderInventory.set(transactions.filter(tx => tx.transactionType === 'ISSUE' &&
-          tx.sourceType?.toUpperCase() === 'ORDER' &&
-          (tx.sourceId === order.id || tx.sourceId === order.code)));
+        this.orderInventory.set(transactions.filter(tx => {
+          const sourceType = tx.sourceType?.toUpperCase() || '';
+          return tx.transactionType === 'ISSUE' &&
+            (sourceType === 'ORDER' || sourceType === 'ORD' || sourceType.includes('ORDER')) &&
+            (tx.sourceId === order.id || tx.sourceId === order.code);
+        }));
         this.orderInventoryLoading.set(false);
       },
       error: () => {
@@ -530,6 +565,9 @@ export class AdminOrderManagementComponent {
     return reached ? '—' : 'Chưa bắt đầu';
   }
   statusLabel(status: OrderStatus): string { return STATUS_LABELS[status] ?? 'Chưa xác định'; }
+  historyEventLabel(status: OrderStatus): string {
+    return status === 'PENDING' ? 'Đơn được tạo' : this.statusLabel(status);
+  }
   customerName(order: OrderRecord): string {
     return order.contactSnapshot?.fullName || order.contactSnapshot?.name || 'Khách hàng';
   }
@@ -596,19 +634,19 @@ export class AdminOrderManagementComponent {
   openAction(action: ActionDialog): void {
     if (!this.canManage() || !action || this.dialogBusy()) return;
     if (action === 'cancel' ? !this.canCancel() : this.availableAction() !== action) return;
-    this.reason.set(''); this.cancelCategory.set(''); this.carrier.set(''); this.tracking.set('');
+    this.reason.set(''); this.cancelCategory.set(''); this.statusNote.set(''); this.carrier.set(''); this.tracking.set('');
     this.cancelRequestKey = action === 'cancel'
       ? 'staff-cancel-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2)
       : null;
     this.dialog.set(action);
   }
   isCancelReasonValid(): boolean {
-    const category = this.cancelCategory();
-    return category.length > 0 && (category !== 'Khác' || this.reason().trim().length >= 5);
+    return this.cancelCategory().length > 0;
   }
   cancelReasonPayload(): string {
-    const category = this.cancelCategory(), note = this.reason().trim();
-    return category === 'Khác' ? note : (note ? category + ' - ' + note : category);
+    const category = this.cancelCategory();
+    const note = this.reason().trim();
+    return note ? category + ' - ' + note : category;
   }
   closeDialog(): void {
     if (this.dialogBusy()) return;
@@ -624,7 +662,11 @@ export class AdminOrderManagementComponent {
     this.dialogBusy.set(true);
     const request = action === 'cancel'
       ? this.api.cancel(order.id, this.cancelReasonPayload(), this.cancelRequestKey ?? 'staff-cancel-' + order.id)
-      : this.api.changeStatus(order.id, action, { carrier: this.carrier().trim(), trackingNumber: this.tracking().trim() });
+      : this.api.changeStatus(order.id, action, {
+          carrier: this.carrier().trim(),
+          trackingNumber: this.tracking().trim(),
+          note: this.statusNote().trim() || undefined,
+        });
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (updated) => {
         this.dialogBusy.set(false); this.dialog.set(null);
