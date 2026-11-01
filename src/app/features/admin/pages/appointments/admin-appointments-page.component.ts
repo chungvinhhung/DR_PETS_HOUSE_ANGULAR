@@ -1,4 +1,4 @@
-import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
+import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -116,18 +116,22 @@ import {
  styles:[`
  :host{display:block;font-family:Roboto,Arial,sans-serif;color:#26364a}
  .appointments{box-sizing:border-box;width:100%;min-width:0;padding:32px}
- .heading{margin:0 0 24px}.heading h1{font-size:28px;line-height:34px;font-weight:700;margin:0;color:#1d2a42}
+ .heading{display:flex;align-items:center;height:48px;margin:0 0 8px}.heading h1{font-size:20px;line-height:28px;font-weight:600;margin:0;color:#101828}
  .panel{border:1px solid #dee5f0;border-radius:10px;background:#fff;margin-bottom:18px;overflow:hidden}
- .filters{margin-bottom:18px}.search{min-width:0}.search input{color:#26364a;font-size:13px}
- .filter-actions{display:flex;align-items:center;gap:12px}.filter-control{width:170px;height:40px}
- .filters .filter-control select{box-sizing:border-box;appearance:none;-webkit-appearance:none;width:100%;height:40px;padding:0 42px 0 12px;
+ .filters{margin-bottom:18px;min-height:54px!important;padding:10px 12px!important;border-radius:8px!important}.search{min-width:0}.search input{color:#26364a;font-size:13px}
+ .filters .search{flex:0 1 385px!important;width:385px!important;max-width:385px!important;height:36px!important;min-height:36px!important}
+ .filter-actions{display:flex;align-items:center;gap:12px}.filter-control{width:160px;height:36px}
+ .filters .filter-control{height:36px!important;min-height:36px!important}
+ .filters .filter-control:nth-child(2){width:148px!important}
+ .filters .web2-add-button{height:36px!important;min-height:36px!important;padding:0 14px!important}
+ .filters .filter-control select{box-sizing:border-box;appearance:none;-webkit-appearance:none;width:100%;height:36px;padding:0 38px 0 12px;
    border:1px solid #dee5f0;border-radius:8px;background:#fff url('/assets/admin-product/icon-chevron-down.svg') no-repeat right 14px center;
    background-size:18px 18px;color:#26364a;font:400 13px Roboto,Arial,sans-serif;cursor:pointer}
  .primary{background:#0d47a1;border:1px solid #0d47a1;color:#fff;text-decoration:none;font-weight:600}
  .primary:hover{background:#083a89}.secondary{padding:9px 15px;border:1px solid #d5deeb;border-radius:8px;color:#0d47a1;background:#fff;cursor:pointer}
  .scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:800px;font-size:12px;color:#41506a}
  th{height:44px;background:#f8fafc;color:#26364a;text-align:left;font-weight:650;padding:10px 12px;white-space:nowrap}
- td{border-top:1px solid #e2e8f0;height:58px;padding:11px 12px;line-height:1.5;overflow-wrap:anywhere}
+ td{border-top:1px solid #e2e8f0;height:54px;padding:11px 12px;line-height:1.5;overflow-wrap:anywhere}
  /* Mã lịch 14% + five equally spaced fields (5 × 15.4%) + Thao tác 9% = 100%.
     Date, time, customer, service and status have equal column widths. */
  th:nth-child(1){width:14%}
@@ -157,11 +161,11 @@ import {
  .pagination{display:flex;align-items:stretch;gap:0;max-width:100%;overflow-x:auto;
    border:1px solid #e2e8f0;border-radius:8px;scrollbar-width:thin}
  .pagination :is(button,span){box-sizing:border-box;display:grid;place-items:center;
-   flex:0 0 44px;width:44px;min-width:44px;height:44px;padding:0;
+   flex:0 0 48px;width:48px;min-width:48px;height:44px;padding:0;
    border:0;border-right:1px solid #e2e8f0;border-radius:0;
    background:#fff;color:#475569;font:400 14px/20px Roboto,Arial,sans-serif}
  .pagination :is(button,span):last-child{border-right:0}
- .pagination button{cursor:pointer}
+ .pagination button:first-child,.pagination button:last-child{flex-basis:44px;width:44px;min-width:44px}.pagination button{cursor:pointer}
  .pagination button:hover:not(:disabled):not(.selected){background:#f1f5f9}
  .pagination button.selected{background:#e5f6fd;color:#0d47a1;
    box-shadow:inset 0 0 0 1px #0d47a1;font-weight:700}
@@ -180,7 +184,7 @@ export class AdminAppointmentsPageComponent {
   private requestVersion=0;
   readonly search=signal('');
   readonly status=signal('');
-  readonly dateRange=signal('all');
+  readonly dateRange=signal('30');
   readonly page=signal(1);
   readonly limit=7;
   readonly loading=signal(false);
@@ -200,7 +204,7 @@ export class AdminAppointmentsPageComponent {
   });
   readonly total=computed(()=>this.filteredRows().length);
   readonly pageCount=computed(()=>Math.max(1,Math.ceil(this.total()/this.limit)));
-  readonly pageNumbers=computed(()=>adminPageWindow(this.page(),this.pageCount()));
+  readonly pageNumbers=computed(()=>adminPageWindowWithEdges(this.page(),this.pageCount()));
   readonly rows=computed(()=>this.filteredRows().slice((this.page()-1)*this.limit,this.page()*this.limit));
 
   constructor(){this.load();}
