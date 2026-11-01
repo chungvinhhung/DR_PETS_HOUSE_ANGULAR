@@ -83,8 +83,9 @@ export function appointmentStatus(raw: unknown): AppointmentStatus {
   return statuses[key] ?? 'UNKNOWN';
 }
 export function statusLabel(status: AppointmentStatus, rawStatus = ''): string {
+  if (status === 'PENDING') return rawStatus || 'Chưa xác định';
   return ({
-    PENDING:'Đang xử lý', PENDING_PAYMENT:'Chờ thanh toán', CONFIRMED:'Đã xác nhận', IN_PROGRESS:'Đang thực hiện',
+    PENDING:'Chưa xác định', PENDING_PAYMENT:'Chờ thanh toán', CONFIRMED:'Đã xác nhận', IN_PROGRESS:'Đang thực hiện',
     COMPLETED:'Hoàn tất', CANCELLED:'Đã hủy', NO_SHOW:'Không đến',
     UNKNOWN: rawStatus || 'Chưa xác định',
   } as Record<AppointmentStatus, string>)[status];
