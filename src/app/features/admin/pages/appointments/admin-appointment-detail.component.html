@@ -1,14 +1,5 @@
 <app-admin-catalog-shell activeItem="appointments">
   <main class="appointment-detail">
-    <nav class="breadcrumb" aria-label="Đường dẫn">
-      <a routerLink="/admin/appointments">Lịch hẹn</a>
-      <span aria-hidden="true">›</span><strong>Chi tiết lịch hẹn</strong>
-    </nav>
-    <header class="heading">
-      <div><h1>Chi tiết lịch hẹn</h1>
-        <p class="subtitle">Theo dõi thông tin, trạng thái và lịch sử xử lý</p></div>
-      <a class="btn btn--outline" routerLink="/admin/appointments">Quay lại danh sách</a>
-    </header>
     @if (loading()) {
       <section class="panel feedback" role="status">Đang tải chi tiết lịch hẹn...</section>
     } @else if (error()) {
@@ -17,199 +8,146 @@
         <button type="button" class="btn btn--outline" (click)="refresh()">Thử lại</button>
       </section>
     } @else if (item(); as appointment) {
-      <section class="panel">
-        <div class="section-heading">
-          <h2>{{appointment.code}}</h2>
-          <span class="status-badge" [attr.data-status]="statusBadge()">
-            {{statusLabel(appointment.status)}}
-          </span>
-        </div>
-        <div class="facts">
-          <div><label>Ngày tạo</label><strong>{{displayTime(appointment.createdAt)}}</strong></div>
-          <div><label>Ngày giờ hẹn</label><strong>{{displayTime(appointment.appointmentAt)}}</strong></div>
-          <div><label>Chi nhánh</label><strong>{{appointment.branchName || 'Chưa có dữ liệu'}}</strong></div>
-          <div><label>Mã định danh</label><strong>{{appointment.id}}</strong></div>
-        </div>
-      </section>
+      <nav class="breadcrumb" aria-label="Đường dẫn">
+        <a routerLink="/admin/appointments">Lịch hẹn</a><span>›</span><strong>Chi tiết lịch hẹn</strong>
+      </nav>
 
-      <section class="panel">
-        <h2>Thông tin khách hàng và thú cưng</h2>
-        <div class="facts">
-          <div><label>Khách hàng</label><strong>{{appointment.customerName || 'Chưa có dữ liệu'}}</strong></div>
-          <div><label>Số điện thoại</label><strong>{{appointment.customerPhone || 'Chưa có dữ liệu'}}</strong></div>
-          <div><label>Email</label><strong>{{appointment.customerEmail || 'Chưa có dữ liệu'}}</strong></div>
-          <div><label>Thú cưng</label><strong>{{appointment.petNames.length ? appointment.petNames.join(', ') : 'Chưa có dữ liệu'}}</strong></div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2>Dịch vụ và thanh toán</h2>
-        <div class="facts">
-          <div class="facts__wide"><label>Dịch vụ</label>
-            <strong>{{appointment.serviceNames.length ? appointment.serviceNames.join(' · ') : 'Chưa có dữ liệu'}}</strong>
-          </div>
-          <div><label>Phương thức thanh toán</label><strong>{{appointment.paymentMethod || 'Chưa có dữ liệu'}}</strong></div>
-          <div><label>Trạng thái thanh toán</label><strong>{{appointment.paymentStatus || 'Chưa có dữ liệu'}}</strong></div>
-          <div><label>Tổng tiền</label><strong>{{amount(appointment.totalAmount)}}</strong></div>
-          <div><label>Đã đặt cọc</label><strong>{{amount(appointment.depositAmount)}}</strong></div>
-          <div><label>Còn phải thu</label><strong>{{amount(appointment.balanceDue)}}</strong></div>
-        </div>
-        <p class="hint">Trạng thái thanh toán và hoàn tiền được theo dõi riêng với lịch hẹn.</p>
-      </section>
-
-      <section class="panel">
-        <h2>Trạng thái và lịch sử xử lý</h2>
-        @if (appointment.history.length) {
-          <ol class="history">
-            @for (event of appointment.history; track $index) {
-              <li><div><strong>{{event.status}}</strong><small>{{displayTime(event.at)}}</small></div>
-                @if (event.note) {<p>{{event.note}}</p>}
-                @if (event.actor) {<small>Người thao tác: {{event.actor}}</small>}
-              </li>
-            }
-          </ol>
-        } @else {
-          <p class="hint">Chưa có lịch sử xử lý để hiển thị.</p>
-        }
-      </section>
-
-      <section class="panel">
-        <h2>Hồ sơ dịch vụ</h2>
-        @if (recordsLoading()) { <p class="hint" role="status">Đang lấy ServiceRecord liên quan...</p> }
-        @else if (recordsError()) {
-          <p class="hint" role="alert">Không đọc được ServiceRecord: {{recordsError()}}</p>
-        } @else if (linkedRecords().length) {
-          <div class="facts">
-            @for (record of linkedRecords(); track record.id) {
-              <div><label>{{record.category === 'UNKNOWN' ? 'Hồ sơ dịch vụ' : record.category}}</label>
-                <a [routerLink]="['/admin/service-records',record.id]">
-                  {{record.code}} · {{serviceRecordStatusLabel(record.status,record.rawStatus)}}
-                </a>
-              </div>
-            }
-          </div>
-        } @else {
-          <p class="hint">Chưa có hồ sơ dịch vụ liên quan đến lịch hẹn này.</p>
-        }
-        <p class="hint">Khi bắt đầu phục vụ, hệ thống tạo hồ sơ dịch vụ cho phần công việc tương ứng. Nhân viên chuyên môn cập nhật kết quả và vật tư tại Hồ sơ dịch vụ; lịch hẹn tự chuyển sang Hoàn tất khi tất cả phần dịch vụ đã hoàn thành và hồ sơ được chốt đúng điều kiện.</p>
-      </section>
-
-      <section class="panel">
-        <h2>Hoàn tiền mô phỏng (refund)</h2>
-        @if (appointment.refund; as refund) {
-          <div class="facts">
-            <div><label>Mã hoàn tiền</label><strong>{{refund.id || 'Chưa có dữ liệu'}}</strong></div>
-            <div><label>Trạng thái hoàn tiền</label><strong>{{refund.status || 'Chưa có dữ liệu'}}</strong></div>
-            <div><label>Tiền yêu cầu hoàn</label><strong>{{amount(refund.requestedAmount)}}</strong></div>
-            <div><label>Hoàn thực tế</label><strong>{{amount(refund.settledAmount)}}</strong></div>
-            <div><label>Ngày yêu cầu</label><strong>{{displayTime(refund.requestedAt)}}</strong></div>
-            <div><label>Ngày thực hiện</label><strong>{{displayTime(refund.settledAt)}}</strong></div>
-            <div class="facts__wide"><label>Ghi chú</label><strong>{{refund.note || '—'}}</strong></div>
-          </div>
-        } @else {
-          <p class="hint">Chưa có thông tin hoàn tiền cho lịch hẹn này.</p>
-        }
-        <p class="hint">Refund trong WBS 4.3 là mô phỏng; không xác nhận tiền thật đã chuyển. Phải theo dõi riêng trạng thái Payment, Refund và việc hoàn quota Voucher.</p>
-      </section>
-
-      <section class="panel">
-        <h2>Nhật ký thao tác / Override</h2>
-        @if (appointment.audit.length) {
-          <ol class="history">
-            @for (event of appointment.audit; track $index) {
-              <li><div><strong>{{event.action}} @if (event.isOverride) { (Override) }</strong>
-                <small>{{displayTime(event.at)}}</small></div>
-                @if (event.actor) {<small>Người thực hiện: {{event.actor}}</small>}
-                @if (event.reason) {<p>Lý do: {{event.reason}}</p>}
-              </li>
-            }
-          </ol>
-        } @else {
-          <p class="hint">Chưa có nhật ký thao tác.</p>
-        }
-      </section>
-
-      <section class="panel">
-        <h2>Đổi lịch / Hủy lịch</h2>
-        <div class="facts">
-          <div><label>Số lần đã đổi lịch</label><strong>{{appointment.rescheduleCount === null ? 'Chưa có thông tin' : appointment.rescheduleCount + '/2'}}</strong></div>
-          <div><label>Điều kiện thời hạn</label>
-            <strong>{{cancellationWindow()?.status==='eligible' ? 'Còn từ 24 giờ trở lên' : cancellationWindow()?.status==='too-late' ? 'Còn dưới 24 giờ' : 'Đang kiểm tra'}}</strong>
-          </div>
-          <div><label>Thao tác khả dụng</label>
-            <strong>{{appointment.allowedActions === null ? 'Chưa có danh sách quyền thao tác' : (appointment.allowedActions.join(', ') || 'Không có')}}</strong>
-          </div>
-          <div><label>Lý do hủy</label><strong>{{appointment.cancellationReason || '—'}}</strong></div>
-        </div>
-        <p class="hint">Có thể đổi hoặc hủy lịch trước 24 giờ và đổi lịch tối đa 2 lần. Một số trường hợp đặc biệt cần quản lý phê duyệt.</p>
-        @if (canInspectActions()) {
-          <div class="actions">
-            <button type="button" class="btn btn--outline" [disabled]="appointment.status!=='CONFIRMED'"
-              (click)="startAction('reschedule')">Đổi lịch</button>
-            <button type="button" class="btn btn--danger" [disabled]="appointment.status==='CANCELLED' || appointment.status==='COMPLETED' || appointment.status==='NO_SHOW'"
+      <header class="heading">
+        <h1>Lịch hẹn #{{ displayCode(appointment.code) }}</h1>
+        <div class="heading-actions">
+          @if (appointment.status==='CONFIRMED' && canInspectActions()) {
+            <button type="button" class="btn btn--outline" (click)="startAction('reschedule')">Đổi lịch</button>
+            <button type="button" class="btn btn--danger" (click)="startAction('cancel')">Hủy lịch</button>
+            <button type="button" class="btn btn--primary" (click)="startAction('status')">Bắt đầu phục vụ</button>
+          } @else if (appointment.status==='COMPLETED') {
+            <a class="btn btn--primary" routerLink="/admin/appointments">Quay lại danh sách</a>
+          } @else if (appointment.status!=='IN_PROGRESS' && canInspectActions()) {
+            <button type="button" class="btn btn--danger"
+              [disabled]="appointment.status==='CANCELLED'||appointment.status==='NO_SHOW'"
               (click)="startAction('cancel')">Hủy lịch</button>
-            @if (appointment.status!=='IN_PROGRESS') {
-              <button type="button" class="btn btn--primary" [disabled]="!proposedActions().length"
-                (click)="startAction('status')">Cập nhật trạng thái</button>
-            }
-          </div>
-          @if (appointment.status==='IN_PROGRESS') {
-            <p class="hint">Lịch đang được phục vụ. Không hoàn tất lịch thủ công tại đây; trạng thái Hoàn tất được cập nhật tự động sau khi các Hồ sơ dịch vụ liên quan được chốt.</p>
-          } @else {
-            <p class="hint">Bạn có thể xem trước yêu cầu. Chức năng lưu thay đổi hiện chưa khả dụng.</p>
           }
-        } @else {
-          <p class="hint">Tài khoản của bạn hiện chỉ có quyền xem lịch hẹn này.</p>
-        }
+        </div>
+      </header>
+
+      <section class="panel info-card">
+        <h2>Thông tin lịch hẹn</h2>
+        <div class="info-grid">
+          <div><label>Khách hàng</label><strong>{{appointment.customerName || '—'}}</strong></div>
+          <div><label>Chi nhánh</label><strong>{{appointment.branchName || '—'}}</strong></div>
+          <div><label>Số thú cưng</label><strong>{{appointment.petNames.length}} thú cưng</strong></div>
+          <div><label>Số điện thoại</label><strong>{{appointment.customerPhone || '—'}}</strong></div>
+          <div><label>Ngày &amp; giờ hẹn</label><strong>{{displayAppointmentWindow(appointment)}}</strong></div>
+          <div><label>Nhân viên phụ trách</label><strong>{{assignedStaffSummary()}}</strong></div>
+        </div>
       </section>
+
+      <section class="panel progress-card">
+        <h2>Tiến trình xử lý lịch hẹn</h2>
+        <div class="progress-steps">
+          @for (step of progressSteps(); track step.key) {
+            <div class="progress-step" [class.progress-step--done]="step.done">
+              <div class="progress-label"><span class="progress-dot"></span><strong>{{step.label}}</strong></div>
+              <div class="progress-line"></div>
+              <small>{{step.time}}</small>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="panel services-card">
+        <h2>Thú cưng và dịch vụ trong lịch hẹn</h2>
+        <div class="service-table-wrap">
+          <table class="service-table">
+            <thead><tr>
+              <th>Thú cưng</th><th>Loài</th><th>Dịch vụ</th><th>Nhân viên</th><th>Tình trạng sức khỏe</th>
+              <th>Thông tin thêm</th><th>Check-in</th><th>Thực hiện</th><th>Thao tác</th>
+            </tr></thead>
+            <tbody>
+              @for (row of appointmentRows(); track row.key) {
+                <tr>
+                  <td><span class="pet-cell"><span class="pet-avatar">{{row.pet.slice(0,1) || 'P'}}</span><strong>{{row.pet || '—'}}</strong></span></td>
+                  <td>{{row.species}}</td>
+                  <td>{{row.service}}</td>
+                  <td>{{row.staff}}</td>
+                  <td><strong>{{row.health}}</strong></td>
+                  <td>{{row.note}}</td>
+                  <td><span class="mini-badge" [attr.data-state]="row.checkedIn?'done':'idle'">{{row.checkedIn?'Đã đến':'Chưa đến'}}</span></td>
+                  <td>{{row.execution}}</td>
+                  <td>
+                    @if (row.recordId) {
+                      <a class="eye-action" [routerLink]="['/admin/service-records',row.recordId]" title="Xem hồ sơ dịch vụ">
+                        <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="">
+                      </a>
+                    } @else { <span class="dash">—</span> }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="bottom-grid">
+        <section class="panel payment-card">
+          <h2>Thanh toán</h2>
+          <dl>
+            <div><dt>Tạm tính</dt><dd>{{amount(appointment.totalAmount)}}</dd></div>
+            <div><dt>Phụ thu</dt><dd>0đ</dd></div>
+            <div><dt>Giảm giá</dt><dd>0đ</dd></div>
+            <div class="payment-total"><dt>Tổng thanh toán</dt><dd>{{amount(appointment.totalAmount)}}</dd></div>
+            <div><dt>Phương thức</dt><dd>{{paymentMethodLabel(appointment.paymentMethod)}}</dd></div>
+            <div><dt>Trạng thái</dt><dd><span class="payment-badge">{{paymentStatusLabel(appointment.paymentStatus)}}</span></dd></div>
+          </dl>
+        </section>
+
+        <section class="panel history-card">
+          <h2>Lịch sử lịch hẹn</h2>
+          @if (appointment.history.length) {
+            <ol class="history">
+              @for (event of appointment.history; track $index) {
+                <li [class.history--latest]="$first">
+                  <small>{{displayTime(event.at)}}</small>
+                  <div><strong>{{historyLabel(event.status)}}</strong>@if(event.note){<p>{{event.note}}</p>}</div>
+                </li>
+              }
+            </ol>
+          } @else {
+            <p class="hint">Chưa có lịch sử xử lý.</p>
+          }
+        </section>
+      </div>
+
+      @if (appointment.status==='IN_PROGRESS') {
+        <p class="workflow-note">Lịch đang được phục vụ. Không hoàn tất thủ công tại màn này; hệ thống tự chuyển Hoàn tất sau khi tất cả Hồ sơ dịch vụ liên quan được chốt.</p>
+      }
     }
   </main>
 
   @if (dialog(); as action) {
     <div class="overlay">
       <section class="modal" role="dialog" aria-modal="true" aria-labelledby="appointment-action-heading">
-        <div class="section-heading">
-          <h2 id="appointment-action-heading">
-            {{action==='reschedule'?'Đề nghị đổi lịch':action==='cancel'?'Đề nghị hủy lịch':'Cập nhật trạng thái'}}
-          </h2>
-          <button class="close" type="button" aria-label="Đóng" (click)="closeDialog()">×</button>
+        <div class="modal-heading">
+          <h2 id="appointment-action-heading">{{action==='reschedule'?'Đổi lịch':action==='cancel'?'Hủy lịch':'Bắt đầu phục vụ'}}</h2>
+          <button class="close" type="button" aria-label="Đóng" (click)="closeDialog()">
+            <img src="/assets/admin-inventory/close-outlined.svg" alt="" aria-hidden="true">
+          </button>
         </div>
-        @if (action==='cancel'||action==='reschedule') {
-          <p class="hint hint--info">{{showPolicyMessage()}}</p>
-          @if (selectedWindow()?.overrideRequiresAudit) {
-            <p class="hint hint--warning">Override chỉ dành cho Manager/Admin, cần lý do bắt buộc và ghi nhật ký BE. FE không tự bỏ qua điều kiện 24 giờ hoặc giới hạn 2 lần.</p>
-          }
-        }
         @if (action==='reschedule') {
           <div class="modal-grid">
-            <label>Ngày hẹn mới <span>*</span>
-              <input type="date" [value]="targetDate()" (input)="targetDate.set($any($event.target).value)" />
-            </label>
-            <label>Giờ bắt đầu mới <span>*</span>
-              <input type="time" [value]="targetTime()" (input)="targetTime.set($any($event.target).value)" />
-            </label>
+            <label>Ngày hẹn mới <span>*</span><input type="date" [value]="targetDate()" (input)="targetDate.set($any($event.target).value)"></label>
+            <label>Giờ bắt đầu mới <span>*</span><input type="time" [value]="targetTime()" (input)="targetTime.set($any($event.target).value)"></label>
           </div>
-          <p class="hint">Giờ hẹn mới cần được kiểm tra lại trước khi xác nhận.</p>
         }
         @if (action==='status') {
-          <label class="modal-label">Trạng thái đề nghị
-            <select [value]="statusTarget()" (change)="statusTarget.set($any($event.target).value)">
-              <option value="">Chọn trạng thái</option>
-              @for (target of proposedActions(); track target) {
-                <option [value]="target">{{statusLabel(target)}}</option>
-              }
-            </select>
-          </label>
-          <p class="hint">Không có thao tác Hoàn tất lịch hẹn thủ công. Khi chọn Đang phục vụ, backend phải đồng thời khởi tạo Hồ sơ dịch vụ; trạng thái Hoàn tất chỉ được cập nhật từ quy trình chốt Hồ sơ dịch vụ.</p>
+          <p class="hint hint--info">Bắt đầu phục vụ sẽ chuyển lịch sang Đang thực hiện. Backend phải đồng thời tạo Hồ sơ dịch vụ tương ứng.</p>
         }
         <label class="modal-label">Lý do / ghi chú xử lý <span>*</span>
-          <textarea rows="4" [value]="reason()" (input)="reason.set($any($event.target).value)"
-            placeholder="Nêu rõ lý do và thông tin cần ghi nhật ký..."></textarea>
+          <textarea rows="4" [value]="reason()" (input)="reason.set($any($event.target).value)" placeholder="Nhập ghi chú xử lý..."></textarea>
         </label>
         @if (actionError()) {<p class="hint hint--warning" role="alert">{{actionError()}}</p>}
         <div class="modal-actions">
           <button class="btn btn--outline" type="button" (click)="closeDialog()">Đóng</button>
-          <button class="btn btn--primary" type="button" (click)="inspectRequest()">Kiểm tra yêu cầu</button>
+          <button class="btn btn--primary" type="button" (click)="inspectRequest()">Xác nhận</button>
         </div>
       </section>
     </div>
