@@ -70,7 +70,7 @@ import {
           <tbody>
             @for (item of rows(); track item.id) {
               <tr>
-                <td class="code">{{item.code}}</td>
+                <td class="code">#{{displayCode(item.code)}}</td>
                 <td>{{formatDate(item.createdAt)}}</td>
                 <td>{{formatClock(item.createdAt)}}</td>
                 <td>{{item.customerName || '—'}}</td>
@@ -242,6 +242,7 @@ export class AdminAppointmentsPageComponent {
       },
     });
   }
+  displayCode(value:string):string{return value.replace(/^#/,'');}
   label(row:AppointmentView):string{return statusLabel(row.status,row.rawStatus);}
   statusColor(row:AppointmentView):string{
     return ['CANCELLED','NO_SHOW'].includes(row.status)?'danger':
