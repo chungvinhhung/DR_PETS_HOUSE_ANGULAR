@@ -45,10 +45,12 @@ Ngày: 2026-10-28 | Nhánh: `feature/admin-appointments-figma` | PR #33
 - Atomic/idempotent khi cancel song song với complete/no-show/reschedule. Nếu version conflict, lỗi 409 và tải lại.
 
 ### 5. Status transitions
-`POST /api/v1/admin/appointments/:id/status` (đề xuất)
-- Trả allowedActions/server state machine theo vai trò (Admin/Manager/Receptionist). Không dùng đề xuất PENDING→CONFIRMED→IN_PROGRESS→COMPLETED của FE làm enum chính thức nếu BE khác.
-- `NO_SHOW` phải đi qua xác nhận có thẩm quyền; `COMPLETED` liên quan ServiceRecord ở Phase 6 và payment balance.
-- Audit actor/time/old/new status, reason, consistent across apps.
+`POST /api/v1/admin/appointments/:id/status` (đề xuất cho các chuyển trạng thái vận hành còn lại)
+- Trả allowedActions/server state machine theo vai trò (Admin/Manager/Receptionist).
+- Receptionist **không** được chuyển `IN_PROGRESS → COMPLETED` thủ công.
+- Khi bắt đầu phục vụ, BE phải đồng thời tạo/liên kết ServiceRecord cho phần dịch vụ tương ứng; thao tác này cần atomic/idempotent.
+- `COMPLETED` là trạng thái hệ thống tự cập nhật sau khi tất cả service segment hoàn thành và ServiceRecord liên quan được finalize đúng rule.
+- `NO_SHOW` phải đi qua xác nhận có thẩm quyền; audit actor/time/old/new status, reason, consistent across apps.
 
 ### 6. Error / idempotency
 - Các code ví dụ `OUTSIDE_CANCEL_WINDOW`, `MAX_RESCHEDULE_REACHED`, `SLOT_UNAVAILABLE`, `STAFF_CONFLICT`, `APPOINTMENT_STATE_CONFLICT`, `PERMISSION_DENIED`, `REFUND_PENDING`.
