@@ -1,4 +1,4 @@
-import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
+import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-pagination';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -185,7 +185,7 @@ export class AdminInventoryPageComponent implements OnInit {
     const total = this.tab() === 'stock' ? this.stockFiltered().length : this.historyFiltered().length;
     return Math.max(1, Math.ceil(total / size));
   });
-  readonly pageNumbers = computed(() => adminPageWindow(this.page(), this.totalPages()));
+  readonly pageNumbers = computed(() => adminPageWindowWithEdges(this.page(), this.totalPages()));
   readonly visibleCount = computed(() => this.tab() === 'stock' ? this.currentRows().length : this.currentHistory().length);
   readonly totalCount = computed(() => this.tab() === 'stock' ? this.stockFiltered().length : this.historyFiltered().length);
   readonly currentHistoryTransactionCount = computed(() =>
