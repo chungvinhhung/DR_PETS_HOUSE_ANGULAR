@@ -60,7 +60,6 @@ export class AdminAppointmentDetailComponent {
   readonly proposedActions = computed(() => {
     const item = this.item();
     if (!item || ['COMPLETED','CANCELLED','NO_SHOW','PENDING_PAYMENT'].includes(item.status)) return [];
-    if (item.status === 'PENDING_CONFIRMATION') return ['CONFIRMED','CANCELLED'];
     if (item.status === 'CONFIRMED') return ['IN_PROGRESS','NO_SHOW','CANCELLED'];
     // IN_PROGRESS is completed by the service-record workflow, not manually by Receptionist.
     return [];
