@@ -72,3 +72,12 @@ Ngày: 2026-10-28 | Nhánh: `feature/admin-appointments-figma` | PR #33
 5. Không bị double-book/double-cancel khi 2 người cùng thao tác.
 6. Trạng thái terminal không có hành động sai.
 7. Trang chi tiết chỉ hiện dữ liệu thật; Figma detail được duyệt trước pixel-perfect/UAT.
+
+
+## Update 2026-11-01 — remove PENDING_CONFIRMATION
+- Product/leader decision supersedes the previous manual confirmation step.
+- Ordinary BOOKABLE lifecycle becomes: `PENDING_PAYMENT → CONFIRMED → IN_PROGRESS → COMPLETED`; payment-free valid bookings may enter `CONFIRMED` directly.
+- Receptionist/Manager/Admin no longer performs a separate “Confirm appointment” action.
+- Existing BE `PENDING_CONFIRMATION` is legacy and must be migrated/removed; FE temporarily normalizes it to `CONFIRMED`.
+- REQUEST_ONLY remains a separate request-review process and is not auto-confirmed by this change.
+- Before enabling auto-confirm, BE must fix segment-level capacity checking and make payment-success + reservation-confirmation atomic/idempotent.
