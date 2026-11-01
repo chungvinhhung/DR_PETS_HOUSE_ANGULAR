@@ -463,21 +463,23 @@
           <div class="order-admin__modal-head">
             <div><h2>{{ action === 'cancel' ? 'Hủy đơn hàng' : 'Cập nhật trạng thái đơn hàng' }}</h2>
               <p>{{ selected()?.code }} · {{ statusLabel(selected()!.status) }} @if (action !== 'cancel') { → {{ nextStatusLabel(action) }} }</p></div>
-            <button class="order-admin__modal-close" type="button" (click)="closeDialog()" [disabled]="dialogBusy()" aria-label="Đóng">×</button>
+            <button class="order-admin__modal-close" type="button" (click)="closeDialog()" [disabled]="dialogBusy()" aria-label="Đóng">
+  <img src="/assets/admin-inventory/close-outlined.svg" alt="" aria-hidden="true">
+</button>
           </div>
           @if (action === 'cancel') {
             <label class="order-admin__field">Lý do hủy <span aria-hidden="true">*</span>
               <select #cancelReasonSelect [value]="cancelCategory()" (change)="cancelCategory.set(cancelReasonSelect.value)">
-                <option value="" disabled>Khoanh lại theo yêu cầu hủy</option>
+                <option value="" disabled>Chọn lý do hủy</option>
                 <option value="Khách hàng yêu cầu hủy">Khách hàng yêu cầu hủy</option>
                 <option value="Đơn hàng trùng lặp">Đơn hàng trùng lặp</option>
                 <option value="Không thể cung cấp sản phẩm">Không thể cung cấp sản phẩm</option>
                 <option value="Khác">Lý do khác</option>
               </select>
             </label>
-            <label class="order-admin__field">Ghi chú @if (cancelCategory() === 'Khác') { <span aria-hidden="true">*</span> }
+            <label class="order-admin__field">Ghi chú
               <textarea #cancelReason rows="2" maxlength="500" [value]="reason()" (input)="reason.set(cancelReason.value)"
-                [placeholder]="cancelCategory() === 'Khác' ? 'Nhập lý do hủy ít nhất 5 ký tự...' : 'Nhập ghi chú nếu cần'"></textarea>
+                placeholder="Nhập ghi chú nếu cần"></textarea>
             </label>
           } @else {
             <div class="order-admin__transition-fields">
