@@ -39,3 +39,26 @@
    - Figma shows subtotal, surcharge, discount, total and PAY_AT_STORE / ONLINE_MOCK payment choices.
    - FE can only show catalog reference pricing until BE returns an authoritative quote including voucher validation and 30/70 split.
    - Voucher preview must not consume quota.
+
+## Appointment ↔ ServiceRecord — correction from report 3.5.4
+
+8. **Receptionist must not manually complete an IN_PROGRESS appointment**
+   - Appointment Management is the Receptionist/Manager operational screen.
+   - When service starts, the system must create the corresponding ServiceRecord(s).
+   - Staff/Veterinarian update and finalize records in the ServiceRecord module.
+   - Appointment transitions to `COMPLETED` automatically only after all service segments are complete and the required ServiceRecord finalization succeeds.
+
+9. **Start-service operation must create ServiceRecord atomically**
+   - The action that moves an appointment into service cannot be a plain status PATCH.
+   - BE must atomically mark the relevant segment/appointment as in service and create/link the ServiceRecord snapshot(s), including material-template snapshot where applicable.
+   - Retrying the action must not create duplicate ServiceRecords.
+
+10. **MEDICAL finalization ownership**
+   - Every MEDICAL record must have a Veterinarian responsible for final closure.
+   - If a Veterinarian already performs a medical segment, prefer an assigned Vet from that appointment.
+   - If all relevant work is performed by Nurse, BE must auto-select an eligible Veterinarian (current shift, then next earliest shift, then lowest pending workload) or mark the record as requiring assignment.
+   - This reviewer/finalizer assignment does not consume appointment capacity/time.
+
+11. **ServiceRecord mutation payloads still need exact schema**
+   - Report v7 identifies: `PUT /service-records/{id}/materials`, `PUT /service-records/{id}/professional`, `POST /service-records/{id}/submit-review`, `POST /service-records/{id}/finalize`.
+   - FE still needs the exact request/response DTOs, optimistic-concurrency/idempotency fields, allowedActions and error codes before enabling write mutations.
