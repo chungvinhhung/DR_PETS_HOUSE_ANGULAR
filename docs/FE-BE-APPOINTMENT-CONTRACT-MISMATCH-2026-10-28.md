@@ -6,7 +6,7 @@
 ## Confirmed BE endpoints / implemented FE corrections
 | BE source | Endpoint (under /api/v1) | FE state |
 |---|---|---|
-| `booking/booking.routes.js` | GET `/appointments`, GET `/appointments/:id` | Correct status `PENDING_CONFIRMATION`, date `scheduledStart`, customer/contact snapshots, `services[].serviceName`, pricing `finalAmount`, `balanceAmount` |
+| `booking/booking.routes.js` | GET `/appointments`, GET `/appointments/:id` | Legacy status `PENDING_CONFIRMATION` (must be removed per 2026-11-01 product decision), date `scheduledStart`, customer/contact snapshots, `services[].serviceName`, pricing `finalAmount`, `balanceAmount` |
 | `booking/availability.routes.js` | GET `/availability?branchId=&date=&serviceIds=` | Corrected CREATE lookup; duration/remaining/status from actual response. Multi-service one-pet supported; do NOT claim slot reserved |
 | `booking/internalBooking.routes.js` | POST `/internal/appointments` | Source exists but FE intentionally DOES NOT submit until BE fixes owner/guest contract and branch authorization |
 | `execution/execution.routes.js` | GET `/service-records`, `/service-records/:id`, `/:id/revisions` | FE list/detail uses these confirmed reads; Appointment detail queries `/service-records?appointmentId=:id` |
@@ -37,3 +37,15 @@
 - Pass/fail evidence for anonymous list/detail 401, cross-customer/guest ownership, Manager 0-branch cannot list/read or mutate, Staff outside branch 403, duplicate writes/slot race, 24h overrides and 2 reschedule limit.
 - Sample live JSON (sanitized) for Appointment list/detail, ServiceRecord list/detail, Revisions, BookingRefund, Availability and internal booking.
 - Once P0 pass, FE can wire authorized mutations with idempotency and version, and complete staging E2E. Until then, keep PR #33 Draft and do not merge.
+
+
+## Superseding product decision — 2026-11-01
+The earlier audit documented BE as-is, including `PENDING_CONFIRMATION`. That is no longer the target behavior.
+
+Required changes:
+1. Remove manual `PENDING_CONFIRMATION` and the ordinary BOOKABLE confirm step.
+2. Successful required payment must transition the Appointment directly to `CONFIRMED`; zero-value valid bookings may be confirmed immediately.
+3. Confirm the held SlotReservation resources in the same authoritative transaction/idempotent operation.
+4. Retain REQUEST_ONLY as a separate review workflow.
+5. Fix capacity checking to evaluate the matching service segment time range, not the appointment-wide time range merely because the appointment contains that service.
+6. Align the configured hold duration with the agreed 15-minute rule; current foundation-v6 source uses 10 minutes.
