@@ -16,6 +16,9 @@ export interface ServiceRecord {
   code: string;
   appointmentId: string;
   appointmentCode: string;
+  petId: string;
+  serviceIds: string[];
+  assignedStaffIds: string[];
   date: string | null;
   completedAt: string | null;
   petName: string;
@@ -124,6 +127,9 @@ export function normalizeServiceRecord(raw:unknown):ServiceRecord {
     id,code:first(r['code'],r['recordCode'],r['service_record_code'])||id,
     appointmentId:first(r['appointmentId'],r['appointment_id'],appointment['id']),
     appointmentCode:first(r['appointmentCode'],appointment['code']),
+    petId:first(r['petId'],pet['id'],pet['_id']),
+    serviceIds:Array.isArray(r['serviceIds']) ? r['serviceIds'].map(str).filter(Boolean) : [],
+    assignedStaffIds:Array.isArray(r['assignedStaffIds']) ? r['assignedStaffIds'].map(str).filter(Boolean) : [],
     date:date(r['date']??r['actualStartAt']??r['createdAt']??r['performedAt']),
     completedAt:date(r['completedAt']??r['actualEndAt']??r['finalizedAt']),
     petName:first(r['petName'],pet['name']),
