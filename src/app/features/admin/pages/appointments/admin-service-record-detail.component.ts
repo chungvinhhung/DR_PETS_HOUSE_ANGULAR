@@ -118,6 +118,17 @@ export class AdminServiceRecordDetailComponent {
     const r=this.item();
     return !!r && r.status==='COMPLETED' && this.isManagerOrAdmin();
   });
+  readonly showProfessionalPanel=computed(()=>{
+    const r=this.item();
+    const user=this.currentUser();
+    return !!r && r.category==='MEDICAL' && user?.systemRole==='STAFF' &&
+      (user.staffSubRole==='VETERINARIAN' || user.staffSubRole==='NURSE');
+  });
+  readonly showRecordActions=computed(()=>
+    this.canSubmitReview() || this.canFinalize() || this.canReopen() ||
+    (this.item()?.status==='IN_PROGRESS' && this.item()?.category==='MEDICAL' && this.isNurse()) ||
+    (this.item()?.status==='AWAITING_VET_REVIEW' && this.item()?.category==='MEDICAL')
+  );
 
   constructor(){
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params=>{
