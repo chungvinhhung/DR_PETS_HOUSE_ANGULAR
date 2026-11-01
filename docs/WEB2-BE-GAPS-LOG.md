@@ -90,3 +90,15 @@
 16. **REQUEST_ONLY remains a separate review flow**
    - Removing `PENDING_CONFIRMATION` from ordinary BOOKABLE appointments must not auto-confirm REQUEST_ONLY services.
    - Current BE rejects REQUEST_ONLY from normal createAppointment and routes them to `/appointment-requests`; retain a separate review/approval lifecycle there.
+
+## ServiceRecord cardinality / appointment completion
+
+17. **BE currently allows only one ServiceRecord per Appointment, but Figma/flow requires multiple**
+   - Figma shows `SR-0042-A` (MEDICAL / Max) and `SR-0042-B` (GROOMING / Luna) linked to the same `APT-0042`.
+   - Current `ServiceRecord` schema on `feat/foundation-v6` declares `appointmentId: { unique: true }`, and `createRecord()` aggregates all appointment services into one record.
+   - BE needs a stable record cardinality key, e.g. `appointmentId + petId + serviceGroup/segmentGroup`, and must remove appointment-only uniqueness.
+
+18. **Appointment auto-complete must wait for all required ServiceRecords, not one finalized record**
+   - Current `finalizeRecord()` sets Appointment `COMPLETED` immediately after finalizing the current record when all appointment segments have executionStatus `COMPLETED`.
+   - With multiple ServiceRecords per Appointment, BE must additionally verify every required linked ServiceRecord is `FINALIZED` before completing the Appointment.
+   - Finalizing SR-A must never complete the appointment while SR-B is still IN_PROGRESS/WAITING_VET_REVIEW.
