@@ -24,7 +24,7 @@ import {
     <label class="search web2-management-search">
       <img src="/assets/service-catalog/search.svg" width="16" height="16" alt="" />
       <span class="sr">Tìm lịch hẹn hoặc khách hàng</span>
-      <input type="search" placeholder="Tìm khách hàng..." [value]="search()"
+      <input type="search" placeholder="Tìm theo số điện thoại khách hàng, mã lịch hẹn..." [value]="search()"
         (input)="onSearch($any($event.target).value)" (keydown.enter)="lookup()">
     </label>
     <div class="filter-actions web2-management-actions">
@@ -150,7 +150,7 @@ import {
  .code{font-weight:600;color:#29354b}
  .badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 9px;border-radius:99px;white-space:nowrap;background:#edf2f8;color:#556174;font-size:12px}
  .badge[data-status=warning]{background:#fff2dd;color:#bc790e}.badge[data-status=success]{background:#e5f5e6;color:#317744}
- .badge[data-status=danger]{background:#ffdddd;color:#b93131}.actions{display:flex;justify-content:center;gap:12px;align-items:center}
+ .badge[data-status=info]{background:#e3f3ff;color:#276c9b}.badge[data-status=danger]{background:#ffdddd;color:#b93131}.actions{display:flex;justify-content:center;gap:12px;align-items:center}
  .actions a{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px}
  .actions a img{display:block;width:20px;height:20px}
  .actions a:hover{background:#eef5ff}.message{text-align:center;color:#718096;padding:26px}
@@ -184,7 +184,7 @@ export class AdminAppointmentsPageComponent {
   private requestVersion=0;
   readonly search=signal('');
   readonly status=signal('');
-  readonly dateRange=signal('30');
+  readonly dateRange=signal('all');
   readonly page=signal(1);
   readonly limit=7;
   readonly loading=signal(false);
@@ -247,6 +247,7 @@ export class AdminAppointmentsPageComponent {
   statusColor(row:AppointmentView):string{
     return ['CANCELLED','NO_SHOW'].includes(row.status)?'danger':
       ['CONFIRMED','COMPLETED'].includes(row.status)?'success':
+      row.status==='IN_PROGRESS'?'info':
       (['PENDING','PENDING_PAYMENT'].includes(row.status))?'warning':'neutral';
   }
   formatDate(value:string|null):string{
