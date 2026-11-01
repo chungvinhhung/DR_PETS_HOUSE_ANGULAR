@@ -54,7 +54,7 @@ import {
     <tbody>
      @for(r of rows();track r.id) {
       <tr>
-       <td class="code">#{{r.code}}</td><td>{{day(r.date)}}</td><td>{{r.petName||r.petId||'—'}}</td>
+       <td class="code">#{{displayCode(r.code)}}</td><td>{{day(r.date)}}</td><td>{{r.petName||r.petId||'—'}}</td>
        <td>{{r.serviceName||r.serviceIds.join(', ')||'—'}}</td><td>{{r.branchName||branchName(r.branchId)||'—'}}</td>
        <td>{{r.primaryStaff||'—'}}</td><td>{{r.category==='UNKNOWN'?'—':r.category}}</td>
        <td><span class="badge" [attr.data-status]="color(r)">{{serviceRecordStatusLabel(r.status,r.rawStatus)}}</span></td>
@@ -163,6 +163,7 @@ export class AdminServiceRecordsComponent {
       error:err=>{if(req!==this.request)return;this.fetched.set([]);this.error.set(adminErrorMessage(err,'Chưa tải được hồ sơ dịch vụ từ BE.'));this.loading.set(false);}
     });
   }
+  displayCode(value:string){return value.replace(/^#/,'');}
   color(r:ServiceRecord){return r.status==='COMPLETED'?'success':r.status==='AWAITING_VET_REVIEW'?'warning':'info';}
   branchName(id:string){return this.branches().find(item=>item.id===id)?.name||id;}
   day(value:string|null){if(!value)return '—';const d=new Date(value);return Number.isNaN(d.getTime())?'—':
