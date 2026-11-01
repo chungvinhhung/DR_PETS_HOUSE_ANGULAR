@@ -1,8 +1,11 @@
 :host{display:block;color:#29364c}
 .record-detail{max-width:1120px;margin:0 auto;padding:28px 32px 40px}
 .record-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:18px}
-.record-breadcrumb{display:flex;align-items:center;gap:7px;margin-bottom:8px;color:#8a98ac;font-size:11px}
-.record-breadcrumb a{color:#65758d;text-decoration:none}.record-breadcrumb a:hover{color:#0d47a1}.record-breadcrumb__separator{color:#9aa7b7}.record-breadcrumb strong{color:#29364c;font-weight:600}
+.record-breadcrumb{display:flex;flex-wrap:wrap;align-items:center;gap:0;min-height:18px;margin:0 0 16px;color:#6b7a8f;font-size:12px;line-height:18px}
+.record-breadcrumb span[aria-hidden]{padding:0 9px;color:#94a3b8}
+.record-breadcrumb a{color:#4d6f9d;text-decoration:none}
+.record-breadcrumb a:hover{color:#0d47a1}
+.record-breadcrumb strong{color:#6b7a8f;font-weight:500}
 h1{margin:0;font-size:22px;line-height:26px;font-weight:650}h2{margin:0;font-size:16px;line-height:19px;font-weight:650}
 .record-card{margin-bottom:16px;padding:17px;border:1px solid #dfe6ef;border-radius:8px;background:#fff}
 .record-card>h2,.card-heading{margin-bottom:16px}.card-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
