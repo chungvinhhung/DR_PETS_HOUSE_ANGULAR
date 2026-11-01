@@ -102,3 +102,10 @@
    - Current `finalizeRecord()` sets Appointment `COMPLETED` immediately after finalizing the current record when all appointment segments have executionStatus `COMPLETED`.
    - With multiple ServiceRecords per Appointment, BE must additionally verify every required linked ServiceRecord is `FINALIZED` before completing the Appointment.
    - Finalizing SR-A must never complete the appointment while SR-B is still IN_PROGRESS/WAITING_VET_REVIEW.
+
+19. **ServiceRecord ↔ Inventory transaction linkage is not exposed**
+   - Inventory finalization writes movements with `sourceType=SERVICE_RECORD_REVISION` and `sourceId=revisionId`.
+   - Current ServiceRecord detail does not return revision IDs or inventory transaction refs/codes.
+   - Current `formatServiceRecordRevision()` also omits the revision document ID.
+   - FE therefore cannot safely render/click the Figma TXK code for each material without guessing.
+   - BE should expose either `revisionId` + transaction refs on record/revision detail, or a queryable `serviceRecordId/revisionId → inventory transactions` relation, preferably with a shared business transaction code.
