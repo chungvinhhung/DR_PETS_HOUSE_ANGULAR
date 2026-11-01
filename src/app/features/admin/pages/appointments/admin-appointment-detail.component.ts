@@ -77,6 +77,79 @@ export class AdminAppointmentDetailComponent {
     });
   });
 
+  displayCode(value:string):string{return value.replace(/^#/,'');}
+  displayAppointmentWindow(appointment:AppointmentView):string{
+    if(!appointment.appointmentAt)return '—';
+    const start=new Date(appointment.appointmentAt);
+    if(Number.isNaN(start.getTime()))return this.displayTime(appointment.appointmentAt);
+    const date=new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric'}).format(start);
+    const from=new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit',hour12:false}).format(start);
+    return date+' · '+from;
+  }
+  assignedStaffSummary():string{
+    const rows=this.linkedRecords();
+    const names=[...new Set(rows.map(r=>r.primaryStaff).filter(Boolean))];
+    return names.length?names.join(' / '):'—';
+  }
+  progressSteps():{key:string;label:string;done:boolean;time:string}[]{
+    const a=this.item();
+    const reached=(step:string)=>a?this.progressReached(a.status,step):false;
+    return [
+      {key:'confirmed',label:'Đã xác nhận',done:reached('CONFIRMED'),time:this.historyTime('CONFIRMED')},
+      {key:'arrived',label:'Đã đến',done:reached('ARRIVED'),time:reached('ARRIVED')?this.historyTime('IN_PROGRESS'):'Chưa bắt đầu'},
+      {key:'serving',label:'Đang phục vụ',done:reached('IN_PROGRESS'),time:reached('IN_PROGRESS')?this.historyTime('IN_PROGRESS'):'Chưa bắt đầu'},
+      {key:'completed',label:'Hoàn thành',done:reached('COMPLETED'),time:reached('COMPLETED')?this.historyTime('COMPLETED'):'Chưa bắt đầu'},
+    ];
+  }
+  private progressReached(status:AppointmentView['status'],step:string):boolean{
+    const rank:Record<string,number>={PENDING_PAYMENT:0,PENDING:0,CONFIRMED:1,IN_PROGRESS:3,COMPLETED:4,CANCELLED:0,NO_SHOW:1,UNKNOWN:0};
+    const need:Record<string,number>={CONFIRMED:1,ARRIVED:2,IN_PROGRESS:3,COMPLETED:4};
+    return (rank[status]??0)>=(need[step]??99);
+  }
+  private historyTime(status:string):string{
+    const event=this.item()?.history.find(row=>row.status.toUpperCase().includes(status));
+    return event?.at?this.displayShortTime(event.at):'Chưa bắt đầu';
+  }
+  private displayShortTime(value:string):string{
+    const d=new Date(value);if(Number.isNaN(d.getTime()))return '—';
+    return new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d).replace(',',' ·');
+  }
+  appointmentRows():{key:string;pet:string;species:string;service:string;staff:string;health:string;note:string;checkedIn:boolean;execution:string;recordId:string}[]{
+    const a=this.item();if(!a)return[];
+    const count=Math.max(1,a.petNames.length,a.serviceNames.length,this.linkedRecords().length);
+    return Array.from({length:count},(_,i)=>{
+      const record=this.linkedRecords()[i];
+      return {
+        key:(record?.id||'row')+'-'+i,
+        pet:a.petNames[i]||record?.petName||a.petNames[0]||'—',
+        species:'—',
+        service:a.serviceNames[i]||record?.serviceName||a.serviceNames[0]||'—',
+        staff:record?.primaryStaff||'—',
+        health:'—',
+        note:'—',
+        checkedIn:['IN_PROGRESS','COMPLETED'].includes(a.status),
+        execution:record?this.serviceRecordStatusLabel(record.status,record.rawStatus):(a.status==='COMPLETED'?'Hoàn thành':a.status==='IN_PROGRESS'?'Đang thực hiện':'Chưa bắt đầu'),
+        recordId:record?.id||'',
+      };
+    });
+  }
+  paymentMethodLabel(value:string):string{
+    const key=value.toUpperCase();return key.includes('STORE')?'Tại phòng khám':key.includes('ONLINE')?'Trực tuyến':value||'—';
+  }
+  paymentStatusLabel(value:string):string{
+    const key=value.toUpperCase();return ['PAID','COMPLETED','SETTLED'].includes(key)?'Đã thanh toán':value||'Đang chờ thanh toán';
+  }
+  historyLabel(value:string):string{
+    const key=value.toUpperCase();
+    if(key.includes('COMPLETED'))return 'Hoàn thành tất cả dịch vụ';
+    if(key.includes('IN_PROGRESS')||key.includes('PROCESSING'))return 'Bắt đầu thực hiện dịch vụ';
+    if(key.includes('CONFIRMED')||key.includes('PENDING_CONFIRMATION'))return 'Đã xác nhận';
+    if(key.includes('CREATE')||key.includes('PENDING'))return 'Tạo lịch hẹn';
+    if(key.includes('CANCEL'))return 'Đã hủy';
+    if(key.includes('NO_SHOW'))return 'Không đến';
+    return value;
+  }
+
   constructor() {
     this.refresh();
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
