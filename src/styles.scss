@@ -6104,3 +6104,40 @@ app-admin-order-return-detail .return-detail__close {
   height:32px;
   padding:4px;
 }
+
+
+/* Phase 3 — Return processing timeline follows Figma's date / event two-column layout. */
+app-admin-order-return-detail .return-detail__timeline li {
+  display:grid;
+  grid-template-columns:112px minmax(0,1fr);
+  column-gap:12px;
+  align-items:start;
+  margin-left:6px;
+  padding:0 0 16px 20px;
+}
+app-admin-order-return-detail .return-detail__timeline-time {
+  grid-column:1;
+  grid-row:1;
+  margin:0;
+  padding-top:1px;
+  color:#64748b;
+  font:400 11px/16px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__timeline-content {
+  grid-column:2;
+  grid-row:1;
+  min-width:0;
+}
+app-admin-order-return-detail .return-detail__timeline-content strong {
+  display:block;
+  color:#253348;
+  font:600 12px/16px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__timeline-content p {
+  margin:3px 0 0;
+}
+@media(max-width:600px) {
+  app-admin-order-return-detail .return-detail__timeline li {
+    grid-template-columns:92px minmax(0,1fr);
+  }
+}
