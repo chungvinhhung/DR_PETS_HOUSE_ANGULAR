@@ -247,7 +247,7 @@ export class AdminAppointmentDetailComponent {
     this.reason.set('');
     this.targetDate.set('');
     this.targetTime.set('');
-    this.statusTarget.set('');
+    this.statusTarget.set(action==='status' ? (this.proposedActions()[0] || '') : '');
     this.actionError.set('');
   }
   closeDialog(): void {
