@@ -60,8 +60,8 @@ export class AdminOrderManagementComponent {
   readonly returns = signal<OrderReturnSummary[]>([]);
   readonly activeTab = signal<'orders' | 'returns'>('orders');
   readonly dateRange = signal('0');
-  readonly returnDateFrom = signal(defaultReturnStart());
-  readonly returnDateTo = signal(localDate(new Date()));
+  readonly returnDateFrom = signal('');
+  readonly returnDateTo = signal('');
   readonly returnCalendarOpen = signal(false);
   readonly returnCalendarStart = signal<string | null>(null);
   readonly returnCalendarMonth = signal(localDate(new Date()).slice(0, 7));
@@ -226,8 +226,8 @@ export class AdminOrderManagementComponent {
     this.status.set('ALL');
     this.dateRange.set('0');
     this.branchId.set('ALL');
-    this.returnDateFrom.set(defaultReturnStart());
-    this.returnDateTo.set(localDate(new Date()));
+    this.returnDateFrom.set('');
+    this.returnDateTo.set('');
     this.closeReturnCalendar();
     this.page.set(1);
     if (tab === 'returns' && !this.hasLoadedReturns()) this.loadReturns();
