@@ -195,8 +195,9 @@ export class AdminAppointmentCreateComponent {
   readonly requiresVetReview = computed(() => this.plannedSegments().some(s => s.requiresVeterinarianReview));
   readonly draftStaffConflicts = computed(() =>
     overlappingAssignedStaff(this.plannedSegments(), this.assignedStaff()));
-  // BE /availability supports sequential services for ONE pet. Multi-pet still requires separate atomic bookings.
-  readonly complexBooking = computed(() => this.petCount() > 1 || this.requiresVetReview());
+  // BE /availability supports sequential services for ONE pet. Multi-pet still requires an atomic quote/reservation contract.
+  // Veterinarian review is a ServiceRecord finalization rule, not a booking blocker.
+  readonly complexBooking = computed(() => this.petCount() > 1);
   readonly hasUnsavedChanges = computed(() => Boolean(
     this.lookupPhone().trim() || this.customerName().trim() || this.selectedPetIds().length ||
     this.newPets().length || this.extraServices().length || this.branchId() || this.serviceId() || this.appointmentDate() ||
@@ -621,8 +622,6 @@ export class AdminAppointmentCreateComponent {
     if (this.extraServices().some(row => !row.serviceId)) errors.push('Chọn dịch vụ cho tất cả các dòng dịch vụ bổ sung.');
     if (this.plannedSegments().some(row => row.durationMinutes === null))
       errors.push('Có dịch vụ chưa có thời lượng được xác nhận.');
-    if (this.requiresVetReview())
-      errors.push('Dịch vụ khám này cần bác sĩ thú y kiểm tra trước khi hoàn tất.');
     if (this.draftStaffConflicts().length)
       errors.push('Có nhân viên được phân công trùng thời gian. Vui lòng chọn lại.');
     if (this.newPets().filter(p => p.selected).some(p => !p.name.trim() || !p.species))
