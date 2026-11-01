@@ -11,11 +11,13 @@
       <header class="record-heading">
         <div>
           <nav class="record-breadcrumb" aria-label="Đường dẫn">
-            <span>Dịch vụ</span><span>›</span>
-            <a routerLink="/admin/service-records">Hồ sơ dịch vụ</a><span>›</span>
+            <a routerLink="/admin/service-catalog">Dịch vụ</a>
+            <span class="record-breadcrumb__separator" aria-hidden="true">›</span>
+            <a routerLink="/admin/service-records">Hồ sơ dịch vụ</a>
+            <span class="record-breadcrumb__separator" aria-hidden="true">›</span>
             <strong>Chi tiết hồ sơ dịch vụ</strong>
           </nav>
-          <h1>Chi tiết hồ sơ dịch vụ #{{ r.code }}</h1>
+          <h1>Chi tiết hồ sơ dịch vụ@if (displayRecordCode(r); as code) { #{{ code }}}</h1>
         </div>
         @if (r.appointmentId) {
           <a class="btn btn--outline" [routerLink]="['/admin/appointments', r.appointmentId]">Xem lịch hẹn</a>
