@@ -26,6 +26,8 @@ interface PetOption {
   age: string;
   weightKg: string;
   health: string;
+  imageUrl?: string;
+  additionalInfo?: string;
 }
 interface PetDraft extends Omit<PetOption, 'id'> {
   id: string;
@@ -75,6 +77,8 @@ function petFromWire(input: unknown): PetOption | null {
     age: textOf(pet['age'] ?? ''),
     weightKg: textOf(pet['weightKg'] ?? pet['weight_kg'] ?? ''),
     health: textOf(pet['healthStatus'] ?? pet['health_status'] ?? ''),
+    imageUrl: textOf(pet['imageUrl'] ?? pet['image_url'] ?? pet['avatarUrl'] ?? pet['avatar_url'] ?? pet['photoUrl'] ?? pet['photo_url'] ?? ''),
+    additionalInfo: textOf(pet['additionalInfo'] ?? pet['additional_info'] ?? pet['note'] ?? ''),
   };
 }
 
@@ -125,6 +129,7 @@ export class AdminAppointmentCreateComponent {
   readonly pets = signal<PetOption[]>([]);
   readonly petsLoadState = signal<LoadState>('idle');
   readonly selectedPetIds = signal<string[]>([]);
+  readonly petNotes = signal<Record<string, string>>({});
   readonly newPets = signal<PetDraft[]>([]);
   readonly extraServices = signal<ExtraPetService[]>([]);
   readonly multiServiceOpen = signal(false);
@@ -226,6 +231,7 @@ export class AdminAppointmentCreateComponent {
     this.pets.set([]);
     this.petsLoadState.set('idle');
     this.selectedPetIds.set([]);
+    this.petNotes.set({});
     this.newPets.set([]);
     this.extraServices.set([]);
     this.assignedStaff.set({});
@@ -274,6 +280,7 @@ export class AdminAppointmentCreateComponent {
     this.lookupState.set('found');
     this.lookupResults.set([]);
     this.selectedPetIds.set([]);
+    this.petNotes.set({});
     this.newPets.set([]);
     this.extraServices.set([]);
     this.assignedStaff.set({});
@@ -337,6 +344,15 @@ export class AdminAppointmentCreateComponent {
     this.selectedPetIds.update(ids => checked ? [...ids.filter(v => v !== id), id] : ids.filter(v => v !== id));
     if (!checked) this.extraServices.update(rows => rows.filter(row => row.petId !== id));
     this.recalculateSlots();
+  }
+
+  petAdditionalInfo(pet: PetOption): string {
+    return this.petNotes()[pet.id] ?? pet.additionalInfo ?? '';
+  }
+
+  updatePetNote(petId: string, value: string): void {
+    this.petNotes.update(notes => ({ ...notes, [petId]: value }));
+    this.clearReview();
   }
 
   extrasForPet(petId: string): readonly ExtraPetService[] {
