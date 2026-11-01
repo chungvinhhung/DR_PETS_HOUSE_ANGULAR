@@ -1,5 +1,5 @@
 export type AppointmentStatus =
-  'PENDING' | 'PENDING_PAYMENT' | 'PENDING_CONFIRMATION' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'UNKNOWN';
+  'PENDING' | 'PENDING_PAYMENT' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'UNKNOWN';
 
 export interface AppointmentHistoryEvent {
   status: string;
@@ -72,7 +72,10 @@ function namesFrom(value: unknown, singular: string): string[] {
 export function appointmentStatus(raw: unknown): AppointmentStatus {
   const key = valueText(raw).toUpperCase();
   const statuses: Record<string, AppointmentStatus> = {
-    PENDING:'PENDING', PENDING_PAYMENT:'PENDING_PAYMENT', PENDING_CONFIRMATION:'PENDING_CONFIRMATION', REQUESTED:'PENDING', 
+    PENDING:'PENDING', PENDING_PAYMENT:'PENDING_PAYMENT',
+    // Legacy BE compatibility: leader removed the manual "Chờ xác nhận" state.
+    // Until BE is migrated, treat persisted PENDING_CONFIRMATION as confirmed.
+    PENDING_CONFIRMATION:'CONFIRMED', REQUESTED:'PENDING',
     CONFIRMED:'CONFIRMED', IN_PROGRESS:'IN_PROGRESS', PROCESSING:'IN_PROGRESS',
     COMPLETED:'COMPLETED', CANCELLED:'CANCELLED', CANCELED:'CANCELLED',
     NO_SHOW:'NO_SHOW', MISSED:'NO_SHOW',
@@ -81,7 +84,7 @@ export function appointmentStatus(raw: unknown): AppointmentStatus {
 }
 export function statusLabel(status: AppointmentStatus, rawStatus = ''): string {
   return ({
-    PENDING:'Chờ xác nhận', PENDING_PAYMENT:'Chờ thanh toán', PENDING_CONFIRMATION:'Chờ xác nhận', CONFIRMED:'Đã xác nhận', IN_PROGRESS:'Đang thực hiện',
+    PENDING:'Đang xử lý', PENDING_PAYMENT:'Chờ thanh toán', CONFIRMED:'Đã xác nhận', IN_PROGRESS:'Đang thực hiện',
     COMPLETED:'Hoàn tất', CANCELLED:'Đã hủy', NO_SHOW:'Không đến',
     UNKNOWN: rawStatus || 'Chưa xác định',
   } as Record<AppointmentStatus, string>)[status];
