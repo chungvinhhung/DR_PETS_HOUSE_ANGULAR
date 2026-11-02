@@ -1,1 +1,20 @@
-<app-admin-catalog-shell activeItem="moderation-reports"><main class="report-detail"><div class="breadcrumbs"><a routerLink="/admin/moderation/reports">Báo cáo vi phạm</a><span>›</span><strong>Báo cáo vi phạm</strong></div><header><h1>Báo cáo vi phạm</h1><div><button disabled>Không vi phạm</button><button class="primary" disabled>Ẩn bài đăng</button></div></header><section class="unavailable"><h2>Chưa có dữ liệu báo cáo vi phạm</h2><p>Backend foundation-v6 chưa có API/collection Report cho BF12 Community Moderation. FE không tạo báo cáo mẫu hoặc giả trạng thái xử lý.</p></section></main></app-admin-catalog-shell>
+<app-admin-catalog-shell activeItem="moderation-reports">
+  <main class="report-detail web2-admin-page">
+    <nav class="web2-admin-breadcrumb" aria-label="Breadcrumb">
+      <a routerLink="/admin/moderation/reports">Báo cáo vi phạm</a>
+      <img src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
+      <span>Chi tiết báo cáo</span>
+    </nav>
+    <header class="web2-admin-page__header">
+      <h1>Báo cáo vi phạm</h1>
+      <div class="web2-admin-page__actions">
+        <button type="button" class="web2-admin-btn web2-admin-btn--outline" disabled>Không vi phạm</button>
+        <button type="button" class="web2-admin-btn web2-admin-btn--primary" disabled>Ẩn bài đăng</button>
+      </div>
+    </header>
+    <section class="unavailable web2-admin-section">
+      <h2 class="web2-admin-section__title">Chưa có dữ liệu báo cáo vi phạm</h2>
+      <p>Backend foundation-v6 chưa có API/collection Report cho BF12 Community Moderation. FE không tạo báo cáo mẫu hoặc giả trạng thái xử lý.</p>
+    </section>
+  </main>
+</app-admin-catalog-shell>
