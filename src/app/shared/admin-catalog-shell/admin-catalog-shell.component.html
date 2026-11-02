@@ -100,11 +100,14 @@
             [class.catalog-sidebar__sub--active]="activeItem === 'staff'"
             [attr.aria-current]="activeItem === 'staff' ? 'page' : null">Nhân sự</a>
         </div>
-        <a class="catalog-sidebar__link" routerLink="/admin/users">
+        <a class="catalog-sidebar__link" routerLink="/admin/customers"
+          [class.catalog-sidebar__link--active]="activeItem === 'customers'"
+          [attr.aria-current]="activeItem === 'customers' ? 'page' : null">
           <img src="/assets/admin-product/icon-users.svg" alt="" width="20" height="20">
-          Quản lý người dùng
+          Quản lý khách hàng
         </a>
         <button type="button" class="catalog-sidebar__group"
+          [class.catalog-sidebar__group--active]="activeItem === 'content-articles' || activeItem === 'content-first-aid' || activeItem === 'content-community' || activeItem === 'content-rescue'"
           [attr.aria-expanded]="contentExpanded" aria-controls="admin-content-submenu"
           (click)="toggleContent()">
           <img src="/assets/admin-product/icon-content.svg" alt="" width="20" height="20">
@@ -115,13 +118,18 @@
         </button>
         <div id="admin-content-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
           [hidden]="!contentExpanded" aria-label="Các mục thuộc Nội dung và Cộng đồng">
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Bài viết / Kiến thức</span>
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Cẩm nang sơ cứu</span>
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Bài đăng cộng đồng</span>
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Cứu trợ &amp; Nhận nuôi</span>
+          <a class="catalog-sidebar__sub" routerLink="/admin/content/articles"
+            [class.catalog-sidebar__sub--active]="activeItem === 'content-articles'">Bài viết / Kiến thức</a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/content/first-aid"
+            [class.catalog-sidebar__sub--active]="activeItem === 'content-first-aid'">Cẩm nang sơ cứu</a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/content/community"
+            [class.catalog-sidebar__sub--active]="activeItem === 'content-community'">Bài đăng cộng đồng</a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/content/rescue"
+            [class.catalog-sidebar__sub--active]="activeItem === 'content-rescue'">Cứu trợ &amp; Nhận nuôi</a>
         </div>
 
         <button type="button" class="catalog-sidebar__group"
+          [class.catalog-sidebar__group--active]="activeItem === 'moderation-reviews' || activeItem === 'moderation-feedback' || activeItem === 'moderation-reports'"
           [attr.aria-expanded]="feedbackExpanded" aria-controls="admin-feedback-submenu"
           (click)="toggleFeedback()">
           <img src="/assets/admin-product/icon-reviews.svg" alt="" width="20" height="20">
@@ -132,9 +140,12 @@
         </button>
         <div id="admin-feedback-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
           [hidden]="!feedbackExpanded" aria-label="Các mục thuộc Đánh giá và Phản hồi">
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Đánh giá</span>
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Phản hồi khách hàng</span>
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Báo cáo vi phạm</span>
+          <a class="catalog-sidebar__sub" routerLink="/admin/moderation/reviews"
+            [class.catalog-sidebar__sub--active]="activeItem === 'moderation-reviews'">Đánh giá</a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/moderation/feedback"
+            [class.catalog-sidebar__sub--active]="activeItem === 'moderation-feedback'">Phản hồi khách hàng</a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/moderation/reports"
+            [class.catalog-sidebar__sub--active]="activeItem === 'moderation-reports'">Báo cáo vi phạm</a>
         </div>
       </nav>
     </aside>
