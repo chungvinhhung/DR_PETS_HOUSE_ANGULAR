@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
-import { Observable, forkJoin, map } from 'rxjs';
+import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
 
@@ -39,16 +39,32 @@ export class AdminCustomerService {
     return this.api.get<any[]>('/admin/customers/' + encodeURIComponent(id) + '/pets');
   }
 
-  getOrders(id: string): Observable<any[]> {
-    return this.api.get<any>('/orders', {
-      params: new HttpParams().set('customerId', id).set('limit', '100'),
-    }).pipe(map(response => response?.items ?? []));
+  getOrders(customer: AdminCustomer): Observable<any[]> {
+    let params = new HttpParams().set('limit', '100');
+    // Order.customerId currently stores User id while Customer API deliberately
+    // hides userId. Use the verified contact snapshot for reconciliation instead
+    // of incorrectly querying by Customer document id.
+    if (customer.phone) params = params.set('search', customer.phone);
+    else if (customer.fullName) params = params.set('search', customer.fullName);
+    return this.api.get<any>('/orders', { params }).pipe(map(response => response?.items ?? []));
   }
 
-  getAppointments(id: string): Observable<any[]> {
+  getAppointments(customer: AdminCustomer): Observable<any[]> {
     return this.api.get<any>('/appointments', {
-      params: new HttpParams().set('customerId', id).set('limit', '100'),
-    }).pipe(map(response => response?.items ?? []));
+      params: new HttpParams().set('limit', '100'),
+    }).pipe(map(response => {
+      const items = response?.items ?? [];
+      const phone = String(customer.phone ?? '').trim();
+      const email = String(customer.email ?? '').trim().toLowerCase();
+      const name = String(customer.fullName ?? '').trim().toLocaleLowerCase('vi');
+      return items.filter((item: any) => {
+        const snapshot = item.customerSnapshot ?? item.contactSnapshot ?? {};
+        const itemPhone = String(snapshot.phone ?? '').trim();
+        const itemEmail = String(snapshot.email ?? '').trim().toLowerCase();
+        const itemName = String(snapshot.fullName ?? snapshot.name ?? '').trim().toLocaleLowerCase('vi');
+        return (phone && itemPhone === phone) || (email && itemEmail === email) || (name && itemName === name);
+      });
+    }));
   }
 
   getFeedback(id: string): Observable<any[]> {
@@ -60,13 +76,15 @@ export class AdminCustomerService {
   }
 
   loadCustomerDetail(id: string) {
-    return forkJoin({
-      customer: this.getCustomer(id),
-      pets: this.getPets(id),
-      orders: this.getOrders(id),
-      appointments: this.getAppointments(id),
-      feedback: this.getFeedback(id),
-    });
+    return this.getCustomer(id).pipe(
+      switchMap(customer => forkJoin({
+        customer: of(customer),
+        pets: this.getPets(id),
+        orders: this.getOrders(customer),
+        appointments: this.getAppointments(customer),
+        feedback: this.getFeedback(id),
+      })),
+    );
   }
 
   block(id: string, reason: string): Observable<AdminCustomer> {
