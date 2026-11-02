@@ -1,9 +1,42 @@
-<app-admin-catalog-shell activeItem="moderation-feedback"><main class="feedback-detail">
-@if(loading()){<div class="state">Đang tải phản hồi...</div>}@else if(error()&&!data()){<div class="state error">{{error()}}</div>}@else if(data();as f){
-<div class="breadcrumbs"><a routerLink="/admin/moderation/feedback">Phản hồi khách hàng</a><span>›</span><strong>Phản hồi của {{f.name||'khách hàng'}}</strong></div>
-<header><h1>Phản hồi của {{f.name||'khách hàng'}}</h1><button type="button" class="primary" (click)="process()" [disabled]="!canAction()||busy()">{{busy()?'Đang xử lý...':actionLabel()}}</button></header>
-@if(error()){<div class="inline-error">{{error()}}</div>}
-<section class="info-grid"><article><span>Tên của bạn</span><strong>{{f.name||'—'}}</strong></article><article><span>Giới tính</span><strong>{{f.gender||'—'}}</strong></article><article><span>Số điện thoại</span><strong>{{f.phone||'—'}}</strong></article><article><span>Địa chỉ email</span><strong>{{f.email||'—'}}</strong></article></section>
-<section class="content-card"><h2>Nội dung</h2><p>{{f.message||f.subject||'—'}}</p></section>
-<section class="meta-grid"><article><span>Ngày gửi</span><strong>{{date(f.createdAt)}}</strong></article><article><span>Nguồn</span><strong>Form phản hồi trên website</strong></article><article class="status-card"><span>Trạng thái</span><strong>{{statusLabel(f.status)}}</strong></article></section>
-}</main></app-admin-catalog-shell>
+<app-admin-catalog-shell activeItem="moderation-feedback">
+  <main class="feedback-detail web2-admin-page">
+    @if (loading()) {
+      <div class="web2-admin-state">Đang tải phản hồi...</div>
+    } @else if (error() && !data()) {
+      <div class="web2-admin-state web2-admin-state--error">{{error()}}</div>
+    } @else if (data(); as f) {
+      <nav class="web2-admin-breadcrumb" aria-label="Breadcrumb">
+        <a routerLink="/admin/moderation/feedback">Phản hồi khách hàng</a>
+        <img src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
+        <span>Phản hồi của {{f.name || 'khách hàng'}}</span>
+      </nav>
+
+      <header class="web2-admin-page__header">
+        <h1>Phản hồi của {{f.name || 'khách hàng'}}</h1>
+        <button type="button" class="web2-admin-btn web2-admin-btn--primary" (click)="process()" [disabled]="!canAction() || busy()">
+          {{busy() ? 'Đang xử lý...' : actionLabel()}}
+        </button>
+      </header>
+
+      @if (error()) { <div class="web2-admin-inline-error">{{error()}}</div> }
+
+      <section class="web2-admin-summary-grid feedback-summary">
+        <article><span>Tên của bạn</span><strong>{{f.name || '—'}}</strong></article>
+        <article><span>Giới tính</span><strong>{{f.gender || '—'}}</strong></article>
+        <article><span>Số điện thoại</span><strong>{{f.phone || '—'}}</strong></article>
+        <article><span>Địa chỉ email</span><strong>{{f.email || '—'}}</strong></article>
+      </section>
+
+      <section class="content-card web2-admin-section">
+        <h2 class="web2-admin-section__title">Nội dung</h2>
+        <p>{{f.message || f.subject || '—'}}</p>
+      </section>
+
+      <section class="meta-grid web2-admin-summary-grid feedback-meta">
+        <article><span>Ngày gửi</span><strong>{{date(f.createdAt)}}</strong></article>
+        <article><span>Nguồn</span><strong>Form phản hồi trên website</strong></article>
+        <article class="status-card"><span>Trạng thái</span><strong><span class="badge" [attr.data-kind]="f.status === 'PROCESSED' ? 'success' : f.status === 'REJECTED' ? 'danger' : 'pending'">{{statusLabel(f.status)}}</span></strong></article>
+      </section>
+    }
+  </main>
+</app-admin-catalog-shell>
