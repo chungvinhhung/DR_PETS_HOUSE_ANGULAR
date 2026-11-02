@@ -56,7 +56,7 @@ export class AdminCustomerService {
       params: new HttpParams().set('limit', '100'),
     }).pipe(map(response =>
       (response?.items ?? []).filter((item: any) =>
-        String(item.customerId?._id ?? item.customerId ?? '') === id))),
+        String(item.customerId?._id ?? item.customerId ?? '') === id)));
   }
 
   loadCustomerDetail(id: string) {
