@@ -14,6 +14,7 @@ export interface AdminCustomer {
   lastLogin?: string | null;
   createdAt?: string | null;
   blockedReason?: string | null;
+  userId?: string | null;
 }
 
 export interface CustomerListResponse {
@@ -44,16 +45,19 @@ export class AdminCustomerService {
     // Order.customerId currently stores User id while Customer API deliberately
     // hides userId. Use the verified contact snapshot for reconciliation instead
     // of incorrectly querying by Customer document id.
-    if (customer.phone) params = params.set('search', customer.phone);
+    if (customer.userId) params = params.set('customerId', customer.userId);
+    else if (customer.phone) params = params.set('search', customer.phone);
     else if (customer.fullName) params = params.set('search', customer.fullName);
     return this.api.get<any>('/orders', { params }).pipe(map(response => response?.items ?? []));
   }
 
   getAppointments(customer: AdminCustomer): Observable<any[]> {
-    return this.api.get<any>('/appointments', {
-      params: new HttpParams().set('limit', '100'),
-    }).pipe(map(response => {
+    const params = customer.userId
+      ? new HttpParams().set('customerId', customer.userId).set('limit', '100')
+      : new HttpParams().set('limit', '100');
+    return this.api.get<any>('/appointments', { params }).pipe(map(response => {
       const items = response?.items ?? [];
+      if (customer.userId) return items;
       const phone = String(customer.phone ?? '').trim();
       const email = String(customer.email ?? '').trim().toLowerCase();
       const name = String(customer.fullName ?? '').trim().toLocaleLowerCase('vi');
