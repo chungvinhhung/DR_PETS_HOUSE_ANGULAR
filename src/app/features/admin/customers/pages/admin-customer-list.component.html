@@ -34,7 +34,7 @@
             <colgroup><col style="width:19%"><col style="width:13%"><col style="width:19%"><col style="width:15%"><col style="width:15%"><col style="width:13%"><col style="width:6%"></colgroup>
             <thead><tr>
               <th>Họ tên khách hàng</th><th>Số điện thoại</th><th>Email</th>
-              <th>Trạng thái kích hoạt</th><th>Trạng thái tài khoản</th><th>Đăng nhập lần cuối</th><th>Thao tác</th>
+              <th>Trạng thái kích hoạt</th><th>Trạng thái tài khoản</th><th>Đăng nhập lần cuối</th><th class="is-center">Thao tác</th>
             </tr></thead>
             <tbody>
               @for (customer of rows(); track customer.id) {
@@ -56,12 +56,12 @@
         <footer class="customer-pagination web2-admin-pagination">
           <span>Đang hiển thị {{rows().length}} trên tổng số {{filtered().length}} khách hàng</span>
           <div class="pagination-buttons web2-admin-pagination__controls">
-            <button type="button" class="web2-admin-page-arrow" aria-label="Trang trước" (click)="goToPage(page()-1)" [disabled]="page()===1">‹</button>
+            <button type="button" class="web2-admin-page-arrow" aria-label="Trang trước" (click)="goToPage(page()-1)" [disabled]="page()===1"><img src="/assets/admin-product/expand_more.svg" alt=""></button>
             @for (item of pageNumbers(); track $index) {
               @if (item === '…') { <span class="pagination-ellipsis">…</span> }
               @else { <button type="button" [class.active]="page()===item" (click)="goToPage(item)">{{item}}</button> }
             }
-            <button type="button" class="web2-admin-page-arrow" aria-label="Trang sau" (click)="goToPage(page()+1)" [disabled]="page()===totalPages()">›</button>
+            <button type="button" class="web2-admin-page-arrow" aria-label="Trang sau" (click)="goToPage(page()+1)" [disabled]="page()===totalPages()"><img src="/assets/admin-product/expand_more.svg" alt=""></button>
           </div>
         </footer>
       }
