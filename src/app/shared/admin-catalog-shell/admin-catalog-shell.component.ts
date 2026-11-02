@@ -23,7 +23,12 @@ export class AdminCatalogShellComponent {
   readonly pendingReturnCount = this.returnNotifications.pendingCount;
   private readonly accordion = inject(AdminSidebarAccordionService);
 
-  @Input({ required: true }) activeItem!: 'categories' | 'products' | 'orders' | 'vouchers' | 'services' | 'appointments' | 'service-records' | 'branches' | 'staff' | 'inventory';
+  @Input({ required: true }) activeItem!:
+    | 'categories' | 'products' | 'orders' | 'vouchers'
+    | 'services' | 'appointments' | 'service-records'
+    | 'branches' | 'staff' | 'inventory' | 'customers'
+    | 'content-articles' | 'content-first-aid' | 'content-community' | 'content-rescue'
+    | 'moderation-reviews' | 'moderation-feedback' | 'moderation-reports';
 
   // Animation is intentionally disabled on each newly mounted shell. Route
   // initialization should NEVER replay the previous group's close animation.
@@ -41,7 +46,7 @@ export class AdminCatalogShellComponent {
     this.accordion.openForRoute(group);
   }
 
-  private groupForActiveItem(): AdminSidebarGroup {
+  private groupForActiveItem(): AdminSidebarGroup | null {
     switch (this.activeItem) {
       case 'categories':
       case 'products':
@@ -56,6 +61,17 @@ export class AdminCatalogShellComponent {
       case 'staff':
       case 'inventory':
         return 'operations';
+      case 'content-articles':
+      case 'content-first-aid':
+      case 'content-community':
+      case 'content-rescue':
+        return 'content';
+      case 'moderation-reviews':
+      case 'moderation-feedback':
+      case 'moderation-reports':
+        return 'feedback';
+      case 'customers':
+        return null;
     }
   }
 
