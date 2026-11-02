@@ -1,0 +1,14 @@
+<app-admin-catalog-shell activeItem="customers"><main class="pet-detail">
+<a class="back" [routerLink]="['/admin/customers',customerId]">‹ Quay lại khách hàng</a>
+@if(loading()){<div class="state">Đang tải hồ sơ thú cưng...</div>}
+@else if(error()){<div class="state state--error">{{error()}}</div>}
+@else if(pet();as p){
+<section class="pet-hero"><img [src]="image(p)" alt=""><div><h1>{{value(p.name,p.petName,p.pet_name)}}</h1><p>{{value(p.breedName,p.breed_name,p.breed,p.speciesName,p.species)}}</p><div class="chips"><span>{{value(p.gender,p.sex)}}</span><span>{{value(p.age)}} tuổi</span><span>{{value(p.weightKg,p.weight_kg,p.weight)}} kg</span></div></div></section>
+<div class="pet-grid">
+<article><span>Sức khỏe chung</span><strong>{{value(p.healthStatus,p.health_status,'Chưa cập nhật')}}</strong></article>
+<article><span>Tiêm phòng tiếp</span><strong>{{value(p.nextVaccinationAt,p.next_vaccination_at,'Chưa có lịch')}}</strong></article>
+</div>
+<section class="card"><h2>Lưu ý y tế</h2><p>{{value(p.medicalNote,p.medical_note,p.note,'Chưa có lưu ý y tế.')}}</p></section>
+<section class="card"><h2>Thông tin hồ sơ</h2><dl><div><dt>Loài</dt><dd>{{value(p.speciesName,p.species)}}</dd></div><div><dt>Giống</dt><dd>{{value(p.breedName,p.breed)}}</dd></div><div><dt>Màu lông</dt><dd>{{value(p.color)}}</dd></div><div><dt>Ngày sinh</dt><dd>{{value(p.birthDate,p.birth_date)}}</dd></div></dl></section>
+<section class="card"><h2>Lịch sử bệnh án</h2><div class="empty">Backend Customer/Pet hiện chưa trả lịch sử bệnh án trong endpoint quản trị.</div></section>
+}</main></app-admin-catalog-shell>
