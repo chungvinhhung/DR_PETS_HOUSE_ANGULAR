@@ -388,3 +388,11 @@
 .catalog-sidebar__group .catalog-sidebar__return-badge{margin-left:auto}
 .catalog-sidebar__group:has(.catalog-sidebar__return-badge) .catalog-sidebar__group-chevron{margin-left:0}
 
+
+.catalog-sidebar__link--active,
+.catalog-sidebar__link--active:hover{
+  background:#0d47a1;
+  color:#fff;
+  font-weight:700;
+}
+.catalog-sidebar__link--active>img{filter:brightness(0) invert(1)}
