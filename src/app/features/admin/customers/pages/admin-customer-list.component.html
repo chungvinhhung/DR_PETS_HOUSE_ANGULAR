@@ -1,0 +1,69 @@
+<app-admin-catalog-shell activeItem="customers">
+  <main class="customer-page">
+    <h1>Quản lý khách hàng</h1>
+
+    <section class="customer-filter">
+      <label class="customer-search">
+        <span aria-hidden="true">⌕</span>
+        <input type="search" placeholder="Tìm theo họ tên, số điện thoại hoặc email..."
+          [ngModel]="search()" (ngModelChange)="search.set($event); onFilter()">
+      </label>
+      <div class="customer-filter__controls">
+        <select aria-label="Trạng thái kích hoạt" [ngModel]="activation()" (ngModelChange)="activation.set($event); onFilter()">
+          <option value="">Trạng thái kích hoạt</option>
+          <option value="ACTIVATED">Đã kích hoạt</option>
+          <option value="PENDING_ACTIVATION">Chờ kích hoạt</option>
+          <option value="NO_ACCOUNT">Chưa có tài khoản</option>
+        </select>
+        <select aria-label="Trạng thái tài khoản" [ngModel]="account()" (ngModelChange)="account.set($event); onFilter()">
+          <option value="">Trạng thái tài khoản</option>
+          <option value="ACTIVE">Đang hoạt động</option>
+          <option value="BLOCKED">Đã chặn</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="customer-table-card">
+      @if (loading()) {
+        <div class="customer-state">Đang tải danh sách khách hàng...</div>
+      } @else if (error()) {
+        <div class="customer-state customer-state--error">{{error()}} <button type="button" (click)="load()">Thử lại</button></div>
+      } @else {
+        <div class="customer-table-scroll">
+          <table>
+            <thead><tr>
+              <th>Họ tên khách hàng</th><th>Số điện thoại</th><th>Email</th>
+              <th>Trạng thái kích hoạt</th><th>Trạng thái tài khoản</th><th>Đăng nhập lần cuối</th><th>Thao tác</th>
+            </tr></thead>
+            <tbody>
+              @for (customer of rows(); track customer.id) {
+                <tr>
+                  <td>{{customer.fullName || 'Chưa cập nhật'}}</td>
+                  <td>{{customer.phone || '—'}}</td>
+                  <td>{{customer.email || '—'}}</td>
+                  <td><span class="badge" [class.badge--pending]="customer.activationStatus!=='ACTIVATED'">{{activationLabel(customer.activationStatus)}}</span></td>
+                  <td><span class="badge" [class.badge--blocked]="customer.accountStatus==='BLOCKED'" [class.badge--neutral]="!customer.accountStatus">{{accountLabel(customer.accountStatus)}}</span></td>
+                  <td>{{when(customer.lastLogin)}}</td>
+                  <td class="action-cell"><a [routerLink]="['/admin/customers', customer.id]" aria-label="Xem chi tiết khách hàng">◉</a></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="7" class="customer-empty">Không có khách hàng phù hợp.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <footer class="customer-pagination">
+          <span>Đang hiển thị {{rows().length}} trên tổng số {{filtered().length}} khách hàng</span>
+          <div class="pagination-buttons">
+            <button type="button" (click)="goToPage(page()-1)" [disabled]="page()===1">‹</button>
+            @for (item of pageNumbers(); track $index) {
+              @if (item === '…') { <span class="pagination-ellipsis">…</span> }
+              @else { <button type="button" [class.active]="page()===item" (click)="goToPage(item)">{{item}}</button> }
+            }
+            <button type="button" (click)="goToPage(page()+1)" [disabled]="page()===totalPages()">›</button>
+          </div>
+        </footer>
+      }
+    </section>
+  </main>
+</app-admin-catalog-shell>
