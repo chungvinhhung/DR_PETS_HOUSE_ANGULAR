@@ -1,8 +1,60 @@
-<app-admin-catalog-shell activeItem="content-rescue"><main class="adoption-detail"><div class="breadcrumbs"><a routerLink="/admin/content/rescue">Cứu trợ &amp; Nhận nuôi</a><span>›</span><a routerLink="/admin/content/adoptions">Đơn đăng ký nhận nuôi</a><span>›</span><strong>Đơn {{id}}</strong></div>
-@if(loading()){<div class="state">Đang tải đơn...</div>}@else if(error()&&!data()){<div class="state error">{{error()}}</div>}@else if(data();as d){
-<header><h1>Đơn {{d.code||id}} · {{d.petName||'Thú cưng'}}</h1><div><button type="button" disabled>Từ chối</button><button type="button" class="primary" disabled>Duyệt đơn</button></div></header>
-<section class="summary"><article><span>Người đăng ký</span><strong>{{value(d.applicantName,d.name)}}</strong></article><article><span>Thú cưng</span><strong>{{value(d.petName)}}</strong></article><article><span>Ngày gửi</span><strong>{{value(d.createdAt)}}</strong></article><article><span>Trạng thái</span><strong>{{value(d.status)}}</strong></article></section>
-<section class="card"><h2>1. Thông tin liên hệ</h2><p><span>Họ và tên</span>{{value(d.applicantName,d.name)}}</p><p><span>Số điện thoại</span>{{value(d.phone)}}</p><p><span>Giới tính / Năm sinh</span>{{value(d.gender)}} / {{value(d.birthYear)}}</p><p><span>Địa chỉ</span>{{value(d.address)}}</p></section>
-<section class="card"><h2>2. Điều kiện sống</h2><p><span>Loại hình nhà ở</span>{{value(d.housingType)}}</p><p><span>Mọi người trong nhà</span>{{value(d.householdAgreement)}}</p><p><span>Thú cưng hiện tại</span>{{value(d.currentPets)}}</p></section>
-<section class="card"><h2>3. Mức độ cam kết</h2><p><span>Thời gian bé ở nhà một mình</span>{{value(d.aloneTime)}}</p><p><span>Lý do nhận nuôi</span>{{value(d.reason)}}</p><p><span>Nếu hoàn cảnh thay đổi</span>{{value(d.contingencyPlan)}}</p></section>
-}</main></app-admin-catalog-shell>
+<app-admin-catalog-shell activeItem="content-rescue">
+  <main class="adoption-detail web2-admin-page">
+    <nav class="web2-admin-breadcrumb" aria-label="Breadcrumb">
+      <a routerLink="/admin/content/rescue">Cứu trợ &amp; Nhận nuôi</a>
+      <img src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
+      <a routerLink="/admin/content/adoptions">Đơn đăng ký nhận nuôi</a>
+      <img src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
+      <span>Đơn {{id}}</span>
+    </nav>
+
+    @if (loading()) {
+      <div class="web2-admin-state">Đang tải đơn...</div>
+    } @else if (error() && !data()) {
+      <div class="web2-admin-state web2-admin-state--error">{{error()}}</div>
+    } @else if (data(); as d) {
+      <header class="web2-admin-page__header">
+        <h1>Đơn {{d.code || id}} · {{d.petName || 'Thú cưng'}}</h1>
+        <div class="web2-admin-page__actions">
+          <button type="button" class="web2-admin-btn web2-admin-btn--outline" disabled>Từ chối</button>
+          <button type="button" class="web2-admin-btn web2-admin-btn--primary" disabled>Duyệt đơn</button>
+        </div>
+      </header>
+
+      <section class="web2-admin-summary-grid adoption-summary">
+        <article><span>Người đăng ký</span><strong>{{value(d.applicantName, d.name)}}</strong></article>
+        <article><span>Thú cưng</span><strong>{{value(d.petName)}}</strong></article>
+        <article><span>Ngày gửi</span><strong>{{value(d.createdAt)}}</strong></article>
+        <article><span>Trạng thái</span><strong>{{value(d.status)}}</strong></article>
+      </section>
+
+      <section class="card web2-admin-section">
+        <h2 class="web2-admin-section__title">1. Thông tin liên hệ</h2>
+        <dl class="web2-admin-detail-grid">
+          <div><dt>Họ và tên</dt><dd>{{value(d.applicantName, d.name)}}</dd></div>
+          <div><dt>Số điện thoại</dt><dd>{{value(d.phone)}}</dd></div>
+          <div><dt>Giới tính / Năm sinh</dt><dd>{{value(d.gender)}} / {{value(d.birthYear)}}</dd></div>
+          <div><dt>Địa chỉ</dt><dd>{{value(d.address)}}</dd></div>
+        </dl>
+      </section>
+
+      <section class="card web2-admin-section">
+        <h2 class="web2-admin-section__title">2. Điều kiện sống</h2>
+        <dl class="web2-admin-detail-grid">
+          <div><dt>Loại hình nhà ở</dt><dd>{{value(d.housingType)}}</dd></div>
+          <div><dt>Mọi người trong nhà</dt><dd>{{value(d.householdAgreement)}}</dd></div>
+          <div><dt>Thú cưng hiện tại</dt><dd>{{value(d.currentPets)}}</dd></div>
+        </dl>
+      </section>
+
+      <section class="card web2-admin-section">
+        <h2 class="web2-admin-section__title">3. Mức độ cam kết</h2>
+        <dl class="web2-admin-detail-grid">
+          <div><dt>Thời gian bé ở nhà một mình</dt><dd>{{value(d.aloneTime)}}</dd></div>
+          <div><dt>Lý do nhận nuôi</dt><dd>{{value(d.reason)}}</dd></div>
+          <div><dt>Nếu hoàn cảnh thay đổi</dt><dd>{{value(d.contingencyPlan)}}</dd></div>
+        </dl>
+      </section>
+    }
+  </main>
+</app-admin-catalog-shell>
