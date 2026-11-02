@@ -218,6 +218,104 @@ export const routes: Routes = [
       .then(component => component.AdminOrderManagementComponent),
   },
   {
+    path: 'admin/customers/:customerId/pets/:petId',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+    loadComponent: () => import('./features/admin/customers/pages/admin-customer-pet-detail.component')
+      .then(c => c.AdminCustomerPetDetailComponent),
+  },
+  {
+    path: 'admin/customers/:id',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () => import('./features/admin/customers/pages/admin-customer-detail.component')
+      .then(c => c.AdminCustomerDetailComponent),
+  },
+  {
+    path: 'admin/customers',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () => import('./features/admin/customers/pages/admin-customer-list.component')
+      .then(c => c.AdminCustomerListComponent),
+  },
+  {
+    path: 'admin/content/articles',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'], contentMode: 'articles' },
+    loadComponent: () => import('./features/admin/content/pages/admin-content-list.component')
+      .then(c => c.AdminContentListComponent),
+  },
+  {
+    path: 'admin/content/first-aid',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'], contentMode: 'first-aid' },
+    loadComponent: () => import('./features/admin/content/pages/admin-content-list.component')
+      .then(c => c.AdminContentListComponent),
+  },
+  {
+    path: 'admin/content/community',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'], contentMode: 'community' },
+    loadComponent: () => import('./features/admin/content/pages/admin-content-list.component')
+      .then(c => c.AdminContentListComponent),
+  },
+  {
+    path: 'admin/content/adoptions/:id',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () => import('./features/admin/content/pages/admin-adoption-detail.component')
+      .then(c => c.AdminAdoptionDetailComponent),
+  },
+  {
+    path: 'admin/content/adoptions',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'], contentMode: 'adoptions' },
+    loadComponent: () => import('./features/admin/content/pages/admin-content-list.component')
+      .then(c => c.AdminContentListComponent),
+  },
+  {
+    path: 'admin/content/rescue',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'], contentMode: 'rescue' },
+    loadComponent: () => import('./features/admin/content/pages/admin-content-list.component')
+      .then(c => c.AdminContentListComponent),
+  },
+  {
+    path: 'admin/moderation/reviews',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'], moderationMode: 'reviews' },
+    loadComponent: () => import('./features/admin/moderation/pages/admin-moderation-list.component')
+      .then(c => c.AdminModerationListComponent),
+  },
+  {
+    path: 'admin/moderation/feedback/:id',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () => import('./features/admin/moderation/pages/admin-feedback-detail.component')
+      .then(c => c.AdminFeedbackDetailComponent),
+  },
+  {
+    path: 'admin/moderation/feedback',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'], moderationMode: 'feedback' },
+    loadComponent: () => import('./features/admin/moderation/pages/admin-moderation-list.component')
+      .then(c => c.AdminModerationListComponent),
+  },
+  {
+    path: 'admin/moderation/reports/:id',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () => import('./features/admin/moderation/pages/admin-report-detail.component')
+      .then(c => c.AdminReportDetailComponent),
+  },
+  {
+    path: 'admin/moderation/reports',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'], moderationMode: 'reports' },
+    loadComponent: () => import('./features/admin/moderation/pages/admin-moderation-list.component')
+      .then(c => c.AdminModerationListComponent),
+  },
+  {
     path: 'admin',
     pathMatch: 'full',
     canActivate: [adminLoginEntryGuard],
