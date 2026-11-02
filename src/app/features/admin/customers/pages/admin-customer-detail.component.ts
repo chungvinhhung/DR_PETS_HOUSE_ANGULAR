@@ -62,7 +62,7 @@ export class AdminCustomerDetailComponent {
   appointmentStatus(v:string):string{return ({PENDING_PAYMENT:'Chờ thanh toán',PENDING_CONFIRMATION:'Chờ xác nhận',CONFIRMED:'Đã xác nhận',IN_PROGRESS:'Đang phục vụ',COMPLETED:'Hoàn thành',CANCELLED:'Đã hủy',NO_SHOW:'Không đến'} as Record<string,string>)[v]??v;}
   petName(p:any):string{return p.name||p.petName||p.pet_name||'Thú cưng';}
   petBreed(p:any):string{return p.breed||p.breedName||p.breed_name||p.species||p.speciesName||'—';}
-  petImage(p:any):string{return p.profileImageUrl||p.profile_image_url||p.imageUrl||p.image||'/assets/customer/images/pets/luna.jpg';}
+  petImage(p:any):string{return p.profileImageUrl||p.profile_image_url||p.imageUrl||p.image||'/assets/customer/images/booking/pet_picker_luna_photo.jpg';}
   serviceNames(a:any):string{return (a.services||[]).map((s:any)=>s.serviceName||s.name).filter(Boolean).join(', ')||a.serviceType||'Dịch vụ';}
   money(v:any):string{return new Intl.NumberFormat('vi-VN').format(Number(v||0))+'đ';}
   date(v:any):string{if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}
