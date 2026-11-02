@@ -1,0 +1,9 @@
+<app-admin-catalog-shell activeItem="moderation-feedback"><main class="feedback-detail">
+@if(loading()){<div class="state">Đang tải phản hồi...</div>}@else if(error()&&!data()){<div class="state error">{{error()}}</div>}@else if(data();as f){
+<div class="breadcrumbs"><a routerLink="/admin/moderation/feedback">Phản hồi khách hàng</a><span>›</span><strong>Phản hồi của {{f.name||'khách hàng'}}</strong></div>
+<header><h1>Phản hồi của {{f.name||'khách hàng'}}</h1><button type="button" class="primary" (click)="process()" [disabled]="!canAction()||busy()">{{busy()?'Đang xử lý...':actionLabel()}}</button></header>
+@if(error()){<div class="inline-error">{{error()}}</div>}
+<section class="info-grid"><article><span>Tên của bạn</span><strong>{{f.name||'—'}}</strong></article><article><span>Giới tính</span><strong>{{f.gender||'—'}}</strong></article><article><span>Số điện thoại</span><strong>{{f.phone||'—'}}</strong></article><article><span>Địa chỉ email</span><strong>{{f.email||'—'}}</strong></article></section>
+<section class="content-card"><h2>Nội dung</h2><p>{{f.message||f.subject||'—'}}</p></section>
+<section class="meta-grid"><article><span>Ngày gửi</span><strong>{{date(f.createdAt)}}</strong></article><article><span>Nguồn</span><strong>Form phản hồi trên website</strong></article><article class="status-card"><span>Trạng thái</span><strong>{{statusLabel(f.status)}}</strong></article></section>
+}</main></app-admin-catalog-shell>
