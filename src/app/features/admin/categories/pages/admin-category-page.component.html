@@ -47,8 +47,7 @@
 
         
         @if (errorMessage()) {
-
-          <button type="button" class="btn-outline retry" (click)="loadPage(null)">Thử lại</button>
+          <app-admin-data-state kind="error" title="Không thể tải danh mục sản phẩm" [message]="errorMessage()" (retry)="loadPage(null)" />
         }
 
         <div class="table-scroll">
