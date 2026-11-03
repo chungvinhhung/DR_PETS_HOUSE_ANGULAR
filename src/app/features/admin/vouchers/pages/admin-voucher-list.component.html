@@ -58,12 +58,9 @@
           </tr></thead>
           <tbody>
             @if (loading()) {
-              <tr><td colspan="7" class="voucher-list__empty" role="status">Đang tải danh sách voucher...</td></tr>
+              <tr><td colspan="7" class="voucher-list__empty"><app-admin-data-state kind="loading" title="Đang tải danh sách voucher" /></td></tr>
             } @else if (error()) {
-              <tr><td colspan="7" class="voucher-list__empty" role="alert">
-                <p>{{ error() }}</p>
-                <button class="voucher-list__button voucher-list__button--plain" type="button" (click)="refresh()">Thử lại</button>
-              </td></tr>
+              <tr><td colspan="7" class="voucher-list__empty"><app-admin-data-state kind="error" title="Không thể tải danh sách voucher" [message]="error()" (retry)="refresh()" /></td></tr>
             } @else {
               @for (voucher of filtered(); track voucher.id) {
                 <tr>
@@ -87,13 +84,9 @@
                 </tr>
               } @empty {
                 <tr><td colspan="7" class="voucher-list__empty">
-                  <strong>{{ hasActiveFilters() ? 'Không có voucher phù hợp.' : 'Chưa có voucher nào.' }}</strong>
-                  <p>{{ hasActiveFilters() ? 'Thử thay đổi từ khóa hoặc bộ lọc.' : 'Chưa có chương trình khuyến mãi nào được tạo trên hệ thống.' }}</p>
-                  @if (hasActiveFilters()) {
-                    <button class="voucher-list__button voucher-list__button--plain" type="button" (click)="clearFilters()">Xóa bộ lọc</button>
-                  } @else if (canEdit()) {
-                    <a class="voucher-list__button voucher-list__button--primary web2-add-button" routerLink="/admin/vouchers/new"><span class="web2-add-icon" aria-hidden="true">+</span><span>Tạo voucher</span></a>
-                  }
+                  <app-admin-data-state kind="empty"
+                    [title]="hasActiveFilters() ? 'Không tìm thấy voucher' : 'Chưa có voucher'"
+                    [message]="hasActiveFilters() ? 'Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác.' : 'Chưa có chương trình khuyến mãi nào được tạo.'" />
                 </td></tr>
               }
             }
