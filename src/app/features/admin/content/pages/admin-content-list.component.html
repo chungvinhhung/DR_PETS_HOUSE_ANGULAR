@@ -118,7 +118,7 @@
                     <td>{{author(r)}}</td><td>{{name(r)}}</td><td>{{category(r)}}</td>
                     <td class="is-center">{{likes(r)}}</td><td class="is-center">{{comments(r)}}</td>
                     <td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
-                    <td class="is-center actions"><button type="button" class="web2-admin-icon-button" aria-label="Xem chi tiết bài đăng" (click)="unsupported('Xem chi tiết bài đăng cộng đồng')"><img src="/assets/admin-branch/figma-eye.svg" alt=""></button></td>
+                    <td class="is-center actions"><button type="button" class="web2-admin-icon-button" aria-label="Kiểm duyệt bài đăng" (click)="openCommunity(r)"><img src="/assets/admin-branch/figma-eye.svg" alt=""></button></td>
                   </tr>
                 } @empty { <tr><td colspan="7" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có bài đăng cộng đồng" message="Hiện chưa có bài đăng phù hợp với bộ lọc." /></td></tr> }
               </tbody>
@@ -166,4 +166,37 @@
       }
     </section>
   </main>
+
+  @if (communityDialog(); as post) {
+    <div class="content-dialog-backdrop" (click)="closeCommunity()">
+      <section class="content-dialog" role="dialog" aria-modal="true" aria-labelledby="community-dialog-title" (click)="$event.stopPropagation()">
+        <header>
+          <div>
+            <h2 id="community-dialog-title">{{post.title || 'Bài đăng cộng đồng'}}</h2>
+            <p>{{post.authorNameSnapshot || 'Thành viên'}}</p>
+          </div>
+          <button type="button" class="content-dialog__close" aria-label="Đóng" [disabled]="actionBusy()" (click)="closeCommunity()">×</button>
+        </header>
+        <div class="content-dialog__body">
+          <p>{{post.content || '—'}}</p>
+          @if (post.status === 'REJECTED' && post.rejectionReason) {
+            <div class="content-dialog__reason"><span>Lý do từ chối</span><strong>{{post.rejectionReason}}</strong></div>
+          }
+          <label>
+            Lý do từ chối
+            <textarea rows="3" [ngModel]="rejectionReason()" (ngModelChange)="rejectionReason.set($event)"
+              placeholder="Bắt buộc khi từ chối bài đăng"></textarea>
+          </label>
+        </div>
+        <footer>
+          @if (post.status !== 'HIDDEN') {
+            <button type="button" class="web2-admin-btn web2-admin-btn--outline" [disabled]="actionBusy()" (click)="moderateCommunity('HIDDEN')">Ẩn bài</button>
+          }
+          <span class="content-dialog__spacer"></span>
+          <button type="button" class="web2-admin-btn web2-admin-btn--outline" [disabled]="actionBusy()" (click)="moderateCommunity('REJECTED')">Từ chối</button>
+          <button type="button" class="web2-admin-btn web2-admin-btn--primary" [disabled]="actionBusy()" (click)="moderateCommunity('APPROVED')">Duyệt bài</button>
+        </footer>
+      </section>
+    </div>
+  }
 </app-admin-catalog-shell>
