@@ -6,6 +6,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiClientService } from '../../../../core/services/api-client.service';
 import { AdminInventoryService } from '../../inventory/services/admin-inventory.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import {
   ServiceRecord, normalizeServiceRecordsPage, serviceRecordStatusLabel,
@@ -14,7 +15,7 @@ import {
 @Component({
   selector:'app-admin-service-records',
   standalone:true,
-  imports:[RouterLink,AdminCatalogShellComponent],
+  imports:[RouterLink,AdminCatalogShellComponent,AdminDataStateComponent],
   template:`
 <app-admin-catalog-shell activeItem="service-records">
  <main class="record-list">
@@ -39,13 +40,13 @@ import {
       <option value="COMPLETED">Hoàn thành</option>
       <option value="REOPENED">Đã mở lại</option>
       <option value="DRAFT">Bản nháp</option>
-      <option value="AWAITING_VET_REVIEW">Chờ BS duyệt</option>
+      <option value="WAITING_VET_REVIEW">Chờ BS duyệt</option>
       <option value="IN_PROGRESS">Đang thực hiện</option>
     </select>
   </section>
   <section class="panel">
-   @if(loading()){<p class="message" role="status">Đang tải hồ sơ dịch vụ...</p>}
-   @else if(error()){<div class="message" role="alert"><p>{{error()}}</p><button type="button" (click)="load()">Thử lại</button></div>}
+   @if(loading()){<app-admin-data-state kind="loading" title="Đang tải hồ sơ dịch vụ" />}
+   @else if(error()){<app-admin-data-state kind="error" title="Không thể tải hồ sơ dịch vụ" [message]="error()" (retry)="load()" />}
    @else {
     <div class="scroll"><table><thead><tr>
       <th>Mã hồ sơ</th><th>Ngày</th><th>Thú cưng</th><th>Dịch vụ</th><th>Chi nhánh</th>
@@ -63,7 +64,7 @@ import {
          <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="" aria-hidden="true">
        </a></td>
       </tr>
-     } @empty {<tr><td colspan="9" class="message">Không có hồ sơ phù hợp.</td></tr>}
+     } @empty {<tr><td colspan="9" class="message"><app-admin-data-state kind="empty" title="Không tìm thấy hồ sơ" message="Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác." /></td></tr>}
     </tbody></table></div>
     <footer><span>Đang hiển thị {{rows().length}} trên tổng số {{total()}} hồ sơ dịch vụ</span>
      <nav class="pages" aria-label="Phân trang hồ sơ dịch vụ">
@@ -160,11 +161,11 @@ export class AdminServiceRecordsComponent {
           this.fetched.set(result.items);this.loading.set(false);
         }catch(err){this.fetched.set([]);this.error.set(err instanceof Error?err.message:'Dữ liệu không hợp lệ.');this.loading.set(false);}
       },
-      error:err=>{if(req!==this.request)return;this.fetched.set([]);this.error.set(adminErrorMessage(err,'Chưa tải được hồ sơ dịch vụ từ BE.'));this.loading.set(false);}
+      error:err=>{if(req!==this.request)return;this.fetched.set([]);this.error.set(adminErrorMessage(err,'Không thể tải hồ sơ dịch vụ. Vui lòng thử lại.'));this.loading.set(false);}
     });
   }
   displayCode(value:string){return value.replace(/^#/,'');}
-  color(r:ServiceRecord){return r.status==='COMPLETED'?'success':r.status==='AWAITING_VET_REVIEW'?'warning':'info';}
+  color(r:ServiceRecord){return r.status==='COMPLETED'?'success':r.status==='WAITING_VET_REVIEW'?'warning':'info';}
   branchName(id:string){return this.branches().find(item=>item.id===id)?.name||id;}
   day(value:string|null){if(!value)return '—';const d=new Date(value);return Number.isNaN(d.getTime())?'—':
     new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric'}).format(d);}
