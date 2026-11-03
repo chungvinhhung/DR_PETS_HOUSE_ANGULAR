@@ -202,22 +202,3 @@ app-admin-catalog-shell .web2-admin-page .pet-grid.web2-admin-summary-grid>artic
  app-admin-catalog-shell .web2-admin-pagination{align-items:flex-start;flex-direction:column}
  app-admin-catalog-shell .web2-admin-pagination__controls{max-width:100%;overflow-x:auto}
 }
-
-/* Shared sidebar accordion transition. Route mounting is animation-free;
-   transitions are enabled only after an explicit user toggle. */
-app-admin-catalog-shell .catalog-sidebar__children{
- display:flex;max-height:0;min-height:0;margin-top:0;margin-bottom:0;padding-top:0;padding-bottom:0;
- overflow:hidden;opacity:0;pointer-events:none
-}
-app-admin-catalog-shell .catalog-sidebar__children.catalog-sidebar__children--expanded{
- max-height:360px;margin-top:0;margin-bottom:16px;padding-top:2px;padding-bottom:4px;opacity:1;pointer-events:auto
-}
-app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__children{
- transition:max-height 180ms cubic-bezier(.2,.7,.2,1),margin 180ms ease,padding 180ms ease,opacity 140ms ease
-}
-app-admin-catalog-shell .catalog-sidebar__children:not(.catalog-sidebar__children--expanded)::before{opacity:0}
-app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__children::before{transition:opacity 120ms ease}
-@media(prefers-reduced-motion:reduce){
- app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__children,
- app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__children::before{transition:none}
-}
