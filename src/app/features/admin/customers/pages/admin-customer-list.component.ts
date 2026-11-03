@@ -5,13 +5,14 @@ import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-pagination';
 import { AdminCustomer, AdminCustomerService } from '../services/admin-customer.service';
 
 @Component({
   selector: 'app-admin-customer-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, AdminCatalogShellComponent],
+  imports: [CommonModule, FormsModule, RouterLink, AdminCatalogShellComponent, AdminDataStateComponent],
   templateUrl: './admin-customer-list.component.html',
   styleUrl: './admin-customer-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
