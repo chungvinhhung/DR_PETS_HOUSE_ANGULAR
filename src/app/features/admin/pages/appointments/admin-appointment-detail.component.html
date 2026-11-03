@@ -8,11 +8,10 @@
         <button type="button" class="btn btn--outline" (click)="refresh()">Thử lại</button>
       </section>
     } @else if (item(); as appointment) {
-      <nav class="breadcrumb" aria-label="Đường dẫn">
-        <a routerLink="/admin/appointments">Lịch hẹn</a>
-        <span aria-hidden="true">›</span>
-        <strong aria-current="page">Chi tiết lịch hẹn</strong>
-      </nav>
+      <app-admin-breadcrumb [items]="[
+        {label:'Lịch hẹn', link:'/admin/appointments'},
+        {label:'Chi tiết lịch hẹn'}
+      ]" />
 
       <header class="heading">
         <h1>Lịch hẹn #{{ displayCode(appointment.code) }}</h1>
