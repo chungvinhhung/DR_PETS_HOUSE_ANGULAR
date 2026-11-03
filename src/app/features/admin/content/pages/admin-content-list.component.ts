@@ -22,6 +22,7 @@ export class AdminContentListComponent{
  private readonly route=inject(ActivatedRoute);private readonly api=inject(AdminContentService);
  readonly mode=this.route.snapshot.data['contentMode'] as ContentMode;
  readonly rows=signal<any[]>([]);readonly loading=signal(true);readonly error=signal('');readonly search=signal('');readonly filter=signal('');readonly status=signal('');readonly page=signal(1);readonly notice=signal('');
+ readonly communityDialog=signal<any|null>(null);readonly rejectionReason=signal('');readonly actionBusy=signal(false);
  readonly pageSize=7;
  readonly title=({articles:'Bài viết / Kiến thức','first-aid':'Cẩm nang sơ cứu',community:'Bài đăng cộng đồng',rescue:'Cứu trợ & Nhận nuôi',adoptions:'Đơn đăng ký nhận nuôi'} as Record<ContentMode,string>)[this.mode];
  readonly activeItem=({articles:'content-articles','first-aid':'content-first-aid',community:'content-community',rescue:'content-rescue',adoptions:'content-rescue'} as const)[this.mode];
@@ -45,6 +46,24 @@ export class AdminContentListComponent{
  }
  onFilter():void{this.page.set(1);} goToPage(p:number):void{this.page.set(Math.max(1,Math.min(p,this.totalPages())));}
  unsupported(action:string):void{this.notice.set(action+' hiện chưa sẵn sàng trên giao diện quản trị.');}
+ openCommunity(r:any):void{this.communityDialog.set(r);this.rejectionReason.set('');this.notice.set('');}
+ closeCommunity():void{if(this.actionBusy())return;this.communityDialog.set(null);this.rejectionReason.set('');}
+ moderateCommunity(status:'APPROVED'|'REJECTED'|'HIDDEN'):void{
+  const row=this.communityDialog();const id=String(row?._id||row?.id||'');
+  if(!id||this.actionBusy())return;
+  if(status==='REJECTED'&&this.rejectionReason().trim().length<3){
+   this.notice.set('Vui lòng nhập lý do từ chối ít nhất 3 ký tự.');return;
+  }
+  this.actionBusy.set(true);this.notice.set('');
+  this.api.moderateCommunity(id,status,this.rejectionReason()).pipe(finalize(()=>this.actionBusy.set(false))).subscribe({
+   next:updated=>{
+    this.rows.update(rows=>rows.map(item=>String(item?._id||item?.id)===id?{...item,...updated}:item));
+    this.communityDialog.set(null);this.rejectionReason.set('');
+    this.notice.set(status==='APPROVED'?'Đã duyệt bài đăng.':status==='HIDDEN'?'Đã ẩn bài đăng.':'Đã từ chối bài đăng.');
+   },
+   error:()=>this.notice.set('Không thể cập nhật trạng thái bài đăng. Vui lòng thử lại.'),
+  });
+ }
  name(r:any):string{return r.title||r.name||r.petName||r.pet_name||r.content||r.message||'—';}
  category(r:any):string{if(this.mode==='community')return 'Bài chia sẻ';return r.category?.label||r.category?.name||r.category||r.group||r.species||r.type||'—';}
  author(r:any):string{return r.authorId?.fullName||r.author?.name||r.authorNameSnapshot||r.authorName||r.displayName||r.ownerName||'Dr. Pet’s House';}
