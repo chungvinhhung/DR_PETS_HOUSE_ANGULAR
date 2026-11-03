@@ -127,7 +127,7 @@ export class AdminServiceRecordDetailComponent {
   readonly showRecordActions=computed(()=>
     this.canSubmitReview() || this.canFinalize() || this.canReopen() ||
     (this.item()?.status==='IN_PROGRESS' && this.item()?.category==='MEDICAL' && this.isNurse()) ||
-    (this.item()?.status==='AWAITING_VET_REVIEW' && this.item()?.category==='MEDICAL')
+    (this.item()?.status==='WAITING_VET_REVIEW' && this.item()?.category==='MEDICAL')
   );
 
   constructor(){
@@ -241,14 +241,14 @@ export class AdminServiceRecordDetailComponent {
   }
 
   reviewLabel(r:ServiceRecord):string{
-    if(r.status==='AWAITING_VET_REVIEW')return 'Chờ Bác sĩ duyệt';
+    if(r.status==='WAITING_VET_REVIEW')return 'Chờ Bác sĩ duyệt';
     if(r.status==='COMPLETED')return 'Đã chốt';
     if(r.reviewerStaffId)return 'Đã chỉ định Bác sĩ';
     return 'Chưa gửi duyệt';
   }
 
   statusTone(r:ServiceRecord):string{
-    return r.status==='COMPLETED'?'success':r.status==='AWAITING_VET_REVIEW'?'warning':
+    return r.status==='COMPLETED'?'success':r.status==='WAITING_VET_REVIEW'?'warning':
       r.status==='IN_PROGRESS'||r.status==='REOPENED'?'info':'neutral';
   }
 
