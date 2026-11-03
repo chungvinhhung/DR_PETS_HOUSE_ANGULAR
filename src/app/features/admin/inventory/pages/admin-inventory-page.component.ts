@@ -8,6 +8,7 @@ import { catchError, forkJoin, Observable, finalize, of, switchMap, tap } from '
 import { AdminProduct } from '../../products/models/admin-product.model';
 import { AdminCategoryService } from '../../categories/services/admin-category.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from "../../../../shared/admin-data-state/admin-data-state.component";
 import { AdminInventoryTransactionDrawerComponent } from '../components/admin-inventory-transaction-drawer.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
@@ -59,7 +60,7 @@ interface StockHistory {
 @Component({
   selector: 'app-admin-inventory-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminCatalogShellComponent, AdminInventoryTransactionDrawerComponent],
+  imports: [CommonModule, FormsModule, AdminCatalogShellComponent, AdminDataStateComponent, AdminInventoryTransactionDrawerComponent],
   templateUrl: './admin-inventory-page.component.html',
   styleUrl: './admin-inventory-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
