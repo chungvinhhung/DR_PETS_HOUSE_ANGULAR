@@ -33,9 +33,9 @@
 
     <section class="table-card web2-admin-table-panel">
       @if (loading()) {
-        <div class="web2-admin-state">Đang tải dữ liệu...</div>
+        <app-admin-data-state kind="loading" [title]="'Đang tải ' + title.toLocaleLowerCase('vi')" />
       } @else if (error()) {
-        <div class="web2-admin-state web2-admin-state--error">{{error()}} <button type="button" (click)="load()">Thử lại</button></div>
+        <app-admin-data-state kind="error" [title]="'Không thể tải ' + title.toLocaleLowerCase('vi')" [message]="error()" (retry)="load()" />
       } @else {
         <div class="table-scroll web2-admin-table-scroll">
           <table class="web2-admin-table"
@@ -55,7 +55,7 @@
                     <td class="is-center">{{date(r.createdAt)}}</td>
                     <td class="is-center"><span class="badge" [attr.data-kind]="statusKind(r)">{{statusLabel(r)}}</span></td>
                   </tr>
-                } @empty { <tr><td colspan="8" class="web2-admin-empty">Chưa có đánh giá.</td></tr> }
+                } @empty { <tr><td colspan="8" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có đánh giá" message="Hiện chưa có đánh giá phù hợp với bộ lọc." /></td></tr> }
               </tbody>
             } @else if (mode === 'feedback') {
               <colgroup><col style="width:14%"><col style="width:9%"><col style="width:13%"><col style="width:18%"><col style="width:21%"><col style="width:10%"><col style="width:9%"><col style="width:6%"></colgroup>
@@ -68,12 +68,12 @@
                     <td class="is-center"><span class="badge" [attr.data-kind]="statusKind(r)">{{statusLabel(r)}}</span></td>
                     <td class="is-center"><a class="web2-admin-icon-button" [routerLink]="['/admin/moderation/feedback', r._id || r.id]" aria-label="Xem chi tiết phản hồi"><img src="/assets/admin-branch/figma-eye.svg" alt=""></a></td>
                   </tr>
-                } @empty { <tr><td colspan="8" class="web2-admin-empty">Chưa có phản hồi.</td></tr> }
+                } @empty { <tr><td colspan="8" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có phản hồi" message="Hiện chưa có phản hồi phù hợp với bộ lọc." /></td></tr> }
               </tbody>
             } @else {
               <colgroup><col style="width:18%"><col style="width:25%"><col style="width:20%"><col style="width:13%"><col style="width:14%"><col style="width:10%"></colgroup>
               <thead><tr><th>Người báo cáo</th><th>Bài đăng bị báo cáo</th><th>Lý do</th><th class="is-center">Ngày báo cáo</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
-              <tbody><tr><td colspan="6" class="web2-admin-empty">Backend foundation-v6 chưa có API Báo cáo vi phạm. Màn hình đã sẵn sàng để nối contract BF12.</td></tr></tbody>
+              <tbody><tr><td colspan="6" class="web2-admin-empty"><app-admin-data-state kind="technical" title="Chưa có dữ liệu báo cáo vi phạm" message="Backend hiện chưa cung cấp API Báo cáo vi phạm. Thông báo này sẽ được gỡ khi contract tương ứng sẵn sàng." /></td></tr></tbody>
             }
           </table>
         </div>
