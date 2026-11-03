@@ -36,7 +36,7 @@
         </button>
 
         <div id="admin-sales-submenu" class="catalog-sidebar__children"
-          [class.catalog-sidebar__children--expanded]="salesExpanded" [attr.aria-hidden]="salesExpanded ? null : 'true'" [attr.inert]="salesExpanded ? null : ''" aria-label="Các mục thuộc Bán hàng">
+          [hidden]="!salesExpanded" aria-label="Các mục thuộc Bán hàng">
           <a class="catalog-sidebar__sub" routerLink="/admin/categories"
             [class.catalog-sidebar__sub--active]="activeItem === 'categories'"
             [attr.aria-current]="activeItem === 'categories' ? 'page' : null">
@@ -66,7 +66,7 @@
             alt="" aria-hidden="true" width="16" height="16">
         </button>
         <div id="admin-services-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
-          [class.catalog-sidebar__children--expanded]="servicesExpanded" [attr.aria-hidden]="servicesExpanded ? null : 'true'" [attr.inert]="servicesExpanded ? null : ''" aria-label="Các mục thuộc Dịch vụ">
+          [hidden]="!servicesExpanded" aria-label="Các mục thuộc Dịch vụ">
           <a class="catalog-sidebar__sub" routerLink="/admin/services"
             [class.catalog-sidebar__sub--active]="activeItem === 'services'"
             [attr.aria-current]="activeItem === 'services' ? 'page' : null">
@@ -87,7 +87,7 @@
             alt="" aria-hidden="true" width="16" height="16">
         </button>
         <div id="admin-operations-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
-          [class.catalog-sidebar__children--expanded]="operationsExpanded" [attr.aria-hidden]="operationsExpanded ? null : 'true'" [attr.inert]="operationsExpanded ? null : ''" aria-label="Các mục thuộc Vận hành">
+          [hidden]="!operationsExpanded" aria-label="Các mục thuộc Vận hành">
           <a class="catalog-sidebar__sub" routerLink="/admin/inventory"
             [class.catalog-sidebar__sub--active]="activeItem === 'inventory'"
             [attr.aria-current]="activeItem === 'inventory' ? 'page' : null">Kho</a>
@@ -117,7 +117,7 @@
             alt="" aria-hidden="true" width="16" height="16">
         </button>
         <div id="admin-content-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
-          [class.catalog-sidebar__children--expanded]="contentExpanded" [attr.aria-hidden]="contentExpanded ? null : 'true'" [attr.inert]="contentExpanded ? null : ''" aria-label="Các mục thuộc Nội dung và Cộng đồng">
+          [hidden]="!contentExpanded" aria-label="Các mục thuộc Nội dung và Cộng đồng">
           <a class="catalog-sidebar__sub" routerLink="/admin/content/articles"
             [class.catalog-sidebar__sub--active]="activeItem === 'content-articles'">Bài viết / Kiến thức</a>
           <a class="catalog-sidebar__sub" routerLink="/admin/content/first-aid"
@@ -139,7 +139,7 @@
             alt="" aria-hidden="true" width="16" height="16">
         </button>
         <div id="admin-feedback-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
-          [class.catalog-sidebar__children--expanded]="feedbackExpanded" [attr.aria-hidden]="feedbackExpanded ? null : 'true'" [attr.inert]="feedbackExpanded ? null : ''" aria-label="Các mục thuộc Đánh giá và Phản hồi">
+          [hidden]="!feedbackExpanded" aria-label="Các mục thuộc Đánh giá và Phản hồi">
           <a class="catalog-sidebar__sub" routerLink="/admin/moderation/reviews"
             [class.catalog-sidebar__sub--active]="activeItem === 'moderation-reviews'">Đánh giá</a>
           <a class="catalog-sidebar__sub" routerLink="/admin/moderation/feedback"
