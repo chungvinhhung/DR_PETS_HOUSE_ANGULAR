@@ -3,11 +3,10 @@
     @if (staff(); as employee) {
       <header class="staff-detail__heading">
         <div class="staff-detail__identity">
-          <nav class="staff-detail__breadcrumb" aria-label="Đường dẫn">
-            <a routerLink="/admin/staff">Nhân sự</a>
-            <span aria-hidden="true">›</span>
-            <strong aria-current="page">Chi tiết nhân viên</strong>
-          </nav>
+          <app-admin-breadcrumb [items]="[
+            {label:'Nhân sự', link:'/admin/staff'},
+            {label:'Chi tiết nhân viên'}
+          ]" />
           <h1>{{ displayName(employee) }}</h1>
           <p>{{ employee.staffCode || employee.id }} · {{ roleName(employee) }}</p>
         </div>

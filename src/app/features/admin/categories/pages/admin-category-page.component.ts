@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, finalize, forkJoin, map, of } from 'rxjs';
+import { catchError, finalize, firstValueFrom, forkJoin, map, of, timeout } from 'rxjs';
 
 import {
   AdminCategory,
@@ -20,7 +20,7 @@ import {
 } from '../models/admin-category.model';
 import { AdminCategoryService } from '../services/admin-category.service';
 import { AdminProductService } from '../../products/services/admin-product.service';
-import { ADMIN_TABLE_PAGE_SIZE, countCursorItems } from '../../../../shared/utils/admin-table-pagination';
+import { ADMIN_TABLE_PAGE_SIZE, countCursorItems, adminPageWindow, AdminPageItem } from '../../../../shared/utils/admin-table-pagination';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 
 @Component({
@@ -83,20 +83,64 @@ export class AdminCategoryPageComponent implements OnInit {
   get pageNumber(): number {
     return this.cursorStack.length + 1;
   }
-  get visiblePageNumbers(): number[] {
-    const current = this.pageNumber;
-    const from = Math.max(1, current - 2);
-    const end = current + (this.nextCursor() ? 1 : 0);
-    return Array.from({length: end - from + 1}, (_, i) => from + i);
+  get visiblePageNumbers(): AdminPageItem[] {
+    const total = this.totalCategories();
+    // Cursor only tells whether the next page exists; it cannot establish the last page.
+    // Show a full window only when the backend or complete count provides an exact total.
+    return total === null ? [this.pageNumber] :
+      adminPageWindow(this.pageNumber, Math.max(1, Math.ceil(total / this.pageSize)));
   }
-  goToPage(target: number): void {
-    if (!Number.isSafeInteger(target) || target < 1 || this.loading()) return;
-    if (target === this.pageNumber) return;
+  async goToPage(target: number): Promise<void> {
+    const total = this.totalCategories();
+    if (!Number.isSafeInteger(target) || target < 1 || this.loading() ||
+      (total !== null && target > Math.max(1, Math.ceil(total / this.pageSize))) ||
+      target === this.pageNumber) return;
     if (target === this.pageNumber + 1) { this.nextPage(); return; }
-    if (target > this.cursorStack.length) return;
-    const cursor = this.cursorStack[target - 1] ?? null;
-    this.cursorStack = this.cursorStack.slice(0, target - 1);
-    this.loadPage(cursor);
+    if (target <= this.cursorStack.length + 1) {
+      const cursor = this.cursorStack[target - 1] ?? null;
+      this.cursorStack = this.cursorStack.slice(0, target - 1);
+      this.loadPage(cursor); return;
+    }
+    // Cursor-based APIs cannot jump by number: discover intermediate page boundaries.
+    const originalStack = [...this.cursorStack];
+    const originalCursor = this.currentCursor;
+    const originalNext = this.nextCursor();
+    const version = ++this.loadSequence;
+    const filters = {
+      q: this.searchTerm,
+      status: this.statusFilter === 'ALL' ? undefined : this.statusFilter,
+      parentId: this.parentFilter === 'ALL' ? undefined :
+        this.parentFilter === 'ROOT' ? 'null' : this.parentFilter,
+      limit: this.pageSize,
+    };
+    let cursor = this.currentCursor;
+    let nextCursor = this.nextCursor();
+    const stack = [...this.cursorStack];
+    this.loading.set(true);
+    try {
+      while (stack.length < target - 1) {
+        if (!nextCursor) throw new Error('Không còn trang tiếp theo.');
+        stack.push(cursor);
+        cursor = nextCursor;
+        if (stack.length === target - 1) break;
+        const response = await firstValueFrom(this.categoryService.listCategories({
+          ...filters, cursor,
+        }).pipe(timeout({first:15000}), takeUntilDestroyed(this.destroyRef)));
+        if (this.destroyRef.destroyed || version !== this.loadSequence) return;
+        nextCursor = response.nextCursor;
+      }
+      if (version !== this.loadSequence) return;
+      this.cursorStack = stack;
+      this.loadPage(cursor);
+    } catch {
+      if (version !== this.loadSequence) return;
+      this.cursorStack = originalStack;
+      this.currentCursor = originalCursor;
+      this.nextCursor.set(originalNext);
+      this.errorMessage.set('Chưa thể chuyển đến trang này. Vui lòng thử lại.');
+    } finally {
+      if (version === this.loadSequence) this.loading.set(false);
+    }
   }
 
   ngOnInit(): void {

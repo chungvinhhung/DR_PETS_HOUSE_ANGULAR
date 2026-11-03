@@ -1,14 +1,14 @@
 <app-admin-catalog-shell activeItem="vouchers">
   <main class="voucher-editor">
-    <nav class="voucher-editor__crumb" aria-label="Đường dẫn">
-      <a routerLink="/admin/vouchers">Khuyến mãi</a><span aria-hidden="true">›</span>
-      <span>{{ mode === 'create' ? 'Tạo voucher' : mode === 'edit' ? 'Chỉnh sửa voucher' : 'Chi tiết voucher' }}</span>
-    </nav>
+    <app-admin-breadcrumb [items]="[
+      {label:'Khuyến mãi', link:'/admin/vouchers'},
+      {label: mode === 'create' ? 'Tạo voucher' : mode === 'edit' ? 'Chỉnh sửa voucher' : 'Chi tiết voucher'}
+    ]" />
     <header class="voucher-editor__heading">
       <h1>{{ mode === 'create' ? 'Tạo voucher' : mode === 'edit' ? 'Chỉnh sửa voucher ' + (original()?.code || '') : 'Chi tiết voucher ' + (original()?.code || '') }}</h1>
       <div class="voucher-editor__heading-actions">
         @if (mode === 'view' && canWrite() && original(); as voucher) {
-          <button type="button" class="voucher-editor__button voucher-editor__button--outline"
+          <button type="button" class="voucher-editor__button voucher-editor__button--outline voucher-editor__button--danger-outline"
             (click)="openDisableDialog()" [disabled]="saving()">
             {{ voucher.status === 'ACTIVE' ? 'Tắt voucher' : 'Bật voucher' }}
           </button>
@@ -221,10 +221,9 @@
       <div class="voucher-editor__overlay" (click)="closeDisableDialog()">
         <section class="voucher-editor__dialog" role="dialog" aria-modal="true" aria-label="Xác nhận trạng thái voucher" (click)="$event.stopPropagation()">
           <h2>{{ voucher.status === 'ACTIVE' ? 'Tắt voucher ' : 'Bật voucher ' }}{{ voucher.code }}</h2>
-          <p>{{ voucher.status === 'ACTIVE' ? 'Voucher sẽ ngừng được áp dụng cho những giao dịch mới.' : 'Voucher sẽ có thể được áp dụng lại nếu còn hạn và còn lượt.' }}</p>
           <div class="voucher-editor__notice">
-            <strong>Lưu ý nghiệp vụ</strong>
-            <p>Thao tác này chỉ cập nhật trạng thái quản lý; không thay đổi số lượt đã sử dụng hoặc hoàn quota.</p>
+            <strong>Lưu ý</strong>
+            <p>{{ voucher.status === 'ACTIVE' ? 'Voucher sẽ ngừng được áp dụng cho những giao dịch mới.' : 'Voucher sẽ có thể được áp dụng lại nếu còn hạn và còn lượt.' }}</p>
           </div>
           <label>Ghi chú
             <textarea rows="2" disabled placeholder="Chưa hỗ trợ ghi chú trên Backend"></textarea>

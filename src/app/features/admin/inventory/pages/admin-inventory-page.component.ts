@@ -1,11 +1,14 @@
+import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-pagination';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { catchError, forkJoin, Observable, finalize, of, switchMap, tap } from 'rxjs';
 import { AdminProduct } from '../../products/models/admin-product.model';
 import { AdminCategoryService } from '../../categories/services/admin-category.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminInventoryTransactionDrawerComponent } from '../components/admin-inventory-transaction-drawer.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import {
@@ -34,6 +37,9 @@ interface StockItem {
 }
 interface StockHistory {
   id: string;
+  groupKey: string;
+  transactionCode: string;
+  createdAt: string;
   date: string;
   item: string;
   sku: string;
@@ -44,14 +50,16 @@ interface StockHistory {
   reason: string;
   delta: string;
   after: string;
-  reference: string;
+  sourceLabel: string;
+  sourceType: string;
+  sourceId: string;
   actor: string;
 }
 
 @Component({
   selector: 'app-admin-inventory-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminCatalogShellComponent],
+  imports: [CommonModule, FormsModule, AdminCatalogShellComponent, AdminInventoryTransactionDrawerComponent],
   templateUrl: './admin-inventory-page.component.html',
   styleUrl: './admin-inventory-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,6 +67,7 @@ interface StockHistory {
 export class AdminInventoryPageComponent implements OnInit {
   private readonly adminToast = inject(AdminToastService);
   private readonly inventoryApi = inject(AdminInventoryService);
+  private readonly route = inject(ActivatedRoute);
   private readonly categoryApi = inject(AdminCategoryService);
   private readonly auth = inject(AuthSessionService);
   private readonly destroyRef = inject(DestroyRef);
@@ -70,6 +79,9 @@ export class AdminInventoryPageComponent implements OnInit {
   readonly tab = signal<'stock' | 'history'>('stock');
   readonly stock = signal<StockItem[]>([]);
   readonly history = signal<StockHistory[]>([]);
+  readonly rawTransactions = signal<InventoryTransactionDto[]>([]);
+  readonly selectedTransactionGroup = signal<InventoryTransactionDto[]>([]);
+  readonly selectedHistoryRow = signal<StockHistory | null>(null);
   readonly inventoryItems = signal<InventoryItemDto[]>([]);
   readonly catalogProducts = signal<AdminProduct[]>([]);
   readonly categoryNames = signal<Map<string, string>>(new Map());
@@ -99,6 +111,7 @@ export class AdminInventoryPageComponent implements OnInit {
   readonly status = signal('');
   readonly changeType = signal('');
   readonly fromDate = signal(new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10));
+  readonly historyRange = signal<'7' | '30' | '90' | 'all'>('30');
   readonly page = signal(1);
   readonly modal = signal<DialogKind | null>(null);
   readonly activeItem = signal<StockItem | null>(null);
@@ -122,7 +135,8 @@ export class AdminInventoryPageComponent implements OnInit {
       .filter(b => b.status === 'ACTIVE' && (isAdmin || accessibleIds.has(b.id)))
       .map(b => b.name);
   });
-  readonly pageSize = 6;
+  readonly stockPageSize = 6;
+  readonly historyPageSize = 9;
   readonly productOptions = computed(() => {
     const catalog = this.catalogBySku();
     return this.inventoryItems().filter(item =>
@@ -157,18 +171,26 @@ export class AdminInventoryPageComponent implements OnInit {
   }));
   readonly historyFiltered = computed(() => this.history().filter(row => {
     const search = this.search().trim().toLocaleLowerCase('vi');
-    const day = row.date.slice(6, 10) + '-' + row.date.slice(3, 5) + '-' + row.date.slice(0, 2);
-    return (!search || `${row.item} ${row.sku}`.toLocaleLowerCase('vi').includes(search)) &&
+    const parsedDate = new Date(row.createdAt);
+    const day = Number.isNaN(parsedDate.getTime()) ? '' : parsedDate.toISOString().slice(0, 10);
+    return (!search || `${row.transactionCode} ${row.sourceLabel} ${row.item} ${row.sku}`.toLocaleLowerCase('vi').includes(search)) &&
       (!this.branch() || row.branchId === this.branchId(this.branch())) &&
       (!this.changeType() || row.action === this.changeType()) &&
       (!this.fromDate() || day >= this.fromDate());
   }));
-  readonly currentRows = computed(() => this.stockFiltered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
-  readonly currentHistory = computed(() => this.historyFiltered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
-  readonly totalPages = computed(() => Math.max(1, Math.ceil((this.tab() === 'stock' ? this.stockFiltered().length : this.historyFiltered().length) / this.pageSize)));
-  readonly pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+  readonly currentRows = computed(() => this.stockFiltered().slice((this.page() - 1) * this.stockPageSize, this.page() * this.stockPageSize));
+  readonly currentHistory = computed(() => this.historyFiltered().slice((this.page() - 1) * this.historyPageSize, this.page() * this.historyPageSize));
+  readonly totalPages = computed(() => {
+    const size = this.tab() === 'stock' ? this.stockPageSize : this.historyPageSize;
+    const total = this.tab() === 'stock' ? this.stockFiltered().length : this.historyFiltered().length;
+    return Math.max(1, Math.ceil(total / size));
+  });
+  readonly pageNumbers = computed(() => adminPageWindowWithEdges(this.page(), this.totalPages()));
   readonly visibleCount = computed(() => this.tab() === 'stock' ? this.currentRows().length : this.currentHistory().length);
   readonly totalCount = computed(() => this.tab() === 'stock' ? this.stockFiltered().length : this.historyFiltered().length);
+  readonly currentHistoryTransactionCount = computed(() =>
+    new Set(this.currentHistory().map(row => row.groupKey)).size,
+  );
   readonly currentQuantity = computed(() => this.modal() === 'receipt' ? this.receiptStock()?.quantity ?? 0 : this.activeItem()?.quantity ?? 0);
   readonly preview = computed(() => {
     const amount = this.quantity() ?? 0;
@@ -187,6 +209,7 @@ export class AdminInventoryPageComponent implements OnInit {
   }[this.modal() ?? 'receipt']));
 
   ngOnInit(): void {
+    if (this.route.snapshot.queryParamMap.get('tab') === 'history') this.switchTab('history');
     this.loadAll();
   }
 
@@ -234,8 +257,12 @@ export class AdminInventoryPageComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef),
       finalize(() => this.historyLoading.set(false)),
     ).subscribe({
-      next: transactions => this.history.set(this.makeHistoryRows(transactions)),
+      next: transactions => {
+        this.rawTransactions.set(transactions);
+        this.history.set(this.makeHistoryRows(transactions));
+      },
       error: (error: unknown) => {
+        this.rawTransactions.set([]);
         this.history.set([]);
         this.historyError.set(adminErrorMessage(error, 'Không tải được lịch sử kho. Vui lòng thử lại.'));
       },
@@ -273,21 +300,30 @@ export class AdminInventoryPageComponent implements OnInit {
   private makeHistoryRows(transactions: InventoryTransactionDto[]): StockHistory[] {
     const items = new Map(this.inventoryItems().map(item => [item.id, item]));
     const catalog = this.catalogBySku();
-    const actions: Record<string, string> = { RECEIPT: 'Nhập kho', ISSUE: 'Xuất kho', ADJUSTMENT: 'Điều chỉnh', TRANSFER: 'Chuyển kho' };
+    const actions: Record<string, string> = {
+      RECEIPT: 'Nhập kho',
+      ISSUE: 'Xuất kho',
+      ADJUSTMENT: 'Điều chỉnh',
+      TRANSFER: 'Chuyển kho',
+    };
+    const branchLabel = (id: string): string => {
+      const branch = this.branchesData().find(value => value.id.toLowerCase() === id.toLowerCase());
+      if (!branch) return 'Chi nhánh chưa xác định';
+      return branch.code && /^Q\d+$/i.test(branch.code) ? branch.code.toUpperCase() : this.shortBranch(branch.name);
+    };
     const transferGroups = new Map<string, InventoryTransactionDto[]>();
     for (const tx of transactions) {
-      if (tx.transactionType !== 'TRANSFER' || tx.sourceType !== 'TRANSFER' || !tx.sourceId) continue;
+      if (tx.transactionType !== 'TRANSFER' || !tx.sourceId) continue;
       const group = transferGroups.get(tx.sourceId) ?? [];
       group.push(tx);
       transferGroups.set(tx.sourceId, group);
     }
-    const branchLabel = (id: string): string => {
-      const branch = this.branchesData().find(value => value.id.toLowerCase() === id.toLowerCase());
-      if (!branch) return 'Chi nhánh chưa xác định';
-      return branch.code && /^Q\\d+$/i.test(branch.code) ? branch.code.toUpperCase() : this.shortBranch(branch.name);
-    };
     return transactions.map(tx => {
-      const transfer = tx.sourceId && tx.sourceType === 'TRANSFER' ? transferGroups.get(tx.sourceId) ?? [] : [];
+      const sku = items.get(tx.inventoryItemId)?.sku || '';
+      const product = catalog.get(sku.trim().toLowerCase());
+      const transfer = tx.transactionType === 'TRANSFER' && tx.sourceId
+        ? transferGroups.get(tx.sourceId) ?? []
+        : [];
       const origin = transfer.find(value => value.changeQty < 0);
       const destination = transfer.find(value => value.changeQty > 0);
       const route = tx.transactionType === 'TRANSFER' && origin && destination
@@ -295,28 +331,93 @@ export class AdminInventoryPageComponent implements OnInit {
         : branchLabel(tx.branchId);
       const date = new Date(tx.createdAt);
       const two = (n: number) => String(n).padStart(2, '0');
-      const formatted = `${two(date.getDate())}/${two(date.getMonth() + 1)}/${date.getFullYear()} ${two(date.getHours())}:${two(date.getMinutes())}`;
+      const formatted = Number.isNaN(date.getTime()) ? '—'
+        : `${two(date.getDate())}/${two(date.getMonth() + 1)} ${two(date.getHours())}:${two(date.getMinutes())}`;
+      const explicitCode = tx.transactionCode || tx.groupCode || tx.code || '';
+      const sourceIdentity = tx.sourceId ? `${tx.sourceType || 'SOURCE'}:${tx.sourceId}` : '';
+      const timeBucket = Number.isNaN(date.getTime()) ? tx.createdAt : date.toISOString();
+      const groupKey = explicitCode
+        ? `code:${explicitCode}`
+        : sourceIdentity
+          ? `${tx.transactionType}:${sourceIdentity}:${timeBucket}`
+          : `row:${tx.id}`;
+      const groupedRows = transactions.filter(other => {
+        const otherCode = other.transactionCode || other.groupCode || other.code || '';
+        if (explicitCode) return otherCode === explicitCode;
+        if (!sourceIdentity) return other.id === tx.id;
+        return other.transactionType === tx.transactionType
+          && other.sourceId === tx.sourceId
+          && (other.sourceType || '') === (tx.sourceType || '')
+          && other.createdAt === tx.createdAt;
+      });
+      const transactionCode = explicitCode || groupedRows[0]?.id || tx.id;
+      const sourceLabel = tx.sourceCode || tx.referenceCode || tx.sourceId || '';
       return {
-      id: tx.id,
-      date: formatted,
-      item: catalog.get((items.get(tx.inventoryItemId)?.sku || '').trim().toLowerCase())?.name
-        || items.get(tx.inventoryItemId)?.name || tx.inventoryItemId,
-      sku: items.get(tx.inventoryItemId)?.sku || '—',
-      variant: (() => {
-        const sku = items.get(tx.inventoryItemId)?.sku || '';
-        const product = catalog.get(sku.trim().toLowerCase());
-        return product?.hasVariant ? this.normalizedVariant(product.label) : '—';
-      })(),
-      branch: route,
-      branchId: tx.branchId,
-      action: actions[tx.transactionType] || tx.transactionType,
-      reason: tx.reason,
-      delta: tx.changeQty > 0 ? `+${tx.changeQty}` : String(tx.changeQty),
-      after: String(tx.afterQty),
-      reference: tx.id.slice(-8).toUpperCase(),
-      actor: '—',
-    };
+        id: tx.id,
+        groupKey,
+        transactionCode,
+        createdAt: tx.createdAt,
+        date: formatted,
+        item: product?.name || items.get(tx.inventoryItemId)?.name || tx.inventoryItemId,
+        sku: items.get(tx.inventoryItemId)?.sku || '—',
+        variant: product?.hasVariant ? this.normalizedVariant(product.label) : '—',
+        branch: route,
+        branchId: tx.branchId,
+        action: actions[tx.transactionType] || tx.transactionType,
+        reason: tx.reason,
+        delta: tx.changeQty > 0 ? `+${tx.changeQty}` : String(tx.changeQty),
+        after: String(tx.afterQty),
+        sourceLabel,
+        sourceType: tx.sourceType || '',
+        sourceId: tx.sourceId || '',
+        actor: tx.actorName || tx.actorId || 'System',
+      };
     });
+  }
+
+  openTransactionDrawer(row: StockHistory): void {
+    const group = this.rawTransactions().filter(tx => {
+      const explicitCode = tx.transactionCode || tx.groupCode || tx.code || '';
+      if (row.groupKey.startsWith('code:')) return explicitCode === row.transactionCode;
+      if (row.groupKey.startsWith('row:')) return tx.id === row.id;
+      return tx.transactionType === this.transactionTypeForAction(row.action)
+        && (tx.sourceId || '') === row.sourceId
+        && (tx.sourceType || '') === row.sourceType
+        && tx.createdAt === row.createdAt;
+    });
+    this.selectedHistoryRow.set(row);
+    this.selectedTransactionGroup.set(group.length ? group : this.rawTransactions().filter(tx => tx.id === row.id));
+  }
+
+  closeTransactionDrawer(): void {
+    this.selectedTransactionGroup.set([]);
+    this.selectedHistoryRow.set(null);
+  }
+
+  referenceLink(row: StockHistory | null): string {
+    if (!row?.sourceId) return '';
+    const type = row.sourceType.toUpperCase();
+    if (type.includes('RETURN') || type === 'RT') return '/admin/order-returns/' + encodeURIComponent(row.sourceId);
+    if (type.includes('ORDER')) return '/admin/orders/' + encodeURIComponent(row.sourceId);
+    if (type.includes('SERVICE') || type === 'SR') return '/admin/service-records/' + encodeURIComponent(row.sourceId);
+    return '';
+  }
+
+  private transactionTypeForAction(action: string): InventoryTransactionDto['transactionType'] {
+    switch (action) {
+      case 'Nhập kho': return 'RECEIPT';
+      case 'Xuất kho': return 'ISSUE';
+      case 'Chuyển kho': return 'TRANSFER';
+      default: return 'ADJUSTMENT';
+    }
+  }
+
+  setHistoryRange(value: string): void {
+    const range = value === '7' || value === '90' || value === 'all' ? value : '30';
+    this.historyRange.set(range);
+    this.fromDate.set(range === 'all' ? '' :
+      new Date(Date.now() - Number(range) * 86400000).toISOString().slice(0, 10));
+    this.onFilter();
   }
 
   shortBranch(value: string): string { return value.replace('Chi nhánh Quận ', 'Q'); }
@@ -399,6 +500,7 @@ export class AdminInventoryPageComponent implements OnInit {
     this.type.set('');
     this.changeType.set('');
     this.menuId.set(null);
+    this.closeTransactionDrawer();
   }
   onFilter(): void { this.page.set(1); }
   openDialog(kind: DialogKind, item?: StockItem): void {

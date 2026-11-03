@@ -75,3 +75,14 @@
 @media(max-width:800px){.return-detail__columns{grid-template-columns:1fr}.return-detail__summary{grid-template-columns:1fr}}
 @media(max-width:520px){.return-detail{padding:18px 12px}.return-detail__metadata{grid-template-columns:1fr}.return-detail__dialog-actions{flex-wrap:wrap}}
 
+
+/* Figma RT detail: real receipt identifiers are links, not disabled actions. */
+.return-detail__stock-links{display:flex;flex-wrap:wrap;gap:6px 10px}
+.return-detail__stock-links a{color:#0d47a1;text-decoration:underline;font-size:12px;overflow-wrap:anywhere}
+.return-detail__button--stock{
+  display:inline-flex;align-items:center;justify-content:center;
+  text-decoration:none;white-space:nowrap;
+}
+.return-detail__button--stock:hover{background:#f0f6ff}
+.return-detail__heading-main{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.return-detail__heading h1{margin-bottom:0}

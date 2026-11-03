@@ -28,11 +28,11 @@ export interface BranchSettingsPreview {
         <form (submit)="save($event)" class="branch-settings__form">
           <label>
             <span>Tên chi nhánh <b>*</b></span>
-            <input #nameField type="text" maxlength="120" [value]="name()" (input)="name.set(nameField.value)" required />
+            <input #nameField type="text" maxlength="120" placeholder="Nhập tên chi nhánh" [value]="name()" (input)="name.set(nameField.value)" required />
           </label>
           <label>
             <span>Địa chỉ <b>*</b></span>
-            <input #addressField type="text" maxlength="240" [value]="address()" (input)="address.set(addressField.value)" required />
+            <input #addressField type="text" maxlength="240" placeholder="Nhập địa chỉ chi nhánh" [value]="address()" (input)="address.set(addressField.value)" required />
           </label>
           <label>
             <span>Hotline</span>

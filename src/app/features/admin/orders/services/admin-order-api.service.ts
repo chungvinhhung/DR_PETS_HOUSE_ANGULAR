@@ -53,13 +53,19 @@ export interface OrderListResponse {
 export type ReturnStatus = 'REQUESTED' | 'PROCESSING' | 'RECEIVED' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
 export interface OrderReturnSummary {
   id: string;
+  code?: string;
   orderId: string;
+  orderCode?: string | null;
+  fulfillmentBranchId?: string | null;
+  createdAt?: string;
+  allowedActions?: string[];
   status: ReturnStatus;
   items: {
     orderItemId: string; productName: string; orderedQty: number;
     alreadyReturnedQty: number; requestedQty: number; refundAmount: number;
     /** Optional fields: only display them if the backend actually supplies them. */
     receivedQty?: number | null; approvedQty?: number | null; finalRefundAmount?: number | null;
+    quality?: 'RESELLABLE' | 'DAMAGED' | 'DISCARDED';
   }[];
   refundBreakdown: { merchandiseNet: number; shippingRefunded: number; total: number };
   /** Optional authoritative settled amount when BE adds it to the Return DTO. */
@@ -86,6 +92,10 @@ export interface OrderRefundRecord {
 }
 
 export type ReturnStaffAction = 'process' | 'receive';
+export interface ReturnInspectionBody {
+  items: Array<{orderItemId:string;receivedQty:number;quality:'RESELLABLE'|'DAMAGED'|'DISCARDED'}>;
+  note?: string;
+}
 export type ReturnManagerAction = 'approve' | 'reject';
 export type OrderWriteAction = 'confirm' | 'process' | 'ship' | 'mark-delivered';
 @Injectable({ providedIn: 'root' })
@@ -119,9 +129,10 @@ export class AdminOrderApiService {
   getReturn(id: string): Observable<OrderReturnSummary> {
     return this.api.get<OrderReturnSummary>('/order-returns/' + encodeURIComponent(id));
   }
-  returnStaffAction(id: string, action: ReturnStaffAction): Observable<OrderReturnSummary> {
-    return this.api.post<OrderReturnSummary, Record<string, never>>(
-      '/order-returns/' + encodeURIComponent(id) + '/' + action, {});
+  returnStaffAction(id: string, action: ReturnStaffAction, body?: ReturnInspectionBody): Observable<OrderReturnSummary> {
+    return this.api.post<OrderReturnSummary, ReturnInspectionBody | Record<string, never>>(
+      '/order-returns/' + encodeURIComponent(id) + '/' + action,
+      action === 'receive' ? (body ?? {items:[]}) : {});
   }
   returnManagerAction(id: string, action: ReturnManagerAction, body: { note?: string; reason?: string }): Observable<OrderReturnSummary> {
     return this.api.post<OrderReturnSummary, { note?: string; reason?: string }>(
@@ -139,10 +150,20 @@ export class AdminOrderApiService {
   get(id: string): Observable<OrderRecord> {
     return this.api.get<OrderRecord>('/orders/' + encodeURIComponent(id));
   }
-  changeStatus(id: string, action: OrderWriteAction, shipping?: { carrier?: string; trackingNumber?: string }): Observable<OrderRecord> {
+  changeStatus(
+    id: string,
+    action: OrderWriteAction,
+    body?: { carrier?: string; trackingNumber?: string; note?: string },
+  ): Observable<OrderRecord> {
+    const payload: { carrier?: string; trackingNumber?: string; note?: string } = {};
+    if (body?.note) payload.note = body.note;
+    if (action === 'ship') {
+      if (body?.carrier) payload.carrier = body.carrier;
+      if (body?.trackingNumber) payload.trackingNumber = body.trackingNumber;
+    }
     return this.api.post<OrderRecord, object>(
       '/orders/' + encodeURIComponent(id) + '/' + action,
-      action === 'ship' ? (shipping ?? {}) : {},
+      payload,
     );
   }
   cancel(id: string, reason: string, idempotencyKey: string): Observable<OrderRecord> {

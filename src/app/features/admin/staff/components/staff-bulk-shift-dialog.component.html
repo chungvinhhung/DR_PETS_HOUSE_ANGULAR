@@ -1,0 +1,169 @@
+<div class="bulk-shift-overlay" (click)="askClose()">
+  <section class="bulk-shift-dialog" role="dialog" aria-modal="true" aria-labelledby="bulk-shift-title"
+    (click)="$event.stopPropagation()">
+    <header class="bulk-shift-heading">
+      <div>
+        <h2 id="bulk-shift-title">Phân ca nhiều ngày</h2>
+        <p>{{ displayName(employee) }} · {{ branchName }}</p>
+      </div>
+      <button type="button" aria-label="Đóng" class="bulk-shift-close" [disabled]="saving()" (click)="askClose()">×</button>
+    </header>
+
+    <div class="bulk-shift-body">
+      <div class="bulk-shift-section-title">
+        <strong>Chọn các ca cần phân công</strong>
+        <button type="button" class="bulk-shift-text-button" [disabled]="!chosen().length || saving()"
+          (click)="clearAll()">Bỏ chọn tất cả</button>
+      </div>
+
+      @if (loading()) {
+        <p class="bulk-shift-note" role="status">Đang kiểm tra lịch làm việc của nhân viên tại các chi nhánh bạn có quyền xem...</p>
+      }
+      <div class="bulk-shift-scroller">
+        <table class="bulk-shift-matrix">
+          <thead>
+            <tr>
+              <th scope="col">Ca / Ngày</th>
+              @for (date of dates; track date) {
+                <th scope="col">{{ dayLabel(date) }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (shift of templates(); track shift.id) {
+              <tr>
+                <th scope="row">
+                  <strong>{{ shift.name }}</strong>
+                  <small>{{ shift.start }}–{{ shift.end }}{{ shift.end < shift.start ? ' (+1)' : '' }}</small>
+                  <button type="button" class="bulk-shift-row-select" [disabled]="loading() || !checkReady() || saving()"
+                    (click)="toggleRow(shift)">{{ rowAllChecked(shift) ? 'Bỏ chọn cả hàng' : 'Chọn cả hàng' }}</button>
+                  <button type="button" class="bulk-shift-row-delete" [attr.aria-label]="'Xóa dòng '+shift.name"
+                    [disabled]="saving()" (click)="removeTemplate(shift.id)">Xóa ca</button>
+                </th>
+                @for (date of dates; track date) {
+                  <td>
+                    @if (available(shift,date)) {
+                      <button type="button" class="bulk-shift-cell" [class.bulk-shift-cell--checked]="checked(shift,date)"
+                        [disabled]="loading() || !checkReady() || saving() || !!conflict()"
+                        [attr.aria-pressed]="checked(shift,date)"
+                        [attr.aria-label]="shift.name+' ngày '+dayLabel(date)+(checked(shift,date)?' đã chọn':' chưa chọn')"
+                        (click)="toggleCell(shift,date)">
+                        @if (checked(shift,date)) { <span class="bulk-shift-tick" aria-hidden="true">✓</span> }
+                        @else { <span class="bulk-shift-empty-tick" aria-hidden="true"></span> }
+                      </button>
+                    } @else {
+                      <span class="bulk-shift-cell bulk-shift-cell--unavailable" aria-label="Ngày này không áp dụng ca" title="Không áp dụng ca">–</span>
+                    }
+                  </td>
+                }
+              </tr>
+            } @empty {
+              <tr><td [attr.colspan]="dates.length+1" class="bulk-shift-empty">
+                Chưa có ca trong ma trận. Hãy thêm ca bên dưới để phân công cho những ngày đã chọn.
+              </td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="bulk-shift-legend" aria-label="Chú thích trạng thái ca">
+        <span><i class="bulk-shift-legend-picked"></i> Đã chọn</span>
+        <span><i class="bulk-shift-legend-empty"></i> Có thể chọn</span>
+        <span><i class="bulk-shift-legend-disabled"></i> Không áp dụng</span>
+      </div>
+
+      <div class="bulk-shift-add">
+        <div class="bulk-shift-add-head">
+          <strong>Ca làm việc trong ma trận</strong>
+          <button type="button" class="bulk-shift-add-toggle" [disabled]="saving()"
+            (click)="adding.set(!adding())">{{ adding() ? 'Thu gọn' : '+ Tạo ca làm việc mới' }}</button>
+        </div>
+        @if (adding()) {
+          <div class="bulk-shift-add-form">
+            <label>Tên ca<input type="text" maxlength="80" placeholder="Ví dụ: Ca sáng"
+              [value]="formName()" (input)="formName.set($any($event.target).value)"></label>
+            <label>Bắt đầu<input type="time" [value]="formStart()" (change)="formStart.set($any($event.target).value)"></label>
+            <label>Kết thúc<input type="time" [value]="formEnd()" (change)="formEnd.set($any($event.target).value)"></label>
+            <fieldset class="bulk-shift-applicable">
+              <legend>Ngày áp dụng</legend>
+              @for (date of dates; track date) {
+                <label><input type="checkbox" [checked]="formDates().includes(date)"
+                  (change)="toggleDayForm(date)">{{ dayLabel(date) }}</label>
+              }
+            </fieldset>
+            <div class="bulk-shift-add-actions">
+              <button type="button" class="bulk-shift-secondary" (click)="adding.set(false)">Hủy</button>
+              <button type="button" class="bulk-shift-primary" (click)="addTemplate()">Thêm vào ma trận</button>
+            </div>
+          </div>
+        }
+        <p class="bulk-shift-be-note">BE chưa cung cấp API mẫu ca và ngày áp dụng của chi nhánh. Ca thêm tại đây chỉ dùng cho lần phân công này, không tạo mẫu ca dùng chung.</p>
+      </div>
+
+      @if (replacedIds().length) {
+        <p class="bulk-shift-replace-note" role="status">{{ replacedIds().length }} ca hiện có đang chờ được thay thế. Lịch cũ chưa bị xóa. Chức năng lưu thay thế cần API atomic từ BE.</p>
+      }
+      @if (info()) { <p class="bulk-shift-info" role="status">{{ info() }}</p> }
+      @if (error()) { <p class="bulk-shift-error" role="alert">{{ error() }}</p> }
+    </div>
+
+    <footer class="bulk-shift-footer">
+      <span class="bulk-shift-count"><b>{{ selectedCount() }} ca được chọn</b><small>{{ affectedDays() }} ngày có phân công</small></span>
+      <div class="bulk-shift-footer-actions">
+        <button type="button" class="bulk-shift-secondary" [disabled]="saving()" (click)="askClose()">Hủy</button>
+        <button type="button" class="bulk-shift-primary" [disabled]="loading() || !checkReady() || saving() || !selectedCount() || !!conflict()"
+          (click)="save()">{{ saving() ? 'Đang lưu...' : 'Lưu phân ca' }}</button>
+      </div>
+    </footer>
+  </section>
+</div>
+
+@if (conflict(); as found) {
+  <div class="bulk-shift-conflict-overlay">
+    <section class="bulk-shift-conflict" role="alertdialog" aria-modal="true"
+      aria-labelledby="bulk-shift-conflict-title" aria-describedby="bulk-shift-conflict-description">
+      <div class="bulk-shift-conflict-heading">
+        <span class="bulk-shift-alert-icon" aria-hidden="true">!</span>
+        <h2 id="bulk-shift-conflict-title">Phát hiện lịch trùng thời gian</h2>
+      </div>
+      <p id="bulk-shift-conflict-description">
+        {{ displayName(employee) }} đã có ca làm việc giao với thời gian vừa chọn.
+        Chọn thay thế để ghi nhận thay đổi, hoặc hủy bỏ các ô vừa chọn.
+      </p>
+      <div class="bulk-shift-conflict-list">
+        <strong>Ca đang chọn</strong>
+        @for (key of found.keys; track key) { <p>{{ shiftLabel(key) }} · {{ branchName }}</p> }
+        @if (found.existing.length) {
+          <strong>Ca đã lưu bị ảnh hưởng</strong>
+          @for (item of found.existing; track item.id) {
+            <p>{{ overlappingDescription(item) }}</p>
+          }
+        }
+        @if (found.draftKeys.length) {
+          <strong>Ca vừa chọn trong ma trận bị ảnh hưởng</strong>
+          @for (key of found.draftKeys; track key) {
+            <p>{{ shiftLabel(key) }}</p>
+          }
+        }
+      </div>
+      <p class="bulk-shift-conflict-hint">Thay thế chỉ được ghi nhận tạm thời. Ca đã lưu không bị xóa trước khi hệ thống lưu thay đổi thành công.</p>
+      <div class="bulk-shift-conflict-actions">
+        <button type="button" class="bulk-shift-secondary" (click)="cancelConflict()">Hủy bỏ</button>
+        <button type="button" class="bulk-shift-primary" (click)="acceptReplacement()">Thay thế bằng lịch này</button>
+      </div>
+    </section>
+  </div>
+}
+
+@if (confirmClose()) {
+  <div class="bulk-shift-conflict-overlay">
+    <section class="bulk-shift-conflict bulk-shift-discard" role="alertdialog" aria-modal="true"
+      aria-labelledby="bulk-shift-discard-title">
+      <h2 id="bulk-shift-discard-title">Bỏ các phân ca chưa lưu?</h2>
+      <p>Những ô bạn đã chọn trong ma trận sẽ không được lưu vào hệ thống.</p>
+      <div class="bulk-shift-conflict-actions">
+        <button type="button" class="bulk-shift-secondary" (click)="confirmClose.set(false)">Tiếp tục chỉnh sửa</button>
+        <button type="button" class="bulk-shift-primary" (click)="closed.emit()">Bỏ thay đổi</button>
+      </div>
+    </section>
+  </div>
+}

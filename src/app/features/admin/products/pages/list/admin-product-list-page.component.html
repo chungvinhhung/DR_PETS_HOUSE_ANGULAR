@@ -11,63 +11,154 @@
     </nav>
 
     <section class="product-panel" aria-label="Danh sách sản phẩm">
-      <div class="toolbar web2-management-toolbar web2-filterbar">
-        <label class="search web2-management-search">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.2 4.2"/></svg>
-          <input type="search" [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput($event)" (keyup.enter)="applyFilters()" placeholder="Tìm kiếm tên sản phẩm hoặc SKU..." aria-label="Tìm sản phẩm theo tên hoặc SKU">
+      <div class="toolbar web2-management-toolbar web2-filterbar product-filter-toolbar">
+        <label class="search web2-management-search product-filter-search">
+          <img class="product-filter-search-icon" src="/assets/service-catalog/search.svg" alt="" aria-hidden="true">
+          <input type="search" [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput($event)"
+            (keyup.enter)="applyFilters()" placeholder="Tìm kiếm tên sản phẩm hoặc SKU..."
+            aria-label="Tìm sản phẩm theo tên hoặc SKU">
         </label>
-        <div class="toolbar-actions web2-management-actions">
-          <button class="outline-btn filter-trigger web2-management-filter-button" type="button" [attr.aria-expanded]="filterOpen" aria-controls="product-filters" (click)="filterOpen = !filterOpen">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 5h16l-6.5 7.5V19l-3 1.5v-8L4 5z"/></svg>Bộ lọc
-          </button>
-          <a class="primary-btn web2-add-button" routerLink="/admin/products/new"><span class="web2-add-icon" aria-hidden="true">+</span><span>Thêm sản phẩm</span></a>
-        </div>
-      </div>
-
-      @if (filterOpen) {
-        <div class="filter-panel" id="product-filters" role="group" aria-label="Bộ lọc sản phẩm">
-          <h2>Bộ lọc sản phẩm</h2>
-          <div class="filter-columns">
-            <fieldset><legend>Danh mục</legend>
-              @for (cat of categories(); track cat.id) {
-                <label class="check"><input type="checkbox" [checked]="categoryFilter === cat.id" (change)="toggleCategory(cat.id)">{{ cat.name }}</label>
+        <div class="toolbar-actions web2-management-actions product-filter-actions">
+          <div class="product-filter-choices">
+            <div class="product-filter-control product-filter-control--category" data-product-filter-ui>
+              <button type="button" class="outline-btn product-filter-trigger"
+                [class.has-filter]="activeCount('category')>0"
+                [attr.aria-expanded]="openPanel==='category'"
+                aria-controls="product-category-options"
+                (click)="togglePanel('category')">
+                <span class="product-filter-trigger-label">Danh mục</span>
+                <span class="product-filter-trigger-trailing">
+                  @if(activeCount('category')){<span class="product-filter-count">{{activeCount('category')}}</span>}
+                  <img class="product-filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
+                </span>
+              </button>
+              @if(openPanel==='category'){
+                <div class="product-filter-popover product-filter-popover--quick" id="product-category-options" role="group" aria-label="Chọn danh mục sản phẩm">
+                  <strong>Danh mục</strong>
+                  <div class="product-filter-options">
+                    @for(cat of categories();track cat.id){
+                      <label class="check"><input type="checkbox" [checked]="categoryFilters.includes(cat.id)"
+                        (change)="toggleCategory(cat.id)">{{cat.name}}</label>
+                    }
+                    @if(!categories().length){<span class="filter-hint">Chưa có danh mục để chọn</span>}
+                  </div>
+                  <div class="filter-footer">
+                    <button type="button" class="outline-btn" (click)="clearQuickFilter()">Xóa</button>
+                    <button type="button" class="primary-btn" (click)="applyFilters()">Áp dụng</button>
+                  </div>
+                </div>
               }
-              @if (!categories().length) { <span class="filter-hint">Chưa tải được danh mục</span> }
-            </fieldset>
-            <fieldset><legend>Loại sử dụng</legend>
-              <label class="check"><input type="checkbox" [checked]="usageFilter === 'SALE'" (change)="toggleUsage('SALE')">Hàng bán</label>
-              <label class="check"><input type="checkbox" [checked]="usageFilter === 'SHARED'" (change)="toggleUsage('SHARED')">Dùng chung</label>
-              <label class="check"><input type="checkbox" [checked]="usageFilter === 'SERVICE_SUPPLY'" (change)="toggleUsage('SERVICE_SUPPLY')">Vật tư dịch vụ</label>
-            </fieldset>
-            <fieldset><legend>Khoảng giá</legend>
-              <label class="check"><input type="checkbox" [checked]="priceFilter === 'LOW'" (change)="togglePrice('LOW')">Dưới 100.000đ</label>
-              <label class="check"><input type="checkbox" [checked]="priceFilter === 'MID'" (change)="togglePrice('MID')">100.000–500.000đ</label>
-              <label class="check"><input type="checkbox" [checked]="priceFilter === 'HIGH'" (change)="togglePrice('HIGH')">Trên 500.000đ</label>
-            </fieldset>
-            <fieldset><legend>Trạng thái</legend>
-              @if (!archiveView) {
-                <label class="check"><input type="checkbox" [checked]="statusFilter === 'ACTIVE'" (change)="toggleStatus('ACTIVE')">Đang hoạt động</label>
-                <label class="check"><input type="checkbox" [checked]="statusFilter === 'INACTIVE'" (change)="toggleStatus('INACTIVE')">Tạm ngưng</label>
-              } @else { <span class="filter-hint">Đang xem sản phẩm lưu trữ</span> }
-            </fieldset>
-            <fieldset><legend>Ngày tạo</legend>
-              <label class="check"><input type="checkbox" [checked]="daysFilter === 7" (change)="toggleDays(7)">7 ngày qua</label>
-              <label class="check"><input type="checkbox" [checked]="daysFilter === 30" (change)="toggleDays(30)">30 ngày qua</label>
-              <label class="check"><input type="checkbox" [checked]="daysFilter === 90" (change)="toggleDays(90)">90 ngày qua</label>
-            </fieldset>
+            </div>
+            <div class="product-filter-control product-filter-control--status" data-product-filter-ui>
+              <select class="product-filter-native-status"
+                aria-label="Lọc theo trạng thái sản phẩm"
+                [value]="selectedStatus()" [disabled]="archiveView"
+                (change)="setStatusFilter($any($event.target).value)">
+                <option value="ALL">Tất cả trạng thái</option>
+                <option value="ACTIVE">Đang hoạt động</option>
+                <option value="INACTIVE">Tạm ngưng</option>
+              </select>
+            </div>
+            <div class="product-filter-control product-filter-control--more" data-product-filter-ui>
+              <button type="button" class="outline-btn product-filter-trigger product-filter-trigger--more"
+                [attr.aria-expanded]="openPanel==='more'"
+                aria-controls="product-other-options" (click)="togglePanel('more')">
+                <img class="product-filter-funnel-icon" src="/assets/admin-product/figma-filter.svg" alt="" aria-hidden="true">
+                Bộ lọc khác
+                @if(activeCount('usage')+activeCount('price')+activeCount('days')){
+                  <span class="product-filter-count">{{activeCount('usage')+activeCount('price')+activeCount('days')}}</span>
+                }
+              </button>
+              @if(openPanel==='more'){
+                <div class="product-filter-popover product-filter-popover--more" id="product-other-options" role="group" aria-label="Bộ lọc khác">
+                  <h2>Bộ lọc khác</h2>
+                  <div class="product-filter-groups">
+                    <fieldset class="product-filter-compact-category">
+                      <legend>Danh mục</legend>
+                      @for(cat of categories();track cat.id){
+                        <label class="check"><input type="checkbox" [checked]="categoryFilters.includes(cat.id)"
+                          (change)="toggleCategory(cat.id)">{{cat.name}}</label>
+                      }
+                    </fieldset>
+                    @if(!archiveView){
+                      <fieldset class="product-filter-compact-status">
+                        <legend>Trạng thái</legend>
+                        <select class="product-filter-advanced-select" aria-label="Lọc theo trạng thái sản phẩm"
+                          [value]="statusFilter" (change)="setDraftStatusFilter($any($event.target).value)">
+                          <option value="ALL">Tất cả trạng thái</option>
+                          <option value="ACTIVE">Đang hoạt động</option>
+                          <option value="INACTIVE">Tạm ngưng</option>
+                        </select>
+                      </fieldset>
+                    }
+                    <fieldset>
+                      <legend>Loại sử dụng</legend>
+                      <label class="check"><input type="checkbox" [checked]="usageFilters.includes('SALE')"
+                        (change)="toggleUsage('SALE')">Hàng bán</label>
+                      <label class="check"><input type="checkbox" [checked]="usageFilters.includes('SHARED')"
+                        (change)="toggleUsage('SHARED')">Dùng chung</label>
+                      <label class="check"><input type="checkbox" [checked]="usageFilters.includes('SERVICE_SUPPLY')"
+                        (change)="toggleUsage('SERVICE_SUPPLY')">Vật tư dịch vụ</label>
+                    </fieldset>
+                    <fieldset>
+                      <legend>Khoảng giá</legend>
+                      <label class="check"><input type="checkbox" [checked]="priceFilters.includes('LOW')"
+                        (change)="togglePrice('LOW')">Dưới 100.000đ</label>
+                      <label class="check"><input type="checkbox" [checked]="priceFilters.includes('MID')"
+                        (change)="togglePrice('MID')">100.000–500.000đ</label>
+                      <label class="check"><input type="checkbox" [checked]="priceFilters.includes('HIGH')"
+                        (change)="togglePrice('HIGH')">Trên 500.000đ</label>
+                    </fieldset>
+                    <fieldset>
+                      <legend>Ngày tạo</legend>
+                      <label class="check"><input type="radio" name="product-created-period"
+                        [checked]="daysFilter===7" (change)="toggleDays(7)">7 ngày qua</label>
+                      <label class="check"><input type="radio" name="product-created-period"
+                        [checked]="daysFilter===30" (change)="toggleDays(30)">30 ngày qua</label>
+                      <label class="check"><input type="radio" name="product-created-period"
+                        [checked]="daysFilter===90" (change)="toggleDays(90)">90 ngày qua</label>
+                    </fieldset>
+                  </div>
+                  <div class="filter-footer">
+                    <button type="button" class="outline-btn" (click)="clearAdvancedFilters()">Xóa tất cả</button>
+                    <button type="button" class="primary-btn" (click)="applyFilters()">Áp dụng</button>
+                  </div>
+                </div>
+              }
+            </div>
           </div>
-          <div class="filter-footer">
-            <button class="outline-btn" type="button" (click)="clearFilters()">Xóa bộ lọc</button>
-            <button class="primary-btn" type="button" (click)="applyFilters(); filterOpen = false">Áp dụng</button>
-          </div>
+          <a class="primary-btn web2-add-button product-add-button" routerLink="/admin/products/new">
+            <img class="web2-add-icon product-filter-add-icon" src="/assets/admin-product/icon-add.svg" alt="" aria-hidden="true"><span>Thêm sản phẩm</span>
+          </a>
+        </div>
+        @if(openPanel){
+          <button type="button" class="product-filter-dismiss" tabindex="-1"
+            aria-label="Đóng bộ lọc" (click)="closePanel()"></button>
+        }
+      </div>
+      @if(activeChips().length){
+        <div class="product-filter-chips" aria-label="Bộ lọc đang áp dụng">
+          <span class="product-filter-chips__label">Đang lọc:</span>
+          @for(chip of activeChips();track chip.group){
+            <button type="button" class="product-filter-chip" (click)="removeFilter(chip.group)"
+              [attr.aria-label]="'Xóa bộ lọc '+chip.label">
+              {{chip.label}} <span aria-hidden="true">×</span>
+            </button>
+          }
+          <button type="button" class="product-filter-clear-all" (click)="clearFilters()">Xóa tất cả</button>
         </div>
       }
 
       @if (error()) {
-        
-        <button type="button" class="outline-btn" (click)="loadPage(pageNumber())">Thử lại</button>
+        <div class="product-list-load-error" role="alert">
+          <span>{{ error() }}</span>
+          <button type="button" class="outline-btn" [disabled]="loading()"
+            (click)="loadPage(failedPage() ?? pageNumber())">
+            Thử lại
+          </button>
+        </div>
       }
-      <div class="table-scroll">
+      <div class="table-scroll" (scroll)="closeArchiveMenu()">
         <table>
           <thead><tr>
             <th scope="col">STT</th><th scope="col">Hình ảnh</th><th scope="col">Tên sản phẩm</th><th scope="col">SKU / Biến thể</th><th scope="col">Danh mục</th><th scope="col">Giá</th><th scope="col" class="web2-cell-center">Tổng tồn kho</th><th scope="col" class="web2-cell-center">Ngày tạo</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th>
@@ -98,16 +189,26 @@
                   <td class="status-cell">
                     <span class="status" [class.active]="product.status === 'ACTIVE'" [class.archived]="product.status === 'ARCHIVED'">{{ product.status === 'ACTIVE' ? 'Đang hoạt động' : product.status === 'ARCHIVED' ? 'Đã lưu trữ' : 'Tạm ngưng' }}</span>
                   </td>
-                  <td class="actions">
-                    <a [routerLink]="['/admin/products', product.id, 'edit']" [queryParams]="product.status === 'ARCHIVED' ? { view: 'archived' } : null" title="Chỉnh sửa" [attr.aria-label]="'Chỉnh sửa ' + product.name">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m13 6 5 5M4 20l4.6-1 10.9-10.9a2.1 2.1 0 0 0-3-3L5.6 16z"/></svg>
-                    </a>
+                  <td class="actions" [class.product-archive-action-cell]="product.status === 'ARCHIVED'">
                     @if (product.status === 'ARCHIVED') {
-                      <button type="button" class="archive-action restore-action" [disabled]="!!updatingId()" (click)="requestRestore(product)" [attr.title]="'Khôi phục ' + product.name" [attr.aria-label]="'Khôi phục ' + product.name">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>
+                      <button type="button" class="product-archive-more-button"
+                        aria-haspopup="menu"
+                        [attr.aria-expanded]="archiveMenuProduct()?.id === product.id"
+                        [attr.aria-label]="'Thao tác với ' + product.name"
+                        [disabled]="!!updatingId()"
+                        (click)="toggleArchiveMenu($event, product)">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true">
+                          <circle cx="6" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="18" cy="12" r="2"></circle>
+                        </svg>
                       </button>
                     } @else {
-                      <button type="button" class="archive-action" [disabled]="!!updatingId()" (click)="requestArchive(product)" title="Lưu trữ sản phẩm" [attr.aria-label]="'Lưu trữ ' + product.name">
+                      <a [routerLink]="['/admin/products', product.id, 'edit']" title="Chỉnh sửa"
+                        [attr.aria-label]="'Chỉnh sửa ' + product.name">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m13 6 5 5M4 20l4.6-1 10.9-10.9a2.1 2.1 0 0 0-3-3L5.6 16z"/></svg>
+                      </a>
+                      <button type="button" class="archive-action" [disabled]="!!updatingId()"
+                        (click)="requestArchive(product)" title="Lưu trữ sản phẩm"
+                        [attr.aria-label]="'Lưu trữ ' + product.name">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="1"/><path d="M3 4h18v4H3zM12 11v6m-3-3 3 3 3-3"/></svg>
                       </button>
                     }
@@ -119,18 +220,44 @@
         </table>
       </div>
       <footer class="pagination">
-        <span>Đang hiển thị {{ products().length }} trên tổng số {{ totalProducts() === null ? '…' : totalProducts() }} sản phẩm</span>
+        <span>
+          @if(totalProducts() === null) {
+            Đang hiển thị {{products().length}} sản phẩm
+            @if(countUnavailable()){ · Chưa xác định tổng số trang}
+          } @else {
+            Đang hiển thị {{products().length}} trên tổng số {{totalProducts()}} sản phẩm
+          }
+        </span>
         <div class="pagination-buttons">
           <button type="button" (click)="previous()" [disabled]="loading() || pageNumber() === 1" aria-label="Trang trước">‹</button>
-          @for (page of visiblePageNumbers(); track page) {
-  <button type="button" class="pagination-page" [class.pagination-page--active]="page === pageNumber()" [attr.aria-current]="page === pageNumber() ? 'page' : null" [attr.aria-label]="'Đến trang ' + page" [disabled]="loading()" (click)="goToPage(page)">{{ page }}</button>
-}
+          @for (page of visiblePageNumbers(); track $index) {
+            @if(page==='…'){<span class="pagination-ellipsis" aria-hidden="true">…</span>}
+            @else {
+              <button type="button" class="pagination-page" [class.pagination-page--active]="page === pageNumber()"
+                [attr.aria-current]="page === pageNumber() ? 'page' : null"
+                [attr.aria-label]="'Đến trang ' + page" [disabled]="loading()" (click)="goToPage(page)">{{page}}</button>
+            }
+          }
           <button type="button" (click)="next()" [disabled]="loading() || !hasNextPage()" aria-label="Trang tiếp">›</button>
         </div>
       </footer>
     </section>
   </main>
 </app-admin-catalog-shell>
+
+@if (archiveMenuProduct(); as menuProduct) {
+  <!-- Keep the popup outside the scrolling table so bottom-row actions aren't clipped. -->
+  <div class="product-archive-action-menu" role="menu" id="product-archive-action-menu"
+    [attr.aria-label]="'Thao tác với ' + menuProduct.name"
+    [style.top.px]="archiveMenuPosition().top"
+    [style.left.px]="archiveMenuPosition().left"
+    (click)="$event.stopPropagation()">
+    <button type="button" role="menuitem" (click)="chooseArchiveAction('restore')">Khôi phục</button>
+    <button type="button" role="menuitem" (click)="chooseArchiveAction('edit')">Chỉnh sửa</button>
+    <button type="button" role="menuitem" class="product-archive-danger-action"
+      (click)="chooseArchiveAction('delete')">Xóa vĩnh viễn</button>
+  </div>
+}
 
 @if (archiveTarget(); as target) {
   <div class="product-leave-overlay" (keydown.escape)="closeArchiveDialog()">
@@ -157,6 +284,29 @@
       <div class="product-leave-actions">
         <button type="button" class="product-leave-stay" [disabled]="!!updatingId()" (click)="closeRestoreDialog()">Hủy bỏ</button>
         <button type="button" class="product-leave-exit" [disabled]="!!updatingId()" (click)="confirmRestore()">{{ updatingId() ? 'Đang khôi phục...' : 'Khôi phục sản phẩm' }}</button>
+      </div>
+    </section>
+  </div>
+}
+
+@if (deleteTarget(); as target) {
+  <div class="product-leave-overlay" (keydown.escape)="closeDeleteDialog()">
+    <section class="product-leave-dialog" role="alertdialog" aria-modal="true"
+      aria-labelledby="delete-product-title" aria-describedby="delete-product-desc" tabindex="-1">
+      <h2 id="delete-product-title">Xóa vĩnh viễn sản phẩm?</h2>
+      <p id="delete-product-desc">
+        Bạn đang yêu cầu xóa vĩnh viễn <strong>{{ target.name }}</strong>.
+        Thao tác này <strong>không thể hoàn tác</strong>. Chỉ nên tiếp tục nếu sản phẩm
+        không còn liên quan đến đơn hàng, tồn kho hoặc lịch sử giao dịch.
+      </p>
+      @if (deleteError()) {
+        <p class="product-permanent-delete-error" role="alert">{{ deleteError() }}</p>
+      }
+      <div class="product-leave-actions">
+        <button type="button" class="product-leave-stay" [disabled]="!!updatingId()"
+          (click)="closeDeleteDialog()">Hủy bỏ</button>
+        <button type="button" class="product-permanent-delete-confirm" [disabled]="!!updatingId()"
+          (click)="confirmDelete()">{{ updatingId() ? 'Đang xóa...' : 'Xác nhận xóa vĩnh viễn' }}</button>
       </div>
     </section>
   </div>

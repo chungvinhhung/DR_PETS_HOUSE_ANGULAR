@@ -1,0 +1,41 @@
+<app-admin-catalog-shell activeItem="moderation-feedback">
+  <main class="feedback-detail web2-admin-page">
+    @if (loading()) {
+      <app-admin-data-state kind="loading" title="Đang tải chi tiết phản hồi" />
+    } @else if (error() && !data()) {
+      <app-admin-data-state kind="error" title="Không thể tải chi tiết phản hồi" [message]="error()" (retry)="load()" />
+    } @else if (data(); as f) {
+      <app-admin-breadcrumb [items]="[
+        {label:'Phản hồi khách hàng', link:'/admin/moderation/feedback'},
+        {label:'Phản hồi của ' + (f.name || 'khách hàng')}
+      ]" />
+
+      <header class="web2-admin-page__header">
+        <h1>Phản hồi của {{f.name || 'khách hàng'}}</h1>
+        <button type="button" class="web2-admin-btn web2-admin-btn--primary" (click)="process()" [disabled]="!canAction() || busy()">
+          {{busy() ? 'Đang xử lý...' : actionLabel()}}
+        </button>
+      </header>
+
+      @if (error()) { <div class="web2-admin-inline-error">{{error()}}</div> }
+
+      <section class="web2-admin-summary-grid feedback-summary">
+        <article><span>Tên của bạn</span><strong>{{f.name || '—'}}</strong></article>
+        <article><span>Giới tính</span><strong>{{f.gender || '—'}}</strong></article>
+        <article><span>Số điện thoại</span><strong>{{f.phone || '—'}}</strong></article>
+        <article><span>Địa chỉ email</span><strong>{{f.email || '—'}}</strong></article>
+      </section>
+
+      <section class="content-card web2-admin-section">
+        <h2 class="web2-admin-section__title">Nội dung</h2>
+        <p>{{f.message || f.subject || '—'}}</p>
+      </section>
+
+      <section class="meta-grid web2-admin-summary-grid feedback-meta">
+        <article><span>Ngày gửi</span><strong>{{date(f.createdAt)}}</strong></article>
+        <article><span>Nguồn</span><strong>Form phản hồi trên website</strong></article>
+        <article class="status-card"><span>Trạng thái</span><strong><span class="badge" [attr.data-kind]="f.status === 'PROCESSED' ? 'success' : f.status === 'REJECTED' ? 'danger' : 'pending'">{{statusLabel(f.status)}}</span></strong></article>
+      </section>
+    }
+  </main>
+</app-admin-catalog-shell>

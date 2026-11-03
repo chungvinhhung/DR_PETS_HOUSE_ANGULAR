@@ -1,3 +1,5 @@
+import { firstValueFrom } from 'rxjs';
+import { adminPageWindow, countCursorItems } from '../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -23,6 +25,9 @@ export class AdminVoucherListComponent {
   private readonly session = inject(AuthSessionService);
   private readonly destroyRef = inject(DestroyRef);
   private requestVersion = 0;
+  private countGeneration = 0;
+  private countRequested = false;
+  readonly countingPages = signal(false);
 
   readonly pageSize = 6;
   readonly all = signal<AdminVoucher[]>([]);
@@ -34,28 +39,26 @@ export class AdminVoucherListComponent {
   readonly error = signal('');
   readonly cursor = signal<string | null>(null);
   readonly nextCursor = signal<string | null>(null);
+  readonly totalCount = signal<number | null>(null);
+  readonly totalPages = computed(()=>this.totalCount()===null?null:Math.max(1,Math.ceil(this.totalCount()!/this.pageSize)));
   readonly previous = signal<(string | null)[]>([]);
   readonly page = computed(() => this.previous().length + 1);
-  // Cursor pagination exposes reachable page numbers, not fabricated total pages.
-  readonly visiblePageNumbers = computed(() => {
-    const current = this.page();
-    const from = Math.max(1, current - 2);
-    const end = current + (this.nextCursor() ? 1 : 0);
-    return Array.from({ length: end - from + 1 }, (_, i) => from + i);
-  });
+  readonly visiblePageNumbers = computed(() =>
+    this.totalPages()===null ? [this.page()] : adminPageWindow(this.page(),this.totalPages()!));
   readonly canEdit = computed(() => this.session.user()?.systemRole === 'ADMIN');
   readonly hasActiveFilters = computed(() =>
     Boolean(this.search().trim()) || this.scope() !== 'ALL' || this.status() !== 'ALL' ||
     this.availabilityFilter() !== 'ALL' || this.cursor() !== null);
   readonly filtered = computed(() => {
-    const q = this.search().trim().toLocaleLowerCase('vi');
     return this.all().filter(item =>
-      (this.availabilityFilter() === 'ALL' || voucherAvailability(item) === this.availabilityFilter()) &&
-      (!q || [item.code, item.name].some(v => v.toLocaleLowerCase('vi').includes(q))));
+      this.availabilityFilter() === 'ALL' || voucherAvailability(item) === this.availabilityFilter());
   });
   readonly scopeLabels = VOUCHER_SCOPE_LABELS;
 
-  constructor() { this.fetch(); }
+  constructor() {
+    this.destroyRef.onDestroy(()=>{if(this.searchTimer)clearTimeout(this.searchTimer);});
+    this.fetch();
+  }
   fetch(): void {
     const request = ++this.requestVersion;
     const current = this.cursor();
@@ -63,6 +66,7 @@ export class AdminVoucherListComponent {
       ...(this.scope() !== 'ALL' ? {scope: this.scope() as VoucherScope} : {}),
       ...(this.status() !== 'ALL' ? {status: this.status() as VoucherStatus} : {}),
       ...(current ? {cursor:current} : {}),
+      ...(this.search().trim() ? {search:this.search().trim()} : {}),
       limit: this.pageSize,
     };
     this.loading.set(true);
@@ -73,6 +77,8 @@ export class AdminVoucherListComponent {
         if (request !== this.requestVersion) return;
         this.all.set(Array.isArray(result.items) ? result.items : []);
         this.nextCursor.set(result.nextCursor || null);
+        if (typeof result.totalCount==='number') this.totalCount.set(result.totalCount);
+        else if (this.totalCount()===null) this.countVoucherPages();
         this.loading.set(false);
       },
       error: err => {
@@ -80,11 +86,45 @@ export class AdminVoucherListComponent {
         if (request !== this.requestVersion) return;
         this.loading.set(false); this.all.set([]);
         this.nextCursor.set(null);
+        this.totalCount.set(null);
         this.error.set(adminErrorMessage(err, 'Không tải được danh sách voucher.'));
       },
     });
   }
-  setSearch(value: string): void { this.search.set(value); }
+  private invalidateCount():void {
+    this.countGeneration++;
+    this.countRequested=false;
+    this.totalCount.set(null);
+    this.countingPages.set(false);
+  }
+  private countVoucherPages():void {
+    if(this.countRequested || this.totalCount()!==null)return;
+    this.countRequested=true;
+    this.countingPages.set(true);
+    const generation=this.countGeneration;
+    const filters={
+      ...(this.scope()!=='ALL'?{scope:this.scope() as VoucherScope}:{}),
+      ...(this.status()!=='ALL'?{status:this.status() as VoucherStatus}:{}),
+      ...(this.search().trim()?{search:this.search().trim()}:{}),
+      limit:100,
+    };
+    void countCursorItems((cursor)=>
+      this.api.list({...filters,...(cursor?{cursor}:{})})
+    ).then(total=>{
+      if(generation!==this.countGeneration || this.destroyRef.destroyed)return;
+      this.countingPages.set(false);
+      if(total!==null)this.totalCount.set(total);
+    });
+  }
+  private searchTimer: ReturnType<typeof setTimeout> | null = null;
+  setSearch(value: string): void {
+    this.search.set(value);
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+    this.searchTimer=setTimeout(()=>{
+      this.invalidateCount();
+      this.previous.set([]); this.cursor.set(null); this.fetch();
+    },300);
+  }
   setAvailability(value: string): void { this.availabilityFilter.set(value); }
   setScope(value: string): void {
     if (value !== 'ALL' && !['ORDER','PRODUCT','SERVICE'].includes(value)) return;
@@ -95,6 +135,7 @@ export class AdminVoucherListComponent {
     this.status.set(value as VoucherStatus | 'ALL'); this.resetAndFetch();
   }
   resetAndFetch(): void {
+    this.invalidateCount();
     this.previous.set([]);
     this.cursor.set(null);
     this.fetch();
@@ -112,15 +153,41 @@ export class AdminVoucherListComponent {
     this.previous.set(prev.slice(0,-1));
     this.fetch();
   }
-  goToPage(target: number): void {
-    if (!Number.isSafeInteger(target) || target < 1 || this.loading()) return;
-    if (target === this.page()) return;
-    if (target === this.page() + 1) { this.next(); return; }
-    if (target > this.previous().length) return;
-    const previous = this.previous();
-    this.cursor.set(previous[target - 1] ?? null);
-    this.previous.set(previous.slice(0, target - 1));
-    this.fetch();
+  async goToPage(target: number): Promise<void> {
+    const count=this.totalPages();
+    if(!Number.isSafeInteger(target)||target<1||(count!==null&&target>count)||this.loading())return;
+    if(target===this.page())return;
+    if(target===this.page()+1){this.next();return;}
+    if(target<=this.previous().length){
+      const previous=this.previous();
+      this.cursor.set(previous[target-1]??null);
+      this.previous.set(previous.slice(0,target-1));
+      this.fetch();return;
+    }
+    // Cursor API: discover the intermediate page boundaries before jumping.
+    // Unlike offset pagination, a page number cannot be converted to a cursor.
+    const requestVersion=++this.requestVersion;
+    const startPage=this.page();
+    let cursor=this.cursor();
+    let previous=[...this.previous()];
+    this.loading.set(true);this.error.set('');
+    try{
+      for(let page=startPage;page<target;page++){
+        const result=await firstValueFrom(this.api.list({
+          ...(this.scope()!=='ALL'?{scope:this.scope() as VoucherScope}:{}),
+          ...(this.status()!=='ALL'?{status:this.status() as VoucherStatus}:{}),
+          ...(this.search().trim()?{search:this.search().trim()}:{}),
+          ...(cursor?{cursor}:{}),limit:this.pageSize,
+        }));
+        if(requestVersion!==this.requestVersion||this.destroyRef.destroyed)return;
+        if(!result.nextCursor)throw new Error('Trang này không còn dữ liệu.');
+        previous=[...previous,cursor];cursor=result.nextCursor;
+      }
+      this.previous.set(previous);this.cursor.set(cursor);this.fetch();
+    }catch{
+      if(requestVersion!==this.requestVersion)return;
+      this.loading.set(false);this.toast.show('Không thể mở trang này. Vui lòng thử lại.','error');
+    }
   }
   date(value: string): string { return voucherDate(value); }
   offer(value: AdminVoucher): string { return voucherOffer(value); }

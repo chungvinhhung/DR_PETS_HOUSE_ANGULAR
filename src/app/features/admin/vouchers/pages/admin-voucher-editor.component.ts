@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed,
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import {
@@ -34,7 +35,7 @@ const BLANK: VoucherFields = {
 @Component({
   selector: 'app-admin-voucher-editor',
   standalone: true,
-  imports: [AdminCatalogShellComponent, RouterLink],
+  imports: [AdminCatalogShellComponent, AdminBreadcrumbComponent, RouterLink],
   templateUrl: './admin-voucher-editor.component.html',
   styleUrl: './admin-voucher-editor.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

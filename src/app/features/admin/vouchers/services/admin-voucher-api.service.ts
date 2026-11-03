@@ -19,7 +19,7 @@ export interface AdminVoucher {
   quota: number;
   usedCount: number;
   status: VoucherStatus;
-  /* BE does not currently include these in formatVoucherResponse. */
+  /* New BE v7 includes these DTO fields; created/updated remain optional. */
   minOrderAmount?: number | null;
   maxDiscountAmount?: number | null;
   description?: string | null;
@@ -29,6 +29,7 @@ export interface AdminVoucher {
 export interface VoucherListResult {
   items: AdminVoucher[];
   nextCursor: string | null;
+  totalCount?: number;
 }
 export interface VoucherWriteBody {
   code: string;
@@ -49,11 +50,12 @@ export type VoucherUpdateBody = Partial<VoucherWriteBody>;
 export class AdminVoucherApiService {
   private readonly api = inject(ApiClientService);
 
-  list(filters: { status?: VoucherStatus; scope?: VoucherScope; cursor?: string; limit?: number } = {}): Observable<VoucherListResult> {
+  list(filters: { status?: VoucherStatus; scope?: VoucherScope; cursor?: string; limit?: number; search?: string } = {}): Observable<VoucherListResult> {
     const pageLimit = Number.isInteger(filters.limit) && (filters.limit ?? 0) >= 1 && (filters.limit ?? 0) <= 100 ? filters.limit! : 20;
     let params = new HttpParams().set('limit', String(pageLimit));
     if (filters.status) params = params.set('status', filters.status);
     if (filters.scope) params = params.set('scope', filters.scope);
+    if (filters.search?.trim()) params = params.set('search', filters.search.trim());
     if (filters.cursor) params = params.set('cursor', filters.cursor);
     return this.api.get<unknown>('/vouchers', { params }).pipe(
       map(response => {

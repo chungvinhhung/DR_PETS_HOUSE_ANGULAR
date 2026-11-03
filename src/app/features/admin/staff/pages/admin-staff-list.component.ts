@@ -1,3 +1,4 @@
+import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
@@ -44,12 +45,7 @@ export class AdminStaffListComponent {
     );
   });
   readonly pages = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.pageSize)));
-  readonly pageNumbers = computed(() => {
-    const total = this.pages();
-    const current = this.page();
-    const start = Math.max(1, Math.min(current - 1, total - 2));
-    return Array.from({ length: Math.min(3, total) }, (_, index) => start + index);
-  });
+  readonly pageNumbers = computed(() => adminPageWindow(this.page(), this.pages()));
   readonly rows = computed(() => this.filtered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
 
   displayName(staff: StaffPreview): string {

@@ -1,3 +1,4 @@
+import { adminPageWindow, AdminPageItem } from '../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, signal } from '@angular/core';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -253,11 +254,8 @@ export class BranchManagementPageComponent {
     this.branchStatus.set(value); this.listPage.set(1);
   }
   changePage(page: number): void { if (page >= 1 && page <= this.pageCount) this.listPage.set(page); }
-  get visiblePageNumbers(): number[] {
-    const total = this.pageCount;
-    const current = this.listPage();
-    const start = Math.max(1, Math.min(current - 1, total - 2));
-    return Array.from({ length: Math.min(3,total) }, (_, i) => start + i);
+  get visiblePageNumbers(): AdminPageItem[] {
+    return adminPageWindow(this.listPage(), this.pageCount);
   }
   setDetailTab(tab: Tab): void { this.detailTab.set(tab); }
   branchLink(row: BranchRow): string[] { return ['/admin/branches', row.id]; }
