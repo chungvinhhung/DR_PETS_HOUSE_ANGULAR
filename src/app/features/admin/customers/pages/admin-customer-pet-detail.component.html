@@ -9,7 +9,7 @@
     @if (loading()) {
       <app-admin-data-state kind="loading" title="Đang tải hồ sơ thú cưng" />
     } @else if (error()) {
-      <app-admin-data-state kind="error" title="Không thể tải hồ sơ thú cưng" [message]="error()" />
+      <app-admin-data-state kind="error" title="Không thể tải hồ sơ thú cưng" [message]="error()" (retry)="load()" />
     } @else if (pet(); as p) {
       <header class="web2-admin-page__header">
         <h1>Hồ sơ thú cưng</h1>
