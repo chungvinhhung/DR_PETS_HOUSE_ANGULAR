@@ -150,39 +150,55 @@ export function normalizeAppointmentHistoryItem(appointment: any = {}) {
 }
 
 export function normalizeBookingService(service: any) {
+  const id = service.id ?? service.service_id ?? service._id;
+  const serviceType = String(service.serviceType ?? service.service_type ?? '').toUpperCase();
   return {
     ...service,
-    id: String(service.service_id),
-    serviceId: String(service.service_id),
-    serviceTypeId: inferServiceType(service),
-    name: service.service_name,
+    id: String(id ?? ''),
+    serviceId: String(id ?? ''),
+    serviceTypeId: serviceType === 'GROOMING' ? 'grooming' : inferServiceType(service),
+    name: service.name ?? service.service_name ?? '',
     desc: service.description || "",
-    price: Number(service.base_price || 0),
+    price: Number(service.basePrice ?? service.base_price ?? 0),
+    bookingMode: service.bookingMode ?? service.booking_mode ?? 'BOOKABLE',
+    requiredStaffRole: service.requiredStaffRole ?? service.required_staff_role ?? '',
+    durationMinutes: Number(service.durationMinutes ?? service.duration_minutes ?? 0),
     isWeightSurchargeApplied: Boolean(service.is_weight_surcharge_applied),
   };
 }
 
 export function normalizeBranch(branch: any) {
+  const id = branch.id ?? branch.branch_id ?? branch._id;
+  const name = branch.name ?? branch.branch_name ?? '';
   return {
     ...branch,
-    id: String(branch.branch_id),
-    label: branch.branch_name ? `${branch.branch_name} - ${branch.address}` : branch.address,
+    id: String(id ?? ''),
+    label: name ? `${name}${branch.address ? ' - ' + branch.address : ''}` : (branch.address || ''),
   };
 }
 
 export function normalizeSlot(slot: any) {
-  const start = formatTime(slot.start_time);
-  const end = formatTime(slot.end_time);
-  const bookedCount = Number(slot.booked_count || 0);
-  const maxAppointments = Number(slot.max_booking || 1);
+  const rawStart = slot.start ?? slot.start_time;
+  const rawEnd = slot.end ?? slot.end_time;
+  const start = formatTime(rawStart);
+  const end = formatTime(rawEnd);
+  const bookedCount = Number(slot.occupiedCount ?? slot.bookedCount ?? slot.booked_count ?? 0);
+  const maxAppointments = Number(slot.totalCount ?? slot.max_booking ?? 1);
+  const canonicalStatus = String(slot.status || '').toUpperCase();
+  const available = canonicalStatus
+    ? canonicalStatus === 'AVAILABLE' && Number(slot.remaining ?? (maxAppointments - bookedCount)) > 0
+    : bookedCount < maxAppointments;
 
   return {
     ...slot,
-    id: String(slot.slot_id),
+    id: String(rawStart ?? slot.slot_id ?? ''),
+    start: rawStart,
+    end: rawEnd,
     value: `${start} - ${end}`,
     bookedCount,
     maxAppointments,
-    available: slot.status === "available" && bookedCount < maxAppointments,
+    remaining: Number(slot.remaining ?? Math.max(0, maxAppointments - bookedCount)),
+    available,
   };
 }
 
@@ -233,29 +249,41 @@ export class BookingApiService {
   private readonly http = inject(CustomerHttpService);
 
   async getBranches() {
-    const response = await this.http.get("/branches");
-    return assertSuccess(response).map(normalizeBranch);
+    const response = await this.http.get("/branches", { params: { limit: 100 } });
+    const payload = assertSuccess(response);
+    const items = Array.isArray(payload) ? payload : (payload?.items || []);
+    return items.map(normalizeBranch);
   }
 
   async getServices(params: any = {}) {
     const response = await this.http.get("/services", { params: { limit: 100, ...params } });
     const payload = assertSuccess(response);
-    return (payload?.services || payload || []).map(normalizeBookingService);
+    const items = Array.isArray(payload) ? payload : (payload?.items || payload?.services || []);
+    return items.map(normalizeBookingService);
   }
 
-  async getAppointmentSlots({ date, branchId, serviceType }: any) {
+  async getAppointmentSlots({ date, branchId, serviceIds }: any) {
+    const ids = (Array.isArray(serviceIds) ? serviceIds : [serviceIds]).filter(Boolean);
+    if (!date || !branchId || !ids.length) return [];
     const response = await this.http.get("/appointments/slots", {
       params: {
         date,
-        branch_id: branchId || undefined,
-        service_type: serviceType === "grooming" ? "grooming" : "exam",
+        branchId,
+        serviceIds: ids.join(','),
       },
     });
-    return groupSlotsByTime(assertSuccess(response).map(normalizeSlot));
+    const payload = assertSuccess(response);
+    const slots = Array.isArray(payload) ? payload : (payload?.slots || []);
+    return slots.map(normalizeSlot);
   }
 
   async bookAppointment(payload: any) {
-    const response = await this.http.post("/appointments/book", payload);
+    const key = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `appointment-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const response = await this.http.post("/appointments", payload, {
+      headers: { 'Idempotency-Key': key },
+    });
     return assertSuccess(response);
   }
 
