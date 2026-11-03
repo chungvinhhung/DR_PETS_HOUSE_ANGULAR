@@ -202,3 +202,34 @@ app-admin-catalog-shell .web2-admin-page .pet-grid.web2-admin-summary-grid>artic
  app-admin-catalog-shell .web2-admin-pagination{align-items:flex-start;flex-direction:column}
  app-admin-catalog-shell .web2-admin-pagination__controls{max-width:100%;overflow-x:auto}
 }
+
+
+/* Management list rhythm uses Service Catalog as the reference. */
+app-admin-catalog-shell .web2-admin-page>.web2-filterbar{margin-bottom:20px!important}
+app-admin-catalog-shell .web2-admin-page__header{min-height:36px;margin-bottom:20px}
+app-admin-catalog-shell .web2-admin-page__header h1{
+ color:#1d2a42;font:700 28px/34px Roboto,Arial,sans-serif;letter-spacing:0
+}
+
+/* Customer list: status, last-login and action columns align under their headers.
+   Reserve enough width for "Thao tác" so it never wraps. */
+app-admin-customer-list .web2-admin-table--customers{min-width:1060px}
+app-admin-customer-list .web2-admin-table--customers :is(th,td):nth-child(4),
+app-admin-customer-list .web2-admin-table--customers :is(th,td):nth-child(5),
+app-admin-customer-list .web2-admin-table--customers :is(th,td):nth-child(6),
+app-admin-customer-list .web2-admin-table--customers :is(th,td):nth-child(7){text-align:center!important}
+app-admin-customer-list .web2-admin-table--customers th:nth-child(7){white-space:nowrap!important;overflow-wrap:normal!important}
+
+/* Content list alignment follows the same heading/value axis. */
+app-admin-content-list .web2-admin-table--first-aid :is(th,td):nth-child(3),
+app-admin-content-list .web2-admin-table--first-aid :is(th,td):nth-child(4),
+app-admin-content-list .web2-admin-table--first-aid :is(th,td):nth-child(5),
+app-admin-content-list .web2-admin-table--first-aid :is(th,td):nth-child(6){text-align:center!important}
+app-admin-content-list .web2-admin-table--rescue :is(th,td):nth-child(n+3){text-align:center!important}
+
+/* Reviews: reference columns are compact; free-text content gets the space. */
+app-admin-moderation-list .web2-admin-table--reviews :is(th,td):nth-child(2),
+app-admin-moderation-list .web2-admin-table--reviews :is(th,td):nth-child(3),
+app-admin-moderation-list .web2-admin-table--reviews :is(th,td):nth-child(5),
+app-admin-moderation-list .web2-admin-table--reviews :is(th,td):nth-child(7),
+app-admin-moderation-list .web2-admin-table--reviews :is(th,td):nth-child(8){text-align:center!important}
