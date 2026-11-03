@@ -5,11 +5,10 @@
     } @else if (error() && !data()) {
       <div class="web2-admin-state web2-admin-state--error">{{error()}}</div>
     } @else if (data(); as f) {
-      <nav class="web2-admin-breadcrumb" aria-label="Breadcrumb">
-        <a routerLink="/admin/moderation/feedback">Phản hồi khách hàng</a>
-        <img src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
-        <span>Phản hồi của {{f.name || 'khách hàng'}}</span>
-      </nav>
+      <app-admin-breadcrumb [items]="[
+        {label:'Phản hồi khách hàng', link:'/admin/moderation/feedback'},
+        {label:'Phản hồi của ' + (f.name || 'khách hàng')}
+      ]" />
 
       <header class="web2-admin-page__header">
         <h1>Phản hồi của {{f.name || 'khách hàng'}}</h1>
