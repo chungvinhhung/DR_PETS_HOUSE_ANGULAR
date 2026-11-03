@@ -468,7 +468,7 @@
 </button>
           </div>
           @if (action === 'cancel') {
-            <label class="order-admin__field">Lý do hủy <span aria-hidden="true">*</span>
+            <label class="order-admin__field">Lý do hủy <span class="order-admin__required" aria-hidden="true">*</span>
               <select #cancelReasonSelect [value]="cancelCategory()" (change)="cancelCategory.set(cancelReasonSelect.value)">
                 <option value="" disabled>Chọn lý do hủy</option>
                 <option value="Khách hàng yêu cầu hủy">Khách hàng yêu cầu hủy</option>
@@ -496,18 +496,18 @@
                 placeholder="Nhập ghi chú nếu cần"></textarea>
             </label>
             @if (action === 'ship') {
-              <label class="order-admin__field">Đơn vị vận chuyển
-                <input #carrierInput type="text" maxlength="120" placeholder="Tên đơn vị vận chuyển" [value]="carrier()" (input)="carrier.set(carrierInput.value)">
+              <label class="order-admin__field">Đơn vị vận chuyển <span class="order-admin__required" aria-hidden="true">*</span>
+                <input #carrierInput type="text" required maxlength="120" placeholder="Tên đơn vị vận chuyển" [value]="carrier()" (input)="carrier.set(carrierInput.value)">
               </label>
-              <label class="order-admin__field">Mã vận đơn
-                <input #trackingInput type="text" maxlength="120" placeholder="Nhập mã vận đơn (nếu có)" [value]="tracking()" (input)="tracking.set(trackingInput.value)">
+              <label class="order-admin__field">Mã vận đơn <span class="order-admin__required" aria-hidden="true">*</span>
+                <input #trackingInput type="text" required maxlength="120" placeholder="Nhập mã vận đơn" [value]="tracking()" (input)="tracking.set(trackingInput.value)">
               </label>
             }
           }
           <div class="order-admin__modal-actions">
             <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="closeDialog()" [disabled]="dialogBusy()">Đóng</button>
             <button class="order-admin__btn" [class.order-admin__btn--danger]="action === 'cancel'" [class.order-admin__btn--primary]="action !== 'cancel'"
-              type="button" [disabled]="dialogBusy() || (action === 'cancel' && !isCancelReasonValid())" (click)="confirmDialog()">
+              type="button" [disabled]="dialogBusy() || !isDialogValid(action)" (click)="confirmDialog()">
               {{ dialogBusy() ? 'Đang xử lý...' : action === 'cancel' ? 'Xác nhận hủy đơn' : 'Xác nhận cập nhật' }}
             </button>
           </div>
