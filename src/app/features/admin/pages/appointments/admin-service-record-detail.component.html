@@ -129,11 +129,11 @@
         @if (r.status==='IN_PROGRESS' && r.category==='MEDICAL' && isNurse()) {
           <p class="action-hint">Y tá cập nhật vật tư thực tế rồi gửi hồ sơ cho Bác sĩ thú y duyệt. Y tá không tự chốt hồ sơ MEDICAL.</p>
         }
-        @if (r.status==='AWAITING_VET_REVIEW' && r.category==='MEDICAL') {
+        @if (r.status==='WAITING_VET_REVIEW' && r.category==='MEDICAL') {
           <p class="action-hint">Hồ sơ đang chờ Bác sĩ thú y được phân công kiểm tra và chốt cuối.</p>
         }
         @if (r.status==='COMPLETED') {
-          <p class="action-hint">Hồ sơ đã được chốt. Appointment liên quan phải được Backend tự hoàn tất khi tất cả hồ sơ bắt buộc đã FINALIZED.</p>
+          <p class="action-hint">Hồ sơ đã được chốt. Lịch hẹn liên quan sẽ tự động hoàn tất khi tất cả hồ sơ bắt buộc đã được chốt.</p>
         }
       </section>
       }
@@ -220,7 +220,7 @@
         <header><h2 id="finalize-dialog-title">Chốt lại hồ sơ đã mở</h2>
           <button type="button" class="modal-close" (click)="closeDialog()" [disabled]="busy()" aria-label="Đóng"><img src="/assets/admin-inventory/close-outlined.svg" alt=""></button>
         </header>
-        <p class="modal-hint">Đây là phiên bản hiệu chỉnh của hồ sơ đã từng chốt. Backend yêu cầu ghi rõ lý do.</p>
+        <p class="modal-hint">Đây là phiên bản hiệu chỉnh của hồ sơ đã từng chốt. Vui lòng ghi rõ lý do hiệu chỉnh.</p>
         <label class="reason-field">Lý do hiệu chỉnh <span>*</span>
           <textarea rows="3" [value]="finalizeReason()" (input)="finalizeReason.set($any($event.target).value)" placeholder="Nhập lý do ít nhất 3 ký tự"></textarea>
         </label>
