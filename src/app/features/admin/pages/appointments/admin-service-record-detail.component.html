@@ -1,12 +1,9 @@
 <app-admin-catalog-shell activeItem="service-records">
   <main class="record-detail">
     @if (loading()) {
-      <section class="record-card record-message" role="status">Đang tải hồ sơ dịch vụ...</section>
+      <app-admin-data-state kind="loading" title="Đang tải hồ sơ dịch vụ" />
     } @else if (error()) {
-      <section class="record-card record-message" role="alert">
-        <p>{{ error() }}</p>
-        <button type="button" class="btn btn--outline" (click)="load()">Thử lại</button>
-      </section>
+      <app-admin-data-state kind="error" title="Không thể tải hồ sơ dịch vụ" [message]="error()" (retry)="load()" />
     } @else if (item(); as r) {
       <header class="record-heading">
         <div>
