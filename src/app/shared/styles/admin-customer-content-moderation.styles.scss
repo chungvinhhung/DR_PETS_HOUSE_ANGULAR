@@ -233,3 +233,29 @@ app-admin-moderation-list .web2-admin-table--reviews :is(th,td):nth-child(3),
 app-admin-moderation-list .web2-admin-table--reviews :is(th,td):nth-child(5),
 app-admin-moderation-list .web2-admin-table--reviews :is(th,td):nth-child(7),
 app-admin-moderation-list .web2-admin-table--reviews :is(th,td):nth-child(8){text-align:center!important}
+
+
+/* Management page title typography: Service Catalog "Danh mục dịch vụ" is authoritative. */
+:is(
+ app-admin-category-page,
+ app-admin-product-list-page,
+ app-admin-order-management,
+ app-admin-voucher-list,
+ app-admin-appointments-page,
+ app-admin-service-records,
+ app-admin-inventory-page,
+ app-branch-management-page,
+ app-admin-staff-list,
+ app-admin-users-page,
+ app-admin-customer-list,
+ app-admin-content-list,
+ app-admin-moderation-list
+) h1{
+ margin-top:0!important;
+ color:#1d2a42!important;
+ font-family:Roboto,Arial,sans-serif!important;
+ font-size:28px!important;
+ font-weight:700!important;
+ line-height:34px!important;
+ letter-spacing:0!important;
+}
