@@ -20,11 +20,12 @@ import {
 } from '../models/admin-user.model';
 import { AdminUsersService } from '../services/admin-users.service';
 import { ADMIN_TABLE_PAGE_SIZE, adminPageWindow, AdminPageItem } from '../../../../shared/utils/admin-table-pagination';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 
 @Component({
   selector: 'app-admin-users-page',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, AdminDataStateComponent],
   template: `
     <section class="users-page">
       <header class="page-heading">
@@ -32,8 +33,8 @@ import { ADMIN_TABLE_PAGE_SIZE, adminPageWindow, AdminPageItem } from '../../../
           <p class="eyebrow">AUTH / RBAC</p>
           <h1>Quản lý tài khoản nội bộ</h1>
           <p>
-            Admin có thể tạo tài khoản và thay đổi role/status. Manager chỉ được
-            xem danh sách trong phạm vi branch do Backend trả về.
+            Admin có thể tạo tài khoản và thay đổi vai trò/trạng thái. Manager chỉ được
+            xem danh sách trong phạm vi chi nhánh được phân công.
           </p>
         </div>
         <button type="button" (click)="loadUsers()" [disabled]="loading()">
@@ -114,22 +115,20 @@ import { ADMIN_TABLE_PAGE_SIZE, adminPageWindow, AdminPageItem } from '../../../
         <p class="notice" role="status">{{ notice() }}</p>
       }
 
-      @if (errorMessage()) {
-        <p class="error" role="alert">{{ errorMessage() }}</p>
-      }
-
       <section class="panel">
         <div class="panel-heading">
           <div>
             <h2>Danh sách người dùng</h2>
-            <p>Danh sách tài khoản trong phạm vi Backend cho phép.</p>
+            <p>Danh sách tài khoản trong phạm vi được phân quyền.</p>
           </div>
         </div>
 
         @if (loading()) {
-          <p class="empty-state">Đang tải danh sách...</p>
+          <app-admin-data-state kind="loading" title="Đang tải danh sách tài khoản" />
+        } @else if (errorMessage()) {
+          <app-admin-data-state kind="error" title="Không thể tải danh sách tài khoản" [message]="errorMessage() || ''" (retry)="loadUsers()" />
         } @else if (users().length === 0) {
-          <p class="empty-state">Không có tài khoản nào trong phạm vi được phép xem.</p>
+          <app-admin-data-state kind="empty" title="Chưa có tài khoản" message="Không có tài khoản nào trong phạm vi được phép xem." />
         } @else {
           <div class="table-wrap">
             <table>
