@@ -1,6 +1,6 @@
 /** WBS 4.3 and Figma 6336:25285 / 6336:25795. Read-only adapters; contracts pending BE. */
 export type ServiceRecordCategory = 'MEDICAL' | 'GROOMING' | 'UNKNOWN';
-export type ServiceRecordStatus = 'DRAFT' | 'IN_PROGRESS' | 'AWAITING_VET_REVIEW' | 'COMPLETED' | 'REOPENED' | 'UNKNOWN';
+export type ServiceRecordStatus = 'DRAFT' | 'IN_PROGRESS' | 'WAITING_VET_REVIEW' | 'COMPLETED' | 'REOPENED' | 'UNKNOWN';
 export interface MaterialUsage {
   inventoryItemId: string;
   name: string;
@@ -60,14 +60,14 @@ export function categoryOf(v:unknown):ServiceRecordCategory {
 export function statusOf(v:unknown):ServiceRecordStatus {
   const s=str(v).toUpperCase();
   if(['COMPLETED','FINALIZED','FINALISED'].includes(s))return 'COMPLETED';
-  if(['PENDING_VET_REVIEW','AWAITING_VET_REVIEW','WAITING_VET_REVIEW','WAITING_REVIEW'].includes(s))return 'AWAITING_VET_REVIEW';
+  if(['PENDING_VET_REVIEW','AWAITING_VET_REVIEW','WAITING_VET_REVIEW','WAITING_REVIEW'].includes(s))return 'WAITING_VET_REVIEW';
   if(['IN_PROGRESS','PROCESSING','OPEN'].includes(s))return 'IN_PROGRESS';
   if(s==='REOPENED')return 'REOPENED';
   if(s==='DRAFT')return 'DRAFT';
   return 'UNKNOWN';
 }
 export function serviceRecordStatusLabel(s:ServiceRecordStatus, raw=''):string {
-  return s==='COMPLETED'?'Hoàn thành':s==='AWAITING_VET_REVIEW'?'Chờ BS duyệt':
+  return s==='COMPLETED'?'Hoàn thành':s==='WAITING_VET_REVIEW'?'Chờ BS duyệt':
     s==='IN_PROGRESS'?'Đang thực hiện':s==='REOPENED'?'Đã mở lại':s==='DRAFT'?'Bản nháp':raw||'Chưa xác định';
 }
 export function normalizeServiceRecord(raw:unknown):ServiceRecord {
@@ -172,9 +172,9 @@ export type MedicalFinalizationCheck = {allowed:boolean;reason:string};
 export function canFinalizeServiceRecord(r:ServiceRecord):MedicalFinalizationCheck {
   if(r.status==='COMPLETED')return {allowed:false,reason:'Hồ sơ đã hoàn thành.'};
   if(r.category==='UNKNOWN')return {allowed:false,reason:'BE chưa xác định loại hồ sơ.'};
-  if(r.category==='MEDICAL' && !['AWAITING_VET_REVIEW','REOPENED'].includes(r.status))
+  if(r.category==='MEDICAL' && !['WAITING_VET_REVIEW','REOPENED'].includes(r.status))
     return {allowed:false,reason:'Hồ sơ MEDICAL phải ở trạng thái chờ Bác sĩ thú y duyệt hoặc đã mở lại trước khi chốt.'};
   if(r.category==='GROOMING' && !['IN_PROGRESS','REOPENED'].includes(r.status))
     return {allowed:false,reason:'Hồ sơ GROOMING chưa ở trạng thái có thể chốt.'};
-  return {allowed:true,reason:'Điều kiện hiển thị phù hợp; Backend vẫn là nguồn quyết định cuối cùng.'};
+  return {allowed:true,reason:'Có thể thực hiện thao tác.'};
 }
