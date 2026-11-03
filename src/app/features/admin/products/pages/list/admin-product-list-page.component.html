@@ -165,9 +165,9 @@
           </tr></thead>
           <tbody>
             @if (loading()) {
-              <tr><td class="empty" colspan="10">Đang tải sản phẩm...</td></tr>
+              <tr><td class="empty" colspan="10"><app-admin-data-state kind="loading" title="Đang tải danh sách sản phẩm" /></td></tr>
             } @else if (products().length === 0) {
-              <tr><td class="empty" colspan="10">{{ archiveView ? 'Chưa có sản phẩm lưu trữ.' : 'Chưa có sản phẩm phù hợp.' }}</td></tr>
+              <tr><td class="empty" colspan="10"><app-admin-data-state kind="empty" [title]="archiveView ? 'Chưa có sản phẩm lưu trữ' : 'Không tìm thấy sản phẩm'" [message]="archiveView ? 'Hiện chưa có sản phẩm nào được lưu trữ.' : 'Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác.'" /></td></tr>
             } @else {
               @for (product of products(); track product.id) {
                 <tr [class.out-of-stock]="product.outOfStock">
