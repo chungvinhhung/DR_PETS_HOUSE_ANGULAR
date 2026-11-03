@@ -1,9 +1,9 @@
 <app-admin-catalog-shell activeItem="moderation-feedback">
   <main class="feedback-detail web2-admin-page">
     @if (loading()) {
-      <div class="web2-admin-state">Đang tải phản hồi...</div>
+      <app-admin-data-state kind="loading" title="Đang tải chi tiết phản hồi" />
     } @else if (error() && !data()) {
-      <div class="web2-admin-state web2-admin-state--error">{{error()}}</div>
+      <app-admin-data-state kind="error" title="Không thể tải chi tiết phản hồi" [message]="error()" (retry)="load()" />
     } @else if (data(); as f) {
       <app-admin-breadcrumb [items]="[
         {label:'Phản hồi khách hàng', link:'/admin/moderation/feedback'},
