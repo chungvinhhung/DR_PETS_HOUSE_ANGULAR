@@ -25,9 +25,9 @@
 
     <section class="customer-table-card web2-admin-table-panel">
       @if (loading()) {
-        <div class="customer-state">Đang tải danh sách khách hàng...</div>
+        <app-admin-data-state kind="loading" title="Đang tải danh sách khách hàng" />
       } @else if (error()) {
-        <div class="customer-state customer-state--error">{{error()}} <button type="button" (click)="load()">Thử lại</button></div>
+        <app-admin-data-state kind="error" title="Không thể tải danh sách khách hàng" [message]="error()" (retry)="load()" />
       } @else {
         <div class="customer-table-scroll web2-admin-table-scroll">
           <table class="web2-admin-table web2-admin-table--customers">
@@ -48,7 +48,7 @@
                   <td class="action-cell is-center"><a class="web2-admin-icon-button" [routerLink]="['/admin/customers', customer.id]" aria-label="Xem chi tiết khách hàng"><img src="/assets/admin-branch/figma-eye.svg" alt=""></a></td>
                 </tr>
               } @empty {
-                <tr><td colspan="7" class="customer-empty">Không có khách hàng phù hợp.</td></tr>
+                <tr><td colspan="7" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Không tìm thấy khách hàng" message="Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác." /></td></tr>
               }
             </tbody>
           </table>
