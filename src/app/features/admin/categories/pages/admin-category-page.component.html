@@ -67,18 +67,18 @@
             </thead>
             <tbody>
               @if (loading()) {
-                <tr><td colspan="8" class="empty">Đang tải danh mục...</td></tr>
+                <tr><td colspan="8" class="empty"><app-admin-data-state kind="loading" title="Đang tải danh mục sản phẩm" /></td></tr>
               } @else if (categories().length === 0) {
-                <tr><td colspan="8" class="empty">Chưa có danh mục phù hợp. Bạn có thể tạo danh mục mới.</td></tr>
+                <tr><td colspan="8" class="empty"><app-admin-data-state kind="empty" title="Không tìm thấy danh mục" message="Thử thay đổi bộ lọc hoặc tạo danh mục mới." /></td></tr>
               } @else {
                 @for (category of categories(); track category.id) {
                   <tr>
                     <td>{{ $index + 1 + (pageNumber - 1) * pageSize }}</td>
                     <td class="category-name">{{ category.name }}</td>
-                    <td class="slug" [title]="'Slug đang lưu trên Backend: ' + category.slug"><code>{{ category.slug }}</code></td>
+                    <td class="slug" [title]="'Slug: ' + category.slug"><code>{{ category.slug }}</code></td>
                     <td>{{ parentName(category.parentId) }}</td>
                     <td class="category-col-count" [title]="categoryProductCount(category.id) === '—' ? 'Không thể tải số lượng sản phẩm' : 'Số sản phẩm chưa lưu trữ trong danh mục'">{{ categoryProductCount(category.id) }}</td>
-                    <td class="category-col-date" [title]="category.createdAt ? '' : 'BE chưa trả createdAt trong API danh mục'">{{ categoryCreatedAt(category.createdAt) }}</td>
+                    <td class="category-col-date" [title]="category.createdAt ? '' : 'Chưa có ngày tạo'">{{ categoryCreatedAt(category.createdAt) }}</td>
                     <td>
                       <span class="status" [class.status--active]="category.status === 'ACTIVE'"
                         [class.status--inactive]="category.status === 'INACTIVE'">
