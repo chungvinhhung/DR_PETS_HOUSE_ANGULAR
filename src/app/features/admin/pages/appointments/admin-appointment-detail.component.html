@@ -1,12 +1,9 @@
 <app-admin-catalog-shell activeItem="appointments">
   <main class="appointment-detail">
     @if (loading()) {
-      <section class="panel feedback" role="status">Đang tải chi tiết lịch hẹn...</section>
+      <app-admin-data-state kind="loading" title="Đang tải chi tiết lịch hẹn" />
     } @else if (error()) {
-      <section class="panel feedback" role="alert">
-        <p>{{error()}}</p>
-        <button type="button" class="btn btn--outline" (click)="refresh()">Thử lại</button>
-      </section>
+      <app-admin-data-state kind="error" title="Không thể tải chi tiết lịch hẹn" [message]="error()" (retry)="refresh()" />
     } @else if (item(); as appointment) {
       <app-admin-breadcrumb [items]="[
         {label:'Lịch hẹn', link:'/admin/appointments'},
@@ -170,7 +167,7 @@
           }
         }
         @if (action==='status') {
-          <p class="hint hint--info">Bắt đầu phục vụ sẽ chuyển lịch sang Đang thực hiện. Backend phải đồng thời tạo Hồ sơ dịch vụ tương ứng.</p>
+          <p class="hint hint--info">Bắt đầu phục vụ sẽ chuyển lịch sang Đang thực hiện và tạo hồ sơ dịch vụ tương ứng.</p>
         }
         <label class="modal-label"><span class="modal-field-label">Lý do / ghi chú xử lý <b>*</b></span>
           <textarea rows="4" [value]="reason()" (input)="reason.set($any($event.target).value)" placeholder="Nhập ghi chú xử lý..."></textarea>
