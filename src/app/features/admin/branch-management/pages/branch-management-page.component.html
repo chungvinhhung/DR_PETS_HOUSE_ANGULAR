@@ -1,16 +1,14 @@
 <app-admin-catalog-shell activeItem="branches">
   <main class="branch-management branch-v2-page" [class.branch-v2-page--detail]="!!branch">
     @if (branchId && (detailLoading() || branchListLoading())) {
-      <p class="branch-v2-page__notice" role="status">Đang tải thông tin chi nhánh...</p>
+      <app-admin-data-state kind="loading" title="Đang tải thông tin chi nhánh" />
     } @else if (branchId && !branch) {
       <nav class="branch-v2-page__breadcrumb" aria-label="Đường dẫn">
         <a routerLink="/admin/branches">Chi nhánh</a><span>›</span><strong>Không tìm thấy</strong>
       </nav>
-      <div class="branch-v2-page__notice" role="alert">
-        {{ detailError() || 'Chi nhánh không tồn tại hoặc tài khoản không có quyền truy cập.' }}
-        <button type="button" (click)="retryDetail()">Thử lại</button>
-        <a routerLink="/admin/branches">Quay lại danh sách</a>
-      </div>
+      <app-admin-data-state kind="error" title="Không thể tải thông tin chi nhánh"
+        [message]="detailError() || 'Chi nhánh không tồn tại hoặc tài khoản không có quyền truy cập.'" (retry)="retryDetail()" />
+      <p class="branch-v2-page__back-link"><a routerLink="/admin/branches">Quay lại danh sách</a></p>
     } @else if (!branch) {
       <header class="branch-v2-page__header branch-v2-page__header--list">
         <h1>Quản lý chi nhánh</h1>
@@ -54,11 +52,9 @@
             </tr></thead>
             <tbody>
               @if (branchListLoading()) {
-                <tr><td colspan="6" class="branch-v2-page__empty">Đang tải danh sách chi nhánh...</td></tr>
+                <tr><td colspan="6" class="branch-v2-page__empty"><app-admin-data-state kind="loading" title="Đang tải danh sách chi nhánh" /></td></tr>
               } @else if (branchListError()) {
-                <tr><td colspan="6" class="branch-v2-page__empty">
-                  {{ branchListError() }} <button type="button" (click)="refreshBranches()">Thử lại</button>
-                </td></tr>
+                <tr><td colspan="6" class="branch-v2-page__empty"><app-admin-data-state kind="error" title="Không thể tải danh sách chi nhánh" [message]="branchListError()" (retry)="refreshBranches()" /></td></tr>
               } @else {
               @for (item of pagedBranches; track item.id) {
                 <tr>
@@ -85,7 +81,7 @@
                   </td>
                 </tr>
               } @empty {
-                <tr><td colspan="6" class="branch-v2-page__empty">Không có chi nhánh phù hợp. <button type="button" (click)="clearFilters()">Xóa bộ lọc</button></td></tr>
+                <tr><td colspan="6" class="branch-v2-page__empty"><app-admin-data-state kind="empty" title="Không tìm thấy chi nhánh" message="Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác." /></td></tr>
               }
               }
             </tbody>
@@ -203,11 +199,9 @@
                 <th scope="col">Đã đặt / Tổng</th><th scope="col">Kích hoạt tại chi nhánh</th><th scope="col" class="branch-v2-page__actions-heading">Thao tác</th></tr></thead>
               <tbody>
                 @if (servicesLoading()) {
-                  <tr><td colspan="5" class="branch-v2-page__empty">Đang tải danh sách dịch vụ...</td></tr>
+                  <tr><td colspan="5" class="branch-v2-page__empty"><app-admin-data-state kind="loading" title="Đang tải danh sách dịch vụ" /></td></tr>
                 } @else if (servicesError()) {
-                  <tr><td colspan="5" class="branch-v2-page__empty">
-                    {{ servicesError() }} <button type="button" (click)="retryDetail()">Thử lại</button>
-                  </td></tr>
+                  <tr><td colspan="5" class="branch-v2-page__empty"><app-admin-data-state kind="error" title="Không thể tải danh sách dịch vụ" [message]="servicesError()" (retry)="retryDetail()" /></td></tr>
                 } @else {
                 @for (service of branchServices; track service.id) {
                   <tr [class.branch-v2-page__focused]="service.id === focusedServiceId">
@@ -231,7 +225,7 @@
                     </td>
                   </tr>
                 } @empty {
-                  <tr><td colspan="5" class="branch-v2-page__empty">Chưa có dịch vụ tại chi nhánh này.</td></tr>
+                  <tr><td colspan="5" class="branch-v2-page__empty"><app-admin-data-state kind="empty" title="Chưa có dịch vụ" message="Chi nhánh này hiện chưa có dịch vụ được cấu hình." /></td></tr>
                 }
                 }
               </tbody>
