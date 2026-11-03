@@ -22,11 +22,9 @@
       </header>
 
       @if (loading()) {
-        <div class="order-admin__feedback" role="status">Đang tải chi tiết đơn hàng...</div>
+        <app-admin-data-state kind="loading" title="Đang tải chi tiết đơn hàng" />
       } @else if (error()) {
-        <div class="order-admin__feedback" role="alert"><p>{{ error() }}</p>
-          <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="refresh()">Thử lại</button>
-        </div>
+        <app-admin-data-state kind="error" title="Không thể tải chi tiết đơn hàng" [message]="error()" (retry)="refresh()" />
       } @else if (selected(); as order) {
         <section class="order-admin__card order-admin__card--detail" aria-label="Thông tin đơn hàng">
           <h2>Thông tin đơn hàng</h2>
@@ -329,7 +327,7 @@
         <p class="order-admin__filter-hint" role="status">Đang đối chiếu chi nhánh của các yêu cầu trả hàng...</p>
       } @else if (unresolvedReturnBranchCount()) {
         <p class="order-admin__filter-hint">
-          {{ unresolvedReturnBranchCount() }} yêu cầu chưa xác định được chi nhánh từ API đơn hàng; chưa được tính khi lọc một chi nhánh cụ thể.
+          {{ unresolvedReturnBranchCount() }} yêu cầu chưa xác định được chi nhánh nên chưa được tính khi lọc một chi nhánh cụ thể.
         </p>
       }
       }
@@ -361,11 +359,9 @@
               </tr></thead>
               <tbody>
                 @if (loading()) {
-                  <tr><td colspan="8" class="order-admin__empty" role="status">Đang tải danh sách đơn hàng...</td></tr>
+                  <tr><td colspan="8" class="order-admin__empty"><app-admin-data-state kind="loading" title="Đang tải danh sách đơn hàng" /></td></tr>
                 } @else if (error()) {
-                  <tr><td colspan="8" class="order-admin__empty" role="alert">{{ error() }}
-                    <button type="button" class="order-admin__btn order-admin__btn--outline" (click)="refresh()">Thử lại</button>
-                  </td></tr>
+                  <tr><td colspan="8" class="order-admin__empty"><app-admin-data-state kind="error" title="Không thể tải danh sách đơn hàng" [message]="error()" (retry)="refresh()" /></td></tr>
                 } @else {
                   @for (order of pageRows(); track order.id) {
                     <tr>
@@ -384,11 +380,9 @@
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="8" class="order-admin__empty">
-                      <strong>{{ totalLoaded() ? 'Không có đơn hàng phù hợp.' : 'Chưa có đơn hàng nào.' }}</strong>
-                      <p>{{ totalLoaded() ? 'Thử thay đổi từ khóa hoặc bộ lọc.' : 'Chưa có đơn hàng nào được ghi nhận. Đơn hàng sẽ xuất hiện sau khi khách đặt hàng thành công.' }}</p>
-                      @if (totalLoaded()) { <button class="order-admin__btn order-admin__btn--outline" type="button" (click)="clearFilters()">Xóa bộ lọc</button> }
-                    </td></tr>
+                    <tr><td colspan="8" class="order-admin__empty"><app-admin-data-state kind="empty"
+                      [title]="totalLoaded() ? 'Không tìm thấy đơn hàng' : 'Chưa có đơn hàng'"
+                      [message]="totalLoaded() ? 'Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác.' : 'Đơn hàng sẽ xuất hiện sau khi khách đặt hàng thành công.'" /></td></tr>
                   }
                 }
               </tbody>
@@ -405,11 +399,9 @@
               </tr></thead>
               <tbody>
                 @if (returnsLoading()) {
-                  <tr><td colspan="8" class="order-admin__empty" role="status">Đang tải yêu cầu trả hàng...</td></tr>
+                  <tr><td colspan="8" class="order-admin__empty"><app-admin-data-state kind="loading" title="Đang tải yêu cầu trả hàng" /></td></tr>
                 } @else if (returnsError()) {
-                  <tr><td colspan="8" class="order-admin__empty" role="alert">{{ returnsError() }}
-                    <button type="button" class="order-admin__btn order-admin__btn--outline" (click)="refresh()">Thử lại</button>
-                  </td></tr>
+                  <tr><td colspan="8" class="order-admin__empty"><app-admin-data-state kind="error" title="Không thể tải yêu cầu trả hàng" [message]="returnsError()" (retry)="refresh()" /></td></tr>
                 } @else {
                   @for (ret of returnPageRows(); track ret.id) {
                     <tr>
@@ -429,10 +421,7 @@
                       </td>
                     </tr>
                   } @empty {
-                    <tr><td colspan="8" class="order-admin__empty">
-                      <strong>Không có yêu cầu trả hàng phù hợp.</strong>
-                      <p>Hãy thử thay đổi bộ lọc hoặc tìm kiếm.</p>
-                    </td></tr>
+                    <tr><td colspan="8" class="order-admin__empty"><app-admin-data-state kind="empty" title="Không tìm thấy yêu cầu trả hàng" message="Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác." /></td></tr>
                   }
                 }
               </tbody>
