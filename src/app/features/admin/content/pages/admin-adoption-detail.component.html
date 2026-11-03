@@ -14,7 +14,7 @@
       <header class="web2-admin-page__header">
         <h1>Đơn {{d.requestCode || id}} · {{pet(d).petName || 'Thú cưng'}}</h1>
         <div class="web2-admin-page__actions">
-          @if (String(d.status || '').toUpperCase() === 'PENDING') {
+          @if (isPending(d)) {
           <button type="button" class="web2-admin-btn web2-admin-btn--outline" [disabled]="busy()" (click)="review('REJECTED')">Từ chối</button>
           <button type="button" class="web2-admin-btn web2-admin-btn--primary" [disabled]="busy()" (click)="review('APPROVED')">Duyệt đơn</button>
         }
