@@ -1,12 +1,10 @@
 <app-admin-catalog-shell activeItem="content-rescue">
   <main class="adoption-detail web2-admin-page">
-    <nav class="web2-admin-breadcrumb" aria-label="Breadcrumb">
-      <a routerLink="/admin/content/rescue">Cứu trợ &amp; Nhận nuôi</a>
-      <img src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
-      <a routerLink="/admin/content/adoptions">Đơn đăng ký nhận nuôi</a>
-      <img src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
-      <span>Đơn {{id}}</span>
-    </nav>
+    <app-admin-breadcrumb [items]="[
+      {label:'Cứu trợ & Nhận nuôi', link:'/admin/content/rescue'},
+      {label:'Đơn đăng ký nhận nuôi', link:'/admin/content/adoptions'},
+      {label:'Đơn ' + id}
+    ]" />
 
     @if (loading()) {
       <div class="web2-admin-state">Đang tải đơn...</div>
