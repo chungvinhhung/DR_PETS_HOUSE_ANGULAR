@@ -77,6 +77,7 @@ export class BookingPageComponent {
   });
   readonly paymentMode = signal<any>("store");
   readonly success = signal<any>(false);
+  readonly createdAppointment = signal<any>(null);
 
   /** Hàm set kiểu React cho signal "selectedServiceType" (dùng khi truyền cho component con / callback) */
   protected readonly setSelectedServiceTypeFn = reactSetter(this.selectedServiceType);
@@ -216,8 +217,13 @@ export class BookingPageComponent {
       this.ownerInfo().branch;
       this.selectedDate();
       this.selectedServiceType();
+      this.selectedServices();
       const cleanup = untracked(() => {
-        if (!this.selectedDate() || !this.ownerInfo().branch) {
+        const selectedServiceIds = this.services()
+          .filter((service: any) => this.selectedServices().includes(service.id))
+          .map((service: any) => service.serviceId || service.id)
+          .filter(Boolean);
+        if (!this.selectedDate() || !this.ownerInfo().branch || !selectedServiceIds.length) {
           this.timeSlots.set([]);
           this.selectedSlot.set(null);
           return;
@@ -228,7 +234,7 @@ export class BookingPageComponent {
         this.bookingApi.getAppointmentSlots({
           date: getDateKey(this.selectedDate()),
           branchId: this.ownerInfo().branch,
-          serviceType: this.selectedServiceType(),
+          serviceIds: selectedServiceIds,
         })
           .then((slots: any) => {
             if (!active) return;
@@ -263,48 +269,58 @@ export class BookingPageComponent {
     }
 
     const firstPetInfo = this.petInfos()[0] || {};
-    const serviceQuantity = Math.max(this.selectedPets().length || this.petInfos().length || 1, 1);
-    const servicePayload = this.services()
+    const serviceIds = this.services()
       .filter((service: any) => this.selectedServices().includes(service.id))
-      .map((service: any) => ({
-        service_id: service.serviceId || service.id,
-        quantity: quantities?.[service.id] || serviceQuantity,
-      }));
+      .map((service: any) => String(service.serviceId || service.id || ''))
+      .filter(Boolean);
+
+    if (!serviceIds.length) {
+      this.bookingError.set("Vui lòng chọn ít nhất một dịch vụ.");
+      return;
+    }
 
     this.bookingSubmitting.set(true);
     this.bookingError.set("");
     try {
-      const selectedPetId = this.selectedPets()[0]?.pet_id || this.selectedPets()[0]?.id;
-      const validPetId = /^\d+$/.test(String(selectedPetId || "")) ? selectedPetId : undefined;
+      const selectedPet = this.selectedPets()[0] || {};
+      const selectedPetId = selectedPet.pet_id || selectedPet.id || selectedPet._id;
+      const validPetId = /^[a-f0-9]{24}$/i.test(String(selectedPetId || "")) ? String(selectedPetId) : undefined;
       const petData = !validPetId && firstPetInfo.name
         ? {
-            pet_name: firstPetInfo.name,
-            species_id: findSpeciesId(this.speciesOptions(), firstPetInfo.species),
-            weight_kg: firstPetInfo.weight || undefined,
+            name: firstPetInfo.name,
+            species: firstPetInfo.species || undefined,
+            breed: firstPetInfo.breed || undefined,
+            weightKg: firstPetInfo.weight ? Number(firstPetInfo.weight) : undefined,
             age: firstPetInfo.age || undefined,
-            gender: firstPetInfo.gender || "unknown",
-            health_status: toBackendHealthStatus(firstPetInfo.status),
-            medical_note: firstPetInfo.notes || undefined,
+            gender: firstPetInfo.gender || undefined,
+            healthStatus: toBackendHealthStatus(firstPetInfo.status),
+            medicalNote: firstPetInfo.notes || undefined,
           }
         : undefined;
 
-      if (!validPetId && !petData?.species_id) {
-        this.bookingError.set("Không tìm thấy mã loài thú cưng từ backend. Vui lòng chọn lại loài.");
-        this.bookingSubmitting.set(false);
+      if (!validPetId && !petData?.name) {
+        this.bookingError.set("Vui lòng chọn hoặc nhập thông tin thú cưng.");
         return;
       }
 
-      await this.bookingApi.bookAppointment({
-        slot_id: selectedSlotRecord.id,
-        pet_id: validPetId,
-        pet_data: petData,
-        service_ids: servicePayload,
-        customer_name_snapshot: this.ownerInfo().name,
-        customer_phone_snapshot: this.ownerInfo().phone,
-        condition_description: ([firstPetInfo.name, firstPetInfo.status].filter(Boolean) as any[]).join(" - ") || undefined,
+      const appointment = await this.bookingApi.bookAppointment({
+        serviceIds,
+        branchId: this.ownerInfo().branch,
+        slotStart: selectedSlotRecord.start,
+        petId: validPetId,
+        pet: petData,
+        ...(!this.authService.isAuthenticated() ? {
+          contact: {
+            fullName: this.ownerInfo().name,
+            phone: this.ownerInfo().phone,
+            email: this.ownerInfo().email || undefined,
+          },
+        } : {}),
+        conditionDescription: ([firstPetInfo.name, firstPetInfo.status].filter(Boolean) as any[]).join(" - ") || undefined,
         note: firstPetInfo.notes || undefined,
-        payment_method: this.paymentMode() === "store" ? "store" : "online",
+        paymentMethod: this.paymentMode() === "store" ? "PAY_AT_STORE" : "ONLINE_MOCK",
       });
+      this.createdAppointment.set(appointment);
       this.success.set(true);
     } catch (error: any) {
       this.bookingError.set(error?.message || "Không thể đặt lịch.");
