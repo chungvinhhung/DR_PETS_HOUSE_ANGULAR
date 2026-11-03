@@ -10,11 +10,10 @@
     } @else if (item(); as r) {
       <header class="record-heading">
         <div>
-          <nav class="record-breadcrumb" aria-label="Đường dẫn">
-            <a routerLink="/admin/service-records">Hồ sơ dịch vụ</a>
-            <span aria-hidden="true">›</span>
-            <strong aria-current="page">Chi tiết hồ sơ dịch vụ</strong>
-          </nav>
+          <app-admin-breadcrumb [items]="[
+            {label:'Hồ sơ dịch vụ', link:'/admin/service-records'},
+            {label:'Chi tiết hồ sơ dịch vụ'}
+          ]" />
           <h1>Chi tiết hồ sơ dịch vụ@if (displayRecordCode(r); as code) { #{{ code }}}</h1>
         </div>
         @if (r.appointmentId) {
