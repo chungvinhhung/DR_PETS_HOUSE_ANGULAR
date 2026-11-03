@@ -73,7 +73,7 @@ export function serviceRecordStatusLabel(s:ServiceRecordStatus, raw=''):string {
 export function normalizeServiceRecord(raw:unknown):ServiceRecord {
   const r=record(raw);if(!r)throw new Error('Dữ liệu hồ sơ không hợp lệ.');
   const id=first(r['id'],r['_id'],r['serviceRecordId'],r['service_record_id']);
-  if(!id)throw new Error('Hồ sơ không có ID từ BE.');
+  if(!id)throw new Error('Dữ liệu hồ sơ chưa đầy đủ.');
   const pet=record(r['pet'])||{};const branch=record(r['branch'])||{};
   const staff=record(r['primaryStaff'])||record(r['staff'])||{};
   const appointment=record(r['appointment'])||{};
@@ -159,7 +159,7 @@ export function normalizeServiceRecordsPage(raw:unknown):ServiceRecordsPage {
   const payload=unwrap(raw);const r=record(payload);
   const rows=Array.isArray(payload)?payload:Array.isArray(r?.['items'])?r['items']:
     Array.isArray(r?.['records'])?r['records']:null;
-  if(!rows)throw new Error('API không trả về danh sách hồ sơ dịch vụ hợp lệ.');
+  if(!rows)throw new Error('Dữ liệu danh sách hồ sơ không hợp lệ.');
   const page=record(r?.['pagination']);
   const total=r?.['total']??r?.['totalCount']??page?.['total'];
   return {items:rows.map(normalizeServiceRecord),total:typeof total==='number'&&total>=0?total:rows.length};
@@ -171,7 +171,7 @@ export type MedicalFinalizationCheck = {allowed:boolean;reason:string};
 /** FE advisory: unverified review cannot count as completed; server must enforce. */
 export function canFinalizeServiceRecord(r:ServiceRecord):MedicalFinalizationCheck {
   if(r.status==='COMPLETED')return {allowed:false,reason:'Hồ sơ đã hoàn thành.'};
-  if(r.category==='UNKNOWN')return {allowed:false,reason:'BE chưa xác định loại hồ sơ.'};
+  if(r.category==='UNKNOWN')return {allowed:false,reason:'Chưa xác định loại hồ sơ.'};
   if(r.category==='MEDICAL' && !['WAITING_VET_REVIEW','REOPENED'].includes(r.status))
     return {allowed:false,reason:'Hồ sơ MEDICAL phải ở trạng thái chờ Bác sĩ thú y duyệt hoặc đã mở lại trước khi chốt.'};
   if(r.category==='GROOMING' && !['IN_PROGRESS','REOPENED'].includes(r.status))
