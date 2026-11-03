@@ -49,6 +49,15 @@ export class AdminContentService {
     }).pipe(map(r=>arrayFrom(unwrap(r))));
   }
 
+  createPost(body:any):Observable<any> {
+    return this.api.post<any>('/admin/posts',body).pipe(map(unwrap));
+  }
+
+  updatePost(id:string,body:any):Observable<any> {
+    // foundation-v6 source uses PATCH for full content updates.
+    return this.api.patch<any>(`/admin/posts/${encodeURIComponent(id)}`,body).pipe(map(unwrap));
+  }
+
   updatePostStatus(id:string,status:'DRAFT'|'PUBLISHED'|'ARCHIVED'):Observable<any> {
     return this.api.patch<any>(`/admin/posts/${encodeURIComponent(id)}/status`,{status})
       .pipe(map(unwrap));
@@ -71,6 +80,18 @@ export class AdminContentService {
 
   deleteCommunity(id:string):Observable<any> {
     return this.api.delete<any>(`/admin/community/posts/${encodeURIComponent(id)}`);
+  }
+
+  createRescuePet(body:any):Observable<any> {
+    return this.api.post<any>('/admin/rescue/pets',body).pipe(map(unwrap));
+  }
+
+  updateRescuePet(id:string,body:any):Observable<any> {
+    return this.api.patch<any>(`/admin/rescue/pets/${encodeURIComponent(id)}`,body).pipe(map(unwrap));
+  }
+
+  deleteRescuePet(id:string):Observable<any> {
+    return this.api.delete<any>(`/admin/rescue/pets/${encodeURIComponent(id)}`);
   }
 
   reviewAdoptionRequest(
