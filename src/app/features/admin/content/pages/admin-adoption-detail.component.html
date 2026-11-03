@@ -33,7 +33,7 @@
       <section class="card web2-admin-section">
         <h2 class="web2-admin-section__title">1. Thông tin liên hệ</h2>
         <dl class="web2-admin-detail-grid">
-          <div><dt>Họ và tên</dt><dd>{{value(d.applicantName, d.name)}}</dd></div>
+          <div><dt>Họ và tên</dt><dd>{{value(applicant(d).fullName, d.applicantName, d.name)}}</dd></div>
           <div><dt>Số điện thoại</dt><dd>{{value(applicant(d).phone, d.phone)}}</dd></div>
           <div><dt>Giới tính / Năm sinh</dt><dd>{{value(d.gender)}} / {{value(d.birthYear)}}</dd></div>
           <div><dt>Địa chỉ</dt><dd>{{value(applicant(d).address, d.address)}}</dd></div>
