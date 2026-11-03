@@ -1,10 +1,9 @@
 <app-admin-catalog-shell activeItem="moderation-reports">
   <main class="report-detail web2-admin-page">
-    <nav class="web2-admin-breadcrumb" aria-label="Breadcrumb">
-      <a routerLink="/admin/moderation/reports">Báo cáo vi phạm</a>
-      <img src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
-      <span>Chi tiết báo cáo</span>
-    </nav>
+    <app-admin-breadcrumb [items]="[
+      {label:'Báo cáo vi phạm', link:'/admin/moderation/reports'},
+      {label:'Chi tiết báo cáo'}
+    ]" />
     <header class="web2-admin-page__header">
       <h1>Báo cáo vi phạm</h1>
       <div class="web2-admin-page__actions">
