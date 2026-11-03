@@ -10,6 +10,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from "../../../../shared/admin-data-state/admin-data-state.component";
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, finalize, firstValueFrom, forkJoin, map, of, timeout } from 'rxjs';
 
@@ -26,7 +27,7 @@ import { AdminToastService } from '../../../../shared/services/admin-toast.servi
 @Component({
   selector: 'app-admin-category-page',
   standalone: true,
-  imports: [FormsModule, AdminCatalogShellComponent],
+  imports: [FormsModule, AdminCatalogShellComponent, AdminDataStateComponent],
   templateUrl: './admin-category-page.component.html',
   styleUrl: './admin-category-page.component.scss',
   changeDetection: ChangeDetectionStrategy.Default,
