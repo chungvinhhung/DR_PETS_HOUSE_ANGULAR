@@ -6163,3 +6163,37 @@ app-admin-appointment-create .pet-picker__additional input{display:block;box-siz
 app-admin-appointment-create .pet-new__additional{margin-top:12px}
 app-admin-appointment-create .appointment-create__page-title{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
 app-admin-appointment-create .appointment-create__header-cancel{min-height:39px;padding:8px 16px}
+
+
+/* Order status dialog: exact 40px readonly fields and explicit disabled state. */
+app-admin-order-management .order-admin__transition-fields .order-admin__field-value,
+app-admin-order-management .order-admin__transition-fields .order-admin__field-value--next{
+  box-sizing:border-box!important;
+  height:40px!important;
+  min-height:40px!important;
+  max-height:40px!important;
+  margin-top:8px!important;
+  padding:0 12px!important;
+  border:1px solid #dee5f0!important;
+  border-radius:8px!important;
+  line-height:20px!important;
+}
+app-admin-order-management .order-admin__transition-fields .order-admin__field-value--next{
+  background:#e5f6fd!important;
+  color:#334155!important;
+  font:400 13px/20px Roboto,Arial,sans-serif!important;
+}
+app-admin-order-management .order-admin__modal .order-admin__field--required>.order-admin__required{
+  display:inline!important;
+  margin-left:2px!important;
+  color:#d92d20!important;
+  font-weight:700!important;
+}
+app-admin-order-management .order-admin__modal-actions .order-admin__btn--primary:disabled{
+  opacity:1!important;
+  border-color:#cbd5e1!important;
+  background:#e2e8f0!important;
+  color:#94a3b8!important;
+  cursor:not-allowed!important;
+  box-shadow:none!important;
+}
