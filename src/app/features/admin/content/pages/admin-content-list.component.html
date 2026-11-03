@@ -82,7 +82,7 @@
                 } @empty { <tr><td colspan="6" class="web2-admin-empty">Chưa có bài viết.</td></tr> }
               </tbody>
             } @else if (mode === 'first-aid') {
-              <colgroup><col style="width:29%"><col style="width:20%"><col style="width:12%"><col style="width:13%"><col style="width:14%"><col style="width:12%"></colgroup>
+              <colgroup><col style="width:30%"><col style="width:20%"><col style="width:11%"><col style="width:13%"><col style="width:14%"><col style="width:12%"></colgroup>
               <thead><tr><th>Tiêu đề</th><th>Nhóm tình huống</th><th>Mức độ</th><th class="is-center">Cập nhật</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
               <tbody>
                 @for (r of visible(); track r.id || r._id || $index) {
@@ -111,7 +111,7 @@
                 } @empty { <tr><td colspan="7" class="web2-admin-empty">Backend hiện chưa có collection/API community moderation.</td></tr> }
               </tbody>
             } @else if (mode === 'rescue') {
-              <colgroup><col style="width:18%"><col style="width:16%"><col style="width:14%"><col style="width:14%"><col style="width:12%"><col style="width:14%"><col style="width:12%"></colgroup>
+              <colgroup><col style="width:19%"><col style="width:18%"><col style="width:13%"><col style="width:13%"><col style="width:12%"><col style="width:14%"><col style="width:11%"></colgroup>
               <thead><tr><th>Thú cưng</th><th>Loài / Giống</th><th>Khu vực</th><th>Tình trạng</th><th class="is-center">Cập nhật</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
               <tbody>
                 @for (r of visible(); track r.id || r._id || $index) {
@@ -141,7 +141,7 @@
           </table>
         </div>
         <footer class="web2-admin-pagination">
-          <span>Đang hiển thị {{visible().length}} trên tổng số {{filtered().length}} {{mode === 'adoptions' ? 'đơn đăng ký' : 'bản ghi'}}</span>
+          <span>Đang hiển thị {{visible().length}} trên tổng số {{filtered().length}} {{mode === 'articles' ? 'kiến thức' : mode === 'first-aid' ? 'cẩm nang' : mode === 'community' ? 'bài đăng' : mode === 'rescue' ? 'bé' : 'đơn đăng ký'}}</span>
           <div class="web2-admin-pagination__controls">
             <button type="button" class="web2-admin-page-arrow" aria-label="Trang trước" (click)="goToPage(page() - 1)" [disabled]="page() === 1"><img src="/assets/admin-product/expand_more.svg" alt=""></button>
             @for (p of pageNumbers(); track $index) {
