@@ -656,6 +656,12 @@ export class AdminOrderManagementComponent {
   isCancelReasonValid(): boolean {
     return this.cancelCategory().length > 0;
   }
+  isDialogValid(action: ActionDialog): boolean {
+    if (!action) return false;
+    if (action === 'cancel') return this.isCancelReasonValid();
+    if (action === 'ship') return this.carrier().trim().length > 0 && this.tracking().trim().length > 0;
+    return true;
+  }
   cancelReasonPayload(): string {
     const category = this.cancelCategory();
     const note = this.reason().trim();
@@ -672,6 +678,7 @@ export class AdminOrderManagementComponent {
     if (!action || !order || this.dialogBusy() || !this.canManage()) return;
     if (action === 'cancel' && (!this.canCancel() || !this.isCancelReasonValid())) return;
     if (action !== 'cancel' && this.availableAction() !== action) return;
+    if (!this.isDialogValid(action)) return;
     this.dialogBusy.set(true);
     const request = action === 'cancel'
       ? this.api.cancel(order.id, this.cancelReasonPayload(), this.cancelRequestKey ?? 'staff-cancel-' + order.id)
