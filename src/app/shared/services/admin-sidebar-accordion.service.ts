@@ -11,13 +11,9 @@ export type AdminSidebarGroup = 'sales' | 'services' | 'operations' | 'content' 
 export class AdminSidebarAccordionService {
   readonly expandedGroup = signal<AdminSidebarGroup | null>(null);
 
-  /**
-   * Synchronize the accordion with the route. A null group means the route is
-   * a standalone Admin page (e.g. Customer Management), so every group closes.
-   * Do not write when unchanged: this prevents needless animation/re-render.
-   */
+  /** Open the ancestor for a newly visited route; do not reset an unchanged group. */
   openForRoute(group: AdminSidebarGroup | null): void {
-    if (this.expandedGroup() !== group) {
+    if (group !== null && this.expandedGroup() !== group) {
       this.expandedGroup.set(group);
     }
   }
