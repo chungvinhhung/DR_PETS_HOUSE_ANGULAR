@@ -21,6 +21,7 @@ import {
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from "../../../../shared/admin-data-state/admin-data-state.component";
 import {
   CatalogBranch,
   CatalogFilterMode,
@@ -37,7 +38,7 @@ type CatalogAction = 'view' | 'edit' | 'configure';
 @Component({
   selector: 'app-service-catalog-list',
   standalone: true,
-  imports: [AdminCatalogShellComponent, ServiceBranchConfigFlowComponent],
+  imports: [AdminCatalogShellComponent, AdminDataStateComponent, ServiceBranchConfigFlowComponent],
   templateUrl: './service-catalog-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
