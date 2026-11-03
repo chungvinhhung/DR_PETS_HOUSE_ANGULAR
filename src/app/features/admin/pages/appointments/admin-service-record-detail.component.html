@@ -143,7 +143,7 @@
         <header><h2 id="materials-dialog-title">Cập nhật vật liệu thực tế</h2>
           <button type="button" class="modal-close" (click)="closeDialog()" [disabled]="busy()" aria-label="Đóng"><img src="/assets/admin-inventory/close-outlined.svg" alt=""></button>
         </header>
-        <p class="modal-hint">Số lượng thực tế chỉ cập nhật hồ sơ. Tồn kho được Backend ghi nhận khi hồ sơ được chốt.</p>
+        <p class="modal-hint">Số lượng thực tế được lưu vào hồ sơ. Tồn kho sẽ được cập nhật khi hồ sơ được chốt.</p>
         <div class="material-editor">
           @for (m of materialDrafts(); track $index; let i=$index) {
             <div class="material-editor__row">
