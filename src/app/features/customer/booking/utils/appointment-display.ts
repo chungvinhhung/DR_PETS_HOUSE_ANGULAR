@@ -53,10 +53,7 @@ export function isClinicPayment(appointment: any) {
 }
 
 export function getAppointmentDisplayStatus(appointment: any) {
-  const status =
-    appointment.status === "pending_payment" && isClinicPayment(appointment)
-      ? "confirmed"
-      : appointment.status;
+  const status = appointment.status;
 
   return {
     value: status,
@@ -96,7 +93,7 @@ export function getAppointmentActions(appointment: any) {
 
 export function getAppointmentTimelineSteps(appointment: any) {
   const { value: status } = getAppointmentDisplayStatus(appointment);
-  const hasPaymentStep = !isClinicPayment(appointment);
+  const hasPaymentStep = status === "pending_payment" || !isClinicPayment(appointment);
   const paid = appointment.paymentStatus === "paid";
   const terminal = status === "cancelled" || status === "no_show";
 
