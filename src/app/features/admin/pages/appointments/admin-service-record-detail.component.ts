@@ -6,6 +6,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiClientService } from '../../../../core/services/api-client.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import {
   AdminInventoryService,
@@ -43,7 +44,7 @@ interface ProfessionalDraft {
 @Component({
   selector:'app-admin-service-record-detail',
   standalone:true,
-  imports:[RouterLink,AdminCatalogShellComponent,AdminInventoryTransactionDrawerComponent],
+  imports:[RouterLink,AdminCatalogShellComponent,AdminBreadcrumbComponent,AdminInventoryTransactionDrawerComponent],
   templateUrl:'./admin-service-record-detail.component.html',
   styleUrl:'./admin-service-record-detail.component.scss',
   changeDetection:ChangeDetectionStrategy.OnPush,
