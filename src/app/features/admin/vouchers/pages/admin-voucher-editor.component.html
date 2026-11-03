@@ -1,9 +1,9 @@
 <app-admin-catalog-shell activeItem="vouchers">
   <main class="voucher-editor">
-    <nav class="voucher-editor__crumb" aria-label="Đường dẫn">
-      <a routerLink="/admin/vouchers">Khuyến mãi</a><span aria-hidden="true">›</span>
-      <span>{{ mode === 'create' ? 'Tạo voucher' : mode === 'edit' ? 'Chỉnh sửa voucher' : 'Chi tiết voucher' }}</span>
-    </nav>
+    <app-admin-breadcrumb [items]="[
+      {label:'Khuyến mãi', link:'/admin/vouchers'},
+      {label: mode === 'create' ? 'Tạo voucher' : mode === 'edit' ? 'Chỉnh sửa voucher' : 'Chi tiết voucher'}
+    ]" />
     <header class="voucher-editor__heading">
       <h1>{{ mode === 'create' ? 'Tạo voucher' : mode === 'edit' ? 'Chỉnh sửa voucher ' + (original()?.code || '') : 'Chi tiết voucher ' + (original()?.code || '') }}</h1>
       <div class="voucher-editor__heading-actions">
