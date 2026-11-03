@@ -7,6 +7,7 @@ import { ApiClientService } from '../../../../core/services/api-client.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { CatalogBranch, CatalogService } from '../../service-catalog/models/service-catalog.model';
 import { ServiceCatalogApiService } from '../../service-catalog/services/service-catalog-api.service';
@@ -20,7 +21,7 @@ type DialogAction = 'cancel' | 'reschedule' | 'status' | null;
 @Component({
   selector: 'app-admin-appointment-detail',
   standalone: true,
-  imports: [RouterLink, AdminCatalogShellComponent, AdminBreadcrumbComponent],
+  imports: [RouterLink, AdminCatalogShellComponent, AdminBreadcrumbComponent, AdminDataStateComponent],
   templateUrl: './admin-appointment-detail.component.html',
   styleUrl: './admin-appointment-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
