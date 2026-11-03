@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Params, RouterLink } from '@angular/router';
 
 export interface AdminBreadcrumbItem {
   label: string;
   link?: string | readonly any[];
+  queryParams?: Params;
 }
 
 @Component({
