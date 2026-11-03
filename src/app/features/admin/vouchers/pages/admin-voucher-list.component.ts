@@ -4,6 +4,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signa
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from "../../../../shared/admin-data-state/admin-data-state.component";
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import {
@@ -14,7 +15,7 @@ import {
 @Component({
   selector: 'app-admin-voucher-list',
   standalone: true,
-  imports: [RouterLink, AdminCatalogShellComponent],
+  imports: [RouterLink, AdminCatalogShellComponent, AdminDataStateComponent],
   templateUrl: './admin-voucher-list.component.html',
   styleUrl: './admin-voucher-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
