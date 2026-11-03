@@ -5,6 +5,7 @@ import { catchError, forkJoin, from, map, mergeMap, of, toArray } from 'rxjs';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
+import { AdminDataStateComponent } from "../../../../shared/admin-data-state/admin-data-state.component";
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { AdminReturnNotificationService } from '../../../../shared/services/admin-return-notification.service';
 import { orderErrorMessage } from '../services/admin-order-error-message';
@@ -33,7 +34,7 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 @Component({
   selector: 'app-admin-order-management',
   standalone: true,
-  imports: [AdminCatalogShellComponent, AdminBreadcrumbComponent, RouterLink, AdminInventoryTransactionDrawerComponent],
+  imports: [AdminCatalogShellComponent, AdminBreadcrumbComponent, AdminDataStateComponent, RouterLink, AdminInventoryTransactionDrawerComponent],
   templateUrl: './admin-order-management.component.html',
   styleUrl: './admin-order-management.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
