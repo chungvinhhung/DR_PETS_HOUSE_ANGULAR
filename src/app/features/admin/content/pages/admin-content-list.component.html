@@ -42,11 +42,23 @@
         </select>
         <select class="web2-admin-filter-select" aria-label="Trạng thái" [ngModel]="status()" (ngModelChange)="status.set($event); onFilter()">
           <option value="">Trạng thái</option>
-          <option value="PUBLISHED">Đã xuất bản</option>
-          <option value="DRAFT">Bản nháp</option>
-          <option value="HIDDEN">Ẩn</option>
-          <option value="PENDING">Chờ duyệt</option>
-          <option value="APPROVED">Đã duyệt</option>
+          @if (mode === 'articles' || mode === 'first-aid') {
+            <option value="PUBLISHED">Đã xuất bản</option>
+            <option value="DRAFT">Bản nháp</option>
+            <option value="ARCHIVED">Đã lưu trữ</option>
+          } @else if (mode === 'community') {
+            <option value="PENDING">Chờ duyệt</option>
+            <option value="APPROVED">Đã duyệt</option>
+            <option value="REJECTED">Đã từ chối</option>
+            <option value="HIDDEN">Đã ẩn</option>
+          } @else if (mode === 'rescue') {
+            <option value="LOOKING_FOR_HOME">Chưa có tổ ấm</option>
+            <option value="ADOPTED">Đã có tổ ấm</option>
+          } @else {
+            <option value="PENDING">Chờ duyệt</option>
+            <option value="APPROVED">Đã duyệt</option>
+            <option value="REJECTED">Đã từ chối</option>
+          }
         </select>
       </div>
     </section>
@@ -87,7 +99,7 @@
               <tbody>
                 @for (r of visible(); track r.id || r._id || $index) {
                   <tr>
-                    <td>{{name(r)}}</td><td>{{category(r)}}</td><td>{{r.severity || '—'}}</td>
+                    <td>{{name(r)}}</td><td>{{category(r)}}</td><td>{{r.urgencyLevel || r.severity || '—'}}</td>
                     <td class="is-center">{{date(r)}}</td>
                     <td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
                     <td class="is-center actions">
@@ -127,7 +139,7 @@
               </tbody>
             } @else {
               <colgroup><col style="width:12%"><col style="width:17%"><col style="width:14%"><col style="width:14%"><col style="width:12%"><col style="width:12%"><col style="width:11%"><col style="width:8%"></colgroup>
-              <thead><tr><th>Mã đơn</th><th>Người đăng ký</th><th>Thú cưng</th><th>Loại nhà ở</th><th>Ở một mình</th><th class="is-center">Ngày gửi</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
+              <thead><tr><th>Mã đơn</th><th>Người đăng ký</th><th>Thú cưng</th><th>Loại nhà ở</th><th>Kinh nghiệm nuôi</th><th class="is-center">Ngày gửi</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
               <tbody>
                 @for (r of visible(); track r.id || r._id || $index) {
                   <tr>
