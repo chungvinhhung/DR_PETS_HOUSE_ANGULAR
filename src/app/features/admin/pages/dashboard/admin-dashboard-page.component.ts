@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { finalize, forkJoin } from 'rxjs';
 
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
