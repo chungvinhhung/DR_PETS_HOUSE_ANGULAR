@@ -1,9 +1,9 @@
 <app-admin-catalog-shell activeItem="customers">
   <main class="customer-detail web2-admin-page">
     @if (loading()) {
-      <div class="web2-admin-state">Đang tải chi tiết khách hàng...</div>
+      <app-admin-data-state kind="loading" title="Đang tải chi tiết khách hàng" />
     } @else if (error()) {
-      <div class="web2-admin-state web2-admin-state--error">{{error()}} <button type="button" (click)="load()">Thử lại</button></div>
+      <app-admin-data-state kind="error" title="Không thể tải chi tiết khách hàng" [message]="error()" (retry)="load()" />
     } @else if (customer(); as c) {
       <app-admin-breadcrumb [items]="[
         {label:'Quản lý khách hàng', link:'/admin/customers'},
