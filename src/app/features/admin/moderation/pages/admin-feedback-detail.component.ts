@@ -5,9 +5,10 @@ import { finalize } from 'rxjs';
 
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminModerationService } from '../services/admin-moderation.service';
 
-@Component({selector:'app-admin-feedback-detail',standalone:true,imports:[CommonModule,RouterLink,AdminCatalogShellComponent,AdminBreadcrumbComponent],templateUrl:'./admin-feedback-detail.component.html',styleUrl:'./admin-feedback-detail.component.scss',changeDetection:ChangeDetectionStrategy.OnPush})
+@Component({selector:'app-admin-feedback-detail',standalone:true,imports:[CommonModule,RouterLink,AdminCatalogShellComponent,AdminBreadcrumbComponent,AdminDataStateComponent],templateUrl:'./admin-feedback-detail.component.html',styleUrl:'./admin-feedback-detail.component.scss',changeDetection:ChangeDetectionStrategy.OnPush})
 export class AdminFeedbackDetailComponent{
  private readonly route=inject(ActivatedRoute);private readonly api=inject(AdminModerationService);
  readonly data=signal<any|null>(null);readonly loading=signal(true);readonly error=signal('');readonly busy=signal(false);readonly id=this.route.snapshot.paramMap.get('id')||'';
