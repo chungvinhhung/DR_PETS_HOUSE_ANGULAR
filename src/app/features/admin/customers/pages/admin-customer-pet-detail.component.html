@@ -1,12 +1,10 @@
 <app-admin-catalog-shell activeItem="customers">
   <main class="pet-detail web2-admin-page">
-    <nav class="web2-admin-breadcrumb" aria-label="Breadcrumb">
-      <a routerLink="/admin/customers">Quản lý khách hàng</a>
-      <img src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
-      <a [routerLink]="['/admin/customers', customerId]">Chi tiết khách hàng</a>
-      <img src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true">
-      <span>Hồ sơ thú cưng</span>
-    </nav>
+    <app-admin-breadcrumb [items]="[
+      {label:'Quản lý khách hàng', link:'/admin/customers'},
+      {label:'Chi tiết khách hàng', link:['/admin/customers', customerId]},
+      {label:'Hồ sơ thú cưng'}
+    ]" />
 
     @if (loading()) {
       <div class="web2-admin-state">Đang tải hồ sơ thú cưng...</div>
