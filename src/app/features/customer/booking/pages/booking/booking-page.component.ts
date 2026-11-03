@@ -14,7 +14,7 @@ import { FooterComponent } from '../../../../../layouts/customer/components/foot
 import { BookingSuccessModalComponent } from '../../components/booking-success-modal.component';
 import { BOOKING_SERVICES } from '../../data/booking-data';
 import { reactSetter } from '../../../../../shared/customer/utils/react-setter';
-import { BRANCH_OPTIONS, DEFAULT_SERVICE_TYPE_ID, createEmptyPetInfo, findSpeciesId, toBackendHealthStatus, isPetInfoTouched, getDateKey } from './booking-page.helpers';
+import { BRANCH_OPTIONS, DEFAULT_SERVICE_TYPE_ID, createEmptyPetInfo, toBackendHealthStatus, isPetInfoTouched, getDateKey } from './booking-page.helpers';
 
 /**
  * BookingPage — chuyển từ React: src/pages/Booking/BookingPage.jsx
