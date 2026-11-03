@@ -2,6 +2,7 @@ import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from "../../../../shared/admin-data-state/admin-data-state.component";
 import { RouterLink } from '@angular/router';
 import { JOB_LABELS, StaffPreview, JobRole, StaffStatus, displayStaffName, displayStaffShift } from '../models/staff-preview.model';
 import { AdminStaffApiService, staffTodayISO, staffWeekMonday } from '../services/admin-staff-api.service';
@@ -9,7 +10,7 @@ import { AdminStaffApiService, staffTodayISO, staffWeekMonday } from '../service
 @Component({
   selector: 'app-admin-staff-list',
   standalone: true,
-  imports: [AdminCatalogShellComponent, FormsModule, RouterLink],
+  imports: [AdminCatalogShellComponent, AdminDataStateComponent, FormsModule, RouterLink],
   templateUrl: './admin-staff-list.component.html',
   styleUrl: './admin-staff-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
