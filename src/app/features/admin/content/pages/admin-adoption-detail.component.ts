@@ -51,4 +51,5 @@ export class AdminAdoptionDetailComponent{
  applicant(d:any):any{return d?.applicantInfo||{};}
  pet(d:any):any{return d?.rescuePetId||{};}
  statusLabel(value:any):string{return ({PENDING:'Chờ duyệt',APPROVED:'Đã duyệt',REJECTED:'Đã từ chối'} as Record<string,string>)[String(value||'').toUpperCase()]||String(value||'—');}
+ isPending(d:any):boolean{return String(d?.status||'').toUpperCase()==='PENDING';}
 }
