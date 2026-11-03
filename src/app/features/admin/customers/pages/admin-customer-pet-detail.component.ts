@@ -4,11 +4,12 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AdminCustomerService } from '../services/admin-customer.service';
 
 @Component({
  selector:'app-admin-customer-pet-detail',standalone:true,
- imports:[CommonModule,RouterLink,AdminCatalogShellComponent],
+ imports:[CommonModule,RouterLink,AdminCatalogShellComponent,AdminBreadcrumbComponent],
  templateUrl:'./admin-customer-pet-detail.component.html',
  styleUrl:'./admin-customer-pet-detail.component.scss',
  changeDetection:ChangeDetectionStrategy.OnPush,
