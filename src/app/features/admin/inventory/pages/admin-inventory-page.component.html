@@ -1,8 +1,8 @@
 <app-admin-catalog-shell activeItem="inventory">
 <section class="inventory-page">
   <div class="page-title"><h1>{{tab()==='history' ? 'Lịch sử kho' : 'Kho hàng'}}</h1></div>
-  @if (loading()) { <div class="inventory-state" role="status">Đang tải tồn kho...</div> }
-  @if (loadError()) { <div class="inventory-state inventory-state--error" role="alert">{{loadError()}} <button type="button" (click)="loadAll()">Thử lại</button></div> }
+  @if (loading()) { <app-admin-data-state kind="loading" title="Đang tải tồn kho" /> }
+  @if (loadError()) { <app-admin-data-state kind="error" title="Không thể tải tồn kho" [message]="loadError()" (retry)="loadAll()" /> }
   <div class="inventory-tabs" role="tablist" aria-label="Kho">
     <button type="button" role="tab" [attr.aria-selected]="tab()==='stock'" [class.active]="tab()==='stock'" (click)="switchTab('stock')">Tồn kho</button>
     <button type="button" role="tab" [attr.aria-selected]="tab()==='history'" [class.active]="tab()==='history'" (click)="switchTab('history')">Lịch sử kho</button>
@@ -40,8 +40,8 @@
     </div>
   </div>
 
-  @if (tab()==='history' && historyLoading()) { <div class="inventory-state" role="status">Đang tải lịch sử kho...</div> }
-  @if (tab()==='history' && historyError()) { <div class="inventory-state inventory-state--error" role="alert">{{historyError()}} <button type="button" (click)="loadHistory()">Thử lại</button></div> }
+  @if (tab()==='history' && historyLoading()) { <app-admin-data-state kind="loading" title="Đang tải lịch sử kho" /> }
+  @if (tab()==='history' && historyError()) { <app-admin-data-state kind="error" title="Không thể tải lịch sử kho" [message]="historyError()" (retry)="loadHistory()" /> }
   <div class="table-shell" [class.table-shell--history]="tab()==='history'">
     <div class="table-scroll" [class.table-scroll--history]="tab()==='history'">
       @if (tab()==='stock') {
@@ -74,7 +74,7 @@
                 </div>
               </td>
             </tr>
-          } @empty {<tr><td colspan="8" class="empty">Không tìm thấy sản phẩm phù hợp.</td></tr>}
+          } @empty {<tr><td colspan="8" class="empty"><app-admin-data-state kind="empty" title="Không tìm thấy sản phẩm" message="Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác." /></td></tr>}
         </tbody></table>
       } @else {
         <table class="history-table">
@@ -106,7 +106,7 @@
               <td class="number">{{record.after}}</td>
               <td>{{record.actor}}</td>
             </tr>
-          } @empty {<tr><td colspan="8" class="empty">Không có lịch sử kho phù hợp.</td></tr>}
+          } @empty {<tr><td colspan="8" class="empty"><app-admin-data-state kind="empty" title="Không tìm thấy lịch sử kho" message="Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác." /></td></tr>}
         </tbody></table>
       }
     </div>
