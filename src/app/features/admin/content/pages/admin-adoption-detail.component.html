@@ -7,41 +7,45 @@
     ]" />
 
     @if (loading()) {
-      <div class="web2-admin-state">Đang tải đơn...</div>
+      <app-admin-data-state kind="loading" title="Đang tải đơn đăng ký" />
     } @else if (error() && !data()) {
-      <div class="web2-admin-state web2-admin-state--error">{{error()}}</div>
+      <app-admin-data-state kind="error" title="Không thể tải đơn đăng ký" [message]="error()" (retry)="load()" />
     } @else if (data(); as d) {
       <header class="web2-admin-page__header">
-        <h1>Đơn {{d.code || id}} · {{d.petName || 'Thú cưng'}}</h1>
+        <h1>Đơn {{d.requestCode || id}} · {{pet(d).petName || 'Thú cưng'}}</h1>
         <div class="web2-admin-page__actions">
-          <button type="button" class="web2-admin-btn web2-admin-btn--outline" disabled>Từ chối</button>
-          <button type="button" class="web2-admin-btn web2-admin-btn--primary" disabled>Duyệt đơn</button>
+          @if (String(d.status || '').toUpperCase() === 'PENDING') {
+          <button type="button" class="web2-admin-btn web2-admin-btn--outline" [disabled]="busy()" (click)="review('REJECTED')">Từ chối</button>
+          <button type="button" class="web2-admin-btn web2-admin-btn--primary" [disabled]="busy()" (click)="review('APPROVED')">Duyệt đơn</button>
+        }
         </div>
       </header>
 
+      @if (actionError()) { <div class="web2-admin-inline-error" role="alert">{{actionError()}}</div> }
+
       <section class="web2-admin-summary-grid adoption-summary">
-        <article><span>Người đăng ký</span><strong>{{value(d.applicantName, d.name)}}</strong></article>
-        <article><span>Thú cưng</span><strong>{{value(d.petName)}}</strong></article>
+        <article><span>Người đăng ký</span><strong>{{value(applicant(d).fullName, d.applicantName, d.name)}}</strong></article>
+        <article><span>Thú cưng</span><strong>{{value(pet(d).petName, d.petName)}}</strong></article>
         <article><span>Ngày gửi</span><strong>{{value(d.createdAt)}}</strong></article>
-        <article><span>Trạng thái</span><strong>{{value(d.status)}}</strong></article>
+        <article><span>Trạng thái</span><strong>{{statusLabel(d.status)}}</strong></article>
       </section>
 
       <section class="card web2-admin-section">
         <h2 class="web2-admin-section__title">1. Thông tin liên hệ</h2>
         <dl class="web2-admin-detail-grid">
           <div><dt>Họ và tên</dt><dd>{{value(d.applicantName, d.name)}}</dd></div>
-          <div><dt>Số điện thoại</dt><dd>{{value(d.phone)}}</dd></div>
+          <div><dt>Số điện thoại</dt><dd>{{value(applicant(d).phone, d.phone)}}</dd></div>
           <div><dt>Giới tính / Năm sinh</dt><dd>{{value(d.gender)}} / {{value(d.birthYear)}}</dd></div>
-          <div><dt>Địa chỉ</dt><dd>{{value(d.address)}}</dd></div>
+          <div><dt>Địa chỉ</dt><dd>{{value(applicant(d).address, d.address)}}</dd></div>
         </dl>
       </section>
 
       <section class="card web2-admin-section">
         <h2 class="web2-admin-section__title">2. Điều kiện sống</h2>
         <dl class="web2-admin-detail-grid">
-          <div><dt>Loại hình nhà ở</dt><dd>{{value(d.housingType)}}</dd></div>
+          <div><dt>Loại hình nhà ở</dt><dd>{{value(applicant(d).housingType, d.housingType)}}</dd></div>
           <div><dt>Mọi người trong nhà</dt><dd>{{value(d.householdAgreement)}}</dd></div>
-          <div><dt>Thú cưng hiện tại</dt><dd>{{value(d.currentPets)}}</dd></div>
+          <div><dt>Thú cưng hiện tại</dt><dd>{{value(d.currentPets, applicant(d).hasPetExperience === true ? 'Đã có kinh nghiệm chăm sóc thú cưng' : applicant(d).hasPetExperience === false ? 'Chưa có kinh nghiệm chăm sóc thú cưng' : '')}}</dd></div>
         </dl>
       </section>
 
@@ -49,7 +53,7 @@
         <h2 class="web2-admin-section__title">3. Mức độ cam kết</h2>
         <dl class="web2-admin-detail-grid">
           <div><dt>Thời gian bé ở nhà một mình</dt><dd>{{value(d.aloneTime)}}</dd></div>
-          <div><dt>Lý do nhận nuôi</dt><dd>{{value(d.reason)}}</dd></div>
+          <div><dt>Lý do nhận nuôi</dt><dd>{{value(applicant(d).message, d.reason)}}</dd></div>
           <div><dt>Nếu hoàn cảnh thay đổi</dt><dd>{{value(d.contingencyPlan)}}</dd></div>
         </dl>
       </section>
