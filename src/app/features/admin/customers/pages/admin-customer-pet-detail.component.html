@@ -7,9 +7,9 @@
     ]" />
 
     @if (loading()) {
-      <div class="web2-admin-state">Đang tải hồ sơ thú cưng...</div>
+      <app-admin-data-state kind="loading" title="Đang tải hồ sơ thú cưng" />
     } @else if (error()) {
-      <div class="web2-admin-state web2-admin-state--error">{{error()}}</div>
+      <app-admin-data-state kind="error" title="Không thể tải hồ sơ thú cưng" [message]="error()" />
     } @else if (pet(); as p) {
       <header class="web2-admin-page__header">
         <h1>Hồ sơ thú cưng</h1>
