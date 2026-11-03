@@ -1,10 +1,10 @@
 <app-admin-catalog-shell activeItem="orders">
   <main class="order-admin">
     @if (isDetail()) {
-      <nav class="order-admin__crumb" aria-label="Đường dẫn">
-        <a routerLink="/admin/orders">Đơn hàng</a><span aria-hidden="true">›</span>
-        <span>Chi tiết đơn hàng</span>
-      </nav>
+      <app-admin-breadcrumb [items]="[
+        {label:'Đơn hàng', link:'/admin/orders'},
+        {label:'Chi tiết đơn hàng'}
+      ]" />
       <header class="order-admin__heading">
         <h1>Đơn hàng {{ selected()?.code || '' }}</h1>
         @if (selected(); as order) {
