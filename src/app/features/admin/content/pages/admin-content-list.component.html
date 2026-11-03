@@ -53,9 +53,9 @@
 
     <section class="table-card web2-admin-table-panel">
       @if (loading()) {
-        <div class="web2-admin-state">Đang tải dữ liệu...</div>
+        <app-admin-data-state kind="loading" [title]="'Đang tải ' + title.toLocaleLowerCase('vi')" />
       } @else if (error()) {
-        <div class="web2-admin-state web2-admin-state--error">{{error()}} <button type="button" (click)="load()">Thử lại</button></div>
+        <app-admin-data-state kind="error" [title]="'Không thể tải ' + title.toLocaleLowerCase('vi')" [message]="error()" (retry)="load()" />
       } @else {
         <div class="table-scroll web2-admin-table-scroll">
           <table class="web2-admin-table"
@@ -79,7 +79,7 @@
                       <button type="button" class="web2-admin-icon-button" title="Xóa" aria-label="Xóa bài viết" (click)="unsupported('Xóa bài viết')"><img src="/assets/admin-product/icon-delete.svg" alt=""></button>
                     </td>
                   </tr>
-                } @empty { <tr><td colspan="6" class="web2-admin-empty">Chưa có bài viết.</td></tr> }
+                } @empty { <tr><td colspan="6" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có bài viết" message="Danh sách bài viết hiện đang trống." /></td></tr> }
               </tbody>
             } @else if (mode === 'first-aid') {
               <colgroup><col style="width:30%"><col style="width:20%"><col style="width:11%"><col style="width:13%"><col style="width:14%"><col style="width:12%"></colgroup>
@@ -95,7 +95,7 @@
                       <button type="button" class="web2-admin-icon-button" title="Xóa" aria-label="Xóa cẩm nang" (click)="unsupported('Xóa cẩm nang')"><img src="/assets/admin-product/icon-delete.svg" alt=""></button>
                     </td>
                   </tr>
-                } @empty { <tr><td colspan="6" class="web2-admin-empty">Chưa có cẩm nang.</td></tr> }
+                } @empty { <tr><td colspan="6" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có cẩm nang" message="Danh sách cẩm nang sơ cứu hiện đang trống." /></td></tr> }
               </tbody>
             } @else if (mode === 'community') {
               <colgroup><col style="width:18%"><col style="width:31%"><col style="width:12%"><col style="width:9%"><col style="width:9%"><col style="width:11%"><col style="width:10%"></colgroup>
@@ -108,7 +108,7 @@
                     <td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
                     <td class="is-center actions"><button type="button" class="web2-admin-icon-button" aria-label="Xem chi tiết bài đăng" (click)="unsupported('Xem chi tiết bài đăng cộng đồng')"><img src="/assets/admin-branch/figma-eye.svg" alt=""></button></td>
                   </tr>
-                } @empty { <tr><td colspan="7" class="web2-admin-empty">Backend hiện chưa có collection/API community moderation.</td></tr> }
+                } @empty { <tr><td colspan="7" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có bài đăng cộng đồng" message="Hiện chưa có bài đăng phù hợp với bộ lọc." /></td></tr> }
               </tbody>
             } @else if (mode === 'rescue') {
               <colgroup><col style="width:19%"><col style="width:18%"><col style="width:13%"><col style="width:13%"><col style="width:12%"><col style="width:14%"><col style="width:11%"></colgroup>
@@ -116,14 +116,14 @@
               <tbody>
                 @for (r of visible(); track r.id || r._id || $index) {
                   <tr>
-                    <td>{{name(r)}}</td><td>{{category(r)}} / {{r.breed || '—'}}</td><td>{{r.area || r.location || '—'}}</td><td>{{r.condition || '—'}}</td>
+                    <td>{{name(r)}}</td><td>{{category(r)}} / {{r.breed || '—'}}</td><td>{{rescueArea(r)}}</td><td>{{rescueCondition(r)}}</td>
                     <td class="is-center">{{date(r)}}</td><td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
                     <td class="is-center actions">
                       <button type="button" class="web2-admin-icon-button" aria-label="Chỉnh sửa hồ sơ cứu trợ" (click)="unsupported('Chỉnh sửa hồ sơ cứu trợ')"><img src="/assets/admin-staff/icon-edit.svg" alt=""></button>
                       <button type="button" class="web2-admin-icon-button" aria-label="Xóa hồ sơ cứu trợ" (click)="unsupported('Xóa hồ sơ cứu trợ')"><img src="/assets/admin-product/icon-delete.svg" alt=""></button>
                     </td>
                   </tr>
-                } @empty { <tr><td colspan="7" class="web2-admin-empty">Chưa có hồ sơ cứu trợ từ API.</td></tr> }
+                } @empty { <tr><td colspan="7" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có hồ sơ cứu trợ" message="Hiện chưa có bé nào phù hợp với bộ lọc." /></td></tr> }
               </tbody>
             } @else {
               <colgroup><col style="width:12%"><col style="width:17%"><col style="width:14%"><col style="width:14%"><col style="width:12%"><col style="width:12%"><col style="width:11%"><col style="width:8%"></colgroup>
@@ -131,11 +131,11 @@
               <tbody>
                 @for (r of visible(); track r.id || r._id || $index) {
                   <tr>
-                    <td>{{r.code || r.id || '—'}}</td><td>{{r.applicantName || r.name || '—'}}</td><td>{{r.petName || '—'}}</td><td>{{r.housingType || '—'}}</td><td>{{r.aloneTime || '—'}}</td>
+                    <td>{{adoptionCode(r)}}</td><td>{{adoptionApplicant(r)}}</td><td>{{adoptionPet(r)}}</td><td>{{adoptionHousing(r)}}</td><td>{{adoptionExperience(r)}}</td>
                     <td class="is-center">{{date(r)}}</td><td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
                     <td class="is-center actions"><a class="web2-admin-icon-button" [routerLink]="['/admin/content/adoptions', r.id || r._id]" aria-label="Xem chi tiết đơn nhận nuôi"><img src="/assets/admin-branch/figma-eye.svg" alt=""></a></td>
                   </tr>
-                } @empty { <tr><td colspan="8" class="web2-admin-empty">Backend hiện chưa có API danh sách đơn nhận nuôi cho Admin.</td></tr> }
+                } @empty { <tr><td colspan="8" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có đơn đăng ký" message="Hiện chưa có đơn đăng ký nhận nuôi phù hợp." /></td></tr> }
               </tbody>
             }
           </table>
