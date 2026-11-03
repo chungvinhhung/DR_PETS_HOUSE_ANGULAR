@@ -1,9 +1,9 @@
 <app-admin-catalog-shell activeItem="orders">
   <main class="return-detail">
-    <nav class="return-detail__breadcrumb" aria-label="Đường dẫn">
-      <a routerLink="/admin/orders" [queryParams]="{tab:'returns'}">Trả hàng &amp; hoàn tiền</a>
-      <span aria-hidden="true">›</span><span>Chi tiết yêu cầu</span>
-    </nav>
+    <app-admin-breadcrumb [items]="[
+      {label:'Trả hàng & hoàn tiền', link:'/admin/orders', queryParams:{tab:'returns'}},
+      {label:'Chi tiết yêu cầu'}
+    ]" />
 
     <header class="return-detail__heading">
       <div class="return-detail__heading-main">
