@@ -6,12 +6,13 @@ import { finalize } from 'rxjs';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AdminCustomer, AdminCustomerService } from '../services/admin-customer.service';
 
 @Component({
   selector:'app-admin-customer-detail',
   standalone:true,
-  imports:[CommonModule,FormsModule,RouterLink,AdminCatalogShellComponent],
+  imports:[CommonModule,FormsModule,RouterLink,AdminCatalogShellComponent,AdminBreadcrumbComponent],
   templateUrl:'./admin-customer-detail.component.html',
   styleUrl:'./admin-customer-detail.component.scss',
   changeDetection:ChangeDetectionStrategy.OnPush,
