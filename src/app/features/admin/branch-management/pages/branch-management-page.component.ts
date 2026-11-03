@@ -7,6 +7,7 @@ import { catchError, from, map, mergeMap, of, toArray } from 'rxjs';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from "../../../../shared/admin-data-state/admin-data-state.component";
 import {
   BranchServiceConfigDialogComponent, BranchServiceConfigPreview,
 } from '../../service-catalog/components/branch-service-config-dialog.component';
@@ -37,7 +38,7 @@ interface OccupancySnapshot {
   selector: 'app-branch-management-page',
   standalone: true,
   imports: [
-    RouterLink, AdminCatalogShellComponent, BranchServiceConfigDialogComponent,
+    RouterLink, AdminCatalogShellComponent, AdminDataStateComponent, BranchServiceConfigDialogComponent,
     BranchHoursPreviewComponent, BranchShiftTemplatesPreviewComponent,
     BranchSettingsDialogComponent,
   ],
