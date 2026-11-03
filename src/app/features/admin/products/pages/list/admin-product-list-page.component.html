@@ -150,13 +150,8 @@
       }
 
       @if (error()) {
-        <div class="product-list-load-error" role="alert">
-          <span>{{ error() }}</span>
-          <button type="button" class="outline-btn" [disabled]="loading()"
-            (click)="loadPage(failedPage() ?? pageNumber())">
-            Thử lại
-          </button>
-        </div>
+        <app-admin-data-state kind="error" title="Không thể tải danh sách sản phẩm"
+          [message]="error()" (retry)="loadPage(failedPage() ?? pageNumber())" />
       }
       <div class="table-scroll" (scroll)="closeArchiveMenu()">
         <table>
