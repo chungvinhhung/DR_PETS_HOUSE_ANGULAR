@@ -6072,14 +6072,21 @@ app-admin-order-management .order-admin__modal .order-admin__field-value--next {
   align-items:center;
   box-sizing:border-box;
   width:100%;
-  min-height:52px;
+  height:40px;
+  min-height:40px;
   margin-top:8px;
-  padding:0 15px;
+  padding:0 12px;
   border:1px solid #dee5f0;
   border-radius:8px;
   background:#e5f6fd;
   color:#334155;
-  font-weight:400;
+  font:400 13px/20px Roboto,Arial,sans-serif;
+}
+app-admin-order-management .order-admin__modal .order-admin__required{
+  display:inline;
+  margin:0 0 0 2px;
+  color:#d92d20;
+  font-weight:600;
 }
 
 /* Keep the reference row visible even when the transaction has no source reference. */
