@@ -166,8 +166,9 @@ export class AdminOrderApiService {
     action: OrderWriteAction,
     body?: { carrier?: string; trackingNumber?: string; note?: string },
   ): Observable<OrderRecord> {
-    const payload: { carrier?: string; trackingNumber?: string; note?: string } = {};
-    if (body?.note) payload.note = body.note;
+    const payload: { carrier?: string; trackingNumber?: string } = {};
+    // Current BE transition handlers do not persist a free-form status note.
+    // Keep the Figma field in the UI, but do not send an unsupported property.
     if (action === 'ship') {
       if (body?.carrier) payload.carrier = body.carrier;
       if (body?.trackingNumber) payload.trackingNumber = body.trackingNumber;
