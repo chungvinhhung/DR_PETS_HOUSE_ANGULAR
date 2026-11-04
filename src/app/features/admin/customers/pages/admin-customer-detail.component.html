@@ -67,7 +67,7 @@
                   <td class="is-center">{{orderStatus(order.status)}}</td>
                 </tr>
               } @empty {
-                <tr><td colspan="5" class="web2-admin-empty">Chưa có đơn hàng.</td></tr>
+                <tr><td colspan="5" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có đơn hàng" message="Khách hàng chưa có đơn hàng để hiển thị." /></td></tr>
               }
             </tbody>
           </table>
@@ -90,7 +90,7 @@
                   <td class="is-center">{{appointmentStatus(apt.status)}}</td>
                 </tr>
               } @empty {
-                <tr><td colspan="5" class="web2-admin-empty">Chưa có lịch hẹn.</td></tr>
+                <tr><td colspan="5" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có lịch hẹn" message="Khách hàng chưa có lịch hẹn để hiển thị." /></td></tr>
               }
             </tbody>
           </table>
