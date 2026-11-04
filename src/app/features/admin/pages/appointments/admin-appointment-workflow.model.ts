@@ -32,6 +32,7 @@ export interface AppointmentView {
   paymentMethod: string;
   paymentStatus: string;
   totalAmount: number | null;
+  paidAmount: number | null;
   depositAmount: number | null;
   balanceDue: number | null;
   createdAt: string | null;
@@ -125,6 +126,14 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
   const refundRaw = obj(item['refund']) ?? obj(item['refundSummary']);
   const referenceRows = item['serviceRecords'] ?? item['serviceRecordRefs'];
   const auditRows = item['auditHistory'] ?? item['auditLog'];
+  const pricing = obj(item['pricing']) ?? {};
+  const finalAmount = toMoney(pricing['finalAmount'] ?? pricing['totalAmount'] ?? item['totalAmount'] ?? item['total_amount']);
+  const paidAmount = toMoney(pricing['paidAmount'] ?? item['paidAmount'] ?? item['paid_amount']);
+  const explicitPaymentStatus = firstString(item['paymentStatus'], item['payment_status'], payment['status']);
+  const derivedPaymentStatus = explicitPaymentStatus ||
+    (finalAmount !== null && finalAmount === 0 ? 'PAID' :
+      paidAmount !== null && finalAmount !== null && paidAmount >= finalAmount ? 'PAID' :
+      paidAmount !== null && paidAmount > 0 ? 'PARTIAL' : 'PENDING');
   const serviceRows = Array.isArray(item['services']) ? item['services'] : [];
   const serviceSegments: AppointmentServiceSegment[] = serviceRows.map(raw => {
     const row = obj(raw) ?? {};
@@ -154,10 +163,11 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
     branchId:firstString(item['branchId'], item['branch_id'], branch['id'], branch['_id']),
     status:appointmentStatus(rawStatus),rawStatus,
     paymentMethod:firstString(item['paymentMethod'], item['payment_method'], payment['method']),
-    paymentStatus:firstString(item['paymentStatus'], item['payment_status'], payment['status']),
-    totalAmount:toMoney(obj(item['pricing'])?.['finalAmount'] ?? obj(item['pricing'])?.['totalAmount'] ?? item['totalAmount'] ?? item['total_amount']),
-    depositAmount:toMoney(obj(item['pricing'])?.['depositAmount'] ?? item['depositAmount'] ?? item['deposit_amount']),
-    balanceDue:toMoney(obj(item['pricing'])?.['balanceAmount'] ?? obj(item['pricing'])?.['balanceDue'] ?? item['balanceDue'] ?? item['balance_due']),
+    paymentStatus:derivedPaymentStatus,
+    totalAmount:finalAmount,
+    paidAmount,
+    depositAmount:toMoney(pricing['depositAmount'] ?? item['depositAmount'] ?? item['deposit_amount']),
+    balanceDue:toMoney(pricing['balanceAmount'] ?? pricing['balanceDue'] ?? item['balanceDue'] ?? item['balance_due']),
     createdAt:isDate(firstString(item['createdAt'],item['created_at'])) ? firstString(item['createdAt'],item['created_at']) : null,
     appointmentAt:date,
     rescheduleCount:typeof reschedules === 'number' && Number.isInteger(reschedules) && reschedules >= 0 ? reschedules : null,
