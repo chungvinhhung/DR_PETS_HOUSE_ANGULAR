@@ -8,15 +8,18 @@
    - Business rule requires: Order → `CANCELLED` + Inventory `RECEIPT` compensation + voucher quota restore, idempotently.
    - `cancelOrder()` currently contains compensation logic, but the automatic payment fail/cancel/expire paths still need confirmation that they all execute the same full compensation flow.
 
-2. **Shared inventory transaction code for multi-SKU business transactions**
+2. **Shared inventory transaction code and structured reference for business transactions**
    - Figma/FE expects one business transaction code (e.g. TXK/PNK) shared by all SKU movement rows in the same operation.
-   - Current inventory response exposes movement row IDs but does not reliably expose a shared `transactionCode/groupCode`.
-   - FE supports `transactionCode/groupCode` when BE provides it and intentionally does not fabricate business IDs.
+   - Current inventory response exposes movement row IDs but does not expose a shared `transactionCode/groupCode`.
+   - Order ISSUE/cancellation RECEIPT calls also omit `orderCode`, so `referenceCode/sourceCode` is empty. Return restock is stored as `sourceType=ORDER` while the Return ID exists only inside the free-text reason.
+   - FE groups rows by persisted source/type/reason as a compatibility fallback, but intentionally does not fabricate business IDs. BE should expose a stable shared transaction code plus structured reference type/id/code.
 
 3. **Admin Create Order branch-selection consistency**
    - Business rule: fulfillment uses `fulfillmentBranchPriority`, selecting the first ACTIVE branch that can fulfill the entire cart; no split order.
    - `checkoutCreateOrder()` follows this rule.
-   - `createAdminOrder()` currently appears to default to the first priority branch when branchId is omitted rather than iterating to the first branch with sufficient stock. Confirm whether Admin Create Order must follow the same rule; if yes, BE needs alignment.
+   - `quoteAdminOrder()` and `createAdminOrder()` currently default to the first priority branch when `branchId` is omitted rather than iterating to the first branch with sufficient stock.
+   - For Manager/Receptionist this can also select a global priority branch outside the actor's branch scope and then return 403 instead of selecting an eligible authorized branch.
+   - BE should make quote and commit use the same scoped, whole-cart fulfillment algorithm.
 
 ## Admin Appointment Create
 
@@ -162,3 +165,52 @@
    - `npm run seed:uat-prod` provisions realistic branches, staff/shifts, categories, products, services and inventory data.
    - Therefore an empty deployed/local Phase 2 screen should be treated first as an environment/seed execution issue, not automatically as a missing API.
    - FE does not inject demo rows when APIs return an empty dataset.
+
+
+## Orders / Voucher / Return — Phase 3 audit
+
+29. **Admin Order voucher integration calls the Voucher service with the wrong contract**
+   - `quoteAdminOrder()` / `createAdminOrder()` call `validateVoucherEligibility()` with fields such as `targetType` and `orderAmount`, while the imported Voucher service expects `scope`, `subtotal`, `customerId`, and `productIds`.
+   - They also call `calculateDiscount(appliedVoucher, merchandiseSubtotal)`, while the Voucher helper expects one object argument containing `voucher` and `subtotal`.
+   - This can make a valid voucher resolve to zero discount or fail eligibility in the internal Create Order flow.
+   - FE must continue trusting only the authoritative quote and must not calculate voucher discounts locally; BE needs to align the function calls.
+
+30. **Receptionist can create an Admin Order but cannot search existing Customers**
+   - Order operator routes allow `STAFF:RECEPTIONIST` to quote/create and process orders.
+   - `GET /customers` currently allows only `ADMIN` and `MANAGER`.
+   - Therefore the Figma phone lookup flow fails for Receptionist even though Receptionist is an intended order operator.
+   - BE needs a scoped internal customer lookup contract for Receptionist (at minimum exact-phone lookup with safe fields).
+
+31. **Order mutation endpoints do not re-check branch scope**
+   - Order list/detail reads enforce Manager/Staff branch scope.
+   - `confirmOrder()`, `processOrder()`, `shipOrder()`, `markDelivered()`, and staff `cancelOrder()` mutate an Order by ID without re-validating that the actor is authorized for the Order's fulfillment branch.
+   - Route-level role checks are not enough because a valid Manager/Receptionist from another branch could act on a known Order ID.
+   - BE must enforce branch scope inside every mutation service, matching read authorization.
+
+32. **Return DTO fabricates physical-receipt values and timestamps**
+   - `formatOrderReturn()` defaults missing `receivedQty` to `requestedQty` and missing `quality` to `RESELLABLE`, even before the RECEIVE step.
+   - It also substitutes `new Date().toISOString()` when `createdAt` or a history timestamp is missing.
+   - These defaults can make FE show goods as received/resellable or create a timeline time that never actually happened.
+   - DTO should preserve unknown values as null/omitted; FE now hides synthetic received quantities before the persisted RECEIVED state.
+
+33. **Return `allowedActions` disagrees with the mutation state machine**
+   - `formatOrderReturn()` advertises `REJECT` in `REQUESTED`.
+   - `rejectReturn()` accepts only `PROCESSING` or `RECEIVED`.
+   - FE intentionally follows the executable service state machine and does not show Reject at REQUESTED until BE contract is reconciled.
+
+34. **Return mutation branch authorization is inconsistent**
+   - Return list/detail reads enforce branch scope and `approveReturn()` checks Manager scope.
+   - `processReturn()` and `receiveReturn()` do not re-check Staff/Manager branch scope.
+   - `rejectReturn()`, `getOrderRefundById()`, and `processOrderRefund()` also do not consistently validate the linked Order's branch against the Manager.
+   - BE must apply the linked Order fulfillment-branch authorization to every Return/Refund mutation and sensitive read.
+
+35. **Return API cannot represent the full per-SKU approval/restock model**
+   - Product rule distinguishes `requestedQty`, `receivedQty`, `approvedQty`, and `restockedQty`.
+   - Current BE persists `receivedQty` plus a binary quality decision; approval effectively refunds all received quantity and restocks either all accepted quantity (`RESELLABLE`) or zero.
+   - There is no independent `approvedQty`, arbitrary `restockedQty <= receivedQty`, or per-item final refund amount contract.
+   - FE therefore constrains current receive input to 0-or-full restock and does not invent unsupported partial approval data.
+
+36. **Order status note and online payment provider are not persisted**
+   - Figma includes a free-form note in the status update modal, but current confirm/process/delivered handlers ignore request-body notes; ship persists only its generated carrier/tracking text.
+   - Admin Create Order lets the user choose a visual online provider, but BE stores only `paymentMethod=ONLINE_MOCK` and no provider field.
+   - FE keeps these Figma controls but explicitly discloses the BE limitation and does not send an unsupported status-note property.
