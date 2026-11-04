@@ -158,7 +158,7 @@
         <div><span>Hết hàng</span><strong class="branch-v2-page__danger">{{ branch.inventory?.out ?? '—' }}</strong></div>
         <button type="button" class="branch-v2-page__icon-action branch-v2-page__inventory-eye"
           [attr.aria-label]="'Xem tồn kho tại ' + branch.name" title="Xem tồn kho"
-          (click)="showPending('Xem tồn kho chi nhánh')">
+          (click)="openBranchInventory(branch.id)">
           <img src="/assets/admin-branch/figma-eye.svg" width="24" height="24" alt="" />
         </button>
       </section>
