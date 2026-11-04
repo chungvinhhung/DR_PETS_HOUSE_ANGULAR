@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, computed, inject, signal } from '@angular/core';
 import { AdminToastService } from '../services/admin-toast.service';
 import { RouterLink } from '@angular/router';
 import { AdminReturnNotificationService } from '../services/admin-return-notification.service';
+import { AdminOrderNotificationService } from '../services/admin-order-notification.service';
 import { AdminSidebarAccordionService, AdminSidebarGroup } from '../services/admin-sidebar-accordion.service';
 import { AdminNotificationService, AdminNotification } from '../services/admin-notification.service';
 import { AuthSessionService } from '../../core/services/auth-session.service';
@@ -23,6 +24,9 @@ export class AdminCatalogShellComponent implements OnChanges {
   readonly toast = inject(AdminToastService);
   readonly returnNotifications = inject(AdminReturnNotificationService);
   readonly pendingReturnCount = this.returnNotifications.pendingCount;
+  readonly orderNotifications = inject(AdminOrderNotificationService);
+  readonly pendingOrderCount = this.orderNotifications.pendingCount;
+  readonly pendingSalesCount = computed(() => this.pendingOrderCount() + this.pendingReturnCount());
   private readonly accordion = inject(AdminSidebarAccordionService);
   readonly notifications = inject(AdminNotificationService);
   readonly session = inject(AuthSessionService);
@@ -47,6 +51,7 @@ export class AdminCatalogShellComponent implements OnChanges {
 
   ngOnInit(): void {
     this.returnNotifications.ensureLoaded();
+    this.orderNotifications.ensureLoaded();
     this.notifications.ensureLoaded();
     this.syncSidebarToActiveItem();
   }
