@@ -53,7 +53,7 @@ export function overlaps(a: DayShiftDraft, b: DayShiftDraft): boolean {
       </div>
       <button type="button" class="shift-assign-new" (click)="requestCreate.emit()">+ Tạo ca làm việc mới</button>
       @if (!options.length) { <p class="shift-assign-hint">Chưa có danh sách mẫu ca được đồng bộ từ hệ thống.</p> }
-      <p class="shift-assign-hint">Thay đổi trong modal này chỉ áp dụng cho ngày đang chọn.</p>
+      
       @if (error()) { <p role="alert" class="shift-assign-error">{{ error() }}</p> }
       @if (confirmDiscard()) {
         <div class="shift-assign-discard"><p>Bỏ các thay đổi chưa lưu?</p>
