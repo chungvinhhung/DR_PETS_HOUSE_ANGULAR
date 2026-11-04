@@ -353,17 +353,14 @@ export class AdminCategoryPageComponent implements OnInit {
       this.formError.set('Danh mục cha không hợp lệ.');
       return;
     }
-    if (this.editing?.parentId && !this.formParentId) {
-      this.formError.set('API hiện chưa hỗ trợ chuyển danh mục con thành danh mục gốc. Vui lòng giữ danh mục cha hoặc nhờ BE cập nhật schema.');
-      return;
-    }
-
     const body: SaveCategoryRequest = {
       name,
       status: this.formStatus,
-      // The OpenAPI v7 schema rejects parentId:null. For a new root category
-      // or edits without a parent, leave this field out of the request body.
-      ...(this.formParentId ? { parentId: this.formParentId } : {}),
+      ...(this.formParentId
+        ? { parentId: this.formParentId }
+        : this.editing
+          ? { parentId: null }
+          : {}),
       // Slug is derived from the name and persisted if it differs from the old one.
       ...(!this.editing || slug !== this.editing.slug ? { slug } : {}),
     };
