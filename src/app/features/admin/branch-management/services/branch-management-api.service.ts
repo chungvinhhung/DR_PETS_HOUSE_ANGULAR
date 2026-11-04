@@ -127,15 +127,16 @@ export class BranchManagementApiService {
     );
   }
 
-  /** Data for one service and a chosen branch/day; not the configured capacity. */
-  getServiceAvailability(
+  /** Occupancy/availability for one service at a branch/day. */
+  getServiceOccupancy(
     branchId: string, serviceId: string, date: string,
   ): Observable<ServiceAvailabilityResponse> {
-    const params = new HttpParams()
-      .set('branchId', branchId)
-      .set('serviceIds', serviceId)
-      .set('date', date);
-    return this.api.get<ServiceAvailabilityResponse>('/availability', { params });
+    const params = new HttpParams().set('date', date);
+    return this.api.get<ServiceAvailabilityResponse>(
+      '/branches/' + encodeURIComponent(branchId) +
+      '/services/' + encodeURIComponent(serviceId) + '/occupancy',
+      { params },
+    );
   }
 
   getInventorySummary(branchId: string): Observable<BranchInventorySummary> {
