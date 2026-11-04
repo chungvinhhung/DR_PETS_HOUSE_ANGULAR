@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize } from 'rxjs';
+import { finalize, Observable } from 'rxjs';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
@@ -428,7 +428,7 @@ export class AdminAppointmentDetailComponent {
     if (!this.reason().trim()) {this.showActionMessage('Vui lòng nhập lý do xử lý.');return;}
 
     const headers=new HttpHeaders({'Idempotency-Key':crypto.randomUUID()});
-    let request;
+    let request: Observable<unknown>;
     if(action==='cancel'){
       const override=win?.overrideRequiresAudit===true&&this.isManagerOrAdmin();
       request=override
