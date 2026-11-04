@@ -55,7 +55,11 @@ export class ServiceCatalogListComponent {
   readonly role = computed(() => this.authSession.user()?.systemRole ?? 'STAFF');
   readonly isAdmin = computed(() => this.role() === 'ADMIN');
   readonly canConfigure = computed(() => this.role() === 'ADMIN' || this.role() === 'MANAGER');
-  readonly scopedBranches = computed<readonly CatalogBranch[]>(() => this.allBranches());
+  readonly scopedBranches = computed<readonly CatalogBranch[]>(() => {
+    if (this.role() === 'ADMIN') return this.allBranches();
+    const scope = new Set(this.authSession.user()?.branchScope ?? []);
+    return this.allBranches().filter((branch) => scope.has(branch.id));
+  });
 
   readonly pageSize = 6;
   readonly rows = signal<readonly CatalogService[]>([]);
