@@ -6314,4 +6314,4 @@ app-admin-order-management .order-admin__pagination .order-admin__page-number--a
 }
 app-admin-order-management .order-admin__pagination .order-admin__page-ellipsis{color:#475569}
 app-admin-order-management .order-admin__pagination > div button:hover:not(:disabled):not(.order-admin__page-number--active){background:#f1f5f9}
-app-admin-order-management .order-admin__pagination > div button:disabled{color:#bac8d9;cursor:not-allowed}
+app-admin-order-management .order-admin__pagination > div button:disabled{background:#fff;color:#bac8d9;cursor:not-allowed}
