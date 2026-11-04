@@ -96,7 +96,12 @@ export class MyOrdersPageComponent {
             if (!active) return;
             if (this.authService.isAuthenticated()) {
               this.ordersData.set([]);
-              this.loadError.set(error?.message || "Không thể tải danh sách đơn hàng của bạn.");
+              const msg = error?.message || "";
+              if (msg.includes("validation") || error?.status === 404) {
+                this.loadError.set("");
+              } else {
+                this.loadError.set(msg || "Không thể tải danh sách đơn hàng của bạn.");
+              }
             } else {
               this.ordersData.set(ORDERS);
               this.loadError.set(error?.message || "Không thể tải danh sách đơn hàng, đang hiển thị dữ liệu mẫu.");

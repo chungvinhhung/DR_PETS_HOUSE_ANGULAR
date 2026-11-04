@@ -172,8 +172,9 @@ export class OrderApiService {
   }
 
   async getMyOrders(params: any = {}) {
+    const { page, ...restParams } = params || {};
     const response = await this.http.get("/orders", {
-      params: { page: 1, limit: 100, ...params },
+      params: { limit: 100, ...restParams },
     });
     const payload = assertSuccess(response);
     const orders = Array.isArray(payload?.items)

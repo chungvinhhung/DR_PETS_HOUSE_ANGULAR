@@ -114,23 +114,29 @@ export class ShoppingCheckoutComponent {
       throw new Error("Vui lòng chọn hoặc thêm địa chỉ nhận hàng");
     }
 
-    const result = this.isGuest()
-      ? await this.orderApi.guestCheckoutOrder({
-          guest: this.guestForm(),
-          paymentMethod: this.cartService.paymentMode(),
-          voucherCode,
-          note: this.note(),
-          items: this.orderItems(),
-        })
-      : await this.orderApi.checkoutOrder({
-          addressId: this.selectedAddress()?.addressId || this.selectedAddress()?.id,
-          selectedAddress: this.selectedAddress(),
-          paymentMethod: this.cartService.paymentMode(),
-          voucherCode,
-          note: this.note(),
-          items: this.orderItems(),
-        });
-    this.cartService.confirmOrder(result);
+    try {
+      const result = this.isGuest()
+        ? await this.orderApi.guestCheckoutOrder({
+            guest: this.guestForm(),
+            paymentMethod: this.cartService.paymentMode(),
+            voucherCode,
+            note: this.note(),
+            items: this.orderItems(),
+          })
+        : await this.orderApi.checkoutOrder({
+            addressId: this.selectedAddress()?.addressId || this.selectedAddress()?.id,
+            selectedAddress: this.selectedAddress(),
+            paymentMethod: this.cartService.paymentMode(),
+            voucherCode,
+            note: this.note(),
+            items: this.orderItems(),
+          });
+      this.cartService.confirmOrder(result);
+    } catch (error: any) {
+      console.error("Lỗi đặt hàng:", error);
+      alert(error?.message || "Không thể đặt hàng. Vui lòng thử lại!");
+      throw error;
+    }
   }
 
   protected async saveAddress(address: any) {
