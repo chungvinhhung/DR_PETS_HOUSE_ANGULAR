@@ -65,10 +65,8 @@ export const routes: Routes = [
   },
   {
     path: 'admin/staff/shifts/assign',
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['ADMIN', 'MANAGER'] },
-    loadComponent: () => import('./features/admin/staff/pages/admin-staff-shift-assign.component')
-      .then(component => component.AdminStaffShiftAssignComponent),
+    pathMatch: 'full',
+    redirectTo: 'admin/staff/schedule',
   },
   {
     path: 'admin/staff/new',
