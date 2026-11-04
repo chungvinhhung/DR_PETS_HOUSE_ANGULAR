@@ -297,3 +297,51 @@ app-admin-moderation-list .web2-admin-table--feedback :is(th,td):last-child{
 }
 app-admin-moderation-list .web2-admin-table--feedback :is(th,td):first-child{padding-left:18px!important}
 app-admin-moderation-list .web2-admin-table--feedback :is(th,td):last-child{padding-right:18px!important}
+
+
+/* Targeted fixes: the shared 170px !important select width above truncates
+   the complete customer and first-aid status labels. Widths belong on the
+   select itself; retain the chevron at the right edge. */
+app-admin-catalog-shell .customer-page .customer-filter.web2-filterbar
+  .toolbar-selects > select.web2-admin-filter-select:first-child{
+  flex:0 0 294px!important;width:294px!important;min-width:294px!important;max-width:none!important
+}
+app-admin-catalog-shell .customer-page .customer-filter.web2-filterbar
+  .toolbar-selects > select.web2-admin-filter-select:last-child{
+  flex:0 0 286px!important;width:286px!important;min-width:286px!important;max-width:none!important
+}
+app-admin-catalog-shell .content-admin .filterbar.web2-filterbar
+  .toolbar-selects > select.web2-admin-filter-select:first-child{
+  flex:0 0 255px!important;width:255px!important;min-width:255px!important;max-width:none!important
+}
+app-admin-catalog-shell .content-admin .filterbar.web2-filterbar
+  .toolbar-selects > select.web2-admin-filter-select:last-child{
+  flex:0 0 196px!important;width:196px!important;min-width:196px!important;max-width:none!important
+}
+/* When available width is limited, wrap controls instead of cropping labels. */
+@media(max-width:1450px){
+  app-admin-catalog-shell .customer-page .customer-filter.web2-filterbar,
+  app-admin-catalog-shell .content-admin .filterbar.web2-filterbar{flex-wrap:wrap!important}
+  app-admin-catalog-shell .customer-page .customer-filter.web2-filterbar .toolbar-selects,
+  app-admin-catalog-shell .content-admin .filterbar.web2-filterbar .toolbar-selects{flex-wrap:wrap!important}
+}
+@media(max-width:620px){
+  app-admin-catalog-shell .customer-page .customer-filter.web2-filterbar .toolbar-selects,
+  app-admin-catalog-shell .content-admin .filterbar.web2-filterbar .toolbar-selects{width:100%!important;justify-content:flex-start!important}
+  app-admin-catalog-shell .customer-page .customer-filter.web2-filterbar .toolbar-selects > select.web2-admin-filter-select,
+  app-admin-catalog-shell .content-admin .filterbar.web2-filterbar .toolbar-selects > select.web2-admin-filter-select{
+    flex:0 1 100%!important;width:100%!important;min-width:0!important;max-width:100%!important
+  }
+}
+/* Rescue management: compact identity column, room for the condition text
+   and a stable one-line action group (2 x 32px buttons). */
+app-admin-content-list .web2-admin-table--rescue{min-width:1120px}
+app-admin-content-list .web2-admin-table--rescue :is(th,td):last-child{
+  white-space:nowrap!important;overflow-wrap:normal!important
+}
+app-admin-content-list .web2-admin-table--rescue .rescue-action-group{
+  display:inline-flex;flex-wrap:nowrap;align-items:center;justify-content:center;gap:4px;white-space:nowrap
+}
+app-admin-content-list .web2-admin-table--rescue .rescue-action-group .web2-admin-icon-button{
+  flex:0 0 32px!important;margin:0!important
+}
