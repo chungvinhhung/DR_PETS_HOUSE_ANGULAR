@@ -26,14 +26,21 @@
           [ngModel]="search()" (ngModelChange)="search.set($event); onFilter()">
       </label>
       <div class="filters toolbar-selects">
-        <select class="web2-admin-filter-select" aria-label="Chủ đề / nhóm nội dung" [ngModel]="filter()" (ngModelChange)="filter.set($event); onFilter()">
-          <option value="">{{mode === 'first-aid' ? 'Tất cả nhóm tình huống' : mode === 'community' ? 'Tất cả loại bài' : mode === 'rescue' ? 'Tất cả loài' : 'Tất cả chủ đề'}}</option>
-          <option value="Sức khỏe">Sức khỏe</option>
-          <option value="Dinh dưỡng">Dinh dưỡng</option>
-          <option value="Chia sẻ">Chia sẻ</option>
-          <option value="Chó">Chó</option>
-          <option value="Mèo">Mèo</option>
-        </select>
+        @if (mode === 'rescue') {
+          <select class="web2-admin-filter-select" aria-label="Loài thú cưng" [ngModel]="filter()" (ngModelChange)="filter.set($event); onFilter()">
+            <option value="">Tất cả loài</option>
+            <option value="DOG">Chó</option>
+            <option value="CAT">Mèo</option>
+            <option value="OTHER">Khác</option>
+          </select>
+        } @else if (mode === 'articles' || mode === 'first-aid') {
+          <select class="web2-admin-filter-select" aria-label="Chủ đề / nhóm nội dung" [ngModel]="filter()" (ngModelChange)="filter.set($event); onFilter()">
+            <option value="">{{mode === 'first-aid' ? 'Tất cả nhóm tình huống' : 'Tất cả chủ đề'}}</option>
+            @for (category of postCategories(); track category) {
+              <option [value]="category">{{category}}</option>
+            }
+          </select>
+        }
         <select class="web2-admin-filter-select" aria-label="Trạng thái" [ngModel]="status()" (ngModelChange)="status.set($event); onFilter()">
           <option value="">Tất cả trạng thái</option>
           @if (mode === 'articles' || mode === 'first-aid') {
@@ -127,7 +134,7 @@
                 } @empty { <tr><td colspan="7" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có bài đăng cộng đồng" message="Hiện chưa có bài đăng phù hợp với bộ lọc." /></td></tr> }
               </tbody>
             } @else if (mode === 'rescue') {
-              <colgroup><col style="width:11%"><col style="width:21%"><col style="width:12%"><col style="width:26%"><col style="width:9%"><col style="width:11%"><col style="width:10%"></colgroup>
+              <colgroup><col style="width:11%"><col style="width:18%"><col style="width:12%"><col style="width:29%"><col style="width:9%"><col style="width:11%"><col style="width:10%"></colgroup>
               <thead><tr><th>Thú cưng</th><th>Loài / Giống</th><th>Khu vực</th><th>Tình trạng</th><th class="is-center">Cập nhật</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
               <tbody>
                 @for (r of visible(); track r.id || r._id || $index) {
