@@ -1,4 +1,4 @@
-/** WBS 4.3 and Figma 6336:25285 / 6336:25795. Read-only adapters; contracts pending BE. */
+/** WBS 4.3 ServiceRecord adapter for the live execution API contract. */
 export type ServiceRecordCategory = 'MEDICAL' | 'GROOMING' | 'UNKNOWN';
 export type ServiceRecordStatus = 'DRAFT' | 'IN_PROGRESS' | 'WAITING_VET_REVIEW' | 'COMPLETED' | 'REOPENED' | 'UNKNOWN';
 export interface MaterialUsage {
