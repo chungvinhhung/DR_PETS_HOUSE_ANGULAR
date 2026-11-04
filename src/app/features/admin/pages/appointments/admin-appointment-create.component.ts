@@ -1,6 +1,7 @@
-import { HttpParams } from '@angular/common/http';
+import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
@@ -83,10 +84,9 @@ function petFromWire(input: unknown): PetOption | null {
 }
 
 /**
- * WBS 4.3 / Figma A02,A03,A13: Admin appointment creation preview.
- * Only read endpoints already used elsewhere in this repository are requested.
- * Admin booking, customer-scoped pets, slot quote, and checkout contracts must
- * be confirmed before a production mutation is enabled. No fake success.
+ * WBS 4.3 / Figma A02,A03,A13: Admin appointment creation.
+ * The current Backend supports atomic internal booking for guest contacts and one pet.
+ * Existing-customer linkage and multi-pet booking remain blocked until their contracts exist.
  */
 @Component({
   selector: 'app-admin-appointment-create',
@@ -113,6 +113,8 @@ export class AdminAppointmentCreateComponent {
   private leaveResolver: ((leave: boolean) => void) | null = null;
   private allowDiscardNavigation = false;
   private priceRequestVersion = 0;
+  private lastCreateFingerprint = '';
+  private lastCreateKey = '';
 
   readonly today = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit',
@@ -157,6 +159,7 @@ export class AdminAppointmentCreateComponent {
   readonly note = signal('');
   readonly reviewErrors = signal<string[]>([]);
   readonly cancellationOpen = signal(false);
+  readonly creating = signal(false);
 
   readonly onlineChoices: ReadonlyArray<{ key: OnlineProvider; name: string; icon: string }> = [
     { key: 'MOMO', name: 'MoMo', icon: '/assets/admin-order/payment-momo.svg' },
@@ -589,18 +592,66 @@ export class AdminAppointmentCreateComponent {
   }
 
   checkVoucher(): void {
-    if (!this.voucherCode().trim()) {
+    const code=this.voucherCode().trim();
+    const serviceIds=[...new Set(this.plannedSegments().map(segment=>segment.serviceId).filter(Boolean))];
+    if (!code) {
       this.voucherNotice.set('Nhập mã giảm giá trước khi áp dụng.');
       this.toast.show('Vui lòng nhập mã giảm giá.');
       return;
     }
-    this.voucherNotice.set('Chưa thể áp dụng mã giảm giá lúc này. Vui lòng thử lại sau.');
-    this.toast.show('Chưa thể áp dụng mã giảm giá lúc này. Vui lòng thử lại sau.', 'info');
+    if(!this.branchId()||!serviceIds.length){
+      this.voucherNotice.set('Chọn chi nhánh và dịch vụ trước khi áp dụng mã.');
+      return;
+    }
+    this.voucherNotice.set('Đang kiểm tra mã giảm giá...');
+    this.api.post<{code:string;valid:boolean;reason:string|null;discount:number}, {
+      code:string;scope:'SERVICE';serviceIds:string[];branchId:string;
+    }>('/vouchers/validate',{
+      code,scope:'SERVICE',serviceIds,branchId:this.branchId(),
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:result=>{
+        if(!result.valid){
+          const labels:Record<string,string>={
+            NOT_FOUND:'Mã giảm giá không tồn tại.',
+            INACTIVE:'Mã giảm giá đang ngừng áp dụng.',
+            NOT_STARTED:'Mã giảm giá chưa đến thời gian áp dụng.',
+            EXPIRED:'Mã giảm giá đã hết hạn.',
+            QUOTA_EXCEEDED:'Mã giảm giá đã hết lượt sử dụng.',
+            SCOPE_MISMATCH:'Mã giảm giá không áp dụng cho dịch vụ.',
+            MIN_CONDITION_NOT_MET:'Lịch hẹn chưa đạt giá trị tối thiểu để áp dụng mã.',
+            FLASH_SALE_NOT_STARTED:'Chương trình flash sale chưa bắt đầu.',
+            FLASH_SALE_EXPIRED:'Chương trình flash sale đã kết thúc.',
+          };
+          this.pricingSnapshot.set(null);
+          this.pricingStatus.set('idle');
+          this.voucherNotice.set(labels[result.reason??'']??'Mã giảm giá không hợp lệ.');
+          return;
+        }
+        const subtotal=this.estimatedSubtotal();
+        const discount=Math.max(0,Number(result.discount)||0);
+        this.pricingSnapshot.set({
+          subtotal,
+          surchargeAmount:0,
+          discountAmount:discount,
+          total:Math.max(0,subtotal-discount),
+          petCount:this.petCount(),
+        });
+        this.pricingKeyAtResponse.set(this.pricingRequestKey());
+        this.pricingStatus.set('ready');
+        this.voucherNotice.set('Mã '+result.code+' hợp lệ · giảm '+this.money(discount)+'.');
+      },
+      error:error=>{
+        this.pricingSnapshot.set(null);
+        this.pricingStatus.set('error');
+        this.voucherNotice.set(adminErrorMessage(error,'Không kiểm tra được mã giảm giá.'));
+      },
+    });
   }
 
   private clearReview(): void { this.reviewErrors.set([]); }
 
   createAppointment(): void {
+    if(this.creating())return;
     const errors: string[] = [];
     const customer = this.selectedCustomer();
     const phone = PHONE(this.customerPhone());
@@ -608,34 +659,93 @@ export class AdminAppointmentCreateComponent {
       errors.push('Tra cứu số điện thoại khách hàng hợp lệ trước khi tiếp tục.');
     if (this.lookupState() === 'found' && !customer) errors.push('Chọn khách hàng trong danh sách tra cứu.');
     if (customer?.accountStatus === 'BLOCKED') errors.push('Tài khoản đang bị chặn, không thể tạo lịch hẹn.');
+    if (customer) errors.push('Hiện chưa thể tạo lịch nội bộ gắn trực tiếp với khách hàng đã có tài khoản.');
     if (!this.customerName().trim()) errors.push('Nhập họ tên khách hàng.');
     if (!this.customerEmail().trim()) errors.push('Vui lòng nhập email khách hàng.');
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.customerEmail().trim()))
       errors.push('Email chưa đúng định dạng.');
     if (!this.petCount()) errors.push('Chọn hoặc thêm ít nhất một thú cưng.');
+    if (this.petCount() > 1) errors.push('Hiện chưa thể tạo một lịch hẹn cho nhiều thú cưng cùng lúc.');
     if (this.extraServices().some(row => !row.serviceId)) errors.push('Chọn dịch vụ cho tất cả các dòng dịch vụ bổ sung.');
     if (this.plannedSegments().some(row => row.durationMinutes === null))
       errors.push('Có dịch vụ chưa có thời lượng được xác nhận.');
-    if (this.draftStaffConflicts().length)
-      errors.push('Có nhân viên được phân công trùng thời gian. Vui lòng chọn lại.');
     if (this.newPets().filter(p => p.selected).some(p => !p.name.trim() || !p.species))
-      errors.push('Nhập tên và loài cho tất cả thú cưng mới được chọn.');
-    if (customer && this.petsLoadState() === 'error' && !this.newPets().some(p => p.selected))
-      errors.push('Chưa tải được hồ sơ thú cưng. Vui lòng thử lại.');
+      errors.push('Nhập tên và loài cho thú cưng mới.');
     if (!this.branchId() || !this.serviceId()) errors.push('Chọn chi nhánh và dịch vụ.');
-    if (this.complexBooking())
-      errors.push('Chưa thể kiểm tra lịch cho nhiều thú cưng cùng lúc. Vui lòng thử lại sau.');
-    if (!this.appointmentDate() || (!this.selectedSlotId() && !this.complexBooking()))
+    if (!this.appointmentDate() || !this.selectedSlotId())
       errors.push('Chọn ngày và khung giờ còn chỗ.');
     else if (this.appointmentDate() < this.today) errors.push('Không thể đặt lịch vào ngày đã qua.');
     if (this.paymentMethod() === 'ONLINE_MOCK' && !this.onlineProvider())
       errors.push('Chọn cổng thanh toán trực tuyến.');
-    if (!this.currentPreview())
-      errors.push('Chưa thể xác định tổng tiền cho lịch hẹn này.');
-    // A slot read/price hint never authorizes a booking mutation.
-    errors.push('Chức năng tạo lịch hẹn hiện chưa khả dụng. Thông tin của bạn chưa được lưu thành lịch hẹn.');
+
     this.reviewErrors.set(errors);
-    if (errors.length) this.toast.show(errors[0]);
+    if (errors.length) {
+      this.toast.show(errors[0]);
+      return;
+    }
+
+    const pet=this.selectedPets()[0];
+    const serviceIds=this.plannedSegments().map(segment=>segment.serviceId).filter(Boolean);
+    const speciesMap:Record<string,string>={Chó:'DOG',Mèo:'CAT',Khác:'OTHER',DOG:'DOG',CAT:'CAT',OTHER:'OTHER'};
+    const healthMap:Record<string,string>={
+      healthy:'NORMAL',treating:'TREATING',need_recheck:'NEED_RECHECK',unknown:'UNKNOWN',
+    };
+    const payload={
+      serviceIds,
+      branchId:this.branchId(),
+      slotStart:this.selectedSlotId(),
+      pet:{
+        name:pet.name.trim(),
+        species:speciesMap[pet.species]??'OTHER',
+        breed:pet.breed?.trim()??'',
+        ageYears:Number(pet.age)||0,
+        weightKg:Number(pet.weightKg)||0,
+        healthStatus:healthMap[pet.health]??pet.health??'',
+        medicalNotes:pet.additionalInfo?.trim()??'',
+      },
+      contact:{
+        name:this.customerName().trim(),
+        phone,
+        email:this.customerEmail().trim().toLowerCase(),
+      },
+      ...(this.voucherCode().trim()?{voucherCode:this.voucherCode().trim().toUpperCase()}:{}),
+      ...(this.note().trim()?{note:this.note().trim()}:{}),
+      ...(pet.additionalInfo?.trim()?{conditionDescription:pet.additionalInfo.trim()}:{}),
+      paymentMethod:this.paymentMethod(),
+    };
+    const fingerprint=JSON.stringify(payload);
+    if(fingerprint!==this.lastCreateFingerprint){
+      this.lastCreateFingerprint=fingerprint;
+      this.lastCreateKey=crypto.randomUUID();
+    }
+
+    this.creating.set(true);
+    this.api.post<unknown,typeof payload>('/internal/appointments',payload,{
+      headers:new HttpHeaders({'Idempotency-Key':this.lastCreateKey}),
+    }).pipe(
+      finalize(()=>this.creating.set(false)),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next:raw=>{
+        const body=objectOf(unwrap(raw));
+        const id=textOf(body?.['id']??body?.['_id']??body?.['appointmentId']);
+        if(!id){
+          this.toast.show('Đã tạo lịch hẹn nhưng chưa đọc được mã lịch. Vui lòng tải lại danh sách.','success');
+          this.allowDiscardNavigation=true;
+          void this.router.navigateByUrl('/admin/appointments');
+          return;
+        }
+        this.allowDiscardNavigation=true;
+        this.reviewErrors.set([]);
+        this.toast.show('Đã tạo lịch hẹn thành công.','success');
+        void this.router.navigate(['/admin/appointments',id]);
+      },
+      error:error=>{
+        const message=adminErrorMessage(error,'Không thể tạo lịch hẹn. Vui lòng kiểm tra khung giờ và thử lại.');
+        this.reviewErrors.set([message]);
+        this.toast.show(message,'error');
+      },
+    });
   }
 
   requestCancel(): void {
