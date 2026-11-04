@@ -67,10 +67,17 @@ export class AdminOrderCreateComponent {
   readonly created=signal(false);
   private quoteRequest=0;
   private createKey: string|null=null;
-  readonly isAdmin=computed(()=>this.session.user()?.systemRole==='ADMIN');
-  readonly canQuote=computed(()=>this.isAdmin() && this.lines().length>0 && !this.hasInvalidQuantities());
+  readonly isOrderOperator=computed(()=>{
+    const user=this.session.user();
+    return user?.systemRole==='ADMIN' || user?.systemRole==='MANAGER' ||
+      (user?.systemRole==='STAFF' && user.staffSubRole==='RECEPTIONIST');
+  });
+  readonly canQuote=computed(()=>this.isOrderOperator() && this.lines().length>0 && !this.hasInvalidQuantities());
   readonly quoteIsCurrent=computed(()=>!!this.quote() && this.quoteState()==='ready' && this.quoteFingerprint()===this.getQuoteFingerprint() && Date.now()<Date.parse(this.quote()!.quoteExpiresAt));
-  readonly canSubmit=computed(()=>this.quoteIsCurrent() && this.isDraftValid() && this.quote()!.eligible && this.quote()!.availability.canFulfillEntireCart && (!this.voucherCode().trim() || this.quote()!.pricing.voucherDiscount>0) && this.session.user()?.systemRole==='ADMIN' && !this.saving());
+  readonly canSubmit=computed(()=>this.quoteIsCurrent() && this.isDraftValid() && this.quote()!.eligible &&
+    this.quote()!.availability.canFulfillEntireCart &&
+    (!this.voucherCode().trim() || this.quote()!.pricing.voucherDiscount>0) &&
+    this.isOrderOperator() && !this.saving());
   readonly lookupPhone = signal('');
   readonly lookupState = signal<LookupState>('idle');
   readonly lookupIncomplete = signal(false);
@@ -582,7 +589,7 @@ export class AdminOrderCreateComponent {
     if(this.quote() && Date.now()>=Date.parse(this.quote()!.quoteExpiresAt)) this.invalidateDraftPricing();
     if (!this.quoteIsCurrent()) {this.requestQuote(true);return;}
     if(!this.canSubmit()){
-      if(this.session.user()?.systemRole!=='ADMIN')this.toast.show('Chức năng tạo đơn hiện đang giới hạn cho quản trị viên.');
+      if(!this.isOrderOperator())this.toast.show('Tài khoản không có quyền tạo đơn tại quầy.');
       else if(!this.isDraftValid())this.toast.show(this.reviewIssues()[0]||'Vui lòng kiểm tra thông tin đơn hàng.');
       else this.toast.show('Vui lòng lấy báo giá hợp lệ, còn hiệu lực trước khi tạo đơn.');
       return;
