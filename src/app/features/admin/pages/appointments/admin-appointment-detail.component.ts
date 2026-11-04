@@ -129,8 +129,9 @@ export class AdminAppointmentDetailComponent {
   }
   private segmentStartTime():string{
     const started=this.item()?.serviceSegments
-      .map(segment=>segment.scheduledStart)
-      .find(Boolean);
+      .map(segment=>segment.executionStartedAt)
+      .filter((value):value is string=>!!value)
+      .sort((a,b)=>Date.parse(b)-Date.parse(a))[0];
     return started?this.displayShortTime(started):this.historyTime('IN_PROGRESS');
   }
   private historyTime(status:string):string{
@@ -223,7 +224,12 @@ export class AdminAppointmentDetailComponent {
           if (version!==this.requestVersion)return;
           try {
             const parsed=normalizeAppointmentDetail(response);
-            if (parsed.id !== id) throw new Error('API trả về lịch hẹn không khớp mã được yêu cầu.');
+            if (parsed.id !== id) throw new Error('Dữ liệu lịch hẹn không khớp yêu cầu.');
+            if (!this.canAccessAppointmentBranch(parsed.branchId)) {
+              this.error.set('Bạn không có quyền xem lịch hẹn của chi nhánh này.');
+              this.loading.set(false);
+              return;
+            }
             this.item.set(parsed);this.loading.set(false);
             this.loadLinkedRecords(id,version);
           } catch (err) {
@@ -237,6 +243,15 @@ export class AdminAppointmentDetailComponent {
           this.loading.set(false);
         },
       });
+  }
+
+  private canAccessAppointmentBranch(branchId:string):boolean{
+    const user=this.session.user();
+    if(!user || user.systemRole==='ADMIN')return true;
+    if(user.systemRole==='MANAGER' || (user.systemRole==='STAFF' && user.staffSubRole==='RECEPTIONIST')){
+      return (user.branchScope ?? []).includes(branchId);
+    }
+    return true;
   }
 
   private loadLinkedRecords(appointmentId:string,version:number):void{
@@ -441,6 +456,10 @@ export class AdminAppointmentDetailComponent {
     const action=this.dialog();
     const appointment=this.item();
     if (!action||!appointment||this.actionBusy())return;
+    if (!this.canAccessAppointmentBranch(appointment.branchId)) {
+      this.showActionMessage('Bạn không có quyền thao tác trên lịch hẹn của chi nhánh này.');
+      return;
+    }
     const allowed = action === 'status' ? this.canStartService() : this.canManageAppointment();
     if (!allowed) {this.showActionMessage('Bạn không có quyền thực hiện thao tác này.');return;}
 
