@@ -642,8 +642,8 @@ export class BranchManagementPageComponent {
       },
     });
   }
-  showPending(action: string): void {
-    this.toast.show(action + ' hiện chưa khả dụng.', 'info');
+  openBranchInventory(branchId: string): void {
+    void this.router.navigate(['/admin/inventory'], { queryParams: { branchId } });
   }
   changeDate(value: string): void {
     if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
