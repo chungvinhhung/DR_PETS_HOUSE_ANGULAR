@@ -4,6 +4,7 @@ import {
   Component,
   HostListener,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -22,6 +23,7 @@ import {
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminDataStateComponent } from "../../../../shared/admin-data-state/admin-data-state.component";
+import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import {
   CatalogBranch,
   CatalogFilterMode,
@@ -47,6 +49,7 @@ export class ServiceCatalogListComponent {
   private readonly authSession = inject(AuthSessionService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly toast = inject(AdminToastService);
 
   readonly allBranches = signal<readonly CatalogBranch[]>([]);
   readonly role = computed(() => this.authSession.user()?.systemRole ?? 'STAFF');
@@ -60,6 +63,14 @@ export class ServiceCatalogListComponent {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly notice = signal<string | null>(null);
+  private readonly notifyNotice = effect(() => {
+    const message = this.notice();
+    if (message) this.toast.show(message, 'info');
+  });
+  private readonly notifyError = effect(() => {
+    const message = this.error();
+    if (message) this.toast.show(message, 'error');
+  });
   readonly openMenuId = signal<string | null>(null);
   readonly configuringService = signal<CatalogService | null>(null);
   readonly searchText = signal('');
