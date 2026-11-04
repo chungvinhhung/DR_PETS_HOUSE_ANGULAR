@@ -66,6 +66,7 @@ export interface ServiceAvailabilitySlot {
   remaining: number;
   bookedCount?: number;
   totalCount?: number;
+  status?: 'AVAILABLE' | 'FULL' | 'BLOCKED' | string;
 }
 export interface ServiceAvailabilityResponse {
   branchId: string;
