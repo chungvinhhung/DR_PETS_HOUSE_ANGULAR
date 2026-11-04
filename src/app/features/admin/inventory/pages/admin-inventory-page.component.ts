@@ -72,6 +72,7 @@ export class AdminInventoryPageComponent implements OnInit {
   private readonly categoryApi = inject(AdminCategoryService);
   private readonly auth = inject(AuthSessionService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly initialBranchId = this.route.snapshot.queryParamMap.get('branchId') ?? '';
 
   readonly loading = signal(false);
   readonly loadError = signal('');
@@ -236,6 +237,10 @@ export class AdminInventoryPageComponent implements OnInit {
         this.catalogProducts.set(products);
         this.scopedBranchIds.set([...new Set(stocks.map(stock => stock.branchId))]);
         this.stock.set(this.makeStockRows(stocks, items, branches));
+        if (this.initialBranchId) {
+          const selectedBranch = branches.find(branch => branch.id === this.initialBranchId);
+          if (selectedBranch) this.branch.set(selectedBranch.name);
+        }
         this.page.set(1);
         this.loadHistory();
       },
