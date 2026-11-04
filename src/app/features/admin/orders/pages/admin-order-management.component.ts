@@ -54,7 +54,11 @@ export class AdminOrderManagementComponent {
   private detailRequestVersion = 0;
 
   readonly statuses = STATUS_LABELS;
-  readonly canCreateOrder = computed(() => this.session.user()?.systemRole === 'ADMIN');
+  readonly canCreateOrder = computed(() => {
+    const user = this.session.user();
+    return user?.systemRole === 'ADMIN' || user?.systemRole === 'MANAGER' ||
+      (user?.systemRole === 'STAFF' && user.staffSubRole === 'RECEPTIONIST');
+  });
   readonly milestones: OrderStatus[] = ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'COMPLETED'];
   readonly orderId = signal('');
   readonly isDetail = computed(() => Boolean(this.orderId()));
@@ -105,11 +109,18 @@ export class AdminOrderManagementComponent {
   readonly selectedInventoryCode = signal('');
   readonly orderInventoryItems = signal<InventoryItemDto[]>([]);
   readonly orderInventoryGroups = computed(() => {
-    const groups = new Map<string, { code: string; rows: InventoryTransactionDto[] }>();
+    const groups = new Map<string, { key: string; code: string; rows: InventoryTransactionDto[] }>();
     for (const tx of this.orderInventory()) {
       const explicit = tx.transactionCode || tx.groupCode || tx.code || '';
-      const key = explicit ? 'code:' + explicit : 'row:' + tx.id;
-      const current = groups.get(key) ?? { code: explicit || tx.id, rows: [] };
+      // Until BE exposes a shared business transaction code, correlate rows by
+      // persisted source + movement type + reason. Do not present Mongo row IDs
+      // as if they were TXK/PNK business codes.
+      const source = tx.sourceId ? (tx.sourceType || 'SOURCE') + ':' + tx.sourceId : '';
+      const fallbackKey = source
+        ? [tx.transactionType, source, tx.reason || ''].join('|')
+        : 'row:' + tx.id;
+      const key = explicit ? 'code:' + explicit : fallbackKey;
+      const current = groups.get(key) ?? { key, code: explicit, rows: [] };
       current.rows.push(tx);
       groups.set(key, current);
     }
@@ -216,7 +227,14 @@ export class AdminOrderManagementComponent {
       else this.loadOrders();
     });
     this.branchApi.listBranches().pipe(takeUntilDestroyed()).subscribe({
-      next: (records) => this.branches.set(records.map((branch) => ({ id: branch.id, name: branch.name }))),
+      next: (records) => {
+        const user = this.session.user();
+        const scope = new Set(user?.branchScope ?? []);
+        const visible = user?.systemRole === 'ADMIN'
+          ? records
+          : records.filter((branch) => scope.has(branch.id));
+        this.branches.set(visible.map((branch) => ({ id: branch.id, name: branch.name })));
+      },
       error: () => { /* Branch titles are optional; Order API remains authoritative. */ },
     });
   }
@@ -428,7 +446,7 @@ export class AdminOrderManagementComponent {
     const link = document.createElement('a');
     link.href = objectUrl; link.download = filename; link.click();
     URL.revokeObjectURL(objectUrl);
-    this.toast.show('Đã xuất những bản ghi hiện có theo bộ lọc.', 'success');
+    this.toast.show('Đã xuất danh sách yêu cầu trả hàng đang hiển thị theo bộ lọc.', 'success');
   }
 
   setSearch(value: string): void { this.search.set(value); this.page.set(1); }
