@@ -243,16 +243,16 @@
           <div class="payment-summary__rows">
             <div><span>Tạm tính</span><strong>{{money(currentPreview()?.subtotal ?? estimatedSubtotal())}}</strong></div>
             <div><span>Phụ thu</span>
-              <strong>{{currentPreview() ? money(currentPreview()!.surchargeAmount) : '—'}}</strong></div>
+              <strong>{{currentPreview() ? money(currentPreview()!.surchargeAmount) : money(0)}}</strong></div>
             <div><span>Giảm giá</span>
-              <strong>{{currentPreview() ? money(currentPreview()!.discountAmount) : '—'}}</strong></div>
+              <strong>{{currentPreview() ? money(currentPreview()!.discountAmount) : money(0)}}</strong></div>
             @if (voucherCode().trim()) {
-              <div><span>Voucher</span><strong>Chưa áp dụng</strong></div>
+              <div><span>Voucher</span><strong>{{ currentPreview() ? 'Đã xác thực' : 'Chưa xác thực' }}</strong></div>
             }
           </div>
           <div class="payment-summary__total">
             <span><strong>Tổng cộng</strong>
-              <small>{{currentPreview() ? 'Tạm tính từ API' : 'Giá tham khảo từ danh mục'}}</small>
+              <small>{{currentPreview() ? 'Giá tham khảo + voucher đã xác thực' : 'Giá tham khảo từ danh mục; BE chốt khi tạo lịch'}}</small>
             </span>
             <strong>{{money(currentPreview()?.total ?? estimatedSubtotal())}}</strong>
           </div>
@@ -279,7 +279,7 @@
 
     <footer class="appointment-create__footer">
       <button type="button" class="btn btn--outline" (click)="requestCancel()">Hủy</button>
-      <button type="button" class="btn btn--primary" (click)="createAppointment()">Tạo lịch hẹn</button>
+      <button type="button" class="btn btn--primary" [disabled]="creating()" (click)="createAppointment()">{{ creating() ? 'Đang tạo...' : 'Tạo lịch hẹn' }}</button>
     </footer>
 
     @if (reviewErrors().length) {
