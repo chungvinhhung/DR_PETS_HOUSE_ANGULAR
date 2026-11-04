@@ -7,6 +7,7 @@ export type StaffStatus = 'ACTIVE' | 'BLOCKED' | 'UNKNOWN';
 
 export interface StaffPreview {
   id: string;
+  userId?: string;
   /** Server ID; distinct from optional human-facing employee code. */
   staffCode?: string;
   branchIds?: readonly string[];
