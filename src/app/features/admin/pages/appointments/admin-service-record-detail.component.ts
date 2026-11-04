@@ -16,6 +16,8 @@ import {
   InventoryTransactionDto,
 } from '../../inventory/services/admin-inventory.service';
 import { AdminInventoryTransactionDrawerComponent } from '../../inventory/components/admin-inventory-transaction-drawer.component';
+import { AdminStaffApiService } from '../../staff/services/admin-staff-api.service';
+import { displayStaffName } from '../../staff/models/staff-preview.model';
 import {
   AppointmentView,
   normalizeAppointmentDetail,
@@ -55,6 +57,7 @@ export class AdminServiceRecordDetailComponent {
   private readonly api=inject(ApiClientService);
   private readonly session=inject(AuthSessionService);
   private readonly inventoryApi=inject(AdminInventoryService);
+  readonly staffDirectory=inject(AdminStaffApiService);
   private readonly toast=inject(AdminToastService);
   private readonly route=inject(ActivatedRoute);
   private readonly destroyRef=inject(DestroyRef);
@@ -68,6 +71,7 @@ export class AdminServiceRecordDetailComponent {
   readonly appointment=signal<AppointmentView|null>(null);
 
   readonly inventoryItems=signal<InventoryItemDto[]>([]);
+  readonly inventoryBranches=signal<{id:string;name:string}[]>([]);
   readonly inventoryStocks=signal<InventoryStockDto[]>([]);
   readonly inventoryTransactions=signal<InventoryTransactionDto[]>([]);
   readonly inventoryLoaded=signal(false);
@@ -158,6 +162,8 @@ export class AdminServiceRecordDetailComponent {
       }
     });
     this.loadInventoryItems();
+    this.loadBranches();
+    this.staffDirectory.loadRoster();
     this.load();
   }
 
@@ -206,6 +212,13 @@ export class AdminServiceRecordDetailComponent {
     this.inventoryApi.listItems().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next:items=>this.inventoryItems.set(items),
       error:()=>this.inventoryItems.set([]),
+    });
+  }
+
+  private loadBranches():void{
+    this.inventoryApi.listBranches().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:rows=>this.inventoryBranches.set(rows.map(row=>({id:row.id,name:row.name}))),
+      error:()=>this.inventoryBranches.set([]),
     });
   }
 
@@ -302,20 +315,39 @@ export class AdminServiceRecordDetailComponent {
   }
 
   petInitial(r:ServiceRecord):string{
-    return (r.petName || 'P').trim().slice(0,1).toUpperCase() || 'P';
+    return this.petLabel(r).trim().slice(0,1).toUpperCase() || 'P';
   }
 
   serviceLabel(r:ServiceRecord):string{
-    return r.serviceName || this.appointment()?.serviceNames?.[0] || r.serviceIds.join(', ') || 'Chưa có dữ liệu';
+    if(r.serviceName)return r.serviceName;
+    const appointment=this.appointment();
+    const names=(appointment?.serviceSegments ?? [])
+      .filter(segment=>!r.serviceIds.length || r.serviceIds.includes(segment.serviceId))
+      .map(segment=>segment.serviceName)
+      .filter(Boolean);
+    return names.length ? [...new Set(names)].join(' / ') :
+      appointment?.serviceNames?.join(' / ') || r.serviceIds.join(', ') || 'Chưa có dữ liệu';
   }
 
   branchLabel(r:ServiceRecord):string{
-    return r.branchName || this.appointment()?.branchName || r.branchId || 'Chưa có dữ liệu';
+    return r.branchName || this.inventoryBranches().find(row=>row.id===r.branchId)?.name ||
+      this.appointment()?.branchName || r.branchId || 'Chưa có dữ liệu';
   }
 
   staffLabel(r:ServiceRecord):string{
     if(r.primaryStaff)return r.primaryRole ? r.primaryStaff+' · '+r.primaryRole : r.primaryStaff;
-    return r.assignedStaffIds.join(', ') || 'Chưa có dữ liệu';
+    const names=r.assignedStaffIds.map(id=>{
+      const staff=this.staffDirectory.staff().find(row=>row.id===id || row.userId===id);
+      return staff ? displayStaffName(staff) : '';
+    }).filter(Boolean);
+    return names.length ? names.join(' / ') : r.assignedStaffIds.join(', ') || 'Chưa có dữ liệu';
+  }
+
+  reviewerLabel(r:ServiceRecord):string{
+    const id=r.reviewerStaffId || r.reviewedBy;
+    if(!id)return 'Chưa được chỉ định';
+    const staff=this.staffDirectory.staff().find(row=>row.id===id || row.userId===id);
+    return staff ? displayStaffName(staff) : id;
   }
 
   recordNote(r:ServiceRecord):string{
