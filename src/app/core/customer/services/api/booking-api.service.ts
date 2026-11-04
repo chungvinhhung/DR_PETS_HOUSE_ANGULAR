@@ -158,6 +158,20 @@ export function normalizeBookingService(service: any) {
   };
 }
 
+
+export function resolveServiceId(id: any): string {
+  if (!id) return "6ad08e4517bf41f5954234c8";
+  const str = String(id).trim();
+  if (/^[0-9a-fA-F]{24}$/.test(str)) return str;
+  if (str === 'general-checkup' || str.includes('exam') || str.includes('kham') || str.includes('clinic')) return '6ad08e4517bf41f5954234c8';
+  if (str === 'vaccine' || str === 'deworming' || str.includes('tiem') || str.includes('giun')) return '6ad08e4517bf41f5954234c9';
+  if (str === 'bath' || str.includes('tam') || str.includes('say')) return '6ad08e4417bf41f5954234c6';
+  if (str === 'trim' || str.includes('tia') || str.includes('long')) return '6ad08e4517bf41f5954234cc';
+  if (str === 'ear-cleaning' || str.includes('tai')) return '6ad08e4517bf41f5954234cd';
+  if (str === 'teeth-cleaning' || str.includes('rang')) return '6ad08e4517bf41f5954234d0';
+  return "6ad08e4517bf41f5954234c8";
+}
+
 export function resolveBranchId(raw: any): string {
   if (!raw) return "6ad08e4417bf41f5954234c3";
   if (typeof raw === 'object') {
@@ -259,7 +273,7 @@ export class BookingApiService {
   private readonly http = inject(CustomerHttpService);
 
   async getBranches() {
-    const response = await this.http.get("/branches", { params: { status: 'ACTIVE' } });
+    const response = await this.http.get("/branches");
     const data = assertSuccess(response);
     const items = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : [];
     return items.map(normalizeBranch);
@@ -277,12 +291,15 @@ export class BookingApiService {
   async getAppointmentSlots({ date, branchId, serviceType, serviceIds }: any) {
     const dateFormatted = date ? String(date).split("T")[0] : new Date().toISOString().split("T")[0];
     const resolvedBranch = resolveBranchId(branchId);
+    let resolvedServiceIds = "6ad08e4517bf41f5954234c8";
+    if (serviceIds && serviceIds.length > 0) {
+      const arr = Array.isArray(serviceIds) ? serviceIds : String(serviceIds).split(",");
+      resolvedServiceIds = arr.map(resolveServiceId).join(",");
+    }
     const params: any = {
       date: dateFormatted,
       branchId: resolvedBranch,
-      serviceIds: (serviceIds && serviceIds.length > 0)
-        ? (Array.isArray(serviceIds) ? serviceIds.join(",") : serviceIds)
-        : "6ad08e4417bf41f5954234c6",
+      serviceIds: resolvedServiceIds,
     };
     try {
       const response = await this.http.get("/appointments/slots", { params });
