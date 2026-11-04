@@ -332,17 +332,20 @@ export class BranchManagementPageComponent {
   closeBranchSettings(): void { if (!this.savingBranch()) this.branchSettingsOpen.set(null); }
   saveBranchSettings(value: BranchSettingsPreview): void {
     if (this.savingBranch()) return;
-    const payload = {
+    const createPayload = {
       name: value.name, address: value.address, phone: value.hotline, status: value.status,
+    };
+    const updatePayload = {
+      name: value.name, address: value.address, phone: value.hotline,
     };
     this.savingBranch.set(true);
     if (!value.id) {
-      const serialized = JSON.stringify(payload);
+      const serialized = JSON.stringify(createPayload);
       if (serialized !== this.lastCreatePayload) {
         this.lastCreatePayload = serialized;
         this.lastCreateKey = crypto.randomUUID();
       }
-      this.api.createBranch(payload, this.lastCreateKey).pipe(
+      this.api.createBranch(createPayload, this.lastCreateKey).pipe(
         takeUntilDestroyed(this.destroyRef),
       ).subscribe({
         next: (saved) => {
@@ -360,7 +363,17 @@ export class BranchManagementPageComponent {
       });
       return;
     }
-    this.api.updateBranch(value.id, payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    const current = this.branchRows().find((row) => row.id === value.id) ?? this.detailRecord();
+    const statusChanged = this.isAdmin && current && current.status !== value.status;
+    this.api.updateBranch(value.id, updatePayload).pipe(
+      switchMap((saved) => {
+        if (!statusChanged) return of(saved);
+        return value.status === 'ACTIVE'
+          ? this.api.activateBranch(value.id, crypto.randomUUID())
+          : this.api.deactivateBranch(value.id, 'Cập nhật trạng thái từ trang quản lý chi nhánh', crypto.randomUUID());
+      }),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
       next: (saved) => {
         const row = this.fromApi(saved);
         this.branchRows.update((all) => all.map((x) => x.id === row.id
