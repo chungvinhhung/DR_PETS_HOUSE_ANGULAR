@@ -30,6 +30,7 @@ export class AdminProductListPageComponent implements OnInit {
   private readonly showErrors = effect(() => { if (this.error()) this.toast.show(this.error()); });
   private readonly showArchiveErrors = effect(() => { if (this.archiveError()) this.toast.show(this.archiveError()); });
   private readonly showRestoreErrors = effect(() => { if (this.restoreError()) this.toast.show(this.restoreError()); });
+  private readonly showDeleteErrors = effect(() => { if (this.deleteError()) this.toast.show(this.deleteError()); });
   private readonly categoriesApi = inject(AdminCategoryService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -470,8 +471,9 @@ export class AdminProductListPageComponent implements OnInit {
     ).subscribe({
       next: updated => {
         this.products.update(rows => rows.map(row => row.id === product.id ? updated : row));
+        this.toast.show('Đã cập nhật trạng thái sản phẩm.', 'success');
       },
-      error: err => this.error.set(err instanceof Error ? err.message : 'Không thể cập nhật trạng thái.'),
+      error: err => this.error.set(adminErrorMessage(err, 'Không thể cập nhật trạng thái sản phẩm.')),
     });
   }
 
@@ -505,8 +507,7 @@ export class AdminProductListPageComponent implements OnInit {
       },
       error: error => {
         this.archiveError.set(
-          adminErrorMessage(error, 'Không thể lưu trữ sản phẩm.') +
-          ' Nếu kết quả chưa rõ, hãy kiểm tra tab Đã lưu trữ trước khi thử lại.',
+          adminErrorMessage(error, 'Không thể lưu trữ sản phẩm. Vui lòng thử lại.'),
         );
       },
     });
@@ -588,7 +589,7 @@ export class AdminProductListPageComponent implements OnInit {
           );
         } else if (status === 409 || status === 422) {
           this.deleteError.set(
-            'Không thể xóa vĩnh viễn vì sản phẩm đang có dữ liệu liên quan. Vui lòng kiểm tra đơn hàng, tồn kho và phản hồi từ Backend.',
+            'Không thể xóa vĩnh viễn vì sản phẩm đang có dữ liệu liên quan. Vui lòng kiểm tra đơn hàng và tồn kho trước khi thử lại.',
           );
         } else {
           this.deleteError.set(adminErrorMessage(error, 'Không thể xóa vĩnh viễn sản phẩm.'));
