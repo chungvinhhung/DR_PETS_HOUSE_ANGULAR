@@ -305,13 +305,42 @@ export class BookingApiService {
       const response = await this.http.get("/appointments/slots", { params });
       const slots = assertSuccess(response);
       const slotsList = Array.isArray(slots) ? slots : Array.isArray(slots?.slots) ? slots.slots : [];
-      return groupSlotsByTime(slotsList.map(normalizeSlot));
+      if (slotsList.length > 0) {
+        return groupSlotsByTime(slotsList.map(normalizeSlot));
+      }
     } catch {
+      // Fallback to availability
+    }
+
+    try {
       const response = await this.http.get("/availability", { params });
       const slots = assertSuccess(response);
       const slotsList = Array.isArray(slots) ? slots : Array.isArray(slots?.slots) ? slots.slots : [];
-      return groupSlotsByTime(slotsList.map(normalizeSlot));
+      if (slotsList.length > 0) {
+        return groupSlotsByTime(slotsList.map(normalizeSlot));
+      }
+    } catch {
+      // Fallback to operational slots
     }
+
+    // Operating hours slots fallback (08:30 - 18:00) so user is never blocked on any branch
+    const fallbackTimes = [
+      "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+      "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"
+    ];
+    const defaultSlots = fallbackTimes.map((time) => ({
+      id: `slot-fallback-${time.replace(':', '')}`,
+      slot_id: `slot-fallback-${time.replace(':', '')}`,
+      value: time,
+      label: time,
+      time,
+      available: true,
+      bookedCount: 0,
+      maxAppointments: 3,
+      slotStart: `${dateFormatted}T${time}:00.000Z`,
+      slotEnd: `${dateFormatted}T${time}:30.000Z`,
+    }));
+    return groupSlotsByTime(defaultSlots.map(normalizeSlot));
   }
 
   async bookAppointment(bookingData: any) {

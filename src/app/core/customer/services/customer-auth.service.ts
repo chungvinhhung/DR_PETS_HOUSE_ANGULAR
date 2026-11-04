@@ -83,7 +83,7 @@ export class CustomerAuthService {
 
   constructor() {
     // Khôi phục token đã lưu để interceptor gắn Authorization cho các request sau khi F5.
-    const token = this.safe(() => localStorage.getItem(ACCESS_TOKEN_KEY) || sessionStorage.getItem(ACCESS_TOKEN_KEY), null);
+    let token = this.safe(() => localStorage.getItem(ACCESS_TOKEN_KEY) || sessionStorage.getItem(ACCESS_TOKEN_KEY), null);
     if (this.authenticated() && token && !this.coreSession.accessToken()) {
       this.coreSession.setSession({ accessToken: token, roles: ['CUSTOMER'], user: null });
     }
@@ -151,9 +151,11 @@ export class CustomerAuthService {
     clearStoredAuthentication();
     const storage = remember ? localStorage : sessionStorage;
     storage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authSession));
-    if (options.accessToken) {
-      storage.setItem(ACCESS_TOKEN_KEY, options.accessToken);
-      this.coreSession.setSession({ accessToken: options.accessToken, roles: ['CUSTOMER'], user: null });
+    const token = options.accessToken || (options as any)['access_token'];
+    if (token) {
+      storage.setItem(ACCESS_TOKEN_KEY, token);
+      localStorage.setItem(ACCESS_TOKEN_KEY, token);
+      this.coreSession.setSession({ accessToken: token, roles: ['CUSTOMER'], user: null });
     }
 
     this.authExpiresAt.set(authSession.expiresAt);

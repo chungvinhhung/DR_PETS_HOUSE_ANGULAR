@@ -46,8 +46,11 @@ export class AuthApiService {
         });
         const payload: any = assertSuccess(response);
         const user = payload?.user || payload;
+        const token = payload?.accessToken || payload?.access_token || payload?.token;
         return {
-          access_token: payload?.accessToken || payload?.access_token,
+          accessToken: token,
+          access_token: token,
+          token,
           user: user
             ? {
                 user_id: user.id || user.user_id,

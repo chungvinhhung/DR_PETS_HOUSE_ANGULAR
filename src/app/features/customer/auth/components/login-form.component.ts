@@ -57,17 +57,18 @@ export class LoginFormComponent {
     this.submitting.set(true);
     this.submitError.set("");
     try {
-      const data = await this.authApi.login({
+      const data: any = await this.authApi.login({
         loginId: this.form().phone.trim(),
         password: this.form().password,
         remember: this.form().remember,
       });
+      const token = data?.accessToken || data?.access_token || data?.token || data?.data?.accessToken || data?.data?.access_token;
       this.completeLogin()(
         { phone: this.form().phone.trim() },
         {
           remember: this.form().remember,
-          accessToken: data?.access_token,
-          user: data?.user,
+          accessToken: token,
+          user: data?.user || data?.data?.user,
         },
       );
     } catch (error: any) {
