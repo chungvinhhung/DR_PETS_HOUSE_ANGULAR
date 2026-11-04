@@ -82,7 +82,7 @@ import { AdminDataStateComponent } from '../../../../shared/admin-data-state/adm
             </label>
 
             <label>
-              <span>System role</span>
+              <span>Vai trò hệ thống</span>
               <select formControlName="systemRole">
                 <option value="MANAGER">MANAGER</option>
                 <option value="STAFF">STAFF</option>
@@ -92,7 +92,7 @@ import { AdminDataStateComponent } from '../../../../shared/admin-data-state/adm
 
             @if (createForm.controls.systemRole.value === 'STAFF') {
               <label>
-                <span>Staff sub-role</span>
+                <span>Vai trò nghiệp vụ</span>
                 <select formControlName="staffSubRole">
                   <option value="RECEPTIONIST">RECEPTIONIST</option>
                   <option value="CARE_STAFF_GROOMER">CARE_STAFF_GROOMER</option>
@@ -135,10 +135,10 @@ import { AdminDataStateComponent } from '../../../../shared/admin-data-state/adm
               <thead>
                 <tr>
                   <th>Người dùng</th>
-                  <th>Role</th>
+                  <th>Vai trò</th>
                   <th>Trạng thái</th>
-                  <th>Branch</th>
-                  <th>Quyền thao tác FE</th>
+                  <th>Chi nhánh</th>
+                  <th>Quyền thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -160,7 +160,6 @@ import { AdminDataStateComponent } from '../../../../shared/admin-data-state/adm
                           <option value="ADMIN">ADMIN</option>
                           <option value="MANAGER">MANAGER</option>
                           <option value="STAFF">STAFF</option>
-                          <option value="CUSTOMER">CUSTOMER</option>
                         </select>
 
                         @if (user.systemRole === 'STAFF') {
