@@ -341,22 +341,13 @@ export class AdminInventoryPageComponent implements OnInit {
         : `${two(date.getDate())}/${two(date.getMonth() + 1)} ${two(date.getHours())}:${two(date.getMinutes())}`;
       const explicitCode = tx.transactionCode || tx.groupCode || tx.code || '';
       const sourceIdentity = tx.sourceId ? `${tx.sourceType || 'SOURCE'}:${tx.sourceId}` : '';
-      const timeBucket = Number.isNaN(date.getTime()) ? tx.createdAt : date.toISOString();
+      const reasonIdentity = (tx.reason || '').trim();
       const groupKey = explicitCode
         ? `code:${explicitCode}`
         : sourceIdentity
-          ? `${tx.transactionType}:${sourceIdentity}:${timeBucket}`
+          ? [tx.transactionType, sourceIdentity, reasonIdentity].join(':')
           : `row:${tx.id}`;
-      const groupedRows = transactions.filter(other => {
-        const otherCode = other.transactionCode || other.groupCode || other.code || '';
-        if (explicitCode) return otherCode === explicitCode;
-        if (!sourceIdentity) return other.id === tx.id;
-        return other.transactionType === tx.transactionType
-          && other.sourceId === tx.sourceId
-          && (other.sourceType || '') === (tx.sourceType || '')
-          && other.createdAt === tx.createdAt;
-      });
-      const transactionCode = explicitCode || groupedRows[0]?.id || tx.id;
+      const transactionCode = explicitCode;
       const sourceLabel = tx.sourceCode || tx.referenceCode || tx.sourceId || '';
       return {
         id: tx.id,
@@ -389,7 +380,7 @@ export class AdminInventoryPageComponent implements OnInit {
       return tx.transactionType === this.transactionTypeForAction(row.action)
         && (tx.sourceId || '') === row.sourceId
         && (tx.sourceType || '') === row.sourceType
-        && tx.createdAt === row.createdAt;
+        && (tx.reason || '') === (row.reason || '');
     });
     this.selectedHistoryRow.set(row);
     this.selectedTransactionGroup.set(group.length ? group : this.rawTransactions().filter(tx => tx.id === row.id));
