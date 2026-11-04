@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, HostListener, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.component';
 import { formatStaffWeekRange } from '../utils/staff-week-range';
 import { AdminStaffApiService, staffTodayISO } from '../services/admin-staff-api.service';
@@ -28,7 +29,7 @@ const readable = (iso: string): string => iso.slice(8, 10) + '/' + iso.slice(5, 
 @Component({
   selector: 'app-admin-staff-schedule',
   standalone: true,
-  imports: [AdminCatalogShellComponent, RouterLink, AdminStaffWeekNavComponent, StaffShiftAssignmentDialogComponent, StaffBulkShiftDialogComponent],
+  imports: [AdminCatalogShellComponent, AdminDataStateComponent, RouterLink, AdminStaffWeekNavComponent, StaffShiftAssignmentDialogComponent, StaffBulkShiftDialogComponent],
   templateUrl: './admin-staff-schedule.component.html',
   styleUrl: './admin-staff-schedule.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -90,6 +91,10 @@ export class AdminStaffScheduleComponent {
   selectBranch(value: string) { if (!this.branches().some(b=>b.id===value)) return; this.clearBulk(); this.branch.set(value); this.createdOptions.set([]); }
   changeWeek(delta: number) { this.clearBulk(); this.monday.set(dateFor(this.monday(), delta * 7)); }
   goToday(): void { this.clearBulk(); this.monday.set(mondayOf(todayIso())); }
+  retrySchedule(): void {
+    if (this.staffApi.error()) this.staffApi.loadRoster(true);
+    else this.staffApi.loadWeek(this.monday(), true);
+  }
 
   selectDate(value: string): void {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return;
@@ -202,7 +207,7 @@ export class AdminStaffScheduleComponent {
       },
       error: () => {
         this.createSaving.set(false);
-        this.templateError.set('Không thể tạo ca trên hệ thống. Kiểm tra quyền và API POST /shifts của Backend; chưa có ca nào được lưu.');
+        this.templateError.set('Không thể tạo ca làm việc. Vui lòng kiểm tra quyền truy cập và thử lại; chưa có thay đổi nào được lưu.');
       },
     });
   }
