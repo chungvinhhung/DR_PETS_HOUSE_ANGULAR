@@ -9,6 +9,7 @@ import { AdminToastService, adminErrorMessage } from '../../../../shared/service
 import { forkJoin, finalize } from 'rxjs';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminStaffApiService, staffTodayISO, staffWeekMonday } from '../services/admin-staff-api.service';
+import { AdminUsersService } from '../../users/services/admin-users.service';
 import {
   JOB_LABELS, JOB_PREFIX, JobRole, STAFF_SHIFTS_PREVIEW,
   StaffPreview, StaffShiftPreview,
@@ -47,6 +48,7 @@ export class AdminStaffFormComponent {
   private readonly session = inject(AuthSessionService);
   private readonly cdr = inject(ChangeDetectorRef);
   readonly staffApi = inject(AdminStaffApiService);
+  private readonly usersApi = inject(AdminUsersService);
   private hydrated = false;
 
   readonly isEdit = this.route.snapshot.data['mode'] === 'edit';
@@ -70,6 +72,7 @@ export class AdminStaffFormComponent {
   showPassword = false;
   resetPasswordOpen = false;
   accountStatusDialogOpen = false;
+  accountStatusBusy = false;
   newPassword = '';
   confirmPassword = '';
   resetVisible = false;
@@ -78,7 +81,9 @@ export class AdminStaffFormComponent {
   resetBusy = false;
   saving = false;
 
-  get canManageAccount(): boolean { return this.isEdit && this.session.hasAnyRole(['ADMIN']); }
+  get canManageAccount(): boolean {
+    return this.isEdit && this.session.hasAnyRole(['ADMIN']) && !!this.staff?.userId;
+  }
 
   openAccountStatusDialog(): void {
     if (!this.canManageAccount || !this.staff) return;
@@ -88,8 +93,20 @@ export class AdminStaffFormComponent {
     this.accountStatusDialogOpen = false;
   }
   confirmAccountStatusPreview(): void {
-    this.accountStatusDialogOpen = false;
-    this.toast.show('Chưa có API chặn/bỏ chặn tài khoản. Trạng thái chưa thay đổi.', 'info');
+    const staff = this.staff;
+    if (!this.canManageAccount || !staff?.userId || this.accountStatusBusy) return;
+    const next = staff.accountStatus === 'BLOCKED' ? 'ACTIVE' : 'BLOCKED';
+    this.accountStatusBusy = true;
+    this.usersApi.updateStatus(staff.userId, { accountStatus: next })
+      .pipe(finalize(() => { this.accountStatusBusy = false; this.cdr.markForCheck(); }))
+      .subscribe({
+        next: () => {
+          this.accountStatusDialogOpen = false;
+          this.staffApi.loadRoster(true);
+          this.toast.show(next === 'BLOCKED' ? 'Đã chặn tài khoản nhân viên.' : 'Đã bỏ chặn tài khoản nhân viên.', 'success');
+        },
+        error: err => this.toast.show(adminErrorMessage(err, 'Không thể cập nhật trạng thái tài khoản.'), 'error'),
+      });
   }
 
   openResetPassword(): void {
