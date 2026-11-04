@@ -32,10 +32,6 @@ import { AdminDataStateComponent } from '../../../../shared/admin-data-state/adm
         <div>
           <p class="eyebrow">AUTH / RBAC</p>
           <h1>Quản lý tài khoản nội bộ</h1>
-          <p>
-            Admin có thể tạo tài khoản và thay đổi vai trò/trạng thái. Manager chỉ được
-            xem danh sách trong phạm vi chi nhánh được phân công.
-          </p>
         </div>
         <button type="button" (click)="loadUsers()" [disabled]="loading()">
           {{ loading() ? 'Đang tải...' : 'Tải lại' }}
@@ -47,7 +43,6 @@ import { AdminDataStateComponent } from '../../../../shared/admin-data-state/adm
           <div class="panel-heading">
             <div>
               <h2>Tạo tài khoản nội bộ</h2>
-              <p>Chỉ ADMIN được phép thực hiện thao tác này.</p>
             </div>
           </div>
 
