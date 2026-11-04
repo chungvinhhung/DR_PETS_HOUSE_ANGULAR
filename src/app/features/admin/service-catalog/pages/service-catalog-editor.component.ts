@@ -15,6 +15,7 @@ import { catchError, firstValueFrom, forkJoin, from, map, mergeMap, of, switchMa
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { CatalogService, ServiceApiRecord, ServiceBookingMode, ServicePriceVariant, ServiceWrite } from '../models/service-catalog.model';
 import { ServiceCatalogApiService, serviceFromApi } from '../services/service-catalog-api.service';
@@ -43,7 +44,7 @@ const TIER_WEIGHTS = [
 @Component({
   selector: 'app-service-catalog-editor',
   standalone: true,
-  imports: [FormsModule, RouterLink, AdminCatalogShellComponent, ServiceBranchConfigFlowComponent],
+  imports: [FormsModule, RouterLink, AdminCatalogShellComponent, AdminDataStateComponent, ServiceBranchConfigFlowComponent],
   templateUrl: './service-catalog-editor.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
