@@ -21,6 +21,7 @@ export interface ServiceWrite {
   requiredStaffRole: 'CARE_STAFF_GROOMER' | 'NURSE' | 'VETERINARIAN';
   bookingMode: ServiceBookingMode;
   status: ServiceMasterStatus;
+  defaultMaterials?: ServiceDefaultMaterial[];
 }
 export interface ServiceApiRecord extends ServiceWrite {
   id: string;
