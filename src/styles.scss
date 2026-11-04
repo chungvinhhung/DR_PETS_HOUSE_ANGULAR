@@ -6379,8 +6379,10 @@ app-admin-order-management .order-admin__kpis,
 app-admin-appointments-page .appointments__kpis{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:12px;
-  margin:0 0 16px;
+  gap:14px;
+  width:100%;
+  max-width:960px;
+  margin:0 auto 18px;
   padding:0;
   border:0;
   border-radius:0;
@@ -6395,10 +6397,10 @@ app-admin-appointments-page .appointments__kpi{
   flex-direction:column;
   align-items:flex-start;
   justify-content:center;
-  gap:7px;
+  gap:5px;
   min-width:0;
-  min-height:86px;
-  padding:13px 18px;
+  min-height:80px;
+  padding:12px 16px;
   border:1px solid #dce5f0;
   border-radius:10px;
   background:#f8fafc;
@@ -6451,13 +6453,15 @@ app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
   app-admin-order-management .order-admin__kpis,
   app-admin-appointments-page .appointments__kpis{
     grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:10px;
+    max-width:520px;
+    gap:12px;
   }
 }
 @media(max-width:540px){
   app-admin-order-management .order-admin__kpis,
   app-admin-appointments-page .appointments__kpis{
     grid-template-columns:1fr;
+    max-width:320px;
     gap:8px;
   }
   app-admin-order-management .order-admin__kpi,
