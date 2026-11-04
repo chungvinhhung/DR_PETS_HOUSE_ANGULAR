@@ -16,6 +16,9 @@
           @if (appointment.status==='CONFIRMED' && canInspectActions()) {
             <button type="button" class="btn btn--outline" (click)="startAction('reschedule')">Đổi lịch</button>
             <button type="button" class="btn btn--danger" (click)="startAction('cancel')">Hủy lịch</button>
+            @if (appointment.noShowWarning) {
+              <button type="button" class="btn btn--outline" (click)="startAction('no-show')">Không đến</button>
+            }
             <button type="button" class="btn btn--primary" (click)="startAction('status')">Bắt đầu phục vụ</button>
           } @else if (appointment.status==='COMPLETED') {
             <a class="btn btn--primary" routerLink="/admin/appointments">Quay lại danh sách</a>
@@ -125,7 +128,7 @@
     <div class="overlay">
       <section class="modal" role="dialog" aria-modal="true" aria-labelledby="appointment-action-heading">
         <div class="modal-heading">
-          <h2 id="appointment-action-heading">{{action==='reschedule'?'Đổi lịch':action==='cancel'?'Hủy lịch':'Bắt đầu phục vụ'}}</h2>
+          <h2 id="appointment-action-heading">{{action==='reschedule'?'Đổi lịch':action==='cancel'?'Hủy lịch':action==='no-show'?'Đánh dấu không đến':'Bắt đầu phục vụ'}}</h2>
           <button class="close" type="button" aria-label="Đóng" (click)="closeDialog()">
             <img src="/assets/admin-inventory/close-outlined.svg" alt="" aria-hidden="true">
           </button>
@@ -161,6 +164,9 @@
         }
         @if (action==='status') {
           <p class="hint hint--info">Bắt đầu phục vụ sẽ khởi động dịch vụ đầu tiên chưa thực hiện và chuyển lịch sang Đang thực hiện.</p>
+        }
+        @if (action==='no-show') {
+          <p class="hint hint--warning">Hệ thống đã xác định lịch đủ điều kiện đánh dấu Không đến. Thao tác này sẽ giải phóng khung giờ và áp dụng chính sách hoàn/khấu trừ của Backend.</p>
         }
         <label class="modal-label"><span class="modal-field-label">Lý do / ghi chú xử lý <b>*</b></span>
           <textarea rows="4" [value]="reason()" (input)="reason.set($any($event.target).value)" placeholder="Nhập ghi chú xử lý..."></textarea>
