@@ -53,17 +53,7 @@ export function overlaps(a: DayShiftDraft, b: DayShiftDraft): boolean {
       </div>
       <button type="button" class="shift-assign-new" (click)="requestCreate.emit()">+ Tạo ca làm việc mới</button>
       @if (!options.length) { <p class="shift-assign-hint">Chưa có danh sách mẫu ca được đồng bộ từ hệ thống.</p> }
-      <fieldset class="shift-assign-scope">
-        <legend>Phạm vi áp dụng</legend>
-        <label><input type="radio" name="repeatScope" value="day" [checked]="scope()==='day'" (change)="scope.set('day')"> Chỉ ngày này</label>
-        <label><input type="radio" name="repeatScope" value="weekly" [checked]="scope()==='weekly'" (change)="scope.set('weekly')"> Lặp lại hằng tuần</label>
-      </fieldset>
-      @if (scope() === 'weekly') {
-        <div class="shift-assign-validity"><h3>Thời gian hiệu lực</h3>
-          <label>Từ ngày<input type="date" [value]="from()" (change)="from.set($any($event.target).value)"></label>
-          <label>Đến ngày<input type="date" [value]="to()" (change)="to.set($any($event.target).value)"></label>
-        </div>
-      }
+      <p class="shift-assign-hint">Thay đổi trong modal này chỉ áp dụng cho ngày đang chọn.</p>
       @if (error()) { <p role="alert" class="shift-assign-error">{{ error() }}</p> }
       @if (confirmDiscard()) {
         <div class="shift-assign-discard"><p>Bỏ các thay đổi chưa lưu?</p>
@@ -122,10 +112,6 @@ export class StaffShiftAssignmentDialogComponent {
   save():void {
     const items=this.draft();
     if(items.some((v,i)=>items.slice(i+1).some(y=>overlaps(v,y)))) {this.error.set('Các ca làm việc đang bị trùng giờ.');return;}
-    if(this.scope()==='weekly' && (!this.from()||!this.to()||this.to()<this.from())) {
-      this.error.set('Vui lòng nhập khoảng thời gian hiệu lực hợp lệ.');return;
-    }
-    // Preview contract only. Do not signal server persistence.
-    this.checked.emit({draft:items,scope:this.scope(),from:this.from(),to:this.to()});
+    this.checked.emit({draft:items,scope:'day',from:this.isoDate,to:this.isoDate});
   }
 }
