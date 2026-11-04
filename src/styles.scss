@@ -1477,7 +1477,7 @@ app-admin-order-management .order-admin__table--returns thead th {
   height:44px;
   padding:10px 16px;
   color:#111827;
-  background:#eaf3fc;
+  background:#f2f7fc;
   font-size:12px;
   font-weight:600;
   white-space:nowrap
@@ -2565,7 +2565,7 @@ app-admin-order-management table.order-admin__table--returns.web2-product-table 
   padding:0 14px !important;
   border:0 !important;
   border-bottom:1px solid #e2e8f0 !important;
-  background:#eaf3fc !important;
+  background:#f2f7fc !important;
   color:#17243a !important;
   font:700 12px/1.4 Roboto,Arial,sans-serif !important;
   text-align:left;
@@ -6216,7 +6216,7 @@ app-admin-order-management .order-admin__modal-actions .order-admin__btn--primar
   app-admin-content-list,
   app-admin-moderation-list
 ) thead th{
-  background:#eaf3fc!important;
+  background:#f2f7fc!important;
 }
 
 /* Management filter selects use the same light focus/open treatment everywhere. */
@@ -6246,5 +6246,5 @@ app-admin-order-management .order-admin__modal-actions .order-admin__btn--primar
   app-admin-content-list,
   app-admin-moderation-list
 ) :is(table, .web2-admin-table) thead th{
-  background:#eaf3fc!important;
+  background:#f2f7fc!important;
 }
