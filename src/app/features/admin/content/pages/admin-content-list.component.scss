@@ -39,7 +39,10 @@
 .content-admin .web2-filterbar .toolbar-selects select.web2-admin-filter-select:first-child{box-sizing:border-box;flex:0 0 220px;width:220px!important;min-width:220px}
 .content-admin .web2-filterbar .toolbar-selects select.web2-admin-filter-select:last-child{box-sizing:border-box;flex:0 0 188px;width:188px!important;min-width:188px}
 .content-admin .web2-filterbar>.web2-add-button{flex:0 0 auto;margin-left:0!important}
-@media(max-width:760px){
+@media(max-width:1450px){
+  .content-admin .web2-filterbar{flex-wrap:wrap!important}
   .content-admin .web2-filterbar .toolbar-selects{flex-wrap:wrap!important}
+}
+@media(max-width:760px){
   .content-admin .web2-filterbar .toolbar-selects select.web2-admin-filter-select{max-width:100%}
 }
