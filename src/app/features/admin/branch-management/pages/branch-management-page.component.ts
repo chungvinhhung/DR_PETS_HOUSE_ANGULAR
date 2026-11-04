@@ -183,6 +183,7 @@ export class BranchManagementPageComponent {
         this.branchRows.set(rows.map((row) => this.fromApi(row)));
         this.branchListLoading.set(false);
         this.fetchEnabledCountsForVisibleBranches();
+        this.fetchInventorySummariesForVisibleBranches();
       },
       error: () => {
         this.branchListLoading.set(false);
@@ -190,6 +191,35 @@ export class BranchManagementPageComponent {
       },
     });
   }
+  private fetchInventorySummariesForVisibleBranches(): void {
+    for (const row of this.visibleBranches) {
+      this.api.getInventorySummary(row.id).pipe(
+        catchError(() => of(null)),
+        takeUntilDestroyed(this.destroyRef),
+      ).subscribe(summary => {
+        if (!summary) return;
+        this.branchRows.update(all => all.map(branch => branch.id === row.id ? {
+          ...branch,
+          inventory: {
+            total: summary.totalItems,
+            low: summary.lowStockItems,
+            out: summary.outOfStockItems,
+          },
+        } : branch));
+        if (this.detailRecord()?.id === row.id) {
+          this.detailRecord.update(current => current ? {
+            ...current,
+            inventory: {
+              total: summary.totalItems,
+              low: summary.lowStockItems,
+              out: summary.outOfStockItems,
+            },
+          } : current);
+        }
+      });
+    }
+  }
+
   private fetchEnabledCountsForVisibleBranches(): void {
     // BE GET /branches does not include enabledServiceCount.
     // Only actual GET service-configs results may populate this column.
