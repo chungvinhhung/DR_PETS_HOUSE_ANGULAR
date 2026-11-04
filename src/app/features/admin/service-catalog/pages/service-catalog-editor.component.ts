@@ -269,7 +269,7 @@ export class ServiceCatalogEditorComponent {
                 ? 'Chưa thể bật'
                 : config.enabled && config.capacity > 0 ? 'Đang bật' : 'Đang tắt';
               const availability = service?.availabilityText ||
-                (this.bookingMode === 'CONTACT_ONLY' ? 'Liên hệ' : 'Khả dụng do Backend tính');
+                (this.bookingMode === 'CONTACT_ONLY' ? 'Liên hệ' : 'Khả dụng theo lịch');
               this.updateBranchSummary(
                 branch.id,
                 `${status} · Sức chứa ${config.capacity} · ${availability}`,
@@ -613,21 +613,36 @@ export class ServiceCatalogEditorComponent {
         defaultQuantity: material.quantity ?? 1,
         unit: material.unit.trim(),
       })),
+      ...(this.isNew ? {
+        autoEnableActiveBranches: this.active,
+        branchConfigs: this.stagedBranchConfigs().map((item) => ({
+          branchId: item.branchId,
+          enabled: item.enabled && this.active,
+          capacity: item.capacity,
+          availability: [],
+        })),
+      } : {}),
       ...prices,
     };
     this.saving.set(true);
+    const updateBody = this.pricingDirty
+      ? body
+      : (({ basePrice: _price, priceVariants: _variants, autoEnableActiveBranches: _auto, branchConfigs: _branches, ...rest }) => rest)(body);
+    const shouldArchive = !this.isNew && this.source?.status === 'ACTIVE' && !this.active;
     const request = this.isNew
       ? this.repository.create(body, this.saveIdempotencyKey ??= crypto.randomUUID())
-      : this.repository.update(this.serviceId!, this.pricingDirty
-        ? body : (({ basePrice: _price, priceVariants: _variants, ...rest }) => rest)(body));
+      : this.repository.update(this.serviceId!, updateBody).pipe(
+          switchMap((saved) => shouldArchive
+            ? this.repository.archive(saved.id, crypto.randomUUID())
+            : of(saved)),
+        );
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (saved) => {
         this.dirty.set(false);
-        if (this.isNew && saved.id) {
-          // A successful POST must never be retried when branch provisioning fails.
+        if (!this.isNew && this.active && saved.id) {
+          // Existing services may predate automatic branch provisioning.
+          // Reconcile only missing configs; creation is already atomic in BE.
           this.pendingActivationServiceId.set(saved.id);
-        }
-        if ((this.active || this.stagedBranchConfigs().length > 0) && saved.id) {
           void this.enableUnconfiguredBranches(saved.id);
           return;
         }
@@ -643,13 +658,9 @@ export class ServiceCatalogEditorComponent {
   }
 
   /**
-   * FB #16: A newly created active Service defaults to being offered at all
-   * currently active branches. Persist this, never fake branch status in UI.
-   * Existing explicit branch settings always win: only missing configs are seeded.
-   *
-   * The current BE has no atomic "enable at all branches" operation. This
-   * retryable reconciliation is idempotent but does not cover branches created
-   * in the future. BE must enforce that long-term business rule.
+   * Existing services created before atomic branch provisioning may be missing
+   * BranchServiceConfig rows. Reconcile missing configs only for those records.
+   * New services send branchConfigs/autoEnableActiveBranches in the create payload.
    */
   async enableUnconfiguredBranches(serviceId: string): Promise<void> {
     if (!serviceId) return;
