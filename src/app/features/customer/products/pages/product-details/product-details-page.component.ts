@@ -43,20 +43,6 @@ export class ProductDetailsPageComponent implements OnInit {
   protected readonly productImages: any = productImages;
   protected readonly formatReviewTime: any = formatReviewTime;
 
-  // --- Giá trị tính toán (computed) ---
-  readonly thumbnails = computed<any>(() => this.product()?.images?.length ? this.product().images : [productImages.detailImage]);
-  readonly selectedImage = computed<any>(() => (this.thumbnails() as any)[this.selectedImageIdx()] || this.thumbnails()[0]);
-  readonly totalReviewPages = computed<any>(() => this.reviewsData().totalPages || 1);
-  readonly reviewItems = computed<any>(() => Array.isArray(this.reviewsData().items) ? this.reviewsData().items : []);
-  readonly SIM_CARD_WIDTH = computed<any>(() => 170);
-  readonly SIM_CARD_GAP = computed<any>(() => 20);
-  readonly SIM_VISIBLE_COUNT = computed<any>(() => 6);
-  readonly safeSimilarProducts = computed<any>(() => Array.isArray(this.similarProducts()) ? this.similarProducts() : []);
-  readonly canGoSimPrev = computed<any>(() => this.simOffset() > 0);
-  readonly canGoSimNext = computed<any>(() => this.simOffset() < this.safeSimilarProducts().length - Number(this.SIM_VISIBLE_COUNT()));
-  readonly selectedVariant = computed<any>(() => this.product().variants?.[this.selectedTypeIdx()]);
-  readonly dropdownOptions = computed<any>(() => this.selectedVariant()?.sizes ?? []);
-
   // --- Trạng thái (signal = useState / useRef) ---
   readonly product = signal<any>(null);
   readonly reviewsData = signal<any>(EMPTY_REVIEWS_DATA);
@@ -64,6 +50,7 @@ export class ProductDetailsPageComponent implements OnInit {
   readonly isLoading = signal<any>(true);
   readonly loadError = signal<any>("");
   readonly selectedImageIdx = signal<any>(0);
+  readonly variantImage = signal<string | null>(null);
   readonly thumbHovered = signal<any>(null);
   readonly selectedTypeIdx = signal<any>(0);
   readonly dropdownOpen = signal<any>(false);
@@ -75,9 +62,87 @@ export class ProductDetailsPageComponent implements OnInit {
   readonly tabTransitioning = signal<any>(false);
   readonly cartAdded = signal<any>(false);
   readonly simOffset = signal<any>(0);
+  readonly notifyEmail = signal<string>('');
+  readonly notifySubscribed = signal<boolean>(false);
+  readonly notifyError = signal<string>('');
+
   readonly descriptionRef = viewChild<ElementRef<any>>('descriptionRef');
   readonly dropdownRef = viewChild<ElementRef<any>>('dropdownRef');
   readonly tabSectionRef = viewChild<ElementRef<any>>('tabSectionRef');
+  readonly similarSectionRef = viewChild<ElementRef<any>>('similarSectionRef');
+
+  // --- Giá trị tính toán (computed) ---
+  readonly thumbnails = computed<any>(() => this.product()?.images?.length ? this.product().images : [productImages.detailImage]);
+  readonly selectedImage = computed<any>(() => this.variantImage() || (this.thumbnails() as any)[this.selectedImageIdx()] || this.thumbnails()[0]);
+  readonly totalReviewPages = computed<any>(() => this.reviewsData().totalPages || 1);
+  readonly reviewItems = computed<any>(() => Array.isArray(this.reviewsData().items) ? this.reviewsData().items : []);
+  readonly SIM_CARD_WIDTH = computed<any>(() => 170);
+  readonly SIM_CARD_GAP = computed<any>(() => 20);
+  readonly SIM_VISIBLE_COUNT = computed<any>(() => 6);
+  readonly safeSimilarProducts = computed<any>(() => Array.isArray(this.similarProducts()) ? this.similarProducts() : []);
+  readonly canGoSimPrev = computed<any>(() => this.simOffset() > 0);
+  readonly canGoSimNext = computed<any>(() => this.simOffset() < this.safeSimilarProducts().length - Number(this.SIM_VISIBLE_COUNT()));
+  readonly selectedVariant = computed<any>(() => this.product()?.variants?.[this.selectedTypeIdx()]);
+  readonly dropdownOptions = computed<any>(() => this.selectedVariant()?.sizes ?? []);
+
+  readonly hasMultipleVariants = computed<boolean>(() => {
+    const variants = this.product()?.variants;
+    if (!variants || !variants.length) return false;
+    if (variants.length > 1) return true;
+    const single = variants[0];
+    return !!single?.label && single.label !== 'Mặc định' && single.label !== 'Tiêu chuẩn';
+  });
+
+  readonly currentPrice = computed<number>(() => {
+    const variant = this.selectedVariant();
+    if (variant && variant.price !== undefined && variant.price !== null) {
+      return Number(variant.price);
+    }
+    return Number(this.product()?.price ?? 0);
+  });
+
+  readonly currentOriginalPrice = computed<number | undefined>(() => {
+    const variant = this.selectedVariant();
+    if (variant) {
+      return variant.originalPrice && Number(variant.originalPrice) > this.currentPrice()
+        ? Number(variant.originalPrice)
+        : undefined;
+    }
+    return this.product()?.originalPrice ? Number(this.product().originalPrice) : undefined;
+  });
+
+  readonly currentDiscountPercent = computed<number | undefined>(() => {
+    const variant = this.selectedVariant();
+    if (variant) {
+      if (variant.discountPercent !== undefined && variant.discountPercent !== null && Number(variant.discountPercent) > 0) {
+        return Number(variant.discountPercent);
+      }
+      const price = this.currentPrice();
+      const orig = this.currentOriginalPrice();
+      if (orig && orig > price && price > 0) {
+        return Math.round(((orig - price) / orig) * 100);
+      }
+      return undefined;
+    }
+    return this.product()?.discountPercent ? Number(this.product().discountPercent) : undefined;
+  });
+
+  readonly currentStock = computed<number>(() => {
+    const variant = this.selectedVariant();
+    if (variant) {
+      const stock = variant.availableStock ?? variant.stockQuantity;
+      if (stock !== undefined && stock !== null) {
+        return Number(stock);
+      }
+    }
+    const prodStock = this.product()?.totalStock ?? this.product()?.stockQuantity ?? this.product()?.availableStock;
+    return prodStock !== undefined && prodStock !== null ? Number(prodStock) : 0;
+  });
+
+  readonly isOutOfStock = computed<boolean>(() => {
+    if (this.product()?.outOfStock) return true;
+    return this.currentStock() <= 0;
+  });
 
   constructor() {
     // useEffect(..., [productId])
@@ -93,6 +158,11 @@ export class ProductDetailsPageComponent implements OnInit {
         let active = true;
         this.isLoading.set(true);
         this.loadError.set("");
+        this.selectedTypeIdx.set(0);
+        this.variantImage.set(null);
+        this.notifySubscribed.set(false);
+        this.notifyEmail.set('');
+        this.notifyError.set('');
 
         this.productApi.getProductDetails(this.navService.params()['productId'])
           .then((detail: any) => {
@@ -179,6 +249,29 @@ export class ProductDetailsPageComponent implements OnInit {
     this.isReviewTab.set(this.showWriteReview());
   }
 
+  protected selectVariant(i: number, variant: any) {
+    this.selectedTypeIdx.set(i);
+    this.dropdownValue.set(variant?.sizes?.[0] ?? "");
+    if (variant?.image) {
+      this.variantImage.set(variant.image);
+      const matchIdx = this.thumbnails().findIndex((img: string) => img === variant.image);
+      if (matchIdx !== -1) {
+        this.selectedImageIdx.set(matchIdx);
+      }
+    } else {
+      this.variantImage.set(null);
+    }
+    const stock = variant?.availableStock ?? variant?.stockQuantity ?? 0;
+    if (stock > 0 && this.quantity() > stock) {
+      this.quantity.set(stock);
+    }
+  }
+
+  protected selectThumbnail(i: number) {
+    this.variantImage.set(null);
+    this.selectedImageIdx.set(i);
+  }
+
   protected async handleLike(reviewId: any) {
     if (!this.navService.params()['productId']) return;
     try {
@@ -240,12 +333,17 @@ export class ProductDetailsPageComponent implements OnInit {
   }
 
   protected handleIncrement() {
+    const maxStock = this.currentStock();
+    if (maxStock > 0 && this.quantity() >= maxStock) {
+      return;
+    }
     return this.quantity.update((q: any) => q + 1);
   }
 
   protected handleAddToCart() {
-    const variant = this.product()?.variants?.[this.selectedTypeIdx()];
-    const itemPrice = variant?.price ?? this.product().price;
+    if (this.isOutOfStock()) return;
+    const variant = this.selectedVariant();
+    const itemPrice = this.currentPrice();
     this.cartService.addToCart({
       id: `${this.product().id}:${variant?.id ?? "default"}:${this.dropdownValue() || "default"}`,
       productId: this.product().id,
@@ -253,7 +351,7 @@ export class ProductDetailsPageComponent implements OnInit {
       name: this.product().name,
       price: itemPrice,
       image: this.selectedImage(),
-      type: variant?.name,
+      type: variant?.label || variant?.name || 'Mặc định',
       size: this.dropdownValue(),
       variants: this.product().variants,
       qty: this.quantity(),
@@ -264,8 +362,9 @@ export class ProductDetailsPageComponent implements OnInit {
   }
 
   protected handleBuyNow() {
-    const variant = this.product()?.variants?.[this.selectedTypeIdx()];
-    const itemPrice = variant?.price ?? this.product().price;
+    if (this.isOutOfStock()) return;
+    const variant = this.selectedVariant();
+    const itemPrice = this.currentPrice();
     this.cartService.addToCart({
       id: `${this.product().id}:${variant?.id ?? "default"}:${this.dropdownValue() || "default"}`,
       productId: this.product().id,
@@ -273,12 +372,30 @@ export class ProductDetailsPageComponent implements OnInit {
       name: this.product().name,
       price: itemPrice,
       image: this.selectedImage(),
-      type: variant?.name,
+      type: variant?.label || variant?.name || 'Mặc định',
       size: this.dropdownValue(),
       variants: this.product().variants,
       qty: this.quantity(),
     });
     this.cartService.openCheckout();
+  }
+
+  protected handleSubscribeNotify() {
+    const email = this.notifyEmail().trim();
+    if (!email || !email.includes('@')) {
+      this.notifyError.set('Vui lòng nhập địa chỉ email hợp lệ.');
+      return;
+    }
+    this.notifyError.set('');
+    this.notifySubscribed.set(true);
+  }
+
+  protected handleFindSimilar() {
+    if (this.similarSectionRef()?.nativeElement) {
+      this.similarSectionRef()?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      this.navService.navigate('/products');
+    }
   }
 
   protected handleReviewPage(page: any) {
@@ -323,12 +440,11 @@ export class ProductDetailsPageComponent implements OnInit {
 
   /** (tự sinh) global Math không dùng trực tiếp được trong template */
   protected compute1(): any {
-    return this.product().discountPercent || Math.round((1 - this.product().price / this.product().originalPrice) * 100);
+    return this.currentDiscountPercent() ?? this.product()?.discountPercent ?? 0;
   }
 
   protected handle2(i: any, variant: any) {
-    this.selectedTypeIdx.set(i);
-    this.dropdownValue.set(variant.sizes?.[0] ?? "");
+    this.selectVariant(i, variant);
   }
 
   protected handle3() {

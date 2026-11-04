@@ -10,12 +10,13 @@ export function formatPrice(value: any) {
 }
 
 export function normalizeVariantOption(variant: any) {
+  const name = variant.label ?? variant.name ?? variant.variant_name ?? "Mặc định";
   return {
     ...variant,
     id: variant.id ?? variant.variant_id,
-    name: variant.name ?? variant.variant_name ?? "Mặc định",
-    price: variant.price ?? 0,
+    label: name,
+    name,
+    price: variant.finalPrice ?? variant.price ?? 0,
     sizes: Array.isArray(variant.sizes) ? variant.sizes : [],
   };
 }
-

@@ -39,6 +39,8 @@ export class ProductPageComponent {
     return (this.selectedCategories()
       .map((selectedCategory: any) => this.categoryOptions().find((category: any) => category.index === selectedCategory)?.categoryId)
       .filter(Boolean) as any[]);
+  }, {
+    equal: (a: any[], b: any[]) => Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((val, i) => String(val) === String(b[i])),
   });
 
   // --- Trạng thái (signal = useState / useRef) ---
@@ -82,19 +84,24 @@ export class ProductPageComponent {
       if (typeof cleanup === 'function') this.destroyRef.onDestroy(cleanup);
     });
 
-    // useEffect(..., [loadProducts])
+    // useEffect(..., [loadProducts]) - Tự động tải lại trang 1 khi các bộ lọc thay đổi
     effect((onCleanup: any) => {
-      const cleanup = untracked(() => {
-        let active = true;
+      // Đăng ký dependencies để effect tự động kích hoạt khi bộ lọc / tìm kiếm / sắp xếp thay đổi
+      this.selectedCategoryIds();
+      this.selectedPrices();
+      this.searchQuery();
+      this.sortOrder();
+
+      let active = true;
+      untracked(() => {
         this.loadProducts(1, false).finally(() => {
           if (!active) return;
         });
-
-        return () => {
-          active = false;
-        };
       });
-      if (typeof cleanup === 'function') onCleanup(cleanup);
+
+      onCleanup(() => {
+        active = false;
+      });
     });
 
     // useEffect(..., [searchParams])

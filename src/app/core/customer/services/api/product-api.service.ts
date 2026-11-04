@@ -66,13 +66,46 @@ function normalizeImageUrl(value: any) {
 
 function normalizeVariant(variant: any) {
   if (!variant) return variant;
+  const label = getFirstValue(variant.label, variant.name, variant.variant_name, variant.sku, '');
+  const name = label || 'Mặc định';
+
+  const finalPrice = getFirstValue(variant.finalPrice, variant.final_price);
+  const rawPrice = getFirstValue(variant.price, variant.originalPrice, variant.original_price, 0);
+
+  const price = toNumber(finalPrice !== undefined && finalPrice !== null ? finalPrice : rawPrice);
+  let originalPrice = getFirstValue(
+    variant.originalPrice,
+    variant.original_price,
+    finalPrice !== undefined && rawPrice > finalPrice ? rawPrice : undefined
+  );
+  if (originalPrice !== undefined) {
+    originalPrice = toNumber(originalPrice);
+  }
+
+  const stock = toNumber(getFirstValue(variant.availableStock, variant.stockQuantity, variant.stock_quantity, variant.stock, 0));
+  const image = normalizeImageUrl(getFirstValue(variant.image, variant.imageUrl, variant.image_url));
+
+  const discountPercent = getFirstValue(
+    variant.discountPercent,
+    variant.discount_percent,
+    originalPrice && originalPrice > price && price > 0
+      ? Math.round(((originalPrice - price) / originalPrice) * 100)
+      : undefined
+  );
+
   return {
     ...variant,
-    id: getFirstValue(variant.id, variant.variant_id),
-    name: getFirstValue(variant.name, variant.variant_name),
-    price: getFirstValue(variant.price, 0),
-    originalPrice: getFirstValue(variant.originalPrice, variant.original_price),
-    stockQuantity: getFirstValue(variant.stockQuantity, variant.stock_quantity, 0),
+    id: String(getFirstValue(variant.id, variant.variant_id, variant.sku, '') || ''),
+    label: name,
+    name,
+    variant_name: name,
+    price,
+    originalPrice: originalPrice && originalPrice > price ? originalPrice : undefined,
+    discountPercent,
+    stockQuantity: stock,
+    availableStock: stock,
+    image,
+    imageUrl: image,
     sizes: Array.isArray(variant.sizes) ? variant.sizes : [],
   };
 }
@@ -153,6 +186,9 @@ export function normalizeProduct(product: any) {
     categoryIdx,
     variants: Array.isArray(source?.variants) ? source.variants.map(normalizeVariant) : [],
     variantId: source?.variants?.[0]?.id || source?.variants?.[0]?._id || null,
+    totalStock: toNumber(getFirstValue(source?.totalStock, source?.stockQuantity, source?.stock_quantity, 0)),
+    outOfStock: Boolean(source?.outOfStock || (source?.totalStock !== undefined && Number(source?.totalStock) <= 0)),
+    availableStock: toNumber(getFirstValue(source?.availableStock, source?.totalStock, source?.stockQuantity, 0)),
     stockQuantity: getFirstValue(source?.stockQuantity, source?.stock_quantity, source?.totalStock, 0),
     soldQuantity: getFirstValue(source?.soldQuantity, source?.sold_quantity, 0),
     reviewCount: getFirstValue(source?.reviewCount, source?._count?.reviews, source?.reviews_count, 0),
@@ -201,7 +237,7 @@ export class ProductApiService {
   
     return {
       products,
-      totalRows: Number(payload?.totalRows ?? products.length),
+      totalRows: Number(payload?.totalRows ?? payload?.total ?? payload?.totalItems ?? products.length),
       totalPages: Number(payload?.totalPages ?? 1),
       page: Number(params.page ?? 1),
       limit: Number(params.limit ?? (products.length || 10)),
