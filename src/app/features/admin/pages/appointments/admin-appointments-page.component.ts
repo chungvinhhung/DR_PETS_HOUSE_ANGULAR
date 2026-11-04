@@ -6,6 +6,7 @@ import { RouterLink } from '@angular/router';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import {
   AppointmentView, normalizeAppointmentPage, statusLabel,
@@ -14,7 +15,7 @@ import {
 @Component({
  selector: 'app-admin-appointments-page',
  standalone: true,
- imports: [RouterLink, AdminCatalogShellComponent],
+ imports: [RouterLink, AdminCatalogShellComponent, AdminDataStateComponent],
  changeDetection: ChangeDetectionStrategy.OnPush,
  template: `
 <app-admin-catalog-shell activeItem="appointments">
@@ -56,10 +57,9 @@ import {
   </section>
   <section class="panel">
     @if (loading()) {
-      <p class="message" role="status">Đang tải lịch hẹn...</p>
+      <app-admin-data-state kind="loading" title="Đang tải danh sách lịch hẹn" />
     } @else if (error()) {
-      <div class="message" role="alert"><p>{{error()}}</p>
-        <button type="button" class="secondary" (click)="load()">Thử lại</button></div>
+      <app-admin-data-state kind="error" title="Không thể tải danh sách lịch hẹn" [message]="error()" (retry)="load()" />
     } @else {
       <div class="scroll">
         <table>
