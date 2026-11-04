@@ -45,11 +45,11 @@ export class AdminOrderNotificationService {
     this.listForView().subscribe({ error: () => { /* Keep badge hidden until data loads. */ } });
   }
 
-  listForView(): Observable<OrderListResponse> {
+  listForView(force = false): Observable<OrderListResponse> {
     if (!this.syncAccount()) {
       return throwError(() => new Error('Bạn không có quyền xem danh sách đơn hàng.'));
     }
-    if (this.inFlight) return this.inFlight;
+    if (!force && this.inFlight) return this.inFlight;
     const accountId = this.accountId;
     const version = ++this.requestVersion;
     let request: Observable<OrderListResponse>;
@@ -68,6 +68,6 @@ export class AdminOrderNotificationService {
 
   refresh(): void {
     if (!this.syncAccount()) return;
-    this.listForView().subscribe({ error: () => { /* Preserve last confirmed count. */ } });
+    this.listForView(true).subscribe({ error: () => { /* Preserve last confirmed count. */ } });
   }
 }
