@@ -110,15 +110,17 @@
       <p class="staff-detail__disclaimer">
         Các trường chưa có dữ liệu sẽ hiển thị dấu gạch ngang.
       </p>
+    } @else if (staffApi.loading()) {
+      <app-admin-data-state kind="loading" title="Đang tải hồ sơ nhân viên" />
+    } @else if (staffApi.error()) {
+      <app-admin-data-state kind="error" title="Không thể tải hồ sơ nhân viên" [message]="staffApi.error()" />
     } @else {
-      @if (staffApi.loading()) { <p role="status">Đang tải hồ sơ nhân viên...</p> }
-      @if (staffApi.error()) { <p role="alert">{{ staffApi.error() }}</p> }
       <nav class="staff-detail__breadcrumb" aria-label="Đường dẫn">
         <a routerLink="/admin/staff">Nhân sự</a><span aria-hidden="true">›</span><strong>Không tìm thấy</strong>
       </nav>
       <section class="staff-detail__card" role="alert">
         <h1>Không tìm thấy nhân viên</h1>
-        <p>{{ staffApi.loading() ? 'Đang tải dữ liệu...' : staffApi.error() ? 'Chưa thể tải hồ sơ nhân viên.' : 'Không tìm thấy mã ' + staffId + '.' }}</p>
+        <p>{{ 'Không tìm thấy mã ' + staffId + '.' }}</p>
         <a class="staff-detail__button staff-detail__button--outline" routerLink="/admin/staff">Về danh sách nhân viên</a>
       </section>
     }
