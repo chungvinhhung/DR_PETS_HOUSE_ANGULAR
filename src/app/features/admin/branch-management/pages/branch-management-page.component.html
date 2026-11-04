@@ -46,21 +46,23 @@
               <th scope="col">Chi nhánh</th>
               <th scope="col">Địa chỉ</th>
               <th scope="col" class="web2-cell-center">Hotline</th>
+              <th scope="col" class="web2-cell-center">Nhân sự</th>
               <th scope="col" class="web2-cell-center">Dịch vụ đang bật</th>
               <th scope="col">Trạng thái</th>
               <th scope="col" class="branch-v2-page__actions-heading">Thao tác</th>
             </tr></thead>
             <tbody>
               @if (branchListLoading()) {
-                <tr><td colspan="6" class="branch-v2-page__empty"><app-admin-data-state kind="loading" title="Đang tải danh sách chi nhánh" /></td></tr>
+                <tr><td colspan="7" class="branch-v2-page__empty"><app-admin-data-state kind="loading" title="Đang tải danh sách chi nhánh" /></td></tr>
               } @else if (branchListError()) {
-                <tr><td colspan="6" class="branch-v2-page__empty"><app-admin-data-state kind="error" title="Không thể tải danh sách chi nhánh" [message]="branchListError()" (retry)="refreshBranches()" /></td></tr>
+                <tr><td colspan="7" class="branch-v2-page__empty"><app-admin-data-state kind="error" title="Không thể tải danh sách chi nhánh" [message]="branchListError()" (retry)="refreshBranches()" /></td></tr>
               } @else {
               @for (item of pagedBranches; track item.id) {
                 <tr>
                   <td>{{ item.name }}</td>
                   <td class="branch-v2-page__secondary">{{ item.address }}</td>
                   <td class="branch-v2-page__secondary web2-cell-center">{{ item.hotline || '—' }}</td>
+                  <td class="branch-v2-page__secondary web2-cell-center">{{ staffCount(item.id) === null ? '—' : staffCount(item.id) + ' nhân sự' }}</td>
                   <td class="branch-v2-page__secondary web2-cell-center">{{ item.enabledServiceCount === null ? '—' : item.enabledServiceCount + ' dịch vụ' }}</td>
                   <td><span class="branch-v2-page__badge"
                     [class.branch-v2-page__badge--off]="item.status !== 'ACTIVE'">
@@ -81,7 +83,7 @@
                   </td>
                 </tr>
               } @empty {
-                <tr><td colspan="6" class="branch-v2-page__empty"><app-admin-data-state kind="empty" title="Không tìm thấy chi nhánh" message="Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác." /></td></tr>
+                <tr><td colspan="7" class="branch-v2-page__empty"><app-admin-data-state kind="empty" title="Không tìm thấy chi nhánh" message="Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác." /></td></tr>
               }
               }
             </tbody>
