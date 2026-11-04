@@ -104,7 +104,7 @@
             </div>
           } @else if (orderInventoryGroups().length) {
             <div class="order-admin__inventory-list">
-              @for (group of orderInventoryGroups(); track group.code) {
+              @for (group of orderInventoryGroups(); track group.key) {
                 <div class="order-admin__inventory-entry">
                   <div class="order-admin__inventory-icon" aria-hidden="true">
                     <img src="/assets/admin-inventory/inventory-transaction.svg" width="19" height="19" alt="">
@@ -117,8 +117,8 @@
                   </div>
                   <button class="order-admin__inventory-link" type="button"
                     (click)="openInventoryGroup(group.code, group.rows)"
-                    [attr.aria-label]="'Xem giao dịch kho ' + group.code">
-                    {{ group.code }} ›
+                    [attr.aria-label]="group.code ? 'Xem giao dịch kho ' + group.code : 'Xem chi tiết giao dịch kho'">
+                    {{ group.code || 'Xem chi tiết' }} ›
                   </button>
                 </div>
               }
