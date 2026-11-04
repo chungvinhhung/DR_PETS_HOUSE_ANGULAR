@@ -216,10 +216,10 @@ export class AdminStaffApiService {
     forkJoin({
       profiles: this.getAll<StaffWire>('/staff'),
       branches: this.listBranches().pipe(catchError(() => of([] as StaffBranchOption[]))),
-      // Account directory is ADMIN-only; the /staff DTO supplies manager-visible names.
-      accounts: this.session.hasAnyRole(['ADMIN'])
-        ? this.listAccounts().pipe(catchError(() => of([] as UserWire[])))
-        : of([] as UserWire[]),
+      // /staff already returns the populated account fields required by this screen.
+      // Avoid a duplicate dependency on /admin/users, which is not mounted on the
+      // currently inspected foundation-v6 backend.
+      accounts: of([] as UserWire[]),
     }).subscribe({
       next: ({ profiles, branches, accounts }) => {
         this.branches.set(branches);
