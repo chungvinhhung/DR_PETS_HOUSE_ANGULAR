@@ -2,7 +2,7 @@ import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
@@ -93,7 +93,7 @@ function petFromWire(input: unknown): PetOption | null {
 @Component({
   selector: 'app-admin-appointment-create',
   standalone: true,
-  imports: [RouterLink, AdminCatalogShellComponent, AdminBreadcrumbComponent],
+  imports: [AdminCatalogShellComponent, AdminBreadcrumbComponent],
   templateUrl: './admin-appointment-create.component.html',
   styleUrl: './admin-appointment-create.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
