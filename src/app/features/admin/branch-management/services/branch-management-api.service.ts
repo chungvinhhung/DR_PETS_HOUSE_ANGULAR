@@ -67,6 +67,12 @@ export interface ServiceAvailabilityResponse {
   date: string;
   slots: readonly ServiceAvailabilitySlot[];
 }
+export interface BranchOperationSlotsResponse {
+  branchId: string;
+  date: string;
+  servicesCount: number;
+  servicesAvailability: readonly ServiceAvailabilityResponse[];
+}
 
 /** No Figma demo fallback: errors propagate to the page and display retry. */
 @Injectable({ providedIn: 'root' })
@@ -123,6 +129,14 @@ export class BranchManagementApiService {
       .set('serviceIds', serviceId)
       .set('date', date);
     return this.api.get<ServiceAvailabilityResponse>('/availability', { params });
+  }
+
+  getOperationSlots(branchId: string, date: string): Observable<BranchOperationSlotsResponse> {
+    const params = new HttpParams().set('date', date).set('includeFull', 'true');
+    return this.api.get<BranchOperationSlotsResponse>(
+      '/branches/' + encodeURIComponent(branchId) + '/operation-slots',
+      { params },
+    );
   }
 
   listServiceConfigs(branchId: string): Observable<BranchServiceApiRecord[]> {
