@@ -60,7 +60,7 @@ export class AdminStaffListComponent {
       staff.accountStatus === 'BLOCKED' ? 'Đã chặn' : 'Chưa có dữ liệu';
   }
   todayShift(staff: StaffPreview): string {
-    if (this.staffApi.shiftError()) return 'Không tải được';
+    if (this.staffApi.shiftError()) return 'Chưa tải được';
     if (this.staffApi.loadedMonday() !== staffWeekMonday(staffTodayISO())) return 'Đang tải...';
     const shifts = this.staffApi.shifts().filter(shift => shift.staffId === staff.id && shift.isoDate === staffTodayISO());
     return shifts.length ? shifts.map(shift => this.displayShift(shift.time)).join('; ') : '—';
