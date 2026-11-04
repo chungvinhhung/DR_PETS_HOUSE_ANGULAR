@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminOrderCheckoutService, AdminOrderQuote, AdminOrderQuoteRequest, AdminOrderCommitRequest } from '../services/admin-order-checkout.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import {
   AdminOrderCreateLookupService, OrderCustomerLookup,
@@ -41,7 +42,7 @@ const normalizePhone = (value: string): string => {
 @Component({
   selector: 'app-admin-order-create',
   standalone: true,
-  imports: [RouterLink, AdminCatalogShellComponent],
+  imports: [RouterLink, AdminCatalogShellComponent, AdminBreadcrumbComponent],
   templateUrl: './admin-order-create.component.html',
   styleUrl: './admin-order-create.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
