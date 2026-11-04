@@ -28,9 +28,11 @@
       </div>
     </header>
 
-    @if (staffApi.loading()) { <p role="status">Đang tải hồ sơ nhân viên...</p> }
-    @if (staffApi.error()) { <p role="alert">{{ staffApi.error() }}</p> }
-    @if (isEdit && !staff && !staffApi.loading()) {
+    @if (staffApi.loading()) {
+      <app-admin-data-state kind="loading" title="Đang tải hồ sơ nhân viên" />
+    } @else if (staffApi.error()) {
+      <app-admin-data-state kind="error" title="Không thể tải hồ sơ nhân viên" [message]="staffApi.error()" />
+    } @else if (isEdit && !staff) {
       <section class="panel" role="alert">
         <h2>Không tìm thấy nhân viên</h2>
         <p>Chưa tìm thấy mã {{ staffId }}. <a routerLink="/admin/staff">Quay lại danh sách nhân viên</a>.</p>
