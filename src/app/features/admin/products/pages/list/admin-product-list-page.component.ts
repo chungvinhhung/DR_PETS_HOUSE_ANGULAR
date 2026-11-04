@@ -360,7 +360,7 @@ export class AdminProductListPageComponent implements OnInit {
 
       // Never present page 1 as page N if a stale BE ignores page=.
       if (typeof result.page === 'number' && result.page !== page) {
-        throw new Error('Backend trả về trang không đúng. Vui lòng kiểm tra hỗ trợ phân trang page/limit.');
+        throw new Error('Danh sách sản phẩm chưa đồng bộ với trang đang xem. Vui lòng tải lại.');
       }
       const reported = result.totalItems ?? result.totalCount ?? result.total;
       const total = typeof reported === 'number' &&
@@ -375,12 +375,12 @@ export class AdminProductListPageComponent implements OnInit {
       }
       if (total !== null && result.items.length === 0 &&
           (page - 1) * this.pageSize < total) {
-        throw new Error('Backend trả về trang trống dù vẫn còn sản phẩm.');
+        throw new Error('Dữ liệu trang hiện tại chưa đồng bộ. Vui lòng thử lại.');
       }
       // The BE applies archived status filters before page/limit.
       if (result.items.some(product => this.archiveView
           ? product.status !== 'ARCHIVED' : product.status === 'ARCHIVED')) {
-        throw new Error('Backend trả về sản phẩm không đúng trạng thái lọc.');
+        throw new Error('Danh sách sản phẩm chưa khớp bộ lọc hiện tại. Vui lòng tải lại.');
       }
 
       this.products.set(result.items);
