@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { HttpParams } from '@angular/common/http';
+import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
@@ -57,6 +58,7 @@ export class AdminAppointmentDetailComponent {
   readonly rescheduleLoading = signal(false);
   readonly rescheduleLoadError = signal('');
   readonly actionError = signal('');
+  readonly actionBusy = signal(false);
   readonly statusTarget = signal('');
   readonly isManagerOrAdmin = computed(() => this.session.hasAnyRole(['ADMIN','MANAGER']));
   readonly isReceptionist = computed(() => this.session.user()?.systemRole === 'STAFF' &&
@@ -239,23 +241,12 @@ export class AdminAppointmentDetailComponent {
     });
   }
 
-  changeRescheduleBranch(branchId:string):void{
-    this.rescheduleBranchId.set(branchId);
-    this.rescheduleServiceId.set('');
-    this.rescheduleServices.set([]);
-    this.rescheduleSlots.set([]);
-    this.rescheduleSlotId.set('');
-    this.targetTime.set('');
-    this.rescheduleLoadError.set('');
-    this.loadRescheduleServices(branchId,'');
+  changeRescheduleBranch(_branchId:string):void {
+    // Current BE reschedule keeps the original branch.
   }
 
-  changeRescheduleService(serviceId:string):void{
-    this.rescheduleServiceId.set(serviceId);
-    this.rescheduleSlots.set([]);
-    this.rescheduleSlotId.set('');
-    this.targetTime.set('');
-    this.loadRescheduleSlots();
+  changeRescheduleService(_serviceId:string):void {
+    // Current BE reschedule keeps the original service sequence.
   }
 
   changeRescheduleDate(value:string):void{
@@ -297,11 +288,13 @@ export class AdminAppointmentDetailComponent {
   }
 
   private loadRescheduleSlots():void{
-    const branchId=this.rescheduleBranchId(), serviceId=this.rescheduleServiceId(), date=this.targetDate();
-    if(!branchId||!serviceId||!date)return;
+    const item=this.item();
+    const branchId=this.rescheduleBranchId(), date=this.targetDate();
+    const serviceIds=(item?.serviceSegments ?? []).map(segment=>segment.serviceId).filter(Boolean);
+    if(!branchId||!serviceIds.length||!date)return;
     this.rescheduleLoading.set(true);this.rescheduleLoadError.set('');
     const params=new HttpParams().set('date',date).set('branchId',branchId)
-      .set('serviceIds',serviceId).set('includeFull','true');
+      .set('serviceIds',serviceIds.join(',')).set('includeFull','true');
     this.api.get<unknown>('/availability',{params}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next:wire=>{
         const root=this.objectValue(wire);
@@ -382,7 +375,9 @@ export class AdminAppointmentDetailComponent {
           }).format(d));
         }
       }
-      this.loadRescheduleServices(item?.branchId||'', item?.serviceNames?.[0]||'');
+      const firstService=item?.serviceSegments?.[0];
+      this.rescheduleServiceId.set(firstService?.serviceId||'');
+      if(this.targetDate()&&firstService?.serviceId)this.loadRescheduleSlots();
     }
   }
   closeDialog(): void {
@@ -414,22 +409,71 @@ export class AdminAppointmentDetailComponent {
   }
 
   inspectRequest(): void {
-    if (!this.dialog())return;
+    const action=this.dialog();
+    const appointment=this.item();
+    if (!action||!appointment||this.actionBusy())return;
     if (!this.canInspectActions()) {this.showActionMessage('Bạn không có quyền xử lý lịch hẹn.');return;}
-    if (this.dialog()==='status'&&!this.statusTarget())
-      {this.showActionMessage('Vui lòng chọn trạng thái muốn cập nhật.');return;}
-    if (this.dialog()==='reschedule') {
-      if (!this.rescheduleBranchId()||!this.rescheduleServiceId()||!this.targetDate()||!this.rescheduleSlotId()||!this.targetTime()) {
-        this.showActionMessage('Vui lòng chọn đầy đủ chi nhánh, dịch vụ, ngày hẹn và khung giờ mới.');return;
+
+    if (action==='reschedule') {
+      if (!this.targetDate()||!this.rescheduleSlotId()) {
+        this.showActionMessage('Vui lòng chọn ngày hẹn và khung giờ mới.');return;
       }
-      if(new Date(this.targetDate()+'T'+this.targetTime()).getTime()<=Date.now()) {
+      if(new Date(this.rescheduleSlotId()).getTime()<=Date.now()) {
         this.showActionMessage('Thời gian mới phải ở tương lai.');return;
       }
     }
+
     const win=this.selectedWindow();
     if(win && !win.canRequest) {this.showActionMessage(this.showPolicyMessage());return;}
     if (!this.reason().trim()) {this.showActionMessage('Vui lòng nhập lý do xử lý.');return;}
-    // These methods are intentionally not wired to unverified mutation APIs.
-    this.showActionMessage('Chức năng này đang được hoàn thiện. Lịch hẹn của bạn chưa thay đổi.');
+
+    const headers=new HttpHeaders({'Idempotency-Key':crypto.randomUUID()});
+    let request;
+    if(action==='cancel'){
+      const override=win?.overrideRequiresAudit===true&&this.isManagerOrAdmin();
+      request=override
+        ? this.api.post<unknown,object>('/appointments/'+encodeURIComponent(appointment.id)+'/cancel-override',
+            {reason:this.reason().trim(),prepaidOutcome:'REFUND_PENDING'},{headers})
+        : this.api.post<unknown,object>('/appointments/'+encodeURIComponent(appointment.id)+'/store-cancel',
+            {reason:this.reason().trim()},{headers});
+    }else if(action==='reschedule'){
+      const override=win?.overrideRequiresAudit===true&&this.isManagerOrAdmin();
+      const body=override
+        ? {newSlotStart:this.rescheduleSlotId(),reason:this.reason().trim()}
+        : {newSlotStart:this.rescheduleSlotId()};
+      request=this.api.post<unknown,typeof body>(
+        '/appointments/'+encodeURIComponent(appointment.id)+(override?'/reschedule-override':'/reschedule'),
+        body,{headers});
+    }else{
+      const segment=appointment.serviceSegments.find(row=>
+        !['IN_PROGRESS','COMPLETED'].includes(row.executionStatus.toUpperCase()));
+      if(!segment){
+        this.showActionMessage('Không còn dịch vụ nào có thể bắt đầu.');return;
+      }
+      request=this.api.post<unknown,{serviceId:string}>(
+        '/appointments/'+encodeURIComponent(appointment.id)+'/start',
+        {serviceId:segment.serviceId});
+    }
+
+    this.actionBusy.set(true);
+    this.actionError.set('');
+    request.pipe(
+      finalize(()=>this.actionBusy.set(false)),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next:()=>{
+        this.toast.show(action==='cancel'?'Đã hủy lịch hẹn.':
+          action==='reschedule'?'Đã đổi lịch hẹn.':'Đã bắt đầu phục vụ.','success');
+        this.closeDialog();
+        this.refresh();
+      },
+      error:err=>{
+        const message=adminErrorMessage(err,
+          action==='cancel'?'Không thể hủy lịch hẹn.':
+          action==='reschedule'?'Không thể đổi lịch hẹn.':'Không thể bắt đầu phục vụ.');
+        this.actionError.set(message);
+        this.toast.show(message,'error');
+      }
+    });
   }
 }
