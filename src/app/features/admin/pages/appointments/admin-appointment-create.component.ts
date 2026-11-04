@@ -291,28 +291,22 @@ export class AdminAppointmentCreateComponent {
     this.petsLoadState.set('loading');
     this.clearReview();
 
-    // GET /customers/:id is already documented by the Order module.
-    // If that DTO does not embed pets, we must not query /my-pets (Admin's own pets)
-    // or manufacture pet records. An Admin-scoped customer pets API is required.
+    // Backend exposes customer pets as a dedicated collection endpoint.
     const version = ++this.petRequest;
-    this.api.get<unknown>('/customers/' + encodeURIComponent(customer.id))
+    this.api.get<unknown[]>('/admin/customers/' + encodeURIComponent(customer.id) + '/pets')
       .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: wire => {
+        next: rawPets => {
           if (version !== this.petRequest) return;
-          const root = objectOf(unwrap(wire));
-          const inner = objectOf(root?.['customer']) ?? root;
-          const rawPets = inner?.['pets'];
-          if (!Array.isArray(rawPets)) {
-            this.petsLoadState.set('unsupported');
-            return;
-          }
-          const pets = rawPets.map(petFromWire).filter((p): p is PetOption => p !== null);
+          const pets = (Array.isArray(rawPets) ? rawPets : [])
+            .map(petFromWire).filter((p): p is PetOption => p !== null);
           this.pets.set(pets);
           this.petsLoadState.set(pets.length ? 'ready' : 'empty');
         },
-        error: () => {
+        error: err => {
           if (version !== this.petRequest) return;
-          this.petsLoadState.set('unsupported');
+          this.pets.set([]);
+          this.petsLoadState.set('error');
+          this.toast.show(adminErrorMessage(err, 'Không tải được danh sách thú cưng.'));
         },
       });
   }
@@ -626,8 +620,8 @@ export class AdminAppointmentCreateComponent {
       errors.push('Có nhân viên được phân công trùng thời gian. Vui lòng chọn lại.');
     if (this.newPets().filter(p => p.selected).some(p => !p.name.trim() || !p.species))
       errors.push('Nhập tên và loài cho tất cả thú cưng mới được chọn.');
-    if (customer && this.petsLoadState() === 'unsupported' && !this.newPets().some(p => p.selected))
-      errors.push('Chưa tải được hồ sơ thú cưng. Vui lòng thêm thú cưng mới hoặc thử lại sau.');
+    if (customer && this.petsLoadState() === 'error' && !this.newPets().some(p => p.selected))
+      errors.push('Chưa tải được hồ sơ thú cưng. Vui lòng thử lại.');
     if (!this.branchId() || !this.serviceId()) errors.push('Chọn chi nhánh và dịch vụ.');
     if (this.complexBooking())
       errors.push('Chưa thể kiểm tra lịch cho nhiều thú cưng cùng lúc. Vui lòng thử lại sau.');
