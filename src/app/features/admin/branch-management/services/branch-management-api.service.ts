@@ -120,10 +120,27 @@ export class BranchManagementApiService {
     name: string;
     address: string;
     phone?: string;
-    status: 'ACTIVE' | 'INACTIVE';
   }): Observable<BranchApiRecord> {
     return this.api.patch<BranchApiRecord, typeof payload>(
       '/branches/' + encodeURIComponent(id), payload,
+    );
+  }
+
+  activateBranch(id: string, idempotencyKey: string): Observable<BranchApiRecord> {
+    const headers = new HttpHeaders({ 'Idempotency-Key': idempotencyKey });
+    return this.api.post<BranchApiRecord, Record<string, never>>(
+      '/branches/' + encodeURIComponent(id) + '/activate',
+      {},
+      { headers },
+    );
+  }
+
+  deactivateBranch(id: string, reason: string, idempotencyKey: string): Observable<BranchApiRecord> {
+    const headers = new HttpHeaders({ 'Idempotency-Key': idempotencyKey });
+    return this.api.post<BranchApiRecord, { reason: string }>(
+      '/branches/' + encodeURIComponent(id) + '/deactivate',
+      { reason },
+      { headers },
     );
   }
 
