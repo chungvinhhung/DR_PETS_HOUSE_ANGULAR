@@ -179,7 +179,7 @@ export class AdminServiceRecordDetailComponent {
           if(version!==this.requestVersion)return;
           try{
             const r=normalizeServiceRecordDetail(raw);
-            if(r.id!==id)throw new Error('API trả hồ sơ không khớp ID.');
+            if(r.id!==id)throw new Error('Dữ liệu hồ sơ không khớp yêu cầu. Vui lòng tải lại.');
             this.item.set(r);
             this.loading.set(false);
             this.loadInventoryForRecord(r,version);
