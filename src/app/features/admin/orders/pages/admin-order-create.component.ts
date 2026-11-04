@@ -6,6 +6,7 @@ import { AdminOrderCheckoutService, AdminOrderQuote, AdminOrderQuoteRequest, Adm
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
+import { AdminOrderNotificationService } from '../../../../shared/services/admin-order-notification.service';
 import {
   AdminOrderCreateLookupService, OrderCustomerLookup,
 } from '../services/admin-order-create-lookup.service';
@@ -52,6 +53,7 @@ export class AdminOrderCreateComponent {
   private readonly checkout = inject(AdminOrderCheckoutService);
   private readonly session = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
+  private readonly orderNotifications = inject(AdminOrderNotificationService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private customerRequest = 0;
@@ -638,6 +640,7 @@ export class AdminOrderCreateComponent {
           return;
         }
         this.created.set(true);
+        this.orderNotifications.refresh();
         this.toast.show(response.guestActivationStatus
           ? 'Tạo đơn '+response.order.code+' thành công. Khách vãng lai đang chờ kích hoạt tài khoản.'
           : 'Tạo đơn '+response.order.code+' thành công.','success');
