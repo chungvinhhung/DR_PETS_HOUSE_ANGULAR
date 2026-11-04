@@ -68,6 +68,7 @@ export class AdminAppointmentDetailComponent {
     ['CARE_STAFF_GROOMER','VETERINARIAN','NURSE'].includes(this.session.user()?.staffSubRole ?? ''));
   readonly canManageAppointment = computed(() => this.isManagerOrAdmin() || this.isReceptionist());
   readonly canStartService = computed(() => this.isManagerOrAdmin() || this.isExecutionStaff());
+  readonly checkInSupported = computed(() => false);
   readonly cancellationWindow = computed(() => {
     const a = this.item();
     return a ? appointmentWindow(a,'cancel',this.nowMs(),this.isManagerOrAdmin()) : null;
@@ -116,8 +117,8 @@ export class AdminAppointmentDetailComponent {
     const reached=(step:string)=>a?this.progressReached(a.status,step):false;
     return [
       {key:'confirmed',label:'Đã xác nhận',done:reached('CONFIRMED'),time:this.historyTime('CONFIRMED')},
-      {key:'arrived',label:'Đã đến',done:reached('ARRIVED'),time:reached('ARRIVED')?this.historyTime('IN_PROGRESS'):'Chưa bắt đầu'},
-      {key:'serving',label:'Đang phục vụ',done:reached('IN_PROGRESS'),time:reached('IN_PROGRESS')?this.historyTime('IN_PROGRESS'):'Chưa bắt đầu'},
+      {key:'arrived',label:'Đã đến',done:false,time:'Chưa có dữ liệu check-in'},
+      {key:'serving',label:'Đang phục vụ',done:reached('IN_PROGRESS'),time:reached('IN_PROGRESS')?this.segmentStartTime():'Chưa bắt đầu'},
       {key:'completed',label:'Hoàn thành',done:reached('COMPLETED'),time:reached('COMPLETED')?this.historyTime('COMPLETED'):'Chưa bắt đầu'},
     ];
   }
@@ -125,6 +126,12 @@ export class AdminAppointmentDetailComponent {
     const rank:Record<string,number>={PENDING_PAYMENT:0,PENDING:0,CONFIRMED:1,IN_PROGRESS:3,COMPLETED:4,CANCELLED:0,NO_SHOW:1,UNKNOWN:0};
     const need:Record<string,number>={CONFIRMED:1,ARRIVED:2,IN_PROGRESS:3,COMPLETED:4};
     return (rank[status]??0)>=(need[step]??99);
+  }
+  private segmentStartTime():string{
+    const started=this.item()?.serviceSegments
+      .map(segment=>segment.scheduledStart)
+      .find(Boolean);
+    return started?this.displayShortTime(started):this.historyTime('IN_PROGRESS');
   }
   private historyTime(status:string):string{
     const event=this.item()?.history.find(row=>row.status.toUpperCase().includes(status));
@@ -134,21 +141,33 @@ export class AdminAppointmentDetailComponent {
     const d=new Date(value);if(Number.isNaN(d.getTime()))return '—';
     return new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d).replace(',',' ·');
   }
-  appointmentRows():{key:string;pet:string;species:string;service:string;staff:string;health:string;note:string;checkedIn:boolean;execution:string;recordId:string}[]{
+  appointmentRows():{key:string;pet:string;species:string;service:string;staff:string;health:string;note:string;checkIn:string;execution:string;recordId:string}[]{
     const a=this.item();if(!a)return[];
-    const count=Math.max(1,a.petNames.length,a.serviceNames.length,this.linkedRecords().length);
-    return Array.from({length:count},(_,i)=>{
-      const record=this.linkedRecords()[i];
+    const segments=a.serviceSegments.length?a.serviceSegments:[];
+    if(!segments.length){
+      return [{
+        key:'appointment-'+a.id,
+        pet:a.petNames[0]||'—',species:a.petSpecies||'—',service:a.serviceNames[0]||'—',
+        staff:this.linkedRecords()[0]?.primaryStaff||'—',health:a.petHealth||'—',note:a.petNote||'—',
+        checkIn:'Chưa có dữ liệu',execution:a.status==='COMPLETED'?'Hoàn thành':a.status==='IN_PROGRESS'?'Đang thực hiện':'Chưa bắt đầu',
+        recordId:this.linkedRecords()[0]?.id||'',
+      }];
+    }
+    return segments.map((segment,i)=>{
+      const record=this.linkedRecords().find(row=>row.serviceIds.includes(segment.serviceId)) ??
+        (this.linkedRecords().length===1 ? this.linkedRecords()[0] : undefined);
+      const execution=segment.executionStatus.toUpperCase()==='COMPLETED'?'Hoàn thành':
+        segment.executionStatus.toUpperCase()==='IN_PROGRESS'?'Đang thực hiện':'Chưa bắt đầu';
       return {
-        key:(record?.id||'row')+'-'+i,
-        pet:a.petNames[i]||record?.petName||a.petNames[0]||'—',
-        species:'—',
-        service:a.serviceNames[i]||record?.serviceName||a.serviceNames[0]||'—',
-        staff:record?.primaryStaff||'—',
-        health:'—',
-        note:'—',
-        checkedIn:['IN_PROGRESS','COMPLETED'].includes(a.status),
-        execution:record?this.serviceRecordStatusLabel(record.status,record.rawStatus):(a.status==='COMPLETED'?'Hoàn thành':a.status==='IN_PROGRESS'?'Đang thực hiện':'Chưa bắt đầu'),
+        key:segment.serviceId+'-'+i,
+        pet:record?.petName||a.petNames[0]||'—',
+        species:a.petSpecies||'—',
+        service:segment.serviceName||record?.serviceName||'—',
+        staff:record?.primaryStaff||segment.assignedStaffId||'—',
+        health:a.petHealth||'—',
+        note:a.petNote||'—',
+        checkIn:'Chưa có dữ liệu',
+        execution,
         recordId:record?.id||'',
       };
     });
@@ -237,7 +256,7 @@ export class AdminAppointmentDetailComponent {
       },
       error:err=>{
         if(version!==this.requestVersion)return;
-        this.recordsError.set(adminErrorMessage(err,'Chưa thể lấy ServiceRecord của lịch hẹn.'));
+        this.recordsError.set(adminErrorMessage(err,'Không thể tải hồ sơ dịch vụ liên quan.'));
         this.recordsLoading.set(false);
       }
     });
@@ -436,7 +455,7 @@ export class AdminAppointmentDetailComponent {
 
     const win=this.selectedWindow();
     if(win && !win.canRequest) {this.showActionMessage(this.showPolicyMessage());return;}
-    if (!this.reason().trim()) {this.showActionMessage('Vui lòng nhập lý do xử lý.');return;}
+    if (action!=='status' && !this.reason().trim()) {this.showActionMessage('Vui lòng nhập lý do xử lý.');return;}
 
     const fingerprint=[
       action,appointment.id,String(appointment.version),
@@ -469,8 +488,12 @@ export class AdminAppointmentDetailComponent {
         {headers},
       );
     }else{
+      if(!this.checkInSupported()){
+        this.showActionMessage('Chưa thể bắt đầu dịch vụ vì hệ thống chưa có dữ liệu check-in theo từng thú cưng.');
+        return;
+      }
       const segment=appointment.serviceSegments.find(row=>
-        !['IN_PROGRESS','COMPLETED'].includes(row.executionStatus.toUpperCase()));
+        row.executionStatus.toUpperCase()==='NOT_STARTED');
       if(!segment){
         this.showActionMessage('Không còn dịch vụ nào có thể bắt đầu.');return;
       }
