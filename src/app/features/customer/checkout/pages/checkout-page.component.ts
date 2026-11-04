@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import { NavBarComponent } from '../../../../layouts/customer/components/navbar/nav-bar.component';
 import { CheckoutComponent } from '../components/checkout.component';
@@ -17,4 +18,10 @@ import { CheckoutComponent } from '../components/checkout.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CheckoutPageComponent {
+  private readonly route = inject(ActivatedRoute);
+
+  readonly mode = computed(() => {
+    const qMode = this.route.snapshot.queryParamMap.get('mode');
+    return qMode === 'appointment' ? 'appointment' : 'shopping';
+  });
 }

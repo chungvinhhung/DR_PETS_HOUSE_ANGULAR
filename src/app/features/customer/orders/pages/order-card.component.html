@@ -7,7 +7,7 @@
 >
   <div class="w-[372px]">
     <div class="flex justify-between text-[14px]">
-      <strong>Mã đơn hàng: {{ order().id }}</strong>
+      <strong>Mã đơn hàng: {{ order().code || order().id }}</strong>
       <span>{{ formatOrderDate(order().orderedAt) }}</span>
     </div>
     @if (products().length) {
