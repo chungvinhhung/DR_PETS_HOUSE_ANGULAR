@@ -6373,40 +6373,40 @@ app-branch-management-page .branch-v2-page .branch-v2-page__table--branches
   :is(th,td):nth-child(7){white-space:nowrap;overflow-wrap:normal}
 
 
-/* Enterprise KPI strip: the same white/blue/gray design language as
-   Admin tables and filters. No multicolor state fills or decorative shapes.
-   Status emphasis belongs to the value, not the whole surface. */
+/* Compact KPI tiles — restrained Dr. Pet's House dashboard style.
+   Separate surfaces restore visual hierarchy without introducing more colors. */
 app-admin-order-management .order-admin__kpis,
 app-admin-appointments-page .appointments__kpis{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:0;
+  gap:12px;
   margin:0 0 16px;
-  border:1px solid #dce5f0;
-  border-radius:11px;
-  background:#fff;
-  overflow:hidden;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  overflow:visible;
 }
 app-admin-order-management .order-admin__kpi,
 app-admin-appointments-page .appointments__kpi{
   box-sizing:border-box;
+  position:relative;
   display:flex;
   flex-direction:column;
   align-items:flex-start;
   justify-content:center;
-  gap:5px;
+  gap:7px;
   min-width:0;
-  min-height:82px;
-  padding:13px 20px;
-  border:0;
-  border-right:1px solid #e2e8f0;
-  border-radius:0;
-  background:#fff;
-  box-shadow:none;
+  min-height:86px;
+  padding:13px 18px;
+  border:1px solid #dce5f0;
+  border-radius:10px;
+  background:#f8fafc;
+  box-shadow:0 1px 2px rgba(20,43,70,.025);
 }
 app-admin-order-management .order-admin__kpi:last-child,
 app-admin-appointments-page .appointments__kpi:last-child{
-  border-right:0;
+  border:1px solid #dce5f0;
 }
 app-admin-order-management .order-admin__kpi::before,
 app-admin-order-management .order-admin__kpi::after,
@@ -6420,18 +6420,28 @@ app-admin-appointments-page .appointments__kpi>span::before{
 app-admin-order-management .order-admin__kpi>span,
 app-admin-appointments-page .appointments__kpi>span{
   display:block;
-  margin:0;
-  color:#60748d;
-  font:500 12px/18px Roboto,Arial,sans-serif;
+  color:#526782;
+  font:500 13px/18px Roboto,Arial,sans-serif;
   white-space:normal;
 }
 app-admin-order-management .order-admin__kpi>strong,
 app-admin-appointments-page .appointments__kpi>strong{
-  margin:0;
+  display:block;
   color:#1d2a42;
-  font:600 26px/30px Roboto,Arial,sans-serif;
+  font:600 27px/32px Roboto,Arial,sans-serif;
   letter-spacing:-.3px;
   font-variant-numeric:tabular-nums;
+}
+/* A single brand-tinted tile draws attention to work awaiting action.
+   All other metrics retain the same neutral palette. */
+app-admin-order-management .order-admin__kpi[data-kpi-tone="warning"],
+app-admin-appointments-page .appointments__kpi[data-kpi-tone="warning"]{
+  background:#f1f6fe;
+  border-color:#c5d8f1;
+}
+app-admin-order-management .order-admin__kpi[data-kpi-tone="warning"]>span,
+app-admin-appointments-page .appointments__kpi[data-kpi-tone="warning"]>span{
+  color:#315c99;
 }
 app-admin-order-management .order-admin__kpi>strong.order-admin__kpi-number--blue,
 app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
@@ -6441,35 +6451,23 @@ app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
   app-admin-order-management .order-admin__kpis,
   app-admin-appointments-page .appointments__kpis{
     grid-template-columns:repeat(2,minmax(0,1fr));
-  }
-  app-admin-order-management .order-admin__kpi:nth-child(2),
-  app-admin-appointments-page .appointments__kpi:nth-child(2){
-    border-right:0;
-  }
-  app-admin-order-management .order-admin__kpi:nth-child(-n+2),
-  app-admin-appointments-page .appointments__kpi:nth-child(-n+2){
-    border-bottom:1px solid #e2e8f0;
+    gap:10px;
   }
 }
 @media(max-width:540px){
   app-admin-order-management .order-admin__kpis,
   app-admin-appointments-page .appointments__kpis{
     grid-template-columns:1fr;
+    gap:8px;
   }
   app-admin-order-management .order-admin__kpi,
   app-admin-appointments-page .appointments__kpi{
-    min-height:70px;
+    min-height:76px;
     padding:11px 16px;
-    border-right:0;
-    border-bottom:1px solid #e2e8f0;
-  }
-  app-admin-order-management .order-admin__kpi:last-child,
-  app-admin-appointments-page .appointments__kpi:last-child{
-    border-bottom:0;
   }
   app-admin-order-management .order-admin__kpi>strong,
   app-admin-appointments-page .appointments__kpi>strong{
-    font-size:24px;
-    line-height:28px;
+    font-size:25px;
+    line-height:29px;
   }
 }
