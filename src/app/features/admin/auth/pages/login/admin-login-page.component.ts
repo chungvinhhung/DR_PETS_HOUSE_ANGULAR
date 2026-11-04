@@ -103,7 +103,21 @@ export class AdminLoginPageComponent {
         return 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.';
       case 'ACCOUNT_LOCKED':
         return 'Tài khoản đang tạm khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau.';
-      default:
+      default: {
+        const detail = this.backendErrorDetail(error.details).toLowerCase();
+        if (detail.includes('not activated') || detail.includes('verify otp')) {
+          return 'Tài khoản chưa được kích hoạt. Vui lòng xác thực OTP.';
+        }
+        if (detail.includes('blocked')) {
+          return 'Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.';
+        }
+        if (detail.includes('deactivated')) {
+          return 'Tài khoản đã ngừng hoạt động. Vui lòng liên hệ quản trị viên.';
+        }
+        if (detail.includes('temporarily locked')) {
+          return 'Tài khoản đang tạm khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau.';
+        }
+
         if (error.kind === 'network') {
           return 'Không thể kết nối đến máy chủ.';
         }
@@ -112,7 +126,16 @@ export class AdminLoginPageComponent {
         if (error.kind === 'forbidden') return 'Tài khoản không có quyền truy cập khu vực quản trị.';
         if (error.kind === 'server') return 'Không thể kết nối đến máy chủ.';
         return 'Đăng nhập thất bại. Vui lòng thử lại.';
+      }
     }
+  }
+
+  private backendErrorDetail(details: unknown): string {
+    if (typeof details === 'object' && details !== null && 'detail' in details &&
+        typeof (details as { detail?: unknown }).detail === 'string') {
+      return (details as { detail: string }).detail;
+    }
+    return '';
   }
 
   private backendErrorCode(details: unknown): string | null {
