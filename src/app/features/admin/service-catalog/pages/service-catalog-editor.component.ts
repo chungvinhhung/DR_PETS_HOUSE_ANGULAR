@@ -69,6 +69,10 @@ export class ServiceCatalogEditorComponent {
     const message = this.activationNotice();
     if (message) this.toast.show(message, 'info');
   });
+  private readonly errorToast = effect(() => {
+    const message = this.errors()[0];
+    if (message) this.toast.show(message, 'error');
+  });
 
   readonly editorMode = (this.route.snapshot.data['editorMode'] ?? 'create') as 'create' | 'edit' | 'view';
   readonly serviceId = this.route.snapshot.paramMap.get('id');
