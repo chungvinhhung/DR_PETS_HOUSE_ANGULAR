@@ -35,7 +35,7 @@
     }
 
     @if (loading()) {
-      <div class="service-editor__error" role="status">Đang tải thông tin dịch vụ...</div>
+      <app-admin-data-state kind="loading" title="Đang tải thông tin dịch vụ" />
     } @else if (missingService()) {
       <div class="service-editor__error" role="alert">
         Không thể tải thông tin dịch vụ. Vui lòng thử lại.
