@@ -134,15 +134,6 @@
             <button type="button" class="btn btn--outline" [disabled]="busy()" (click)="openReopenDialog()">Mở lại hồ sơ</button>
           }
         </div>
-        @if (r.status==='IN_PROGRESS' && r.category==='MEDICAL' && isNurse()) {
-          <p class="action-hint">Y tá cập nhật vật tư thực tế rồi gửi hồ sơ cho Bác sĩ thú y duyệt. Y tá không tự chốt hồ sơ MEDICAL.</p>
-        }
-        @if (r.status==='WAITING_VET_REVIEW' && r.category==='MEDICAL') {
-          <p class="action-hint">Hồ sơ đang chờ Bác sĩ thú y được phân công kiểm tra và chốt cuối.</p>
-        }
-        @if (r.status==='COMPLETED') {
-          <p class="action-hint">Hồ sơ đã được chốt. Lịch hẹn sẽ tự chuyển trạng thái khi tất cả dịch vụ liên quan đã hoàn tất.</p>
-        }
       </section>
       }
     }
@@ -167,7 +158,6 @@
         </header>
 
         @if (materialEditorMode()==='add') {
-          <p class="modal-hint">Lưu vật liệu chỉ cập nhật số lượng thực tế trong hồ sơ. Tồn kho chỉ thay đổi sau khi hồ sơ được chốt hợp lệ.</p>
           @for (m of materialDrafts(); track $index; let i=$index) {
             <div class="material-add-form">
               <label class="material-field material-field--full">
@@ -205,7 +195,6 @@
             </div>
           }
         } @else {
-          <p class="modal-hint">Hồ sơ đã được mở lại. Hãy cập nhật số lượng thực tế mới; phần chênh lệch tồn kho sẽ được ghi nhận khi hồ sơ được chốt lại.</p>
           <div class="material-editor">
             @for (m of materialDrafts(); track $index; let i=$index) {
               <div class="material-editor__row">
@@ -286,7 +275,6 @@
         <header><h2 id="finalize-dialog-title">Chốt lại hồ sơ đã mở</h2>
           <button type="button" class="modal-close" (click)="closeDialog()" [disabled]="busy()" aria-label="Đóng"><img src="/assets/admin-inventory/close-outlined.svg" alt=""></button>
         </header>
-        <p class="modal-hint">Đây là phiên bản hiệu chỉnh của hồ sơ đã từng chốt. Vui lòng ghi rõ lý do hiệu chỉnh.</p>
         <label class="reason-field">Lý do hiệu chỉnh <span>*</span>
           <textarea rows="3" [value]="finalizeReason()" (input)="finalizeReason.set($any($event.target).value)" placeholder="Nhập lý do ít nhất 3 ký tự"></textarea>
         </label>
