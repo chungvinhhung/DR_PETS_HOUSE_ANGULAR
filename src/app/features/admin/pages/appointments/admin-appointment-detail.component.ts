@@ -157,7 +157,11 @@ export class AdminAppointmentDetailComponent {
     const key=value.toUpperCase();return key.includes('STORE')?'Tại phòng khám':key.includes('ONLINE')?'Trực tuyến':value||'—';
   }
   paymentStatusLabel(value:string):string{
-    const key=value.toUpperCase();return ['PAID','COMPLETED','SETTLED'].includes(key)?'Đã thanh toán':value||'Đang chờ thanh toán';
+    const key=value.toUpperCase();
+    if(['PAID','COMPLETED','SETTLED'].includes(key))return 'Đã thanh toán';
+    if(['PARTIAL','PARTIALLY_PAID'].includes(key))return 'Đã thanh toán một phần';
+    if(['PENDING','PENDING_PAYMENT'].includes(key))return 'Đang chờ thanh toán';
+    return value||'Chưa xác định';
   }
   historyLabel(value:string):string{
     const key=value.toUpperCase();
