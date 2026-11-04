@@ -6291,3 +6291,27 @@ app-admin-service-record-detail {
 }
 
 app-admin-order-create .create-order__dialog-close img{display:block;width:20px;height:20px}
+
+
+/* Phase 6 — Order/Return pagination matches the shared Product/Inventory pattern. */
+app-admin-order-management .order-admin__pagination > div{
+  display:flex;align-items:stretch;gap:0;max-width:100%;overflow-x:auto;
+  border:1px solid #e2e8f0;border-radius:8px;scrollbar-width:thin
+}
+app-admin-order-management .order-admin__pagination > div :is(button,span){
+  box-sizing:border-box;display:grid;place-items:center;
+  flex:0 0 48px;width:48px;min-width:48px;height:44px;min-height:44px;
+  padding:0;border:0;border-right:1px solid #e2e8f0;border-radius:0;
+  background:#fff;color:#475569;font:400 14px/20px Roboto,Arial,sans-serif
+}
+app-admin-order-management .order-admin__pagination > div :is(button,span):last-child{border-right:0}
+app-admin-order-management .order-admin__pagination > div button:first-child,
+app-admin-order-management .order-admin__pagination > div button:last-child{
+  flex-basis:44px;width:44px;min-width:44px
+}
+app-admin-order-management .order-admin__pagination .order-admin__page-number--active{
+  background:#e5f6fd;color:#0d47a1;box-shadow:inset 0 0 0 1px #0d47a1;font-weight:700
+}
+app-admin-order-management .order-admin__pagination .order-admin__page-ellipsis{color:#475569}
+app-admin-order-management .order-admin__pagination > div button:hover:not(:disabled):not(.order-admin__page-number--active){background:#f1f5f9}
+app-admin-order-management .order-admin__pagination > div button:disabled{color:#bac8d9;cursor:not-allowed}
