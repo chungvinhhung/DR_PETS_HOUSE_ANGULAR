@@ -6,22 +6,22 @@
       <label class="search search-field">
         <img src="/assets/service-catalog/search.svg" alt="" aria-hidden="true">
         <input type="search"
-          [placeholder]="mode === 'reviews' ? 'Tìm tên / mã đơn / mã lịch...' : mode === 'feedback' ? 'Tìm khách hàng...' : 'Tìm người báo cáo / bài đăng...'"
+          [placeholder]="mode === 'reviews' ? 'Tìm tên khách hàng, mã đơn hoặc mã lịch...' : mode === 'feedback' ? 'Tìm khách hàng...' : 'Tìm người báo cáo, bài đăng...'"
           [ngModel]="search()" (ngModelChange)="search.set($event); onFilter()">
       </label>
       <div class="filters toolbar-selects">
         @if (mode === 'reviews') {
           <select class="web2-admin-filter-select" aria-label="Điểm đánh giá" [ngModel]="filter()" (ngModelChange)="filter.set($event); onFilter()">
-            <option value="">Điểm đánh giá</option><option value="5">5 sao</option><option value="4">4 sao</option><option value="3">≤ 3 sao</option>
+            <option value="">Tất cả điểm đánh giá</option><option value="5">5 sao</option><option value="4">4 sao</option><option value="3">≤ 3 sao</option>
           </select>
         }
         @if (mode === 'reports') {
           <select class="web2-admin-filter-select" aria-label="Lý do báo cáo" [ngModel]="filter()" (ngModelChange)="filter.set($event); onFilter()">
-            <option value="">Lý do</option><option>Spam / quảng cáo</option><option>Thông tin sai lệch</option><option>Nội dung không phù hợp</option>
+            <option value="">Tất cả lý do</option><option>Spam / quảng cáo</option><option>Thông tin sai lệch</option><option>Nội dung không phù hợp</option>
           </select>
         }
         <select class="web2-admin-filter-select" aria-label="Trạng thái" [ngModel]="status()" (ngModelChange)="status.set($event); onFilter()">
-          <option value="">Trạng thái</option>
+          <option value="">Tất cả trạng thái</option>
           @if (mode === 'reviews') { <option value="ACTIVE">Hiển thị</option><option value="HIDDEN">Ẩn</option> }
           @else { <option value="NEW">Mới</option><option value="PROCESSING">Đang xử lý</option><option value="PROCESSED">Đã xử lý</option> }
         </select>
@@ -58,7 +58,7 @@
                 } @empty { <tr><td colspan="8" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có đánh giá" message="Hiện chưa có đánh giá phù hợp với bộ lọc." /></td></tr> }
               </tbody>
             } @else if (mode === 'feedback') {
-              <colgroup><col style="width:14%"><col style="width:9%"><col style="width:13%"><col style="width:18%"><col style="width:21%"><col style="width:10%"><col style="width:9%"><col style="width:6%"></colgroup>
+              <colgroup><col style="width:13%"><col style="width:8%"><col style="width:13%"><col style="width:17%"><col style="width:22%"><col style="width:10%"><col style="width:9%"><col style="width:8%"></colgroup>
               <thead><tr><th>Khách hàng</th><th>Giới tính</th><th>Số điện thoại</th><th>Email</th><th>Nội dung</th><th class="is-center">Ngày gửi</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
               <tbody>
                 @for (r of visible(); track r._id || r.id) {
