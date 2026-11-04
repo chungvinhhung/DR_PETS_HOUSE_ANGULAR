@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, firstValueFrom, timeout } from 'rxjs';
 
 import { AdminCatalogShellComponent } from '../../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from '../../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminToastService, adminErrorMessage } from '../../../../../shared/services/admin-toast.service';
 import { AdminCategoryService } from '../../../categories/services/admin-category.service';
 import { AdminCategory } from '../../../categories/models/admin-category.model';
@@ -21,7 +22,7 @@ interface EditableProductImage {
 @Component({
   selector: 'app-admin-product-edit-page',
   standalone: true,
-  imports: [FormsModule, RouterLink, AdminCatalogShellComponent],
+  imports: [FormsModule, RouterLink, AdminCatalogShellComponent, AdminDataStateComponent],
   templateUrl: './admin-product-edit-page.component.html',
   styleUrl: './admin-product-edit-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
