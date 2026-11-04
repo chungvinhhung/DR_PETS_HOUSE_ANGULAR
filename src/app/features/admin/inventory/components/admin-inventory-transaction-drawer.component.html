@@ -4,7 +4,7 @@
     <header class="inventory-transaction-header">
       <div>
         <h2 id="inventory-transaction-title">Chi tiết giao dịch kho</h2>
-        <span>{{ transactionCode || transactions[0]?.transactionCode || transactions[0]?.groupCode || transactions[0]?.code || transactions[0]?.id }}</span>
+        <span>{{ transactionCode || transactions[0]?.transactionCode || transactions[0]?.groupCode || transactions[0]?.code || 'Chưa có mã giao dịch' }}</span>
       </div>
       <button type="button" aria-label="Đóng chi tiết giao dịch" (click)="closed.emit()"><img src="/assets/admin-inventory/close-outlined.svg" alt="" aria-hidden="true"></button>
     </header>
