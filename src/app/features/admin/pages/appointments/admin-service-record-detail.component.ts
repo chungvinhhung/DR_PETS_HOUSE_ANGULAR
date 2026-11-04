@@ -12,6 +12,7 @@ import { AdminToastService, adminErrorMessage } from '../../../../shared/service
 import {
   AdminInventoryService,
   InventoryItemDto,
+  InventoryStockDto,
   InventoryTransactionDto,
 } from '../../inventory/services/admin-inventory.service';
 import { AdminInventoryTransactionDrawerComponent } from '../../inventory/components/admin-inventory-transaction-drawer.component';
@@ -67,8 +68,11 @@ export class AdminServiceRecordDetailComponent {
   readonly appointment=signal<AppointmentView|null>(null);
 
   readonly inventoryItems=signal<InventoryItemDto[]>([]);
+  readonly inventoryStocks=signal<InventoryStockDto[]>([]);
   readonly inventoryTransactions=signal<InventoryTransactionDto[]>([]);
   readonly inventoryLoaded=signal(false);
+  readonly inventoryTransactionsLoading=signal(false);
+  readonly inventoryTransactionsError=signal('');
   readonly selectedTransactions=signal<InventoryTransactionDto[]>([]);
   readonly selectedTransactionCode=signal('');
   readonly inventoryDrawerOpen=signal(false);
@@ -91,18 +95,29 @@ export class AdminServiceRecordDetailComponent {
   readonly isGroomer=computed(()=>this.currentUser()?.systemRole==='STAFF' && this.currentUser()?.staffSubRole==='CARE_STAFF_GROOMER');
   readonly isManagerOrAdmin=computed(()=>this.session.hasAnyRole(['MANAGER','ADMIN']));
 
-  readonly materialOptions=computed(()=>
-    this.inventoryItems().filter(item=>item.status==='ACTIVE' && item.kind==='MATERIAL'));
+  readonly canReadInventoryTransactions=computed(()=>this.isManagerOrAdmin());
+  readonly materialOptions=computed(()=>{
+    const r=this.item();
+    const currentIds=new Set((r?.materials ?? []).map(row=>row.inventoryItemId));
+    const stockedIds=new Set(this.inventoryStocks().map(row=>row.inventoryItemId));
+    return this.inventoryItems().filter(item=>
+      item.status==='ACTIVE' && item.kind==='MATERIAL' &&
+      (stockedIds.has(item.id) || currentIds.has(item.id)));
+  });
 
   readonly canEditMaterials=computed(()=>{
-    const r=this.item(); if(!r || r.status==='COMPLETED') return false;
+    const r=this.item();
+    if(!r || !['IN_PROGRESS','REOPENED'].includes(r.status)) return false;
+    if(this.isManagerOrAdmin()) return true;
     if(r.category==='GROOMING') return this.isGroomer();
     if(r.category==='MEDICAL') return this.isNurse() || this.isVet();
     return false;
   });
 
   readonly canEditProfessional=computed(()=>{
-    const r=this.item(); if(!r || r.category!=='MEDICAL' || r.status==='COMPLETED') return false;
+    const r=this.item();
+    if(!r || r.category!=='MEDICAL' ||
+      !['IN_PROGRESS','WAITING_VET_REVIEW','REOPENED'].includes(r.status)) return false;
     return this.isVet();
   });
 
@@ -160,6 +175,7 @@ export class AdminServiceRecordDetailComponent {
             if(r.id!==id)throw new Error('API trả hồ sơ không khớp ID.');
             this.item.set(r);
             this.loading.set(false);
+            this.loadInventoryForRecord(r,version);
             if(r.appointmentId)this.loadAppointment(r.appointmentId,version);
           }catch(err){
             this.error.set(err instanceof Error?err.message:'Không đọc được hồ sơ.');
@@ -191,6 +207,70 @@ export class AdminServiceRecordDetailComponent {
       next:items=>this.inventoryItems.set(items),
       error:()=>this.inventoryItems.set([]),
     });
+  }
+
+  private loadInventoryForRecord(r:ServiceRecord,version:number):void{
+    this.inventoryApi.listStocks(r.branchId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:rows=>{if(version===this.requestVersion)this.inventoryStocks.set(rows);},
+      error:()=>{if(version===this.requestVersion)this.inventoryStocks.set([]);},
+    });
+
+    this.inventoryTransactions.set([]);
+    this.inventoryLoaded.set(false);
+    this.inventoryTransactionsError.set('');
+    if(!this.canReadInventoryTransactions())return;
+
+    this.inventoryTransactionsLoading.set(true);
+    this.inventoryApi.listTransactions({
+      sourceType:'SERVICE_RECORD',
+      sourceId:r.id,
+      branchId:r.branchId || undefined,
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:rows=>{
+        if(version!==this.requestVersion)return;
+        this.inventoryTransactions.set(rows);
+        this.inventoryLoaded.set(true);
+        this.inventoryTransactionsLoading.set(false);
+      },
+      error:err=>{
+        if(version!==this.requestVersion)return;
+        this.inventoryTransactions.set([]);
+        this.inventoryLoaded.set(true);
+        this.inventoryTransactionsLoading.set(false);
+        this.inventoryTransactionsError.set(adminErrorMessage(err,'Không tải được giao dịch kho liên quan.'));
+      },
+    });
+  }
+
+  materialTransactions(m:MaterialUsage):InventoryTransactionDto[]{
+    return this.inventoryTransactions()
+      .filter(tx=>{
+        if(Array.isArray(tx.items) && tx.items.length){
+          return tx.items.some(line=>line.inventoryItemId===m.inventoryItemId);
+        }
+        return tx.inventoryItemId===m.inventoryItemId;
+      })
+      .sort((a,b)=>(Date.parse(b.createdAt)||0)-(Date.parse(a.createdAt)||0));
+  }
+
+  materialStockAfter(m:MaterialUsage):number|null{
+    const tx=this.materialTransactions(m)[0];
+    if(!tx)return null;
+    if(Array.isArray(tx.items) && tx.items.length){
+      const line=tx.items.find(item=>item.inventoryItemId===m.inventoryItemId);
+      return line ? Number(line.afterQty) : null;
+    }
+    return tx.inventoryItemId===m.inventoryItemId ? Number(tx.afterQty) : null;
+  }
+
+  transactionDisplayCode(tx:InventoryTransactionDto):string{
+    return tx.transactionCode || tx.groupCode || tx.code || tx.id;
+  }
+
+  openInventoryTransactionRow(tx:InventoryTransactionDto):void{
+    this.selectedTransactionCode.set(this.transactionDisplayCode(tx));
+    this.selectedTransactions.set([tx]);
+    this.inventoryDrawerOpen.set(true);
   }
 
   displayRecordCode(r:ServiceRecord):string{
@@ -406,22 +486,10 @@ export class AdminServiceRecordDetailComponent {
 
   openInventoryTransaction(code:string):void{
     if(!code)return;
-    const open=(transactions:InventoryTransactionDto[])=>{
-      const rows=transactions.filter(tx=>
-        tx.id===code || tx.transactionCode===code || tx.groupCode===code || tx.code===code);
-      if(!rows.length){
-        this.toast.show('Backend chưa cung cấp liên kết giao dịch kho cho mã này.','info');
-        return;
-      }
-      this.selectedTransactionCode.set(code);
-      this.selectedTransactions.set(rows);
-      this.inventoryDrawerOpen.set(true);
-    };
-    if(this.inventoryLoaded()){open(this.inventoryTransactions());return;}
-    this.inventoryApi.listTransactions().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next:rows=>{this.inventoryTransactions.set(rows);this.inventoryLoaded.set(true);open(rows);},
-      error:()=>this.toast.show('Không tải được giao dịch kho liên quan.','error'),
-    });
+    const tx=this.inventoryTransactions().find(row=>
+      row.id===code || row.transactionCode===code || row.groupCode===code || row.code===code);
+    if(tx){this.openInventoryTransactionRow(tx);return;}
+    this.toast.show('Không tìm thấy giao dịch kho liên quan.','info');
   }
 
   closeInventoryDrawer():void{
@@ -435,7 +503,9 @@ export class AdminServiceRecordDetailComponent {
 
   private acceptMutation(raw:unknown,message:string):void{
     try{
-      this.item.set(normalizeServiceRecordDetail(raw));
+      const updated=normalizeServiceRecordDetail(raw);
+      this.item.set(updated);
+      this.loadInventoryForRecord(updated,this.requestVersion);
       this.busy.set(false);this.dialog.set(null);this.dialogError.set('');
       this.toast.show(message,'success');
     }catch{
