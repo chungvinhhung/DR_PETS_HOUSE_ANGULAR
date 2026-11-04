@@ -133,20 +133,13 @@
         @if (action==='reschedule') {
           <div class="modal-grid modal-grid--reschedule">
             <label><span class="modal-field-label">Chi nhánh <b>*</b></span>
-              <select [value]="rescheduleBranchId()" (change)="changeRescheduleBranch($any($event.target).value)">
-                <option value="">Chọn chi nhánh</option>
-                @for (branch of rescheduleBranches(); track branch.id) {
-                  <option [value]="branch.id">{{branch.name}}</option>
-                }
+              <select [value]="rescheduleBranchId()" disabled aria-label="Chi nhánh hiện tại">
+                @if (item(); as current) { <option [value]="current.branchId">{{current.branchName || 'Chi nhánh hiện tại'}}</option> }
               </select>
             </label>
             <label><span class="modal-field-label">Dịch vụ <b>*</b></span>
-              <select [value]="rescheduleServiceId()" [disabled]="!rescheduleBranchId() || rescheduleLoading()"
-                (change)="changeRescheduleService($any($event.target).value)">
-                <option value="">{{rescheduleLoading()?'Đang tải dịch vụ...':'Chọn dịch vụ'}}</option>
-                @for (service of rescheduleServices(); track service.id) {
-                  <option [value]="service.id">{{service.name}}</option>
-                }
+              <select [value]="rescheduleServiceId()" disabled aria-label="Dịch vụ hiện tại">
+                @if (item(); as current) { <option [value]="rescheduleServiceId()">{{current.serviceNames.join(' + ') || 'Dịch vụ hiện tại'}}</option> }
               </select>
             </label>
             <label><span class="modal-field-label">Ngày hẹn <b>*</b></span>
@@ -167,15 +160,15 @@
           }
         }
         @if (action==='status') {
-          <p class="hint hint--info">Bắt đầu phục vụ sẽ chuyển lịch sang Đang thực hiện và tạo hồ sơ dịch vụ tương ứng.</p>
+          <p class="hint hint--info">Bắt đầu phục vụ sẽ khởi động dịch vụ đầu tiên chưa thực hiện và chuyển lịch sang Đang thực hiện.</p>
         }
         <label class="modal-label"><span class="modal-field-label">Lý do / ghi chú xử lý <b>*</b></span>
           <textarea rows="4" [value]="reason()" (input)="reason.set($any($event.target).value)" placeholder="Nhập ghi chú xử lý..."></textarea>
         </label>
         @if (actionError()) {<p class="hint hint--warning" role="alert">{{actionError()}}</p>}
         <div class="modal-actions">
-          <button class="btn btn--outline" type="button" (click)="closeDialog()">Đóng</button>
-          <button class="btn btn--primary" type="button" (click)="inspectRequest()">Xác nhận</button>
+          <button class="btn btn--outline" type="button" (click)="closeDialog()" [disabled]="actionBusy()">Đóng</button>
+          <button class="btn btn--primary" type="button" (click)="inspectRequest()" [disabled]="actionBusy()">{{ actionBusy() ? 'Đang xử lý...' : 'Xác nhận' }}</button>
         </div>
       </section>
     </div>
