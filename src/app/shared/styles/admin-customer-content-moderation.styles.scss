@@ -304,19 +304,19 @@ app-admin-moderation-list .web2-admin-table--feedback :is(th,td):last-child{padd
    select itself; retain the chevron at the right edge. */
 app-admin-catalog-shell .customer-page .customer-filter.web2-filterbar
   .toolbar-selects > select.web2-admin-filter-select:first-child{
-  flex:0 0 294px!important;width:294px!important;min-width:294px!important;max-width:none!important
+  flex:0 0 auto!important;width:max-content!important;min-width:max-content!important;max-width:none!important
 }
 app-admin-catalog-shell .customer-page .customer-filter.web2-filterbar
   .toolbar-selects > select.web2-admin-filter-select:last-child{
-  flex:0 0 286px!important;width:286px!important;min-width:286px!important;max-width:none!important
+  flex:0 0 auto!important;width:max-content!important;min-width:max-content!important;max-width:none!important
 }
 app-admin-catalog-shell .content-admin .filterbar.web2-filterbar
   .toolbar-selects > select.web2-admin-filter-select:first-child{
-  flex:0 0 255px!important;width:255px!important;min-width:255px!important;max-width:none!important
+  flex:0 0 auto!important;width:max-content!important;min-width:max-content!important;max-width:none!important
 }
 app-admin-catalog-shell .content-admin .filterbar.web2-filterbar
   .toolbar-selects > select.web2-admin-filter-select:last-child{
-  flex:0 0 196px!important;width:196px!important;min-width:196px!important;max-width:none!important
+  flex:0 0 auto!important;width:max-content!important;min-width:max-content!important;max-width:none!important
 }
 /* When available width is limited, wrap controls instead of cropping labels. */
 @media(max-width:1450px){
