@@ -11,7 +11,7 @@ import { AppHttpError } from '../../../../core/models/app-http-error.model';
 import { DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { catchError, firstValueFrom, forkJoin, from, map, mergeMap, of, toArray } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, from, map, mergeMap, of, switchMap, toArray } from 'rxjs';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
