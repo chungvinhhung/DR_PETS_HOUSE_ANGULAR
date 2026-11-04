@@ -92,7 +92,7 @@
                   <td>{{ quantityText(m.templateQuantity,m.unit) }}</td>
                   <td>{{ quantityText(m.actualQuantity,m.unit) }}</td>
                   <td>
-                    @if (materialStockAfter(m); as stockAfter) { {{ stockAfter }} }
+                    @if (materialStockAfter(m) !== null) { {{ materialStockAfter(m) }} }
                     @else { — }
                   </td>
                   <td>
