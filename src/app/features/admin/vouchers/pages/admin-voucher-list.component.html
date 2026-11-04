@@ -96,7 +96,7 @@
       <footer class="voucher-list__pagination">
         <span>Đang hiển thị {{ filtered().length }} trên tổng số {{ totalCount()===null?'chưa xác định':totalCount() }} voucher @if(countingPages()){(đang tính tổng số trang...)}</span>
         <div>
-          <button type="button" [disabled]="!previous().length || loading()" (click)="prev()" aria-label="Trang trước">‹</button>
+          <button type="button" [disabled]="!hasPreviousPage() || loading()" (click)="prev()" aria-label="Trang trước">‹</button>
           @for (index of visiblePageNumbers(); track $index) {
             @if(index==='…'){<span class="voucher-list__ellipsis" aria-hidden="true">…</span>}
             @else {
@@ -105,7 +105,7 @@
                 [attr.aria-label]="'Trang ' + index" [disabled]="loading()" (click)="goToPage(index)">{{index}}</button>
             }
           }
-          <button type="button" [disabled]="!nextCursor() || loading()" (click)="next()" aria-label="Trang sau">›</button>
+          <button type="button" [disabled]="!hasNextPage() || loading()" (click)="next()" aria-label="Trang sau">›</button>
         </div>
       </footer>
     </section>
