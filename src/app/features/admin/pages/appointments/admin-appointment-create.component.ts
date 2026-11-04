@@ -651,6 +651,12 @@ export class AdminAppointmentCreateComponent {
         }
         const subtotal=this.estimatedSubtotal();
         const discount=Math.max(0,Number(result.discount)||0);
+        if (subtotal === null) {
+          this.pricingSnapshot.set(null);
+          this.pricingStatus.set('idle');
+          this.voucherNotice.set('Mã '+result.code+' hợp lệ · giảm '+this.money(discount)+'. Chưa có đủ giá dịch vụ để tính tổng tiền.');
+          return;
+        }
         this.pricingSnapshot.set({
           subtotal,
           surchargeAmount:0,
