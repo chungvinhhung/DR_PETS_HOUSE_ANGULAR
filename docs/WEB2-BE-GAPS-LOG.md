@@ -121,3 +121,26 @@
    - Figma requires values such as `#SR-0042-A`, pet name, service name, branch name and staff name.
    - FE now enriches pet/service/branch from the linked Appointment when possible and hides a raw Mongo ObjectId from the page title instead of presenting it as a fake SR code.
    - BE should expose a stable ServiceRecord business code plus safe display summaries (or a documented expand/include contract). FE must not fabricate `SR-xxxx` codes.
+
+
+## Auth / RBAC — Phase 1 audit
+
+22. **`/api/v1/admin/users` is documented but not mounted in inspected BE source**
+   - Auth handoff documents GET/POST/PUT endpoints under `/api/v1/admin/users`.
+   - Inspected `feat/foundation-v6/src/app.js` does not mount an Admin Users router. `/api/v1/admin` currently mounts `adminContentRoutes` only.
+   - FE keeps the Admin Users integration contract but must not fabricate account data while the route is unavailable.
+
+23. **403 auth error codes are overwritten by the global BE error handler**
+   - Auth service raises specific codes such as `ACCOUNT_NOT_ACTIVATED` and `ACCOUNT_BLOCKED`.
+   - Current global `errorHandler.js` rewrites every 403 to `AUTHORIZATION_ERROR`, losing the original auth code.
+   - FE now defensively recognizes the returned detail text so login messages remain user-friendly, but BE should preserve specific problem codes.
+
+24. **`rememberMe` is stripped before Auth login reaches the service**
+   - `auth.service.login()` supports `rememberMe` and chooses short/long refresh-session TTL accordingly.
+   - The ingress normalizer in `app.js` currently deletes `rememberMe`, `remember` and `remember_me` from the login body.
+   - Therefore the documented remember-me behavior cannot currently take effect.
+
+25. **Auth serializer and profile update contract have field mismatches**
+   - `formatMe()` exposes `branchScope`, `activationStatus`, `accountStatus`, and `lastLogin`; FE now preserves these fields in session state.
+   - `formatMe()` currently omits `avatarUrl` even though Auth/Profile contracts and the User model support it.
+   - `updateMe()` ignores `email: null`, so FE cannot truly clear an existing email even though the profile request shape allows a nullable email.
