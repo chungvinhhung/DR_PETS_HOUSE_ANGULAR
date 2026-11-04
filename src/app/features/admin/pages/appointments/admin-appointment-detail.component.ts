@@ -17,7 +17,7 @@ import {
 } from './admin-appointment-workflow.model';
 import { ServiceRecord, normalizeServiceRecordsPage, serviceRecordStatusLabel } from './admin-service-record.model';
 
-type DialogAction = 'cancel' | 'reschedule' | 'status' | null;
+type DialogAction = 'cancel' | 'reschedule' | 'status' | 'no-show' | null;
 
 @Component({
   selector: 'app-admin-appointment-detail',
@@ -88,7 +88,8 @@ export class AdminAppointmentDetailComponent {
       const name=action.toLowerCase();
       return this.dialog()==='cancel' ? name.includes('cancel') :
         this.dialog()==='reschedule' ? name.includes('reschedul') :
-        name.includes('status') || name.includes('confirm') || name.includes('start') || name.includes('no_show') || name.includes('noshow');
+        this.dialog()==='no-show' ? name.includes('no_show') || name.includes('noshow') :
+        name.includes('status') || name.includes('confirm') || name.includes('start');
     });
   });
 
@@ -362,7 +363,7 @@ export class AdminAppointmentDetailComponent {
     this.rescheduleSlotId.set('');
     this.rescheduleSlots.set([]);
     this.rescheduleLoadError.set('');
-    this.statusTarget.set(action==='status' ? (this.proposedActions()[0] || '') : '');
+    this.statusTarget.set(action==='status' ? 'IN_PROGRESS' : action==='no-show' ? 'NO_SHOW' : '');
     this.actionError.set('');
     if(action==='reschedule'){
       const item=this.item();
@@ -444,6 +445,15 @@ export class AdminAppointmentDetailComponent {
       request=this.api.post<unknown,typeof body>(
         '/appointments/'+encodeURIComponent(appointment.id)+(override?'/reschedule-override':'/reschedule'),
         body,{headers});
+    }else if(action==='no-show'){
+      if(!appointment.noShowWarning){
+        this.showActionMessage('Lịch hẹn chưa đủ điều kiện đánh dấu Không đến.');return;
+      }
+      request=this.api.post<unknown,{reason:string}>(
+        '/appointments/'+encodeURIComponent(appointment.id)+'/no-show',
+        {reason:this.reason().trim()},
+        {headers},
+      );
     }else{
       const segment=appointment.serviceSegments.find(row=>
         !['IN_PROGRESS','COMPLETED'].includes(row.executionStatus.toUpperCase()));
@@ -463,14 +473,16 @@ export class AdminAppointmentDetailComponent {
     ).subscribe({
       next:()=>{
         this.toast.show(action==='cancel'?'Đã hủy lịch hẹn.':
-          action==='reschedule'?'Đã đổi lịch hẹn.':'Đã bắt đầu phục vụ.','success');
+          action==='reschedule'?'Đã đổi lịch hẹn.':
+          action==='no-show'?'Đã đánh dấu khách không đến.':'Đã bắt đầu phục vụ.','success');
         this.closeDialog();
         this.refresh();
       },
       error:err=>{
         const message=adminErrorMessage(err,
           action==='cancel'?'Không thể hủy lịch hẹn.':
-          action==='reschedule'?'Không thể đổi lịch hẹn.':'Không thể bắt đầu phục vụ.');
+          action==='reschedule'?'Không thể đổi lịch hẹn.':
+          action==='no-show'?'Không thể đánh dấu khách không đến.':'Không thể bắt đầu phục vụ.');
         this.actionError.set(message);
         this.toast.show(message,'error');
       }
