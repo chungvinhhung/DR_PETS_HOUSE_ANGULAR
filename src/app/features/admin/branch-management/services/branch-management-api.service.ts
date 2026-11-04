@@ -54,11 +54,9 @@ interface BranchServiceBlockedWindowsResponse {
 }
 
 /**
- * The live BE /availability currently only populates start/end/remaining.
- * bookedCount and totalCount are REQUIRED additions to the API contract
- * before the admin UI can display the requested "booked / total" ratio.
- * Never calculate totalCount from configured concurrent capacity: staff
- * availability and sequential segments may reduce real bookable places.
+ * Live BE availability returns bookedCount/heldCount/occupiedCount/totalCount
+ * per slot. Admin UI reads those authoritative values and does not derive
+ * occupancy from configured capacity on the client.
  */
 export interface ServiceAvailabilitySlot {
   start: string;
