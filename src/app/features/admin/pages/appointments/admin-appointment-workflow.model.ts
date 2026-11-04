@@ -37,6 +37,9 @@ export interface AppointmentView {
   createdAt: string | null;
   appointmentAt: string | null;
   rescheduleCount: number | null;
+  version: number;
+  reviewerStaffId: string;
+  noShowWarning: boolean;
   allowedActions: string[] | null;
   history: AppointmentHistoryEvent[];
   cancellationReason: string | null;
@@ -158,6 +161,9 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
     createdAt:isDate(firstString(item['createdAt'],item['created_at'])) ? firstString(item['createdAt'],item['created_at']) : null,
     appointmentAt:date,
     rescheduleCount:typeof reschedules === 'number' && Number.isInteger(reschedules) && reschedules >= 0 ? reschedules : null,
+    version:typeof item['version'] === 'number' && Number.isInteger(item['version']) ? item['version'] : 0,
+    reviewerStaffId:firstString(item['reviewerStaffId']),
+    noShowWarning:item['noShowWarning'] === true,
     allowedActions:Array.isArray(item['allowedActions']) ? item['allowedActions'].filter((a): a is string => typeof a === 'string') : null,
     history:Array.isArray(historyRows) ? historyRows.map(row => {
       const event = obj(row) ?? {};
