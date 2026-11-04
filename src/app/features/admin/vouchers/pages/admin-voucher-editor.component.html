@@ -187,9 +187,6 @@
       @if (validation()) {
         <div class="voucher-editor__validation" role="alert">{{ validation() }}</div>
       }
-      @if (!canWrite()) {
-        <p class="voucher-editor__muted">Chỉ Quản trị viên được phép tạo hoặc chỉnh sửa voucher.</p>
-      }
     }
 
     @if (leaveDialogOpen()) {
