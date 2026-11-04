@@ -25,9 +25,11 @@ export class LoyaltyApiService {
         serviceIds: serviceIds || undefined,
       });
       const data = assertSuccess(response);
+      const discount = data?.discount ?? data?.discount_amount ?? data?.discountValue ?? data?.discountAmount ?? 0;
       return {
         ...data,
-        discount: data?.discount ?? data?.discount_amount ?? data?.discountValue ?? 0,
+        discount,
+        discountAmount: discount,
         valid: data?.valid ?? true,
         reason: data?.reason ?? "",
       };
