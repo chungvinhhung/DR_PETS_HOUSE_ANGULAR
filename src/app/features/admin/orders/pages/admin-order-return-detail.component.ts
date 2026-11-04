@@ -481,7 +481,10 @@ export class AdminOrderReturnDetailComponent {
   submit(): void {
     const action = this.dialog(), data = this.data();
     if (!action || !data || this.busy() || !this.availableActions().includes(action)) return;
-    if (action === 'reject' && this.note().trim().length < 5) return;
+    if (action === 'reject' && this.note().trim().length < 5) {
+      this.toast.show('Vui lòng nhập lý do từ chối rõ ràng (ít nhất 5 ký tự).', 'error');
+      return;
+    }
     if(action==='receive' && !this.inspectionValid()){
       this.toast.show('Kiểm tra số lượng thực nhận và chọn số lượng nhập kho (0 hoặc toàn bộ) cho từng sản phẩm.');return;
     }
