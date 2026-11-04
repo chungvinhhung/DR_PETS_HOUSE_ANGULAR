@@ -7,7 +7,10 @@
 .customer-page .customer-filter__controls select.web2-admin-filter-select:last-child{
   box-sizing:border-box;flex:0 0 254px;width:254px!important;min-width:254px
 }
-@media(max-width:670px){
+@media(max-width:1450px){
+  .customer-page .customer-filter.web2-filterbar{flex-wrap:wrap!important}
   .customer-page .customer-filter__controls{flex-wrap:wrap!important}
+}
+@media(max-width:670px){
   .customer-page .customer-filter__controls select.web2-admin-filter-select{max-width:100%}
 }
