@@ -107,10 +107,12 @@ export class AdminOrderReturnDetailComponent {
   readonly totalQuantity = computed(() => this.data()?.items.reduce((sum, item) => sum + item.requestedQty, 0) ?? 0);
   /** Identify the stage after which an irreversible rejection/cancellation occurred. */
   rejectionStage(ret:OrderReturnSummary):ReturnStatus {
-    if(ret.history?.some(event=>event.status==='RECEIVED') ||
-       ret.items.some(item=>typeof item.receivedQty==='number'))return 'RECEIVED';
-    if(ret.status==='CANCELLED' && !ret.history?.some(event=>event.status==='PROCESSING'))
+    // Current BE DTO defaults receivedQty to requestedQty even before goods are
+    // physically received, so only persisted history may prove the RECEIVE step.
+    if (ret.history?.some(event => event.status === 'RECEIVED')) return 'RECEIVED';
+    if (ret.status === 'CANCELLED' && !ret.history?.some(event => event.status === 'PROCESSING')) {
       return 'REQUESTED';
+    }
     return 'PROCESSING';
   }
   terminalStageLabel(ret:OrderReturnSummary):string {
@@ -132,7 +134,7 @@ export class AdminOrderReturnDetailComponent {
     const at = ret.history?.find(event => event.status === step)?.at;
     if (at) {
       const date = new Date(at);
-      return Number.isNaN(date.getTime()) ? 'BE chưa ghi thời gian' :
+      return Number.isNaN(date.getTime()) ? 'Chưa ghi thời gian' :
         new Intl.DateTimeFormat('vi-VN', {
           timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', year: 'numeric',
         }).format(date);
@@ -154,12 +156,22 @@ export class AdminOrderReturnDetailComponent {
     if (ret.status !== 'COMPLETED') return 0;
     const approved = item.approvedQty;
     const quantity = typeof approved === 'number' && Number.isFinite(approved)
-      ? approved : item.requestedQty;
+      ? approved
+      : typeof item.receivedQty === 'number' && Number.isFinite(item.receivedQty)
+        ? item.receivedQty
+        : item.requestedQty;
     return Math.max(0, Math.min(quantity, item.requestedQty));
   }
   hasNonResellable(ret: OrderReturnSummary):boolean{
     return ret.items.some(item=>item.quality==='DAMAGED'||item.quality==='DISCARDED');
   }
+  receivedQuantityLabel(ret: OrderReturnSummary, item: OrderReturnSummary['items'][number]): string {
+    if (!['RECEIVED', 'APPROVED', 'COMPLETED'].includes(ret.status)) return '—';
+    return typeof item.receivedQty === 'number' && Number.isFinite(item.receivedQty)
+      ? String(item.receivedQty)
+      : 'Chưa có dữ liệu';
+  }
+
   receivedTotal(ret: OrderReturnSummary): string {
     // Before RECEIVE no stock has actually been handed back, even though older
     // BE DTOs may default receivedQty to requestedQty.
@@ -341,7 +353,8 @@ export class AdminOrderReturnDetailComponent {
     if (ret.status === 'APPROVED' || ret.status === 'COMPLETED') {
       return ret.refundBreakdown.total;
     }
-    if (ret.items.some(item => typeof item.receivedQty === 'number')) {
+    if (ret.status === 'RECEIVED' &&
+        ret.items.some(item => typeof item.receivedQty === 'number')) {
       return this.approvedPreviewAmount();
     }
     return this.requestedRefundAmount(ret);
