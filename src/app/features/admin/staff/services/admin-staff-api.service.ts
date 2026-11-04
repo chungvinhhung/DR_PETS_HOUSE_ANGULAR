@@ -53,6 +53,16 @@ export interface StaffShiftRecord {
 
 
 export interface StaffBranchOption { id: string; name: string; }
+export interface StaffCreateResult extends StaffPreview {
+  credentials?: { username: string; password: string };
+}
+export interface StaffPasswordResetResult {
+  success: boolean;
+  message?: string;
+  temporaryPassword?: string;
+  staffId?: string;
+  username?: string;
+}
 
 function idOf(input: string | { id?: string; _id?: string } | null | undefined): string {
   if (typeof input === 'string') return input;
@@ -174,6 +184,7 @@ export class AdminStaffApiService {
       rawStatus === 'ACTIVE' ? 'ACTIVE' : 'UNKNOWN';
     return {
       id,
+      userId: idOf(input.userId),
       staffCode: input.staffCode ?? input.code ?? '',
       fullName: input.fullName ?? account?.fullName ?? account?.name ?? 'Chưa cập nhật họ tên',
       jobRole: safeRole(input.staffSubRole ?? input.jobRole),
@@ -224,6 +235,44 @@ export class AdminStaffApiService {
         this.error.set(errorText(err, 'Staff'));
       },
     });
+  }
+
+  createStaff(payload: {
+    fullName: string;
+    email?: string;
+    phone?: string;
+    staffSubRole: 'RECEPTIONIST' | 'CARE_STAFF_GROOMER' | 'VETERINARIAN' | 'NURSE';
+    authorizedBranchIds: string[];
+    homeBranchId?: string;
+  }): Observable<StaffCreateResult> {
+    return this.api.post<StaffWire & { credentials?: { username: string; password: string } }, typeof payload>(
+      '/staff',
+      payload,
+      { headers: new HttpHeaders().set('Idempotency-Key', crypto.randomUUID()) },
+    ).pipe(map(raw => {
+      const branchNames = new Map(this.branches().map(branch => [branch.id, branch.name]));
+      const staff = this.staffFromWire(raw, branchNames, new Map());
+      if (!staff) throw new Error('Không đọc được hồ sơ nhân viên vừa tạo.');
+      return { ...staff, credentials: raw.credentials };
+    }));
+  }
+
+  updateStaffRole(id: string, staffSubRole: 'RECEPTIONIST' | 'CARE_STAFF_GROOMER' | 'VETERINARIAN' | 'NURSE'): Observable<unknown> {
+    return this.api.patch('/staff/' + encodeURIComponent(id), { staffSubRole });
+  }
+
+  updateStaffBranches(id: string, payload: {
+    homeBranchId?: string;
+    authorizedBranchIds: string[];
+  }): Observable<unknown> {
+    return this.api.put('/staff/' + encodeURIComponent(id) + '/branches', payload);
+  }
+
+  resetStaffPassword(id: string, newPassword: string): Observable<StaffPasswordResetResult> {
+    return this.api.post<StaffPasswordResetResult, { newPassword: string }>(
+      '/staff/' + encodeURIComponent(id) + '/reset-password',
+      { newPassword },
+    );
   }
 
   /**
