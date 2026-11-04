@@ -22,7 +22,7 @@ import {
 import { AdminCategoryService } from '../services/admin-category.service';
 import { AdminProductService } from '../../products/services/admin-product.service';
 import { ADMIN_TABLE_PAGE_SIZE, countCursorItems, adminPageWindow, AdminPageItem } from '../../../../shared/utils/admin-table-pagination';
-import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 
 @Component({
   selector: 'app-admin-category-page',
@@ -388,25 +388,13 @@ export class AdminCategoryPageComponent implements OnInit {
   }
 
   private errorText(error: unknown, fallback: string): string {
-    if (error instanceof HttpErrorResponse) {
-      if (error.status === 409) {
-        return 'Đường dẫn (slug) đã tồn tại. Vui lòng chọn đường dẫn khác.';
-      }
-      if (error.status === 0) return 'Không thể kết nối máy chủ. Vui lòng thử lại.';
-      if (error.status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
-      if (error.status === 403) return 'Bạn không có quyền thực hiện thao tác này.';
-      if (error.status >= 500) return 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.';
-      const body: unknown = error.error;
-      if (body && typeof body === 'object') {
-        const details = body as { detail?: unknown; message?: unknown; errors?: unknown };
-        if (typeof details.detail === 'string' && details.detail.trim()) return details.detail;
-        if (typeof details.message === 'string' && details.message.trim()) return details.message;
-      }
-      if (error.status === 400) return 'Dữ liệu chưa đúng định dạng API. Vui lòng kiểm tra tên và đường dẫn.';
-      if (error.status === 401 || error.status === 403) return 'Bạn không có quyền thực hiện thao tác này. Hãy đăng nhập bằng tài khoản ADMIN.';
-      return fallback;
+    const status = (error as { status?: number } | null)?.status;
+    if (status === 409) {
+      return 'Đường dẫn (slug) đã tồn tại. Vui lòng chọn tên danh mục khác.';
     }
-    if (error instanceof Error && error.message && !/unauthoriz|failed to fetch|http failure/i.test(error.message)) return error.message;
-    return fallback;
+    if (status === 400 || status === 422) {
+      return 'Thông tin danh mục chưa hợp lệ. Vui lòng kiểm tra lại các trường đã nhập.';
+    }
+    return adminErrorMessage(error, fallback);
   }
 }
