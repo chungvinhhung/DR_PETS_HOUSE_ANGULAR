@@ -11,8 +11,8 @@ import { AuthSessionService } from '../../../../core/services/auth-session.servi
 import { AdminStaffApiService, staffTodayISO, staffWeekMonday } from '../services/admin-staff-api.service';
 import { AdminUsersService } from '../../users/services/admin-users.service';
 import {
-  JOB_LABELS, JOB_PREFIX, JobRole, STAFF_SHIFTS_PREVIEW,
-  StaffPreview, StaffShiftPreview,
+  JOB_LABELS, JOB_PREFIX, JobRole,
+  StaffPreview,
 } from '../models/staff-preview.model';
 
 const JOB_ROLES = (Object.keys(JOB_LABELS) as JobRole[])
@@ -171,7 +171,7 @@ export class AdminStaffFormComponent {
 
   // Edit page displays the employee's real shifts for the selected week.
   weekMonday = staffWeekMonday(staffTodayISO());
-  shifts: Record<string, { branch: string; template: string }> = {};
+  shifts: Record<string, { branch: string; template: string; hours: string }> = {};
 
   constructor() {
     this.form.controls.loginIdentifier.disable({ emitEvent: false });
@@ -205,7 +205,11 @@ export class AdminStaffFormComponent {
       const shifts = this.staffApi.shifts();
       if (this.staffApi.loadedMonday() === this.weekMonday && this.isEdit) {
         this.shifts = Object.fromEntries(shifts.filter(s => s.staffId === this.staffId)
-          .map(s => [s.isoDate, { branch: s.branch, template: s.shiftName }]));
+          .map(s => [s.isoDate, {
+            branch: s.branch,
+            template: s.shiftName,
+            hours: s.time.replace('–', ' - '),
+          }]));
         this.cdr.markForCheck();
       }
     });
@@ -234,14 +238,9 @@ export class AdminStaffFormComponent {
         dayMonth: `${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}`,
         branch: value?.branch ?? '',
         template: value?.template ?? '',
-        hours: value ? this.templateHours(value.template, iso) : '—',
+        hours: value?.hours || '—',
       };
     });
-  }
-  templateHours(template: string, iso: string): string {
-    const fixture: StaffShiftPreview | undefined = STAFF_SHIFTS_PREVIEW.find(s => s.staffId === this.staffId && s.isoDate === iso && s.shiftName === template);
-    if (fixture) return fixture.time.replace('–', ' - ');
-    return template === 'Ca sáng' ? '07:00 - 15:00' : template === 'Ca chiều' ? '15:00 - 22:00' : '—';
   }
   changeWeek(delta: number): void {
     this.weekMonday = new Date(new Date(this.weekMonday + 'T00:00:00Z').getTime() + delta * WEEK_MS).toISOString().slice(0, 10);
