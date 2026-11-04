@@ -51,9 +51,11 @@ import {
           <option value="90">90 ngày qua</option>
         </select>
       </label>
-      <a routerLink="/admin/appointments/new" class="primary web2-add-button">
-        <span class="web2-add-icon" aria-hidden="true">+</span>Tạo lịch hẹn
-      </a>
+      @if (canCreateAppointment()) {
+        <a routerLink="/admin/appointments/new" class="primary web2-add-button">
+          <span class="web2-add-icon" aria-hidden="true">+</span>Tạo lịch hẹn
+        </a>
+      }
     </div>
   </section>
   <section class="panel">
@@ -193,6 +195,11 @@ export class AdminAppointmentsPageComponent {
   readonly error=signal('');
   private readonly fetchedRows=signal<AppointmentView[]>([]);
   readonly partial=computed(()=>this.fetchedRows().length>=100);
+  readonly canCreateAppointment=computed(()=>{
+    const user=this.session.user();
+    return user?.systemRole==='ADMIN' || user?.systemRole==='MANAGER' ||
+      (user?.systemRole==='STAFF' && user.staffSubRole==='RECEPTIONIST');
+  });
   private readonly scopedRows=computed(()=>{
     const user=this.session.user();
     if(!user || user.systemRole==='ADMIN') return this.fetchedRows();
