@@ -104,6 +104,13 @@ export class BranchManagementPageComponent {
       this.occupancyLoading.set(false);
       this.servicesError.set('');
       if (id) {
+        if (!this.canAccessBranch(id)) {
+          this.detailLoading.set(false);
+          this.servicesLoading.set(false);
+          this.detailRecord.set(null);
+          this.detailError.set('Bạn không có quyền xem chi nhánh này.');
+          return;
+        }
         this.fetchDetail(id);
         this.fetchServiceConfigs(id);
       } else {
@@ -122,27 +129,22 @@ export class BranchManagementPageComponent {
   }
 
   private managerAssignedBranches(): readonly string[] {
-    // This is UI-only filtering; Backend MUST enforce authorization on every request.
-    // AuthUser omits the assigned branches but the Backend JWT includes them.
-    const token = this.session.accessToken();
-    if (!token) return [];
-    try {
-      const part = token.split('.')[1];
-      if (!part) return [];
-      const bytes = atob(part.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - part.length % 4) % 4));
-      const claims: { assignedBranchIds?: unknown } = JSON.parse(bytes);
-      return Array.isArray(claims.assignedBranchIds)
-        ? claims.assignedBranchIds.filter((id): id is string => typeof id === 'string')
-        : [];
-    } catch { return []; }
+    // /auth/me is the canonical source for Manager branch scope.
+    return [...(this.session.user()?.branchScope ?? [])];
+  }
+
+  private canAccessBranch(id: string): boolean {
+    return this.isAdmin || (
+      this.session.user()?.systemRole === 'MANAGER' &&
+      this.managerAssignedBranches().includes(id)
+    );
   }
 
   get branch(): BranchRow | null {
     const id = this.branchId;
     if (!id) return null;
     const match = this.visibleBranches.find((row) => row.id === id) ?? this.detailRecord();
-    // A Manager must not render an unverified, out-of-scope branch from /branches/:id.
-    if (!this.isAdmin && !this.managerAssignedBranches().includes(id)) return null;
+    if (!this.canAccessBranch(id)) return null;
     return match?.id === id ? match : null;
   }
   get pickerServices(): readonly CatalogService[] {
