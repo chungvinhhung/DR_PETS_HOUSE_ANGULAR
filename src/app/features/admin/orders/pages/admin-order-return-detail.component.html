@@ -33,12 +33,9 @@
     </header>
 
     @if (loading()) {
-      <div class="return-detail__feedback" role="status">Đang tải chi tiết yêu cầu trả hàng...</div>
+      <app-admin-data-state kind="loading" title="Đang tải chi tiết yêu cầu trả hàng" />
     } @else if (error()) {
-      <div class="return-detail__feedback" role="alert">
-        <p>{{ error() }}</p>
-        <button class="return-detail__button" type="button" (click)="load()">Thử lại</button>
-      </div>
+      <app-admin-data-state kind="error" title="Không thể tải chi tiết yêu cầu trả hàng" [message]="error()" (retry)="load()" />
     } @else if (data(); as ret) {
       <section class="return-detail__panel">
         <h2>Thông tin yêu cầu</h2>
