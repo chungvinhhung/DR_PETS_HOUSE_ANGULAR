@@ -58,6 +58,7 @@ export class AdminServiceRecordDetailComponent {
   private readonly route=inject(ActivatedRoute);
   private readonly destroyRef=inject(DestroyRef);
   private requestVersion=0;
+  private readonly mutationKeys=new Map<string,string>();
 
   readonly id=signal(this.route.snapshot.paramMap.get('id')||'');
   readonly loading=signal(false);
@@ -353,7 +354,7 @@ export class AdminServiceRecordDetailComponent {
     this.busy.set(true);this.actionError.set('');
     this.api.post<unknown>('/service-records/'+encodeURIComponent(r.id)+'/submit-review',{
       expectedVersion:r.version??undefined,
-    },{headers:this.idempotencyHeaders()}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    },{headers:this.idempotencyHeaders('submit-review:'+r.id+':'+(r.version??0))}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next:raw=>this.acceptActionMutation(raw,'Đã gửi hồ sơ cho Bác sĩ thú y duyệt.'),
       error:err=>this.failAction(err,'Không gửi được hồ sơ cho Bác sĩ duyệt.'),
     });
@@ -376,7 +377,7 @@ export class AdminServiceRecordDetailComponent {
     this.api.post<unknown>('/service-records/'+encodeURIComponent(r.id)+'/finalize',{
       expectedVersion:r.version??undefined,
       reason:reason.trim()||undefined,
-    },{headers:this.idempotencyHeaders()}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    },{headers:this.idempotencyHeaders('finalize:'+r.id+':'+(r.version??0)+':'+reason.trim())}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next:raw=>this.acceptActionMutation(raw,'Đã chốt hồ sơ dịch vụ. Hệ thống sẽ tự cập nhật lịch hẹn khi đủ điều kiện.'),
       error:err=>{
         if(this.dialog()==='finalize')this.failDialog(err,'Không thể chốt hồ sơ.');
@@ -397,7 +398,7 @@ export class AdminServiceRecordDetailComponent {
     this.busy.set(true);this.dialogError.set('');
     this.api.post<unknown>('/service-records/'+encodeURIComponent(r.id)+'/reopen',{
       expectedVersion:r.version??undefined,reason:this.reopenReason().trim(),
-    },{headers:this.idempotencyHeaders()}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    },{headers:this.idempotencyHeaders('reopen:'+r.id+':'+(r.version??0)+':'+this.reopenReason().trim())}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next:raw=>this.acceptMutation(raw,'Đã mở lại hồ sơ dịch vụ.'),
       error:err=>this.failDialog(err,'Không thể mở lại hồ sơ.'),
     });
@@ -460,10 +461,14 @@ export class AdminServiceRecordDetailComponent {
     if(value.trim()==='')return null;const n=Number(value);return Number.isFinite(n)?n:null;
   }
 
-  private idempotencyHeaders():HttpHeaders{
-    const key=typeof crypto!=='undefined' && 'randomUUID' in crypto
-      ? crypto.randomUUID()
-      : 'sr-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+  private idempotencyHeaders(fingerprint:string):HttpHeaders{
+    let key=this.mutationKeys.get(fingerprint);
+    if(!key){
+      key=typeof crypto!=='undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : 'sr-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+      this.mutationKeys.set(fingerprint,key);
+    }
     return new HttpHeaders({'Idempotency-Key':key});
   }
 }
