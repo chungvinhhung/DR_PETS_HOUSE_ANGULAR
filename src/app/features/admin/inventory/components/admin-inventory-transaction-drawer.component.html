@@ -4,7 +4,7 @@
     <header class="inventory-transaction-header">
       <div>
         <h2 id="inventory-transaction-title">Chi tiết giao dịch kho</h2>
-        <span>{{ transactionCode || transactions[0]?.transactionCode || transactions[0]?.groupCode || transactions[0]?.code || 'Chưa có mã giao dịch' }}</span>
+        <span>{{ displayedTransactionCode() }}</span>
       </div>
       <button type="button" aria-label="Đóng chi tiết giao dịch" (click)="closed.emit()"><img src="/assets/admin-inventory/close-outlined.svg" alt="" aria-hidden="true"></button>
     </header>
@@ -20,18 +20,18 @@
         </div>
       </section>
       <section class="inventory-transaction-section">
-        <h3>Sản phẩm &amp; biến động · {{ transactions.length }} mặt hàng</h3>
+        <h3>Sản phẩm &amp; biến động · {{ movementLines().length }} mặt hàng</h3>
         <div class="inventory-transaction-lines">
-          @for (tx of transactions; track tx.id) {
+          @for (line of movementLines(); track line.key) {
             <article class="inventory-transaction-item">
               <div class="inventory-transaction-item-title">
-                <strong>{{ itemFor(tx.inventoryItemId)?.name || tx.inventoryItemId }}</strong>
-                <small>{{ itemFor(tx.inventoryItemId)?.sku || '—' }} · SL: {{ tx.changeQty < 0 ? -tx.changeQty : tx.changeQty }}</small>
+                <strong>{{ line.name }}</strong>
+                <small>{{ line.sku }} · SL: {{ line.quantity }}{{ line.unit ? ' ' + line.unit : '' }}</small>
               </div>
               <div class="inventory-transaction-quantity">
-                <div><span>Tồn trước</span><strong>{{ tx.beforeQty }}</strong></div>
-                <div><span>Thay đổi</span><strong>{{ signedQuantity(tx.changeQty) }}</strong></div>
-                <div><span>Tồn sau</span><strong>{{ tx.afterQty }}</strong></div>
+                <div><span>Tồn trước</span><strong>{{ line.beforeQty }}</strong></div>
+                <div><span>Thay đổi</span><strong>{{ signedQuantity(line.changeQty) }}</strong></div>
+                <div><span>Tồn sau</span><strong>{{ line.afterQty }}</strong></div>
               </div>
             </article>
           }
