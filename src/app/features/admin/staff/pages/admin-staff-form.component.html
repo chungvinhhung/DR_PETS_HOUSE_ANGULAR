@@ -28,12 +28,12 @@
       </div>
     </header>
 
-    @if (staffApi.loading()) { <p role="status">Đang tải hồ sơ nhân viên từ Backend...</p> }
+    @if (staffApi.loading()) { <p role="status">Đang tải hồ sơ nhân viên...</p> }
     @if (staffApi.error()) { <p role="alert">{{ staffApi.error() }}</p> }
     @if (isEdit && !staff && !staffApi.loading()) {
       <section class="panel" role="alert">
         <h2>Không tìm thấy nhân viên</h2>
-        <p>Chưa tìm thấy mã {{ staffId }} trong dữ liệu Backend. <a routerLink="/admin/staff">Quay lại danh sách nhân viên</a>.</p>
+        <p>Chưa tìm thấy mã {{ staffId }}. <a routerLink="/admin/staff">Quay lại danh sách nhân viên</a>.</p>
       </section>
     } @else {
       <form [formGroup]="form" (ngSubmit)="submit('save')" novalidate>
@@ -129,25 +129,9 @@
                 }
               </div>
             } @else {
-              <div class="fields stacked">
-                <label>
-                  <span class="field-label">Tài khoản đăng nhập <em>*</em></span>
-                  <input formControlName="loginIdentifier" type="text" autocomplete="off" placeholder="Nhập tài khoản đăng nhập">
-                  @if (fieldError('loginIdentifier')) { <small class="error">{{ fieldError('loginIdentifier') }}</small> }
-                </label>
-                <label>
-                  <span class="field-label">Mật khẩu <em>*</em></span>
-                  <span class="password-wrap">
-                    <input formControlName="password" [type]="showPassword ? 'text' : 'password'"
-                      autocomplete="new-password" placeholder="Nhập mật khẩu">
-                    <button type="button" (click)="showPassword = !showPassword"
-                      [attr.aria-label]="showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'">
-                      <img [src]="showPassword ? '/assets/admin-login/visibility-off-outlined.svg' : '/assets/admin-login/visibility-outlined.svg'"
-                        width="20" height="20" alt="" aria-hidden="true">
-                    </button>
-                  </span>
-                  @if (fieldError('password')) { <small class="error">{{ fieldError('password') }}</small> }
-                </label>
+              <div class="account-auto-note">
+                <strong>Tài khoản được tạo tự động</strong>
+                <p>Hệ thống sẽ tự sinh tên đăng nhập và mật khẩu tạm an toàn sau khi tạo nhân viên.</p>
               </div>
             }
           </section>
@@ -262,9 +246,9 @@
       @if (resetError) { <p class="staff-reset-error" role="alert">{{ resetError }}</p> }
       <div class="staff-reset-actions">
         <button type="button" class="secondary" (click)="closeResetPassword()">Hủy</button>
-        <button type="button" class="primary" (click)="validateResetPassword()">Đặt lại mật khẩu</button>
+        <button type="button" class="primary" (click)="validateResetPassword()" [disabled]="resetBusy">{{ resetBusy ? 'Đang lưu...' : 'Đặt lại mật khẩu' }}</button>
       </div>
-      <p class="staff-reset-note">Chưa kết nối API Backend. Không lưu hoặc thay đổi mật khẩu thật.</p>
+      <p class="staff-reset-note">Mật khẩu mới sẽ có hiệu lực ngay sau khi lưu.</p>
     </section>
   </div>
 }
@@ -274,10 +258,10 @@
     <section class="staff-leave-dialog" role="alertdialog" aria-modal="true"
       aria-labelledby="staff-account-status-title" tabindex="-1">
       <h2 id="staff-account-status-title">{{ staff.accountStatus === 'BLOCKED' ? 'Bỏ chặn tài khoản?' : 'Chặn tài khoản?' }}</h2>
-      <p>{{ displayName }} · {{ staffId }}. Đây là bản FE preview; chưa kết nối API nên trạng thái tài khoản sẽ không thay đổi.</p>
+      <p>{{ displayName }} · {{ staffId }}. Trạng thái tài khoản sẽ được cập nhật ngay khi xác nhận.</p>
       <div class="staff-leave-actions">
         <button type="button" class="secondary" (click)="closeAccountStatusDialog()">Hủy</button>
-        <button type="button" class="danger-outline" (click)="confirmAccountStatusPreview()">Xác nhận</button>
+        <button type="button" class="danger-outline" (click)="confirmAccountStatusPreview()" [disabled]="accountStatusBusy">{{ accountStatusBusy ? 'Đang cập nhật...' : 'Xác nhận' }}</button>
       </div>
     </section>
   </div>
