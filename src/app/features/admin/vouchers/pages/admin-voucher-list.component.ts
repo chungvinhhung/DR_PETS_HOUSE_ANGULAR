@@ -37,13 +37,16 @@ export class AdminVoucherListComponent {
   readonly status = signal<VoucherStatus | 'ALL'>('ALL');
   readonly loading = signal(false);
   readonly availabilityFilter = signal('ALL');
+  readonly availabilityDataset = signal<AdminVoucher[] | null>(null);
+  readonly clientPage = signal(1);
   readonly error = signal('');
   readonly cursor = signal<string | null>(null);
   readonly nextCursor = signal<string | null>(null);
   readonly totalCount = signal<number | null>(null);
   readonly totalPages = computed(()=>this.totalCount()===null?null:Math.max(1,Math.ceil(this.totalCount()!/this.pageSize)));
   readonly previous = signal<(string | null)[]>([]);
-  readonly page = computed(() => this.previous().length + 1);
+  readonly page = computed(() =>
+    this.availabilityFilter() !== 'ALL' ? this.clientPage() : this.previous().length + 1);
   readonly visiblePageNumbers = computed(() =>
     this.totalPages()===null ? [this.page()] : adminPageWindow(this.page(),this.totalPages()!));
   readonly canEdit = computed(() => this.session.user()?.systemRole === 'ADMIN');
@@ -51,8 +54,11 @@ export class AdminVoucherListComponent {
     Boolean(this.search().trim()) || this.scope() !== 'ALL' || this.status() !== 'ALL' ||
     this.availabilityFilter() !== 'ALL' || this.cursor() !== null);
   readonly filtered = computed(() => {
-    return this.all().filter(item =>
-      this.availabilityFilter() === 'ALL' || voucherAvailability(item) === this.availabilityFilter());
+    if (this.availabilityFilter() === 'ALL') return this.all();
+    const matched = (this.availabilityDataset() ?? [])
+      .filter(item => voucherAvailability(item) === this.availabilityFilter());
+    const start = (this.clientPage() - 1) * this.pageSize;
+    return matched.slice(start, start + this.pageSize);
   });
   readonly scopeLabels = VOUCHER_SCOPE_LABELS;
 
@@ -123,10 +129,26 @@ export class AdminVoucherListComponent {
     if (this.searchTimer) clearTimeout(this.searchTimer);
     this.searchTimer=setTimeout(()=>{
       this.invalidateCount();
-      this.previous.set([]); this.cursor.set(null); this.fetch();
+      this.previous.set([]); this.cursor.set(null); this.clientPage.set(1);
+      if (this.availabilityFilter() === 'ALL') this.fetch();
+      else void this.fetchAvailabilityDataset();
     },300);
   }
-  setAvailability(value: string): void { this.availabilityFilter.set(value); }
+  setAvailability(value: string): void {
+    if (!['ALL', 'Còn lượt', 'Hết lượt', 'Chưa bắt đầu', 'Hết hạn'].includes(value)) return;
+    this.availabilityFilter.set(value);
+    this.clientPage.set(1);
+    this.previous.set([]);
+    this.cursor.set(null);
+    this.nextCursor.set(null);
+    this.invalidateCount();
+    if (value === 'ALL') {
+      this.availabilityDataset.set(null);
+      this.fetch();
+    } else {
+      void this.fetchAvailabilityDataset();
+    }
+  }
   setScope(value: string): void {
     if (value !== 'ALL' && !['ORDER','PRODUCT','SERVICE'].includes(value)) return;
     this.scope.set(value as VoucherScope | 'ALL'); this.resetAndFetch();
@@ -139,23 +161,42 @@ export class AdminVoucherListComponent {
     this.invalidateCount();
     this.previous.set([]);
     this.cursor.set(null);
-    this.fetch();
+    this.clientPage.set(1);
+    if (this.availabilityFilter() === 'ALL') this.fetch();
+    else void this.fetchAvailabilityDataset();
   }
   next(): void {
-    if (!this.nextCursor() || this.loading()) return;
+    if (this.loading()) return;
+    if (this.availabilityFilter() !== 'ALL') {
+      const pages = this.totalPages() ?? 1;
+      if (this.clientPage() < pages) this.clientPage.update(page => page + 1);
+      return;
+    }
+    if (!this.nextCursor()) return;
     this.previous.update(a => [...a, this.cursor()]);
     this.cursor.set(this.nextCursor());
     this.fetch();
   }
   prev(): void {
+    if (this.loading()) return;
+    if (this.availabilityFilter() !== 'ALL') {
+      if (this.clientPage() > 1) this.clientPage.update(page => page - 1);
+      return;
+    }
     const prev = this.previous();
-    if (!prev.length || this.loading()) return;
+    if (!prev.length) return;
     this.cursor.set(prev[prev.length - 1]);
     this.previous.set(prev.slice(0,-1));
     this.fetch();
   }
   async goToPage(target: number): Promise<void> {
     const count=this.totalPages();
+    if (this.availabilityFilter() !== 'ALL') {
+      if (Number.isSafeInteger(target) && target >= 1 && (count === null || target <= count) && !this.loading()) {
+        this.clientPage.set(target);
+      }
+      return;
+    }
     if(!Number.isSafeInteger(target)||target<1||(count!==null&&target>count)||this.loading())return;
     if(target===this.page())return;
     if(target===this.page()+1){this.next();return;}
@@ -190,6 +231,46 @@ export class AdminVoucherListComponent {
       this.loading.set(false);this.toast.show('Không thể mở trang này. Vui lòng thử lại.','error');
     }
   }
+  private async fetchAvailabilityDataset(): Promise<void> {
+    const request = ++this.requestVersion;
+    this.loading.set(true);
+    this.error.set('');
+    this.availabilityDataset.set(null);
+    this.nextCursor.set(null);
+    try {
+      const rows: AdminVoucher[] = [];
+      let cursor: string | null = null;
+      let pages = 0;
+      do {
+        const result = await firstValueFrom(this.api.list({
+          ...(this.scope() !== 'ALL' ? { scope: this.scope() as VoucherScope } : {}),
+          ...(this.status() !== 'ALL' ? { status: this.status() as VoucherStatus } : {}),
+          ...(this.search().trim() ? { search: this.search().trim() } : {}),
+          ...(cursor ? { cursor } : {}),
+          limit: 100,
+        }));
+        if (request !== this.requestVersion || this.destroyRef.destroyed) return;
+        rows.push(...result.items);
+        cursor = result.nextCursor || null;
+        pages += 1;
+      } while (cursor && pages < 50);
+
+      const matched = rows.filter(item =>
+        voucherAvailability(item) === this.availabilityFilter());
+      this.availabilityDataset.set(rows);
+      this.totalCount.set(matched.length);
+      this.clientPage.set(Math.min(this.clientPage(), Math.max(1, Math.ceil(matched.length / this.pageSize))));
+      this.loading.set(false);
+    } catch (error) {
+      if (request !== this.requestVersion || this.destroyRef.destroyed) return;
+      this.loading.set(false);
+      this.availabilityDataset.set([]);
+      this.totalCount.set(0);
+      this.error.set(adminErrorMessage(error, 'Không tải được danh sách voucher.'));
+      this.toast.show(this.error(), 'error');
+    }
+  }
+
   date(value: string): string { return voucherDate(value); }
   offer(value: AdminVoucher): string { return voucherOffer(value); }
   availability(value: AdminVoucher): string { return voucherAvailability(value); }
@@ -201,9 +282,15 @@ export class AdminVoucherListComponent {
     this.scope.set('ALL');
     this.status.set('ALL');
     this.availabilityFilter.set('ALL');
+    this.availabilityDataset.set(null);
+    this.clientPage.set(1);
     this.previous.set([]);
     this.cursor.set(null);
+    this.invalidateCount();
     this.fetch();
   }
-  refresh(): void { this.fetch(); }
+  refresh(): void {
+    if (this.availabilityFilter() === 'ALL') this.fetch();
+    else void this.fetchAvailabilityDataset();
+  }
 }
