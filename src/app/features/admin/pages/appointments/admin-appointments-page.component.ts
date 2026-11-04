@@ -23,19 +23,19 @@ import {
 <main class="appointments">
   <header class="heading"><h1>Quản lý lịch hẹn</h1></header>
   <section class="appointments__kpis" aria-label="Thống kê lịch hẹn trong dữ liệu đã tải">
-    <article class="appointments__kpi">
+    <article class="appointments__kpi" data-kpi-tone="neutral">
       <span>Tổng lịch hẹn</span>
       <strong>{{ loading() || error() ? '—' : kpis().total }}</strong>
     </article>
-    <article class="appointments__kpi">
+    <article class="appointments__kpi" data-kpi-tone="warning">
       <span>Chờ thanh toán</span>
       <strong class="appointments__kpi--blue">{{ loading() || error() ? '—' : kpis().pendingPayment }}</strong>
     </article>
-    <article class="appointments__kpi">
+    <article class="appointments__kpi" data-kpi-tone="info">
       <span>Đang thực hiện</span>
       <strong>{{ loading() || error() ? '—' : kpis().inProgress }}</strong>
     </article>
-    <article class="appointments__kpi">
+    <article class="appointments__kpi" data-kpi-tone="success">
       <span>Hoàn tất</span>
       <strong>{{ loading() || error() ? '—' : kpis().completed }}</strong>
     </article>
