@@ -156,28 +156,8 @@
                   @for (day of weekDays; track day.key) {
                     <tr>
                       <td><span class="shift-day"><span class="shift-day__weekday">{{ day.weekday }}</span><small class="shift-day__date">{{ day.dayMonth }}</small></span></td>
-                      <td>
-                        <span class="select-wrap">
-                          <select aria-label="Chi nhánh của {{ day.label }}" [value]="day.branch"
-                            (change)="setShift(day.key, 'branch', $any($event.target).value)"
-                            [disabled]="!day.template">
-                            <option value="">—</option>
-                            @for (branch of selectedBranches; track branch) { <option [value]="branch">{{ branch }}</option> }
-                          </select>
-                          @if (day.template) { <img src="/assets/admin-product/expand_more.svg" width="15" height="15" alt=""> }
-                        </span>
-                      </td>
-                      <td>
-                        <span class="select-wrap">
-                          <select aria-label="Ca làm của {{ day.label }}" [value]="day.template"
-                            (change)="setShift(day.key, 'template', $any($event.target).value)">
-                            <option value="">Chưa phân ca</option>
-                            <option value="Ca sáng">Ca sáng</option>
-                            <option value="Ca chiều">Ca chiều</option>
-                          </select>
-                          <img src="/assets/admin-product/expand_more.svg" width="15" height="15" alt="">
-                        </span>
-                      </td>
+                      <td>{{ day.branch || '—' }}</td>
+                      <td>{{ day.template || 'Chưa phân ca' }}</td>
                       <td>{{ day.hours }}</td>
                       <td>{{ day.template && day.branch ? 'Đã xếp' : 'Chưa xếp' }}</td>
                     </tr>
@@ -185,7 +165,7 @@
                 </tbody>
               </table>
             </div>
-            <p class="schedule-note">Lịch hiển thị mẫu Figma. Phân ca thực tế và xác nhận xung đột phải được Backend xử lý.</p>
+            <p class="schedule-note">Lịch này được lấy từ dữ liệu ca làm việc thực tế. Muốn thay đổi phân ca, hãy mở màn Lịch làm việc.</p>
           </section>
         }
       </form>
