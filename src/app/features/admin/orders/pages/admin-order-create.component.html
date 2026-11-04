@@ -1,8 +1,9 @@
 <app-admin-catalog-shell activeItem="orders">
   <main class="create-order">
-    <nav class="create-order__breadcrumb" aria-label="Đường dẫn">
-      <a routerLink="/admin/orders">Đơn hàng</a><span aria-hidden="true">›</span><strong>Tạo đơn hàng</strong>
-    </nav>
+    <app-admin-breadcrumb [items]="[
+      {label:'Đơn hàng', link:'/admin/orders'},
+      {label:'Tạo đơn hàng'}
+    ]" />
     <h1>Tạo đơn hàng</h1>
 
     <section class="create-order__panel" aria-labelledby="lookup-title">
