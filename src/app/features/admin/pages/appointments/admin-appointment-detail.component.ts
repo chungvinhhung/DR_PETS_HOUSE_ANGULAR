@@ -63,7 +63,10 @@ export class AdminAppointmentDetailComponent {
   readonly isManagerOrAdmin = computed(() => this.session.hasAnyRole(['ADMIN','MANAGER']));
   readonly isReceptionist = computed(() => this.session.user()?.systemRole === 'STAFF' &&
     this.session.user()?.staffSubRole === 'RECEPTIONIST');
-  readonly canInspectActions = computed(() => this.isManagerOrAdmin() || this.isReceptionist());
+  readonly isExecutionStaff = computed(() => this.session.user()?.systemRole === 'STAFF' &&
+    ['CARE_STAFF_GROOMER','VETERINARIAN','NURSE'].includes(this.session.user()?.staffSubRole ?? ''));
+  readonly canManageAppointment = computed(() => this.isManagerOrAdmin() || this.isReceptionist());
+  readonly canStartService = computed(() => this.isManagerOrAdmin() || this.isExecutionStaff());
   readonly cancellationWindow = computed(() => {
     const a = this.item();
     return a ? appointmentWindow(a,'cancel',this.nowMs(),this.isManagerOrAdmin()) : null;
@@ -354,7 +357,8 @@ export class AdminAppointmentDetailComponent {
   }
 
   startAction(action: Exclude<DialogAction,null>): void {
-    if (!this.canInspectActions())return;
+    const allowed = action === 'status' ? this.canStartService() : this.canManageAppointment();
+    if (!allowed)return;
     this.nowMs.set(Date.now());
     this.dialog.set(action);
     this.reason.set('');
@@ -413,7 +417,8 @@ export class AdminAppointmentDetailComponent {
     const action=this.dialog();
     const appointment=this.item();
     if (!action||!appointment||this.actionBusy())return;
-    if (!this.canInspectActions()) {this.showActionMessage('Bạn không có quyền xử lý lịch hẹn.');return;}
+    const allowed = action === 'status' ? this.canStartService() : this.canManageAppointment();
+    if (!allowed) {this.showActionMessage('Bạn không có quyền thực hiện thao tác này.');return;}
 
     if (action==='reschedule') {
       if (!this.targetDate()||!this.rescheduleSlotId()) {
