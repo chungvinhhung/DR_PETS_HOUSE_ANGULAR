@@ -33,6 +33,12 @@ export interface BranchServiceView {
   service: CatalogService;
   config: BranchServiceApiRecord | null;
 }
+export interface BranchInventorySummary {
+  branchId: string;
+  totalItems: number;
+  lowStockItems: number;
+  outOfStockItems: number;
+}
 export interface BranchServiceBlockedWindow {
   id: string;
   startAt: string;
@@ -129,6 +135,10 @@ export class BranchManagementApiService {
       .set('serviceIds', serviceId)
       .set('date', date);
     return this.api.get<ServiceAvailabilityResponse>('/availability', { params });
+  }
+
+  getInventorySummary(branchId: string): Observable<BranchInventorySummary> {
+    return this.api.get<BranchInventorySummary>('/inventory/summary/' + encodeURIComponent(branchId));
   }
 
   getOperationSlots(branchId: string, date: string): Observable<BranchOperationSlotsResponse> {
