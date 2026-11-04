@@ -130,11 +130,6 @@
                   <button type="button" class="secondary reset-button" (click)="openResetPassword()">Đặt lại mật khẩu</button>
                 }
               </div>
-            } @else {
-              <div class="account-auto-note">
-                <strong>Tài khoản được tạo tự động</strong>
-                <p>Hệ thống sẽ tự sinh tên đăng nhập và mật khẩu tạm an toàn sau khi tạo nhân viên.</p>
-              </div>
             }
           </section>
         </div>
@@ -167,7 +162,6 @@
                 </tbody>
               </table>
             </div>
-            <p class="schedule-note">Lịch này được lấy từ dữ liệu ca làm việc thực tế. Muốn thay đổi phân ca, hãy mở màn Lịch làm việc.</p>
           </section>
         }
       </form>
@@ -230,7 +224,6 @@
         <button type="button" class="secondary" (click)="closeResetPassword()">Hủy</button>
         <button type="button" class="primary" (click)="validateResetPassword()" [disabled]="resetBusy">{{ resetBusy ? 'Đang lưu...' : 'Đặt lại mật khẩu' }}</button>
       </div>
-      <p class="staff-reset-note">Mật khẩu mới sẽ có hiệu lực ngay sau khi lưu.</p>
     </section>
   </div>
 }
