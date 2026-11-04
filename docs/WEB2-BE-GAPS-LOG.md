@@ -144,3 +144,21 @@
    - `formatMe()` exposes `branchScope`, `activationStatus`, `accountStatus`, and `lastLogin`; FE now preserves these fields in session state.
    - `formatMe()` currently omits `avatarUrl` even though Auth/Profile contracts and the User model support it.
    - `updateMe()` ignores `email: null`, so FE cannot truly clear an existing email even though the profile request shape allows a nullable email.
+
+
+## Catalog / Operations — Phase 2 audit
+
+26. **Branch and Service branch-config read APIs do not enforce Manager branch scope**
+   - `branch.service.listBranches()` returns every branch to any internal actor and `getBranchById()` does not reject an out-of-scope Manager.
+   - `GET /services/:id/branch-configs` is also mounted with optional auth and currently returns configs across branches without Manager scope enforcement.
+   - FE now filters by canonical `branchScope` from `/auth/me` and blocks direct out-of-scope branch navigation, but this is only presentation-layer protection. BE must enforce the same scope before returning data.
+
+27. **Permanent Product delete is still not implemented**
+   - FE has an archived-product permanent-delete action for the approved UI flow.
+   - Inspected Catalog routes provide archive and restore but no `DELETE /products/:id`.
+   - FE keeps the action non-fabricated and surfaces the technical unsupported notice only when the missing endpoint is actually invoked.
+
+28. **Phase 2 UAT seed exists, but environment execution is not guaranteed**
+   - `npm run seed:uat-prod` provisions realistic branches, staff/shifts, categories, products, services and inventory data.
+   - Therefore an empty deployed/local Phase 2 screen should be treated first as an environment/seed execution issue, not automatically as a missing API.
+   - FE does not inject demo rows when APIs return an empty dataset.
