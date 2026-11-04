@@ -228,7 +228,14 @@ export class AdminOrderCreateComponent {
       error: error => {
         if (version !== this.customerRequest) return;
         this.lookupState.set('error');
-        this.toast.show(adminErrorMessage(error, 'Chưa tra cứu được khách hàng.'));
+        const status = (error as { status?: number } | null)?.status;
+        const user = this.session.user();
+        this.toast.show(
+          status === 403 && user?.systemRole === 'STAFF' && user.staffSubRole === 'RECEPTIONIST'
+            ? 'BE chưa cấp quyền tra cứu khách hàng cho Lễ tân trên phiên bản hiện tại.'
+            : adminErrorMessage(error, 'Chưa tra cứu được khách hàng.'),
+          'error',
+        );
       },
     });
   }
