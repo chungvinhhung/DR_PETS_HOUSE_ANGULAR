@@ -5,7 +5,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.component';
 import { formatStaffWeekRange } from '../utils/staff-week-range';
-import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
+import { forkJoin, finalize } from 'rxjs';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminStaffApiService, staffTodayISO, staffWeekMonday } from '../services/admin-staff-api.service';
 import {
@@ -13,7 +14,8 @@ import {
   StaffPreview, StaffShiftPreview,
 } from '../models/staff-preview.model';
 
-const JOB_ROLES = (Object.keys(JOB_LABELS) as JobRole[]).filter(role => role !== 'UNKNOWN');
+const JOB_ROLES = (Object.keys(JOB_LABELS) as JobRole[])
+  .filter(role => role !== 'UNKNOWN' && role !== 'MANAGER');
 const STRONG_PASSWORD = /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
 const PHONE = /^0[0-9]{9}$/;
 const WEEK_MS = 7 * 86400000;
@@ -60,8 +62,8 @@ export class AdminStaffFormComponent {
     email: [this.staff?.email ?? '', Validators.email],
     homeBranch: [this.staff?.homeBranch ?? this.staff?.branches[0] ?? '', Validators.required],
     assignedBranches: [this.staff?.branches.join(',') ?? '', Validators.required],
-    loginIdentifier: [this.staff?.loginUsername ?? '', Validators.required],
-    password: ['', this.isEdit ? [] : [Validators.required, Validators.pattern(STRONG_PASSWORD)]],
+    loginIdentifier: [this.staff?.loginUsername ?? ''],
+    password: [''],
   });
 
   submitted = false;
@@ -73,6 +75,8 @@ export class AdminStaffFormComponent {
   resetVisible = false;
   resetConfirmVisible = false;
   resetError = '';
+  resetBusy = false;
+  saving = false;
 
   get canManageAccount(): boolean { return this.isEdit && this.session.hasAnyRole(['ADMIN']); }
 
@@ -107,7 +111,7 @@ export class AdminStaffFormComponent {
     this.resetError = '';
   }
   validateResetPassword(): void {
-    if (!this.canManageAccount || !this.staff) return;
+    if (!this.canManageAccount || !this.staff || this.resetBusy) return;
     if (!STRONG_PASSWORD.test(this.newPassword)) {
       this.resetError = 'Mật khẩu cần ít nhất 8 ký tự, có chữ hoa và chữ số.';
       return;
@@ -117,7 +121,20 @@ export class AdminStaffFormComponent {
       return;
     }
     this.resetError = '';
-    this.toast.show('Biểu mẫu hợp lệ. Chưa có API đặt lại mật khẩu, tài khoản chưa thay đổi.', 'info');
+    this.resetBusy = true;
+    this.staffApi.resetStaffPassword(this.staff.id, this.newPassword)
+      .pipe(finalize(() => { this.resetBusy = false; this.cdr.markForCheck(); }))
+      .subscribe({
+        next: () => {
+          this.toast.show('Đã đặt lại mật khẩu nhân viên.', 'success');
+          this.closeResetPassword();
+          this.cdr.markForCheck();
+        },
+        error: err => {
+          this.resetError = adminErrorMessage(err, 'Không thể đặt lại mật khẩu. Vui lòng thử lại.');
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   branchMenuOpen = false;
@@ -133,7 +150,12 @@ export class AdminStaffFormComponent {
 
   constructor() {
     this.form.controls.loginIdentifier.disable({ emitEvent: false });
-    if (!this.isEdit) this.form.controls.loginIdentifier.enable({ emitEvent: false });
+    this.form.controls.password.disable({ emitEvent: false });
+    if (this.isEdit) {
+      this.form.controls.fullName.disable({ emitEvent: false });
+      this.form.controls.phone.disable({ emitEvent: false });
+      this.form.controls.email.disable({ emitEvent: false });
+    }
     this.staffApi.loadRoster();
     effect(() => {
       const staff = this.staff;
@@ -251,11 +273,13 @@ export class AdminStaffFormComponent {
   submit(intent: 'save' | 'assign'): void {
     this.submitted = true;
     this.form.markAllAsTouched();
+    if (this.saving) return;
     if (!this.hasStaff) {
-      this.toast.show('Không tìm thấy hồ sơ nhân viên từ Backend.', 'error');
+      this.toast.show('Không tìm thấy hồ sơ nhân viên.', 'error');
       return;
     }
-    if (!this.selectedBranches.size || !this.form.controls.homeBranch.value || !this.selectedBranches.has(this.form.controls.homeBranch.value)) {
+    const homeBranchName = this.form.controls.homeBranch.value;
+    if (!this.selectedBranches.size || !homeBranchName || !this.selectedBranches.has(homeBranchName)) {
       this.toast.show('Vui lòng chọn chi nhánh làm việc phù hợp với chi nhánh chính.', 'error');
       return;
     }
@@ -263,9 +287,64 @@ export class AdminStaffFormComponent {
       this.toast.show('Vui lòng kiểm tra các trường được đánh dấu lỗi.', 'error');
       return;
     }
-    this.toast.show(intent === 'assign'
-      ? 'Backend chưa xác nhận API tạo đồng thời tài khoản và hồ sơ nhân viên. Chưa phân ca.'
-      : 'Đã kết nối API đọc, nhưng chưa có hợp đồng ghi Staff tương thích với form. Chưa lưu thay đổi.', 'info');
+    const branchIds = [...this.selectedBranches]
+      .map(name => this.staffApi.branches().find(branch => branch.name === name)?.id ?? '')
+      .filter(Boolean);
+    const homeBranchId = this.staffApi.branches().find(branch => branch.name === homeBranchName)?.id ?? '';
+    if (!branchIds.length || !homeBranchId) {
+      this.toast.show('Không xác định được mã chi nhánh. Vui lòng tải lại dữ liệu.', 'error');
+      return;
+    }
+    const role = this.form.controls.jobRole.value === 'CARE_STAFF'
+      ? 'CARE_STAFF_GROOMER'
+      : this.form.controls.jobRole.value;
+    if (!['RECEPTIONIST', 'CARE_STAFF_GROOMER', 'VETERINARIAN', 'NURSE'].includes(role)) {
+      this.toast.show('Vai trò nhân viên chưa hợp lệ.', 'error');
+      return;
+    }
+    this.saving = true;
+    if (!this.isEdit) {
+      this.staffApi.createStaff({
+        fullName: this.form.controls.fullName.value.trim(),
+        phone: this.form.controls.phone.value.trim() || undefined,
+        email: this.form.controls.email.value.trim() || undefined,
+        staffSubRole: role as 'RECEPTIONIST' | 'CARE_STAFF_GROOMER' | 'VETERINARIAN' | 'NURSE',
+        authorizedBranchIds: branchIds,
+        homeBranchId,
+      }).pipe(finalize(() => { this.saving = false; this.cdr.markForCheck(); })).subscribe({
+        next: created => {
+          this.allowNavigation = true;
+          this.staffApi.loadRoster(true);
+          const credentials = created.credentials;
+          this.toast.show(credentials
+            ? `Đã tạo nhân viên. Tài khoản: ${credentials.username} · Mật khẩu tạm: ${credentials.password}`
+            : 'Đã tạo nhân viên.', 'success');
+          void this.router.navigateByUrl(intent === 'assign'
+            ? '/admin/staff/shifts/assign?staffId=' + encodeURIComponent(created.id)
+            : '/admin/staff/' + encodeURIComponent(created.id));
+        },
+        error: err => this.toast.show(adminErrorMessage(err, 'Không thể tạo nhân viên. Vui lòng thử lại.'), 'error'),
+      });
+      return;
+    }
+
+    const staff = this.staff;
+    if (!staff) {
+      this.saving = false;
+      return;
+    }
+    forkJoin([
+      this.staffApi.updateStaffRole(staff.id, role as 'RECEPTIONIST' | 'CARE_STAFF_GROOMER' | 'VETERINARIAN' | 'NURSE'),
+      this.staffApi.updateStaffBranches(staff.id, { homeBranchId, authorizedBranchIds: branchIds }),
+    ]).pipe(finalize(() => { this.saving = false; this.cdr.markForCheck(); })).subscribe({
+      next: () => {
+        this.staffApi.loadRoster(true);
+        this.form.markAsPristine();
+        this.selectedBranches = new Set(this.selectedBranches);
+        this.toast.show('Đã cập nhật vai trò và phân công chi nhánh.', 'success');
+      },
+      error: err => this.toast.show(adminErrorMessage(err, 'Không thể lưu thay đổi nhân viên. Vui lòng thử lại.'), 'error'),
+    });
   }
   notAvailable(action: string): void {
     this.toast.show(`${action} đang chờ API Backend và phân quyền Admin.`, 'info');
