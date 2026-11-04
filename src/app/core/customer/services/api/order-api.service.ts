@@ -10,22 +10,23 @@ import { Injectable, inject } from '@angular/core';
 import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 
 function normalizeOrderStatus(order: any = {}) {
-  const status = order.order_status || order.status;
-  if (status === "cancelled") return "cancelled";
-  if (status === "shipping") return "shipping";
-  if (status === "completed") return "delivered";
-  if (status === "confirmed") return "processing";
-  if (order.payment_status === "unpaid" || order.payments?.some((payment: any) => payment.status === "pending")) {
+  const raw = String(order.order_status || order.status || "").toLowerCase();
+  if (raw === "cancelled") return "cancelled";
+  if (raw === "shipping" || raw === "shipped") return "shipping";
+  if (raw === "completed" || raw === "delivered") return "delivered";
+  if (raw === "confirmed") return "processing";
+  if (raw === "processing") return "processing";
+  if (raw === "pending" || order.payment_status === "unpaid" || order.payment?.status === "PENDING" || order.payments?.some((payment: any) => payment.status === "pending")) {
     return "awaiting_payment";
   }
   return "processing";
 }
 
 function normalizePaymentMethod(order: any = {}) {
-  const method = order.payments?.[0]?.payment_method || order.payment_method;
-  if (method === "online") return "Thanh toán trực tuyến";
-  if (method === "cod") return "Thanh toán khi nhận hàng";
-  if (method === "store") return "Thanh toán tại cửa hàng";
+  const method = order.payments?.[0]?.payment_method || order.payment_method || order.paymentMethod;
+  if (method === "online" || method === "ONLINE_MOCK") return "Thanh toán trực tuyến";
+  if (method === "cod" || method === "COD") return "Thanh toán khi nhận hàng";
+  if (method === "store" || method === "PAY_AT_STORE") return "Thanh toán tại cửa hàng";
   return method || "Đang cập nhật";
 }
 
@@ -47,45 +48,49 @@ function parseVariantMeta(value: any = "") {
 }
 
 function normalizeOrderProduct(item: any = {}) {
-  const itemName = item.item_name_snapshot || item.product?.product_name || "Sản phẩm";
+  const itemName = item.name || item.nameSnapshot || item.item_name_snapshot || item.product?.product_name || "Sản phẩm";
   const [name, snapshotVariantName] = itemName.split(" - ");
-  const variantName = item.variant?.variant_name || item.variant_name || snapshotVariantName || "";
+  const variantName = item.variant?.variant_name || item.variant_name || item.variantSnapshot || snapshotVariantName || "";
   const parsedVariant = parseVariantMeta(variantName);
 
   return {
-    id: String(item.order_item_id || item.product_id || item.id || itemName),
-    productId: item.product_id,
-    variantId: item.variant_id ?? item.variant?.variant_id ?? null,
+    id: String(item.orderItemId || item.order_item_id || item.productId || item.product_id || item.id || itemName),
+    productId: item.productId || item.product_id,
+    variantId: item.variantId ?? item.variant_id ?? item.variant?.variant_id ?? null,
     name,
-    price: Number(item.unit_price || item.product?.price || 0),
+    price: Number(item.unitPrice ?? item.unit_price ?? item.price ?? item.product?.price ?? 0),
     quantity: Number(item.quantity || 1),
     variant: item.variant_label || item.variantLabel || parsedVariant.variant,
     size: item.size || item.size_label || item.sizeLabel || parsedVariant.size,
-    image: item.product?.product_images?.[0]?.image_url || "",
+    image: item.product?.product_images?.[0]?.image_url || item.image || item.photoUrl || "",
   };
 }
 
 export function normalizeOrder(order: any = {}) {
-  const products = Array.isArray(order.order_items) ? order.order_items.map(normalizeOrderProduct) : [];
-  const createdAt = order.created_at || order.orderedAt || new Date().toISOString();
+  const rawItems = Array.isArray(order.items) ? order.items : (Array.isArray(order.order_items) ? order.order_items : []);
+  const products = rawItems.map(normalizeOrderProduct);
+  const createdAt = order.created_at || order.createdAt || order.orderedAt || new Date().toISOString();
+  const totalAmount = Number(order.total_amount ?? order.pricing?.totalAmount ?? order.totalAmount ?? 0);
+  const shippingFee = Number(order.shipping_fee ?? order.pricing?.shippingFee ?? order.shippingFee ?? 0);
+  const discount = Number(order.discount_amount ?? order.pricing?.voucherDiscount ?? order.discount ?? 0) + Number(order.points_discount_amount || 0);
 
   return {
     ...order,
-    id: String(order.order_id || order.id || order.order_code || ""),
-    code: order.order_code || order.code || "",
+    id: String(order.id || order._id || order.order_id || order.order_code || order.code || ""),
+    code: order.code || order.order_code || "",
     status: normalizeOrderStatus(order),
     paymentMethod: normalizePaymentMethod(order),
     paymentExpiresAt: order.payment_expires_at || new Date(new Date(createdAt).getTime() + 15 * 60 * 1000).toISOString(),
     orderedAt: createdAt,
     estimatedDelivery: order.estimated_delivery_at || null,
     products,
-    shippingFee: Number(order.shipping_fee || 0),
-    discount: Number(order.discount_amount || 0) + Number(order.points_discount_amount || 0),
-    totalAmount: Number(order.total_amount || 0),
+    shippingFee,
+    discount,
+    totalAmount,
     recipient: {
-      name: order.recipient_name || order.address?.recipient_name || "",
-      phone: order.recipient_phone || order.address?.recipient_phone || "",
-      address: order.shipping_address || order.address?.address_line || "",
+      name: order.recipient_name || order.shippingAddress?.recipientName || order.shippingAddress?.fullName || order.contactSnapshot?.fullName || order.address?.recipient_name || "",
+      phone: order.recipient_phone || order.shippingAddress?.phone || order.contactSnapshot?.phone || order.address?.recipient_phone || "",
+      address: order.shipping_address || (order.shippingAddress ? [order.shippingAddress.line1, order.shippingAddress.ward, order.shippingAddress.district, order.shippingAddress.city].filter(Boolean).join(", ") : "") || order.address?.address_line || "",
     },
   };
 }

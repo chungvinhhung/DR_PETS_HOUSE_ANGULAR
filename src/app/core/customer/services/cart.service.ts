@@ -243,6 +243,12 @@ export class CartService {
 
   private showOrderSuccess(orderResult: any = null): void {
     if (orderResult) this.lastOrderResult.set(orderResult);
+    this.cartItems.set([]);
+    try {
+      localStorage.removeItem(CART_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
     this.isCartOpen.set(false);
     this.isCheckoutOpen.set(false);
     this.isBankTransferOpen.set(false);

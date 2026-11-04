@@ -30,5 +30,12 @@ export class OrderSuccessOverlayComponent {
 
   protected handleOrderDetails() {
     this.cartService.closeOrderSuccess();
+    const order = this.cartService.lastOrderResult();
+    const orderId = order?.id || order?._id || order?.order_id || order?.orderId || order?.orderCode || order?.code;
+    if (orderId) {
+      this.navService.navigate(`/don-hang-cua-toi/${orderId}`);
+    } else {
+      this.navService.navigate('/don-hang-cua-toi');
+    }
   }
 }
