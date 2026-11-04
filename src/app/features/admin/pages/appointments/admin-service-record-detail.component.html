@@ -150,57 +150,96 @@
 
   @if (dialog()==='materials' && item(); as r) {
     <div class="record-overlay">
-      <section class="record-modal record-modal--material" role="dialog" aria-modal="true" aria-labelledby="materials-dialog-title">
+      <section class="record-modal"
+        [class.record-modal--material]="materialEditorMode()==='add'"
+        [class.record-modal--wide]="materialEditorMode()==='correct'"
+        role="dialog" aria-modal="true" aria-labelledby="materials-dialog-title">
         <header>
           <div class="modal-title-group">
-            <h2 id="materials-dialog-title">Thêm vật liệu phát sinh</h2>
+            <h2 id="materials-dialog-title">
+              {{ materialEditorMode()==='add' ? 'Thêm vật liệu phát sinh' : 'Điều chỉnh vật liệu thực tế' }}
+            </h2>
             <p>Hồ sơ #{{ displayRecordCode(r) }} · {{ petLabel(r) }} · {{ serviceLabel(r) }}</p>
           </div>
           <button type="button" class="modal-close" (click)="closeDialog()" [disabled]="busy()" aria-label="Đóng">
             <img src="/assets/admin-inventory/close-outlined.svg" alt="">
           </button>
         </header>
-        <p class="modal-hint">Lưu vật liệu chỉ cập nhật số lượng thực tế trong hồ sơ. Tồn kho chỉ thay đổi khi Backend chốt hồ sơ hợp lệ.</p>
-        @for (m of materialDrafts(); track $index; let i=$index) {
-          <div class="material-add-form">
-            <label class="material-field material-field--full">
-              <span>Vật tư <b>*</b></span>
-              <select [value]="m.inventoryItemId" (change)="selectMaterial(i,$any($event.target).value)">
-                <option value="">Tìm vật tư trong kho tại {{ branchLabel(r) }}</option>
-                @for (option of materialOptions(); track option.id) {
-                  <option [value]="option.id">{{ option.name }} · {{ option.sku }}</option>
-                }
-              </select>
-            </label>
-            <label class="material-field">
-              <span>Số lượng <b>*</b></span>
-              <div class="quantity-stepper">
-                <button type="button" (click)="adjustMaterialQuantity(i,-1)" [disabled]="busy() || (m.quantity || 1) <= 1" aria-label="Giảm số lượng">−</button>
-                <input type="number" min="1" step="1" [value]="m.quantity ?? 1"
-                  (input)="updateMaterialQuantity(i,$any($event.target).value)">
-                <button type="button" (click)="adjustMaterialQuantity(i,1)" [disabled]="busy()" aria-label="Tăng số lượng">+</button>
+
+        @if (materialEditorMode()==='add') {
+          <p class="modal-hint">Lưu vật liệu chỉ cập nhật số lượng thực tế trong hồ sơ. Tồn kho chỉ thay đổi khi Backend chốt hồ sơ hợp lệ.</p>
+          @for (m of materialDrafts(); track $index; let i=$index) {
+            <div class="material-add-form">
+              <label class="material-field material-field--full">
+                <span>Vật tư <b>*</b></span>
+                <select [value]="m.inventoryItemId" (change)="selectMaterial(i,$any($event.target).value)">
+                  <option value="">Tìm vật tư trong kho tại {{ branchLabel(r) }}</option>
+                  @for (option of materialOptions(); track option.id) {
+                    <option [value]="option.id">{{ option.name }} · {{ option.sku }}</option>
+                  }
+                </select>
+              </label>
+              <label class="material-field">
+                <span>Số lượng <b>*</b></span>
+                <div class="quantity-stepper">
+                  <button type="button" (click)="adjustMaterialQuantity(i,-1)" [disabled]="busy() || (m.quantity || 1) <= 1" aria-label="Giảm số lượng">−</button>
+                  <input type="number" min="1" step="1" [value]="m.quantity ?? 1"
+                    (input)="updateMaterialQuantity(i,$any($event.target).value)">
+                  <button type="button" (click)="adjustMaterialQuantity(i,1)" [disabled]="busy()" aria-label="Tăng số lượng">+</button>
+                </div>
+              </label>
+              <label class="material-field">
+                <span>Đơn vị</span>
+                <select [value]="m.unit" (change)="updateMaterialField(i,'unit',$any($event.target).value)">
+                  @for (unit of materialUnits(); track unit) {
+                    <option [value]="unit">{{ unit }}</option>
+                  }
+                </select>
+              </label>
+              <label class="material-field material-field--full">
+                <span>Ghi chú</span>
+                <input type="text" [value]="m.notes"
+                  (input)="updateMaterialField(i,'notes',$any($event.target).value)"
+                  placeholder="Nhập lý do phát sinh vật tư...">
+              </label>
+            </div>
+          }
+        } @else {
+          <p class="modal-hint">Hồ sơ đã được mở lại. Chỉ lưu số lượng thực tế mới; Backend sẽ tạo ADJUSTMENT theo phần chênh lệch khi hồ sơ được chốt lại.</p>
+          <div class="material-editor">
+            @for (m of materialDrafts(); track $index; let i=$index) {
+              <div class="material-editor__row">
+                <label>Vật tư
+                  <select [value]="m.inventoryItemId" (change)="selectMaterial(i,$any($event.target).value)">
+                    <option value="">Chọn vật tư</option>
+                    @for (option of materialOptions(); track option.id) {
+                      <option [value]="option.id">{{ option.name }} · {{ option.sku }}</option>
+                    }
+                  </select>
+                </label>
+                <label>Số lượng thực tế
+                  <input type="number" min="0" step="0.01" [value]="m.quantity ?? ''"
+                    (input)="updateMaterialQuantity(i,$any($event.target).value)">
+                </label>
+                <label>Đơn vị
+                  <input type="text" [value]="m.unit" (input)="updateMaterialField(i,'unit',$any($event.target).value)">
+                </label>
+                <label>Ghi chú
+                  <input type="text" [value]="m.notes" (input)="updateMaterialField(i,'notes',$any($event.target).value)">
+                </label>
+                <button type="button" class="remove-row" (click)="removeMaterial(i)" aria-label="Xóa vật tư">×</button>
               </div>
-            </label>
-            <label class="material-field">
-              <span>Đơn vị</span>
-              <select [value]="m.unit" (change)="updateMaterialField(i,'unit',$any($event.target).value)">
-                @for (unit of materialUnits(); track unit) {
-                  <option [value]="unit">{{ unit }}</option>
-                }
-              </select>
-            </label>
-            <label class="material-field material-field--full">
-              <span>Ghi chú</span>
-              <input type="text" [value]="m.notes"
-                (input)="updateMaterialField(i,'notes',$any($event.target).value)"
-                placeholder="Nhập lý do phát sinh vật tư...">
-            </label>
+            }
           </div>
+          <button type="button" class="text-button" (click)="addMaterial()">+ Thêm dòng vật tư</button>
         }
+
         @if (dialogError()) { <p class="modal-error" role="alert">{{ dialogError() }}</p> }
         <footer>
           <button type="button" class="btn btn--outline" (click)="closeDialog()" [disabled]="busy()">Hủy</button>
-          <button type="button" class="btn btn--primary" (click)="saveMaterials()" [disabled]="busy()">Lưu vật liệu</button>
+          <button type="button" class="btn btn--primary" (click)="saveMaterials()" [disabled]="busy()">
+            {{ materialEditorMode()==='add' ? 'Lưu vật liệu' : 'Lưu hiệu chỉnh' }}
+          </button>
         </footer>
       </section>
     </div>
