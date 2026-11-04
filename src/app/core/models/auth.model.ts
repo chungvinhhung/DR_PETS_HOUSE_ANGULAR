@@ -15,6 +15,10 @@ export interface AuthUser {
   systemRole: SystemRole;
   staffSubRole: StaffSubRole | null;
   avatarUrl: string | null;
+  accountStatus?: 'ACTIVE' | 'BLOCKED';
+  activationStatus?: 'PENDING_ACTIVATION' | 'ACTIVATED' | 'NO_ACCOUNT';
+  lastLogin?: string | null;
+  branchScope?: readonly string[];
 }
 
 export interface CurrentUserResponse {
@@ -26,6 +30,10 @@ export interface CurrentUserResponse {
   systemRole: SystemRole;
   staffSubRole?: StaffSubRole | null;
   avatarUrl?: string | null;
+  accountStatus?: 'ACTIVE' | 'BLOCKED';
+  activationStatus?: 'PENDING_ACTIVATION' | 'ACTIVATED' | 'NO_ACCOUNT';
+  lastLogin?: string | null;
+  branchScope?: readonly string[];
 }
 
 export interface LoginRequest {
