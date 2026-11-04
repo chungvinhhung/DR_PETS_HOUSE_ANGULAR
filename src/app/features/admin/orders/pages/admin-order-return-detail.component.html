@@ -132,7 +132,7 @@
                   <td>{{ item.alreadyReturnedQty }}</td>
                   <td>{{ availableReturnQty(item) }}</td>
                   <td class="return-detail__emphasis">{{ item.requestedQty }}</td>
-                  <td>{{ item.receivedQty ?? '—' }}</td>
+                  <td>{{ receivedQuantityLabel(ret, item) }}</td>
                   <td>{{ item.approvedQty ?? '—' }}</td>
                   <td>{{ money(item.refundAmount) }}</td>
                   <td class="return-detail__final-refund">{{ item.finalRefundAmount != null ? money(item.finalRefundAmount) : '—' }}</td>
