@@ -21,8 +21,8 @@
                 <button type="button" class="btn btn--outline" (click)="startAction('no-show')">Không đến</button>
               }
             }
-            @if (canStartService()) {
-              <button type="button" class="btn btn--primary" (click)="startAction('status')">Bắt đầu phục vụ</button>
+            @if (canStartService() && checkInSupported()) {
+              <button type="button" class="btn btn--primary" (click)="startAction('status')">Bắt đầu dịch vụ</button>
             }
           } @else if (appointment.status==='COMPLETED') {
             <a class="btn btn--primary" routerLink="/admin/appointments">Quay lại danh sách</a>
@@ -76,7 +76,7 @@
                   <td>{{row.staff}}</td>
                   <td><strong>{{row.health}}</strong></td>
                   <td>{{row.note}}</td>
-                  <td><span class="mini-badge" [attr.data-state]="row.checkedIn?'done':'idle'">{{row.checkedIn?'Đã đến':'Chưa đến'}}</span></td>
+                  <td><span class="mini-badge" data-state="unknown">{{row.checkIn}}</span></td>
                   <td>{{row.execution}}</td>
                   <td>
                     @if (row.recordId) {
@@ -90,6 +90,9 @@
             </tbody>
           </table>
         </div>
+        @if (!checkInSupported()) {
+          <p class="technical-note">BE hiện chưa trả trạng thái check-in theo từng thú cưng/dịch vụ. FE không tự suy luận “Đã đến” từ trạng thái thực hiện.</p>
+        }
       </section>
 
       <div class="bottom-grid">
@@ -167,12 +170,12 @@
           }
         }
         @if (action==='status') {
-          <p class="hint hint--info">Bắt đầu phục vụ sẽ khởi động dịch vụ đầu tiên chưa thực hiện và chuyển lịch sang Đang thực hiện.</p>
+          <p class="hint hint--info">Chỉ có thể bắt đầu dịch vụ sau khi có trạng thái check-in hợp lệ của thú cưng tương ứng.</p>
         }
         @if (action==='no-show') {
           <p class="hint hint--warning">Hệ thống đã xác định lịch đủ điều kiện đánh dấu Không đến. Thao tác này sẽ giải phóng khung giờ và áp dụng chính sách hoàn/khấu trừ của Backend.</p>
         }
-        <label class="modal-label"><span class="modal-field-label">Lý do / ghi chú xử lý <b>*</b></span>
+        <label class="modal-label"><span class="modal-field-label">Lý do / ghi chú xử lý @if(action!=='status'){<b>*</b>}</span>
           <textarea rows="4" [value]="reason()" (input)="reason.set($any($event.target).value)" placeholder="Nhập ghi chú xử lý..."></textarea>
         </label>
         @if (actionError()) {<p class="hint hint--warning" role="alert">{{actionError()}}</p>}
