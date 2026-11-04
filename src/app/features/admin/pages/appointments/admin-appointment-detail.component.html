@@ -13,16 +13,20 @@
       <header class="heading">
         <h1>Lịch hẹn #{{ displayCode(appointment.code) }}</h1>
         <div class="heading-actions">
-          @if (appointment.status==='CONFIRMED' && canInspectActions()) {
-            <button type="button" class="btn btn--outline" (click)="startAction('reschedule')">Đổi lịch</button>
-            <button type="button" class="btn btn--danger" (click)="startAction('cancel')">Hủy lịch</button>
-            @if (appointment.noShowWarning) {
-              <button type="button" class="btn btn--outline" (click)="startAction('no-show')">Không đến</button>
+          @if (appointment.status==='CONFIRMED') {
+            @if (canManageAppointment()) {
+              <button type="button" class="btn btn--outline" (click)="startAction('reschedule')">Đổi lịch</button>
+              <button type="button" class="btn btn--danger" (click)="startAction('cancel')">Hủy lịch</button>
+              @if (appointment.noShowWarning) {
+                <button type="button" class="btn btn--outline" (click)="startAction('no-show')">Không đến</button>
+              }
             }
-            <button type="button" class="btn btn--primary" (click)="startAction('status')">Bắt đầu phục vụ</button>
+            @if (canStartService()) {
+              <button type="button" class="btn btn--primary" (click)="startAction('status')">Bắt đầu phục vụ</button>
+            }
           } @else if (appointment.status==='COMPLETED') {
             <a class="btn btn--primary" routerLink="/admin/appointments">Quay lại danh sách</a>
-          } @else if (appointment.status!=='IN_PROGRESS' && canInspectActions()) {
+          } @else if (appointment.status!=='IN_PROGRESS' && canManageAppointment()) {
             <button type="button" class="btn btn--danger"
               [disabled]="appointment.status==='CANCELLED'||appointment.status==='NO_SHOW'"
               (click)="startAction('cancel')">Hủy lịch</button>
