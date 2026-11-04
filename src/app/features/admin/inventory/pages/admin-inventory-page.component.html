@@ -1,8 +1,6 @@
 <app-admin-catalog-shell activeItem="inventory">
 <section class="inventory-page">
   <div class="page-title"><h1>{{tab()==='history' ? 'Lịch sử kho' : 'Kho hàng'}}</h1></div>
-  @if (loading()) { <app-admin-data-state kind="loading" title="Đang tải tồn kho" /> }
-  @if (loadError()) { <app-admin-data-state kind="error" title="Không thể tải tồn kho" [message]="loadError()" (retry)="loadAll()" /> }
   <div class="inventory-tabs" role="tablist" aria-label="Kho">
     <button type="button" role="tab" [attr.aria-selected]="tab()==='stock'" [class.active]="tab()==='stock'" (click)="switchTab('stock')">Tồn kho</button>
     <button type="button" role="tab" [attr.aria-selected]="tab()==='history'" [class.active]="tab()==='history'" (click)="switchTab('history')">Lịch sử kho</button>
@@ -28,7 +26,7 @@
         <button type="button" class="primary-btn inventory-create web2-add-button" (click)="openDialog('receipt')"><span class="web2-add-icon" aria-hidden="true">+</span><span>Nhập kho</span></button>
       } @else {
         <select aria-label="Loại biến động" [ngModel]="changeType()" (ngModelChange)="changeType.set($event);onFilter()">
-          <option value="">Loại biến động</option><option>Nhập kho</option><option>Xuất kho</option><option>Điều chỉnh</option><option>Chuyển kho</option><option>Hoàn stock</option>
+          <option value="">Tất cả biến động</option><option>Nhập kho</option><option>Xuất kho</option><option>Điều chỉnh</option><option>Chuyển kho</option><option>Hoàn stock</option>
         </select>
         <select aria-label="Khoảng thời gian" [ngModel]="historyRange()" (ngModelChange)="setHistoryRange($event)">
           <option value="30">30 ngày qua</option>
@@ -40,10 +38,17 @@
     </div>
   </div>
 
-  @if (tab()==='history' && historyLoading()) { <app-admin-data-state kind="loading" title="Đang tải lịch sử kho" /> }
-  @if (tab()==='history' && historyError()) { <app-admin-data-state kind="error" title="Không thể tải lịch sử kho" [message]="historyError()" (retry)="loadHistory()" /> }
   <div class="table-shell" [class.table-shell--history]="tab()==='history'">
-    <div class="table-scroll" [class.table-scroll--history]="tab()==='history'">
+    @if (loading()) {
+      <app-admin-data-state kind="loading" title="Đang tải tồn kho" />
+    } @else if (loadError()) {
+      <app-admin-data-state kind="error" title="Không thể tải tồn kho" [message]="loadError()" (retry)="loadAll()" />
+    } @else if (tab()==='history' && historyLoading()) {
+      <app-admin-data-state kind="loading" title="Đang tải lịch sử kho" />
+    } @else if (tab()==='history' && historyError()) {
+      <app-admin-data-state kind="error" title="Không thể tải lịch sử kho" [message]="historyError()" (retry)="loadHistory()" />
+    } @else {
+      <div class="table-scroll" [class.table-scroll--history]="tab()==='history'">
       @if (tab()==='stock') {
         <table class="stock-table">
           <colgroup>
@@ -129,6 +134,7 @@
         <button type="button" aria-label="Trang sau" (click)="setPage(page()+1)" [disabled]="page()===totalPages()">›</button>
       </nav>
     </div>
+    }
   </div>
 
   @if (selectedHistoryRow(); as row) {
