@@ -86,6 +86,7 @@ export class AdminServiceRecordDetailComponent {
   readonly actionError=signal('');
   readonly busy=signal(false);
   readonly materialDrafts=signal<MaterialDraft[]>([]);
+  readonly materialEditorMode=signal<'add'|'correct'>('add');
   readonly professionalDraft=signal<ProfessionalDraft>({
     diagnosis:'',treatment:'',result:'',professionalNote:'',
   });
@@ -376,14 +377,31 @@ export class AdminServiceRecordDetailComponent {
   }
 
   openMaterialsEditor():void{
-    if(!this.canEditMaterials())return;
-    this.materialDrafts.set([{inventoryItemId:'',quantity:1,unit:'',notes:''}]);
+    const r=this.item();
+    if(!r||!this.canEditMaterials())return;
+    if(r.status==='REOPENED'){
+      this.materialEditorMode.set('correct');
+      const actual=r.materials.filter(item=>item.actualQuantity!=='').map(item=>({
+        inventoryItemId:item.inventoryItemId,
+        quantity:Number(item.actualQuantity),
+        unit:item.unit||this.inventoryItems().find(v=>v.id===item.inventoryItemId)?.unit||'',
+        notes:item.note,
+      }));
+      this.materialDrafts.set(actual.length?actual:[{inventoryItemId:'',quantity:0,unit:'',notes:''}]);
+    }else{
+      this.materialEditorMode.set('add');
+      this.materialDrafts.set([{inventoryItemId:'',quantity:1,unit:'',notes:''}]);
+    }
     this.dialogError.set('');this.dialog.set('materials');
   }
 
   addMaterial():void{
-    if(this.materialDrafts().length)return;
-    this.materialDrafts.set([{inventoryItemId:'',quantity:1,unit:'',notes:''}]);
+    if(this.materialEditorMode()==='add'){
+      if(this.materialDrafts().length)return;
+      this.materialDrafts.set([{inventoryItemId:'',quantity:1,unit:'',notes:''}]);
+      return;
+    }
+    this.materialDrafts.update(rows=>[...rows,{inventoryItemId:'',quantity:0,unit:'',notes:''}]);
   }
 
   removeMaterial(index:number):void{
@@ -425,6 +443,40 @@ export class AdminServiceRecordDetailComponent {
 
   saveMaterials():void{
     const r=this.item();if(!r||this.busy()||!this.canEditMaterials())return;
+
+    if(this.materialEditorMode()==='correct'){
+      const rows=this.materialDrafts();
+      if(!rows.length){
+        this.dialogError.set('Cần ít nhất một dòng vật tư để lưu hiệu chỉnh.');return;
+      }
+      if(rows.some(row=>!row.inventoryItemId || row.quantity===null || !Number.isFinite(row.quantity) || row.quantity<0)){
+        this.dialogError.set('Chọn vật tư và nhập số lượng từ 0 trở lên cho tất cả các dòng.');return;
+      }
+      const ids=rows.map(row=>row.inventoryItemId);
+      if(new Set(ids).size!==ids.length){
+        this.dialogError.set('Mỗi vật tư chỉ được xuất hiện một lần.');return;
+      }
+      if(rows.some(row=>!this.materialOptions().some(item=>item.id===row.inventoryItemId))){
+        this.dialogError.set('Có vật tư không thuộc kho chi nhánh hoặc không còn hoạt động.');return;
+      }
+      const previousById=new Map(r.materials.map(item=>[item.inventoryItemId,item]));
+      const materials=rows.map(row=>({
+        inventoryItemId:row.inventoryItemId,
+        quantity:row.quantity,
+        unit:row.unit||undefined,
+        notes:row.notes||undefined,
+        isExtra:previousById.get(row.inventoryItemId)?.isExtra ?? true,
+      }));
+      this.busy.set(true);this.dialogError.set('');
+      this.api.put<unknown>('/service-records/'+encodeURIComponent(r.id)+'/materials',{
+        expectedVersion:r.version??undefined,materials,
+      }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next:raw=>this.acceptMutation(raw,'Đã cập nhật vật liệu thực tế.'),
+        error:err=>this.failDialog(err,'Không cập nhật được vật liệu thực tế.'),
+      });
+      return;
+    }
+
     const row=this.materialDrafts()[0];
     if(!row?.inventoryItemId){
       this.dialogError.set('Vui lòng chọn vật tư hợp lệ.');return;
@@ -559,7 +611,7 @@ export class AdminServiceRecordDetailComponent {
 
   closeDialog():void{
     if(this.busy())return;
-    this.dialog.set(null);this.dialogError.set('');
+    this.dialog.set(null);this.dialogError.set('');this.materialEditorMode.set('add');
   }
 
   private acceptMutation(raw:unknown,message:string):void{
