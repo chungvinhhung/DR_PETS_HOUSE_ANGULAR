@@ -70,7 +70,7 @@ export class AdminOrderCreateComponent {
   readonly isAdmin=computed(()=>this.session.user()?.systemRole==='ADMIN');
   readonly canQuote=computed(()=>this.isAdmin() && this.lines().length>0 && !this.hasInvalidQuantities());
   readonly quoteIsCurrent=computed(()=>!!this.quote() && this.quoteState()==='ready' && this.quoteFingerprint()===this.getQuoteFingerprint() && Date.now()<Date.parse(this.quote()!.quoteExpiresAt));
-  readonly canSubmit=computed(()=>this.quoteIsCurrent() && this.isDraftValid() && this.quote()!.eligible && this.quote()!.availability.canFulfillEntireCart && (!this.voucherCode().trim() || this.quote()!.pricing.voucherDiscount>0) && this.session.user()?.systemRole==='ADMIN' && !!this.selectedCustomer() && !this.saving());
+  readonly canSubmit=computed(()=>this.quoteIsCurrent() && this.isDraftValid() && this.quote()!.eligible && this.quote()!.availability.canFulfillEntireCart && (!this.voucherCode().trim() || this.quote()!.pricing.voucherDiscount>0) && this.session.user()?.systemRole==='ADMIN' && !this.saving());
   readonly lookupPhone = signal('');
   readonly lookupState = signal<LookupState>('idle');
   readonly lookupIncomplete = signal(false);
@@ -566,7 +566,6 @@ export class AdminOrderCreateComponent {
           this.toast.show('Mã giảm giá chưa đủ điều kiện áp dụng.');
         else if(openConfirmation) {
           if(!this.isDraftValid()) this.toast.show(this.reviewIssues()[0]||'Vui lòng kiểm tra thông tin đơn hàng.');
-          else if(!this.selectedCustomer()) this.toast.show('Hiện chưa thể tạo đơn cho khách chưa có tài khoản.');
           else this.confirmCreateOpen.set(true);
         } else this.toast.show('Đã cập nhật báo giá từ hệ thống.','success');
       },
@@ -580,12 +579,10 @@ export class AdminOrderCreateComponent {
   }
   reviewCreate():void {
     if (!this.isDraftValid()) {this.toast.show(this.reviewIssues()[0]||'Vui lòng kiểm tra thông tin đơn hàng.');return;}
-    if (!this.selectedCustomer()) {this.toast.show('Hiện chưa thể tạo đơn cho khách chưa có tài khoản.');return;}
     if(this.quote() && Date.now()>=Date.parse(this.quote()!.quoteExpiresAt)) this.invalidateDraftPricing();
     if (!this.quoteIsCurrent()) {this.requestQuote(true);return;}
     if(!this.canSubmit()){
-      if(!this.selectedCustomer())this.toast.show('Hiện chỉ hỗ trợ tạo đơn cho khách đã có tài khoản. Khách vãng lai sẽ được mở sau khi xác minh luồng kích hoạt.');
-      else if(this.session.user()?.systemRole!=='ADMIN')this.toast.show('Chức năng tạo đơn hiện đang giới hạn cho quản trị viên.');
+      if(this.session.user()?.systemRole!=='ADMIN')this.toast.show('Chức năng tạo đơn hiện đang giới hạn cho quản trị viên.');
       else if(!this.isDraftValid())this.toast.show(this.reviewIssues()[0]||'Vui lòng kiểm tra thông tin đơn hàng.');
       else this.toast.show('Vui lòng lấy báo giá hợp lệ, còn hiệu lực trước khi tạo đơn.');
       return;
@@ -601,7 +598,13 @@ export class AdminOrderCreateComponent {
     }
     const q=this.quote()!;
     const body:AdminOrderCommitRequest={
-      ...this.quoteBody(),branchId:q.fulfillmentBranchId,paymentMethod:this.paymentMethod(),
+      ...this.quoteBody(),
+      ...(!this.selectedCustomer()?{guestContact:{
+        fullName:this.customerName().trim(),
+        phone:normalizePhone(this.customerPhone()||this.lookupPhone()),
+        ...(this.customerEmail().trim()?{email:this.customerEmail().trim()}:{}),
+      }}:{}),
+      branchId:q.fulfillmentBranchId,paymentMethod:this.paymentMethod(),
       shippingAddress:{
         recipientName:this.shippingRecipientName(),
         phone:this.shippingRecipientPhone(),
@@ -620,7 +623,9 @@ export class AdminOrderCreateComponent {
           return;
         }
         this.created.set(true);
-        this.toast.show('Tạo đơn '+response.order.code+' thành công.','success');
+        this.toast.show(response.guestActivationStatus
+          ? 'Tạo đơn '+response.order.code+' thành công. Khách vãng lai đang chờ kích hoạt tài khoản.'
+          : 'Tạo đơn '+response.order.code+' thành công.','success');
         void this.router.navigateByUrl('/admin/orders/'+encodeURIComponent(response.order.id));
       },
       error:err=>{
