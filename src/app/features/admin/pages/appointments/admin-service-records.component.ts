@@ -26,16 +26,16 @@ import {
       <input type="search" placeholder="Tìm mã hồ sơ, thú cưng..." [value]="search()"
         (input)="search.set($any($event.target).value)" (keydown.enter)="applyFilters()"/>
     </label>
-    <select aria-label="Loại hồ sơ" [value]="category()" (change)="category.set($any($event.target).value);applyFilters()">
+    <select aria-label="Loại hồ sơ" [value]="category()" (change)="category.set($any($event.target).value);applyFilters(true)">
       <option value="">Loại hồ sơ</option><option value="MEDICAL">MEDICAL</option><option value="GROOMING">GROOMING</option>
     </select>
-    <select aria-label="Chi nhánh" [value]="branch()" (change)="branch.set($any($event.target).value);applyFilters()">
+    <select aria-label="Chi nhánh" [value]="branch()" (change)="branch.set($any($event.target).value);applyFilters(true)">
       <option value="">Chi nhánh</option>
       @for (item of branches(); track item.id) {
         <option [value]="item.id">{{ item.name }}</option>
       }
     </select>
-    <select aria-label="Trạng thái hồ sơ" [value]="status()" (change)="status.set($any($event.target).value);applyFilters()">
+    <select aria-label="Trạng thái hồ sơ" [value]="status()" (change)="status.set($any($event.target).value);applyFilters(true)">
       <option value="">Trạng thái</option>
       <option value="COMPLETED">Hoàn thành</option>
       <option value="REOPENED">Đã mở lại</option>
@@ -66,7 +66,9 @@ import {
       </tr>
      } @empty {<tr><td colspan="9" class="message"><app-admin-data-state kind="empty" title="Không tìm thấy hồ sơ" message="Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác." /></td></tr>}
     </tbody></table></div>
-    <footer><span>Đang hiển thị {{rows().length}} trên tổng số {{total()}} hồ sơ dịch vụ</span>
+    <footer><span>Đang hiển thị {{rows().length}} trên tổng số {{total()}} hồ sơ dịch vụ
+      @if(partial()){ <span> (trong tối đa 100 hồ sơ khớp bộ lọc)</span> }
+    </span>
      <nav class="pages" aria-label="Phân trang hồ sơ dịch vụ">
        <button type="button" (click)="go(page()-1)" [disabled]="page()===1" aria-label="Trang trước">‹</button>
        @for (index of pageNumbers(); track $index) {
@@ -119,11 +121,8 @@ export class AdminServiceRecordsComponent {
   readonly filtered=computed(()=>{
     const q=this.search().trim().toLocaleLowerCase('vi');
     return this.fetched().filter(r=>
-      (!this.category() || r.category===this.category()) &&
-      (!this.status() || r.status===this.status()) &&
-      (!this.branch() || r.branchId===this.branch()) &&
-      (!q || [r.id,r.code,r.appointmentId,r.petName,r.serviceName,r.branchName,r.primaryStaff]
-        .some(value=>value.toLocaleLowerCase('vi').includes(q))));
+      !q || [r.id,r.code,r.appointmentId,r.petName,r.serviceName,r.branchName,r.primaryStaff]
+        .some(value=>value.toLocaleLowerCase('vi').includes(q)));
   });
   readonly rows=computed(()=>this.filtered().slice((this.page()-1)*this.size,this.page()*this.size));
   readonly loading=signal(false);
@@ -146,12 +145,17 @@ export class AdminServiceRecordsComponent {
     });
     this.load();
   }
-  applyFilters(){this.page.set(1);}
+  applyFilters(reload=false){
+    this.page.set(1);
+    if(reload)this.load();
+  }
   go(value:number){if(value<1||value>this.pageCount())return;this.page.set(value);}
   load(){
-    // BE list accepts recordType/status, but does not implement page/search.
-    // Download the first bounded batch and label the UI as a subset.
-    const params=new HttpParams().set('limit',100);
+    // BE filters recordType/status/branchId server-side, but still caps the result at 100.
+    let params=new HttpParams().set('limit',100);
+    if(this.category())params=params.set('recordType',this.category());
+    if(this.status())params=params.set('status',this.status()==='COMPLETED'?'FINALIZED':this.status());
+    if(this.branch())params=params.set('branchId',this.branch());
     const req=++this.request;
     this.loading.set(true);this.error.set('');
     // Confirmed source route in BE foundation-v6: GET /api/v1/service-records.
