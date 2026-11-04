@@ -5392,8 +5392,8 @@ app-admin-product-list-page .product-filter-popover .product-filter-advanced-sel
 :root {
   --web2-focus-color: #0d47a1;
   --web2-focus-border: #a9c5ed;
-  --web2-focus-surface: #f5f9ff;
-  --web2-focus-halo: 0 0 0 2px rgba(13, 71, 161, .18);
+  --web2-focus-surface: #f8fbff;
+  --web2-focus-halo: 0 0 0 2px rgba(13, 71, 161, .10);
 }
 /* Keyboard focus: one consistent, accessible outline across modules. */
 :root :is(
@@ -6196,4 +6196,34 @@ app-admin-order-management .order-admin__modal-actions .order-admin__btn--primar
   color:#94a3b8!important;
   cursor:not-allowed!important;
   box-shadow:none!important;
+}
+
+
+/* Unified management-table header surface across Admin modules. */
+:is(
+  app-admin-category-page,
+  app-admin-product-list-page,
+  app-service-catalog-list,
+  app-admin-order-management,
+  app-admin-voucher-list,
+  app-admin-appointments-page,
+  app-admin-service-records,
+  app-admin-inventory-page,
+  app-branch-management-page,
+  app-admin-staff-list,
+  app-admin-users-page,
+  app-admin-customer-list,
+  app-admin-content-list,
+  app-admin-moderation-list
+) thead th{
+  background:#f4f6f9!important;
+}
+
+/* Management filter selects use the same light focus/open treatment everywhere. */
+:root app-admin-catalog-shell .web2-filterbar select:not(:disabled):focus{
+  border-color:#a9c5ed!important;
+  background-color:#f8fbff!important;
+  outline:none!important;
+  outline-offset:0!important;
+  box-shadow:0 0 0 2px rgba(13,71,161,.10)!important;
 }
