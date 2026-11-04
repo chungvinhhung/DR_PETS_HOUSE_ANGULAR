@@ -259,3 +259,41 @@ app-admin-moderation-list .web2-admin-table--reviews :is(th,td):nth-child(8){tex
  line-height:34px!important;
  letter-spacing:0!important;
 }
+
+
+/* Unified filter dropdown focus state: calm, single-layer, no browser blue ring. */
+app-admin-catalog-shell .web2-filterbar .web2-admin-filter-select:focus,
+app-admin-catalog-shell .web2-filterbar .web2-admin-filter-select:focus-visible{
+  border-color:#9dbbe0!important;
+  outline:none!important;
+  box-shadow:0 0 0 2px #eef6ff!important;
+}
+app-admin-catalog-shell .web2-filterbar .web2-admin-filter-select option{color:#26364a;background:#fff}
+
+/* Unified management-table header tone and action-column wrapping. */
+app-admin-catalog-shell .web2-admin-table thead th{
+  background:#f4f6f9!important;
+}
+app-admin-catalog-shell .web2-admin-table th:last-child{
+  white-space:nowrap!important;
+  overflow-wrap:normal!important;
+}
+
+/* Rescue table: condition is the primary long-form column and stays left aligned. */
+app-admin-content-list .web2-admin-table--rescue :is(th,td):nth-child(4){
+  text-align:left!important;
+  vertical-align:middle!important;
+}
+app-admin-content-list .web2-admin-table--rescue :is(th,td):nth-child(3),
+app-admin-content-list .web2-admin-table--rescue :is(th,td):nth-child(5),
+app-admin-content-list .web2-admin-table--rescue :is(th,td):nth-child(6),
+app-admin-content-list .web2-admin-table--rescue :is(th,td):nth-child(7){
+  text-align:center!important;
+}
+
+/* Feedback table: preserve balanced first/last padding and keep actions on one line. */
+app-admin-moderation-list .web2-admin-table--feedback :is(th,td):last-child{
+  white-space:nowrap!important;
+}
+app-admin-moderation-list .web2-admin-table--feedback :is(th,td):first-child{padding-left:18px!important}
+app-admin-moderation-list .web2-admin-table--feedback :is(th,td):last-child{padding-right:18px!important}
