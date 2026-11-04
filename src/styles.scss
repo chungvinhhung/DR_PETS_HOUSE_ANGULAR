@@ -6373,116 +6373,103 @@ app-branch-management-page .branch-v2-page .branch-v2-page__table--branches
   :is(th,td):nth-child(7){white-space:nowrap;overflow-wrap:normal}
 
 
-/* Shared compact KPI bar for Orders / Returns and Appointments. */
+/* Enterprise KPI strip: the same white/blue/gray design language as
+   Admin tables and filters. No multicolor state fills or decorative shapes.
+   Status emphasis belongs to the value, not the whole surface. */
 app-admin-order-management .order-admin__kpis,
 app-admin-appointments-page .appointments__kpis{
-  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;
-  margin:0 0 16px
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:0;
+  margin:0 0 16px;
+  border:1px solid #dce5f0;
+  border-radius:11px;
+  background:#fff;
+  overflow:hidden;
 }
 app-admin-order-management .order-admin__kpi,
 app-admin-appointments-page .appointments__kpi{
-  box-sizing:border-box;display:flex;flex-direction:row;
-  align-items:center;justify-content:space-between;gap:12px;
-  min-width:0;min-height:74px;padding:12px 16px;
-  border:1px solid #e2e8f0;border-radius:9px;background:#fff
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:5px;
+  min-width:0;
+  min-height:82px;
+  padding:13px 20px;
+  border:0;
+  border-right:1px solid #e2e8f0;
+  border-radius:0;
+  background:#fff;
+  box-shadow:none;
+}
+app-admin-order-management .order-admin__kpi:last-child,
+app-admin-appointments-page .appointments__kpi:last-child{
+  border-right:0;
+}
+app-admin-order-management .order-admin__kpi::before,
+app-admin-order-management .order-admin__kpi::after,
+app-admin-appointments-page .appointments__kpi::before,
+app-admin-appointments-page .appointments__kpi::after,
+app-admin-order-management .order-admin__kpi>span::before,
+app-admin-appointments-page .appointments__kpi>span::before{
+  content:none;
+  display:none;
 }
 app-admin-order-management .order-admin__kpi>span,
 app-admin-appointments-page .appointments__kpi>span{
-  min-width:0;margin:0;color:#475569;
-  font:500 13px/20px Roboto,Arial,sans-serif
+  display:block;
+  margin:0;
+  color:#60748d;
+  font:500 12px/18px Roboto,Arial,sans-serif;
+  white-space:normal;
 }
 app-admin-order-management .order-admin__kpi>strong,
 app-admin-appointments-page .appointments__kpi>strong{
-  flex:0 0 auto;margin:0;color:#202e45;
-  font:600 24px/30px Roboto,Arial,sans-serif
+  margin:0;
+  color:#1d2a42;
+  font:600 26px/30px Roboto,Arial,sans-serif;
+  letter-spacing:-.3px;
+  font-variant-numeric:tabular-nums;
 }
 app-admin-order-management .order-admin__kpi>strong.order-admin__kpi-number--blue,
 app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
-  color:#0d47a1
+  color:#0d47a1;
 }
 @media(max-width:1100px){
   app-admin-order-management .order-admin__kpis,
   app-admin-appointments-page .appointments__kpis{
-    grid-template-columns:repeat(2,minmax(0,1fr))
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  app-admin-order-management .order-admin__kpi:nth-child(2),
+  app-admin-appointments-page .appointments__kpi:nth-child(2){
+    border-right:0;
+  }
+  app-admin-order-management .order-admin__kpi:nth-child(-n+2),
+  app-admin-appointments-page .appointments__kpi:nth-child(-n+2){
+    border-bottom:1px solid #e2e8f0;
   }
 }
-@media(max-width:620px){
+@media(max-width:540px){
   app-admin-order-management .order-admin__kpis,
   app-admin-appointments-page .appointments__kpis{
-    grid-template-columns:1fr;gap:8px
+    grid-template-columns:1fr;
   }
   app-admin-order-management .order-admin__kpi,
   app-admin-appointments-page .appointments__kpi{
-    min-height:64px;padding:10px 14px
+    min-height:70px;
+    padding:11px 16px;
+    border-right:0;
+    border-bottom:1px solid #e2e8f0;
   }
-}
-
-
-/* Refined compact KPI cards: restrained status accents, soft depth and clear
-   visual hierarchy without returning to tall dashboard panels. */
-app-admin-order-management .order-admin__kpi,
-app-admin-appointments-page .appointments__kpi{
-  --kpi-accent:#567093;
-  --kpi-wash:#f5f8fc;
-  --kpi-border:#dae5f1;
-  position:relative;isolation:isolate;overflow:hidden;
-  display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
-  gap:4px;min-height:91px;padding:13px 19px 12px 20px;
-  background:linear-gradient(113deg,var(--kpi-wash) 0%,#fff 66%);
-  border:1px solid var(--kpi-border);border-radius:12px;
-  box-shadow:0 2px 8px rgba(16,37,65,.045);
-}
-app-admin-order-management .order-admin__kpi::before,
-app-admin-appointments-page .appointments__kpi::before{
-  content:"";position:absolute;top:17px;bottom:17px;left:0;width:3px;
-  border-radius:0 4px 4px 0;background:var(--kpi-accent);
-}
-app-admin-order-management .order-admin__kpi::after,
-app-admin-appointments-page .appointments__kpi::after{
-  content:"";position:absolute;z-index:-1;right:-32px;bottom:-54px;
-  width:124px;height:124px;border-radius:50%;
-  border:1px solid var(--kpi-border);
-  box-shadow:0 0 0 14px rgba(255,255,255,.5);
-  pointer-events:none;opacity:.65;
-}
-app-admin-order-management .order-admin__kpi>span,
-app-admin-appointments-page .appointments__kpi>span{
-  display:inline-flex;align-items:center;gap:8px;
-  position:relative;z-index:1;
-  font:500 12px/18px Roboto,Arial,sans-serif;color:#40536c;
-}
-app-admin-order-management .order-admin__kpi>span::before,
-app-admin-appointments-page .appointments__kpi>span::before{
-  content:"";display:block;flex:0 0 7px;width:7px;height:7px;
-  border-radius:50%;background:var(--kpi-accent);
-}
-app-admin-order-management .order-admin__kpi>strong,
-app-admin-appointments-page .appointments__kpi>strong,
-app-admin-order-management .order-admin__kpi>strong.order-admin__kpi-number--blue,
-app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
-  position:relative;z-index:1;
-  color:#162b47;font:650 28px/32px Roboto,Arial,sans-serif;
-  font-variant-numeric:tabular-nums;letter-spacing:-.55px
-}
-app-admin-order-management .order-admin__kpi[data-kpi-tone="warning"],
-app-admin-appointments-page .appointments__kpi[data-kpi-tone="warning"]{
-  --kpi-accent:#d48a29;--kpi-wash:#fff9ee;--kpi-border:#f2e1c5
-}
-app-admin-order-management .order-admin__kpi[data-kpi-tone="info"],
-app-admin-appointments-page .appointments__kpi[data-kpi-tone="info"]{
-  --kpi-accent:#2f80c1;--kpi-wash:#f0f8ff;--kpi-border:#d8e9f6
-}
-app-admin-order-management .order-admin__kpi[data-kpi-tone="success"],
-app-admin-appointments-page .appointments__kpi[data-kpi-tone="success"]{
-  --kpi-accent:#32936d;--kpi-wash:#f1faf5;--kpi-border:#d8eadd
-}
-@media(max-width:620px){
-  app-admin-order-management .order-admin__kpi,
-  app-admin-appointments-page .appointments__kpi{
-    min-height:78px;padding:11px 16px 10px 18px
+  app-admin-order-management .order-admin__kpi:last-child,
+  app-admin-appointments-page .appointments__kpi:last-child{
+    border-bottom:0;
   }
   app-admin-order-management .order-admin__kpi>strong,
   app-admin-appointments-page .appointments__kpi>strong{
-    font-size:26px;line-height:29px
+    font-size:24px;
+    line-height:28px;
   }
 }
