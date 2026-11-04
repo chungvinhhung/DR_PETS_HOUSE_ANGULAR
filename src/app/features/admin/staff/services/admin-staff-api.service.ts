@@ -222,8 +222,13 @@ export class AdminStaffApiService {
       accounts: of([] as UserWire[]),
     }).subscribe({
       next: ({ profiles, branches, accounts }) => {
-        this.branches.set(branches);
-        const byId = new Map(branches.map(b => [b.id, b.name]));
+        const role = this.session.user()?.systemRole;
+        const scope = new Set(this.session.user()?.branchScope ?? []);
+        const visibleBranches = role === 'ADMIN'
+          ? branches
+          : branches.filter((branch) => scope.has(branch.id));
+        this.branches.set(visibleBranches);
+        const byId = new Map(visibleBranches.map(b => [b.id, b.name]));
         const byAccount = new Map(accounts.map(a => [idOf(a.id ?? a._id), a]));
         this.staff.set(profiles.map(p => this.staffFromWire(p, byId, byAccount))
           .filter((s): s is StaffPreview => s !== null));
