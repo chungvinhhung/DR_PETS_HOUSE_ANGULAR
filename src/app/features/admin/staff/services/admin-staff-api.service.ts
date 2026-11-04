@@ -288,6 +288,10 @@ export class AdminStaffApiService {
     });
   }
 
+  cancelShift(id: string): Observable<unknown> {
+    return this.api.post('/shifts/' + encodeURIComponent(id) + '/cancel', {});
+  }
+
   /** Fresh, employee-scoped shifts for overlap checks, including other visible branches. */
   listStaffShiftRecords(staffId: string, dateFrom: string, dateTo: string): Observable<StaffShiftRecord[]> {
     const params = new HttpParams().set('staffId', staffId)
