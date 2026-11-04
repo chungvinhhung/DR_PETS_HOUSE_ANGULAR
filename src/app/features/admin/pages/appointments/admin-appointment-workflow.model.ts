@@ -111,9 +111,9 @@ export function statusLabel(status: AppointmentStatus, rawStatus = ''): string {
 }
 export function normalizeAppointment(raw: unknown): AppointmentView {
   const item = obj(raw);
-  if (!item) throw new Error('Lịch hẹn không đúng cấu trúc dữ liệu.');
+  if (!item) throw new Error('Không đọc được dữ liệu lịch hẹn.');
   const id = firstString(item['id'], item['_id'], item['appointmentId'], item['appointment_id']);
-  if (!id) throw new Error('API không trả về ID lịch hẹn.');
+  if (!id) throw new Error('Dữ liệu lịch hẹn chưa đầy đủ. Vui lòng tải lại.');
   const customer = obj(item['customer']) ?? obj(item['user']) ?? {};
   const contact = obj(item['contactSnapshot']) ?? obj(item['guestContact']) ?? {};
   const custSnapshot = obj(item['customerSnapshot']) ?? {};
@@ -225,7 +225,7 @@ export function normalizeAppointmentPage(raw: unknown): AppointmentListPage {
   const list = Array.isArray(payload) ? payload :
     Array.isArray(page?.['items']) ? page['items'] :
     Array.isArray(page?.['appointments']) ? page['appointments'] : null;
-  if (!list) throw new Error('API không trả về danh sách lịch hẹn hợp lệ.');
+  if (!list) throw new Error('Không đọc được danh sách lịch hẹn. Vui lòng thử lại.');
   const items = list.map(normalizeAppointment);
   const pagination = obj(page?.['pagination']);
   const total = page?.['total'] ?? page?.['totalCount'] ?? page?.['totalItems'] ?? pagination?.['total'];
