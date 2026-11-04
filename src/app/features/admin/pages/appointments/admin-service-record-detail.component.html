@@ -91,13 +91,20 @@
                   <td>{{ materialName(m) }}</td>
                   <td>{{ quantityText(m.templateQuantity,m.unit) }}</td>
                   <td>{{ quantityText(m.actualQuantity,m.unit) }}</td>
-                  <td>{{ m.stockAfter===null ? '—' : m.stockAfter }}</td>
                   <td>
-                    @if (m.inventoryTransactionCode) {
-                      <button type="button" class="tx-link" (click)="openInventoryTransaction(m.inventoryTransactionCode)">
-                        {{ m.inventoryTransactionCode }}
-                      </button>
-                    } @else { — }
+                    @if (materialStockAfter(m); as stockAfter) { {{ stockAfter }} }
+                    @else { — }
+                  </td>
+                  <td>
+                    @if (inventoryTransactionsLoading()) {
+                      <span class="inventory-inline-state">Đang tải...</span>
+                    } @else {
+                      @for (tx of materialTransactions(m); track tx.id) {
+                        <button type="button" class="tx-link" (click)="openInventoryTransactionRow(tx)">
+                          {{ transactionDisplayCode(tx) }}
+                        </button>
+                      } @empty { — }
+                    }
                   </td>
                   <td>{{ m.note || '—' }}</td>
                 </tr>
@@ -107,6 +114,9 @@
             </tbody>
           </table>
         </div>
+        @if (inventoryTransactionsError()) {
+          <p class="inventory-warning">{{ inventoryTransactionsError() }}</p>
+        }
       </section>
 
       @if (showRecordActions()) {
@@ -130,7 +140,7 @@
           <p class="action-hint">Hồ sơ đang chờ Bác sĩ thú y được phân công kiểm tra và chốt cuối.</p>
         }
         @if (r.status==='COMPLETED') {
-          <p class="action-hint">Hồ sơ đã được chốt. Lịch hẹn liên quan sẽ tự động hoàn tất khi tất cả hồ sơ bắt buộc đã được chốt.</p>
+          <p class="action-hint">Hồ sơ đã được chốt. Trạng thái lịch hẹn chỉ thay đổi khi Backend xác định toàn bộ dịch vụ liên quan đã đủ điều kiện hoàn tất.</p>
         }
       </section>
       }
@@ -143,13 +153,13 @@
         <header><h2 id="materials-dialog-title">Cập nhật vật liệu thực tế</h2>
           <button type="button" class="modal-close" (click)="closeDialog()" [disabled]="busy()" aria-label="Đóng"><img src="/assets/admin-inventory/close-outlined.svg" alt=""></button>
         </header>
-        <p class="modal-hint">Số lượng thực tế được lưu vào hồ sơ. Tồn kho sẽ được cập nhật khi hồ sơ được chốt.</p>
+        <p class="modal-hint">Vật tư được lấy từ kho của chi nhánh liên quan. Lưu tại đây chỉ cập nhật số lượng thực tế; tồn kho chỉ thay đổi sau khi BE chốt hồ sơ hợp lệ.</p>
         <div class="material-editor">
           @for (m of materialDrafts(); track $index; let i=$index) {
             <div class="material-editor__row">
               <label>Vật tư
                 <select [value]="m.inventoryItemId" (change)="selectMaterial(i,$any($event.target).value)">
-                  <option value="">Chọn vật tư</option>
+                  <option value="">Tìm vật tư trong kho chi nhánh</option>
                   @for (option of materialOptions(); track option.id) {
                     <option [value]="option.id">{{ option.name }} · {{ option.sku }}</option>
                   }
@@ -170,7 +180,7 @@
         </div>
         <button type="button" class="text-button" (click)="addMaterial()">+ Thêm dòng vật tư</button>
         @if (dialogError()) { <p class="modal-error" role="alert">{{ dialogError() }}</p> }
-        <footer><button type="button" class="btn btn--outline" (click)="closeDialog()" [disabled]="busy()">Đóng</button>
+        <footer><button type="button" class="btn btn--outline" (click)="closeDialog()" [disabled]="busy()">Hủy</button>
           <button type="button" class="btn btn--primary" (click)="saveMaterials()" [disabled]="busy()">Lưu vật liệu</button></footer>
       </section>
     </div>
