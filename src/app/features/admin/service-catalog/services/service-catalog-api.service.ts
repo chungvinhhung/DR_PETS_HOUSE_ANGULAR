@@ -22,6 +22,23 @@ interface BranchApiPage {
 }
 interface BranchApiEnvelope { data?: BranchApiPage; items?: BranchApiPage['items']; nextCursor?: string | null; }
 
+export interface ServiceBranchConfigRecord {
+  branchId: string;
+  branchName: string;
+  branchCode?: string;
+  branchStatus?: 'ACTIVE' | 'INACTIVE';
+  enabled: boolean;
+  capacity: number;
+  availability?: readonly { dayOfWeek: number; open: string; close: string }[];
+  blockedWindows?: readonly unknown[];
+  version?: number;
+}
+interface ServiceBranchConfigsResponse {
+  serviceId: string;
+  serviceName: string;
+  configs: ServiceBranchConfigRecord[];
+}
+
 export function serviceFromApi(raw: ServiceApiRecord, branchId = 'ALL'): CatalogService {
   const pricing = resolveServicePricing(raw);
   const fixed = [...pricing.fixedTiers.values()];
@@ -100,6 +117,12 @@ export class ServiceCatalogApiService {
       {},
       { headers },
     );
+  }
+
+  getBranchConfigs(id: string): Observable<ServiceBranchConfigRecord[]> {
+    return this.api.get<ServiceBranchConfigsResponse>(
+      '/services/' + encodeURIComponent(id) + '/branch-configs',
+    ).pipe(map((response) => response.configs ?? []));
   }
 
   /** All accessible branches for Service Detail, including inactive branches.
