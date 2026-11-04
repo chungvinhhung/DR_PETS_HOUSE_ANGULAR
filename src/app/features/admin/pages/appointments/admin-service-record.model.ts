@@ -10,6 +10,7 @@ export interface MaterialUsage {
   note: string;
   stockAfter: number | null;
   inventoryTransactionCode: string;
+  isExtra: boolean;
 }
 export interface ServiceRecord {
   id: string;
@@ -114,7 +115,8 @@ export function normalizeServiceRecord(raw:unknown):ServiceRecord {
       unit:first(m['unit'],product['unit']),
       note:first(m['note'],m['notes'],m['remark']),
       stockAfter:typeof (m['stockAfter']??m['afterQty'])==='number' ? Number(m['stockAfter']??m['afterQty']) : null,
-      inventoryTransactionCode:first(m['inventoryTransactionCode'],m['inventoryTransactionId'],m['transactionCode'])};
+      inventoryTransactionCode:first(m['inventoryTransactionCode'],m['inventoryTransactionId'],m['transactionCode']),
+      isExtra:m['isExtra']===true};
   });
   const rawHistory=r['statusHistory']??r['auditHistory']??r['history'];
   const history=Array.isArray(rawHistory)?rawHistory.map(v=>{const h=record(v)||{};return {
