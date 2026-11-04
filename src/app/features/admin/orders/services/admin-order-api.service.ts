@@ -1,6 +1,6 @@
 import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { EMPTY, expand, map, Observable, reduce } from 'rxjs';
 import { ApiClientService } from '../../../../core/services/api-client.service';
 
 export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
@@ -102,16 +102,27 @@ export type OrderWriteAction = 'confirm' | 'process' | 'ship' | 'mark-delivered'
 export class AdminOrderApiService {
   private readonly api = inject(ApiClientService);
 
-  /** The deployed API may return fewer orders than its reported totalCount. */
+  private listAll<T>(path:string, resource:string): Observable<{items:T[];totalCount?:number;nextCursor?:string|null}> {
+    const fetch=(cursor?:string)=>this.api.get<unknown>(path,{
+      params:cursor
+        ? new HttpParams().set('limit','100').set('cursor',cursor)
+        : new HttpParams().set('limit','100'),
+    }).pipe(map(response=>this.requirePage<T>(response,resource)));
+    return fetch().pipe(
+      expand(page=>page.nextCursor?fetch(page.nextCursor):EMPTY),
+      reduce((all,page)=>({
+        items:[...all.items,...page.items],
+        totalCount:all.totalCount??page.totalCount,
+        nextCursor:page.nextCursor??null,
+      }),{items:[] as T[],totalCount:undefined as number|undefined,nextCursor:null as string|null}),
+    );
+  }
+
   list(): Observable<OrderListResponse> {
-    return this.api.get<unknown>('/orders', {
-      params: new HttpParams().set('limit', '100'),
-    }).pipe(map((response) => this.requirePage<OrderRecord>(response, 'Đơn hàng')));
+    return this.listAll<OrderRecord>('/orders','Đơn hàng');
   }
   listReturns(): Observable<OrderReturnListResponse> {
-    return this.api.get<unknown>('/order-returns', {
-      params: new HttpParams().set('limit', '100'),
-    }).pipe(map((response) => this.requirePage<OrderReturnSummary>(response, 'Trả hàng')));
+    return this.listAll<OrderReturnSummary>('/order-returns','Trả hàng');
   }
 
   /**
