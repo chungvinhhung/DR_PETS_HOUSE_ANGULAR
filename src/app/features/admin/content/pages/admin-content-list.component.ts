@@ -79,6 +79,12 @@ export class AdminContentListComponent{
    });this.editorDialog.set('rescue');
   }
  }
+ updatePostDraft(field:keyof ReturnType<typeof this.postDraft>,value:string):void{
+  this.postDraft.update(current=>({...current,[field]:value}));
+ }
+ updateRescueDraft(field:keyof ReturnType<typeof this.rescueDraft>,value:string):void{
+  this.rescueDraft.update(current=>({...current,[field]:value}));
+ }
  closeEditor():void{if(this.actionBusy())return;this.editorDialog.set(null);this.editing.set(null);this.editorError.set('');}
  saveEditor():void{
   if(this.actionBusy())return;
@@ -96,7 +102,7 @@ export class AdminContentListComponent{
      if(id&&d.status&&String(editing?.status||'')!==d.status){
       this.api.updatePostStatus(id,d.status as 'DRAFT'|'PUBLISHED'|'ARCHIVED').subscribe({next:()=>{},error:()=>{}});
      }
-     this.closeEditor();this.notice.set(id?'Đã cập nhật nội dung.':'Đã tạo nội dung mới.');
+     this.editorDialog.set(null);this.editing.set(null);this.editorError.set('');this.notice.set(id?'Đã cập nhật nội dung.':'Đã tạo nội dung mới.');
     },
     error:()=>this.editorError.set(id?'Không thể cập nhật nội dung. Vui lòng thử lại.':'Không thể tạo nội dung. Vui lòng thử lại.'),
    });return;
@@ -109,7 +115,7 @@ export class AdminContentListComponent{
    this.actionBusy.set(true);this.editorError.set('');
    const req=id?this.api.updateRescuePet(id,d):this.api.createRescuePet(d);
    req.pipe(finalize(()=>this.actionBusy.set(false))).subscribe({
-    next:updated=>{if(id)this.rows.update(rows=>rows.map(r=>String(r?._id||r?.id)===id?{...r,...updated}:r));else this.rows.update(rows=>[updated,...rows]);this.closeEditor();this.notice.set(id?'Đã cập nhật hồ sơ cứu trợ.':'Đã thêm hồ sơ cứu trợ.');},
+    next:updated=>{if(id)this.rows.update(rows=>rows.map(r=>String(r?._id||r?.id)===id?{...r,...updated}:r));else this.rows.update(rows=>[updated,...rows]);this.editorDialog.set(null);this.editing.set(null);this.editorError.set('');this.notice.set(id?'Đã cập nhật hồ sơ cứu trợ.':'Đã thêm hồ sơ cứu trợ.');},
     error:()=>this.editorError.set(id?'Không thể cập nhật hồ sơ. Vui lòng thử lại.':'Không thể tạo hồ sơ. Vui lòng thử lại.'),
    });
   }
