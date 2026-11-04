@@ -23,6 +23,17 @@ export interface InventoryStockDto {
   version: number;
 }
 
+export interface InventoryTransactionLineDto {
+  inventoryItemId: string;
+  sku?: string | null;
+  name?: string | null;
+  unit?: string | null;
+  quantity: number;
+  beforeQty: number;
+  changeQty: number;
+  afterQty: number;
+}
+
 export interface InventoryTransactionDto {
   id: string;
   branchId: string;
@@ -33,6 +44,9 @@ export interface InventoryTransactionDto {
   afterQty: number;
   actorId: string;
   actorName?: string | null;
+  actorRole?: string | null;
+  branchName?: string | null;
+  branchCode?: string | null;
   reason: string;
   createdAt: string;
   sourceType: string;
@@ -42,6 +56,21 @@ export interface InventoryTransactionDto {
   transactionCode?: string | null;
   groupCode?: string | null;
   code?: string | null;
+  serviceRecordId?: string | null;
+  serviceRecordCode?: string | null;
+  recordVersion?: number | null;
+  items?: InventoryTransactionLineDto[];
+}
+
+export interface InventoryTransactionFilters {
+  branchId?: string;
+  inventoryItemId?: string;
+  transactionType?: InventoryTransactionDto['transactionType'];
+  sourceType?: string;
+  sourceId?: string;
+  search?: string;
+  fromDate?: string;
+  toDate?: string;
 }
 
 export interface InventoryBranchDto {
@@ -118,10 +147,18 @@ export class AdminInventoryService {
     });
   }
 
-  listTransactions(): Observable<InventoryTransactionDto[]> {
+  listTransactions(filters: InventoryTransactionFilters = {}): Observable<InventoryTransactionDto[]> {
     return this.allPages(cursor => {
       let params = new HttpParams().set('limit', '100');
       if (cursor) params = params.set('cursor', cursor);
+      if (filters.branchId) params = params.set('branchId', filters.branchId);
+      if (filters.inventoryItemId) params = params.set('inventoryItemId', filters.inventoryItemId);
+      if (filters.transactionType) params = params.set('transactionType', filters.transactionType);
+      if (filters.sourceType) params = params.set('sourceType', filters.sourceType);
+      if (filters.sourceId) params = params.set('sourceId', filters.sourceId);
+      if (filters.search) params = params.set('search', filters.search);
+      if (filters.fromDate) params = params.set('fromDate', filters.fromDate);
+      if (filters.toDate) params = params.set('toDate', filters.toDate);
       return this.api.get<InventoryCursorPage<InventoryTransactionDto>>('/inventory/transactions', { params });
     });
   }
