@@ -20,10 +20,10 @@ function getPrimaryProductImage(product: any = {}) {
 export function normalizeCartItem(item: any = {}) {
   const product = item.product || {};
   const variant = item.variant || item.product_variant || {};
-  const productId = item.product_id ?? product.product_id ?? item.productId;
-  const variantId = item.variant_id ?? variant.variant_id ?? item.variantId ?? null;
-  const cartItemId = item.cart_item_id ?? item.cartItemId ?? item.id;
-  const price = variant.price ?? product.price ?? item.price ?? 0;
+  const productId = item.product_id ?? product.product_id ?? item.productId ?? product.id;
+  const variantId = item.variant_id ?? variant.variant_id ?? item.variantId ?? variant.id ?? null;
+  const cartItemId = item.cart_item_id ?? item.cartItemId ?? item.id ?? item._id;
+  const price = variant.finalPrice ?? variant.price ?? product.finalPrice ?? product.price ?? item.price ?? 0;
 
   return {
     id: String(cartItemId ?? `${productId}:${variantId || "default"}`),
@@ -32,12 +32,12 @@ export function normalizeCartItem(item: any = {}) {
     variantId,
     name: product.product_name ?? product.name ?? item.name ?? "",
     price: Number(price),
-    image: getPrimaryProductImage(product) || item.image || item.imageUrl || item.thumbnail,
-    type: variant.variant_name ?? item.type ?? "",
+    image: getPrimaryProductImage(product) || item.image || item.imageUrl || item.thumbnail || product.thumbnailUrl || product.imageUrl,
+    type: variant.variant_name ?? variant.label ?? variant.name ?? item.type ?? "",
     size: item.size ?? "",
     variants: Array.isArray(product.variants) ? product.variants : item.variants,
     qty: Number(item.quantity ?? item.qty ?? 1),
-    selected: Boolean(item.is_selected ?? item.selected ?? true),
+    selected: Boolean(item.is_selected ?? item.isSelected ?? item.selected ?? true),
     raw: item,
   };
 }
@@ -67,9 +67,13 @@ export class CartApiService {
   }
 
   async addCartItem(item: any) {
+    let variantId = item.variantId || item.variant_id || null;
+    if (!variantId && Array.isArray(item.variants) && item.variants.length > 0) {
+      variantId = item.variants[0]?.id || item.variants[0]?._id || item.variants[0]?.variantId || null;
+    }
     const payload = {
       productId: item.productId || item.product_id || item.id,
-      variantId: item.variantId || item.variant_id || null,
+      variantId,
       size: item.size || "",
       quantity: Number(item.qty || item.quantity || 1),
     };

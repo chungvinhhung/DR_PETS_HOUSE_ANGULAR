@@ -152,6 +152,7 @@ export function normalizeProduct(product: any) {
     images: productImages.length ? productImages : image ? [image] : [],
     categoryIdx,
     variants: Array.isArray(source?.variants) ? source.variants.map(normalizeVariant) : [],
+    variantId: source?.variants?.[0]?.id || source?.variants?.[0]?._id || null,
     stockQuantity: getFirstValue(source?.stockQuantity, source?.stock_quantity, source?.totalStock, 0),
     soldQuantity: getFirstValue(source?.soldQuantity, source?.sold_quantity, 0),
     reviewCount: getFirstValue(source?.reviewCount, source?._count?.reviews, source?.reviews_count, 0),

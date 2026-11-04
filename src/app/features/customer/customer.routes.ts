@@ -42,6 +42,7 @@ export const CUSTOMER_ROUTES: Routes = [
 
   { path: 'petshop', loadComponent: shop },
   { path: 'cua-hang', loadComponent: shop },
+  { path: 'shop', loadComponent: shop },
   { path: 'products', loadComponent: productList },
   { path: 'san-pham', loadComponent: productList },
   { path: 'product-details', loadComponent: productDetails },
@@ -64,6 +65,14 @@ export const CUSTOMER_ROUTES: Routes = [
 
   { path: 'rescue', loadComponent: rescue },
   { path: 'cuu-tro', loadComponent: rescue },
+  { path: 'pets/adoption', loadComponent: rescue },
+  { path: 'first-aid', loadComponent: firstAid },
+  { path: 'first-aid/:postId', loadComponent: firstAidDetail },
+  { path: 'profile', redirectTo: 'thong-tin-nguoi-dung', pathMatch: 'full' },
+  { path: 'my-pets', redirectTo: 'thu-cung-cua-toi', pathMatch: 'full' },
+  { path: 'tracking', redirectTo: 'don-hang-cua-toi', pathMatch: 'full' },
+  { path: 'my-orders', redirectTo: 'don-hang-cua-toi', pathMatch: 'full' },
+  { path: 'my-appointments', redirectTo: 'lich-su-dat-lich', pathMatch: 'full' },
   { path: 'search', loadComponent: search },
   { path: 'about', loadComponent: about },
   { path: 've-chung-toi', loadComponent: about },
