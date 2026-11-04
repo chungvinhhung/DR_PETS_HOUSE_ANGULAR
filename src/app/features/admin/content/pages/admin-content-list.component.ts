@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize, Observable } from 'rxjs';
 
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-pagination';
 import { AdminContentService } from '../services/admin-content.service';
@@ -19,13 +20,19 @@ type ContentMode='articles'|'first-aid'|'community'|'rescue'|'adoptions';
  changeDetection:ChangeDetectionStrategy.OnPush,
 })
 export class AdminContentListComponent{
- private readonly route=inject(ActivatedRoute);private readonly api=inject(AdminContentService);
+ private readonly route=inject(ActivatedRoute);private readonly api=inject(AdminContentService);private readonly session=inject(AuthSessionService);
  readonly mode=this.route.snapshot.data['contentMode'] as ContentMode;
  readonly rows=signal<any[]>([]);readonly loading=signal(true);readonly error=signal('');readonly search=signal('');readonly filter=signal('');readonly status=signal('');readonly page=signal(1);readonly notice=signal('');
  readonly communityDialog=signal<any|null>(null);readonly rejectionReason=signal('');readonly actionBusy=signal(false);
+ readonly editorDialog=signal<'post'|'rescue'|null>(null);readonly editing=signal<any|null>(null);
+ readonly editorError=signal('');
+ readonly postDraft=signal({title:'',category:'',excerpt:'',content:'',status:'DRAFT',emergencyPhone:'1900-PET-HELP'});
+ readonly rescueDraft=signal({petName:'',species:'DOG',breed:'',ageDescription:'',healthStatus:'',rescueStory:'',status:'LOOKING_FOR_HOME'});
  readonly pageSize=7;
  readonly title=({articles:'Bài viết / Kiến thức','first-aid':'Cẩm nang sơ cứu',community:'Bài đăng cộng đồng',rescue:'Cứu trợ & Nhận nuôi',adoptions:'Đơn đăng ký nhận nuôi'} as Record<ContentMode,string>)[this.mode];
  readonly activeItem=({articles:'content-articles','first-aid':'content-first-aid',community:'content-community',rescue:'content-rescue',adoptions:'content-rescue'} as const)[this.mode];
+ readonly isAdmin=computed(()=>this.session.user()?.systemRole==='ADMIN');
+ readonly canCreate=computed(()=>this.mode==='rescue' || ((this.mode==='articles'||this.mode==='first-aid') && this.isAdmin()));
  readonly filtered=computed(()=>{
   const q=this.search().trim().toLocaleLowerCase('vi');
   return this.rows().filter(row=>{
@@ -45,7 +52,78 @@ export class AdminContentListComponent{
   request.pipe(finalize(()=>this.loading.set(false))).subscribe({next:rows=>this.rows.set(rows),error:()=>this.error.set('Đã có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại.')});
  }
  onFilter():void{this.page.set(1);} goToPage(p:number):void{this.page.set(Math.max(1,Math.min(p,this.totalPages())));}
- unsupported(action:string):void{this.notice.set(action+' hiện chưa sẵn sàng trên giao diện quản trị.');}
+ openCreate():void{
+  this.editing.set(null);this.editorError.set('');
+  if(this.mode==='articles'||this.mode==='first-aid'){
+   this.postDraft.set({title:'',category:'',excerpt:'',content:'',status:'DRAFT',emergencyPhone:'1900-PET-HELP'});
+   this.editorDialog.set('post');return;
+  }
+  if(this.mode==='rescue'){
+   this.rescueDraft.set({petName:'',species:'DOG',breed:'',ageDescription:'',healthStatus:'',rescueStory:'',status:'LOOKING_FOR_HOME'});
+   this.editorDialog.set('rescue');
+  }
+ }
+ openEdit(row:any):void{
+  this.editing.set(row);this.editorError.set('');
+  if(this.mode==='articles'||this.mode==='first-aid'){
+   this.postDraft.set({
+    title:String(row.title||''),category:String(row.category||''),excerpt:String(row.excerpt||''),
+    content:String(row.content||''),status:String(row.status||'DRAFT'),emergencyPhone:String(row.emergencyPhone||'1900-PET-HELP'),
+   });this.editorDialog.set('post');return;
+  }
+  if(this.mode==='rescue'){
+   this.rescueDraft.set({
+    petName:String(row.petName||row.name||''),species:String(row.species||'DOG'),breed:String(row.breed||''),
+    ageDescription:String(row.ageDescription||''),healthStatus:String(row.healthStatus||''),rescueStory:String(row.rescueStory||''),
+    status:String(row.status||'LOOKING_FOR_HOME'),
+   });this.editorDialog.set('rescue');
+  }
+ }
+ closeEditor():void{if(this.actionBusy())return;this.editorDialog.set(null);this.editing.set(null);this.editorError.set('');}
+ saveEditor():void{
+  if(this.actionBusy())return;
+  const editing=this.editing();const id=String(editing?._id||editing?.id||'');
+  if(this.editorDialog()==='post'){
+   const d=this.postDraft();
+   if(!d.title.trim()||!d.category.trim()||!d.content.trim()){this.editorError.set('Vui lòng nhập đầy đủ tiêu đề, chủ đề và nội dung.');return;}
+   const body:any={...d,title:d.title.trim(),category:d.category.trim(),excerpt:d.excerpt.trim(),content:d.content.trim(),
+    postType:this.mode==='first-aid'?'FIRST_AID':'OFFICIAL_BLOG'};
+   this.actionBusy.set(true);this.editorError.set('');
+   const req=id?this.api.updatePost(id,body):this.api.createPost(body);
+   req.pipe(finalize(()=>this.actionBusy.set(false))).subscribe({
+    next:updated=>{
+     if(id)this.rows.update(rows=>rows.map(r=>String(r?._id||r?.id)===id?{...r,...updated}:r));else this.rows.update(rows=>[updated,...rows]);
+     if(id&&d.status&&String(editing?.status||'')!==d.status){
+      this.api.updatePostStatus(id,d.status as 'DRAFT'|'PUBLISHED'|'ARCHIVED').subscribe({next:()=>{},error:()=>{}});
+     }
+     this.closeEditor();this.notice.set(id?'Đã cập nhật nội dung.':'Đã tạo nội dung mới.');
+    },
+    error:()=>this.editorError.set(id?'Không thể cập nhật nội dung. Vui lòng thử lại.':'Không thể tạo nội dung. Vui lòng thử lại.'),
+   });return;
+  }
+  if(this.editorDialog()==='rescue'){
+   const d=this.rescueDraft();
+   if(!d.petName.trim()||!d.breed.trim()||!d.ageDescription.trim()||!d.healthStatus.trim()||!d.rescueStory.trim()){
+    this.editorError.set('Vui lòng nhập đầy đủ thông tin bắt buộc của bé.');return;
+   }
+   this.actionBusy.set(true);this.editorError.set('');
+   const req=id?this.api.updateRescuePet(id,d):this.api.createRescuePet(d);
+   req.pipe(finalize(()=>this.actionBusy.set(false))).subscribe({
+    next:updated=>{if(id)this.rows.update(rows=>rows.map(r=>String(r?._id||r?.id)===id?{...r,...updated}:r));else this.rows.update(rows=>[updated,...rows]);this.closeEditor();this.notice.set(id?'Đã cập nhật hồ sơ cứu trợ.':'Đã thêm hồ sơ cứu trợ.');},
+    error:()=>this.editorError.set(id?'Không thể cập nhật hồ sơ. Vui lòng thử lại.':'Không thể tạo hồ sơ. Vui lòng thử lại.'),
+   });
+  }
+ }
+ deleteRow(row:any):void{
+  const id=String(row?._id||row?.id||'');if(!id||this.actionBusy())return;
+  if(typeof window!=='undefined'&&!window.confirm('Bạn có chắc muốn xóa nội dung này?'))return;
+  this.actionBusy.set(true);this.notice.set('');
+  const req=this.mode==='rescue'?this.api.deleteRescuePet(id):(this.mode==='community'?this.api.deleteCommunity(id):this.api.deletePost(id));
+  req.pipe(finalize(()=>this.actionBusy.set(false))).subscribe({
+   next:()=>{this.rows.update(rows=>rows.filter(r=>String(r?._id||r?.id)!==id));this.notice.set('Đã xóa nội dung.');},
+   error:()=>this.notice.set('Không thể xóa nội dung. Vui lòng thử lại.'),
+  });
+ }
  openCommunity(r:any):void{this.communityDialog.set(r);this.rejectionReason.set('');this.notice.set('');}
  closeCommunity():void{if(this.actionBusy())return;this.communityDialog.set(null);this.rejectionReason.set('');}
  moderateCommunity(status:'APPROVED'|'REJECTED'|'HIDDEN'):void{
