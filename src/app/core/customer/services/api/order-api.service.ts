@@ -16,7 +16,11 @@ function normalizeOrderStatus(order: any = {}) {
   if (raw === "completed" || raw === "delivered") return "delivered";
   if (raw === "confirmed") return "processing";
   if (raw === "processing") return "processing";
-  if (raw === "pending" || order.payment_status === "unpaid" || order.payment?.status === "PENDING" || order.payments?.some((payment: any) => payment.status === "pending")) {
+
+  const paymentMethod = String(order.paymentMethod || order.payment_method || order.payments?.[0]?.payment_method || "").toUpperCase();
+  const isOnline = paymentMethod.includes("ONLINE");
+
+  if (isOnline && (raw === "pending" || order.payment_status === "unpaid" || order.payment?.status === "PENDING" || order.payments?.some((payment: any) => payment.status === "pending"))) {
     return "awaiting_payment";
   }
   return "processing";
@@ -55,14 +59,14 @@ function normalizeOrderProduct(item: any = {}) {
 
   return {
     id: String(item.orderItemId || item.order_item_id || item.productId || item.product_id || item.id || itemName),
-    productId: item.productId || item.product_id,
+    productId: item.productId || item.product_id || item.id,
     variantId: item.variantId ?? item.variant_id ?? item.variant?.variant_id ?? null,
     name,
     price: Number(item.unitPrice ?? item.unit_price ?? item.price ?? item.product?.price ?? 0),
     quantity: Number(item.quantity || 1),
     variant: item.variant_label || item.variantLabel || parsedVariant.variant,
     size: item.size || item.size_label || item.sizeLabel || parsedVariant.size,
-    image: item.product?.product_images?.[0]?.image_url || item.image || item.photoUrl || "",
+    image: item.product?.product_images?.[0]?.image_url || item.image || item.photoUrl || '/assets/customer/images/product/detail-image.png',
   };
 }
 
@@ -88,9 +92,9 @@ export function normalizeOrder(order: any = {}) {
     discount,
     totalAmount,
     recipient: {
-      name: order.recipient_name || order.shippingAddress?.recipientName || order.shippingAddress?.fullName || order.contactSnapshot?.fullName || order.address?.recipient_name || "",
+      name: order.recipient_name || order.shippingAddress?.recipientName || order.shippingAddress?.fullName || order.contactSnapshot?.fullName || order.address?.recipient_name || "Khách hàng",
       phone: order.recipient_phone || order.shippingAddress?.phone || order.contactSnapshot?.phone || order.address?.recipient_phone || "",
-      address: order.shipping_address || (order.shippingAddress ? [order.shippingAddress.line1, order.shippingAddress.ward, order.shippingAddress.district, order.shippingAddress.city].filter(Boolean).join(", ") : "") || order.address?.address_line || "",
+      address: order.shipping_address || (order.shippingAddress ? [order.shippingAddress.addressLine, order.shippingAddress.line1, order.shippingAddress.ward, order.shippingAddress.district, order.shippingAddress.city].filter(Boolean).join(", ") : "") || order.address?.address_line || (typeof order.shippingAddress === 'string' ? order.shippingAddress : "") || "Tại cửa hàng",
     },
   };
 }

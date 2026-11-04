@@ -48,8 +48,8 @@ export function assertSuccess<T = any>(response: any): T {
     return (response.DT !== undefined ? response.DT : response) as T;
   }
 
-  // 3. Chuẩn Direct REST: Trả về trực tiếp items, object hoặc array
-  return (response.data ?? response.items ?? response) as T;
+  // 3. Chuẩn Direct REST: Trả về trực tiếp response hoặc response.data
+  return (response.data !== undefined ? response.data : response) as T;
 }
 
 /**

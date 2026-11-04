@@ -28,9 +28,9 @@ export const getOrderProductSize = (product: any = {}) =>
 
 export const buildCheckoutItemsFromOrder = (order: any) =>
   (order?.products || [])
-    .filter((product: any) => product.productId)
+    .filter((product: any) => product.productId || product.id)
     .map((product: any) => ({
-      productId: product.productId,
+      productId: product.productId || product.id,
       variantId: product.variantId,
       name: product.name,
       price: product.price,

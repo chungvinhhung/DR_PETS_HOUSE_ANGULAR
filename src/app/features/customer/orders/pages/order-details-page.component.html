@@ -26,7 +26,7 @@
     <section class="rounded-[14px] bg-white px-6 py-[30px]">
       <div class="flex items-center justify-between gap-4">
         <div>
-          <h1 class="text-[32px] font-bold text-[#344054]">Mã đơn hàng: {{ order().id }}</h1>
+          <h1 class="text-[32px] font-bold text-[#344054]">Mã đơn hàng: {{ order().code || order().order_code || order().id }}</h1>
           <span [class]="`mt-2 inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase ${currentStatus().badgeClass}`">{{ currentStatus().label }}</span>
         </div>
         <button
