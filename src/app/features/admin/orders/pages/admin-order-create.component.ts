@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminOrderCheckoutService, AdminOrderQuote, AdminOrderQuoteRequest, AdminOrderCommitRequest } from '../services/admin-order-checkout.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
@@ -42,7 +42,7 @@ const normalizePhone = (value: string): string => {
 @Component({
   selector: 'app-admin-order-create',
   standalone: true,
-  imports: [RouterLink, AdminCatalogShellComponent, AdminBreadcrumbComponent],
+  imports: [AdminCatalogShellComponent, AdminBreadcrumbComponent],
   templateUrl: './admin-order-create.component.html',
   styleUrl: './admin-order-create.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
