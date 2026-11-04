@@ -208,7 +208,7 @@
           } @else {
             <label><span class="content-editor__field-label">Tên thú cưng <span class="content-editor__required" aria-hidden="true">*</span></span><input type="text" [ngModel]="rescueDraft().petName" (ngModelChange)="updateRescueDraft('petName',$event)"></label>
             <label><span class="content-editor__field-label">Loài <span class="content-editor__required" aria-hidden="true">*</span></span>
-              <select [ngModel]="rescueDraft().species" (ngModelChange)="updateRescueDraft('species',$event)"><option value="DOG">Chó</option><option value="CAT">Mèo</option></select>
+              <select [ngModel]="rescueDraft().species" (ngModelChange)="updateRescueDraft('species',$event)"><option value="DOG">Chó</option><option value="CAT">Mèo</option><option value="OTHER">Khác</option></select>
             </label>
             <label><span class="content-editor__field-label">Giống <span class="content-editor__required" aria-hidden="true">*</span></span><input type="text" [ngModel]="rescueDraft().breed" (ngModelChange)="updateRescueDraft('breed',$event)"></label>
             <label><span class="content-editor__field-label">Độ tuổi <span class="content-editor__required" aria-hidden="true">*</span></span><input type="text" [ngModel]="rescueDraft().ageDescription" (ngModelChange)="updateRescueDraft('ageDescription',$event)"></label>
