@@ -35,6 +35,7 @@ export class AdminAppointmentDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private requestVersion = 0;
+  private readonly mutationKeys=new Map<string,string>();
   private readonly nowMs = signal(Date.now());
 
   readonly id = signal(this.route.snapshot.paramMap.get('id') || '');
@@ -433,7 +434,11 @@ export class AdminAppointmentDetailComponent {
     if(win && !win.canRequest) {this.showActionMessage(this.showPolicyMessage());return;}
     if (!this.reason().trim()) {this.showActionMessage('Vui lòng nhập lý do xử lý.');return;}
 
-    const headers=new HttpHeaders({'Idempotency-Key':crypto.randomUUID()});
+    const fingerprint=[
+      action,appointment.id,String(appointment.version),
+      this.rescheduleSlotId(),this.reason().trim(),
+    ].join('|');
+    const headers=this.idempotencyHeaders(fingerprint);
     let request: Observable<unknown>;
     if(action==='cancel'){
       const override=win?.overrideRequiresAudit===true&&this.isManagerOrAdmin();
@@ -492,5 +497,15 @@ export class AdminAppointmentDetailComponent {
         this.toast.show(message,'error');
       }
     });
+  }
+  private idempotencyHeaders(fingerprint:string):HttpHeaders {
+    let key=this.mutationKeys.get(fingerprint);
+    if(!key){
+      key=typeof crypto!=='undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : 'appointment-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+      this.mutationKeys.set(fingerprint,key);
+    }
+    return new HttpHeaders({'Idempotency-Key':key});
   }
 }
