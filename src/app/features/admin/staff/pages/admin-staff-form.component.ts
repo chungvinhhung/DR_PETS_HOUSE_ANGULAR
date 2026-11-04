@@ -105,7 +105,15 @@ export class AdminStaffFormComponent {
           this.staffApi.loadRoster(true);
           this.toast.show(next === 'BLOCKED' ? 'Đã chặn tài khoản nhân viên.' : 'Đã bỏ chặn tài khoản nhân viên.', 'success');
         },
-        error: err => this.toast.show(adminErrorMessage(err, 'Không thể cập nhật trạng thái tài khoản.'), 'error'),
+        error: err => {
+          const status = (err as { status?: number } | null)?.status;
+          this.toast.show(
+            status === 404 || status === 405 || status === 501
+              ? 'BE chưa hỗ trợ API khóa/mở tài khoản nội bộ trên phiên bản hiện tại.'
+              : adminErrorMessage(err, 'Không thể cập nhật trạng thái tài khoản.'),
+            'error',
+          );
+        },
       });
   }
 
