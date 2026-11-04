@@ -79,10 +79,10 @@ export class AdminContentListComponent{
    });this.editorDialog.set('rescue');
   }
  }
- updatePostDraft(field:keyof ReturnType<typeof this.postDraft>,value:string):void{
+ updatePostDraft(field:'title'|'category'|'excerpt'|'content'|'status'|'emergencyPhone',value:string):void{
   this.postDraft.update(current=>({...current,[field]:value}));
  }
- updateRescueDraft(field:keyof ReturnType<typeof this.rescueDraft>,value:string):void{
+ updateRescueDraft(field:'petName'|'species'|'breed'|'ageDescription'|'healthStatus'|'rescueStory'|'status',value:string):void{
   this.rescueDraft.update(current=>({...current,[field]:value}));
  }
  closeEditor():void{if(this.actionBusy())return;this.editorDialog.set(null);this.editing.set(null);this.editorError.set('');}
