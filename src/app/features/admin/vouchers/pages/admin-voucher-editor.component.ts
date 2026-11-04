@@ -126,7 +126,9 @@ export class AdminVoucherEditorComponent {
   toggleMaxDiscountUnlimited(checked: boolean): void {
     if (!this.allowEditing() || this.saving()) return;
     if (checked && this.mode === 'edit' && this.original()?.maxDiscountAmount != null) {
-      this.validation.set('Backend chưa hỗ trợ xóa mức giảm tối đa đã lưu về trạng thái Không giới hạn.');
+      const message = 'Backend chưa hỗ trợ xóa mức giảm tối đa đã lưu về trạng thái Không giới hạn.';
+      this.validation.set(message);
+      this.toast.show(message, 'info');
       return;
     }
     this.maxDiscountUnlimited.set(checked);
@@ -204,7 +206,10 @@ export class AdminVoucherEditorComponent {
   save(): void {
     if (!this.allowEditing() || this.saving()) return;
     const body=this.payload();
-    if (!body) return;
+    if (!body) {
+      if (this.validation()) this.toast.show(this.validation(), 'error');
+      return;
+    }
     this.saving.set(true);
     const request=this.mode === 'create' ? this.api.create(body,this.createKey) : this.api.update(this.id,body);
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
