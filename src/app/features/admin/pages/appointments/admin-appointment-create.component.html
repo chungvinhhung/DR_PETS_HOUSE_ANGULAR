@@ -1,8 +1,9 @@
 <app-admin-catalog-shell activeItem="appointments">
   <main class="appointment-create">
-    <nav class="breadcrumb appointment-create__breadcrumb" aria-label="Đường dẫn">
-      <a routerLink="/admin/appointments">Lịch hẹn</a><span aria-hidden="true">›</span><strong aria-current="page">Tạo lịch hẹn</strong>
-    </nav>
+    <app-admin-breadcrumb [items]="[
+      {label:'Lịch hẹn', link:'/admin/appointments'},
+      {label:'Tạo lịch hẹn'}
+    ]" />
     <div class="appointment-create__page-title">
       <h1>Tạo lịch hẹn</h1>
       <button type="button" class="btn btn--outline appointment-create__header-cancel" (click)="requestCancel()">Hủy</button>
