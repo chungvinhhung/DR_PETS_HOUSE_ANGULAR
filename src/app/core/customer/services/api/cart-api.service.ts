@@ -57,9 +57,12 @@ export class CartApiService {
           : Array.isArray(cart)
             ? cart
             : [];
+      const validItems = items
+        .map(normalizeCartItem)
+        .filter((item: any) => Boolean(item && item.name && item.name.trim() && item.name !== 'Sản phẩm' && item.productId));
       return {
         ...cart,
-        items: items.map(normalizeCartItem),
+        items: validItems,
       };
     } catch {
       return { items: [] };

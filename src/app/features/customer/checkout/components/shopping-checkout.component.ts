@@ -45,7 +45,11 @@ export class ShoppingCheckoutComponent {
 
   // --- Giá trị tính toán (computed) ---
   readonly isGuest = computed<any>(() => !this.authService.isAuthenticated());
-  readonly orderItems = computed<any>(() => this.cartService.cartItems().filter((item: any) => item.selected));
+  readonly orderItems = computed<any>(() => {
+    const all = this.cartService.cartItems().filter((item: any) => Boolean(item && item.name && item.name.trim()));
+    const selected = all.filter((item: any) => item.selected !== false);
+    return selected.length > 0 ? selected : all;
+  });
   readonly selectedAddress = computed<any>(() => this.addresses().find((address: any) => address.id === this.selectedAddressId()) || this.addresses()[0] || null);
 
   // --- Trạng thái (signal = useState / useRef) ---

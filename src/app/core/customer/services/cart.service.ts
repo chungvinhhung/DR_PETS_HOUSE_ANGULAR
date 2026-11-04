@@ -20,7 +20,10 @@ const CART_STORAGE_KEY = 'drPetCartItems';
 function loadLocalCart(): any[] {
   try {
     const saved = localStorage.getItem(CART_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
+    if (!saved) return [];
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item: any) => Boolean(item && item.name && item.name.trim() && item.name !== 'Sản phẩm' && item.productId));
   } catch {
     return [];
   }
@@ -95,8 +98,11 @@ export class CartService {
     this.cartSyncError.set('');
     try {
       const cart = await this.cartApi.getCart();
-      if (Array.isArray(cart?.items) && cart.items.length > 0) {
-        this.cartItems.set(cart.items);
+      const validItems = Array.isArray(cart?.items)
+        ? cart.items.filter((item: any) => Boolean(item && item.name && item.name.trim() && item.name !== 'Sản phẩm' && item.productId))
+        : [];
+      if (validItems.length > 0) {
+        this.cartItems.set(validItems);
       }
     } catch (error: any) {
       this.cartSyncError.set(error?.message || 'Không thể tải giỏ hàng');
