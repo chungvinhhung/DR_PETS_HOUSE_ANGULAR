@@ -22,6 +22,28 @@ import {
 <app-admin-catalog-shell activeItem="appointments">
 <main class="appointments">
   <header class="heading"><h1>Quản lý lịch hẹn</h1></header>
+  <section class="appointments__kpis" aria-label="Thống kê lịch hẹn trong dữ liệu đã tải">
+    <article class="appointments__kpi">
+      <span>Tổng lịch hẹn</span>
+      <strong>{{ loading() || error() ? '—' : kpis().total }}</strong>
+      <small>Tổng số lịch trong dữ liệu đã tải</small>
+    </article>
+    <article class="appointments__kpi">
+      <span>Chờ thanh toán</span>
+      <strong class="appointments__kpi--blue">{{ loading() || error() ? '—' : kpis().pendingPayment }}</strong>
+      <small>Trong {{ loading() || error() ? '—' : kpis().total }} lịch đã tải</small>
+    </article>
+    <article class="appointments__kpi">
+      <span>Đang thực hiện</span>
+      <strong>{{ loading() || error() ? '—' : kpis().inProgress }}</strong>
+      <small>Trong {{ loading() || error() ? '—' : kpis().total }} lịch đã tải</small>
+    </article>
+    <article class="appointments__kpi">
+      <span>Hoàn tất</span>
+      <strong>{{ loading() || error() ? '—' : kpis().completed }}</strong>
+      <small>Trong {{ loading() || error() ? '—' : kpis().total }} lịch đã tải</small>
+    </article>
+  </section>
   <section class="panel filters web2-filterbar" aria-label="Bộ lọc lịch hẹn">
     <label class="search web2-management-search">
       <img src="/assets/service-catalog/search.svg" width="16" height="16" alt="" />
@@ -208,6 +230,15 @@ export class AdminAppointmentsPageComponent {
       return this.fetchedRows().filter(row=>scope.includes(row.branchId));
     }
     return this.fetchedRows();
+  });
+  readonly kpis=computed(()=>{
+    const appointments=this.scopedRows();
+    return {
+      total: appointments.length,
+      pendingPayment: appointments.filter(row=>row.status==='PENDING_PAYMENT').length,
+      inProgress: appointments.filter(row=>row.status==='IN_PROGRESS').length,
+      completed: appointments.filter(row=>row.status==='COMPLETED').length,
+    };
   });
   readonly filteredRows=computed(()=>{
     const search=this.search().trim().toLocaleLowerCase('vi');
