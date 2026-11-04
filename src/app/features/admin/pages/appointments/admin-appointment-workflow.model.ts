@@ -7,6 +7,15 @@ export interface AppointmentHistoryEvent {
   actor: string | null;
   note: string | null;
 }
+export interface AppointmentServiceSegment {
+  serviceId: string;
+  serviceName: string;
+  assignedStaffId: string;
+  requiredStaffRole: string;
+  executionStatus: string;
+  scheduledStart: string | null;
+  scheduledEnd: string | null;
+}
 export interface AppointmentView {
   id: string;
   code: string;
@@ -15,6 +24,7 @@ export interface AppointmentView {
   customerEmail: string;
   petNames: string[];
   serviceNames: string[];
+  serviceSegments: AppointmentServiceSegment[];
   branchName: string;
   branchId: string;
   status: AppointmentStatus;
@@ -112,6 +122,21 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
   const refundRaw = obj(item['refund']) ?? obj(item['refundSummary']);
   const referenceRows = item['serviceRecords'] ?? item['serviceRecordRefs'];
   const auditRows = item['auditHistory'] ?? item['auditLog'];
+  const serviceRows = Array.isArray(item['services']) ? item['services'] : [];
+  const serviceSegments: AppointmentServiceSegment[] = serviceRows.map(raw => {
+    const row = obj(raw) ?? {};
+    const scheduledStart = firstString(row['scheduledStart'], row['startAt']);
+    const scheduledEnd = firstString(row['scheduledEnd'], row['endAt']);
+    return {
+      serviceId: firstString(row['serviceId'], obj(row['service'])?.['id'], obj(row['service'])?.['_id']),
+      serviceName: firstString(row['serviceName'], obj(row['service'])?.['name']),
+      assignedStaffId: firstString(row['assignedStaffId'], obj(row['staff'])?.['id'], obj(row['staff'])?.['_id']),
+      requiredStaffRole: firstString(row['requiredStaffRole']),
+      executionStatus: firstString(row['executionStatus']) || 'NOT_STARTED',
+      scheduledStart: isDate(scheduledStart) ? scheduledStart : null,
+      scheduledEnd: isDate(scheduledEnd) ? scheduledEnd : null,
+    };
+  }).filter(row => !!row.serviceId);
   return {
     id, code:firstString(item['code'], item['appointmentCode'], item['appointment_code']) || id,
     customerName:firstString(item['customerName'], item['customer_name_snapshot'], customer['fullName'], customer['full_name'], custSnapshot['name'], contact['fullName'], contact['name']),
@@ -121,6 +146,7 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
       ? namesFrom(item['pets'] ?? item['pet'], 'pet') : firstString(item['petName'], item['pet_name_snapshot'], petSnapshot['name']) ? [firstString(item['petName'], item['pet_name_snapshot'], petSnapshot['name'])] : [],
     serviceNames:namesFrom(item['services'] ?? item['appointment_services'], 'service').length
       ? namesFrom(item['services'] ?? item['appointment_services'], 'service') : firstString(item['serviceName']) ? [firstString(item['serviceName'])] : [],
+    serviceSegments,
     branchName:firstString(item['branchName'], branch['name'], branch['branch_name']),
     branchId:firstString(item['branchId'], item['branch_id'], branch['id'], branch['_id']),
     status:appointmentStatus(rawStatus),rawStatus,
