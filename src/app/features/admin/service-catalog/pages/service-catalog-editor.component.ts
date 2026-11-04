@@ -245,51 +245,38 @@ export class ServiceCatalogEditorComponent {
    * Branch names come from the BE branch scope. Individual config is displayed
    * only if BE returns it for the selected service and branch. */
   private loadBranchDetailRows(): void {
+    if (!this.serviceId) return;
     this.branchesLoading.set(true);
     this.branchLoadError.set('');
-    this.repository.listBranchesForServiceDetail().pipe(
+    this.repository.getBranchConfigs(this.serviceId).pipe(
       takeUntilDestroyed(this.destroyRef),
     ).subscribe({
-      next: (branches) => {
-        this.branchDetailRows.set(branches.map((branch) => ({
-          id: branch.id,
-          name: branch.name,
-          summary: 'Đang tải cấu hình...',
-        })));
+      next: (configs) => {
+        const role = this.authSessionRole;
+        const scope = new Set(this.authSession.user()?.branchScope ?? []);
+        const visible = role === 'ADMIN'
+          ? configs
+          : configs.filter((config) => scope.has(config.branchId));
+        this.branchDetailRows.set(visible.map((config) => {
+          const status = this.source?.status !== 'ACTIVE'
+            ? 'Chưa thể bật'
+            : config.branchStatus === 'INACTIVE'
+              ? 'Chi nhánh ngừng hoạt động'
+              : config.enabled && config.capacity > 0 ? 'Đang bật' : 'Đang tắt';
+          const availability = this.bookingMode === 'CONTACT_ONLY'
+            ? 'Liên hệ'
+            : 'Khả dụng theo lịch';
+          return {
+            id: config.branchId,
+            name: config.branchName,
+            summary: `${status} · Sức chứa ${config.capacity} · ${availability}`,
+          };
+        }));
         this.branchesLoading.set(false);
-        for (const branch of branches) {
-          this.repository.list({
-            search: this.serviceName,
-            branchId: branch.id,
-            mode: 'ALL',
-            status: 'ALL',
-            page: 1,
-            pageSize: 100,
-          }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-            next: (page) => {
-              const service = page.items.find((item) => item.id === this.serviceId);
-              const config = service?.branchServices.find((item) => item.branchId === branch.id);
-              if (!config) {
-                this.updateBranchSummary(branch.id, 'Chưa có dữ liệu cấu hình tại chi nhánh');
-                return;
-              }
-              const status = this.source?.status !== 'ACTIVE'
-                ? 'Chưa thể bật'
-                : config.enabled && config.capacity > 0 ? 'Đang bật' : 'Đang tắt';
-              const availability = service?.availabilityText ||
-                (this.bookingMode === 'CONTACT_ONLY' ? 'Liên hệ' : 'Khả dụng theo lịch');
-              this.updateBranchSummary(
-                branch.id,
-                `${status} · Sức chứa ${config.capacity} · ${availability}`,
-              );
-            },
-            error: () => this.updateBranchSummary(branch.id, 'Chưa tải được cấu hình tại chi nhánh'),
-          });
-        }
       },
       error: () => {
         this.branchesLoading.set(false);
-        this.branchLoadError.set('Không tải được danh sách chi nhánh. Vui lòng thử lại.');
+        this.branchLoadError.set('Không tải được cấu hình chi nhánh. Vui lòng thử lại.');
       },
     });
   }
