@@ -32,10 +32,12 @@
         <a class="staff-add web2-add-button" routerLink="/admin/staff/new" title="Thêm nhân viên"><span class="web2-add-icon" aria-hidden="true">+</span><span>Thêm nhân viên</span></a>
       </div>
     </section>
-    @if (loading()) { <app-admin-data-state kind="loading" title="Đang tải danh sách nhân sự" /> }
-    @if (error()) { <app-admin-data-state kind="error" title="Không thể tải danh sách nhân sự" [message]="error()" (retry)="retry()" /> }
-    @if (shiftError()) { <p role="alert">{{ shiftError() }}</p> }
     <section class="staff-panel" aria-label="Danh sách nhân viên">
+      @if (loading()) {
+        <app-admin-data-state kind="loading" title="Đang tải danh sách nhân sự" />
+      } @else if (error()) {
+        <app-admin-data-state kind="error" title="Không thể tải danh sách nhân sự" [message]="error()" (retry)="retry()" />
+      } @else {
       <div class="staff-table-wrap"><table>
         <thead><tr><th>Mã nhân viên</th><th>Họ tên</th><th class="web2-cell-center">Vai trò nghiệp vụ</th><th class="web2-cell-center">Chi nhánh được phân công</th><th>Ca hôm nay</th><th>Trạng thái tài khoản</th><th>Thao tác</th></tr></thead>
         <tbody>
@@ -80,6 +82,7 @@
           <button type="button" aria-label="Trang sau" [disabled]="page() >= pages()" (click)="changePage(page() + 1)">›</button>
         </nav>
       </footer>
+      }
     </section>
   </main>
 </app-admin-catalog-shell>
