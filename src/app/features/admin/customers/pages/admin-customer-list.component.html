@@ -5,18 +5,18 @@
     <section class="customer-filter web2-filterbar" role="search" aria-label="Tìm kiếm và lọc khách hàng">
       <label class="customer-search search-field">
         <img src="/assets/service-catalog/search.svg" alt="" aria-hidden="true">
-        <input type="search" placeholder="Tìm theo họ tên, số điện thoại hoặc email..."
+        <input type="search" placeholder="Tìm theo họ tên, số điện thoại và email..."
           [ngModel]="search()" (ngModelChange)="search.set($event); onFilter()">
       </label>
       <div class="customer-filter__controls toolbar-selects">
         <select class="web2-admin-filter-select" aria-label="Trạng thái kích hoạt" [ngModel]="activation()" (ngModelChange)="activation.set($event); onFilter()">
-          <option value="">Trạng thái kích hoạt</option>
+          <option value="">Tất cả trạng thái kích hoạt</option>
           <option value="ACTIVATED">Đã kích hoạt</option>
           <option value="PENDING_ACTIVATION">Chờ kích hoạt</option>
           <option value="NO_ACCOUNT">Chưa có tài khoản</option>
         </select>
         <select class="web2-admin-filter-select" aria-label="Trạng thái tài khoản" [ngModel]="account()" (ngModelChange)="account.set($event); onFilter()">
-          <option value="">Trạng thái tài khoản</option>
+          <option value="">Tất cả trạng thái tài khoản</option>
           <option value="ACTIVE">Đang hoạt động</option>
           <option value="BLOCKED">Đã chặn</option>
         </select>
