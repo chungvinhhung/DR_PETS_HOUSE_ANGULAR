@@ -101,6 +101,7 @@
             [attr.aria-current]="activeItem === 'staff' ? 'page' : null">Nhân sự</a>
         </div>
         <a class="catalog-sidebar__link" routerLink="/admin/customers"
+          (click)="closeSidebarGroups()"
           [class.catalog-sidebar__link--active]="activeItem === 'customers'"
           [attr.aria-current]="activeItem === 'customers' ? 'page' : null">
           <img src="/assets/admin-product/icon-users.svg" alt="" width="20" height="20">
