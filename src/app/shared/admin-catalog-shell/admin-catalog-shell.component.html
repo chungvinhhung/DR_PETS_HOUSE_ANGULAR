@@ -67,7 +67,7 @@
           (click)="toggleSales()">
           <img src="/assets/admin-product/icon-sales.svg" alt="" width="20" height="20">
           <span>Bán hàng</span>
-          @if (pendingReturnCount() > 0) { <span class="catalog-sidebar__return-badge web2-notification-badge web2-notification-badge--inverted" [attr.aria-label]="pendingReturnCount() + ' yêu cầu trả hàng chờ tiếp nhận'">{{ pendingReturnCount() }}</span> }
+          @if (pendingSalesCount() > 0) { <span class="catalog-sidebar__return-badge web2-notification-badge web2-notification-badge--inverted" [attr.aria-label]="pendingOrderCount() + ' đơn chờ xác nhận và ' + pendingReturnCount() + ' yêu cầu trả hàng chờ tiếp nhận'">{{ pendingSalesCount() }}</span> }
           <img class="catalog-sidebar__group-chevron"
             [src]="salesExpanded ? '/assets/admin-product/expand_less.svg' : '/assets/admin-product/expand_more.svg'"
             alt="" aria-hidden="true" width="16" height="16">
@@ -87,7 +87,7 @@
           </a>
           <a class="catalog-sidebar__sub" routerLink="/admin/orders"
             [class.catalog-sidebar__sub--active]="activeItem === 'orders'"
-            [attr.aria-current]="activeItem === 'orders' ? 'page' : null"><span>Đơn hàng</span> @if (pendingReturnCount() > 0) { <span class="catalog-sidebar__return-badge web2-notification-badge">{{ pendingReturnCount() }}</span> }</a>
+            [attr.aria-current]="activeItem === 'orders' ? 'page' : null"><span>Đơn hàng</span> @if (pendingSalesCount() > 0) { <span class="catalog-sidebar__return-badge web2-notification-badge" [attr.aria-label]="pendingOrderCount() + ' đơn chờ xác nhận và ' + pendingReturnCount() + ' yêu cầu trả hàng chờ tiếp nhận'">{{ pendingSalesCount() }}</span> }</a>
           <a class="catalog-sidebar__sub" routerLink="/admin/vouchers"
             [class.catalog-sidebar__sub--active]="activeItem === 'vouchers'"
             [attr.aria-current]="activeItem === 'vouchers' ? 'page' : null">Khuyến mãi</a>
