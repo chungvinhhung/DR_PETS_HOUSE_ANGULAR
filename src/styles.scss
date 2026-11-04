@@ -6248,3 +6248,24 @@ app-admin-order-management .order-admin__modal-actions .order-admin__btn--primar
 ) :is(table, .web2-admin-table) thead th{
   background:#f2f7fc!important;
 }
+
+/* Service Record Phase 5 — Figma extra-material modal + inventory linkage */
+app-admin-service-record-detail {
+  .record-modal--material{width:min(530px,100%);padding:23px;border-radius:12px}
+  .modal-title-group{display:flex;min-width:0;flex:1;flex-direction:column;gap:5px}
+  .record-modal>header .modal-title-group h2{margin:0;color:#202b3c;font-size:18px;font-weight:600;line-height:22px}
+  .modal-title-group p{margin:0;color:#66778c;font-size:11px;line-height:16px}
+  .material-add-form{display:grid;grid-template-columns:154px minmax(0,1fr);gap:13px 20px;margin-top:14px}
+  .material-field{display:flex;min-width:0;flex-direction:column;gap:7px;color:#202b3c;font-size:12px;font-weight:600}
+  .material-field--full{grid-column:1/-1}.material-field b{color:#202b3c}
+  .material-field input,.material-field select{box-sizing:border-box;width:100%;height:40px;border:1px solid #d6e0eb;border-radius:7px;background:#fff;padding:0 12px;color:#34445a;font:inherit;font-weight:400;outline:none}
+  .material-field input:focus,.material-field select:focus{border-color:#175bb5}
+  .quantity-stepper{display:grid;grid-template-columns:40px minmax(0,1fr) 40px;height:40px;overflow:hidden;border:1px solid #d6e0eb;border-radius:7px;background:#fff}
+  .quantity-stepper button{border:0;background:#fff;color:#175bb5;font-size:20px;cursor:pointer}
+  .quantity-stepper button+input,.quantity-stepper input+button{border-left:1px solid #d6e0eb}
+  .quantity-stepper button:disabled{background:#f3f6f9;color:#9aa7b8;cursor:not-allowed}
+  .quantity-stepper input{height:38px;border:0;border-radius:0;padding:0;text-align:center;font-weight:600;-moz-appearance:textfield}
+  .quantity-stepper input::-webkit-outer-spin-button,.quantity-stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .inventory-inline-state{color:#718198;font-size:10px}.inventory-warning{margin:10px 0 0;color:#9a6700;font-size:10px}
+}
+@media(max-width:620px){app-admin-service-record-detail .material-add-form{grid-template-columns:1fr}app-admin-service-record-detail .material-field--full{grid-column:auto}}
