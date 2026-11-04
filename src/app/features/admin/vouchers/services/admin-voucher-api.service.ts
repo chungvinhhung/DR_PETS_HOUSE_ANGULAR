@@ -25,6 +25,9 @@ export interface AdminVoucher {
   description?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
+  isFlashSale?: boolean;
+  flashSaleStartTime?: string | null;
+  flashSaleEndTime?: string | null;
 }
 export interface VoucherListResult {
   items: AdminVoucher[];
@@ -41,6 +44,7 @@ export interface VoucherWriteBody {
   effectiveTo: string;
   quota: number;
   status: VoucherStatus;
+  description?: string;
   minOrderAmount?: number;
   maxDiscountAmount?: number;
 }
