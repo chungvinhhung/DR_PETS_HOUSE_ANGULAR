@@ -1,1 +1,13 @@
 :host{display:block;min-width:0}
+
+/* Let both full status labels fit; do not move or overlay native select arrows. */
+.customer-page .customer-filter__controls select.web2-admin-filter-select:first-child{
+  box-sizing:border-box;flex:0 0 260px;width:260px!important;min-width:260px
+}
+.customer-page .customer-filter__controls select.web2-admin-filter-select:last-child{
+  box-sizing:border-box;flex:0 0 254px;width:254px!important;min-width:254px
+}
+@media(max-width:670px){
+  .customer-page .customer-filter__controls{flex-wrap:wrap!important}
+  .customer-page .customer-filter__controls select.web2-admin-filter-select{max-width:100%}
+}
