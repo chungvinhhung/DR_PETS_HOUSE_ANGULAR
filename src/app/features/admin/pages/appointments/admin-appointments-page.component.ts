@@ -26,22 +26,18 @@ import {
     <article class="appointments__kpi">
       <span>Tổng lịch hẹn</span>
       <strong>{{ loading() || error() ? '—' : kpis().total }}</strong>
-      <small>Tổng số lịch trong dữ liệu đã tải</small>
     </article>
     <article class="appointments__kpi">
       <span>Chờ thanh toán</span>
       <strong class="appointments__kpi--blue">{{ loading() || error() ? '—' : kpis().pendingPayment }}</strong>
-      <small>Trong {{ loading() || error() ? '—' : kpis().total }} lịch đã tải</small>
     </article>
     <article class="appointments__kpi">
       <span>Đang thực hiện</span>
       <strong>{{ loading() || error() ? '—' : kpis().inProgress }}</strong>
-      <small>Trong {{ loading() || error() ? '—' : kpis().total }} lịch đã tải</small>
     </article>
     <article class="appointments__kpi">
       <span>Hoàn tất</span>
       <strong>{{ loading() || error() ? '—' : kpis().completed }}</strong>
-      <small>Trong {{ loading() || error() ? '—' : kpis().total }} lịch đã tải</small>
     </article>
   </section>
   <section class="panel filters web2-filterbar" aria-label="Bộ lọc lịch hẹn">
