@@ -5,6 +5,7 @@ import { finalize } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { AdminOrderCreateLookupService, OrderCustomerLookup } from '../../orders/services/admin-order-create-lookup.service';
@@ -98,6 +99,7 @@ function petFromWire(input: unknown): PetOption | null {
 })
 export class AdminAppointmentCreateComponent {
   private readonly api = inject(ApiClientService);
+  private readonly session = inject(AuthSessionService);
   private readonly lookupApi = inject(AdminOrderCreateLookupService);
   private readonly catalog = inject(ServiceCatalogApiService);
   readonly staffDirectory = inject(AdminStaffApiService);
@@ -440,12 +442,27 @@ export class AdminAppointmentCreateComponent {
 
 
 
+  private allowedBranchIds(): readonly string[] | null {
+    const user=this.session.user();
+    if(!user || user.systemRole==='ADMIN') return null;
+    if(user.systemRole==='MANAGER' || (user.systemRole==='STAFF' && user.staffSubRole==='RECEPTIONIST')) {
+      return user.branchScope ?? [];
+    }
+    return [];
+  }
+
+  private canUseBranch(branchId:string):boolean {
+    const scope=this.allowedBranchIds();
+    return scope===null || scope.includes(branchId);
+  }
+
   loadBranches(): void {
     this.branchLoadState.set('loading');
     this.catalog.listBranches().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: rows => {
-        this.branches.set(rows);
-        this.branchLoadState.set(rows.length ? 'ready' : 'empty');
+        const scoped=rows.filter(row=>this.canUseBranch(row.id));
+        this.branches.set(scoped);
+        this.branchLoadState.set(scoped.length ? 'ready' : 'empty');
       },
       error: err => {
         this.branchLoadState.set('error');
@@ -455,6 +472,10 @@ export class AdminAppointmentCreateComponent {
   }
 
   selectBranch(branchId: string): void {
+    if(branchId && !this.canUseBranch(branchId)){
+      this.toast.show('Bạn không có quyền tạo lịch tại chi nhánh này.','error');
+      return;
+    }
     this.branchId.set(branchId);
     this.serviceId.set('');
     this.services.set([]);
