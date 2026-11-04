@@ -171,6 +171,7 @@
         <button type="button" [class.order-admin__tabs--active]="activeTab() === 'orders'"
           [attr.aria-current]="activeTab() === 'orders' ? 'page' : null" (click)="setTab('orders')">
           Đơn hàng
+          @if (pendingOrderCount() > 0) { <span class="order-admin__tabs-count web2-notification-badge" [attr.aria-label]="pendingOrderCount() + ' đơn hàng chờ xác nhận'">{{ pendingOrderCount() }}</span> }
         </button>
         <button type="button" [class.order-admin__tabs--active]="activeTab() === 'returns'"
           [attr.aria-current]="activeTab() === 'returns' ? 'page' : null" (click)="setTab('returns')">
@@ -181,36 +182,36 @@
 
       <section class="order-admin__kpis" [attr.aria-label]="activeTab() === 'orders' ? 'Chỉ số đơn hàng' : 'Chỉ số trả hàng và hoàn tiền'">
         @if (activeTab() === 'orders') {
-          <div class="order-admin__kpi">
+          <div class="order-admin__kpi" data-kpi-tone="neutral">
             <span>Tổng đơn hàng</span>
             <strong>{{ loading() || error() ? '—' : totalLoaded() }}</strong>
           </div>
-          <div class="order-admin__kpi">
+          <div class="order-admin__kpi" data-kpi-tone="warning">
             <span>Chờ xác nhận</span>
             <strong class="order-admin__kpi-number--blue">{{ loading() || error() ? '—' : awaitingCount() }}</strong>
           </div>
-          <div class="order-admin__kpi">
+          <div class="order-admin__kpi" data-kpi-tone="info">
             <span>Đang giao</span>
             <strong>{{ loading() || error() ? '—' : shippingCount() }}</strong>
           </div>
-          <div class="order-admin__kpi">
+          <div class="order-admin__kpi" data-kpi-tone="success">
             <span>Hoàn tất</span>
             <strong>{{ loading() || error() ? '—' : completedOrderCount() }}</strong>
           </div>
         } @else {
-          <div class="order-admin__kpi">
+          <div class="order-admin__kpi" data-kpi-tone="neutral">
             <span>Tổng yêu cầu</span>
             <strong>{{ returnsLoading() || returnsError() || !hasLoadedReturns() ? '—' : totalReturnsCount() }}</strong>
           </div>
-          <div class="order-admin__kpi">
+          <div class="order-admin__kpi" data-kpi-tone="warning">
             <span>Chờ tiếp nhận</span>
             <strong class="order-admin__kpi-number--blue">{{ returnsLoading() || returnsError() || !hasLoadedReturns() ? '—' : requestedReturnCount() }}</strong>
           </div>
-          <div class="order-admin__kpi">
+          <div class="order-admin__kpi" data-kpi-tone="info">
             <span>Đang xử lý</span>
             <strong>{{ returnsLoading() || returnsError() || !hasLoadedReturns() ? '—' : processingReturnCount() }}</strong>
           </div>
-          <div class="order-admin__kpi">
+          <div class="order-admin__kpi" data-kpi-tone="success">
             <span>Hoàn tất</span>
             <strong>{{ returnsLoading() || returnsError() || !hasLoadedReturns() ? '—' : completedReturnCount() }}</strong>
           </div>
