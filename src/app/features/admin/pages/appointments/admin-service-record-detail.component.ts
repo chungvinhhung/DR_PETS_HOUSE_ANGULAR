@@ -144,7 +144,7 @@ export class AdminServiceRecordDetailComponent {
   readonly showRecordActions=computed(()=>
     this.canSubmitReview() || this.canFinalize() || this.canReopen() ||
     (this.item()?.status==='IN_PROGRESS' && this.item()?.category==='MEDICAL' && this.isNurse()) ||
-    (this.item()?.status==='WAITING_VET_REVIEW' && this.item()?.category==='MEDICAL')
+    (this.item()?.status==='WAITING_VET_REVIEW' && this.item()?.category==='MEDICAL' && this.isVet())
   );
 
   constructor(){
@@ -344,23 +344,26 @@ export class AdminServiceRecordDetailComponent {
   }
 
   openMaterialsEditor():void{
-    const r=this.item();if(!r)return;
-    this.materialDrafts.set(r.materials.map(m=>({
-      inventoryItemId:m.inventoryItemId,
-      quantity:this.numberOrNull(m.actualQuantity!==''?m.actualQuantity:m.templateQuantity),
-      unit:m.unit || this.inventoryItems().find(v=>v.id===m.inventoryItemId)?.unit || '',
-      notes:m.note,
-    })));
-    if(!this.materialDrafts().length)this.addMaterial();
+    if(!this.canEditMaterials())return;
+    this.materialDrafts.set([{inventoryItemId:'',quantity:1,unit:'',notes:''}]);
     this.dialogError.set('');this.dialog.set('materials');
   }
 
   addMaterial():void{
-    this.materialDrafts.update(rows=>[...rows,{inventoryItemId:'',quantity:null,unit:'',notes:''}]);
+    if(this.materialDrafts().length)return;
+    this.materialDrafts.set([{inventoryItemId:'',quantity:1,unit:'',notes:''}]);
   }
 
   removeMaterial(index:number):void{
     this.materialDrafts.update(rows=>rows.filter((_,i)=>i!==index));
+  }
+
+  adjustMaterialQuantity(index:number,delta:number):void{
+    this.materialDrafts.update(rows=>rows.map((row,i)=>{
+      if(i!==index)return row;
+      const next=Math.max(1,Number(row.quantity||1)+delta);
+      return {...row,quantity:next};
+    }));
   }
 
   selectMaterial(index:number,id:string):void{
@@ -382,26 +385,45 @@ export class AdminServiceRecordDetailComponent {
   }
 
   saveMaterials():void{
-    const r=this.item();if(!r||this.busy())return;
-    const rows=this.materialDrafts();
-    if(rows.some(row=>!row.inventoryItemId || row.quantity===null || row.quantity<0)){
-      this.dialogError.set('Chọn vật tư và nhập số lượng thực tế hợp lệ cho tất cả các dòng.');
-      return;
+    const r=this.item();if(!r||this.busy()||!this.canEditMaterials())return;
+    const row=this.materialDrafts()[0];
+    if(!row?.inventoryItemId){
+      this.dialogError.set('Vui lòng chọn vật tư hợp lệ.');return;
     }
-    const ids=rows.map(row=>row.inventoryItemId);
-    if(new Set(ids).size!==ids.length){
-      this.dialogError.set('Mỗi vật tư chỉ nên xuất hiện một lần trong danh sách thực tế.');
-      return;
+    if(row.quantity===null || !Number.isFinite(row.quantity) || row.quantity<=0){
+      this.dialogError.set('Số lượng vật tư phát sinh phải lớn hơn 0.');return;
     }
+    if(!this.materialOptions().some(item=>item.id===row.inventoryItemId)){
+      this.dialogError.set('Vật tư không thuộc kho của chi nhánh này hoặc không còn hoạt động.');return;
+    }
+    if(r.materials.some(item=>item.inventoryItemId===row.inventoryItemId && item.actualQuantity!=='')){
+      this.dialogError.set('Vật tư này đã có trong danh sách thực tế.');return;
+    }
+
+    const existing=r.materials
+      .filter(item=>item.actualQuantity!=='')
+      .map(item=>({
+        inventoryItemId:item.inventoryItemId,
+        quantity:Number(item.actualQuantity),
+        unit:item.unit||undefined,
+        notes:item.note||undefined,
+        isExtra:item.isExtra,
+      }));
+    const materials=[...existing,{
+      inventoryItemId:row.inventoryItemId,
+      quantity:row.quantity,
+      unit:row.unit||undefined,
+      notes:row.notes||undefined,
+      isExtra:true,
+    }];
+
     this.busy.set(true);this.dialogError.set('');
     this.api.put<unknown>('/service-records/'+encodeURIComponent(r.id)+'/materials',{
       expectedVersion:r.version??undefined,
-      materials:rows.map(row=>({
-        inventoryItemId:row.inventoryItemId,quantity:row.quantity,unit:row.unit||undefined,notes:row.notes||undefined,
-      })),
+      materials,
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next:raw=>this.acceptMutation(raw,'Đã cập nhật vật liệu thực tế.'),
-      error:err=>this.failDialog(err,'Không cập nhật được vật liệu.'),
+      next:raw=>this.acceptMutation(raw,'Đã thêm vật liệu phát sinh.'),
+      error:err=>this.failDialog(err,'Không thêm được vật liệu phát sinh.'),
     });
   }
 
