@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { adminErrorMessage } from '../../../../shared/services/admin-toast.service';
@@ -180,6 +181,7 @@ import {
 })
 export class AdminAppointmentsPageComponent {
   private readonly api=inject(ApiClientService);
+  private readonly session=inject(AuthSessionService);
   private readonly destroyRef=inject(DestroyRef);
   private requestVersion=0;
   readonly search=signal('');
@@ -191,6 +193,15 @@ export class AdminAppointmentsPageComponent {
   readonly error=signal('');
   private readonly fetchedRows=signal<AppointmentView[]>([]);
   readonly partial=computed(()=>this.fetchedRows().length>=100);
+  private readonly scopedRows=computed(()=>{
+    const user=this.session.user();
+    if(!user || user.systemRole==='ADMIN') return this.fetchedRows();
+    if(user.systemRole==='MANAGER' || (user.systemRole==='STAFF' && user.staffSubRole==='RECEPTIONIST')){
+      const scope=user.branchScope ?? [];
+      return this.scopedRows().filter(row=>scope.includes(row.branchId));
+    }
+    return this.fetchedRows();
+  });
   readonly filteredRows=computed(()=>{
     const search=this.search().trim().toLocaleLowerCase('vi');
     const status=this.status();
