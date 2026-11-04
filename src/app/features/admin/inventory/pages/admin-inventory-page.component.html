@@ -100,7 +100,9 @@
           @for (record of currentHistory(); track record.id) {
             <tr>
               <td class="history-code-cell">
-                <button type="button" class="history-code" (click)="openTransactionDrawer(record)">{{record.transactionCode}}</button>
+                <button type="button" class="history-code" (click)="openTransactionDrawer(record)">
+                  {{ record.transactionCode || 'Xem chi tiết' }}
+                </button>
                 @if (record.sourceLabel) { <small>{{record.sourceLabel}}</small> }
               </td>
               <td>{{record.date}}</td>
