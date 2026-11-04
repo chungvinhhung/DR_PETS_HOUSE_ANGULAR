@@ -29,7 +29,7 @@ export class AdminContentListComponent{
  readonly postDraft=signal({title:'',category:'',excerpt:'',content:'',status:'DRAFT',emergencyPhone:'1900-PET-HELP'});
  readonly rescueDraft=signal({petName:'',species:'DOG',breed:'',ageDescription:'',healthStatus:'',rescueStory:'',status:'LOOKING_FOR_HOME'});
  readonly pageSize=7;
- readonly title=({articles:'Bài viết / Kiến thức','first-aid':'Cẩm nang sơ cứu',community:'Bài đăng cộng đồng',rescue:'Cứu trợ & Nhận nuôi',adoptions:'Đơn đăng ký nhận nuôi'} as Record<ContentMode,string>)[this.mode];
+ readonly title=({articles:'Bài viết kiến thức','first-aid':'Cẩm nang sơ cứu',community:'Bài đăng cộng đồng',rescue:'Cứu trợ & Nhận nuôi',adoptions:'Đơn đăng ký nhận nuôi'} as Record<ContentMode,string>)[this.mode];
  readonly activeItem=({articles:'content-articles','first-aid':'content-first-aid',community:'content-community',rescue:'content-rescue',adoptions:'content-rescue'} as const)[this.mode];
  readonly isAdmin=computed(()=>this.session.user()?.systemRole==='ADMIN');
  readonly canCreate=computed(()=>this.mode==='rescue' || ((this.mode==='articles'||this.mode==='first-aid') && this.isAdmin()));
