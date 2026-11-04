@@ -166,7 +166,7 @@ export class BranchManagementPageComponent {
   }
   staffCount(branchId: string): number | null {
     if (!this.staffApi.loaded() || this.staffApi.error()) return null;
-    return this.staffApi.staff().filter(person=>person.branchIds.includes(branchId)).length;
+    return this.staffApi.staff().filter(person=>person.branchIds?.includes(branchId) ?? false).length;
   }
   get pageCount(): number { return Math.max(1, Math.ceil(this.filteredBranches.length / this.pageSize)); }
   get pagedBranches(): readonly BranchRow[] {
