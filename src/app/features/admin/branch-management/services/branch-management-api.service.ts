@@ -33,6 +33,19 @@ export interface BranchServiceView {
   service: CatalogService;
   config: BranchServiceApiRecord | null;
 }
+export interface BranchServiceBlockedWindow {
+  id: string;
+  startAt: string;
+  endAt: string;
+  reason: string;
+  createdBy?: string | null;
+  createdAt?: string | null;
+}
+interface BranchServiceBlockedWindowsResponse {
+  branchId: string;
+  serviceId: string;
+  blockedWindows: BranchServiceBlockedWindow[];
+}
 
 /**
  * The live BE /availability currently only populates start/end/remaining.
@@ -127,6 +140,33 @@ export class BranchManagementApiService {
       '/branches/' + encodeURIComponent(branchId) +
       '/service-configs/' + encodeURIComponent(serviceId),
       payload,
+    );
+  }
+
+  listBlockedWindows(branchId: string, serviceId: string): Observable<BranchServiceBlockedWindow[]> {
+    return this.api.get<BranchServiceBlockedWindowsResponse>(
+      '/branches/' + encodeURIComponent(branchId) +
+      '/service-configs/' + encodeURIComponent(serviceId) + '/blocks',
+    ).pipe(map(response => response.blockedWindows ?? []));
+  }
+
+  createBlockedWindow(
+    branchId: string,
+    serviceId: string,
+    payload: { startAt: string; endAt: string; reason: string },
+  ): Observable<BranchServiceBlockedWindow> {
+    return this.api.post<BranchServiceBlockedWindow, typeof payload>(
+      '/branches/' + encodeURIComponent(branchId) +
+      '/service-configs/' + encodeURIComponent(serviceId) + '/blocks',
+      payload,
+    );
+  }
+
+  deleteBlockedWindow(branchId: string, serviceId: string, blockId: string): Observable<unknown> {
+    return this.api.delete(
+      '/branches/' + encodeURIComponent(branchId) +
+      '/service-configs/' + encodeURIComponent(serviceId) +
+      '/blocks/' + encodeURIComponent(blockId),
     );
   }
 
