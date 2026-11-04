@@ -62,11 +62,20 @@ import { AdminDataStateComponent } from '../../../../shared/admin-data-state/adm
     .branch-shifts__actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:10px}
     .branch-management__button{text-decoration:none;white-space:nowrap}
     .branch-management__button:disabled{cursor:not-allowed;background:#f1f5f9;border-color:#dce4ee;color:#94a3b8}
+    .branch-shifts__actions a.branch-management__button--outline{
+      box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;
+      min-height:40px;padding:0 16px;border:1px solid #a9c5ed;border-radius:8px;
+      background:#eff6ff;color:#0d47a1;font:600 13px/20px Roboto,Arial,sans-serif;
+      text-decoration:none;transition:background-color .15s,border-color .15s
+    }
+    .branch-shifts__actions a.branch-management__button--outline:hover{
+      background:#e0edff;border-color:#6c9cd9
+    }
     .branch-management__table-scroll{width:100%;overflow-x:auto;border:1px solid #dce4ee;border-radius:10px;background:#fff}
     .branch-v2__shifts{width:100%;min-width:770px;border-collapse:collapse;table-layout:fixed;font:400 13px/20px Roboto,Arial,sans-serif;color:#334155}
     .branch-v2__shifts thead{background:#e5f6fd}
     .branch-v2__shifts :is(th,td){box-sizing:border-box;padding:12px 16px;text-align:left;vertical-align:middle}
-    .branch-v2__shifts th{height:50px;color:#475569;font:600 13px/20px Roboto,Arial,sans-serif;white-space:nowrap}
+    .branch-v2__shifts th{height:50px;color:#475569;font:600 13px/20px Roboto,Arial,sans-serif;white-space:nowrap;text-transform:none!important}
     .branch-v2__shifts td{border-top:1px solid #e2e8f0}
     .branch-v2__shifts :is(th,td):last-child{text-align:center;padding-inline:12px}
     @media(max-width:650px){.branch-shifts__actions{justify-content:flex-start}}
