@@ -72,7 +72,7 @@ export const routes: Routes = [
     path: 'admin/staff/new',
     canActivate: [authGuard, roleGuard],
     canDeactivate: [confirmStaffLeave],
-    data: { roles: ['ADMIN'], mode: 'create' },
+    data: { roles: ['ADMIN', 'MANAGER'], mode: 'create' },
     loadComponent: () => import('./features/admin/staff/pages/admin-staff-form.component')
       .then(component => component.AdminStaffFormComponent),
   },
