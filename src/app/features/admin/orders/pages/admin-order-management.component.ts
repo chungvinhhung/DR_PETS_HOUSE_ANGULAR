@@ -100,6 +100,12 @@ export class AdminOrderManagementComponent {
   readonly totalLoaded = computed(() => this.allOrders().length);
   readonly awaitingCount = computed(() => this.allOrders().filter(item => item.status === 'PENDING').length);
   readonly shippingCount = computed(() => this.allOrders().filter(item => item.status === 'SHIPPED').length);
+  readonly completedOrderCount = computed(() => this.allOrders().filter(item => item.status === 'COMPLETED').length);
+  readonly totalReturnsCount = computed(() => this.returns().length);
+  readonly requestedReturnCount = computed(() => this.returns().filter(item => item.status === 'REQUESTED').length);
+  readonly processingReturnCount = computed(() => this.returns().filter(item =>
+    item.status === 'PROCESSING' || item.status === 'RECEIVED' || item.status === 'APPROVED').length);
+  readonly completedReturnCount = computed(() => this.returns().filter(item => item.status === 'COMPLETED').length);
   readonly selected = signal<OrderRecord | null>(null);
   readonly orderInventory = signal<InventoryTransactionDto[]>([]);
   readonly orderInventoryLoading = signal(false);
