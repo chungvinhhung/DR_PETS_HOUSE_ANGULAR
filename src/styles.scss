@@ -6269,3 +6269,23 @@ app-admin-service-record-detail {
   .inventory-inline-state{color:#718198;font-size:10px}.inventory-warning{margin:10px 0 0;color:#9a6700;font-size:10px}
 }
 @media(max-width:620px){app-admin-service-record-detail .material-add-form{grid-template-columns:1fr}app-admin-service-record-detail .material-field--full{grid-column:auto}}
+
+
+/* Phase 6 — shared disabled treatment for Order / Return / Appointment / Service Record.
+   Disabled controls must be visually inactive, not just lower opacity. */
+:is(
+  app-admin-order-create,
+  app-admin-order-management,
+  app-admin-order-return-detail,
+  app-admin-appointment-create,
+  app-admin-appointment-detail,
+  app-admin-service-record-detail
+) :is(button,select,textarea,input:not([type="checkbox"]):not([type="radio"])):disabled {
+  opacity:1;
+  background-color:#f1f5f9;
+  border-color:#d8e0ea;
+  color:#94a3b8;
+  cursor:not-allowed;
+  box-shadow:none;
+  pointer-events:none;
+}
