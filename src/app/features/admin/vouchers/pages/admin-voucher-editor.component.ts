@@ -14,6 +14,7 @@ import {
 interface VoucherFields {
   code: string;
   name: string;
+  description: string;
   scope: VoucherScope;
   discountType: VoucherDiscountType;
   discountValue: string;
@@ -27,7 +28,7 @@ interface VoucherFields {
   toTime: string;
 }
 const BLANK: VoucherFields = {
-  code:'', name:'', scope:'ORDER', discountType:'PERCENTAGE', discountValue:'',
+  code:'', name:'', description:'', scope:'ORDER', discountType:'PERCENTAGE', discountValue:'',
   minOrderAmount:'0', maxDiscountAmount:'', quota:'',
   status:'ACTIVE', fromDate:'', fromTime:'09:00', toDate:'', toTime:'23:59',
 };
@@ -100,7 +101,7 @@ export class AdminVoucherEditorComponent {
       next: v => {
         this.original.set(v);
         this.form.set({
-          code:v.code, name:v.name, scope:v.scope, discountType:v.discountType,
+          code:v.code, name:v.name, description:v.description ?? '', scope:v.scope, discountType:v.discountType,
           discountValue:String(v.discountValue),
           minOrderAmount:v.minOrderAmount == null ? '' : String(v.minOrderAmount),
           maxDiscountAmount:v.maxDiscountAmount == null ? '' : String(v.maxDiscountAmount),
@@ -123,7 +124,11 @@ export class AdminVoucherEditorComponent {
     this.dirty.set(true);
   }
   toggleMaxDiscountUnlimited(checked: boolean): void {
-    if (!this.allowEditing() || this.mode !== 'create' || this.saving()) return;
+    if (!this.allowEditing() || this.saving()) return;
+    if (checked && this.mode === 'edit' && this.original()?.maxDiscountAmount != null) {
+      this.validation.set('Backend chưa hỗ trợ xóa mức giảm tối đa đã lưu về trạng thái Không giới hạn.');
+      return;
+    }
     this.maxDiscountUnlimited.set(checked);
     if (checked) this.form.update(current => ({...current, maxDiscountAmount: ''}));
     this.validation.set('');
@@ -175,29 +180,24 @@ export class AdminVoucherEditorComponent {
     if (!from || !to || Date.parse(to) <= Date.parse(from)) {
       this.validation.set('Ngày giờ kết thúc phải sau ngày giờ bắt đầu.');return null;
     }
+    const minimum = Number(v.minOrderAmount || '0');
+    if (!Number.isFinite(minimum) || minimum < 0) {
+      this.validation.set('Giá trị giao dịch tối thiểu phải là số không âm.');return null;
+    }
     const body: VoucherWriteBody = {
-      code:v.code.trim().toUpperCase(),name:v.name.trim(),scope:v.scope,
-      discountType:v.discountType,discountValue:num,quota,
-      status:v.status,effectiveFrom:from,effectiveTo:to,
+      code:v.code.trim().toUpperCase(),name:v.name.trim(),description:v.description.trim(),
+      scope:v.scope,discountType:v.discountType,discountValue:num,quota,
+      status:v.status,effectiveFrom:from,effectiveTo:to,minOrderAmount:minimum,
     };
-    // The BE does not return minOrderAmount/maxDiscountAmount in GET response.
-    // Only new voucher may set these fields. Editing must NEVER reset unknown stored values.
-    if (this.mode === 'create') {
-      const minimum = Number(v.minOrderAmount || '0');
-      if (!Number.isFinite(minimum) || minimum < 0) {
-        this.validation.set('Giá trị giao dịch tối thiểu phải là số không âm.');return null;
+    if (v.discountType === 'PERCENTAGE' && !this.maxDiscountUnlimited()) {
+      if (!v.maxDiscountAmount.trim()) {
+        this.validation.set('Vui lòng nhập mức giảm tối đa hoặc chọn Không giới hạn mức giảm.');return null;
       }
-      body.minOrderAmount=minimum;
-      if (v.discountType === 'PERCENTAGE' && !this.maxDiscountUnlimited()) {
-        if (!v.maxDiscountAmount.trim()) {
-          this.validation.set('Vui lòng nhập mức giảm tối đa hoặc chọn Không giới hạn mức giảm.');return null;
-        }
-        const max = Number(v.maxDiscountAmount);
-        if (!Number.isFinite(max) || max <= 0) {
-          this.validation.set('Giảm tối đa phải lớn hơn 0 hoặc để trống.');return null;
-        }
-        body.maxDiscountAmount=max;
+      const max = Number(v.maxDiscountAmount);
+      if (!Number.isFinite(max) || max <= 0) {
+        this.validation.set('Giảm tối đa phải lớn hơn 0.');return null;
       }
+      body.maxDiscountAmount=max;
     }
     return body;
   }
