@@ -167,24 +167,6 @@
         <h1>Quản lý đơn hàng</h1>
       </header>
 
-      <section class="order-admin__kpis" aria-label="Thống kê đơn hàng đã tải">
-        <div class="order-admin__kpi">
-          <span>Tổng đơn hàng</span>
-          <strong>{{ loading() ? '—' : totalLoaded() }}</strong>
-          <small>Tổng số đơn trong dữ liệu đã tải</small>
-        </div>
-        <div class="order-admin__kpi">
-          <span>Chờ xác nhận</span>
-          <strong class="order-admin__kpi-number--blue">{{ loading() ? '—' : awaitingCount() }}</strong>
-          <small>Trong {{ totalLoaded() }} đơn đã tải</small>
-        </div>
-        <div class="order-admin__kpi">
-          <span>Đang giao</span>
-          <strong>{{ loading() ? '—' : shippingCount() }}</strong>
-          <small>Trong {{ totalLoaded() }} đơn đã tải</small>
-        </div>
-      </section>
-
       <nav class="order-admin__tabs" aria-label="Loại nghiệp vụ bán hàng">
         <button type="button" [class.order-admin__tabs--active]="activeTab() === 'orders'"
           [attr.aria-current]="activeTab() === 'orders' ? 'page' : null" (click)="setTab('orders')">
@@ -196,6 +178,44 @@
           @if (returnPendingCount()) { <span class="order-admin__tabs-count web2-notification-badge">{{ returnPendingCount() }}</span> }
         </button>
       </nav>
+
+      <section class="order-admin__kpis" [attr.aria-label]="activeTab() === 'orders' ? 'Chỉ số đơn hàng' : 'Chỉ số trả hàng và hoàn tiền'">
+        @if (activeTab() === 'orders') {
+          <div class="order-admin__kpi">
+            <span>Tổng đơn hàng</span>
+            <strong>{{ loading() || error() ? '—' : totalLoaded() }}</strong>
+          </div>
+          <div class="order-admin__kpi">
+            <span>Chờ xác nhận</span>
+            <strong class="order-admin__kpi-number--blue">{{ loading() || error() ? '—' : awaitingCount() }}</strong>
+          </div>
+          <div class="order-admin__kpi">
+            <span>Đang giao</span>
+            <strong>{{ loading() || error() ? '—' : shippingCount() }}</strong>
+          </div>
+          <div class="order-admin__kpi">
+            <span>Hoàn tất</span>
+            <strong>{{ loading() || error() ? '—' : completedOrderCount() }}</strong>
+          </div>
+        } @else {
+          <div class="order-admin__kpi">
+            <span>Tổng yêu cầu</span>
+            <strong>{{ returnsLoading() || returnsError() || !hasLoadedReturns() ? '—' : totalReturnsCount() }}</strong>
+          </div>
+          <div class="order-admin__kpi">
+            <span>Chờ tiếp nhận</span>
+            <strong class="order-admin__kpi-number--blue">{{ returnsLoading() || returnsError() || !hasLoadedReturns() ? '—' : requestedReturnCount() }}</strong>
+          </div>
+          <div class="order-admin__kpi">
+            <span>Đang xử lý</span>
+            <strong>{{ returnsLoading() || returnsError() || !hasLoadedReturns() ? '—' : processingReturnCount() }}</strong>
+          </div>
+          <div class="order-admin__kpi">
+            <span>Hoàn tất</span>
+            <strong>{{ returnsLoading() || returnsError() || !hasLoadedReturns() ? '—' : completedReturnCount() }}</strong>
+          </div>
+        }
+      </section>
 
       @if (activeTab() === 'orders') {
       <div class="order-admin__filters order-admin__filters--figma web2-filterbar" role="search" aria-label="Tìm kiếm và lọc đơn hàng">
