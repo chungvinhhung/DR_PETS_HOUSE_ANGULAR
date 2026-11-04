@@ -58,7 +58,20 @@ export class AdminOrderReturnDetailComponent {
   readonly relatedReceiptsError = signal(false);
   readonly inventoryDrawerOpen = signal(false);
   readonly selectedReceipt = signal<InventoryTransactionDto | null>(null);
-  readonly selectedReceiptRows = computed(() => this.selectedReceipt() ? [this.selectedReceipt()!] : []);
+  readonly selectedReceiptRows = computed(() => {
+    const selected = this.selectedReceipt();
+    if (!selected) return [];
+    const explicit = selected.transactionCode || selected.groupCode || selected.code || '';
+    if (explicit) {
+      return this.relatedReceipts().filter(tx =>
+        (tx.transactionCode || tx.groupCode || tx.code || '') === explicit);
+    }
+    return this.relatedReceipts().filter(tx =>
+      tx.transactionType === selected.transactionType &&
+      tx.sourceType === selected.sourceType &&
+      tx.sourceId === selected.sourceId &&
+      (tx.reason || '') === (selected.reason || ''));
+  });
   readonly selectedReceiptCode = computed(() => {
     const tx = this.selectedReceipt();
     return tx ? this.receiptCode(tx) : '';
@@ -182,7 +195,14 @@ export class AdminOrderReturnDetailComponent {
 
   constructor() {
     this.branchApi.listBranches().pipe(takeUntilDestroyed()).subscribe({
-      next: branches => this.branchNames.set(Object.fromEntries(branches.map(branch => [branch.id, branch.name]))),
+      next: branches => {
+        const user = this.session.user();
+        const scope = new Set(user?.branchScope ?? []);
+        const visible = user?.systemRole === 'ADMIN'
+          ? branches
+          : branches.filter(branch => scope.has(branch.id));
+        this.branchNames.set(Object.fromEntries(visible.map(branch => [branch.id, branch.name])));
+      },
       error: () => { /* A branch name is noncritical; display the ID instead. */ },
     });
     this.route.paramMap.pipe(takeUntilDestroyed()).subscribe(params => {
@@ -251,7 +271,7 @@ export class AdminOrderReturnDetailComponent {
   }
 
   receiptCode(tx: InventoryTransactionDto): string {
-    return tx.transactionCode || tx.groupCode || tx.code || tx.id;
+    return tx.transactionCode || tx.groupCode || tx.code || '';
   }
   openReceipt(tx: InventoryTransactionDto): void {
     this.selectedReceipt.set(tx);
