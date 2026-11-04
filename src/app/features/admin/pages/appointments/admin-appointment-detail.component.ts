@@ -433,7 +433,7 @@ export class AdminAppointmentDetailComponent {
       const override=win?.overrideRequiresAudit===true&&this.isManagerOrAdmin();
       request=override
         ? this.api.post<unknown,object>('/appointments/'+encodeURIComponent(appointment.id)+'/cancel-override',
-            {reason:this.reason().trim(),prepaidOutcome:'REFUND_PENDING'},{headers})
+            {reason:this.reason().trim()},{headers})
         : this.api.post<unknown,object>('/appointments/'+encodeURIComponent(appointment.id)+'/store-cancel',
             {reason:this.reason().trim()},{headers});
     }else if(action==='reschedule'){
