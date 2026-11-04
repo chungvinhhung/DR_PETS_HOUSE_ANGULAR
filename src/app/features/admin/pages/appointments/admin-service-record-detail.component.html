@@ -68,7 +68,7 @@
             <div><label>Ghi chú chuyên môn</label><strong>{{ r.professional?.professionalNote || 'Chưa có dữ liệu' }}</strong></div>
           </div>
           <div class="review-strip">
-            <div><span>Bác sĩ chốt hồ sơ</span><strong>{{ r.reviewerStaffId || 'Chưa được chỉ định' }}</strong></div>
+            <div><span>Bác sĩ chốt hồ sơ</span><strong>{{ reviewerLabel(r) }}</strong></div>
             <div><span>Trạng thái duyệt</span><strong>{{ reviewLabel(r) }}</strong></div>
           </div>
         </section>
