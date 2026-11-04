@@ -417,11 +417,7 @@ export class BranchManagementPageComponent {
     return occupancy ? `${occupancy.bookedCount}/${occupancy.totalCount}` : 'Chưa có dữ liệu';
   }
 
-  /**
-   * BE currently returns slots[].remaining, but NOT bookedCount/totalCount.
-   * Render the requested occupied/total ratio only when BE returns both.
-   * A fully booked start time must also be present in the BE response.
-   */
+  /** Load booked/total occupancy for the selected branch, date and time. */
   private fetchOccupancy(): void {
     const requestVersion = ++this.occupancyRequestVersion;
     const branchId = this.branchId;
@@ -446,7 +442,7 @@ export class BranchManagementPageComponent {
     this.occupancyLoading.set(true);
     from(services).pipe(
       mergeMap((row) =>
-        this.api.getServiceAvailability(branchId, row.service.id, date).pipe(
+        this.api.getServiceOccupancy(branchId, row.service.id, date).pipe(
           map((result): { serviceId: string; data: OccupancySnapshot } | null => {
             const slot = result.slots?.find((candidate) =>
               typeof candidate.start === 'string' && candidate.start.slice(11, 16) === time,
