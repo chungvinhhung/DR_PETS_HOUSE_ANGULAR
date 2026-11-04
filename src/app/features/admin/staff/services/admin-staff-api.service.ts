@@ -307,17 +307,6 @@ export class AdminStaffApiService {
     }));
   }
 
-  /** Atomic replacement is deliberately delegated to BE; no cancel-then-create partial writes. */
-  replaceShiftsAtomically(payload: {
-    staffId: string; branchId: string;
-    create: {startAt: string; endAt: string}[];
-    cancelShiftIds: string[];
-  }): Observable<unknown> {
-    return this.api.post('/shifts/bulk-assign', payload, {
-      headers: new HttpHeaders().set('Idempotency-Key', crypto.randomUUID()),
-    });
-  }
-
   loadWeek(monday: string, force = false): void {
     if (!force && this.loadedMonday() === monday && !this.shiftError()) return;
     const request = ++this.weekRequest;
