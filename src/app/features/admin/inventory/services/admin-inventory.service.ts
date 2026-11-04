@@ -139,10 +139,11 @@ export class AdminInventoryService {
     });
   }
 
-  listStocks(): Observable<InventoryStockDto[]> {
+  listStocks(branchId = ''): Observable<InventoryStockDto[]> {
     return this.allPages(cursor => {
       let params = new HttpParams().set('limit', '100');
       if (cursor) params = params.set('cursor', cursor);
+      if (branchId) params = params.set('branchId', branchId);
       return this.api.get<InventoryCursorPage<InventoryStockDto>>('/inventory/stocks', { params });
     });
   }
