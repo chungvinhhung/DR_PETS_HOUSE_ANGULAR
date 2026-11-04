@@ -326,7 +326,7 @@
     <div class="create-order__footer">
       <button type="button" class="create-order__button create-order__button--outline" (click)="askCancel()">Hủy</button>
 <button type="button" class="create-order__button create-order__button--primary"
-        [disabled]="!isAdmin() || !lines().length || hasInvalidQuantities() || quoteState()==='loading' || saving()"
+        [disabled]="!isOrderOperator() || !lines().length || hasInvalidQuantities() || quoteState()==='loading' || saving()"
         (click)="reviewCreate()">{{quoteState()==='loading'?'Đang kiểm tra đơn...':'Xác nhận tạo đơn'}}</button>
     </div>
   </main>
