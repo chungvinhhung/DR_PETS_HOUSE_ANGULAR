@@ -5,9 +5,6 @@
   color:var(--ink); background:#fff; font:14px/1.5 Roboto,Arial,sans-serif;
 }
 .create-order *, .create-order *::before, .create-order *::after { box-sizing:border-box; }
-.create-order__breadcrumb { display:flex; align-items:center; gap:10px; font-size:12px; color:var(--muted); margin-bottom:8px; }
-.create-order__breadcrumb a { text-decoration:none; color:var(--muted); }
-.create-order__breadcrumb strong { font-weight:500; color:var(--ink); }
 .create-order h1 { font-size:24px; line-height:32px; margin:0 0 18px; font-weight:700; }
 .create-order__panel {
   position:relative; border:1px solid var(--border); border-radius:12px; padding:20px 20px 22px;
