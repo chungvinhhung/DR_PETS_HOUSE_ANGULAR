@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { AdminToastService } from '../services/admin-toast.service';
 import { RouterLink } from '@angular/router';
 import { AdminReturnNotificationService } from '../services/admin-return-notification.service';
@@ -17,7 +17,7 @@ import { AdminSidebarAccordionService, AdminSidebarGroup } from '../services/adm
   styleUrl: './admin-catalog-shell.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminCatalogShellComponent {
+export class AdminCatalogShellComponent implements OnChanges {
   readonly toast = inject(AdminToastService);
   readonly returnNotifications = inject(AdminReturnNotificationService);
   readonly pendingReturnCount = this.returnNotifications.pendingCount;
@@ -42,8 +42,22 @@ export class AdminCatalogShellComponent {
 
   ngOnInit(): void {
     this.returnNotifications.ensureLoaded();
-    const group = this.groupForActiveItem();
-    this.accordion.openForRoute(group);
+    this.syncSidebarToActiveItem();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['activeItem'] && !changes['activeItem'].firstChange) {
+      this.syncSidebarToActiveItem();
+    }
+  }
+
+  private syncSidebarToActiveItem(): void {
+    this.accordion.openForRoute(this.groupForActiveItem());
+  }
+
+  closeSidebarGroups(): void {
+    this.sidebarAnimationEnabled = true;
+    this.accordion.openForRoute(null);
   }
 
   private groupForActiveItem(): AdminSidebarGroup | null {
