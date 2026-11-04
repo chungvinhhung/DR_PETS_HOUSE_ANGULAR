@@ -160,10 +160,9 @@ export class AdminStaffFormComponent {
   private leaveResolver: ((allowed: boolean) => void) | null = null;
   private allowNavigation = false;
 
-  // Figma edit page uses a 7-day table. This is a local preview, not a BE shift write.
+  // Edit page displays the employee's real shifts for the selected week.
   weekMonday = staffWeekMonday(staffTodayISO());
   shifts: Record<string, { branch: string; template: string }> = {};
-  shiftDraftDirty = false;
 
   constructor() {
     this.form.controls.loginIdentifier.disable({ emitEvent: false });
@@ -195,7 +194,7 @@ export class AdminStaffFormComponent {
     });
     effect(() => {
       const shifts = this.staffApi.shifts();
-      if (!this.shiftDraftDirty && this.staffApi.loadedMonday() === this.weekMonday && this.isEdit) {
+      if (this.staffApi.loadedMonday() === this.weekMonday && this.isEdit) {
         this.shifts = Object.fromEntries(shifts.filter(s => s.staffId === this.staffId)
           .map(s => [s.isoDate, { branch: s.branch, template: s.shiftName }]));
         this.cdr.markForCheck();
@@ -254,13 +253,6 @@ export class AdminStaffFormComponent {
     this.weekMonday = date.toISOString().slice(0, 10);
     this.staffApi.loadWeek(this.weekMonday);
   }
-  setShift(iso: string, field: 'branch' | 'template', value: string): void {
-    const previous = this.shifts[iso] ?? { branch: '', template: '' };
-    this.shifts = { ...this.shifts, [iso]: { ...previous, [field]: value } };
-    if (!this.shifts[iso].template) this.shifts[iso] = { branch: '', template: '' };
-    this.shiftDraftDirty = true;
-  }
-
   toggleBranchMenu(): void { this.branchMenuOpen = !this.branchMenuOpen; }
   selectHomeBranch(branch: string): void {
     this.form.controls.homeBranch.setValue(branch);
@@ -337,7 +329,7 @@ export class AdminStaffFormComponent {
             ? `Đã tạo nhân viên. Tài khoản: ${credentials.username} · Mật khẩu tạm: ${credentials.password}`
             : 'Đã tạo nhân viên.', 'success');
           void this.router.navigateByUrl(intent === 'assign'
-            ? '/admin/staff/shifts/assign?staffId=' + encodeURIComponent(created.id)
+            ? '/admin/staff/schedule'
             : '/admin/staff/' + encodeURIComponent(created.id));
         },
         error: err => this.toast.show(adminErrorMessage(err, 'Không thể tạo nhân viên. Vui lòng thử lại.'), 'error'),
@@ -367,7 +359,7 @@ export class AdminStaffFormComponent {
     this.toast.show(`${action} đang chờ API Backend và phân quyền Admin.`, 'info');
   }
 
-  hasChanges(): boolean { return this.form.dirty || this.shiftDraftDirty; }
+  hasChanges(): boolean { return this.form.dirty; }
   canLeavePage(): boolean | Promise<boolean> {
     if (this.allowNavigation || !this.hasChanges()) return true;
     if (this.leaveResolver) return false;
