@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, inject, signal } from '@angular/core';
 import { AdminToastService } from '../services/admin-toast.service';
 import { RouterLink } from '@angular/router';
 import { AdminReturnNotificationService } from '../services/admin-return-notification.service';
 import { AdminSidebarAccordionService, AdminSidebarGroup } from '../services/admin-sidebar-accordion.service';
+import { AdminNotificationService, AdminNotification } from '../services/admin-notification.service';
+import { AuthSessionService } from '../../core/services/auth-session.service';
 
 /**
  * Shared Admin catalog chrome for category, product and operations screens.
@@ -22,6 +24,9 @@ export class AdminCatalogShellComponent implements OnChanges {
   readonly returnNotifications = inject(AdminReturnNotificationService);
   readonly pendingReturnCount = this.returnNotifications.pendingCount;
   private readonly accordion = inject(AdminSidebarAccordionService);
+  readonly notifications = inject(AdminNotificationService);
+  readonly session = inject(AuthSessionService);
+  readonly notificationOpen = signal(false);
 
   @Input({ required: true }) activeItem!:
     | 'categories' | 'products' | 'orders' | 'vouchers'
@@ -42,6 +47,7 @@ export class AdminCatalogShellComponent implements OnChanges {
 
   ngOnInit(): void {
     this.returnNotifications.ensureLoaded();
+    this.notifications.ensureLoaded();
     this.syncSidebarToActiveItem();
   }
 
@@ -98,5 +104,34 @@ export class AdminCatalogShellComponent implements OnChanges {
   toggleServices(): void { this.toggleGroup('services'); }
   toggleOperations(): void { this.toggleGroup('operations'); }
   toggleContent(): void { this.toggleGroup('content'); }
+  toggleNotifications(): void {
+    this.notificationOpen.update(open=>!open);
+    if(this.notificationOpen())this.notifications.ensureLoaded();
+  }
+  closeNotifications(): void { this.notificationOpen.set(false); }
+  openNotification(item: AdminNotification): void {
+    this.notifications.markRead(item.id);
+    this.closeNotifications();
+  }
+  roleLabel(): string {
+    const user=this.session.user();
+    if(!user)return 'Tài khoản';
+    if(user.systemRole==='ADMIN')return 'Quản trị viên';
+    if(user.systemRole==='MANAGER')return 'Quản lý';
+    if(user.staffSubRole==='VETERINARIAN')return 'Bác sĩ thú y';
+    if(user.staffSubRole==='NURSE')return 'Y tá';
+    if(user.staffSubRole==='CARE_STAFF_GROOMER')return 'Nhân viên chăm sóc';
+    if(user.staffSubRole==='RECEPTIONIST')return 'Lễ tân';
+    return user.systemRole;
+  }
+  notificationTime(value:string): string {
+    const date=new Date(value);
+    if(Number.isNaN(date.getTime()))return '';
+    return new Intl.DateTimeFormat('vi-VN',{
+      day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false,
+      timeZone:'Asia/Ho_Chi_Minh',
+    }).format(date);
+  }
+
   toggleFeedback(): void { this.toggleGroup('feedback'); }
 }
