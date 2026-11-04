@@ -4,6 +4,7 @@ import { adminLoginEntryGuard } from './core/guards/admin-login-entry.guard';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { orderOperatorGuard } from './core/guards/order-operator.guard';
+import { appointmentCreateGuard } from './core/guards/appointment-create.guard';
 
 const BACKOFFICE_ROLES = ['ADMIN', 'MANAGER', 'STAFF'];
 
@@ -29,7 +30,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/appointments/new',
-    canActivate: [authGuard, roleGuard],
+    canActivate: [authGuard, roleGuard, appointmentCreateGuard],
     canDeactivate: [confirmAppointmentCreateLeave],
     data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
     loadComponent: () => import('./features/admin/pages/appointments/admin-appointment-create.component')
