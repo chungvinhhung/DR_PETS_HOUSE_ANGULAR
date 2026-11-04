@@ -14,6 +14,7 @@ import {
 import { CatalogBranch, CatalogService } from '../../service-catalog/models/service-catalog.model';
 import { BranchHoursPreviewComponent } from './branch-hours-preview.component';
 import { BranchShiftTemplatesPreviewComponent } from './branch-shift-templates-preview.component';
+import { AdminStaffApiService } from '../../staff/services/admin-staff-api.service';
 import { BranchSettingsDialogComponent, BranchSettingsPreview } from './branch-settings-dialog.component';
 import {
   BranchApiRecord, BranchManagementApiService, BranchServiceApiRecord,
@@ -49,6 +50,7 @@ export class BranchManagementPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly api = inject(BranchManagementApiService);
+  private readonly staffApi = inject(AdminStaffApiService);
   private readonly session = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
   private readonly destroyRef = inject(DestroyRef);
@@ -94,6 +96,7 @@ export class BranchManagementPageComponent {
 
   constructor() {
     this.refreshBranches();
+    this.staffApi.loadRoster();
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const id = params.get('id');
       this.detailTab.set('services');
@@ -160,6 +163,10 @@ export class BranchManagementPageComponent {
       (this.branchStatus() === 'ALL' || row.status === this.branchStatus()) &&
       (!text || [row.name, row.address, row.hotline].some((part) => part.toLocaleLowerCase('vi').includes(text))),
     );
+  }
+  staffCount(branchId: string): number | null {
+    if (!this.staffApi.loaded() || this.staffApi.error()) return null;
+    return this.staffApi.staff().filter(person=>person.branchIds.includes(branchId)).length;
   }
   get pageCount(): number { return Math.max(1, Math.ceil(this.filteredBranches.length / this.pageSize)); }
   get pagedBranches(): readonly BranchRow[] {
