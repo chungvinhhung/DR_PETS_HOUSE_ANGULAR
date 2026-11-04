@@ -99,10 +99,11 @@ function safeRole(role: string | undefined): JobRole {
 }
 function errorText(error: unknown, resource: string): string {
   const http = error as HttpErrorResponse;
+  const label = resource === 'Staff' ? 'danh sách nhân sự' : resource === 'Shift' ? 'lịch làm việc' : resource;
   if (http?.status === 401) return 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
-  if (http?.status === 403) return 'Bạn không có quyền xem dữ liệu ' + resource + ' của chi nhánh này.';
-  if (http?.status === 404) return 'Backend trên Render chưa cung cấp API ' + resource + '.';
-  return 'Không thể tải ' + resource + ' từ Backend. Kiểm tra kết nối Render và API.';
+  if (http?.status === 403) return 'Bạn không có quyền xem ' + label + ' trong phạm vi này.';
+  if (http?.status === 404) return 'Dữ liệu ' + label + ' hiện chưa khả dụng.';
+  return 'Không thể tải ' + label + '. Vui lòng thử lại.';
 }
 
 /**
@@ -177,7 +178,7 @@ export class AdminStaffApiService {
       fullName: input.fullName ?? account?.fullName ?? account?.name ?? 'Chưa cập nhật họ tên',
       jobRole: safeRole(input.staffSubRole ?? input.jobRole),
       branchIds: ids,
-      branches: ids.map(b => branchNames.get(b) ?? b),
+      branches: [...new Set(ids.map(b => branchNames.get(b) ?? 'Chưa tải được tên chi nhánh'))],
       homeBranchId: homeId,
       homeBranch: homeId ? (branchNames.get(homeId) ?? homeId) : undefined,
       phone: input.phone ?? account?.phone,
