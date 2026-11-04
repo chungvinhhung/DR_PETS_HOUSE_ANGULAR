@@ -214,3 +214,50 @@
    - Figma includes a free-form note in the status update modal, but current confirm/process/delivered handlers ignore request-body notes; ship persists only its generated carrier/tracking text.
    - Admin Create Order lets the user choose a visual online provider, but BE stores only `paymentMethod=ONLINE_MOCK` and no provider field.
    - FE keeps these Figma controls but explicitly discloses the BE limitation and does not send an unsupported status-note property.
+
+
+## Appointments — Phase 4 audit
+
+26. **Appointment model cannot represent multi-pet / per-pet check-in**
+   - Current `Appointment` stores one `petId` / `petSnapshot` at appointment level.
+   - `services[]` has no `petId`, `checkInStatus`, `checkedInAt` or `checkedInBy`.
+   - No check-in endpoint exists in `booking.routes.js`.
+   - FE must not infer ARRIVED from appointment `IN_PROGRESS`; multi-pet check-in in current Figma/handover cannot be integrated yet.
+
+27. **Start-segment endpoint does not enforce check-in**
+   - `POST /appointments/:id/start` only finds the service segment and sets `executionStatus=IN_PROGRESS`.
+   - It does not verify that the corresponding pet has arrived.
+   - FE now gates start-service while authoritative per-pet check-in is unavailable instead of bypassing the business rule.
+
+28. **ServiceRecord schema currently allows only one record per Appointment**
+   - `ServiceRecord.appointmentId` is declared `unique: true`.
+   - This conflicts with the handover model where one Appointment can have multiple independent Service Records (for example SR-A / SR-B).
+   - It also prevents reliable per-pet/per-service eye-linking for a multi-pet appointment.
+
+29. **Mixed MEDICAL + GROOMING appointment is rejected by current BE**
+   - `createAppointment()` requires every selected service to have exactly the same `serviceType`.
+   - Current Figma examples combine Medical and Grooming in one Appointment, so this remains a BE/BA contract decision.
+
+30. **Per-service reschedule/cancel is not implemented**
+   - BE exposes reschedule/cancel only at Appointment level.
+   - There is no endpoint to split/reschedule/cancel one pet/service after another segment has started.
+   - FE must not implement the Figma row menu workflow by mutating the whole appointment.
+
+31. **Appointment branch scope is incomplete on BE detail/create/mutations**
+   - List scoping exists, but GET `/appointments/:id` checks CUSTOMER ownership only.
+   - `createInternalAppointment` delegates directly to `createAppointment` and does not explicitly verify the Manager/Receptionist branch scope.
+   - Start/reschedule/cancel/no-show flows do not consistently re-check branch scope.
+   - FE now applies branchScope defensively to create/list/detail, but BE remains authoritative and must enforce the same scope.
+
+32. **Receptionist list scoping uses `authorizedBranchIds` while other modules use assigned branch scope**
+   - `getAppointments()` checks `actor.authorizedBranchIds` for RECEPTIONIST and `actor.assignedBranchIds` for MANAGER.
+   - Auth/session contract currently exposes normalized `branchScope` to FE; BE actor-field consistency should be verified to avoid unscoped Receptionist reads.
+
+33. **Appointment serializer does not expose a real lifecycle timeline**
+   - `formatAppointment()` returns current state, segments and cancel metadata, but not status/history events.
+   - FE cannot reproduce the Figma timeline (created, confirmed, per-pet arrived, segment started/completed, etc.) without persisted event data.
+
+34. **Whole-appointment completion is currently coupled to one ServiceRecord finalization**
+   - `finalizeRecord()` first requires every appointment segment to be COMPLETED, then sets Appointment status to COMPLETED.
+   - This guards against completing while segments remain unfinished, which is correct at appointment level.
+   - However, because ServiceRecord is currently unique per Appointment, this does not match the handover model of independent records per pet/service.
