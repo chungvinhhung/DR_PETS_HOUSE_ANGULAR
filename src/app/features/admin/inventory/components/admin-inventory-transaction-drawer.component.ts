@@ -28,6 +28,51 @@ export class AdminInventoryTransactionDrawerComponent {
   itemFor(id: string): InventoryItemDto | undefined {
     return this.items.find(item => item.id === id);
   }
+  movementLines(): Array<{
+    key:string; inventoryItemId:string; sku:string; name:string; unit:string;
+    quantity:number; beforeQty:number; changeQty:number; afterQty:number;
+  }> {
+    const lines: Array<{
+      key:string; inventoryItemId:string; sku:string; name:string; unit:string;
+      quantity:number; beforeQty:number; changeQty:number; afterQty:number;
+    }> = [];
+    for (const tx of this.transactions) {
+      if (Array.isArray(tx.items) && tx.items.length) {
+        tx.items.forEach((line,index) => {
+          const item=this.itemFor(line.inventoryItemId);
+          lines.push({
+            key:tx.id+':'+line.inventoryItemId+':'+index,
+            inventoryItemId:line.inventoryItemId,
+            sku:line.sku || item?.sku || '—',
+            name:line.name || item?.name || line.inventoryItemId,
+            unit:line.unit || item?.unit || '',
+            quantity:Number(line.quantity ?? Math.abs(line.changeQty || 0)),
+            beforeQty:Number(line.beforeQty || 0),
+            changeQty:Number(line.changeQty || 0),
+            afterQty:Number(line.afterQty || 0),
+          });
+        });
+      } else {
+        const item=this.itemFor(tx.inventoryItemId);
+        lines.push({
+          key:tx.id+':'+tx.inventoryItemId,
+          inventoryItemId:tx.inventoryItemId,
+          sku:item?.sku || '—',
+          name:item?.name || tx.inventoryItemId,
+          unit:item?.unit || '',
+          quantity:Math.abs(Number(tx.changeQty || 0)),
+          beforeQty:Number(tx.beforeQty || 0),
+          changeQty:Number(tx.changeQty || 0),
+          afterQty:Number(tx.afterQty || 0),
+        });
+      }
+    }
+    return lines;
+  }
+  displayedTransactionCode():string {
+    const tx=this.transactions[0];
+    return this.transactionCode || tx?.transactionCode || tx?.groupCode || tx?.code || tx?.id || 'Chưa có mã giao dịch';
+  }
   transactionName(): string {
     const type = this.transactions[0]?.transactionType;
     return ({ISSUE:'Xuất kho',RECEIPT:'Nhập kho',TRANSFER:'Chuyển kho',
