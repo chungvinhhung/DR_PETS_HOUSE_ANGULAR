@@ -373,6 +373,13 @@ export class AdminServiceRecordDetailComponent {
     }:row));
   }
 
+  materialUnits():string[]{
+    const values=this.materialOptions().map(item=>item.unit).filter(Boolean);
+    const current=this.materialDrafts()[0]?.unit;
+    if(current)values.push(current);
+    return [...new Set(values)];
+  }
+
   updateMaterialQuantity(index:number,value:string):void{
     const quantity=value.trim()===''?null:Number(value);
     this.materialDrafts.update(rows=>rows.map((row,i)=>i===index?{
