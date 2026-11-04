@@ -18,7 +18,7 @@ import { AdminToastService } from '../../../../shared/services/admin-toast.servi
 import { CatalogBranch, CatalogService } from '../models/service-catalog.model';
 
 export interface BlockedWindow {
-  id: number;
+  id: string;
   start: string;
   end: string;
   reason: string;
@@ -32,8 +32,8 @@ export interface BranchServiceConfigPreview {
 }
 
 /**
- * Phase 3 BranchService preview — opened ONLY from Branch Detail.
- * No Backend writes. Availability is computed by BE, never manually configured.
+ * Branch service configuration dialog. Persistence is delegated to the parent,
+ * which writes the real BranchServiceConfig and blocked-window APIs.
  */
 @Component({
   selector: 'app-branch-service-config-dialog',
@@ -64,7 +64,7 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
   readonly blockEnd = signal('');
   readonly blockReason = signal('');
   readonly showBlockForm = signal(false);
-  readonly editingBlockedId = signal<number | null>(null);
+  readonly editingBlockedId = signal<string | null>(null);
   readonly dirty = signal(false);
   readonly feedback = signal('');
   readonly errors = signal<string[]>([]);
@@ -95,20 +95,12 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     this.selectedBranchId.set(branch.id);
     this.capacity.set(Math.max(0, count));
     this.enabled.set(this.isServiceActive && count > 0 && (current?.enabled ?? false));
-    // Empty until the BE exposes per-service blocked windows. Do not invent existing periods.
     if (this.initialBlockedWindows) {
       this.blockedWindows.set(this.initialBlockedWindows.map((window) => ({ ...window })));
-      this.nextBlockedId = Math.max(0, ...this.initialBlockedWindows.map((window) => window.id)) + 1;
       this.showBlockForm.set(false);
-    } else if (branch.id === 'demo-q1') {
-      // Figma V2 illustrations only, not fetched or persisted.
-      this.blockedWindows.set([
-        { id: 1, start: '2026-10-22T13:00', end: '2026-10-22T15:00', reason: 'Bảo trì khu tắm' },
-        { id: 2, start: '2026-10-24T08:00', end: '2026-10-24T12:00', reason: 'Vệ sinh thiết bị' },
-      ]);
-      this.nextBlockedId = 3;
-      this.showBlockForm.set(true);
-    } else this.blockedWindows.set([]);
+    } else {
+      this.blockedWindows.set([]);
+    }
   }
 
   ngAfterViewInit(): void {
@@ -160,7 +152,7 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     this.errors.set([]);
   }
 
-  editBlockedWindow(id: number): void {
+  editBlockedWindow(id: string): void {
     const selected = this.blockedWindows().find((item) => item.id === id);
     if (!selected) return;
     this.blockStart.set(selected.start);
@@ -220,7 +212,7 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
       this.errors.set(['Khoảng tạm khóa mới bị trùng với khoảng đã nhập.']);
       return;
     }
-    const id = this.editingBlockedId() ?? this.nextBlockedId++;
+    const id = this.editingBlockedId() ?? 'new-' + this.nextBlockedId++;
     this.blockedWindows.update((windows) => [
       ...windows.filter((window) => window.id !== id),
       { id, start, end, reason },
@@ -233,7 +225,7 @@ export class BranchServiceConfigDialogComponent implements OnInit, AfterViewInit
     this.markChanged();
   }
 
-  removeBlockedWindow(id: number): void {
+  removeBlockedWindow(id: string): void {
     this.blockedWindows.update((windows) => windows.filter((window) => window.id !== id));
     this.markChanged();
   }
