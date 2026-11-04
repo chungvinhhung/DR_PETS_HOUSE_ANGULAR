@@ -68,7 +68,7 @@ app-admin-catalog-shell table.web2-admin-table{
 app-admin-catalog-shell .web2-admin-table :is(th,td){
  box-sizing:border-box;padding:12px;border:0;border-bottom:1px solid #e2e8f0;vertical-align:middle;text-align:left;overflow-wrap:anywhere;word-break:normal
 }
-app-admin-catalog-shell .web2-admin-table thead th{height:48px;background:#eaf3fc;color:#26364a;font:600 12px/18px Roboto,Arial,sans-serif;white-space:normal}
+app-admin-catalog-shell .web2-admin-table thead th{height:48px;background:#f2f7fc;color:#26364a;font:600 12px/18px Roboto,Arial,sans-serif;white-space:normal}
 app-admin-catalog-shell .web2-admin-table tbody td{height:68px;background:#fff;color:#475569;font:400 13px/20px Roboto,Arial,sans-serif}
 app-admin-catalog-shell .web2-admin-table tbody tr:last-child td{border-bottom:0}
 app-admin-catalog-shell .web2-admin-table tbody tr:hover td{background:#f8fbff}
@@ -97,7 +97,7 @@ app-admin-catalog-shell .web2-admin-icon-button{
  width:32px!important;min-width:32px!important;height:32px!important;min-height:32px!important;margin:0 2px!important;padding:0!important;overflow:hidden;
  border:0!important;border-radius:7px!important;background:transparent!important;color:#0d47a1!important;line-height:0!important;vertical-align:middle;cursor:pointer;text-decoration:none!important
 }
-app-admin-catalog-shell .web2-admin-icon-button:hover:not(:disabled){background:#eaf3fc!important}
+app-admin-catalog-shell .web2-admin-icon-button:hover:not(:disabled){background:#f2f7fc!important}
 app-admin-catalog-shell .web2-admin-icon-button img{
  display:block!important;flex:0 0 18px!important;width:18px!important;height:18px!important;max-width:18px!important;max-height:18px!important;
  margin:0!important;padding:0!important;object-fit:contain;border:0
@@ -272,7 +272,7 @@ app-admin-catalog-shell .web2-filterbar .web2-admin-filter-select option{color:#
 
 /* Unified management-table header tone and action-column wrapping. */
 app-admin-catalog-shell .web2-admin-table thead th{
-  background:#eaf3fc!important;
+  background:#f2f7fc!important;
 }
 app-admin-catalog-shell .web2-admin-table th:last-child{
   white-space:nowrap!important;
