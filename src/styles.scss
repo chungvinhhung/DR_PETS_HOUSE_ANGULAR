@@ -6373,37 +6373,36 @@ app-branch-management-page .branch-v2-page .branch-v2-page__table--branches
   :is(th,td):nth-child(7){white-space:nowrap;overflow-wrap:normal}
 
 
-/* Admin summary metrics: left-anchored compact tiles, aligned with the page
-   title, filters, and table. No oversized centered row or multicolor cards. */
+/* Compact KPI tiles — restrained Dr. Pet's House dashboard style.
+   Separate surfaces restore visual hierarchy without introducing more colors. */
 app-admin-order-management .order-admin__kpis,
 app-admin-appointments-page .appointments__kpis{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:10px;
-  width:100%;
-  max-width:904px;
-  margin:0 0 14px;
+  gap:12px;
+  margin:0 0 16px;
   padding:0;
   border:0;
-  background:transparent;
   border-radius:0;
+  background:transparent;
   overflow:visible;
 }
 app-admin-order-management .order-admin__kpi,
 app-admin-appointments-page .appointments__kpi{
   box-sizing:border-box;
+  position:relative;
   display:flex;
-  flex-direction:row;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:7px;
   min-width:0;
-  min-height:66px;
-  padding:11px 16px;
+  min-height:86px;
+  padding:13px 18px;
   border:1px solid #dce5f0;
-  border-radius:8px;
-  background:#fff;
-  box-shadow:none;
+  border-radius:10px;
+  background:#f8fafc;
+  box-shadow:0 1px 2px rgba(20,43,70,.025);
 }
 app-admin-order-management .order-admin__kpi:last-child,
 app-admin-appointments-page .appointments__kpi:last-child{
@@ -6415,32 +6414,30 @@ app-admin-appointments-page .appointments__kpi::before,
 app-admin-appointments-page .appointments__kpi::after,
 app-admin-order-management .order-admin__kpi>span::before,
 app-admin-appointments-page .appointments__kpi>span::before{
-  display:none;
   content:none;
+  display:none;
 }
 app-admin-order-management .order-admin__kpi>span,
 app-admin-appointments-page .appointments__kpi>span{
-  min-width:0;
-  flex:1 1 auto;
-  margin:0;
+  display:block;
   color:#526782;
-  font:500 12px/18px Roboto,Arial,sans-serif;
+  font:500 13px/18px Roboto,Arial,sans-serif;
+  white-space:normal;
 }
 app-admin-order-management .order-admin__kpi>strong,
 app-admin-appointments-page .appointments__kpi>strong{
-  flex:0 0 auto;
-  margin:0;
+  display:block;
   color:#1d2a42;
-  font:600 24px/30px Roboto,Arial,sans-serif;
+  font:600 27px/32px Roboto,Arial,sans-serif;
+  letter-spacing:-.3px;
   font-variant-numeric:tabular-nums;
-  letter-spacing:-.2px;
 }
-/* Only the pending metric gets a subtle brand-color treatment. */
+/* A single brand-tinted tile draws attention to work awaiting action.
+   All other metrics retain the same neutral palette. */
 app-admin-order-management .order-admin__kpi[data-kpi-tone="warning"],
 app-admin-appointments-page .appointments__kpi[data-kpi-tone="warning"]{
-  border-color:#b9cdec;
-  background:#fff;
-  box-shadow:inset 3px 0 #0d47a1;
+  background:#f1f6fe;
+  border-color:#c5d8f1;
 }
 app-admin-order-management .order-admin__kpi[data-kpi-tone="warning"]>span,
 app-admin-appointments-page .appointments__kpi[data-kpi-tone="warning"]>span{
@@ -6454,19 +6451,23 @@ app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
   app-admin-order-management .order-admin__kpis,
   app-admin-appointments-page .appointments__kpis{
     grid-template-columns:repeat(2,minmax(0,1fr));
-    max-width:452px;
+    gap:10px;
   }
 }
-@media(max-width:440px){
+@media(max-width:540px){
   app-admin-order-management .order-admin__kpis,
   app-admin-appointments-page .appointments__kpis{
     grid-template-columns:1fr;
-    max-width:290px;
     gap:8px;
   }
   app-admin-order-management .order-admin__kpi,
   app-admin-appointments-page .appointments__kpi{
-    min-height:58px;
-    padding:9px 14px;
+    min-height:76px;
+    padding:11px 16px;
+  }
+  app-admin-order-management .order-admin__kpi>strong,
+  app-admin-appointments-page .appointments__kpi>strong{
+    font-size:25px;
+    line-height:29px;
   }
 }
