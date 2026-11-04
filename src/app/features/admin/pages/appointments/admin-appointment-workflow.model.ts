@@ -15,6 +15,8 @@ export interface AppointmentServiceSegment {
   executionStatus: string;
   scheduledStart: string | null;
   scheduledEnd: string | null;
+  executionStartedAt: string | null;
+  executionCompletedAt: string | null;
 }
 export interface AppointmentView {
   id: string;
@@ -150,6 +152,8 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
       executionStatus: firstString(row['executionStatus']) || 'NOT_STARTED',
       scheduledStart: isDate(scheduledStart) ? scheduledStart : null,
       scheduledEnd: isDate(scheduledEnd) ? scheduledEnd : null,
+      executionStartedAt: isDate(firstString(row['executionStartedAt'])) ? firstString(row['executionStartedAt']) : null,
+      executionCompletedAt: isDate(firstString(row['executionCompletedAt'])) ? firstString(row['executionCompletedAt']) : null,
     };
   }).filter(row => !!row.serviceId);
   return {
