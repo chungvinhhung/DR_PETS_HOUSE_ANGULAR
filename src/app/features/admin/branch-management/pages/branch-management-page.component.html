@@ -233,8 +233,7 @@
           </div>
         </section>
       } @else if (detailTab() === 'hours') {
-        <p class="branch-v2-page__api-note" role="status">Lịch hoạt động đang hiển thị dữ liệu minh họa. Chức năng xem lịch thực tế chưa khả dụng.</p>
-        <app-branch-hours-preview />
+        <app-branch-hours-preview [branchId]="branch.id" [services]="branchServices" />
       } @else {
         <p class="branch-v2-page__api-note" role="status">Ca làm việc hiện chỉ hiển thị dữ liệu mẫu. Chức năng lưu thay đổi chưa khả dụng.</p>
         <app-branch-shift-templates-preview [branchName]="branch.name" />
