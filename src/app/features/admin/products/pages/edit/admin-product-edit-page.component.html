@@ -7,7 +7,7 @@
   
   
   @if (product()?.status === 'ARCHIVED') { <p class="notice info">Sản phẩm đang lưu trữ. Bấm “Khôi phục sản phẩm” ở phía trên để tiếp tục chỉnh sửa.</p> }
-  @if (loading()) { <section class="panel">Đang tải chi tiết sản phẩm...</section> }
+  @if (loading()) { <app-admin-data-state kind="loading" title="Đang tải chi tiết sản phẩm" /> }
   @else if (product()) {
     <div class="columns">
       <div class="left-column">
