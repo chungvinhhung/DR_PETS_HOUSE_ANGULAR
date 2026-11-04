@@ -127,7 +127,7 @@
                 } @empty { <tr><td colspan="7" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có bài đăng cộng đồng" message="Hiện chưa có bài đăng phù hợp với bộ lọc." /></td></tr> }
               </tbody>
             } @else if (mode === 'rescue') {
-              <colgroup><col style="width:16%"><col style="width:19%"><col style="width:13%"><col style="width:25%"><col style="width:10%"><col style="width:10%"><col style="width:7%"></colgroup>
+              <colgroup><col style="width:11%"><col style="width:21%"><col style="width:12%"><col style="width:26%"><col style="width:9%"><col style="width:11%"><col style="width:10%"></colgroup>
               <thead><tr><th>Thú cưng</th><th>Loài / Giống</th><th>Khu vực</th><th>Tình trạng</th><th class="is-center">Cập nhật</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
               <tbody>
                 @for (r of visible(); track r.id || r._id || $index) {
@@ -135,10 +135,12 @@
                     <td>{{name(r)}}</td><td>{{category(r)}} / {{r.breed || '—'}}</td><td>{{rescueArea(r)}}</td><td>{{rescueCondition(r)}}</td>
                     <td class="is-center">{{date(r)}}</td><td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
                     <td class="is-center actions">
-                      <button type="button" class="web2-admin-icon-button" aria-label="Chỉnh sửa hồ sơ cứu trợ" (click)="openEdit(r)"><img src="/assets/admin-staff/icon-edit.svg" alt=""></button>
-                      @if (isAdmin()) {
-                        <button type="button" class="web2-admin-icon-button" aria-label="Xóa hồ sơ cứu trợ" (click)="deleteRow(r)"><img src="/assets/admin-product/icon-delete.svg" alt=""></button>
-                      }
+                      <span class="rescue-action-group">
+                        <button type="button" class="web2-admin-icon-button" aria-label="Chỉnh sửa hồ sơ cứu trợ" (click)="openEdit(r)"><img src="/assets/admin-staff/icon-edit.svg" alt=""></button>
+                        @if (isAdmin()) {
+                          <button type="button" class="web2-admin-icon-button" aria-label="Xóa hồ sơ cứu trợ" (click)="deleteRow(r)"><img src="/assets/admin-product/icon-delete.svg" alt=""></button>
+                        }
+                      </span>
                     </td>
                   </tr>
                 } @empty { <tr><td colspan="7" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có hồ sơ cứu trợ" message="Hiện chưa có bé nào phù hợp với bộ lọc." /></td></tr> }
