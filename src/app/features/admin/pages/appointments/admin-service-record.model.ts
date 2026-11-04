@@ -172,8 +172,8 @@ export type MedicalFinalizationCheck = {allowed:boolean;reason:string};
 export function canFinalizeServiceRecord(r:ServiceRecord):MedicalFinalizationCheck {
   if(r.status==='COMPLETED')return {allowed:false,reason:'Hồ sơ đã hoàn thành.'};
   if(r.category==='UNKNOWN')return {allowed:false,reason:'Chưa xác định loại hồ sơ.'};
-  if(r.category==='MEDICAL' && !['WAITING_VET_REVIEW','REOPENED'].includes(r.status))
-    return {allowed:false,reason:'Hồ sơ MEDICAL phải ở trạng thái chờ Bác sĩ thú y duyệt hoặc đã mở lại trước khi chốt.'};
+  if(r.category==='MEDICAL' && !['IN_PROGRESS','WAITING_VET_REVIEW','REOPENED'].includes(r.status))
+    return {allowed:false,reason:'Hồ sơ MEDICAL chưa ở trạng thái có thể được Bác sĩ thú y chốt.'};
   if(r.category==='GROOMING' && !['IN_PROGRESS','REOPENED'].includes(r.status))
     return {allowed:false,reason:'Hồ sơ GROOMING chưa ở trạng thái có thể chốt.'};
   return {allowed:true,reason:'Có thể thực hiện thao tác.'};
