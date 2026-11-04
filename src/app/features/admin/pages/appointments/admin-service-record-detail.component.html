@@ -141,7 +141,7 @@
           <p class="action-hint">Hồ sơ đang chờ Bác sĩ thú y được phân công kiểm tra và chốt cuối.</p>
         }
         @if (r.status==='COMPLETED') {
-          <p class="action-hint">Hồ sơ đã được chốt. Trạng thái lịch hẹn chỉ thay đổi khi Backend xác định toàn bộ dịch vụ liên quan đã đủ điều kiện hoàn tất.</p>
+          <p class="action-hint">Hồ sơ đã được chốt. Lịch hẹn sẽ tự chuyển trạng thái khi tất cả dịch vụ liên quan đã hoàn tất.</p>
         }
       </section>
       }
@@ -167,7 +167,7 @@
         </header>
 
         @if (materialEditorMode()==='add') {
-          <p class="modal-hint">Lưu vật liệu chỉ cập nhật số lượng thực tế trong hồ sơ. Tồn kho chỉ thay đổi khi Backend chốt hồ sơ hợp lệ.</p>
+          <p class="modal-hint">Lưu vật liệu chỉ cập nhật số lượng thực tế trong hồ sơ. Tồn kho chỉ thay đổi sau khi hồ sơ được chốt hợp lệ.</p>
           @for (m of materialDrafts(); track $index; let i=$index) {
             <div class="material-add-form">
               <label class="material-field material-field--full">
@@ -205,7 +205,7 @@
             </div>
           }
         } @else {
-          <p class="modal-hint">Hồ sơ đã được mở lại. Chỉ lưu số lượng thực tế mới; Backend sẽ tạo ADJUSTMENT theo phần chênh lệch khi hồ sơ được chốt lại.</p>
+          <p class="modal-hint">Hồ sơ đã được mở lại. Hãy cập nhật số lượng thực tế mới; phần chênh lệch tồn kho sẽ được ghi nhận khi hồ sơ được chốt lại.</p>
           <div class="material-editor">
             @for (m of materialDrafts(); track $index; let i=$index) {
               <div class="material-editor__row">
