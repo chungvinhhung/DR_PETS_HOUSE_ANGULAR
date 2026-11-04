@@ -16,7 +16,7 @@
             [routerLink]="['/admin/staff', employee.id, 'edit']" [queryParams]="{ from: 'detail' }">Chỉnh sửa nhân viên</a>
           <button type="button" class="staff-detail__button staff-detail__button--danger"
             [disabled]="!canBlockAccount"
-            [title]="canBlockAccount ? 'Quản lý trạng thái tài khoản' : 'Chưa có API chặn/bỏ chặn tài khoản được xác minh'"
+            [title]="canBlockAccount ? 'Quản lý trạng thái tài khoản' : 'Tài khoản này chưa thể cập nhật trạng thái'"
             (click)="openBlockConfirmation()">{{ employee.accountStatus === 'BLOCKED' ? 'Bỏ chặn tài khoản' : 'Chặn tài khoản' }}</button>
         </div>
       </header>
@@ -108,7 +108,7 @@
         </div>
       </section>
       <p class="staff-detail__disclaimer">
-        Dữ liệu nhân viên và ca làm được lấy từ API Staff/Shift trên Render. Các trường Backend chưa cung cấp sẽ hiển thị dấu gạch ngang.
+        Các trường chưa có dữ liệu sẽ hiển thị dấu gạch ngang.
       </p>
     } @else {
       @if (staffApi.loading()) { <p role="status">Đang tải hồ sơ nhân viên...</p> }
@@ -118,7 +118,7 @@
       </nav>
       <section class="staff-detail__card" role="alert">
         <h1>Không tìm thấy nhân viên</h1>
-        <p>{{ staffApi.loading() ? 'Đang tải dữ liệu...' : staffApi.error() ? 'Chưa thể xác minh hồ sơ do lỗi API.' : 'Không tìm thấy mã ' + staffId + ' trong dữ liệu trả về từ Backend.' }}</p>
+        <p>{{ staffApi.loading() ? 'Đang tải dữ liệu...' : staffApi.error() ? 'Chưa thể tải hồ sơ nhân viên.' : 'Không tìm thấy mã ' + staffId + '.' }}</p>
         <a class="staff-detail__button staff-detail__button--outline" routerLink="/admin/staff">Về danh sách nhân viên</a>
       </section>
     }
@@ -130,10 +130,10 @@
     <section class="staff-detail__confirm" role="alertdialog" aria-modal="true"
       aria-labelledby="staff-block-title" aria-describedby="staff-block-description" tabindex="-1">
       <h2 id="staff-block-title">{{ employee.accountStatus === 'BLOCKED' ? 'Bỏ chặn tài khoản?' : 'Chặn tài khoản?' }}</h2>
-      <p id="staff-block-description">Bạn đang yêu cầu {{ employee.accountStatus === 'BLOCKED' ? 'bỏ chặn' : 'chặn' }} tài khoản của {{ displayName(employee) }}. Chức năng này hiện chưa có API Backend, nên không thay đổi trạng thái thật.</p>
+      <p id="staff-block-description">Bạn có chắc muốn {{ employee.accountStatus === 'BLOCKED' ? 'bỏ chặn' : 'chặn' }} tài khoản của {{ displayName(employee) }}?</p>
       <div class="staff-detail__confirm-actions">
         <button class="staff-detail__button staff-detail__button--outline" type="button" autofocus (click)="closeBlockConfirmation()">Hủy</button>
-        <button class="staff-detail__button staff-detail__button--danger" type="button" (click)="confirmBlockPreview()">Xác nhận</button>
+        <button class="staff-detail__button staff-detail__button--danger" type="button" (click)="confirmBlockPreview()" [disabled]="blockBusy">{{ blockBusy ? 'Đang cập nhật...' : 'Xác nhận' }}</button>
       </div>
     </section>
   </div>
