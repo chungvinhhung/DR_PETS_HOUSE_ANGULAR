@@ -93,6 +93,15 @@ export class ServiceCatalogApiService {
     );
   }
 
+  archive(id: string, idempotencyKey: string): Observable<ServiceApiRecord> {
+    const headers = new HttpHeaders({ 'Idempotency-Key': idempotencyKey });
+    return this.api.post<ServiceApiRecord, Record<string, never>>(
+      '/services/' + encodeURIComponent(id) + '/archive',
+      {},
+      { headers },
+    );
+  }
+
   /** All accessible branches for Service Detail, including inactive branches.
    * A service can be unavailable at a branch without the branch disappearing
    * from the read-only detail card. Backend remains the authority on scope. */
