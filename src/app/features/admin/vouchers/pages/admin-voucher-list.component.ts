@@ -49,6 +49,12 @@ export class AdminVoucherListComponent {
     this.availabilityFilter() !== 'ALL' ? this.clientPage() : this.previous().length + 1);
   readonly visiblePageNumbers = computed(() =>
     this.totalPages()===null ? [this.page()] : adminPageWindow(this.page(),this.totalPages()!));
+  readonly hasPreviousPage = computed(() =>
+    this.availabilityFilter() !== 'ALL' ? this.clientPage() > 1 : this.previous().length > 0);
+  readonly hasNextPage = computed(() =>
+    this.availabilityFilter() !== 'ALL'
+      ? this.clientPage() < (this.totalPages() ?? 1)
+      : Boolean(this.nextCursor()));
   readonly canEdit = computed(() => this.session.user()?.systemRole === 'ADMIN');
   readonly hasActiveFilters = computed(() =>
     Boolean(this.search().trim()) || this.scope() !== 'ALL' || this.status() !== 'ALL' ||
