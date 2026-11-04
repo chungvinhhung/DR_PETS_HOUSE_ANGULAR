@@ -51,7 +51,11 @@ function toNumber(value: any) {
 }
 
 function normalizeImageUrl(value: any) {
-  if (!value) return value;
+  if (!value) return "";
+  if (typeof value === 'object') {
+    value = value.url || value.imageUrl || value.image_url || value.src || "";
+  }
+  if (!value || typeof value !== 'string') return "";
   if (/^(https?:)?\/\//.test(value) || value.startsWith("data:") || value.startsWith("blob:")) {
     return value;
   }
@@ -75,41 +79,54 @@ function normalizeVariant(variant: any) {
 
 export function normalizeProduct(product: any) {
   const source = getPayload(product);
-  const id = getFirstValue(source?.productId, source?.product_id, source?.id);
-  const name = getFirstValue(source?.productName, source?.product_name, source?.name, "Sản phẩm");
-  const productImages = Array.isArray(source?.product_images)
-    ? ([...source.product_images]
-        .sort((first: any, second: any) => Number(Number(Boolean(second?.is_primary))) - Number(Number(Boolean(first?.is_primary))))
-        .map((item: any) => normalizeImageUrl(item?.image_url))
-        .filter(Boolean) as any[])
-    : [];
+  const id = String(getFirstValue(source?.id, source?._id, source?.productId, source?.product_id, "") || "");
+  const name = getFirstValue(source?.name, source?.productName, source?.product_name, "Sản phẩm");
+
+  let productImages: string[] = [];
+  if (Array.isArray(source?.images)) {
+    productImages = source.images.map(normalizeImageUrl).filter(Boolean);
+  } else if (Array.isArray(source?.product_images)) {
+    productImages = source.product_images.map(normalizeImageUrl).filter(Boolean);
+  }
+
+  const image = normalizeImageUrl(
+    getFirstValue(
+      source?.image,
+      source?.thumbnailUrl,
+      source?.thumbnail_url,
+      source?.imageUrl,
+      source?.image_url,
+      source?.product_image,
+      productImages[0],
+      ""
+    )
+  );
+
   const price = getFirstValue(
     source?.price,
+    source?.finalPrice,
+    source?.minPrice,
+    source?.minFinalPrice,
+    source?.variants?.[0]?.finalPrice,
+    source?.variants?.[0]?.price,
     source?.product_price,
     source?.sellingPrice,
-    source?.selling_price,
-    source?.sale_price,
-    0,
+    0
   );
-  const originalPrice = getFirstValue(source?.originalPrice, source?.original_price, source?.oldPrice);
+  const originalPrice = getFirstValue(
+    source?.originalPrice,
+    source?.original_price,
+    source?.oldPrice,
+    source?.maxPrice,
+    source?.variants?.[0]?.price
+  );
   const numericPrice = toNumber(price);
   const numericOriginalPrice = toNumber(originalPrice);
   const computedDiscountPercent =
     numericOriginalPrice > numericPrice && numericPrice > 0
       ? Math.round(((numericOriginalPrice - numericPrice) / numericOriginalPrice) * 100)
       : undefined;
-  const image = normalizeImageUrl(
-    getFirstValue(
-      source?.imageUrl,
-      source?.image_url,
-      source?.product_image,
-      source?.thumbnail_url,
-      productImages[0],
-      source?.images?.[0],
-      source?.image,
-      source?.thumbnail,
-    ),
-  );
+
   const categoryId = getFirstValue(source?.categoryId, source?.category_id, source?.product_category_id);
   const categoryIdx = Number.isFinite(Number(categoryId)) ? Number(Number(categoryId)) - 1 : source?.categoryIdx;
 
@@ -119,25 +136,23 @@ export function normalizeProduct(product: any) {
     productId: id,
     name,
     productName: name,
-    price,
-    originalPrice,
+    price: numericPrice,
+    originalPrice: numericOriginalPrice > 0 ? numericOriginalPrice : undefined,
     discountPercent: getFirstValue(
       source?.discountPercent,
       source?.discount_percent,
       source?.discount_percentage,
       computedDiscountPercent,
     ),
-    rating: getFirstValue(source?.rating, source?.averageRating, source?.average_rating, 0),
+    rating: getFirstValue(source?.rating, source?.averageRating, source?.average_rating, 5),
     image,
     imageUrl: image,
-    images: productImages.length
-      ? productImages
-      : Array.isArray(source?.images)
-        ? source.images.map(normalizeImageUrl)
-        : image ? [image] : [],
+    imageSrc: image,
+    thumbnail: image,
+    images: productImages.length ? productImages : image ? [image] : [],
     categoryIdx,
     variants: Array.isArray(source?.variants) ? source.variants.map(normalizeVariant) : [],
-    stockQuantity: getFirstValue(source?.stockQuantity, source?.stock_quantity, 0),
+    stockQuantity: getFirstValue(source?.stockQuantity, source?.stock_quantity, source?.totalStock, 0),
     soldQuantity: getFirstValue(source?.soldQuantity, source?.sold_quantity, 0),
     reviewCount: getFirstValue(source?.reviewCount, source?._count?.reviews, source?.reviews_count, 0),
   };
