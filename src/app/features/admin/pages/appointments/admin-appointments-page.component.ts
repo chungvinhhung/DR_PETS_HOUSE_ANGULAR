@@ -198,7 +198,7 @@ export class AdminAppointmentsPageComponent {
     if(!user || user.systemRole==='ADMIN') return this.fetchedRows();
     if(user.systemRole==='MANAGER' || (user.systemRole==='STAFF' && user.staffSubRole==='RECEPTIONIST')){
       const scope=user.branchScope ?? [];
-      return this.scopedRows().filter(row=>scope.includes(row.branchId));
+      return this.fetchedRows().filter(row=>scope.includes(row.branchId));
     }
     return this.fetchedRows();
   });
@@ -207,7 +207,7 @@ export class AdminAppointmentsPageComponent {
     const status=this.status();
     const days=this.dateRange();
     const cutoff=days==='all'?null:Date.now()-Number(days)*24*60*60*1000;
-    return this.fetchedRows().filter(row=>
+    return this.scopedRows().filter(row=>
       (cutoff===null || (row.createdAt!==null && new Date(row.createdAt).getTime()>=cutoff)) &&
       (!status || row.rawStatus===status) &&
       (!search || [row.code,row.customerName,row.customerPhone,row.id,...row.serviceNames]
