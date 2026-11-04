@@ -33,12 +33,28 @@ export class AdminContentListComponent{
  readonly activeItem=({articles:'content-articles','first-aid':'content-first-aid',community:'content-community',rescue:'content-rescue',adoptions:'content-rescue'} as const)[this.mode];
  readonly isAdmin=computed(()=>this.session.user()?.systemRole==='ADMIN');
  readonly canCreate=computed(()=>this.mode==='rescue' || ((this.mode==='articles'||this.mode==='first-aid') && this.isAdmin()));
+ readonly postCategories=computed(()=>[...new Set(this.rows()
+  .map(row=>this.postCategory(row))
+  .filter((category): category is string=>Boolean(category)))]
+  .sort((left,right)=>left.localeCompare(right,'vi')));
+ private postCategory(row:any):string {
+  const raw=row?.category;
+  return typeof raw==='string' ? raw.trim() : String(raw?.name??raw?.label??'').trim();
+ }
  readonly filtered=computed(()=>{
   const q=this.search().trim().toLocaleLowerCase('vi');
+  const selected=this.filter();
   return this.rows().filter(row=>{
     const text=JSON.stringify(row).toLocaleLowerCase('vi');
-    const type=String(row.category??row.type??row.species??row.status??'');
-    return (!q||text.includes(q))&&(!this.filter()||type.toLocaleLowerCase('vi').includes(this.filter().toLocaleLowerCase('vi')))&&(!this.status()||String(row.status??row.visibility??'').toUpperCase()===this.status());
+    const categoryMatches=!selected || (
+      this.mode==='rescue'
+        ? String(row.species??'').toUpperCase()===selected
+        : (this.mode==='articles'||this.mode==='first-aid')
+          ? this.postCategory(row).toLocaleLowerCase('vi')===selected.toLocaleLowerCase('vi')
+          : true
+    );
+    return (!q||text.includes(q)) && categoryMatches &&
+      (!this.status()||String(row.status??row.visibility??'').toUpperCase()===this.status());
   });
  });
  readonly totalPages=computed(()=>Math.max(1,Math.ceil(this.filtered().length/this.pageSize)));
