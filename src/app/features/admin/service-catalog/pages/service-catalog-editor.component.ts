@@ -59,6 +59,14 @@ export class ServiceCatalogEditorComponent {
   private readonly toast = inject(AdminToastService);
   private readonly previewToast = effect(() => {
     const message = this.notice();
+    if (message) this.toast.show(message, /thành công/i.test(message) ? 'success' : 'info');
+  });
+  private readonly branchErrorToast = effect(() => {
+    const message = this.branchLoadError();
+    if (message) this.toast.show(message, 'error');
+  });
+  private readonly activationToast = effect(() => {
+    const message = this.activationNotice();
     if (message) this.toast.show(message, 'info');
   });
 
