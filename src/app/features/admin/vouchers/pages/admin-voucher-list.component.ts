@@ -8,7 +8,7 @@ import { AdminDataStateComponent } from "../../../../shared/admin-data-state/adm
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import {
-  AdminVoucher, AdminVoucherApiService, VoucherScope, VoucherStatus, VOUCHER_SCOPE_LABELS,
+  AdminVoucher, AdminVoucherApiService, VoucherListResult, VoucherScope, VoucherStatus, VOUCHER_SCOPE_LABELS,
   voucherAvailability, voucherDate, voucherOffer,
 } from '../services/admin-voucher-api.service';
 
@@ -248,7 +248,7 @@ export class AdminVoucherListComponent {
       let cursor: string | null = null;
       let pages = 0;
       do {
-        const result = await firstValueFrom(this.api.list({
+        const result: VoucherListResult = await firstValueFrom(this.api.list({
           ...(this.scope() !== 'ALL' ? { scope: this.scope() as VoucherScope } : {}),
           ...(this.status() !== 'ALL' ? { status: this.status() as VoucherStatus } : {}),
           ...(this.search().trim() ? { search: this.search().trim() } : {}),
