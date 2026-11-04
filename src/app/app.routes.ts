@@ -195,9 +195,9 @@ export const routes: Routes = [
   },
   {
     path: 'admin/orders/new',
-    canActivate: [authGuard, roleGuard],
+    canActivate: [authGuard, roleGuard, orderOperatorGuard],
     canDeactivate: [confirmOrderCreateLeave],
-    data: { roles: ['ADMIN'] },
+    data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
     loadComponent: () => import('./features/admin/orders/pages/admin-order-create.component')
       .then(component => component.AdminOrderCreateComponent),
   },
