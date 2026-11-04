@@ -48,10 +48,6 @@ export class CouponAndSummaryComponent {
       this.couponError.set("Vui lòng nhập mã giảm giá");
       return;
     }
-    if (this.subtotal() <= 0) {
-      this.couponError.set("Vui lòng thêm sản phẩm vào đơn hàng trước khi áp dụng mã giảm giá");
-      return;
-    }
     if (this.isGuest()) {
       this.couponError.set("Vui lòng đăng nhập để kiểm tra mã giảm giá");
       return;
@@ -65,21 +61,7 @@ export class CouponAndSummaryComponent {
         code: this.couponCode().trim(),
         orderValue: this.subtotal(),
       });
-      if (result && result.valid === false) {
-        this.discountAmount.set(0);
-        const reasonMap: Record<string, string> = {
-          NOT_FOUND: 'Mã không tồn tại (Gợi ý: THUNHO20, FREESHIP)',
-          EXPIRED: 'Mã giảm giá đã hết hạn',
-          NOT_STARTED: 'Mã giảm giá chưa đến ngày áp dụng',
-          QUOTA_EXCEEDED: 'Mã giảm giá đã hết lượt sử dụng',
-          INACTIVE: 'Mã giảm giá đang tạm khóa',
-          SCOPE_MISMATCH: 'Mã không áp dụng cho đơn hàng sản phẩm',
-          MIN_CONDITION_NOT_MET: 'Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã',
-        };
-        this.couponError.set(reasonMap[result?.reason] || result?.reason || 'Mã giảm giá không hợp lệ');
-        return;
-      }
-      const discount = Number(result?.discountAmount ?? result?.discount ?? 0);
+      const discount = Number(result?.discountAmount || 0);
       this.discountAmount.set(discount);
       this.couponSuccess.set(`Đã áp dụng giảm ${formatMoney(discount)}`);
     } catch (error: any) {
