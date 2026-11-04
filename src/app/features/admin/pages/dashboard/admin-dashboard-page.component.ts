@@ -19,7 +19,6 @@ import {
       <header class="dashboard-heading">
         <div>
           <h1>Tổng quan hoạt động</h1>
-          <p>Số liệu được tổng hợp từ hoạt động thực tế trong hệ thống.</p>
         </div>
         <label class="dashboard-period">
           <span>Khoảng thời gian</span>
