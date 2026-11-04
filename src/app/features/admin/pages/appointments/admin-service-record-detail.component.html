@@ -102,7 +102,7 @@
                   <td>{{ m.note || '—' }}</td>
                 </tr>
               } @empty {
-                <tr><td colspan="6" class="empty-cell">Chưa có thông tin vật tư đã sử dụng.</td></tr>
+                <tr><td colspan="6" class="empty-cell"><app-admin-data-state kind="empty" title="Chưa có vật tư sử dụng" message="Hồ sơ này chưa ghi nhận vật tư thực tế." /></td></tr>
               }
             </tbody>
           </table>
