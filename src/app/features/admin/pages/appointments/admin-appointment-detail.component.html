@@ -173,7 +173,7 @@
           <p class="hint hint--info">Chỉ có thể bắt đầu dịch vụ sau khi có trạng thái check-in hợp lệ của thú cưng tương ứng.</p>
         }
         @if (action==='no-show') {
-          <p class="hint hint--warning">Hệ thống đã xác định lịch đủ điều kiện đánh dấu Không đến. Thao tác này sẽ giải phóng khung giờ và áp dụng chính sách hoàn/khấu trừ của Backend.</p>
+          <p class="hint hint--warning">Lịch đã đủ điều kiện đánh dấu Không đến. Thao tác này sẽ giải phóng khung giờ và áp dụng chính sách hoàn/khấu trừ hiện hành.</p>
         }
         <label class="modal-label"><span class="modal-field-label">Lý do / ghi chú xử lý @if(action!=='status'){<b>*</b>}</span>
           <textarea rows="4" [value]="reason()" (input)="reason.set($any($event.target).value)" placeholder="Nhập ghi chú xử lý..."></textarea>
