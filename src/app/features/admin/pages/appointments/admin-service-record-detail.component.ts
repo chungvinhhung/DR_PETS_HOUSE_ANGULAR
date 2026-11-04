@@ -369,7 +369,7 @@ export class AdminServiceRecordDetailComponent {
   selectMaterial(index:number,id:string):void{
     const item=this.inventoryItems().find(v=>v.id===id);
     this.materialDrafts.update(rows=>rows.map((row,i)=>i===index?{
-      ...row,inventoryItemId:id,unit:row.unit||item?.unit||'',
+      ...row,inventoryItemId:id,unit:item?.unit||row.unit||'',
     }:row));
   }
 
@@ -403,8 +403,8 @@ export class AdminServiceRecordDetailComponent {
     if(!this.materialOptions().some(item=>item.id===row.inventoryItemId)){
       this.dialogError.set('Vật tư không thuộc kho của chi nhánh này hoặc không còn hoạt động.');return;
     }
-    if(r.materials.some(item=>item.inventoryItemId===row.inventoryItemId && item.actualQuantity!=='')){
-      this.dialogError.set('Vật tư này đã có trong danh sách thực tế.');return;
+    if(r.materials.some(item=>item.inventoryItemId===row.inventoryItemId)){
+      this.dialogError.set('Vật tư này đã có trong hồ sơ. Chỉ thêm vật tư phát sinh chưa được ghi nhận.');return;
     }
 
     const existing=r.materials
