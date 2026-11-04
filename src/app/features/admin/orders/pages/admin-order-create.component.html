@@ -345,7 +345,7 @@
             <p>Đơn sẽ được tạo và xử lý tại chi nhánh do hệ thống phân công.</p>
           </div>
           <button type="button" class="create-order__dialog-close" aria-label="Đóng"
-            [disabled]="saving()" (click)="closeCreate()">×</button>
+            [disabled]="saving()" (click)="closeCreate()"><img src="/assets/admin-inventory/close-outlined.svg" alt="" aria-hidden="true"></button>
         </div>
         <p><strong>Tổng đơn: {{price(quote()!.pricing.totalAmount)}}</strong></p>
         <div class="create-order__dialog-actions">
@@ -370,7 +370,7 @@
             <p id="order-cancel-dialog-description">Thông tin bản nháp chưa được lưu. Bạn có muốn rời khỏi trang?</p>
           </div>
           <button type="button" class="create-order__dialog-close" aria-label="Đóng"
-            (click)="closeCancel()">×</button>
+            (click)="closeCancel()"><img src="/assets/admin-inventory/close-outlined.svg" alt="" aria-hidden="true"></button>
         </div>
         <div class="create-order__dialog-actions">
           <button type="button" class="create-order__button create-order__button--outline"
@@ -396,7 +396,7 @@
             }
           </div>
           <button type="button" class="create-order__dialog-close" aria-label="Đóng"
-            (click)="closeAddressDialog()">×</button>
+            (click)="closeAddressDialog()"><img src="/assets/admin-inventory/close-outlined.svg" alt="" aria-hidden="true"></button>
         </div>
 
         @if (mode === 'choose') {
