@@ -23,6 +23,9 @@ export interface AppointmentView {
   customerPhone: string;
   customerEmail: string;
   petNames: string[];
+  petSpecies: string;
+  petHealth: string;
+  petNote: string;
   serviceNames: string[];
   serviceSegments: AppointmentServiceSegment[];
   branchName: string;
@@ -156,6 +159,9 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
     customerEmail:firstString(item['customerEmail'], customer['email'], contact['email']),
     petNames:namesFrom(item['pets'] ?? item['pet'], 'pet').length
       ? namesFrom(item['pets'] ?? item['pet'], 'pet') : firstString(item['petName'], item['pet_name_snapshot'], petSnapshot['name']) ? [firstString(item['petName'], item['pet_name_snapshot'], petSnapshot['name'])] : [],
+    petSpecies:firstString(petSnapshot['species'], petSnapshot['speciesName']),
+    petHealth:firstString(petSnapshot['healthStatus'], petSnapshot['health'], item['conditionDescription']),
+    petNote:firstString(petSnapshot['medicalNotes'], item['conditionDescription'], item['note']),
     serviceNames:namesFrom(item['services'] ?? item['appointment_services'], 'service').length
       ? namesFrom(item['services'] ?? item['appointment_services'], 'service') : firstString(item['serviceName']) ? [firstString(item['serviceName'])] : [],
     serviceSegments,
