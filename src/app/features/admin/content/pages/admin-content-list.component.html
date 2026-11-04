@@ -87,8 +87,10 @@
                     <td class="is-center">{{date(r)}}</td>
                     <td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
                     <td class="is-center actions">
-                      <button type="button" class="web2-admin-icon-button" title="Chỉnh sửa" aria-label="Chỉnh sửa bài viết" (click)="openEdit(r)"><img src="/assets/admin-staff/icon-edit.svg" alt=""></button>
-                      <button type="button" class="web2-admin-icon-button" title="Xóa" aria-label="Xóa bài viết" (click)="deleteRow(r)"><img src="/assets/admin-product/icon-delete.svg" alt=""></button>
+                      @if (isAdmin()) {
+                        <button type="button" class="web2-admin-icon-button" title="Chỉnh sửa" aria-label="Chỉnh sửa bài viết" (click)="openEdit(r)"><img src="/assets/admin-staff/icon-edit.svg" alt=""></button>
+                        <button type="button" class="web2-admin-icon-button" title="Xóa" aria-label="Xóa bài viết" (click)="deleteRow(r)"><img src="/assets/admin-product/icon-delete.svg" alt=""></button>
+                      }
                     </td>
                   </tr>
                 } @empty { <tr><td colspan="6" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có bài viết" message="Danh sách bài viết hiện đang trống." /></td></tr> }
@@ -103,8 +105,10 @@
                     <td class="is-center">{{date(r)}}</td>
                     <td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
                     <td class="is-center actions">
-                      <button type="button" class="web2-admin-icon-button" title="Chỉnh sửa" aria-label="Chỉnh sửa cẩm nang" (click)="openEdit(r)"><img src="/assets/admin-staff/icon-edit.svg" alt=""></button>
-                      <button type="button" class="web2-admin-icon-button" title="Xóa" aria-label="Xóa cẩm nang" (click)="deleteRow(r)"><img src="/assets/admin-product/icon-delete.svg" alt=""></button>
+                      @if (isAdmin()) {
+                        <button type="button" class="web2-admin-icon-button" title="Chỉnh sửa" aria-label="Chỉnh sửa cẩm nang" (click)="openEdit(r)"><img src="/assets/admin-staff/icon-edit.svg" alt=""></button>
+                        <button type="button" class="web2-admin-icon-button" title="Xóa" aria-label="Xóa cẩm nang" (click)="deleteRow(r)"><img src="/assets/admin-product/icon-delete.svg" alt=""></button>
+                      }
                     </td>
                   </tr>
                 } @empty { <tr><td colspan="6" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có cẩm nang" message="Danh sách cẩm nang sơ cứu hiện đang trống." /></td></tr> }
