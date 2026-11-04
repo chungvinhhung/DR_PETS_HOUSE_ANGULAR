@@ -2,12 +2,6 @@
   <main class="content-admin web2-admin-page">
     <header class="web2-admin-page__header">
       <h1>{{title}}</h1>
-      @if (canCreate()) {
-        <button type="button" class="web2-add-button" (click)="openCreate()">
-          <img src="/assets/admin-product/icon-add.svg" alt="" aria-hidden="true">
-          <span>{{mode === 'rescue' ? 'Thêm hồ sơ' : mode === 'first-aid' ? 'Thêm cẩm nang' : 'Thêm bài viết'}}</span>
-        </button>
-      }
     </header>
 
     @if (mode === 'rescue' || mode === 'adoptions') {
@@ -61,6 +55,12 @@
           }
         </select>
       </div>
+      @if (canCreate()) {
+        <button type="button" class="web2-add-button" (click)="openCreate()">
+          <img src="/assets/admin-product/icon-add.svg" alt="" aria-hidden="true">
+          <span>{{mode === 'rescue' ? 'Thêm hồ sơ nhận nuôi' : mode === 'first-aid' ? 'Thêm cẩm nang' : 'Thêm bài viết'}}</span>
+        </button>
+      }
     </section>
 
     <section class="table-card web2-admin-table-panel">
@@ -184,27 +184,27 @@
         </header>
         <div class="content-dialog__body content-editor">
           @if (editor === 'post') {
-            <label>Tiêu đề <span>*</span><input type="text" [ngModel]="postDraft().title" (ngModelChange)="updatePostDraft('title',$event)"></label>
-            <label>Chủ đề <span>*</span><input type="text" [ngModel]="postDraft().category" (ngModelChange)="updatePostDraft('category',$event)"></label>
+            <label><span class="content-editor__field-label">Tiêu đề <span class="content-editor__required" aria-hidden="true">*</span></span><input type="text" [ngModel]="postDraft().title" (ngModelChange)="updatePostDraft('title',$event)"></label>
+            <label><span class="content-editor__field-label">Chủ đề <span class="content-editor__required" aria-hidden="true">*</span></span><input type="text" [ngModel]="postDraft().category" (ngModelChange)="updatePostDraft('category',$event)"></label>
             <label>Tóm tắt<input type="text" [ngModel]="postDraft().excerpt" (ngModelChange)="updatePostDraft('excerpt',$event)"></label>
             @if (mode === 'first-aid') {
               <label>Hotline cấp cứu<input type="text" [ngModel]="postDraft().emergencyPhone" (ngModelChange)="updatePostDraft('emergencyPhone',$event)"></label>
             }
-            <label>Nội dung <span>*</span><textarea rows="7" [ngModel]="postDraft().content" (ngModelChange)="updatePostDraft('content',$event)"></textarea></label>
+            <label><span class="content-editor__field-label">Nội dung <span class="content-editor__required" aria-hidden="true">*</span></span><textarea rows="7" [ngModel]="postDraft().content" (ngModelChange)="updatePostDraft('content',$event)"></textarea></label>
             <label>Trạng thái
               <select [ngModel]="postDraft().status" (ngModelChange)="updatePostDraft('status',$event)">
                 <option value="DRAFT">Bản nháp</option><option value="PUBLISHED">Đã xuất bản</option><option value="ARCHIVED">Đã lưu trữ</option>
               </select>
             </label>
           } @else {
-            <label>Tên thú cưng <span>*</span><input type="text" [ngModel]="rescueDraft().petName" (ngModelChange)="updateRescueDraft('petName',$event)"></label>
-            <label>Loài <span>*</span>
+            <label><span class="content-editor__field-label">Tên thú cưng <span class="content-editor__required" aria-hidden="true">*</span></span><input type="text" [ngModel]="rescueDraft().petName" (ngModelChange)="updateRescueDraft('petName',$event)"></label>
+            <label><span class="content-editor__field-label">Loài <span class="content-editor__required" aria-hidden="true">*</span></span>
               <select [ngModel]="rescueDraft().species" (ngModelChange)="updateRescueDraft('species',$event)"><option value="DOG">Chó</option><option value="CAT">Mèo</option></select>
             </label>
-            <label>Giống <span>*</span><input type="text" [ngModel]="rescueDraft().breed" (ngModelChange)="updateRescueDraft('breed',$event)"></label>
-            <label>Độ tuổi <span>*</span><input type="text" [ngModel]="rescueDraft().ageDescription" (ngModelChange)="updateRescueDraft('ageDescription',$event)"></label>
-            <label>Tình trạng sức khỏe <span>*</span><input type="text" [ngModel]="rescueDraft().healthStatus" (ngModelChange)="updateRescueDraft('healthStatus',$event)"></label>
-            <label>Câu chuyện cứu hộ <span>*</span><textarea rows="5" [ngModel]="rescueDraft().rescueStory" (ngModelChange)="updateRescueDraft('rescueStory',$event)"></textarea></label>
+            <label><span class="content-editor__field-label">Giống <span class="content-editor__required" aria-hidden="true">*</span></span><input type="text" [ngModel]="rescueDraft().breed" (ngModelChange)="updateRescueDraft('breed',$event)"></label>
+            <label><span class="content-editor__field-label">Độ tuổi <span class="content-editor__required" aria-hidden="true">*</span></span><input type="text" [ngModel]="rescueDraft().ageDescription" (ngModelChange)="updateRescueDraft('ageDescription',$event)"></label>
+            <label><span class="content-editor__field-label">Tình trạng sức khỏe <span class="content-editor__required" aria-hidden="true">*</span></span><input type="text" [ngModel]="rescueDraft().healthStatus" (ngModelChange)="updateRescueDraft('healthStatus',$event)"></label>
+            <label><span class="content-editor__field-label">Câu chuyện cứu hộ <span class="content-editor__required" aria-hidden="true">*</span></span><textarea rows="5" [ngModel]="rescueDraft().rescueStory" (ngModelChange)="updateRescueDraft('rescueStory',$event)"></textarea></label>
             @if (editing()) {
               <label>Trạng thái
                 <select [ngModel]="rescueDraft().status" (ngModelChange)="updateRescueDraft('status',$event)">
