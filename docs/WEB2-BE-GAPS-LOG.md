@@ -261,3 +261,48 @@
    - `finalizeRecord()` first requires every appointment segment to be COMPLETED, then sets Appointment status to COMPLETED.
    - This guards against completing while segments remain unfinished, which is correct at appointment level.
    - However, because ServiceRecord is currently unique per Appointment, this does not match the handover model of independent records per pet/service.
+
+
+## Service Records — Phase 5 audit
+
+35. **P0 — ServiceRecord creation currently defaults actual usage to planned usage**
+   - `createRecord()` sets `actualMaterials = data.actualMaterials || data.plannedMaterials || []`.
+   - This means a newly created record can report planned quantities as if they were actually consumed.
+   - Business rule requires planned/template quantity and actual usage to remain independent.
+   - BE should initialize `actualMaterials` only from explicit actual usage (normally empty at creation), never copy planned values implicitly.
+
+36. **ServiceRecord serializer drops material notes**
+   - The model stores `notes` on material rows and update endpoints accept it.
+   - `formatServiceRecord()` currently serializes planned/actual material quantities and units but omits `notes`.
+   - FE therefore cannot reliably display or preserve the material note after a reload/update.
+
+37. **Inventory transaction API has no human-readable transaction code**
+   - ServiceRecord finalize creates a real InventoryTransaction and groups all material lines in its `items[]`.
+   - The transaction serializer exposes Mongo `id`, source/reference code and recordVersion, but no canonical `TXK-xxxx`/transactionCode.
+   - FE now uses the persisted transaction id as fallback and does not invent a TXK code.
+   - If Figma-style TXK codes are required, BE must persist and return a canonical transaction code.
+
+38. **Executing STAFF cannot read ServiceRecord inventory transactions**
+   - `GET /inventory/transactions` is currently limited to MANAGER / ADMIN.
+   - STAFF (NURSE, VETERINARIAN, CARE_STAFF_GROOMER) can update/finalize ServiceRecords and cause inventory ISSUE/ADJUSTMENT, but cannot read the resulting transaction for the drawer.
+   - This prevents the executing staff UI from showing the persisted stock-after and transaction link after finalize.
+   - BE should either allow scoped read access for assigned execution staff or expose related transaction data through the ServiceRecord detail contract.
+
+39. **ServiceRecord inventory transaction is grouped, but FE legacy contract treated it as one top-level SKU**
+   - `applyServiceRecordDelta()` creates one InventoryTransaction with multiple material lines in `items[]`.
+   - The shared FE drawer has been corrected to render nested `items[]`, with top-level movement as backward-compatible fallback.
+   - No BE change required for this point.
+
+40. **Material availability should be branch-scoped**
+   - ServiceRecord extra material must be selected from inventory of the ServiceRecord branch.
+   - FE now intersects ACTIVE MATERIAL catalog items with branch stock rows before offering them in the modal.
+   - BE remains authoritative for stock and must reject insufficient inventory at finalize.
+
+41. **Initial finalize vs correction transaction behavior is confirmed in BE**
+   - Initial ServiceRecord finalize (`recordVersion <= 1`) creates an `ISSUE` when there is actual material delta.
+   - Reopened/corrected versions create an `ADJUSTMENT` for the delta and preserve prior ledger transactions.
+   - FE now lists all persisted transactions related to the ServiceRecord/material instead of replacing prior links.
+
+42. **One ServiceRecord per Appointment still blocks the target per-pet/per-service architecture**
+   - `ServiceRecord.appointmentId` remains `unique: true`, while the approved Web 2 flow expects independent records such as SR-A and SR-B under one Appointment.
+   - Until this is changed, the desired one-record/one-service transaction separation cannot be represented end-to-end.
