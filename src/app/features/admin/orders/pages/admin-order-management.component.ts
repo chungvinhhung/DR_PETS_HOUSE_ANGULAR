@@ -8,6 +8,7 @@ import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/ad
 import { AdminDataStateComponent } from "../../../../shared/admin-data-state/admin-data-state.component";
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { AdminReturnNotificationService } from '../../../../shared/services/admin-return-notification.service';
+import { AdminOrderNotificationService } from '../../../../shared/services/admin-order-notification.service';
 import { orderErrorMessage } from '../services/admin-order-error-message';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
@@ -48,6 +49,7 @@ export class AdminOrderManagementComponent {
   private readonly session = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
   private readonly returnNotifications = inject(AdminReturnNotificationService);
+  private readonly orderNotifications = inject(AdminOrderNotificationService);
   private readonly destroyRef = inject(DestroyRef);
   private ordersRequestVersion = 0;
   private returnsRequestVersion = 0;
@@ -97,6 +99,7 @@ export class AdminOrderManagementComponent {
   readonly hasLoadedReturns = signal(false);
   // Shared with sidebar; loaded on initial page render, not when the tab is clicked.
   readonly returnPendingCount = this.returnNotifications.pendingCount;
+  readonly pendingOrderCount = this.orderNotifications.pendingCount;
   readonly totalLoaded = computed(() => this.allOrders().length);
   readonly awaitingCount = computed(() => this.allOrders().filter(item => item.status === 'PENDING').length);
   readonly shippingCount = computed(() => this.allOrders().filter(item => item.status === 'SHIPPED').length);
@@ -474,7 +477,7 @@ export class AdminOrderManagementComponent {
   private loadOrders(): void {
     const version = ++this.ordersRequestVersion;
     this.loading.set(true); this.error.set('');
-    this.api.list().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.orderNotifications.listForView().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (page) => {
         if (version !== this.ordersRequestVersion) return;
         this.allOrders.set(Array.isArray(page.items) ? page.items : []);
@@ -718,6 +721,7 @@ export class AdminOrderManagementComponent {
         this.dialogBusy.set(false); this.dialog.set(null);
         this.cancelRequestKey = null;
         this.selected.set(updated);
+        this.orderNotifications.refresh();
         this.toast.show(action === 'cancel' ? 'Đơn hàng đã được hủy.' : 'Đã cập nhật trạng thái đơn hàng.', 'success');
         this.loadDetail();
       },
