@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.component';
 import { formatStaffWeekRange } from '../utils/staff-week-range';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
@@ -35,7 +36,7 @@ interface ShiftDay {
 @Component({
   selector: 'app-admin-staff-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, AdminCatalogShellComponent, AdminStaffWeekNavComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AdminCatalogShellComponent, AdminDataStateComponent, AdminStaffWeekNavComponent],
   templateUrl: './admin-staff-form.component.html',
   styleUrl: './admin-staff-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
