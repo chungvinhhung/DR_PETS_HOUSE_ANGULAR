@@ -50,8 +50,8 @@
           <div class="voucher-editor__summary">
             <div><span>Loại ưu đãi</span><strong>{{ discountTypeLabels[voucher.discountType] }}</strong></div>
             <div><span>Mức giảm</span><strong>{{ offer(voucher) }}</strong></div>
-            <div><span>Giao dịch tối thiểu</span><strong>{{ voucher.minOrderAmount == null ? 'BE chưa cung cấp' : money(voucher.minOrderAmount) }}</strong></div>
-            <div><span>Giảm tối đa</span><strong>{{ voucher.maxDiscountAmount == null ? 'BE chưa cung cấp' : money(voucher.maxDiscountAmount) }}</strong></div>
+            <div><span>Giao dịch tối thiểu</span><strong>{{ money(voucher.minOrderAmount ?? 0) }}</strong></div>
+            <div><span>Giảm tối đa</span><strong>{{ voucher.maxDiscountAmount == null ? 'Không giới hạn' : money(voucher.maxDiscountAmount) }}</strong></div>
           </div>
         </section>
         <section class="voucher-editor__panel">
@@ -95,9 +95,9 @@
             </span>
           </label>
           <label class="voucher-editor__fields--full">Mô tả
-            <textarea rows="2" readonly
-              placeholder="Nhập mô tả chương trình"
-              title="Trường mô tả hiện chưa được Backend hỗ trợ lưu"></textarea>
+            <textarea #descriptionField rows="2" [value]="form().description"
+              (input)="change('description',descriptionField.value)"
+              [disabled]="!allowEditing()" placeholder="Nhập mô tả chương trình"></textarea>
           </label>
         </div>
       </section>
@@ -129,7 +129,7 @@
           <label>Giá trị đơn tối thiểu
             <div class="voucher-editor__input-suffix">
               <input #minField type="number" min="0" [value]="form().minOrderAmount" (input)="change('minOrderAmount',minField.value)"
-                [disabled]="mode !== 'create' || !allowEditing()" placeholder="0">
+                [disabled]="!allowEditing()" placeholder="0">
               <span>đ</span>
             </div>
           </label>
@@ -138,7 +138,7 @@
             <div class="voucher-editor__input-suffix">
               <input id="voucher-maximum-discount" #maxField type="number" min="0"
                 [value]="form().maxDiscountAmount" (input)="change('maxDiscountAmount',maxField.value)"
-                [disabled]="mode !== 'create' || form().discountType === 'FIXED' || maxDiscountUnlimited() || !allowEditing()"
+                [disabled]="form().discountType === 'FIXED' || maxDiscountUnlimited() || !allowEditing()"
                 placeholder="50.000">
               <span>đ</span>
             </div>
@@ -146,7 +146,7 @@
               <label class="voucher-editor__checkbox-line">
                 <input #noMaxDiscount type="checkbox" [checked]="maxDiscountUnlimited()"
                   (change)="toggleMaxDiscountUnlimited(noMaxDiscount.checked)"
-                  [disabled]="mode !== 'create' || !allowEditing()">
+                  [disabled]="!allowEditing()">
                 Không giới hạn mức giảm
               </label>
             }
