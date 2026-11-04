@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } 
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.component';
 import { formatStaffWeekRange } from '../utils/staff-week-range';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
@@ -42,7 +43,7 @@ function dayLabel(day: number): string {
 @Component({
   selector: 'app-admin-staff-detail',
   standalone: true,
-  imports: [RouterLink, AdminCatalogShellComponent, AdminBreadcrumbComponent, AdminStaffWeekNavComponent],
+  imports: [RouterLink, AdminCatalogShellComponent, AdminBreadcrumbComponent, AdminDataStateComponent, AdminStaffWeekNavComponent],
   templateUrl: './admin-staff-detail.component.html',
   styleUrl: './admin-staff-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
