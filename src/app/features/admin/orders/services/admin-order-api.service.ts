@@ -132,7 +132,7 @@ export class AdminOrderApiService {
   private requirePage<T>(response: unknown, resource: string): { items: T[]; totalCount?: number; nextCursor?: string | null } {
     if (!response || typeof response !== 'object' || !('items' in response) ||
         !Array.isArray((response as { items: unknown }).items)) {
-      throw new Error('API ' + resource + ' trả về sai cấu trúc danh sách.');
+      throw new Error('Dữ liệu danh sách ' + resource.toLowerCase() + ' chưa đồng bộ. Vui lòng tải lại.');
     }
     return response as { items: T[]; totalCount?: number; nextCursor?: string | null };
   }
