@@ -102,7 +102,7 @@ import {
   .view{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px}.view img{display:block;width:20px;height:20px}.view:hover{background:#ecf4ff}
   footer{min-height:58px;display:flex;justify-content:space-between;align-items:center;padding:8px 18px;border-top:1px solid #e2e8f0;color:#6c7a90;font-size:11px}
   .pages{display:flex;gap:0;align-items:stretch;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden}
-  .pages :is(button,span){box-sizing:border-box;display:grid;place-items:center;flex:0 0 48px;width:48px;min-width:48px;height:44px;padding:0;border:0;border-right:1px solid #e2e8f0;border-radius:0;background:#fff;color:#475569;font:400 12px/18px Roboto,Arial,sans-serif}
+  .pages :is(button,span){box-sizing:border-box;display:grid;place-items:center;flex:0 0 48px;width:48px;min-width:48px;height:44px;padding:0;border:0;border-right:1px solid #e2e8f0;border-radius:0;background:#fff;color:#475569;font:400 14px/20px Roboto,Arial,sans-serif
   .pages :is(button,span):last-child{border-right:0}.pages button:first-child,.pages button:last-child{flex-basis:44px;width:44px;min-width:44px}.pages button{cursor:pointer}.pages button:disabled{color:#bac8d9;cursor:not-allowed}.pages button.page-active{background:#e5f6fd;color:#0d47a1;box-shadow:inset 0 0 0 1px #0d47a1;font-weight:700}
   .message{padding:26px;text-align:center;color:#64748b}.message button{padding:8px 14px;border:1px solid #cad9eb;border-radius:6px;background:white;color:#0d47a1;cursor:pointer}
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
