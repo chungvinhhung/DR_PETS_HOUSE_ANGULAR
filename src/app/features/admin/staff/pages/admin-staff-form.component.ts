@@ -157,6 +157,7 @@ export class AdminStaffFormComponent {
         },
         error: err => {
           this.resetError = adminErrorMessage(err, 'Không thể đặt lại mật khẩu. Vui lòng thử lại.');
+          this.toast.show(this.resetError, 'error');
           this.cdr.markForCheck();
         },
       });
