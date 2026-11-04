@@ -26,11 +26,9 @@
     </header>
 
     @if (loading()) {
-      <section class="voucher-editor__panel" role="status">Đang tải thông tin voucher...</section>
+      <app-admin-data-state kind="loading" title="Đang tải thông tin voucher" />
     } @else if (error()) {
-      <section class="voucher-editor__panel voucher-editor__error" role="alert">
-        <p>{{ error() }}</p><button class="voucher-editor__button" type="button" (click)="retry()">Thử lại</button>
-      </section>
+      <app-admin-data-state kind="error" title="Không thể tải thông tin voucher" [message]="error()" (retry)="retry()" />
     } @else if (mode === 'view') {
       @if (original(); as voucher) {
         <section class="voucher-editor__panel">
