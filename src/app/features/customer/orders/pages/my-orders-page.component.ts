@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, afterNextRender, computed, inject, signal } from '@angular/core';
 
-import { CustomerAuthService } from '../../../../core/customer/services/customer-auth.service';
 import { DecisionModalService } from '../../../../core/customer/services/decision-modal.service';
 import { CartService } from '../../../../core/customer/services/cart.service';
 import { CustomerNavigationService } from '../../../../core/customer/services/customer-navigation.service';
@@ -30,7 +29,6 @@ export class MyOrdersPageComponent {
   // --- Service dùng chung ---
   protected readonly decisionModalService = inject(DecisionModalService);
   protected readonly cartService = inject(CartService);
-  protected readonly authService = inject(CustomerAuthService);
   protected readonly navService = inject(CustomerNavigationService);
   protected readonly cartApi = inject(CartApiService);
   protected readonly orderApi = inject(OrderApiService);
@@ -87,25 +85,12 @@ export class MyOrdersPageComponent {
 
         this.orderApi.getMyOrders()
           .then((orders: any) => {
-            if (active) {
-              const list = Array.isArray(orders) ? orders : [];
-              this.ordersData.set(list);
-            }
+            if (active) this.ordersData.set(orders);
           })
           .catch((error: any) => {
             if (!active) return;
-            if (this.authService.isAuthenticated()) {
-              this.ordersData.set([]);
-              const msg = error?.message || "";
-              if (msg.includes("validation") || error?.status === 404) {
-                this.loadError.set("");
-              } else {
-                this.loadError.set(msg || "Không thể tải danh sách đơn hàng của bạn.");
-              }
-            } else {
-              this.ordersData.set(ORDERS);
-              this.loadError.set(error?.message || "Không thể tải danh sách đơn hàng, đang hiển thị dữ liệu mẫu.");
-            }
+            this.ordersData.set(ORDERS);
+            this.loadError.set(error?.message || "Không thể tải danh sách đơn hàng, đang hiển thị dữ liệu mẫu.");
           })
           .finally(() => {
             if (active) this.isLoading.set(false);
