@@ -1,4 +1,4 @@
-import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
+import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, forkJoin, from, map, mergeMap, of, toArray } from 'rxjs';
@@ -147,7 +147,7 @@ export class AdminOrderManagementComponent {
   readonly branchId = signal('ALL');
   readonly page = signal(1);
   readonly pageSize = 6;
-  readonly pageNumbers = computed(() => adminPageWindow(this.page(),this.totalPages()));
+  readonly pageNumbers = computed(() => adminPageWindowWithEdges(this.page(),this.totalPages()));
   readonly dialog = signal<ActionDialog>(null);
   readonly dialogBusy = signal(false);
   private cancelRequestKey: string | null = null;
