@@ -84,8 +84,34 @@ export class MyOrdersPageComponent {
         this.loadError.set("");
 
         this.orderApi.getMyOrders()
-          .then((orders: any) => {
-            if (active) this.ordersData.set(orders);
+          .then(async (orders: any) => {
+            if (!active) return;
+            this.ordersData.set(orders);
+
+            const needEnrich = orders.some((o: any) => o.products?.[0] && (!o.products[0].image || o.products[0].image.includes('detail-image')));
+            if (needEnrich) {
+              const cache = new Map<string, string | null>();
+              const enriched = await Promise.all(orders.map(async (o: any) => {
+                if (!o.products?.length) return o;
+                const newProducts = await Promise.all(o.products.map(async (p: any) => {
+                  if ((!p.image || p.image.includes('detail-image')) && p.productId) {
+                    if (!cache.has(p.productId)) {
+                      try {
+                        const prod = await this.productApi.getProductDetails(p.productId);
+                        cache.set(p.productId, prod?.image || null);
+                      } catch {
+                        cache.set(p.productId, null);
+                      }
+                    }
+                    const cachedImg = cache.get(p.productId);
+                    if (cachedImg) return { ...p, image: cachedImg };
+                  }
+                  return p;
+                }));
+                return { ...o, products: newProducts };
+              }));
+              if (active) this.ordersData.set(enriched);
+            }
           })
           .catch((error: any) => {
             if (!active) return;

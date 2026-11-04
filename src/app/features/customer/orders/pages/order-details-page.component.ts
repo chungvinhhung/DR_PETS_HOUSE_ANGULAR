@@ -112,8 +112,27 @@ export class OrderDetailsPageComponent {
         this.loadError.set("");
 
         this.orderApi.getOrderDetails(this.navService.params()['orderId'])
-          .then((detail: any) => {
-            if (active) this.order.set(detail);
+          .then(async (detail: any) => {
+            if (!active) return;
+            this.order.set(detail);
+
+            if (detail?.products?.length) {
+              const needsImg = detail.products.some((p: any) => !p.image || p.image.includes('detail-image'));
+              if (needsImg) {
+                const updatedProducts = await Promise.all(detail.products.map(async (p: any) => {
+                  if ((!p.image || p.image.includes('detail-image')) && p.productId) {
+                    try {
+                      const prod = await this.productApi.getProductDetails(p.productId);
+                      if (prod?.image) return { ...p, image: prod.image };
+                    } catch {}
+                  }
+                  return p;
+                }));
+                if (active) {
+                  this.order.update((curr: any) => curr ? { ...curr, products: updatedProducts } : curr);
+                }
+              }
+            }
           })
           .catch((error: any) => {
             if (!active) return;
