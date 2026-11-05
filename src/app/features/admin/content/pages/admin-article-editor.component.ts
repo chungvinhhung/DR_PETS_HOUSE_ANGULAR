@@ -29,8 +29,8 @@ function normalizedBlocks(raw: unknown, fallback: string): ArticleBlock[] {
   }
   const paragraphs = fallback.split(/\n\s*\n/).map(x => x.trim()).filter(Boolean);
   return paragraphs.length
-    ? paragraphs.map((text, i) => ({id:i+1,type:'paragraph',text}))
-    : [{id:1,type:'paragraph',text:''}];
+    ? paragraphs.map((text, i): ArticleBlock => ({id:i+1,type:'paragraph',text}))
+    : [{id:1,type:'paragraph' as const,text:''}];
 }
 
 @Component({
