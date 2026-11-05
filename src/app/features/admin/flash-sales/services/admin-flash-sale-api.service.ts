@@ -49,6 +49,8 @@ export interface FlashSaleWriteBody {
   startAt: string;
   endAt: string;
   items: FlashSaleItemWrite[];
+  /** Initial enabled/paused state persists even when the program is only a draft. */
+  isPaused?: boolean;
 }
 export interface FlashSalePage {
   items: AdminFlashSale[];
@@ -134,9 +136,11 @@ export class AdminFlashSaleApiService {
       this.root + '/' + encodeURIComponent(id), body,
     ).pipe(map(asSale));
   }
-  publish(id: string, key: string): Observable<AdminFlashSale> {
-    return this.api.post<unknown, Record<string, never>>(
-      this.root + '/' + encodeURIComponent(id) + '/publish', {},
+  publish(id: string, key: string, isPaused?: boolean): Observable<AdminFlashSale> {
+    // BE must commit publication and initial pause as one atomic transition.
+    return this.api.post<unknown, {isPaused?: boolean}>(
+      this.root + '/' + encodeURIComponent(id) + '/publish',
+      isPaused === undefined ? {} : {isPaused},
       {headers: new HttpHeaders({'Idempotency-Key': key})},
     ).pipe(map(asSale));
   }
