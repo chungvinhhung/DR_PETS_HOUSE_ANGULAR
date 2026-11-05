@@ -14,13 +14,15 @@
               [disabled]="saving()" (click)="publish()">{{ saving()?'Đang kích hoạt...':'Kích hoạt chương trình' }}</button>
           }
           @if (canManage() && currentState()!=='ENDED') {
-            <a class="flash-editor__btn flash-editor__btn--primary"
+            <a class="flash-editor__btn flash-editor__btn--outline"
               [routerLink]="['/admin/flash-sales',id,'edit']">Chỉnh sửa</a>
           }
         } @else {
           <button type="button" class="flash-editor__btn flash-editor__btn--outline"
             [disabled]="saving()" (click)="cancel()">Hủy bỏ</button>
-          <button type="button" class="flash-editor__btn flash-editor__btn--primary"
+          <button type="button" class="flash-editor__btn"
+            [class.flash-editor__btn--outline]="mode==='create' || original()?.status==='DRAFT'"
+            [class.flash-editor__btn--primary]="mode==='edit' && original()?.status==='PUBLISHED'"
             [disabled]="!editable() || loading()" (click)="save(false)">
             {{ saving()?'Đang lưu...':mode==='create'?'Lưu bản nháp':'Lưu thay đổi' }}
           </button>
@@ -106,7 +108,7 @@
         <div class="flash-editor__section-heading">
           <h2>Sản phẩm áp dụng ({{form().items.length}})</h2>
           @if (mode!=='view' && canManage()) {
-            <button type="button" class="flash-editor__btn flash-editor__btn--outline"
+            <button #addProductTrigger type="button" class="flash-editor__btn flash-editor__btn--outline"
               [disabled]="!editable()" (click)="openPicker()">
               <span aria-hidden="true">+</span> Thêm sản phẩm
             </button>
@@ -167,7 +169,7 @@
 
   @if (pickerOpen()) {
     <div class="flash-editor__overlay" role="presentation" (click)="closePicker()">
-      <section class="flash-editor__dialog" role="dialog" aria-modal="true" aria-labelledby="flash-product-dialog-title"
+      <section #pickerDialog class="flash-editor__dialog" role="dialog" aria-modal="true" aria-labelledby="flash-product-dialog-title"
         (click)="$event.stopPropagation()">
         <header class="flash-editor__dialog-heading">
           <h2 id="flash-product-dialog-title">Thêm sản phẩm</h2>
