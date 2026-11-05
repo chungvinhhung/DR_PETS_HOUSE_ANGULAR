@@ -71,7 +71,6 @@ export class AdminArticleEditorComponent {
   readonly layout = signal<ArticleLayout>('STANDARD');
   readonly blocks = signal<ArticleBlock[]>([{id:1,type:'paragraph',text:''}]);
   readonly previewMode = signal<'CARD'|'DETAIL'>('CARD');
-  readonly previewDevice = signal<'DESKTOP'|'MOBILE'>('DESKTOP');
   readonly savedStatus = signal<'DRAFT'|'PUBLISHED'|'ARCHIVED'>('DRAFT');
   readonly articlePublishedDate = signal<string>('');
   readonly previewCategoryId = computed(() => {
