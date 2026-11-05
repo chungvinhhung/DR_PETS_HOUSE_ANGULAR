@@ -7003,3 +7003,150 @@ app-admin-flash-sale-list .flash-list__tabs a:focus-visible {
 .service-editor__material-picker-table input[type=checkbox]:disabled{cursor:not-allowed}
 .service-editor__material-picker .flash-editor__dialog-actions{flex:none}
 .service-editor__material-picker .flash-editor__picker-search{flex:none}
+
+
+/* WEB2 Final visual QA: shared form sections, tables and single-surface search focus. */
+:root{
+  --web2-form-section-heading-size:18px;
+  --web2-form-section-heading-line:26px;
+  --web2-form-table-header-bg:#f0f5fa;
+  --web2-form-table-border:#dce5f0;
+  --web2-form-table-ink:#1b2b43;
+}
+/* The same heading scale across Admin create, edit and detail sections. */
+app-service-catalog-editor .service-editor__card > h2,
+app-service-catalog-editor .service-editor__branch-section-heading > h2,
+app-admin-flash-sale-editor .flash-editor__panel h2,
+app-admin-voucher-editor .voucher-editor__panel > h2,
+app-admin-order-create .create-order__panel > h2,
+app-admin-product-create-page section.panel > h2,
+app-admin-product-edit-page section.panel > h2,
+.order-admin__card > h2 {
+  font-family:Roboto,Arial,sans-serif;
+  font-size:var(--web2-form-section-heading-size);
+  line-height:var(--web2-form-section-heading-line);
+  font-weight:700;
+  color:#182b45;
+  letter-spacing:0;
+}
+/* Material picker is a secondary action, like Add product in Flash Sale. */
+app-service-catalog-editor .service-editor__branch-section-heading button.service-editor__material-add {
+  box-sizing:border-box;
+  display:inline-flex;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  height:44px;
+  min-height:44px;
+  padding:0 16px;
+  border:1px solid #0d47a1;
+  border-radius:8px;
+  background:#fff;
+  color:#0d47a1;
+  font:600 14px/20px Roboto,Arial,sans-serif;
+  box-shadow:none;
+  white-space:nowrap;
+}
+app-service-catalog-editor .service-editor__branch-section-heading button.service-editor__material-add:hover:not(:disabled){
+  background:#f2f7fd;
+}
+app-service-catalog-editor .service-editor__branch-section-heading button.service-editor__material-add .web2-add-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:16px;
+  height:16px;
+  color:inherit;
+  font-size:20px;
+  line-height:1;
+  font-weight:500;
+}
+
+/* Read-only SKU uses the same light-blue fill as calculated sale prices. */
+app-admin-product-create-page .variant-panel td input[readonly],
+app-admin-product-edit-page .variant-panel td input[readonly] {
+  background:#e5f6fd;
+  border-color:#d7e5f0;
+  color:#293e58;
+  opacity:1;
+  cursor:default;
+}
+app-admin-product-edit-page .basic-panel input[readonly]{
+  background:#e5f6fd;
+  border-color:#d7e5f0;
+  opacity:1;
+}
+/* Shared form-table heading; keep table cell widths & business logic untouched. */
+:is(app-service-catalog-editor,app-admin-flash-sale-editor,app-admin-voucher-editor,
+    app-admin-order-create,app-admin-product-create-page,app-admin-product-edit-page,
+    app-admin-order-return-detail,app-admin-appointment-create,
+    app-admin-appointment-detail,app-admin-service-record-detail,
+    app-admin-staff-form,app-admin-staff-detail,app-admin-branch-detail)
+  table thead th {
+  background:var(--web2-form-table-header-bg);
+  color:var(--web2-form-table-ink);
+  font:600 13px/20px Roboto,Arial,sans-serif;
+  text-align:left;
+  vertical-align:middle;
+  white-space:nowrap;
+  border-color:var(--web2-form-table-border);
+}
+:is(app-service-catalog-editor,app-admin-flash-sale-editor,app-admin-voucher-editor,
+    app-admin-order-create,app-admin-product-create-page,app-admin-product-edit-page,
+    app-admin-order-return-detail,app-admin-appointment-create,
+    app-admin-appointment-detail,app-admin-service-record-detail,
+    app-admin-staff-form,app-admin-staff-detail,app-admin-branch-detail)
+  :is(.service-editor__table-scroll,.flash-editor__scroll,.create-order__table-scroll,.table-scroll) {
+  border:1px solid var(--web2-form-table-border);
+  border-radius:8px;
+  overflow-x:auto;
+}
+/* Preserve the center alignment of action columns. */
+app-admin-order-create .create-order__table th.create-order__actions,
+app-admin-flash-sale-editor .flash-editor__table th.flash-editor__actions-column,
+app-service-catalog-editor .service-editor__table th:last-child:not(:first-child) {
+  text-align:center;
+}
+/* Only the complete search control gets a focus ring, not its child input.
+   Standalone fields keep their own accessible focus indication. */
+app-admin-order-create .create-order__search-field,
+app-admin-flash-sale-editor .flash-editor__picker-search,
+app-service-catalog-editor .flash-editor__picker-search {
+  transition:border-color .12s ease,box-shadow .12s ease;
+}
+app-admin-order-create .create-order__search-field:focus-within,
+app-admin-flash-sale-editor .flash-editor__picker-search:focus-within,
+app-service-catalog-editor .flash-editor__picker-search:focus-within {
+  border-color:#0d47a1;
+  box-shadow:0 0 0 2px rgba(13,71,161,.12);
+}
+app-admin-order-create .create-order__search-field input:is(:focus,:focus-visible),
+app-admin-flash-sale-editor .flash-editor__picker-search input:is(:focus,:focus-visible),
+app-service-catalog-editor .flash-editor__picker-search input:is(:focus,:focus-visible) {
+  outline:0!important;
+  box-shadow:none!important;
+  border:0!important;
+  border-radius:0!important;
+}
+app-admin-order-create .create-order__search-field input,
+app-admin-flash-sale-editor .flash-editor__picker-search input,
+app-service-catalog-editor .flash-editor__picker-search input {
+  min-height:0;
+  background:transparent;
+}
+/* Nested pricing and quantity inputs follow the same one-ring rule. */
+app-admin-order-create .create-order__qty:focus-within,
+app-service-catalog-editor .service-editor__price-input:focus-within,
+app-admin-product-create-page :is(.currency-input,.variant-currency-input):focus-within,
+app-admin-product-edit-page :is(.unit-input,.variant-currency-input):focus-within{
+  border-color:#0d47a1;
+  box-shadow:0 0 0 2px rgba(13,71,161,.12);
+}
+app-admin-order-create .create-order__qty input:is(:focus,:focus-visible),
+app-service-catalog-editor .service-editor__price-input input:is(:focus,:focus-visible),
+app-admin-product-create-page :is(.currency-input,.variant-currency-input) input:is(:focus,:focus-visible),
+app-admin-product-edit-page :is(.unit-input,.variant-currency-input) input:is(:focus,:focus-visible){
+  outline:0!important;
+  box-shadow:none!important;
+}
