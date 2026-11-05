@@ -100,7 +100,7 @@ export class AdminVoucherEditorComponent {
   private readonly createKey = 'voucher-create-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
 
   constructor() {
-    this.nowInterval = setInterval(() => this.now.set(Date.now()), 60000);
+    this.nowInterval = setInterval(() => this.now.set(Date.now()), 1000);
     this.destroyRef.onDestroy(() => {
       if (this.nowInterval) clearInterval(this.nowInterval);
     });
