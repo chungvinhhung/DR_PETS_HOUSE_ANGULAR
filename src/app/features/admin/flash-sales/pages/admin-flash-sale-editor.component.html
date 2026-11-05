@@ -75,7 +75,7 @@
               </label>
               <label>Thời gian bắt đầu <span class="flash-editor__required">*</span>
                 <input #from type="datetime-local" [value]="form().from"
-                  [min]="minimumStartAt()" (change)="update('from',from.value)"
+                  [min]="minimumStartAt()" (change)="changeStart(from)"
                   [disabled]="!editable() || startTimeLocked()">
               </label>
               <label>Thời gian kết thúc <span class="flash-editor__required">*</span>
