@@ -93,7 +93,7 @@
                   [checked]="original()?.isPaused ?? false"
                   [disabled]="!canManage() || saving()"
                   [attr.aria-checked]="original()?.isPaused ?? false"
-                  (change)="togglePaused(pauseSwitch.checked)">
+                  (change)="togglePaused(pauseSwitch.checked, pauseSwitch)">
                 <span class="flash-editor__switch-track" aria-hidden="true"></span>
               </span>
             </label>
@@ -132,7 +132,7 @@
                     </td>
                     <td>{{money(product.originalPrice)}}</td>
                     <td>
-                      @if (mode==='view') { <strong>{{money(+product.salePrice)}}</strong> }
+                      @if (mode==='view') { <strong>{{moneyFromText(product.salePrice)}}</strong> }
                       @else { <input #price type="number" min="1" step="1" aria-label="Giá Flash Sale"
                         [value]="product.salePrice" [disabled]="!editable()"
                         (input)="updateItem(i,'salePrice',price.value)"> }
