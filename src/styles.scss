@@ -7227,18 +7227,6 @@ app-admin-article-editor{display:block;min-width:0}
 @media(max-width:550px){.article-studio__fields,.article-studio__layouts{grid-template-columns:1fr}.article-studio__field--wide{grid-column:auto}.article-studio__actions{width:100%}.article-studio__btn{flex:1 1 auto}.article-studio__section-heading{align-items:flex-start}.article-studio__preview-card--featured{grid-template-columns:1fr}.article-studio__preview-card--featured .article-studio__preview-cover{height:180px}}
 
 
-/* Preview viewport switch: only the preview changes width, never the editor. */
-.article-studio__device-tabs{display:flex;gap:2px;padding:3px;background:#f2f6fa;border-radius:8px;margin-bottom:14px}
-.article-studio__device-tabs button{border:0;border-radius:6px;padding:7px 13px;background:transparent;color:#667991;font:500 12px/18px Roboto,Arial,sans-serif;cursor:pointer}
-.article-studio__device-tabs button.is-selected{background:#fff;color:#0d47a1;box-shadow:0 1px 3px #d4dce7}
-.article-studio__preview-section--mobile .article-studio__preview-card,
-.article-studio__preview-section--mobile .article-studio__preview-detail{
-  width:min(100%,320px);margin:0 auto
-}
-.article-studio__preview-section--mobile .article-studio__preview-card--featured{grid-template-columns:1fr}
-.article-studio__preview-section--mobile .article-studio__preview-card--featured .article-studio__preview-cover{height:180px}
-
-
 /* Content Studio preview reuses real Customer BlogCard and FeaturedPost renderers. */
 .article-studio__customer-card-preview {
   width:100%;min-width:0;overflow:hidden;
@@ -7386,10 +7374,6 @@ app-admin-article-editor{display:block;min-width:0}
 @container (max-width:325px) {
   .article-studio__featured-canvas{zoom:.235}
 }
-.article-studio__preview-section--mobile .article-studio__customer-card-preview {
-  width:min(100%,320px);margin:0 auto;
-}
-.article-studio__preview-section--mobile .article-studio__featured-canvas{zoom:.235}
 
 
 /* Content Studio Phase 1 refinements: fixed topics, hashtag chips and rich block editing. */
