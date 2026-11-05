@@ -123,13 +123,14 @@
         </div>
         @if (form().items.length) {
           <div class="flash-editor__scroll">
-            <table class="flash-editor__table">
+            <table class="flash-editor__table flash-editor__table--applied">
               <thead><tr>
                 <th scope="col">Sản phẩm / SKU</th>
                 <th scope="col">Giá hiện tại</th>
+                <th scope="col">Tổng tồn kho</th>
                 <th scope="col">Giá Flash Sale</th>
                 <th scope="col">Số lượng</th>
-                @if (mode!=='view') { <th scope="col">Thao tác</th> }
+                @if (mode!=='view') { <th scope="col" class="flash-editor__actions-column">Thao tác</th> }
               </tr></thead>
               <tbody>
                 @for (product of form().items; track product.productId+'::'+product.variantId; let i=$index) {
@@ -141,6 +142,7 @@
                       </div>
                     </td>
                     <td>{{money(product.originalPrice)}}</td>
+                    <td class="flash-editor__stock" [attr.title]="stockFor(product) === null ? 'Chưa có dữ liệu tồn kho cho SKU này' : null">{{stockFor(product) ?? '—'}}</td>
                     <td>
                       @if (mode==='view') { <strong>{{moneyFromText(product.salePrice)}}</strong> }
                       @else { <input #price type="number" min="0" step="1000" inputmode="numeric"
