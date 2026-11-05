@@ -6486,7 +6486,8 @@ app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
 .flash-editor__btn:disabled{background:#f5f7fa;color:#a1aec0;border-color:#e5ecf5;cursor:not-allowed}
 .flash-editor__panel{border:1px solid #dce5f0;border-radius:12px;background:#fff;padding:23px 24px;min-width:0;margin-bottom:16px}
 .flash-editor__panel h2{margin:0 0 20px;font-size:18px;line-height:24px;font-weight:650;color:#203047}
-.flash-editor__top{display:block}
+.flash-editor__top{display:flex;justify-content:center;align-items:flex-start}
+.flash-editor__info{width:100%;max-width:1020px}
 .flash-editor__info-heading{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;margin-bottom:20px}
 .flash-editor__info-heading h2{margin:0}
 .flash-editor__status-inline{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -6568,9 +6569,9 @@ app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
 .flash-list{box-sizing:border-box;max-width:1480px;width:100%;margin:0 auto;padding:34px 36px;color:#1c2d43;font:13px/1.5 Roboto,Arial,sans-serif}
 .flash-list *{box-sizing:border-box}
 .flash-list__heading{display:flex;justify-content:space-between;margin-bottom:24px}
-.flash-list__heading h1{font-size:26px;line-height:34px;font-weight:650;margin:0}
-.flash-list__tabs{display:flex;align-items:stretch;gap:12px;border-bottom:1px solid #dce5f0;margin-bottom:20px}
-.flash-list__tabs a{padding:12px 23px;border-bottom:2px solid transparent;text-decoration:none;color:#526782;font-weight:500}
+.flash-list__heading h1{font:700 28px/36px Roboto,Arial,sans-serif;margin:0;color:#1c2d43}
+.flash-list__tabs{display:flex;align-items:stretch;gap:24px;min-height:46px;border-bottom:1px solid #dce5f0;margin-bottom:24px}
+.flash-list__tabs a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 24px;border-bottom:3px solid transparent;text-decoration:none;color:#475569;font:500 16px/24px Roboto,Arial,sans-serif;letter-spacing:.2px;white-space:nowrap}
 .flash-list__tabs .flash-list__tab--active{color:#0d47a1;border-bottom-color:#0d47a1;font-weight:600}
 .flash-list__toolbar{display:grid;grid-template-columns:minmax(230px,1fr) 202px auto;gap:12px;align-items:center;min-height:76px;margin-bottom:18px;padding:14px 16px;border:1px solid #dce5f0;border-radius:12px;background:white}
 .flash-list__search{display:flex;gap:10px;align-items:center;max-width:475px;min-width:0;height:44px;padding:0 12px;border:1px solid #dce5f0;border-radius:8px}
@@ -6650,6 +6651,7 @@ app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
   display:grid;grid-template-columns:minmax(0,2fr) minmax(265px,.94fr);
   column-gap:16px;align-items:stretch
 }
+.flash-editor__top--with-status .flash-editor__info{max-width:none}
 .flash-editor__top--with-status .flash-editor__panel{height:100%}
 .flash-editor__status-panel{display:flex;flex-direction:column;align-items:stretch}
 .flash-editor__status-panel h2{margin:0 0 28px}
