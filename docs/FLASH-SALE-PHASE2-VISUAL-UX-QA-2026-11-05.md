@@ -72,3 +72,18 @@ The Flash Sale Admin follows existing WEB 2 Admin UI, not a new dashboard langua
 ## Related work
 BE contract and end-to-end acceptance: `docs/BE-HANDOFF-ADMIN-FLASH-SALE-2026-11-05.md`.
 Do not merge this branch into main or sign off Phase 3/4 while BE contract and CI/runtime checks remain pending.
+
+## Follow-up UX revision — two-stage activation, shared with Voucher (05/11/2026)
+
+This section supersedes older screenshots/notes about switches only showing for today's start and about the large status sidebar.
+
+- **Before startAt (today or future date):** one compact switch with ON **Tự động hoạt động theo lịch** and OFF **Kích hoạt thủ công**. OFF persists in DB and remains paused when startAt arrives; no background cron may turn it on.
+- **During startAt ≤ now < endAt:** the same switch reads ON **Đang hoạt động** / OFF **Tạm ngừng**; Manager cannot mutate, Admin can.
+- **After endAt:** hide/disable mutation switch, never reactivate expired promotion.
+- **Flash Sale:** use `activationMode:'AUTO'|'MANUAL'` plus `isPaused` in create/edit/publish/pause and enforce atomic persistence by BE.
+- **Voucher:** existing BE `ACTIVE/INACTIVE` is enough to represent the two modes, provided checkout checks both status and effective dates and no scheduler enables an INACTIVE voucher automatically. The form/view now share a 2-phase switch.
+- **Layout:** no tall right status panel. A compact horizontal strip (max width 1020px, minimum height 88px) sits below the program-information panel with a clean 18–26px gap before the next section. Voucher status moved out of the 3-column details layout, which now uses 2 balanced columns.
+- **Acceptance tests:** create AUTO and MANUAL promotions, save, reload, reach startAt, reload again, purchase attempt. MANUAL must remain unavailable until an explicit Admin toggle. Confirm response state before success toast; failed API call restores switch.
+
+Manual browser render and end-to-end BE checkout integration are still pending; static code review does not establish E2E PASS.
+
