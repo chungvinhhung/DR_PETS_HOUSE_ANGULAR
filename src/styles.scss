@@ -6486,7 +6486,8 @@ app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
 .flash-editor__btn:disabled{background:#f5f7fa;color:#a1aec0;border-color:#e5ecf5;cursor:not-allowed}
 .flash-editor__panel{border:1px solid #dce5f0;border-radius:12px;background:#fff;padding:23px 24px;min-width:0;margin-bottom:16px}
 .flash-editor__panel h2{margin:0 0 20px;font-size:18px;line-height:24px;font-weight:650;color:#203047}
-.flash-editor__top{display:flex;justify-content:center;align-items:flex-start}
+.flash-editor__top{display:flex;flex-direction:column;align-items:center;gap:18px;margin-bottom:24px}
+.flash-editor__top>.flash-editor__panel{margin-bottom:0}
 .flash-editor__info{width:100%;max-width:1020px}
 .flash-editor__info-heading{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;margin-bottom:20px}
 .flash-editor__info-heading h2{margin:0}
@@ -6562,7 +6563,7 @@ app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
 .flash-editor__dialog-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 22px;border-top:1px solid #dce5f0}
 .flash-editor__dialog-actions>span{margin-right:auto;color:#637790;font-size:12px}
 .flash-editor__leave-dialog .flash-editor__dialog-actions{border-top:0;padding:10px 0 0}
-@media(max-width:1020px){.flash-editor{padding:24px 20px}.flash-editor__top{grid-template-columns:1fr}}
+@media(max-width:1020px){.flash-editor{padding:24px 20px}}
 @media(max-width:720px){.flash-editor{padding:18px 12px}.flash-editor__header h1{font-size:23px}.flash-editor__info-heading{align-items:flex-start}.flash-editor__status-inline{width:100%;justify-content:space-between}.flash-editor__fields,.flash-editor__summary{grid-template-columns:1fr}.flash-editor__overlay{padding:10px}}
 
 :host{display:block;min-width:0}
@@ -6647,17 +6648,16 @@ app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
 }
 
 /* WEB2 form layout: use the operating-status panel only while sale is running. */
-.flash-editor__top.flash-editor__top--with-status{
-  display:grid;grid-template-columns:minmax(0,2fr) minmax(265px,.94fr);
-  column-gap:16px;align-items:stretch
+/* Keep the status separate and compact: never stretch it to the form height. */
+.flash-editor__status-panel{
+  display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+  gap:16px 24px;flex-wrap:wrap;width:100%;max-width:1020px;
+  min-height:86px;padding:17px 24px
 }
-.flash-editor__top--with-status .flash-editor__info{max-width:none}
-.flash-editor__top--with-status .flash-editor__panel{height:100%}
-.flash-editor__status-panel{display:flex;flex-direction:column;align-items:stretch}
-.flash-editor__status-panel h2{margin:0 0 28px}
+.flash-editor__status-panel h2{margin:0;line-height:26px}
 .flash-editor__status-panel .flash-editor__switch-row{
-  display:flex;align-items:center;justify-content:center;gap:12px;
-  margin:10px 0 0;white-space:nowrap;font-weight:500
+  display:inline-flex;align-items:center;justify-content:flex-end;
+  gap:12px;margin:0;white-space:nowrap;font-weight:500
 }
 .flash-editor__btn--neutral{
   border-color:#dce5f0;background:#fff;color:#526782;font-weight:500
@@ -6666,10 +6666,10 @@ app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
 .flash-editor__btn--outline:hover:not(:disabled){background:#f2f7fd}
 .flash-editor__btn--primary:hover:not(:disabled){background:#0b3e8e}
 .flash-editor__actions>.flash-editor__btn{min-height:44px}
-@media(max-width:1050px){
-  .flash-editor__top.flash-editor__top--with-status{grid-template-columns:1fr;row-gap:0}
-  .flash-editor__top--with-status .flash-editor__panel{height:auto}
+@media(max-width:720px){
+  .flash-editor__status-panel{align-items:flex-start;min-height:0;gap:14px}
   .flash-editor__status-panel .flash-editor__switch-row{justify-content:flex-start}
+  .flash-editor__top{gap:16px;margin-bottom:20px}
 }
 
 /* Search SKU modal: focus surrounds the combined control, never the nested input. */
