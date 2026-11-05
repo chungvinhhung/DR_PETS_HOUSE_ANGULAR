@@ -97,6 +97,14 @@ export class AdminFlashSaleEditorComponent {
   readonly currentState = computed(() => this.original() ? flashSaleState(this.original()!, this.now()) : 'DRAFT');
   readonly stateLabels = FLASH_SALE_STATE_LABELS;
   readonly now = signal(Date.now());
+  readonly showOperatingSection = computed(() => {
+    const sale = this.original();
+    if (!sale || sale.status !== 'PUBLISHED') return false;
+    const start = Date.parse(sale.startAt);
+    const end = Date.parse(sale.endAt);
+    return Number.isFinite(start) && Number.isFinite(end) &&
+      start <= this.now() && this.now() < end;
+  });
 
   readonly pickerOpen = signal(false);
   readonly pickerLoading = signal(false);
@@ -219,6 +227,10 @@ export class AdminFlashSaleEditorComponent {
   async save(publishAfterSave=false): Promise<void> {
     if (!this.editable() || this.saving()) return;
     const body=this.payload();if (!body) return;
+    if (publishAfterSave && Date.parse(body.endAt) <= Date.now()) {
+      this.validation.set('Thời gian kết thúc đã qua. Vui lòng chọn thời gian hợp lệ trước khi lưu chương trình.');
+      return;
+    }
     this.saving.set(true);this.validation.set('');
     try {
       const sale=this.mode==='create'
@@ -234,7 +246,12 @@ export class AdminFlashSaleEditorComponent {
       await this.router.navigate(['/admin/flash-sales',sale.id]);return;
         }
       }
-      this.toast.show(publishAfterSave?'Đã kích hoạt Flash Sale.':'Đã lưu Flash Sale.','success');
+        const feedback = publishAfterSave
+        ? Date.parse(sale.startAt) > Date.now()
+          ? 'Đã lưu chương trình. Flash Sale sẽ tự động bắt đầu theo lịch.'
+          : 'Đã lưu chương trình. Flash Sale đang trong thời gian diễn ra.'
+        : sale.status === 'PUBLISHED' ? 'Đã cập nhật chương trình.' : 'Đã lưu bản nháp.';
+      this.toast.show(feedback,'success');
       this.allowSavedNavigation = true;
       await this.router.navigate(['/admin/flash-sales',sale.id]);
     }catch(err){
@@ -246,8 +263,15 @@ export class AdminFlashSaleEditorComponent {
     if (!this.canManage()||this.saving()||!this.original()||this.original()!.status!=='DRAFT')return;
     this.saving.set(true);
     try{
+      if (Date.parse(this.original()!.endAt) <= Date.now()) {
+        this.toast.show('Chương trình đã hết thời gian áp dụng, không thể kích hoạt.','error');
+        return;
+      }
       const updated=await firstValueFrom(this.api.publish(this.id,'flash-publish-'+this.id));
-      this.original.set(updated);this.toast.show('Đã kích hoạt chương trình.','success');
+      this.original.set(updated);
+      this.toast.show(Date.parse(updated.startAt) > Date.now()
+        ? 'Chương trình đã được lên lịch và sẽ tự bắt đầu đúng thời gian.'
+        : 'Chương trình đã được kích hoạt.','success');
     }catch(err){this.toast.show(this.message(err,'Không thể kích hoạt chương trình.'),'error');}
     finally{this.saving.set(false);}
   }
@@ -261,7 +285,7 @@ export class AdminFlashSaleEditorComponent {
       this.original.set(updated);
       this.toast.show(checked?'Đã tạm ngừng Flash Sale.':'Đã tiếp tục Flash Sale.','success');
     }catch(err){
-      input.checked = sale.isPaused;
+      input.checked = !sale.isPaused;
       this.toast.show(this.message(err,'Không cập nhật được trạng thái chương trình.'),'error');
     }
     finally{this.saving.set(false);}
