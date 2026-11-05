@@ -1,10 +1,6 @@
-import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { CustomerIconComponent } from '../../../../../shared/customer/components/icon/customer-icon.component';
 
-/**
- * VideoSection — chuyển từ React: src/pages/Blog/FirstAidDetailPage.jsx
- */
 @Component({
   selector: 'section[app-video-section]',
   standalone: true,
@@ -16,13 +12,10 @@ import { CustomerIconComponent } from '../../../../../shared/customer/components
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VideoSectionComponent {
-  // --- Input / Output (props của React) ---
-  readonly video = input<any>(undefined);
-
-  // --- Trạng thái (signal = useState / useRef) ---
-  readonly playing = signal<any>(false);
-
-  protected handle1() {
-    this.playing.update((value: any) => !value);
-  }
+  readonly video=input<any>(null);
+  readonly validUrl=computed(()=>{
+    const value=String(this.video()?.url || '');
+    try{return ['http:','https:'].includes(new URL(value).protocol);}catch{return false;}
+  });
+  readonly directMedia=computed(()=>/\.(mp4|webm|ogg)(?:\?|$)/i.test(String(this.video()?.url || '')));
 }
