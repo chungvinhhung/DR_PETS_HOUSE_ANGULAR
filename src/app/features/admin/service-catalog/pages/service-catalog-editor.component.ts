@@ -1,6 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  HostListener,
+  ViewChild,
   inject,
   signal,
   effect,
@@ -165,7 +168,15 @@ export class ServiceCatalogEditorComponent {
   readonly title = this.editorMode === 'view' ? 'Chi tiết dịch vụ' : this.isNew ? 'Thêm dịch vụ' : 'Chỉnh sửa dịch vụ';
   productOptions: MaterialOption[] = [];
   readonly productCategoryNames = new Map<string, string>();
-  readonly openMaterialKey = signal<number | null>(null);
+  @ViewChild('materialSearchInput') private materialSearchInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('materialPickerDialog') private materialPickerDialog?: ElementRef<HTMLElement>;
+  @ViewChild('materialAddTrigger') private materialAddTrigger?: ElementRef<HTMLButtonElement>;
+  readonly materialPickerOpen = signal(false);
+  readonly materialPickerSearch = signal('');
+  readonly materialPickerPending = signal<string[]>([]);
+  readonly materialPickerVisible = signal(20);
+  readonly materialCatalogLoading = signal(true);
+  readonly materialCatalogError = signal('');
   private materialsDirty = false;
 
   serviceName = '';
@@ -197,37 +208,7 @@ export class ServiceCatalogEditorComponent {
         for (const category of page.items) this.productCategoryNames.set(category.id, category.name);
       },
     });
-    forkJoin({
-      items: this.inventoryApi.listItems(),
-      products: this.inventoryApi.listCatalogProducts(),
-    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: ({ items, products }) => {
-        const productBySku = new Map(products.flatMap(product => product.variants.map(variant => [
-          variant.sku,
-          {
-            image: variant.image || product.images.find(image => image.isPrimary)?.url || product.images[0]?.url || null,
-            categoryId: product.categoryId,
-            price: variant.finalPrice ?? variant.price,
-          },
-        ] as const)));
-        this.productOptions = items
-          .filter(item => item.status === 'ACTIVE')
-          .map(item => {
-            const product = productBySku.get(item.sku);
-            return {
-              materialId: item.id,
-              sku: item.sku,
-              name: item.name,
-              unit: item.unit || '',
-              image: product?.image ?? null,
-              categoryId: product?.categoryId ?? '',
-              price: product?.price ?? 0,
-            };
-          });
-        this.refreshMaterialLabels();
-      },
-      error: () => { this.productOptions = []; },
-    });
+    this.loadMaterialCatalog();
     if (this.serviceId && this.editorMode !== 'create') {
       this.repository.get(this.serviceId).pipe(
         takeUntilDestroyed(this.destroyRef),
@@ -244,6 +225,41 @@ export class ServiceCatalogEditorComponent {
         },
       });
     }
+  }
+
+  private loadMaterialCatalog(): void {
+    this.materialCatalogLoading.set(true);
+    this.materialCatalogError.set('');
+    forkJoin({
+      items: this.inventoryApi.listItems(),
+      products: this.inventoryApi.listCatalogProducts(),
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({items, products}) => {
+        const productBySku = new Map(products.flatMap(product => product.variants.map(variant => [
+          variant.sku,
+          {
+            image: variant.image || product.images.find(image => image.isPrimary)?.url || product.images[0]?.url || null,
+            categoryId: product.categoryId,
+            price: variant.finalPrice ?? variant.price,
+          },
+        ] as const)));
+        this.productOptions = items.filter(item => item.status === 'ACTIVE').map(item => {
+          const product = productBySku.get(item.sku);
+          return {
+            materialId: item.id, sku: item.sku, name: item.name,
+            unit: item.unit || '', image: product?.image ?? null,
+            categoryId: product?.categoryId ?? '', price: product?.price ?? 0,
+          };
+        });
+        this.refreshMaterialLabels();
+        this.materialCatalogLoading.set(false);
+      },
+      error: () => {
+        this.productOptions = [];
+        this.materialCatalogLoading.set(false);
+        this.materialCatalogError.set('Không tải được danh sách vật liệu. Vui lòng thử lại.');
+      },
+    });
   }
 
   /** Read-only branch cards: do not collapse every branch into aggregate counts.
@@ -444,38 +460,76 @@ export class ServiceCatalogEditorComponent {
     this.markDirty();
   }
 
-  addMaterial(): void {
-    this.materialsDirty = true;
-    this.materials.push({
-      key: this.nextMaterialKey++, materialId: '', sku: '', query: '', quantity: null, unit: '',
-    });
-    this.markDirty();
+  openMaterialPicker(): void {
+    if (this.readOnly || this.saving()) return;
+    this.materialPickerPending.set([]);
+    this.materialPickerSearch.set('');
+    this.materialPickerVisible.set(20);
+    this.materialPickerOpen.set(true);
+    setTimeout(() => this.materialSearchInput?.nativeElement.focus(), 0);
   }
-
+  closeMaterialPicker(): void {
+    this.materialPickerOpen.set(false);
+    this.materialPickerPending.set([]);
+    setTimeout(() => this.materialAddTrigger?.nativeElement.focus(), 0);
+  }
+  setMaterialPickerSearch(value: string): void {
+    this.materialPickerSearch.set(value);
+    this.materialPickerVisible.set(20);
+  }
+  materialPickerMatches(): MaterialOption[] {
+    const term = this.materialPickerSearch().trim().toLocaleLowerCase('vi');
+    return this.productOptions.filter(item =>
+      !term || item.name.toLocaleLowerCase('vi').includes(term) ||
+      item.sku.toLocaleLowerCase('vi').includes(term));
+  }
+  materialAlreadyAdded(id: string): boolean {
+    return this.materials.some(line => line.materialId === id);
+  }
+  toggleMaterialPending(id: string, checked: boolean): void {
+    if (this.materialAlreadyAdded(id)) return;
+    this.materialPickerPending.update(current =>
+      checked ? (current.includes(id) ? current : [...current, id]) : current.filter(x => x !== id));
+  }
+  applyMaterials(): void {
+    if (this.readOnly || this.saving()) return;
+    const pending = new Set(this.materialPickerPending());
+    const picked = this.productOptions.filter(item =>
+      pending.has(item.materialId) && !this.materialAlreadyAdded(item.materialId));
+    for (const item of picked) {
+      this.materials.push({
+        key: this.nextMaterialKey++, materialId: item.materialId, sku: item.sku,
+        query: item.name, quantity: null, unit: item.unit,
+      });
+    }
+    if (picked.length) this.markMaterialDirty();
+    this.closeMaterialPicker();
+  }
   removeMaterial(key: number): void {
-    this.materialsDirty = true;
-    this.materials = this.materials.filter((line) => line.key !== key);
-    if (this.openMaterialKey() === key) this.openMaterialKey.set(null);
-    this.markDirty();
+    this.materials = this.materials.filter(line => line.key !== key);
+    this.markMaterialDirty();
   }
-
-  matchProduct(line: MaterialLine, text: string): void {
-    this.materialsDirty = true;
-    line.query = text;
-    const normalized = text.trim().toLocaleLowerCase('vi');
-    const product = this.productOptions.find((item) =>
-      item.name.toLocaleLowerCase('vi') === normalized || item.sku.toLocaleLowerCase('vi') === normalized);
-    line.materialId = product?.materialId ?? '';
-    line.sku = product?.sku ?? '';
-    if (product && !line.unit) line.unit = product.unit;
-    this.markDirty();
-  }
-
-  filteredMaterialOptions(line: MaterialLine): MaterialOption[] {
-    const term = line.query.trim().toLocaleLowerCase('vi');
-    return this.productOptions.filter((item) =>
-      !term || item.name.toLocaleLowerCase('vi').includes(term) || item.sku.toLocaleLowerCase('vi').includes(term)
-    ).slice(0, 20);
+  @HostListener('document:keydown', ['$event'])
+  onMaterialPickerKey(event: KeyboardEvent): void {
+    if (!this.materialPickerOpen()) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.closeMaterialPicker();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const dialog = this.materialPickerDialog?.nativeElement;
+    if (!dialog) return;
+    const focusable = [...dialog.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), a[href]')].filter(el => el.getClientRects().length > 0);
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || !dialog.contains(active))) {
+      event.preventDefault(); last.focus();
+    } else if (!event.shiftKey && (active === last || !dialog.contains(active))) {
+      event.preventDefault(); first.focus();
+    }
   }
 
   private refreshMaterialLabels(): void {
@@ -493,19 +547,6 @@ export class ServiceCatalogEditorComponent {
 
   productCategoryLabel(id: string): string {
     return this.productCategoryNames.get(id) || 'Chưa có danh mục';
-  }
-
-  chooseMaterial(line: MaterialLine, item: MaterialOption): void {
-    line.query = item.name;
-    line.materialId = item.materialId;
-    line.sku = item.sku;
-    if (!line.unit) line.unit = item.unit;
-    this.openMaterialKey.set(null);
-    this.markMaterialDirty();
-  }
-
-  closeMaterialMenu(key: number): void {
-    if (this.openMaterialKey() === key) this.openMaterialKey.set(null);
   }
 
   toggleStatus(): void {
