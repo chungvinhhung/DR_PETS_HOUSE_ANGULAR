@@ -3,7 +3,7 @@
 <p class="text-[16px] leading-6">Bác sĩ trực tuyến luôn sẵn sàng hướng dẫn bạn qua video call 24/7.</p>
 <div class="flex flex-col gap-4">
   <a
-    [href]="'tel:' + phone().replace(/[^+0-9]/g, '')"
+    [href]="telHref()"
     class="flex h-14 items-center justify-center rounded-full bg-[#D32F2F] text-[15px] font-bold uppercase tracking-[0.46px] text-white shadow-elevation transition-transform hover:scale-[1.02]"
   >Gọi ngay {{phone()}}</a>
   <a
