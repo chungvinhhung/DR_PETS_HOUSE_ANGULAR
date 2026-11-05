@@ -21,12 +21,12 @@
           <button type="button" class="flash-editor__btn flash-editor__btn--outline"
             [disabled]="saving()" (click)="cancel()">Hủy bỏ</button>
           <button type="button" class="flash-editor__btn flash-editor__btn--primary"
-            [disabled]="saving() || loading() || !canManage()" (click)="save(false)">
+            [disabled]="!editable() || loading()" (click)="save(false)">
             {{ saving()?'Đang lưu...':mode==='create'?'Lưu bản nháp':'Lưu thay đổi' }}
           </button>
           @if (mode==='create' || original()?.status==='DRAFT') {
             <button type="button" class="flash-editor__btn flash-editor__btn--primary"
-              [disabled]="saving() || loading() || !canManage()" (click)="save(true)">
+              [disabled]="!editable() || loading()" (click)="save(true)">
               Lưu &amp; kích hoạt
             </button>
           }
