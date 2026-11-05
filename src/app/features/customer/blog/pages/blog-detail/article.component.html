@@ -9,6 +9,39 @@
   <div class="absolute left-6 top-6 flex items-center gap-2 rounded-full bg-white/90 px-5 py-2 text-[12px] font-bold uppercase tracking-[0.6px] text-[#0D47A1] shadow-lg backdrop-blur-[4px]">
     <app-category-icon [category]="post().category" [className]="'h-4 w-4'" />{{ post().categoryLabel }}</div>
 </div>
+@if (post().contentBlocks?.length) {
+  <div class="mt-6 text-[16px] leading-[26px] text-[#414753]">
+    @for (block of post().contentBlocks; track $index) {
+      @switch (block.type) {
+        @case ('heading') {
+          <h2 class="mt-7 mb-3 text-[24px] font-semibold leading-8 text-[#005AB4]">{{block.text}}</h2>
+        }
+        @case ('quote') {
+          <blockquote class="my-6 rounded-r-[8px] border-l-4 border-[#1976D2] bg-[#F3F4F6] px-6 py-6 whitespace-pre-line">{{block.text}}</blockquote>
+        }
+        @case ('list') {
+          <ul class="my-5 list-disc space-y-2 pl-6">
+            @for (line of block.text.split('\n'); track $index) {
+              @if (line.trim()) { <li>{{line.trim()}}</li> }
+            }
+          </ul>
+        }
+        @case ('image') {
+          <figure class="my-6">
+            <img class="w-full rounded-[12px] object-contain" [src]="block.text" [alt]="block.alt || ''">
+            @if (block.alt) { <figcaption class="mt-2 text-center text-[13px] text-[#6B7280]">{{block.alt}}</figcaption> }
+          </figure>
+        }
+        @case ('video') {
+          <video class="my-6 w-full rounded-[12px] bg-black" [src]="block.text" controls preload="metadata"></video>
+        }
+        @default {
+          <p class="mt-5 whitespace-pre-line">{{block.text}}</p>
+        }
+      }
+    }
+  </div>
+} @else {
 <div class="mt-6 text-[16px] leading-[26px] text-[#414753]">
   <p class="italic">{{ post().intro }}</p>
   <p class="mt-6">{{ post().description }}</p>
@@ -26,6 +59,7 @@
     }
   </ol>
 </div>
+}
 <div class="mt-8 flex flex-wrap gap-2 border-t border-[#C1C6D5] pt-8">
   @for (tag of post().tags; track tag) {
     <button
