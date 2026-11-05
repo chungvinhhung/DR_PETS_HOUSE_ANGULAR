@@ -170,8 +170,7 @@
               </button>
             </div>
           </section>
-          <section class="article-studio__section article-studio__preview-section"
-            [class.article-studio__preview-section--mobile]="previewDevice()==='MOBILE'">
+          <section class="article-studio__section article-studio__preview-section">
             <div class="article-studio__section-heading">
               <h2>Xem trước</h2>
               <div class="article-studio__preview-tabs" role="group" aria-label="Kiểu xem trước">
@@ -180,12 +179,6 @@
                 <button type="button" [class.is-selected]="previewMode()==='DETAIL'"
                   [attr.aria-pressed]="previewMode()==='DETAIL'" (click)="previewMode.set('DETAIL')">Chi tiết</button>
               </div>
-            </div>
-            <div class="article-studio__device-tabs" role="group" aria-label="Kích thước bản xem trước">
-              <button type="button" [class.is-selected]="previewDevice()==='DESKTOP'"
-                [attr.aria-pressed]="previewDevice()==='DESKTOP'" (click)="previewDevice.set('DESKTOP')">Desktop</button>
-              <button type="button" [class.is-selected]="previewDevice()==='MOBILE'"
-                [attr.aria-pressed]="previewDevice()==='MOBILE'" (click)="previewDevice.set('MOBILE')">Mobile</button>
             </div>
             @if (previewMode() === 'CARD') {
               <div class="article-studio__customer-card-preview" aria-label="Xem trước thẻ bài viết Customer">
