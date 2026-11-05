@@ -6486,15 +6486,18 @@ app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
 .flash-editor__btn:disabled{background:#f5f7fa;color:#a1aec0;border-color:#e5ecf5;cursor:not-allowed}
 .flash-editor__panel{border:1px solid #dce5f0;border-radius:12px;background:#fff;padding:23px 24px;min-width:0;margin-bottom:16px}
 .flash-editor__panel h2{margin:0 0 20px;font-size:18px;line-height:24px;font-weight:650;color:#203047}
-.flash-editor__top{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(250px,.9fr);gap:16px;align-items:start}
-.flash-editor__fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 16px}
+.flash-editor__top{display:block}
+.flash-editor__info-heading{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;margin-bottom:20px}
+.flash-editor__info-heading h2{margin:0}
+.flash-editor__status-inline{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.flash-editor__fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 16px;max-width:960px}
 .flash-editor__fields label{display:block;min-width:0;color:#475569;font-weight:550;font-size:12px}
 .flash-editor__wide{grid-column:1/-1}
 .flash-editor__required{color:#c2394c}
 .flash-editor__fields :is(input,textarea){display:block;margin-top:8px;width:100%;min-height:44px;border:1px solid #dce5f0;border-radius:8px;padding:10px 12px;background:white;color:#203047;font:13px Roboto,Arial,sans-serif}
 .flash-editor__fields textarea{min-height:88px;resize:vertical}
 .flash-editor__fields :is(input,textarea):disabled{background:#f7f9fc;color:#708198}
-.flash-editor__summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:19px 14px}
+.flash-editor__summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:19px 14px;max-width:960px}
 .flash-editor__summary>div>span{display:block;margin-bottom:5px;font-size:12px;color:#71849b}
 .flash-editor__summary strong{font-weight:550;color:#21354f;font-size:13px;overflow-wrap:anywhere}
 .flash-editor__summary-wide{grid-column:1/-1}
@@ -6502,13 +6505,13 @@ app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
 .flash-editor__badge[data-state="UPCOMING"]{background:#e9f2ff;color:#205da6}
 .flash-editor__badge[data-state="RUNNING"]{background:#e8f5ed;color:#207744}
 .flash-editor__badge[data-state="ENDED"],.flash-editor__badge[data-state="PAUSED"]{background:#edf1f5;color:#64748b}
-.flash-editor__switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:23px;font-size:13px;color:#3b506b;cursor:pointer}
-.flash-editor__switch{position:relative;display:inline-flex;flex:none;width:44px;height:24px}
+.flash-editor__switch-row{display:inline-flex;align-items:center;justify-content:flex-start;gap:10px;margin:0;font-size:13px;color:#3b506b;cursor:pointer;white-space:nowrap}
+.flash-editor__switch{position:relative;display:inline-flex;flex:none;width:56px;height:32px}
 .flash-editor__switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;z-index:1;cursor:pointer}
-.flash-editor__switch-track{display:block;width:44px;height:24px;border-radius:99px;background:#cbd5e1;transition:background .15s}
-.flash-editor__switch-track::after{content:'';display:block;position:relative;top:3px;left:3px;width:18px;height:18px;background:white;border-radius:50%;box-shadow:0 1px 3px #0002;transition:transform .15s}
+.flash-editor__switch-track{display:block;width:56px;height:32px;border-radius:99px;background:#cbd5e1;transition:background .15s}
+.flash-editor__switch-track::after{content:'';display:block;position:relative;top:4px;left:4px;width:24px;height:24px;background:white;border-radius:50%;box-shadow:0 1px 3px #0002;transition:transform .15s}
 .flash-editor__switch input:checked+.flash-editor__switch-track{background:#0d47a1}
-.flash-editor__switch input:checked+.flash-editor__switch-track::after{transform:translateX(20px)}
+.flash-editor__switch input:checked+.flash-editor__switch-track::after{transform:translateX(24px)}
 .flash-editor__switch input:focus-visible+.flash-editor__switch-track{outline:2px solid #0d47a1;outline-offset:3px}
 .flash-editor__switch input:disabled+.flash-editor__switch-track{opacity:.5}
 .flash-editor__products{padding-top:22px}
@@ -6559,7 +6562,7 @@ app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
 .flash-editor__dialog-actions>span{margin-right:auto;color:#637790;font-size:12px}
 .flash-editor__leave-dialog .flash-editor__dialog-actions{border-top:0;padding:10px 0 0}
 @media(max-width:1020px){.flash-editor{padding:24px 20px}.flash-editor__top{grid-template-columns:1fr}}
-@media(max-width:720px){.flash-editor{padding:18px 12px}.flash-editor__header h1{font-size:23px}.flash-editor__fields,.flash-editor__summary{grid-template-columns:1fr}.flash-editor__overlay{padding:10px}}
+@media(max-width:720px){.flash-editor{padding:18px 12px}.flash-editor__header h1{font-size:23px}.flash-editor__info-heading{align-items:flex-start}.flash-editor__status-inline{width:100%;justify-content:space-between}.flash-editor__fields,.flash-editor__summary{grid-template-columns:1fr}.flash-editor__overlay{padding:10px}}
 
 :host{display:block;min-width:0}
 .flash-list{box-sizing:border-box;max-width:1480px;width:100%;margin:0 auto;padding:34px 36px;color:#1c2d43;font:13px/1.5 Roboto,Arial,sans-serif}
