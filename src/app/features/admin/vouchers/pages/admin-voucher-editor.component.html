@@ -167,7 +167,7 @@
               <span class="voucher-editor__switch">
                 <input #editActivation type="checkbox" role="switch"
                   [checked]="activationEnabled()"
-                  [disabled]="!allowEditing() || saving() || (Number.isFinite(voucherEnd()) && now() >= voucherEnd())"
+                  [disabled]="!allowEditing() || saving() || endTimePassed()"
                   [attr.aria-checked]="activationEnabled()"
                   (change)="changeActivation(editActivation.checked)">
                 <span class="voucher-editor__switch-track" aria-hidden="true"></span>
