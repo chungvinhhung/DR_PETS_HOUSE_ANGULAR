@@ -228,11 +228,11 @@
   }
   @if (leaveOpen()) {
     <div class="flash-editor__overlay" role="presentation">
-      <section class="flash-editor__leave-dialog" role="dialog" aria-modal="true" aria-labelledby="flash-leave-title">
+      <section #leaveDialog class="flash-editor__leave-dialog" role="dialog" aria-modal="true" aria-labelledby="flash-leave-title">
         <h2 id="flash-leave-title">Rời trang khi chưa lưu?</h2>
         <p>Những thay đổi chưa lưu sẽ bị mất.</p>
         <div class="flash-editor__dialog-actions">
-          <button type="button" class="flash-editor__btn flash-editor__btn--outline" (click)="resolveLeave(false)">Tiếp tục chỉnh sửa</button>
+          <button #keepEditing type="button" class="flash-editor__btn flash-editor__btn--outline" (click)="resolveLeave(false)">Tiếp tục chỉnh sửa</button>
           <button type="button" class="flash-editor__btn flash-editor__btn--primary" (click)="resolveLeave(true)">Rời trang</button>
         </div>
       </section>
