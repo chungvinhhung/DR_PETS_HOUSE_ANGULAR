@@ -11,7 +11,7 @@
 - **Không cấu hình Flash Sale theo chi nhánh**. Điều kiện mua vẫn cần tồn kho fulfillment theo Order hiện hành.
 - Không nhập tay “Sắp diễn ra”, “Đang diễn ra” hoặc “Đã kết thúc”.
 - Admin có `DRAFT` (lưu bản nháp), `PUBLISHED` (đã kích hoạt), và **switch** `isPaused` để tạm ngừng/tiếp tục một chương trình đã kích hoạt.
-- Display state do BE tính bằng UTC server time: `DRAFT`, `PAUSED`, `UPCOMING`, `RUNNING`, `ENDED`. Precedence: DRAFT → PAUSED → ENDED → UPCOMING → RUNNING. Thời gian form FE được nhập theo Asia/Ho_Chi_Minh và gửi ISO UTC.
+- Display state do BE tính bằng UTC server time: `DRAFT`, `PAUSED`, `UPCOMING`, `RUNNING`, `ENDED`. Precedence: DRAFT → ENDED → PAUSED → UPCOMING → RUNNING. Thời gian form FE được nhập theo Asia/Ho_Chi_Minh và gửi ISO UTC.
 
 ## 2. REST contract FE đang gọi (cần BE xác nhận/triển khai)
 
