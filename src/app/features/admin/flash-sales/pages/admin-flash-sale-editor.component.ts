@@ -87,8 +87,9 @@ export class AdminFlashSaleEditorComponent {
   readonly dirty = signal(false);
   readonly canManage = computed(() => this.session.user()?.systemRole === 'ADMIN');
   readonly editable = computed(() => this.mode !== 'view' && this.canManage() && !this.saving());
-  readonly currentState = computed(() => this.original() ? flashSaleState(this.original()!) : 'DRAFT');
+  readonly currentState = computed(() => this.original() ? flashSaleState(this.original()!, this.now()) : 'DRAFT');
   readonly stateLabels = FLASH_SALE_STATE_LABELS;
+  readonly now = signal(Date.now());
 
   readonly pickerOpen = signal(false);
   readonly pickerLoading = signal(false);
@@ -102,10 +103,13 @@ export class AdminFlashSaleEditorComponent {
   private allowSavedNavigation = false;
   private pickerRequest = 0;
   private pickerSearchTimer: ReturnType<typeof setTimeout> | null = null;
+  private nowInterval: ReturnType<typeof setInterval> | null = null;
   private readonly createKey = 'flash-create-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
 
   constructor() {
+    this.nowInterval = setInterval(() => this.now.set(Date.now()), 60000);
     this.destroyRef.onDestroy(() => {
+      if (this.nowInterval) clearInterval(this.nowInterval);
       if (this.pickerSearchTimer) clearTimeout(this.pickerSearchTimer);
       this.leaveResolver?.(false);
       this.leaveResolver = null;
