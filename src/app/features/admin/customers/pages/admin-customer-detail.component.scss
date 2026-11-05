@@ -17,3 +17,16 @@
 .btn-primary{border:1px solid #0d47a1;background:#0d47a1;color:#fff}
 .btn-outline:disabled,.btn-primary:disabled{opacity:.55;cursor:not-allowed}
 @media(max-width:600px){.dialog{padding:18px}.dialog footer{flex-wrap:wrap}}
+
+
+/* Empty pet state spans the full section rather than a single grid column. */
+.web2-admin-pet-grid > .web2-admin-empty-inline {
+  box-sizing: border-box;
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
