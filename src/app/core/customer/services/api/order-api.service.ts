@@ -54,18 +54,20 @@ function parseVariantMeta(value: any = "") {
 function normalizeOrderProduct(item: any = {}) {
   const itemName = item.name || item.nameSnapshot || item.item_name_snapshot || item.product?.product_name || "Sản phẩm";
   const [name, snapshotVariantName] = itemName.split(" - ");
-  const variantName = item.variant?.variant_name || item.variant_name || item.variantSnapshot || snapshotVariantName || "";
-  const parsedVariant = parseVariantMeta(variantName);
+  const rawVariant = item.variant_label || item.variantLabel || item.variant?.variant_name || item.variant_name || item.variantSnapshot || snapshotVariantName || item.type || "";
+  const fullVariant = rawVariant ? String(rawVariant).trim() : "";
 
   return {
     id: String(item.orderItemId || item.order_item_id || item.productId || item.product_id || item.id || itemName),
     productId: item.productId || item.product_id || item.id,
     variantId: item.variantId ?? item.variant_id ?? item.variant?.variant_id ?? null,
-    name,
+    name: name.trim(),
     price: Number(item.unitPrice ?? item.unit_price ?? item.price ?? item.product?.price ?? 0),
     quantity: Number(item.quantity || 1),
-    variant: item.variant_label || item.variantLabel || parsedVariant.variant,
-    size: item.size || item.size_label || item.sizeLabel || parsedVariant.size,
+    variant: fullVariant,
+    variant_name: fullVariant,
+    type: fullVariant,
+    size: item.size || "",
     image: item.product?.product_images?.[0]?.image_url || item.image || item.photoUrl || item.photo_url || item.imageUrl || item.image_url || '/assets/customer/images/product/detail-image.png',
   };
 }

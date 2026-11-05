@@ -283,7 +283,9 @@ export class BookingPageComponent {
     const petName = selectedPetObj.name || selectedPetObj.pet_name || firstPetInfo.name || "Bé cưng";
     const petBreed = selectedPetObj.breed?.breed_name || selectedPetObj.breed || firstPetInfo.breed || selectedPetObj.species?.species_name || selectedPetObj.species || firstPetInfo.species || "Chó";
     const petWeight = selectedPetObj.weight_kg ? `${selectedPetObj.weight_kg}kg` : (selectedPetObj.weight || firstPetInfo.weight || "3kg");
-    const petImage = selectedPetObj.profile_image_url || selectedPetObj.image || selectedPetObj.pet_images?.[0]?.image_url || "";
+    const petImage = selectedPetObj.profile_image_url || selectedPetObj.avatar || selectedPetObj.photoUrl || selectedPetObj.image || selectedPetObj.pet_images?.[0]?.image_url || "";
+    const petAge = selectedPetObj.age || (selectedPetObj.ageYears ? `${selectedPetObj.ageYears} tuổi` : (firstPetInfo.age || "1 tuổi"));
+    const petGender = selectedPetObj.gender || firstPetInfo.gender || "Đực";
     const totalPrice = selectedServicesList.reduce((acc: number, s: any) => acc + (s.price || 0) * (quantities?.[s.id] || serviceQuantity), 0);
 
     this.bookingSubmitting.set(true);
@@ -324,6 +326,8 @@ export class BookingPageComponent {
         petBreed,
         petWeight,
         petImage,
+        petAge,
+        petGender,
         service_ids: servicePayload,
         serviceIds: servicePayload.map((s: any) => s.service_id),
         services: selectedServicesList,

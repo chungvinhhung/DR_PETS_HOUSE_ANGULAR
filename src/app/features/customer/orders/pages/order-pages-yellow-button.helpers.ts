@@ -17,10 +17,12 @@ export const EMPTY_ORDER_PRODUCT = {
 };
 
 export const getOrderProductType = (product: any = {}) =>
-  (typeof product.variant === "string" && product.variant) ||
-  product.type ||
   product.variant_name ||
   product.variant?.variant_name ||
+  (typeof product.variant === "string" && product.variant) ||
+  product.type ||
+  product.variantName ||
+  product.variantLabel ||
   "Mặc định";
 
 export const getOrderProductSize = (product: any = {}) =>

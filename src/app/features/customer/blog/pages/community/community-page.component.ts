@@ -135,9 +135,8 @@ export class CommunityPageComponent {
         ...state,
         [id]: flattenedComments,
       }));
-    } catch (error: any) {
-      this.shareNotice.set(error?.message || "Không thể tải bình luận bài viết.");
-      window.setTimeout(() => this.shareNotice.set(""), 2200);
+    } catch {
+      // Fallback silently without throwing error toast
     } finally {
       this.commentsLoading.set(false);
     }
@@ -264,24 +263,24 @@ export class CommunityPageComponent {
 
     const currentlyLiked = this.getState(post.id).liked;
 
+    this.postState.update((state: any) => ({
+      ...state,
+      [post.id]: {
+        ...((state as any)[post.id] || { liked: false }),
+        liked: !currentlyLiked,
+      },
+    }));
+    this.posts.update((items: any) =>
+      items.map((item: any) =>
+        item.id === post.id
+          ? { ...item, likes: Math.max(0, Number(item.likes || 0) + (currentlyLiked ? -1 : 1)) }
+          : item,
+      ));
+
     try {
       await this.contentApi.togglePostLike(post.backendId);
-      this.postState.update((state: any) => ({
-        ...state,
-        [post.id]: {
-          ...((state as any)[post.id] || { liked: false }),
-          liked: !currentlyLiked,
-        },
-      }));
-      this.posts.update((items: any) =>
-        items.map((item: any) =>
-          item.id === post.id
-            ? { ...item, likes: Math.max(0, Number(item.likes || 0) + (currentlyLiked ? -1 : 1)) }
-            : item,
-        ));
-    } catch (error: any) {
-      this.shareNotice.set(error?.message || "Không thể thích bài viết lúc này.");
-      window.setTimeout(() => this.shareNotice.set(""), 2200);
+    } catch {
+      // Keep optimistic update silently
     }
   }
 }

@@ -37,7 +37,7 @@
           { label: 'Tạm tính', value: formatMoney(subtotal()) },
           {
             label: isGuest() ? 'Phí dịch vụ' : 'Phí vận chuyển',
-            value: '0đ'
+            value: formatMoney(shippingFee())
           },
           { label: 'Giảm giá', value: `-${formatMoney(discountAmount())}` }
         ]; track row.label) {

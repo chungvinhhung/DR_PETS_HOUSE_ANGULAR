@@ -95,7 +95,7 @@ function normalizeVariant(variant: any) {
 
   return {
     ...variant,
-    id: String(getFirstValue(variant.id, variant.variant_id, variant.sku, '') || ''),
+    id: String(getFirstValue(variant.id, variant.variant_id, variant._id, variant.sku, '') || ''),
     label: name,
     name,
     variant_name: name,

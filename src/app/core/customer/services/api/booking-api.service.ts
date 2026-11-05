@@ -139,7 +139,7 @@ export function normalizeAppointmentHistoryItem(appointment: any = {}) {
   const service = getAppointmentServiceSummary(appointment);
   const services = getAppointmentServices(appointment);
   const status = normalizeAppointmentStatus(appointment);
-  const pet = appointment.pet || appointment.petSnapshot || {};
+  const pet = appointment.pet || appointment.petSnapshot || appointment.pet_data || {};
   const speciesName = pet.species?.species_name || pet.species || appointment.pet_species_snapshot || "";
   let petName = (pet.name && pet.name !== "Thú cưng") ? pet.name : (pet.pet_name || appointment.pet_name_snapshot || appointment.petSnapshot?.name || "");
   if (!petName || petName === "Thú cưng") {
@@ -150,9 +150,9 @@ export function normalizeAppointmentHistoryItem(appointment: any = {}) {
     }
   }
   if (!petName) petName = pet.name || "Thú cưng";
-  const breedName = pet.breed?.breed_name || pet.breed || appointment.pet_breed_snapshot || appointment.petSnapshot?.breed || speciesName || "Thú cưng";
+  const breedName = pet.breed?.breed_name || pet.breed || appointment.pet_breed_snapshot || appointment.petSnapshot?.breed || speciesName || "Chó";
   const petAge = pet.age || (pet.ageYears ? `${pet.ageYears} tuổi` : "");
-  const petGender = pet.gender === "male" ? "Đực" : (pet.gender === "female" ? "Cái" : (pet.gender || ""));
+  const petGender = pet.gender === "male" || pet.gender === "MALE" ? "Đực" : (pet.gender === "female" || pet.gender === "FEMALE" ? "Cái" : (pet.gender || ""));
   const petWeight = pet.weight_kg || pet.weightKg ? `${pet.weight_kg || pet.weightKg}kg` : (pet.weight ? (String(pet.weight).includes('kg') ? pet.weight : `${pet.weight}kg`) : "");
 
   const paymentMethod = appointment.payment_method || appointment.paymentMethod || (appointment.payment_status === "waiting_store_payment" ? "store" : "online");
@@ -183,7 +183,7 @@ export function normalizeAppointmentHistoryItem(appointment: any = {}) {
       age: petAge,
       gender: petGender,
       weight: petWeight,
-      image: pet.image || pet.profile_image_url || pet.pet_images?.[0]?.image_url || "",
+      image: pet.image || pet.photoUrl || pet.avatar || pet.profile_image_url || pet.pet_images?.[0]?.image_url || "",
       healthBadge: pet.healthBadge || (pet.health_status === "healthy" ? "" : (pet.health_status || "")),
       note: pet.medical_note || appointment.note || "",
     },
