@@ -9,6 +9,7 @@ import { AuthSessionService } from '../../../../core/services/auth-session.servi
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-pagination';
 import { AdminContentService } from '../services/admin-content.service';
+import { FIRST_AID_CATEGORIES } from '../../../../shared/customer/data/first-aid-data';
 
 type ContentMode='articles'|'first-aid'|'community'|'rescue'|'adoptions';
 
@@ -33,13 +34,25 @@ export class AdminContentListComponent{
  readonly activeItem=({articles:'content-articles','first-aid':'content-first-aid',community:'content-community',rescue:'content-rescue',adoptions:'content-rescue'} as const)[this.mode];
  readonly isAdmin=computed(()=>this.session.user()?.systemRole==='ADMIN');
  readonly canCreate=computed(()=>this.mode==='rescue' || ((this.mode==='articles'||this.mode==='first-aid') && this.isAdmin()));
- readonly postCategories=computed(()=>[...new Set(this.rows()
-  .map(row=>this.postCategory(row))
-  .filter((category): category is string=>Boolean(category)))]
-  .sort((left,right)=>left.localeCompare(right,'vi')));
+ readonly postCategories=computed(()=>this.mode==='first-aid'
+  ? FIRST_AID_CATEGORIES.filter(c=>c.id!=='all').map(c=>c.label)
+  : [...new Set(this.rows()
+     .map(row=>this.postCategory(row))
+     .filter((category): category is string=>Boolean(category)))]
+     .sort((left,right)=>left.localeCompare(right,'vi')));
  private postCategory(row:any):string {
   const raw=row?.category;
-  return typeof raw==='string' ? raw.trim() : String(raw?.name??raw?.label??'').trim();
+  const label=typeof raw==='string'?raw.trim():String(raw?.name??raw?.label??raw?.category_name??'').trim();
+  if(this.mode==='first-aid') {
+   return FIRST_AID_CATEGORIES.find(item=>item.id===label||item.label===label)?.label || label;
+  }
+  return label;
+ }
+ urgencyLabel(row:any):string {
+  const value=String(row?.urgencyLevel||row?.urgency_level||row?.severity||'').toUpperCase();
+  if(row?.urgent===true||['URGENT','HIGH','EMERGENCY'].includes(value))return 'Khẩn cấp';
+  if(row?.urgent===false||['NORMAL','LOW','MEDIUM'].includes(value))return 'Thông thường';
+  return '—';
  }
  readonly filtered=computed(()=>{
   const q=this.search().trim().toLocaleLowerCase('vi');
