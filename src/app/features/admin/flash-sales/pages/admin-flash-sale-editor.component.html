@@ -91,8 +91,8 @@
           }
         </section>
         @if (showOperatingSection()) {
-          <aside class="flash-editor__panel flash-editor__status-panel">
-            <h2>Trạng thái chương trình</h2>
+          <aside class="flash-editor__panel flash-editor__status-panel" aria-label="Thiết lập trạng thái chương trình">
+            <h2>{{ isPreStart() ? 'Chế độ kích hoạt' : 'Trạng thái chương trình' }}</h2>
             <label class="flash-editor__switch-row">
               <span class="flash-editor__switch">
                 <input #activeSwitch type="checkbox" role="switch"
@@ -102,7 +102,7 @@
                   (change)="setOperatingEnabled(activeSwitch.checked,activeSwitch)">
                 <span class="flash-editor__switch-track" aria-hidden="true"></span>
               </span>
-              <span>{{ operatingEnabled() ? 'Đang hoạt động' : 'Tạm ngừng' }}</span>
+              <span class="flash-editor__switch-text">{{ operatingLabel() }}</span>
             </label>
           </aside>
         }
