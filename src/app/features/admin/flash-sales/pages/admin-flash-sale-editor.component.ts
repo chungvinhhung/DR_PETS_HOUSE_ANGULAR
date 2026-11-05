@@ -361,8 +361,14 @@ export class AdminFlashSaleEditorComponent {
         ? checked ? 'MANUAL' : 'AUTO'
         : this.modeFor(sale, !checked);
       const updated=await firstValueFrom(this.api.setPaused(sale.id,checked,activationMode));
+      if (updated.isPaused !== checked ||
+          (updated.activationMode !== undefined && updated.activationMode !== activationMode)) {
+        throw new Error('BE chưa lưu đúng chế độ kích hoạt của chương trình.');
+      }
       this.original.set(updated);
-      this.toast.show(checked?'Đã tạm ngừng Flash Sale.':'Đã tiếp tục Flash Sale.','success');
+      this.toast.show(this.isPreStart()
+        ? checked ? 'Đã chọn kích hoạt thủ công.' : 'Đã chọn tự động hoạt động theo lịch.'
+        : checked ? 'Đã tạm ngừng Flash Sale.' : 'Đã tiếp tục Flash Sale.','success');
     }catch(err){
       input.checked = !sale.isPaused;
       this.toast.show(this.message(err,'Không cập nhật được trạng thái chương trình.'),'error');
