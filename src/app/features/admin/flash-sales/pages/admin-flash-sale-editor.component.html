@@ -17,21 +17,12 @@
               [routerLink]="['/admin/flash-sales',id,'edit']">Chỉnh sửa</a>
           }
         } @else {
-          <button type="button" class="flash-editor__btn flash-editor__btn--neutral"
+          <button type="button" class="flash-editor__btn flash-editor__btn--outline"
             [disabled]="saving()" (click)="cancel()">Hủy bỏ</button>
-          @if (mode==='create' || original()?.status==='DRAFT') {
-            <button type="button" class="flash-editor__btn flash-editor__btn--outline"
-              [disabled]="!editable() || loading()" (click)="save(false)">
-              {{ saving()?'Đang lưu...':'Lưu bản nháp' }}
-            </button>
-            <button type="button" class="flash-editor__btn flash-editor__btn--primary"
-              [disabled]="!editable() || loading()" (click)="save(true)">Lưu chương trình</button>
-          } @else {
-            <button type="button" class="flash-editor__btn flash-editor__btn--primary"
-              [disabled]="!editable() || loading()" (click)="save(false)">
-              {{ saving()?'Đang lưu...':'Cập nhật chương trình' }}
-            </button>
-          }
+          <button type="button" class="flash-editor__btn flash-editor__btn--primary"
+            [disabled]="!editable() || loading()" (click)="save()">
+            {{ saving() ? 'Đang lưu...' : (mode==='create' || original()?.status==='DRAFT' ? 'Lưu chương trình' : 'Cập nhật chương trình') }}
+          </button>
         }
       </div>
     </header>
@@ -49,9 +40,11 @@
         <section class="flash-editor__panel flash-editor__info">
           <div class="flash-editor__info-heading">
             <h2>Thông tin chương trình</h2>
-            <span class="flash-editor__badge" [attr.data-state]="mode==='create'?'DRAFT':currentState()">
-              {{ mode==='create'?'Bản nháp':stateLabels[currentState()] }}
-            </span>
+            @if (mode !== 'create') {
+              <span class="flash-editor__badge" [attr.data-state]="currentState()">
+                {{ stateLabels[currentState()] }}
+              </span>
+            }
           </div>
           @if (mode==='view') {
             @if (original(); as sale) {
