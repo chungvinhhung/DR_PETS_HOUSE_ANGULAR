@@ -18,13 +18,16 @@
           <img [attr.src]="detail().image" alt="" class="absolute inset-0 h-full w-full object-cover" />
           <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-white/50"></div>
           <div class="relative flex h-full max-w-[760px] flex-col justify-center p-6">
-            <span class="flex w-fit items-center gap-2 rounded-full bg-[#FFDAD6] px-4 py-2 text-[14px] font-semibold text-[#C62828]">
-              <app-customer-icon name="siren" className="h-4 w-4" /> CẤP CỨU KHẨN CẤP</span>
+            @if (detail().urgent) {
+              <span class="flex w-fit items-center gap-2 rounded-full bg-[#FFDAD6] px-4 py-2 text-[14px] font-semibold text-[#C62828]">
+                <app-customer-icon name="siren" className="h-4 w-4" /> CẤP CỨU KHẨN CẤP
+              </span>
+            }
             <h1 class="mt-4 text-[48px] font-bold leading-[60px] tracking-[-0.96px] text-[#FDD835]">{{ detail().heroTitle }}</h1>
             <p class="mt-3 max-w-[672px] text-[18px] leading-7 text-white">{{ detail().description }}</p>
           </div>
         </div>
-        <div class="-ml-[34px] relative z-10"><aside app-emergency-support></aside></div>
+        <div class="-ml-[34px] relative z-10"><aside app-emergency-support [phone]="detail().emergencyPhone || '0868686868'"></aside></div>
       </section>
       @if (isLoading()) {
         <div class="mt-4 rounded-[16px] bg-white px-6 py-3 text-[#0D47A1]">Đang tải hướng dẫn sơ cứu...</div>
@@ -32,8 +35,12 @@
       @if (loadError()) {
         <div class="mt-4 rounded-[16px] bg-white px-6 py-3 text-[#0D47A1]">{{ loadError() }}</div>
       }
-      <section app-step-section [steps]="detail().steps"></section>
-      <section app-video-section [video]="detail().video"></section>
+      @if (detail().steps?.length) {
+        <section app-step-section [steps]="detail().steps"></section>
+      }
+      @if (detail().video?.url) {
+        <section app-video-section [video]="detail().video"></section>
+      }
       <app-related-section [currentId]="detail().id" [posts]="relatedPosts()" />
     </div>
   </main>
