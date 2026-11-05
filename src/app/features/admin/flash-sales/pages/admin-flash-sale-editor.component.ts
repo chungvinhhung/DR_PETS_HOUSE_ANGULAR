@@ -86,7 +86,8 @@ export class AdminFlashSaleEditorComponent {
   readonly validation = signal('');
   readonly dirty = signal(false);
   readonly canManage = computed(() => this.session.user()?.systemRole === 'ADMIN');
-  readonly editable = computed(() => this.mode !== 'view' && this.canManage() && !this.saving());
+  readonly editable = computed(() => this.mode !== 'view' && this.canManage() && !this.saving() &&
+    (!this.original() || flashSaleState(this.original()!) !== 'ENDED'));
   readonly currentState = computed(() => this.original() ? flashSaleState(this.original()!, this.now()) : 'DRAFT');
   readonly stateLabels = FLASH_SALE_STATE_LABELS;
   readonly now = signal(Date.now());
@@ -129,6 +130,12 @@ export class AdminFlashSaleEditorComponent {
     this.loading.set(true);this.error.set('');
     this.api.get(this.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: sale => {
+        if (this.mode === 'edit' && flashSaleState(sale) === 'ENDED') {
+          this.loading.set(false);
+          this.toast.show('Chương trình đã kết thúc, chỉ có thể xem thông tin.','info');
+          void this.router.navigate(['/admin/flash-sales',sale.id]);
+          return;
+        }
         this.original.set(sale);
         this.form.set({
           name:sale.name, description:sale.description,
