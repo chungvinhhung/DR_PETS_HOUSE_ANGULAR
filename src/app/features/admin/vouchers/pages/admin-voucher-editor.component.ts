@@ -156,11 +156,18 @@ export class AdminVoucherEditorComponent {
     this.api.update(v.id, {status})
       .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: saved => {
-          this.original.set(saved);
           this.saving.set(false);
+          if (saved.status !== status) {
+            input.checked = v.status === 'ACTIVE';
+            this.toast.show('BE chưa lưu đúng trạng thái voucher. Vui lòng tải lại.', 'error');
+            this.load();
+            return;
+          }
+          this.original.set(saved);
           this.toast.show(this.beforeStart()
-            ? saved.status === 'ACTIVE' ? 'Đã chọn tự động hoạt động theo lịch.' : 'Đã chọn kích hoạt thủ công.'
-            : saved.status === 'ACTIVE' ? 'Đã bật voucher.' : 'Đã tạm ngừng voucher.', 'success');
+            ? status === 'ACTIVE' ? 'Đã chọn tự động hoạt động theo lịch.' : 'Đã chọn kích hoạt thủ công.'
+            : status === 'ACTIVE' ? 'Đã bật voucher.' : 'Đã tạm ngừng voucher.', 'success');
+          this.load();
         },
         error: err => {
           input.checked = v.status === 'ACTIVE';
