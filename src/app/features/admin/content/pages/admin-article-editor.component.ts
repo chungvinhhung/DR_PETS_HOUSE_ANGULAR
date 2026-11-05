@@ -12,10 +12,11 @@ import { BlogCardComponent } from '../../../../shared/customer/components/blog-c
 import { FeaturedPostComponent } from '../../../customer/blog/pages/blog/featured-post.component';
 import { blogImages } from '../../../../shared/customer/assets/blog-images';
 import { BLOG_CATEGORIES } from '../../../../shared/customer/data/blog-data';
+import { AdminArticleRichBlockComponent } from './admin-article-rich-block.component';
 
 export type ArticleBlockType = 'paragraph' | 'heading' | 'list' | 'quote' | 'image' | 'video';
 export type ArticleLayout = 'STANDARD' | 'FEATURED';
-export interface ArticleBlock { id: number; type: ArticleBlockType; text: string; alt?: string; }
+export interface ArticleBlock { id: number; type: ArticleBlockType; text: string; alt?: string; html?: string; }
 
 function storedId(row: any): string {
   return String(row?._id || row?.id || row?.post_id || '');
@@ -28,7 +29,13 @@ function normalizedBlocks(raw: unknown, fallback: string): ArticleBlock[] {
   if (Array.isArray(raw) && raw.length) {
     const supported: ArticleBlockType[] = ['paragraph','heading','list','quote','image','video'];
     const parsed = raw.filter((v: any) => supported.includes(v?.type) && typeof v?.text === 'string')
-      .map((v: any, i: number) => ({ id: i + 1, type: v.type as ArticleBlockType, text: v.text, alt: String(v.alt || '') }));
+      .map((v: any, i: number) => ({
+        id: i + 1, type: v.type as ArticleBlockType,
+        text: v.type === 'list'
+          ? v.text.split(/\r?\n/).map((line:string)=>line.replace(/^\s*(?:[•*\-]|\d+[.)])\s+/, '')).join('\n')
+          : v.text,
+        alt: String(v.alt || ''), html: typeof v.html === 'string' ? v.html : '',
+      }));
     if (parsed.length) return parsed;
   }
   const paragraphs = fallback.split(/\n\s*\n/).map(x => x.trim()).filter(Boolean);
@@ -40,7 +47,7 @@ function normalizedBlocks(raw: unknown, fallback: string): ArticleBlock[] {
 @Component({
   selector: 'app-admin-article-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminCatalogShellComponent, AdminBreadcrumbComponent, BlogCardComponent, FeaturedPostComponent],
+  imports: [CommonModule, FormsModule, AdminCatalogShellComponent, AdminBreadcrumbComponent, BlogCardComponent, FeaturedPostComponent, AdminArticleRichBlockComponent],
   templateUrl: './admin-article-editor.component.html',
   styleUrl: './admin-article-editor.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,12 +64,14 @@ export class AdminArticleEditorComponent {
   readonly category = signal('');
   readonly excerpt = signal('');
   readonly coverUrl = signal('');
-  readonly tags = signal('');
+  readonly tags = signal<string[]>([]);
+  readonly tagDraft = signal('');
+  readonly categories = BLOG_CATEGORIES.filter(c=>c.id !== 'all');
+  readonly contentTagHelp = 'Hiển thị ở cuối bài viết dưới dạng #ThẻNộiDung trên web Customer.';
   readonly layout = signal<ArticleLayout>('STANDARD');
   readonly blocks = signal<ArticleBlock[]>([{id:1,type:'paragraph',text:''}]);
   readonly previewMode = signal<'CARD'|'DETAIL'>('CARD');
   readonly previewDevice = signal<'DESKTOP'|'MOBILE'>('DESKTOP');
-  readonly suggestedCategories = signal<string[]>([]);
   readonly savedStatus = signal<'DRAFT'|'PUBLISHED'|'ARCHIVED'>('DRAFT');
   readonly articlePublishedDate = signal<string>('');
   readonly previewCategoryId = computed(() => {
@@ -103,7 +112,7 @@ export class AdminArticleEditorComponent {
   ];
   readonly summary = computed(() => this.excerpt().trim() ||
     this.blocks().find(x => x.type === 'paragraph' && x.text.trim())?.text.trim() || '');
-  readonly categoryTags = computed(() => this.tags().split(/[;,\n]+/).map(x => x.trim().replace(/^#/, '')).filter(Boolean));
+  readonly categoryTags = computed(() => this.tags());
   readonly previewBlocks = computed(() => this.blocks().filter(block => block.text.trim()));
   readonly layoutNames: Record<ArticleLayout,string> = {STANDARD:'Bài viết thường',FEATURED:'Bài viết nổi bật'};
   readonly typeNames: Record<ArticleBlockType,string> = {
@@ -116,9 +125,6 @@ export class AdminArticleEditorComponent {
     // Categories are suggestions from real data; do not invent backend category IDs.
     try {
       const rows = await firstValueFrom(this.api.listArticles());
-      this.suggestedCategories.set([...new Set(rows.map((r:any) =>
-        String(typeof r.category === 'string' ? r.category : r.category?.name || r.category?.label || r.category?.category_name || '').trim())
-        .filter(Boolean))].sort((a,b)=>a.localeCompare(b,'vi')));
       if (this.isEditing) {
         const found = rows.find((r:any) => storedId(r) === this.editId);
         if (found) this.hydrate(found);
@@ -140,10 +146,14 @@ export class AdminArticleEditorComponent {
   private hydrate(row:any): void {
     const category = row.category;
     this.title.set(String(row.title || ''));
-    this.category.set(String(typeof category === 'string' ? category : category?.name || category?.label || category?.category_name || ''));
+    const categoryValue=String(typeof category==='string' ? category :
+      category?.name || category?.label || category?.category_name || category?.id || '');
+    const selected=this.categories.find(option => option.label === categoryValue || option.id === categoryValue);
+    this.category.set(selected?.label || categoryValue);
     this.excerpt.set(String(row.excerpt || ''));
     this.coverUrl.set(String(row.thumbnail_url || row.thumbnailUrl || row.coverImage || ''));
-    this.tags.set(Array.isArray(row.hashtags) ? row.hashtags.join(', ') : String(row.hashtags || ''));
+    const rawTags=Array.isArray(row.hashtags) ? row.hashtags.join(',') : String(row.hashtags || '');
+    this.tags.set([...new Set(rawTags.split(/[,;\s]+/).map(t=>this.normalizeTag(t)).filter(Boolean))].slice(0,12));
     const layout = row.layoutType || row.layout_type;
     this.layout.set(layout === 'FEATURED' ? 'FEATURED' : 'STANDARD');
     const blocks = normalizedBlocks(row.contentBlocks || row.content_blocks, String(row.content || ''));
@@ -157,7 +167,33 @@ export class AdminArticleEditorComponent {
       parsedDate.toLocaleDateString('vi-VN',{day:'2-digit',month:'long',year:'numeric'}) : '');
     this.dirty.set(false);
   }
-  setField(field:'title'|'category'|'excerpt'|'coverUrl'|'tags', value:string):void {
+  private normalizeTag(value:string):string {
+    return value.trim().replace(/^#+/,'').replace(/\s+/g,'').slice(0,40);
+  }
+  commitTag():void {
+    const tag=this.normalizeTag(this.tagDraft());
+    if(!tag) {this.tagDraft.set('');return;}
+    if(this.tags().length>=12) {
+      this.error.set('Tối đa 12 thẻ nội dung cho mỗi bài viết.');return;
+    }
+    if(!this.tags().some(x=>x.toLocaleLowerCase('vi')===tag.toLocaleLowerCase('vi'))) {
+      this.tags.update(tags=>[...tags,tag]);this.dirty.set(true);
+    }
+    this.tagDraft.set('');
+  }
+  handleTagKey(event:KeyboardEvent):void {
+    if(event.key==='Enter'||event.key===',') {
+      event.preventDefault();this.commitTag();
+    }
+  }
+  removeTag(tag:string):void {
+    this.tags.update(tags=>tags.filter(x=>x!==tag));this.dirty.set(true);
+  }
+  updateRichBlock(id:number, value:{text:string;html:string}):void {
+    this.blocks.update(items=>items.map(b=>b.id===id?{...b,text:value.text,html:value.html}:b));
+    this.dirty.set(true);
+  }
+  setField(field:'title'|'category'|'excerpt'|'coverUrl', value:string):void {
     this[field].set(value); this.dirty.set(true); this.error.set('');
   }
   setLayout(layout:ArticleLayout):void {
@@ -186,10 +222,11 @@ export class AdminArticleEditorComponent {
     this.dirty.set(true);
   }
   private payload(): Record<string,unknown> | null {
+    this.commitTag();
     const title = this.title().trim(), category = this.category().trim();
     const blocks = this.blocks().filter(b => b.text.trim());
-    if (!title || !category || !blocks.length) {
-      this.error.set('Nhập tiêu đề, chủ đề và ít nhất một khối nội dung trước khi lưu.');
+    if (!title || !category || !this.categories.some(c=>c.label===category) || !blocks.length) {
+      this.error.set('Nhập tiêu đề, chọn một trong bốn chủ đề cố định và thêm ít nhất một khối nội dung.');
       return null;
     }
     if (this.coverUrl().trim() && !isWebUrl(this.coverUrl().trim())) {
@@ -200,7 +237,7 @@ export class AdminArticleEditorComponent {
     }
     const content = blocks.map(b => {
       if(b.type === 'image' || b.type === 'video') return '';
-      if(b.type === 'list') return b.text.split('\n').map(line => line.trim()).filter(Boolean).map(line => '• '+line).join('\n');
+      if(b.type === 'list') return b.text.split('\n').map(line => line.trim()).filter(Boolean).map((line,i) => `${i+1}. ${line}`).join('\n');
       return b.text.trim();
     }).filter(Boolean).join('\n\n');
     if (!content.trim()) {this.error.set('Bài viết cần có ít nhất một khối văn bản.');return null;}
@@ -208,7 +245,9 @@ export class AdminArticleEditorComponent {
       title,category,excerpt:this.excerpt().trim(),content,postType:'OFFICIAL_BLOG',
       status:this.savedStatus(),thumbnail_url:this.coverUrl().trim() || null,
       hashtags:this.categoryTags().join(', '),layoutType:this.layout(),
-      contentBlocks:blocks.map(({type,text,alt}) => ({type,text:text.trim(),alt:alt?.trim() || ''})),
+      contentBlocks:blocks.map(({type,text,alt,html}) => ({
+        type,text:text.trim(),alt:alt?.trim() || '',html:html || '',
+      })),
     };
   }
   async save(target:'DRAFT'|'PUBLISHED'):Promise<void> {
