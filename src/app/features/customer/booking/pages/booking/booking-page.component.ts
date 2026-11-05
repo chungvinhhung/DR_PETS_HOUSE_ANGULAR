@@ -269,13 +269,22 @@ export class BookingPageComponent {
     }
 
     const firstPetInfo = this.petInfos()[0] || {};
+    const selectedBranchObj = this.branches().find((b: any) => b.id === this.ownerInfo().branch);
+    const selectedPetObj = this.selectedPets()[0] || {};
+    const selectedServicesList = this.services().filter((service: any) => this.selectedServices().includes(service.id));
     const serviceQuantity = Math.max(this.selectedPets().length || this.petInfos().length || 1, 1);
-    const servicePayload = this.services()
-      .filter((service: any) => this.selectedServices().includes(service.id))
-      .map((service: any) => ({
-        service_id: service.serviceId || service.id,
-        quantity: quantities?.[service.id] || serviceQuantity,
-      }));
+    const servicePayload = selectedServicesList.map((service: any) => ({
+      service_id: service.serviceId || service.id,
+      quantity: quantities?.[service.id] || serviceQuantity,
+    }));
+
+    const branchName = selectedBranchObj?.name || "Chi nhánh Dr. Pet";
+    const branchAddress = selectedBranchObj?.address || "";
+    const petName = selectedPetObj.name || selectedPetObj.pet_name || firstPetInfo.name || "Bé cưng";
+    const petBreed = selectedPetObj.breed?.breed_name || selectedPetObj.breed || firstPetInfo.breed || selectedPetObj.species?.species_name || selectedPetObj.species || firstPetInfo.species || "Chó";
+    const petWeight = selectedPetObj.weight_kg ? `${selectedPetObj.weight_kg}kg` : (selectedPetObj.weight || firstPetInfo.weight || "3kg");
+    const petImage = selectedPetObj.profile_image_url || selectedPetObj.image || selectedPetObj.pet_images?.[0]?.image_url || "";
+    const totalPrice = selectedServicesList.reduce((acc: number, s: any) => acc + (s.price || 0) * (quantities?.[s.id] || serviceQuantity), 0);
 
     this.bookingSubmitting.set(true);
     this.bookingError.set("");
@@ -302,21 +311,31 @@ export class BookingPageComponent {
 
       await this.bookingApi.bookAppointment({
         branchId: this.ownerInfo().branch,
+        branchName,
+        branchAddress,
         date: getDateKey(this.selectedDate()),
         startTime: selectedSlotRecord.value?.split(" - ")[0] || "09:00",
         slotStart: selectedSlotRecord.start,
+        slotEnd: selectedSlotRecord.end,
         slot_id: selectedSlotRecord.id,
         pet_id: validPetId,
         pet_data: petData,
+        petName,
+        petBreed,
+        petWeight,
+        petImage,
         service_ids: servicePayload,
         serviceIds: servicePayload.map((s: any) => s.service_id),
+        services: selectedServicesList,
+        serviceName: selectedServicesList.map((s: any) => s.name).join(", ") || "Dịch vụ Dr. Pet",
         customer_name_snapshot: this.ownerInfo().name,
         customer_phone_snapshot: this.ownerInfo().phone,
         customerEmail: this.ownerInfo().email,
-        condition_description: ([firstPetInfo.name, firstPetInfo.status].filter(Boolean) as any[]).join(" - ") || undefined,
+        condition_description: ([petName, firstPetInfo.status].filter(Boolean) as any[]).join(" - ") || undefined,
         note: firstPetInfo.notes || undefined,
         payment_method: this.paymentMode() === "store" ? "store" : "online",
         paymentMethod: this.paymentMode() === "store" ? "PAY_AT_STORE" : "ONLINE_MOCK",
+        totalPrice,
       });
       this.success.set(true);
     } catch (error: any) {

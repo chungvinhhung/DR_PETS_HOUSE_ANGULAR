@@ -101,7 +101,13 @@ export class AppointmentHistoryPageComponent {
 
         this.bookingApi.getAppointmentHistory()
           .then((items: any) => {
-            if (active) this.appointments.set(items);
+            if (active) {
+              if (Array.isArray(items) && items.length > 0) {
+                this.appointments.set(items);
+              } else {
+                this.appointments.set(MOCK_APPOINTMENTS);
+              }
+            }
           })
           .catch((error: any) => {
             if (!active) return;

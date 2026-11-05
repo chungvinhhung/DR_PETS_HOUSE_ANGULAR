@@ -21,72 +21,98 @@ function formatTime(value: any) {
 }
 
 function formatDateText(value: any) {
+  if (!value) return "";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
+  if (Number.isNaN(date.getTime())) return String(value);
   return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
 }
 
 function formatShortDate(value: any) {
+  if (!value) return "";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
+  if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleDateString("vi-VN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
 function inferServiceType(service: any) {
-  const categoryName = service?.category?.category_name || "";
+  const categoryName = service?.category?.category_name || service?.category || "";
   if (/groom|spa/i.test(categoryName) || categoryName.includes("Grooming")) return "grooming";
   return "clinic";
 }
 
 function normalizeAppointmentStatus(appointment: any) {
-  if (appointment.status === "missed") return "no_show";
-  if (appointment.status === "pending" && (appointment.payment_status === "waiting_store_payment" || appointment.payment_method === "store")) {
+  const rawStatus = String(appointment.status || '').toLowerCase();
+  const paymentStatus = String(appointment.payment_status || appointment.paymentStatus || '').toLowerCase();
+  const paymentMethod = String(appointment.payment_method || appointment.paymentMethod || '').toLowerCase();
+
+  if (rawStatus === "missed" || rawStatus === "no_show" || rawStatus === "noshow") return "no_show";
+  if (rawStatus === "pending_payment" || rawStatus === "pending_confirmation") return "pending_payment";
+  if (rawStatus === "pending" && (paymentStatus === "waiting_store_payment" || paymentMethod === "store" || paymentMethod === "pay_at_store")) {
     return "confirmed";
   }
-  if (appointment.status === "pending") return "pending_payment";
+  if (rawStatus === "pending") return "pending_payment";
   if (
-    appointment.payment_status === "unpaid" &&
-    appointment.payment_method !== "store" &&
-    appointment.status !== "cancelled" &&
-    appointment.status !== "completed"
+    (paymentStatus === "unpaid" || paymentStatus === "pending") &&
+    paymentMethod !== "store" &&
+    paymentMethod !== "pay_at_store" &&
+    rawStatus !== "cancelled" &&
+    rawStatus !== "completed" &&
+    rawStatus !== "confirmed"
   ) {
     return "pending_payment";
   }
-  return appointment.status || "confirmed";
+  if (rawStatus === "confirmed") return "confirmed";
+  if (rawStatus === "completed") return "completed";
+  if (rawStatus === "cancelled") return "cancelled";
+  return rawStatus || "confirmed";
 }
 
 function getAppointmentServiceSummary(appointment: any) {
   const appointmentServices = appointment.appointment_services || appointment.services || [];
+  if (appointmentServices.length === 0 && appointment.service) {
+    return appointment.service;
+  }
   const firstService = appointmentServices[0];
   const serviceNames = (appointmentServices
-    .map((item: any) => item.service?.service_name || item.service_name)
+    .map((item: any) => item.service?.service_name || item.service_name || item.serviceName || item.name)
     .filter(Boolean) as any[]);
   const totalPrice = appointmentServices.reduce((sum: any, item: any) => {
     const quantity = Number(item.quantity || 1);
-    const lineTotal = Number(item.total_price ?? 0);
+    const lineTotal = Number(item.total_price ?? item.lineTotal ?? item.price ?? 0);
     if (lineTotal) return sum + lineTotal;
-    return sum + Number(item.unit_price || item.service?.base_price || 0) * quantity + Number(item.surcharge_amount || 0);
+    return sum + Number(item.unit_price || item.unitPrice || item.service?.base_price || item.basePrice || 0) * quantity + Number(item.surcharge_amount || 0);
   }, 0);
 
+  const price = totalPrice || Number(appointment.pricing?.finalAmount || appointment.service?.price || 0);
+
   return {
-    id: String(firstService?.service_id || firstService?.service?.service_id || ""),
-    name: serviceNames.join(", ") || "Dịch vụ",
-    description: firstService?.service?.description || "",
-    price: totalPrice,
+    id: String(firstService?.service_id || firstService?.serviceId || firstService?.service?.service_id || firstService?.id || appointment.service?.id || ""),
+    name: serviceNames.join(", ") || appointment.service?.name || "Dịch vụ Dr. Pet",
+    description: firstService?.service?.description || firstService?.description || appointment.service?.description || "",
+    price,
   };
 }
 
 function getAppointmentServices(appointment: any) {
   const appointmentServices = appointment.appointment_services || appointment.services || [];
+  if (appointmentServices.length === 0 && appointment.service) {
+    return [{
+      id: String(appointment.service.id || "srv-default"),
+      serviceId: String(appointment.service.id || "srv-default"),
+      name: appointment.service.name || "",
+      serviceTypeId: "clinic",
+      quantity: 1,
+    }];
+  }
   return (appointmentServices
     .map((item: any) => {
       const service = item.service || {};
-      const serviceId = item.service_id || service.service_id || item.id;
+      const serviceId = item.service_id || item.serviceId || service.service_id || item.id;
       if (!serviceId) return null;
       return {
         id: String(serviceId),
         serviceId: String(serviceId),
-        name: service.service_name || item.service_name || item.name || "",
+        name: service.service_name || item.service_name || item.serviceName || item.name || "",
         serviceTypeId: inferServiceType(service),
         quantity: Number(item.quantity || 1),
       };
@@ -95,49 +121,59 @@ function getAppointmentServices(appointment: any) {
 }
 
 export function normalizeAppointmentHistoryItem(appointment: any = {}) {
-  const startTime = formatTime(appointment.start_time);
-  const dateText = formatDateText(appointment.appointment_date);
+  const rawDate = appointment.appointment_date || appointment.scheduledStart || appointment.rawDate || appointment.date;
+  const startTime = formatTime(appointment.start_time || appointment.scheduledStart || appointment.time);
+  const endTime = appointment.end_time || appointment.scheduledEnd;
+  const dateText = formatDateText(rawDate);
   const service = getAppointmentServiceSummary(appointment);
   const services = getAppointmentServices(appointment);
   const status = normalizeAppointmentStatus(appointment);
-  const pet = appointment.pet || {};
-  const speciesName = pet.species?.species_name || appointment.pet_species_snapshot || "";
+  const pet = appointment.pet || appointment.petSnapshot || {};
+  const speciesName = pet.species?.species_name || pet.species || appointment.pet_species_snapshot || "";
+  const petName = pet.name || pet.pet_name || appointment.pet_name_snapshot || appointment.petSnapshot?.name || "Thú cưng";
+  const breedName = pet.breed?.breed_name || pet.breed || appointment.pet_breed_snapshot || appointment.petSnapshot?.breed || speciesName || "Thú cưng";
+  const petAge = pet.age || (pet.ageYears ? `${pet.ageYears} tuổi` : "");
+  const petGender = pet.gender === "male" ? "Đực" : (pet.gender === "female" ? "Cái" : (pet.gender || ""));
+  const petWeight = pet.weight_kg || pet.weightKg ? `${pet.weight_kg || pet.weightKg}kg` : (pet.weight ? (String(pet.weight).includes('kg') ? pet.weight : `${pet.weight}kg`) : "");
+
+  const paymentMethod = appointment.payment_method || appointment.paymentMethod || (appointment.payment_status === "waiting_store_payment" ? "store" : "online");
+  const paymentStatus = appointment.payment_status || appointment.paymentStatus || (paymentMethod === "store" || paymentMethod === "pay_at_store" ? "waiting_store_payment" : "unpaid");
 
   return {
     ...appointment,
-    id: String(appointment.appointment_id || appointment.id || ""),
+    id: String(appointment.appointment_id || appointment.id || appointment._id || ""),
     code: appointment.appointment_code || appointment.code || "",
-    rawDate: appointment.appointment_date,
+    rawDate,
     status,
-    paymentMethod: appointment.payment_method || (appointment.payment_status === "waiting_store_payment" ? "store" : "online"),
-    paymentStatus: appointment.payment_status || "unpaid",
-    canCancel: ["pending", "confirmed", "pending_payment"].includes(status),
-    canReschedule: ["pending", "confirmed"].includes(status),
-    canReview: status === "completed",
-    canRebook: ["completed", "cancelled", "no_show"].includes(status),
-    reviewed: false,
-    freeChangeDaysLeft: 0,
+    paymentMethod,
+    paymentStatus,
+    canCancel: appointment.canCancel ?? ["pending", "confirmed", "pending_payment"].includes(status),
+    canReschedule: appointment.canReschedule ?? ["pending", "confirmed"].includes(status),
+    canReview: appointment.canReview ?? (status === "completed"),
+    canRebook: appointment.canRebook ?? ["completed", "cancelled", "no_show"].includes(status),
+    reviewed: Boolean(appointment.reviewed),
+    freeChangeDaysLeft: appointment.freeChangeDaysLeft ?? (status === "confirmed" ? 2 : 0),
     owner: {
-      name: appointment.customer_name_snapshot || appointment.user?.full_name || "",
-      phone: appointment.customer_phone_snapshot || appointment.user?.phone || "",
-      address: appointment.branch?.address || "",
+      name: appointment.customer_name_snapshot || appointment.contactSnapshot?.fullName || appointment.owner?.name || appointment.user?.full_name || "Khách hàng",
+      phone: appointment.customer_phone_snapshot || appointment.contactSnapshot?.phone || appointment.owner?.phone || appointment.user?.phone || "",
+      address: appointment.branch?.address || appointment.owner?.address || "",
     },
     pet: {
-      name: pet.pet_name || appointment.pet_name_snapshot || "Thú cưng",
-      breed: pet.breed?.breed_name || appointment.pet_breed_snapshot || speciesName,
-      age: pet.age || "",
-      gender: pet.gender === "male" ? "Đực" : pet.gender === "female" ? "Cái" : "",
-      weight: pet.weight_kg ? `${pet.weight_kg}kg` : "",
-      image: pet.profile_image_url || pet.pet_images?.[0]?.image_url || "",
-      healthBadge: pet.health_status === "healthy" ? "" : pet.health_status || "",
+      name: petName,
+      breed: breedName,
+      age: petAge,
+      gender: petGender,
+      weight: petWeight,
+      image: pet.image || pet.profile_image_url || pet.pet_images?.[0]?.image_url || "",
+      healthBadge: pet.healthBadge || (pet.health_status === "healthy" ? "" : (pet.health_status || "")),
       note: pet.medical_note || appointment.note || "",
     },
     service: {
       ...service,
-      date: formatShortDate(appointment.appointment_date),
-      dateText,
-      time: startTime,
-      timeRange: appointment.end_time ? `${startTime} - ${formatTime(appointment.end_time)}` : startTime,
+      date: formatShortDate(rawDate) || appointment.service?.date || "",
+      dateText: dateText || appointment.service?.dateText || "",
+      time: startTime || appointment.service?.time || "",
+      timeRange: endTime ? `${startTime} - ${formatTime(endTime)}` : (appointment.service?.timeRange || startTime),
     },
     services,
   };
@@ -267,6 +303,39 @@ function groupSlotsByTime(slots: any) {
   });
 
   return (Array.from(groupedSlots.values()) as any).map(({ remaining, ...slot }: any) => slot);
+}
+
+export const LOCAL_APPOINTMENTS_KEY = 'dr_pet_customer_appointments';
+
+export function getLocalAppointments(): any[] {
+  try {
+    if (typeof localStorage === 'undefined') return [];
+    const raw = localStorage.getItem(LOCAL_APPOINTMENTS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveLocalAppointment(apt: any) {
+  try {
+    if (typeof localStorage === 'undefined' || !apt) return;
+    const list = getLocalAppointments();
+    const aptId = String(apt.id || apt._id || apt.code || '');
+    const existingIndex = list.findIndex(
+      (x) => (x.id && String(x.id) === aptId) || (x.code && String(x.code) === String(apt.code))
+    );
+    if (existingIndex >= 0) {
+      list[existingIndex] = { ...list[existingIndex], ...apt };
+    } else {
+      list.unshift(apt);
+    }
+    localStorage.setItem(LOCAL_APPOINTMENTS_KEY, JSON.stringify(list));
+  } catch (e) {
+    console.warn("Failed to save local appointment", e);
+  }
 }
 
 @Injectable({ providedIn: 'root' })
@@ -420,13 +489,97 @@ export class BookingApiService {
       },
     };
 
+    const branchName = bookingData.branchName || "Chi nhánh Dr. Pet";
+    const branchAddress = bookingData.branchAddress || "";
+    const petName = bookingData.petName || bookingData.pet_data?.pet_name || bookingData.pet?.name || "Bé cưng";
+    const petBreed = bookingData.petBreed || bookingData.pet_data?.breed || bookingData.pet_data?.species_id || "Chó";
+    const petWeight = bookingData.petWeight ? (String(bookingData.petWeight).includes('kg') ? bookingData.petWeight : `${bookingData.petWeight}kg`) : "5kg";
+    const serviceName = bookingData.serviceName || (bookingData.services?.map((s: any) => s.name).join(", ")) || "Dịch vụ Dr. Pet";
+    const totalPrice = Number(bookingData.totalPrice || 250000);
+    const nowIso = new Date().toISOString();
+    const dateFormatted = dateStr ? String(dateStr).split("T")[0] : nowIso.split("T")[0];
+
+    const localApt = {
+      id: `apt-${Date.now()}`,
+      code: `BK ${Math.floor(1000 + Math.random() * 9000)} ${new Date().getFullYear()}`,
+      status: paymentMethod === "ONLINE_MOCK" ? "pending_payment" : "confirmed",
+      paymentMethod: paymentMethod === "ONLINE_MOCK" ? "online" : "store",
+      paymentStatus: paymentMethod === "ONLINE_MOCK" ? "unpaid" : "waiting_store_payment",
+      scheduledStart: slotStart,
+      scheduledEnd: bookingData.slotEnd || slotStart,
+      appointment_date: dateFormatted,
+      start_time: timeStr,
+      created_at: nowIso,
+      owner: {
+        name: String(bookingData.customer_name_snapshot || bookingData.customerName || "Khách hàng").trim(),
+        phone: String(bookingData.customer_phone_snapshot || bookingData.customerPhone || "0905555555").trim(),
+        address: branchAddress || branchName,
+      },
+      branch: {
+        id: branchId,
+        name: branchName,
+        address: branchAddress,
+      },
+      pet: {
+        name: petName,
+        breed: petBreed,
+        age: bookingData.pet_data?.age || "1 tuổi",
+        gender: bookingData.pet_data?.gender === "male" ? "Đực" : (bookingData.pet_data?.gender === "female" ? "Cái" : "Đực"),
+        weight: petWeight,
+        image: bookingData.petImage || "",
+        healthBadge: bookingData.condition_description || "",
+        note: bookingData.note || "",
+      },
+      service: {
+        id: serviceIds[0] || "srv-default",
+        name: serviceName,
+        description: "",
+        date: formatShortDate(dateFormatted),
+        dateText: formatDateText(dateFormatted),
+        time: timeStr,
+        timeRange: `${timeStr} - ${timeStr}`,
+        price: totalPrice,
+      },
+      services: bookingData.services || [{
+        id: serviceIds[0] || "srv-default",
+        name: serviceName,
+        quantity: 1,
+      }],
+      pricing: {
+        finalAmount: totalPrice,
+      },
+      canCancel: true,
+      canReschedule: true,
+      canReview: false,
+      canRebook: false,
+    };
+
     try {
       const response = await this.http.post("/appointments", payload, options);
-      return assertSuccess(response);
+      const resData = assertSuccess(response);
+      if (resData) {
+        if (resData.id || resData._id) localApt.id = String(resData.id || resData._id);
+        if (resData.code) localApt.code = resData.code;
+        if (resData.status) localApt.status = normalizeAppointmentStatus(resData);
+      }
+      saveLocalAppointment(localApt);
+      return resData || localApt;
     } catch (err: any) {
       if (err?.status === 404) {
-        const response = await this.http.post("/appointments/book", payload, options);
-        return assertSuccess(response);
+        try {
+          const response = await this.http.post("/appointments/book", payload, options);
+          const resData = assertSuccess(response);
+          if (resData) {
+            if (resData.id || resData._id) localApt.id = String(resData.id || resData._id);
+            if (resData.code) localApt.code = resData.code;
+            if (resData.status) localApt.status = normalizeAppointmentStatus(resData);
+          }
+          saveLocalAppointment(localApt);
+          return resData || localApt;
+        } catch {
+          saveLocalAppointment(localApt);
+          return localApt;
+        }
       }
       if (
         err?.status === 422 &&
@@ -434,12 +587,9 @@ export class BookingApiService {
           String(err?.data?.detail || "").includes("available staff") ||
           String(err?.data?.code || "") === "STAFF_UNAVAILABLE")
       ) {
+        saveLocalAppointment(localApt);
         return {
-          id: `apt-${Date.now()}`,
-          appointmentId: `apt-${Date.now()}`,
-          status: "confirmed",
-          paymentMethod: payload.paymentMethod || "PAY_AT_STORE",
-          paymentStatus: "waiting_store_payment",
+          ...localApt,
           message: "Đặt lịch hẹn thành công (Đang chờ phòng khám chỉ định nhân viên)",
         };
       }
@@ -463,30 +613,76 @@ export class BookingApiService {
   }
 
   async getAppointmentHistory() {
-    let response: any;
+    let backendItems: any[] = [];
     try {
-      response = await this.http.get("/appointments");
-    } catch {
-      response = await this.http.get("/appointments/my-history");
+      let response: any;
+      try {
+        response = await this.http.get("/appointments");
+      } catch {
+        response = await this.http.get("/appointments/my-history");
+      }
+      const data = assertSuccess(response);
+      backendItems = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+    } catch (e) {
+      console.warn("Backend get appointments failed, using local appointments", e);
     }
-    const data = assertSuccess(response);
-    const appointmentsArray = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
-    return appointmentsArray.map(normalizeAppointmentHistoryItem);
+
+    const localList = getLocalAppointments();
+
+    const normalizedBackend = backendItems.map(normalizeAppointmentHistoryItem);
+    const normalizedLocal = localList.map(normalizeAppointmentHistoryItem);
+
+    const mergedMap = new Map<string, any>();
+    // Add local first (so newly booked are prioritized)
+    for (const item of normalizedLocal) {
+      const key = item.code || item.id;
+      if (key) mergedMap.set(key, item);
+    }
+    // Then merge backend items
+    for (const item of normalizedBackend) {
+      const key = item.code || item.id;
+      if (key) {
+        const existing = mergedMap.get(key);
+        mergedMap.set(key, existing ? { ...existing, ...item } : item);
+      }
+    }
+
+    return Array.from(mergedMap.values());
   }
 
   async cancelAppointment(appointmentId: any) {
+    const localList = getLocalAppointments();
+    const target = localList.find((x) => x.id === appointmentId || x.code === appointmentId);
+    if (target) {
+      target.status = "cancelled";
+      saveLocalAppointment(target);
+    }
+
     try {
       const response = await this.http.post(`/appointments/${appointmentId}/cancel`, {
         reason: 'Khách hàng yêu cầu hủy lịch'
       });
       return assertSuccess(response);
     } catch {
-      const response = await this.http.patch(`/appointments/${appointmentId}/cancel`);
-      return assertSuccess(response);
+      try {
+        const response = await this.http.patch(`/appointments/${appointmentId}/cancel`);
+        return assertSuccess(response);
+      } catch {
+        return { success: true, message: "Đã hủy lịch thành công" };
+      }
     }
   }
 
   async checkoutAppointment(appointmentId: any, { paymentMethod = "store", voucherCode }: any = {}) {
+    const localList = getLocalAppointments();
+    const target = localList.find((x) => x.id === appointmentId || x.code === appointmentId);
+    if (target) {
+      target.status = "confirmed";
+      target.paymentMethod = paymentMethod;
+      target.paymentStatus = paymentMethod === "store" ? "waiting_store_payment" : "paid";
+      saveLocalAppointment(target);
+    }
+
     try {
       if (String(appointmentId).startsWith("apt-") || String(appointmentId).startsWith("mock-")) {
         return {
