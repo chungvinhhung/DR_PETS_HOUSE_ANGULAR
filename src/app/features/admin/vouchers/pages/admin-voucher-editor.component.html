@@ -32,8 +32,6 @@
           <div class="voucher-editor__summary">
             <div><span>Mã</span><strong>{{ voucher.code }}</strong></div>
             <div><span>Tên</span><strong>{{ voucher.name }}</strong></div>
-            <div><span>Phạm vi áp dụng</span><strong>{{ scopeLabels[voucher.scope] }}</strong></div>
-                        <div><span>Hiệu lực</span><strong>{{ when(voucher.effectiveFrom) }} – {{ when(voucher.effectiveTo) }}</strong></div>
             <div class="voucher-editor__activation-control voucher-editor__activation-control--view">
               <span class="voucher-editor__activation-caption">{{beforeStart() ? 'Chế độ kích hoạt' : 'Trạng thái voucher'}}</span>
               <label class="voucher-editor__activation-row">
@@ -48,6 +46,9 @@
                 <span>{{activationLabel()}}</span>
               </label>
             </div>
+            <div><span>Phạm vi áp dụng</span><strong>{{ scopeLabels[voucher.scope] }}</strong></div>
+                        <div><span>Hiệu lực</span><strong>{{ when(voucher.effectiveFrom) }} – {{ when(voucher.effectiveTo) }}</strong></div>
+
             <div><span>Ngày tạo</span><strong>{{ when(voucher.createdAt) }}</strong></div>
           </div>
         </section>
@@ -87,6 +88,20 @@
             <input #nameField type="text" required maxlength="120" [value]="form().name"
               (input)="change('name',nameField.value)" placeholder="Ưu đãi tháng 10" [disabled]="!allowEditing()">
           </label>
+          <div class="voucher-editor__activation-control">
+            <span class="voucher-editor__activation-caption">{{beforeStart() ? 'Chế độ kích hoạt' : 'Trạng thái voucher'}}</span>
+            <label class="voucher-editor__activation-row">
+              <span class="voucher-editor__switch">
+                <input #editActivation type="checkbox" role="switch"
+                  [checked]="activationEnabled()"
+                  [disabled]="!allowEditing() || saving() || endTimePassed()"
+                  [attr.aria-checked]="activationEnabled()"
+                  (change)="changeActivation(editActivation.checked)">
+                <span class="voucher-editor__switch-track" aria-hidden="true"></span>
+              </span>
+              <span>{{activationLabel()}}</span>
+            </label>
+          </div>
           <label class="voucher-editor__fields--full">Mô tả
             <textarea #descriptionField rows="2" [value]="form().description"
               (input)="change('description',descriptionField.value)"
@@ -161,20 +176,7 @@
           <label>Giờ kết thúc <span class="voucher-editor__required">*</span>
             <input #toTime type="time" [value]="form().toTime" (change)="change('toTime',toTime.value)" [disabled]="!allowEditing()">
           </label>
-          <div class="voucher-editor__activation-control">
-            <span class="voucher-editor__activation-caption">{{beforeStart() ? 'Chế độ kích hoạt' : 'Trạng thái voucher'}}</span>
-            <label class="voucher-editor__activation-row">
-              <span class="voucher-editor__switch">
-                <input #editActivation type="checkbox" role="switch"
-                  [checked]="activationEnabled()"
-                  [disabled]="!allowEditing() || saving() || endTimePassed()"
-                  [attr.aria-checked]="activationEnabled()"
-                  (change)="changeActivation(editActivation.checked)">
-                <span class="voucher-editor__switch-track" aria-hidden="true"></span>
-              </span>
-              <span>{{activationLabel()}}</span>
-            </label>
-          </div>
+
           <div class="voucher-editor__quota-field voucher-editor__fields--full">
             <div class="voucher-editor__field-caption">Giới hạn lượt sử dụng</div>
             <div class="voucher-editor__quota-controls">
