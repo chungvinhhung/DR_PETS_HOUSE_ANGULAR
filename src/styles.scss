@@ -7706,3 +7706,64 @@ app-admin-article-rich-block{display:block;min-width:0}
  .aid-studio__detail-steps{grid-template-columns:1fr}
  .aid-studio__emergency{flex-direction:column;align-items:flex-start}
 }
+
+
+/* First Aid Studio card preview uses the actual Customer FirstAidCard component. */
+.aid-studio__customer-card{width:100%;min-width:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.aid-studio__customer-card app-first-aid-card>a{
+  box-sizing:border-box;display:block;width:min(100%,360px);min-height:300px;
+  text-decoration:none;color:#172b45;overflow:hidden;border-radius:26px;
+  border:1px solid #d9e3f6;background:#fff;box-shadow:0 2px 8px rgba(17,40,65,.05)
+}
+.aid-studio__customer-card app-first-aid-card>a>div{
+  display:flex;flex-direction:column;min-height:300px;height:100%
+}
+.aid-studio__customer-card app-first-aid-card>a>div>div:first-child{
+  position:relative;height:178px;flex:none;overflow:hidden
+}
+.aid-studio__customer-card app-first-aid-card>a>div>div:first-child>img{
+  width:100%;height:100%;object-fit:cover;display:block
+}
+.aid-studio__customer-card app-first-aid-card>a>div>div:first-child>span{
+  position:absolute;top:14px;left:14px;display:inline-flex;align-items:center;
+  gap:6px;border-radius:99px;background:#ffdad6;padding:7px 13px;
+  color:#c62828;text-transform:uppercase;
+  font:600 11px/16px Roboto,Arial,sans-serif
+}
+.aid-studio__customer-card app-first-aid-card>a>div>div:last-child{
+  box-sizing:border-box;padding:24px;display:flex;flex-direction:column;flex:1;align-items:flex-start;justify-content:center;min-width:0
+}
+.aid-studio__customer-card app-first-aid-card>a>div>div:last-child>p:first-child{
+  margin:0;color:#0d47a1;text-transform:uppercase;
+  letter-spacing:.3px;font:600 12px/18px Roboto,Arial,sans-serif
+}
+.aid-studio__customer-card app-first-aid-card>a>div>div:last-child>h2{
+  font:600 20px/27px Roboto,Arial,sans-serif;color:#172b45;
+  margin:12px 0 0;overflow-wrap:anywhere
+}
+.aid-studio__customer-card app-first-aid-card>a>div>div:last-child>p:not(:first-child){
+  margin:12px 0 0;color:#414753;
+  font:400 13px/21px Roboto,Arial,sans-serif;
+  white-space:normal;overflow-wrap:anywhere
+}
+.aid-studio__customer-card app-first-aid-card>a>div>div:last-child>span{
+  margin-top:20px;display:inline-flex;align-items:center;gap:7px;
+  color:#005ab4;font:600 13px/20px Roboto,Arial,sans-serif
+}
+.aid-studio__customer-card app-customer-icon{
+  display:inline-flex;width:16px;height:16px;align-items:center;justify-content:center
+}
+.aid-studio__customer-card--urgent app-first-aid-card>a{width:100%;min-height:280px}
+.aid-studio__customer-card--urgent app-first-aid-card>a>div{
+  display:grid;grid-template-columns:44% minmax(0,1fr);min-height:280px
+}
+.aid-studio__customer-card--urgent app-first-aid-card>a>div>div:first-child{
+  height:100%;min-height:280px;overflow:hidden
+}
+.aid-studio__customer-card--urgent app-first-aid-card>a>div>div:last-child{padding:25px;min-height:280px}
+.aid-studio__customer-card--urgent app-first-aid-card>a>div>div:last-child>h2{font-size:21px}
+@media(max-width:600px){
+ .aid-studio__customer-card--urgent app-first-aid-card>a>div{display:flex;flex-direction:column}
+ .aid-studio__customer-card--urgent app-first-aid-card>a>div>div:first-child{height:180px;min-height:0}
+ .aid-studio__customer-card--urgent app-first-aid-card>a>div>div:last-child{min-height:0}
+}
