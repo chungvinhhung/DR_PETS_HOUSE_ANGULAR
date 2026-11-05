@@ -47,3 +47,16 @@ Do not start First Aid, Community posts, or Rescue/Adoption editor work until th
 - The Customer category badge (including the actual category icon) now sits at the top-left of the cover image. Standard preview keeps the 288×343 Customer card frame, two-line title/excerpt limits, published-date row, and “Đọc tiếp” affordance.
 - Actual Customer UI uses Customer lazy-loaded CSS; scoped preview CSS supplies the matching geometry within the Admin layout. Preview links are non-interactive and Desktop/Mobile sizing stays available.
 - Source/HTML static QA passed. **Still needs browser build and visual screenshot QA** before claiming pixel-level matching. Status for unsaved articles says “Chưa xuất bản” rather than inventing a publication date.
+
+
+## Phase 1 refinement — categories, hashtags, rich text & step lists (2026-11-06)
+
+- `Chủ đề` is now a strict select sourced from the four existing Customer knowledge categories: **Sức khỏe, Dinh dưỡng, Tâm lý, Vệ sinh & Làm đẹp**. Do not allow arbitrary categories on this form. The chosen label must map to the matching Customer category ID; no fabricated category entries.
+- `Thẻ nội dung (Hashtag)` is now a one-at-a-time input. Enter/comma/Add commits a chip, duplicate entries are ignored, individual chips are removable, maximum 12; chips appear at the end of the Customer article as hash tags.
+- Fix select chevron position with right padding; match existing Admin focus rules.
+- Text block editor now supports bold, italic, underline, http(s) link, numbered/bulleted formatting, and preset font colors. Plain text remains in `content` and `contentBlocks[].text`; block-level rich markup is serialized as `contentBlocks[].html`.
+- New `list` blocks default to an **ordered list** with automatic numbering as the user presses Enter. Admin Detail preview and Customer Detail render numbered steps with light-blue circular numbers. Old text-only list blocks are still supported.
+- **P0 BE REQUIREMENT:** persist and return sanitized `contentBlocks[].html` for all text blocks on both Admin and public Customer APIs; never store or output unsafe scriptable HTML, event handlers, disallowed URLs, or arbitrary embedded markup. FE Angular binding sanitization is defense-in-depth, not a server security replacement.
+- **P0 BE REQUIREMENT:** persist and return the approved category taxonomy and hashtags without converting real categories into fallback values. Validate category against the four options on BE; category name/ID must map to Customer consistently.
+- **IMPORTANT:** Rich formatting depends on BE retaining the `html` field. If it strips this field, text falls back safely but loses bold, italic, underline, links and colors after reload/publication. This is a backend gap, not a verified E2E success.
+- **QA:** create with 4 categories, 3+ hashtag chips, inline formatting, multiple Enter-generated numbered items, then draft/save/reload/publish and compare preview with Customer detail. Test javascript: URLs, paste, broken HTML and permission checks; verify no XSS.
