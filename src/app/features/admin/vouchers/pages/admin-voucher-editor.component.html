@@ -8,10 +8,6 @@
       <h1>{{ mode === 'create' ? 'Tạo voucher' : mode === 'edit' ? 'Chỉnh sửa voucher ' + (original()?.code || '') : 'Chi tiết voucher ' + (original()?.code || '') }}</h1>
       <div class="voucher-editor__heading-actions">
         @if (mode === 'view' && canWrite() && original(); as voucher) {
-          <button type="button" class="voucher-editor__button voucher-editor__button--outline voucher-editor__button--danger-outline"
-            (click)="openDisableDialog()" [disabled]="saving()">
-            {{ voucher.status === 'ACTIVE' ? 'Tắt voucher' : 'Bật voucher' }}
-          </button>
           <a class="voucher-editor__button voucher-editor__button--primary"
             [routerLink]="['/admin/vouchers',voucher.id,'edit']">Chỉnh sửa</a>
         } @else if (mode !== 'view') {
@@ -37,11 +33,27 @@
             <div><span>Mã</span><strong>{{ voucher.code }}</strong></div>
             <div><span>Tên</span><strong>{{ voucher.name }}</strong></div>
             <div><span>Phạm vi áp dụng</span><strong>{{ scopeLabels[voucher.scope] }}</strong></div>
-            <div><span>Trạng thái quản lý</span><strong><span class="voucher-editor__badge" [attr.data-status]="voucher.status">{{ voucher.status === 'ACTIVE' ? 'Đang bật' : 'Đã tắt' }}</span></strong></div>
+            <div><span>{{beforeStart() ? 'Chế độ kích hoạt' : 'Trạng thái quản lý'}}</span><strong><span class="voucher-editor__badge" [attr.data-status]="voucher.status">{{activationLabel()}}</span></strong></div>
             <div><span>Hiệu lực</span><strong>{{ when(voucher.effectiveFrom) }} – {{ when(voucher.effectiveTo) }}</strong></div>
             <div><span>Ngày tạo</span><strong>{{ when(voucher.createdAt) }}</strong></div>
           </div>
         </section>
+        @if (showActivation()) {
+          <section class="voucher-editor__panel voucher-editor__activation-panel" aria-label="Điều khiển kích hoạt voucher">
+            <h2>{{ beforeStart() ? 'Chế độ kích hoạt' : 'Trạng thái voucher' }}</h2>
+            <label class="voucher-editor__activation-row">
+              <span class="voucher-editor__switch">
+                <input #viewActivation type="checkbox" role="switch"
+                  [checked]="activationEnabled()"
+                  [disabled]="!canWrite() || saving()"
+                  [attr.aria-checked]="activationEnabled()"
+                  (change)="toggleActivationFromView(viewActivation)">
+                <span class="voucher-editor__switch-track" aria-hidden="true"></span>
+              </span>
+              <span>{{activationLabel()}}</span>
+            </label>
+          </section>
+        }
         <div class="voucher-editor__detail-grid">
         <section class="voucher-editor__panel">
           <h2>Điều kiện áp dụng</h2>
@@ -77,20 +89,6 @@
           <label>Tên chương trình <span class="voucher-editor__required">*</span>
             <input #nameField type="text" required maxlength="120" [value]="form().name"
               (input)="change('name',nameField.value)" placeholder="Ưu đãi tháng 10" [disabled]="!allowEditing()">
-          </label>
-          <label class="voucher-editor__status-control">
-            <span class="voucher-editor__field-caption">Trạng thái voucher</span>
-            <span class="voucher-editor__switch-row">
-              <span class="voucher-editor__switch">
-                <input #statusField type="checkbox" role="switch"
-                  [checked]="form().status === 'ACTIVE'"
-                  (change)="change('status',statusField.checked ? 'ACTIVE' : 'INACTIVE')"
-                  [disabled]="!allowEditing()"
-                  [attr.aria-checked]="form().status === 'ACTIVE'">
-                <span class="voucher-editor__switch-track" aria-hidden="true"></span>
-              </span>
-              <span class="voucher-editor__switch-text">{{ form().status === 'ACTIVE' ? 'Đang hoạt động' : 'Đã tắt' }}</span>
-            </span>
           </label>
           <label class="voucher-editor__fields--full">Mô tả
             <textarea #descriptionField rows="2" [value]="form().description"
@@ -184,6 +182,22 @@
         </div>
       </section>
       </div>
+      @if (showActivation()) {
+        <section class="voucher-editor__panel voucher-editor__activation-panel" aria-label="Điều khiển kích hoạt voucher">
+          <h2>{{ beforeStart() ? 'Chế độ kích hoạt' : 'Trạng thái voucher' }}</h2>
+          <label class="voucher-editor__activation-row">
+            <span class="voucher-editor__switch">
+              <input #editActivation type="checkbox" role="switch"
+                [checked]="activationEnabled()"
+                [disabled]="!allowEditing() || saving()"
+                [attr.aria-checked]="activationEnabled()"
+                (change)="changeActivation(editActivation.checked)">
+              <span class="voucher-editor__switch-track" aria-hidden="true"></span>
+            </span>
+            <span>{{activationLabel()}}</span>
+          </label>
+        </section>
+      }
       @if (validation()) {
         <div class="voucher-editor__validation" role="alert">{{ validation() }}</div>
       }
@@ -212,25 +226,5 @@
       </div>
     }
 
-    @if (disableDialog() && original(); as voucher) {
-      <div class="voucher-editor__overlay" (click)="closeDisableDialog()">
-        <section class="voucher-editor__dialog" role="dialog" aria-modal="true" aria-label="Xác nhận trạng thái voucher" (click)="$event.stopPropagation()">
-          <h2>{{ voucher.status === 'ACTIVE' ? 'Tắt voucher ' : 'Bật voucher ' }}{{ voucher.code }}</h2>
-          <div class="voucher-editor__notice">
-            <strong>Lưu ý</strong>
-            <p>{{ voucher.status === 'ACTIVE' ? 'Voucher sẽ ngừng được áp dụng cho những giao dịch mới.' : 'Voucher sẽ có thể được áp dụng lại nếu còn hạn và còn lượt.' }}</p>
-          </div>
-          <label>Ghi chú
-            <textarea rows="2" disabled placeholder="Chưa hỗ trợ ghi chú trên Backend"></textarea>
-            <small>Trường này được khóa để tránh nhập lý do mà hệ thống không lưu được.</small>
-          </label>
-          <div class="voucher-editor__dialog-actions">
-            <button class="voucher-editor__button voucher-editor__button--outline" type="button" [disabled]="saving()" (click)="closeDisableDialog()">Quay lại</button>
-            <button class="voucher-editor__button voucher-editor__button--primary" type="button" [disabled]="saving()"
-              (click)="toggleStatus()">{{ saving() ? 'Đang xử lý...' : voucher.status === 'ACTIVE' ? 'Tắt voucher' : 'Bật voucher' }}</button>
-          </div>
-        </section>
-      </div>
-    }
   </main>
 </app-admin-catalog-shell>
