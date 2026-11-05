@@ -269,6 +269,20 @@ export const routes: Routes = [
       .then(c => c.AdminCustomerListComponent),
   },
   {
+    path: 'admin/content/articles/new',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () => import('./features/admin/content/pages/admin-article-editor.component')
+      .then(c => c.AdminArticleEditorComponent),
+  },
+  {
+    path: 'admin/content/articles/:id/edit',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () => import('./features/admin/content/pages/admin-article-editor.component')
+      .then(c => c.AdminArticleEditorComponent),
+  },
+  {
     path: 'admin/content/articles',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN', 'MANAGER'], contentMode: 'articles' },
