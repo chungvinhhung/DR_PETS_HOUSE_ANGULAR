@@ -97,13 +97,34 @@ export class AdminFlashSaleEditorComponent {
   readonly currentState = computed(() => this.original() ? flashSaleState(this.original()!, this.now()) : 'DRAFT');
   readonly stateLabels = FLASH_SALE_STATE_LABELS;
   readonly now = signal(Date.now());
+  // Current Vietnam-local minute, rounded up so a newly selected start never lies in the past.
+  readonly minimumStartAt = computed(() =>
+    vietnamLocal(new Date(Math.ceil(this.now() / 60000) * 60000).toISOString()));
+  readonly draftEnabled = signal(true);
+  readonly startTimeLocked = computed(() => {
+    const sale = this.original();
+    return this.mode === 'edit' && sale?.status === 'PUBLISHED' &&
+      Date.parse(sale.startAt) < this.now();
+  });
+  readonly operatingEnabled = computed(() =>
+    this.original()?.status === 'PUBLISHED'
+      ? !this.original()!.isPaused : this.draftEnabled());
+  readonly startsLaterToday = computed(() => {
+    const start = this.mode === 'view'
+      ? this.original()?.startAt : utcFromVietnam(this.form().from);
+    return Boolean(start && Date.parse(start) > this.now());
+  });
   readonly showOperatingSection = computed(() => {
     const sale = this.original();
-    if (!sale || sale.status !== 'PUBLISHED') return false;
-    const start = Date.parse(sale.startAt);
-    const end = Date.parse(sale.endAt);
-    return Number.isFinite(start) && Number.isFinite(end) &&
-      start <= this.now() && this.now() < end;
+    const startValue = sale?.status === 'PUBLISHED'
+      ? vietnamLocal(sale.startAt) : this.form().from;
+    if (!startValue) return false;
+    const startTime = utcFromVietnam(startValue);
+    const endTime = sale?.status === 'PUBLISHED' ? Date.parse(sale.endAt) : null;
+    const today = startValue.slice(0, 10) === this.minimumStartAt().slice(0, 10);
+    if (!sale || sale.status === 'DRAFT') return today;
+    return Boolean(endTime && endTime > this.now() &&
+      (today || (startTime && Date.parse(startTime) <= this.now())));
   });
 
   readonly pickerOpen = signal(false);
@@ -161,6 +182,7 @@ export class AdminFlashSaleEditorComponent {
           return;
         }
         this.original.set(sale);
+        this.draftEnabled.set(!sale.isPaused);
         this.form.set({
           name:sale.name, description:sale.description,
           from:vietnamLocal(sale.startAt),to:vietnamLocal(sale.endAt),
@@ -176,6 +198,35 @@ export class AdminFlashSaleEditorComponent {
       },
       error: err=>{this.loading.set(false);this.error.set(this.message(err,'Không tải được Flash Sale.'));},
     });
+  }
+  changeStart(input: HTMLInputElement): void {
+    if (!this.editable() || this.startTimeLocked()) return;
+    const min = this.minimumStartAt();
+    if (input.value && input.value < min) {
+      input.value = min;
+      this.update('from', min);
+      this.validation.set('Thời gian bắt đầu không được trước thời điểm hiện tại.');
+      return;
+    }
+    this.update('from', input.value);
+  }
+  setOperatingEnabled(enabled: boolean, input: HTMLInputElement): void {
+    if (!this.editable() && this.original()?.status !== 'PUBLISHED') {
+      input.checked = this.operatingEnabled();
+      return;
+    }
+    if (this.original()?.status === 'PUBLISHED') {
+      void this.togglePaused(!enabled, input);
+      return;
+    }
+    this.draftEnabled.set(enabled);
+    this.resetCreateKeyWhenDraftChanges();
+    this.dirty.set(true);
+    this.validation.set('');
+  }
+  selectNumericInput(event: FocusEvent): void {
+    const input = event.target;
+    if (input instanceof HTMLInputElement) input.select();
   }
   update<K extends keyof Omit<SaleForm, 'items'>>(field: K, value: SaleForm[K]): void {
     if (!this.editable()) return;
@@ -207,6 +258,11 @@ export class AdminFlashSaleEditorComponent {
     if (!from || !to || Date.parse(to)<=Date.parse(from)) {
       this.validation.set('Vui lòng chọn thời gian kết thúc sau thời gian bắt đầu.');return null;
     }
+    const existing = this.original();
+    if ((this.mode === 'create' || existing?.status === 'DRAFT' ||
+      !this.startTimeLocked()) && Date.parse(from) < Date.now()) {
+      this.validation.set('Thời gian bắt đầu không được ở quá khứ.');return null;
+    }
     if (!f.items.length) {
       this.validation.set('Vui lòng thêm ít nhất một sản phẩm vào Flash Sale.');return null;
     }
@@ -221,7 +277,12 @@ export class AdminFlashSaleEditorComponent {
       }
       items.push({productId:row.productId,variantId:row.variantId,salePrice:price,quantityLimit:qty});
     }
-    return {name:f.name.trim(),description:f.description.trim(),startAt:from,endAt:to,items};
+    return {
+      name:f.name.trim(),description:f.description.trim(),
+      startAt:from,endAt:to,items,
+      // BE must preserve initial pause on DRAFT and atomically apply it at publish.
+      isPaused: existing?.status === 'PUBLISHED' ? existing.isPaused : !this.draftEnabled(),
+    };
   }
 
   async save(publishAfterSave=false): Promise<void> {
@@ -239,7 +300,7 @@ export class AdminFlashSaleEditorComponent {
       this.original.set(sale);this.dirty.set(false);
       if (publishAfterSave && sale.status==='DRAFT') {
         try {
-          await firstValueFrom(this.api.publish(sale.id,'flash-publish-'+sale.id));
+          await firstValueFrom(this.api.publish(sale.id,'flash-publish-'+sale.id,body.isPaused));
         }catch(err){
           this.toast.show('Đã lưu bản nháp nhưng chưa kích hoạt. '+this.message(err,'Vui lòng kích hoạt trong trang chi tiết.'),'error');
           this.allowSavedNavigation = true;
@@ -268,7 +329,7 @@ export class AdminFlashSaleEditorComponent {
         this.toast.show('Chương trình đã hết thời gian áp dụng, không thể kích hoạt.','error');
         return;
       }
-      const updated=await firstValueFrom(this.api.publish(this.id,'flash-publish-'+this.id));
+      const updated=await firstValueFrom(this.api.publish(this.id,'flash-publish-'+this.id,this.original()!.isPaused));
       this.original.set(updated);
       this.toast.show(Date.parse(updated.startAt) > Date.now()
         ? 'Chương trình đã được lên lịch và sẽ tự bắt đầu đúng thời gian.'
