@@ -16,6 +16,7 @@ const confirmProductLeave: CanDeactivateFn<ProductLeaveAware> = (component) => c
 
 const confirmStaffLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
 const confirmVoucherLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
+const confirmFlashSaleLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
 const confirmAppointmentCreateLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
 const confirmOrderCreateLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
 
@@ -156,6 +157,36 @@ export const routes: Routes = [
       import(
         './features/admin/service-catalog/pages/service-catalog-list.component'
       ).then((component) => component.ServiceCatalogListComponent),
+  },
+  {
+    path: 'admin/flash-sales/new',
+    canActivate: [authGuard, roleGuard],
+    canDeactivate: [confirmFlashSaleLeave],
+    data: {roles: ['ADMIN'], mode:'create'},
+    loadComponent: () => import('./features/admin/flash-sales/pages/admin-flash-sale-editor.component')
+      .then(c => c.AdminFlashSaleEditorComponent),
+  },
+  {
+    path: 'admin/flash-sales/:id/edit',
+    canActivate: [authGuard, roleGuard],
+    canDeactivate: [confirmFlashSaleLeave],
+    data: {roles: ['ADMIN'], mode:'edit'},
+    loadComponent: () => import('./features/admin/flash-sales/pages/admin-flash-sale-editor.component')
+      .then(c => c.AdminFlashSaleEditorComponent),
+  },
+  {
+    path: 'admin/flash-sales/:id',
+    canActivate: [authGuard, roleGuard],
+    data: {roles: ['ADMIN','MANAGER'], mode:'view'},
+    loadComponent: () => import('./features/admin/flash-sales/pages/admin-flash-sale-editor.component')
+      .then(c => c.AdminFlashSaleEditorComponent),
+  },
+  {
+    path: 'admin/flash-sales',
+    canActivate: [authGuard, roleGuard],
+    data: {roles: ['ADMIN','MANAGER']},
+    loadComponent: () => import('./features/admin/flash-sales/pages/admin-flash-sale-list.component')
+      .then(c => c.AdminFlashSaleListComponent),
   },
   {
     path: 'admin/vouchers/new',
