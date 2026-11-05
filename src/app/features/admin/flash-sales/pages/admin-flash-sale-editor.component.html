@@ -1,7 +1,6 @@
 <app-admin-catalog-shell activeItem="vouchers">
   <main class="flash-editor">
     <app-admin-breadcrumb [items]="[
-      {label:'Khuyến mãi', link:'/admin/vouchers'},
       {label:'Flash Sale', link:'/admin/flash-sales'},
       {label:mode==='create'?'Tạo Flash Sale':mode==='edit'?'Chỉnh sửa Flash Sale':'Chi tiết Flash Sale'}
     ]" />
@@ -76,11 +75,12 @@
               </label>
               <label>Thời gian bắt đầu <span class="flash-editor__required">*</span>
                 <input #from type="datetime-local" [value]="form().from"
-                  (change)="update('from',from.value)" [disabled]="!editable()">
+                  [min]="minimumStartAt()" (change)="update('from',from.value)"
+                  [disabled]="!editable() || startTimeLocked()">
               </label>
               <label>Thời gian kết thúc <span class="flash-editor__required">*</span>
                 <input #to type="datetime-local" [value]="form().to"
-                  (change)="update('to',to.value)" [disabled]="!editable()">
+                  [min]="form().from || minimumStartAt()" (change)="update('to',to.value)" [disabled]="!editable()">
               </label>
               <label class="flash-editor__wide">Mô tả (không bắt buộc)
                 <textarea #description rows="3" [value]="form().description"
@@ -96,13 +96,13 @@
             <label class="flash-editor__switch-row">
               <span class="flash-editor__switch">
                 <input #activeSwitch type="checkbox" role="switch"
-                  [checked]="!(original()?.isPaused ?? false)"
+                  [checked]="operatingEnabled()"
                   [disabled]="!canManage() || saving()"
-                  [attr.aria-checked]="!(original()?.isPaused ?? false)"
-                  (change)="togglePaused(!activeSwitch.checked, activeSwitch)">
+                  [attr.aria-checked]="operatingEnabled()"
+                  (change)="setOperatingEnabled(activeSwitch.checked,activeSwitch)">
                 <span class="flash-editor__switch-track" aria-hidden="true"></span>
               </span>
-              <span>{{ original()?.isPaused ? 'Tạm ngừng' : 'Đang hoạt động' }}</span>
+              <span>{{ operatingEnabled() ? (startsLaterToday() ? 'Sẽ hoạt động theo lịch' : 'Đang hoạt động') : 'Tạm ngừng' }}</span>
             </label>
           </aside>
         }
@@ -140,7 +140,9 @@
                     <td>{{money(product.originalPrice)}}</td>
                     <td>
                       @if (mode==='view') { <strong>{{moneyFromText(product.salePrice)}}</strong> }
-                      @else { <input #price type="number" min="1" step="1" aria-label="Giá Flash Sale"
+                      @else { <input #price type="number" min="0" step="1000" inputmode="numeric"
+                        [attr.max]="product.originalPrice - 1" aria-label="Giá Flash Sale (VNĐ)"
+                        (focus)="selectNumericInput($event)"
                         [value]="product.salePrice" [disabled]="!editable()"
                         (input)="updateItem(i,'salePrice',price.value)"> }
                     </td>
