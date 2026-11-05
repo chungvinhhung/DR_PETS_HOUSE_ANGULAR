@@ -62,7 +62,7 @@
                     </a>
                     @if (canManage() && state(sale) !== 'ENDED') {
                       <a [routerLink]="['/admin/flash-sales', sale.id, 'edit']" title="Chỉnh sửa" [attr.aria-label]="'Chỉnh sửa Flash Sale ' + sale.name">
-                        <img src="/assets/admin-product/icon-save.svg" width="18" height="18" alt="">
+                        <img src="/assets/admin-staff/icon-edit.svg" width="18" height="18" alt="">
                       </a>
                     }
                   </td>
