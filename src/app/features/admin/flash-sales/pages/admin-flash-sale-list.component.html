@@ -60,11 +60,7 @@
                     <a [routerLink]="['/admin/flash-sales', sale.id]" title="Xem chi tiết" [attr.aria-label]="'Xem Flash Sale ' + sale.name">
                       <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="">
                     </a>
-                    @if (canManage() && state(sale) !== 'ENDED') {
-                      <a [routerLink]="['/admin/flash-sales', sale.id, 'edit']" title="Chỉnh sửa" [attr.aria-label]="'Chỉnh sửa Flash Sale ' + sale.name">
-                        <img src="/assets/admin-staff/icon-edit.svg" width="18" height="18" alt="">
-                      </a>
-                    }
+
                   </td>
                 </tr>
               } @empty {
@@ -78,7 +74,13 @@
         </table>
       </div>
       <footer class="flash-list__pagination">
-        <span>Đang hiển thị {{ displayRows().length }} trên tổng số {{ totalCount() === null ? 'chưa xác định' : totalCount() }} chương trình</span>
+        <span>
+          @if (totalCount() !== null) {
+            Đang hiển thị {{ displayRows().length }} trên tổng số {{ totalCount() }} chương trình
+          } @else {
+            Đang hiển thị {{ displayRows().length }} chương trình
+          }
+        </span>
         <div>
           <button type="button" (click)="previous()" [disabled]="loading() || !previousCursors().length" aria-label="Trang trước">‹</button>
           @for (index of visiblePages(); track $index) {
