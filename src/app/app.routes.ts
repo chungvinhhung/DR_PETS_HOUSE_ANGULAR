@@ -290,6 +290,20 @@ export const routes: Routes = [
       .then(c => c.AdminContentListComponent),
   },
   {
+    path: 'admin/content/first-aid/new',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () => import('./features/admin/content/pages/admin-first-aid-editor.component')
+      .then(c => c.AdminFirstAidEditorComponent),
+  },
+  {
+    path: 'admin/content/first-aid/:id/edit',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () => import('./features/admin/content/pages/admin-first-aid-editor.component')
+      .then(c => c.AdminFirstAidEditorComponent),
+  },
+  {
     path: 'admin/content/first-aid',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN', 'MANAGER'], contentMode: 'first-aid' },
