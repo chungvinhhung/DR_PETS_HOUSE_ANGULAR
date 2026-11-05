@@ -92,6 +92,18 @@ export function normalizePost(post: any = {}) {
   const category = post.category || {};
   const categoryLabel = category.category_name || "Kiến thức";
   const contentText = post.content || post.excerpt || "";
+  // New Content Studio blocks are optional. Preserve the old plain-text
+  // renderer when BE does not return these fields.
+  const rawBlocks = post.contentBlocks || post.content_blocks;
+  const contentBlocks = Array.isArray(rawBlocks)
+    ? rawBlocks.filter((block: any) =>
+        ['paragraph','heading','quote','list','image','video'].includes(block?.type) &&
+        typeof block?.text === 'string' && block.text.trim())
+      .map((block: any) => ({
+        type:block.type, text:block.text,
+        alt:typeof block.alt === 'string' ? block.alt : ''
+      }))
+    : [];
   const paragraphs = (String(contentText)
     .split(/\n{2,}|\r?\n/)
     .map((item: any) => item.trim())
@@ -107,8 +119,10 @@ export function normalizePost(post: any = {}) {
     title: post.title || "Bài viết",
     excerpt: post.excerpt || paragraphs[0] || "Thông tin hữu ích giúp bạn chăm sóc thú cưng mỗi ngày.",
     content: contentText,
+    contentBlocks,
+    layoutType: post.layoutType || post.layout_type || 'STANDARD',
     paragraphs,
-    image: post.thumbnail_url || blogImages.postPlaceholder,
+    image: post.thumbnail_url || post.thumbnailUrl || post.coverImage || blogImages.postPlaceholder,
     author: post.author?.full_name || "Dr. Pet's House",
     authorImage: post.author?.avatar_url || blogImages.authorMinhAnh,
     publishedAt: formatDate(post.created_at),
