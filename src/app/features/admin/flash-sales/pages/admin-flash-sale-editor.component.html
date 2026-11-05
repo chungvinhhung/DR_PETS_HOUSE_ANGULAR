@@ -65,7 +65,7 @@
                   <span class="flash-editor__switch">
                     <input #detailActivation type="checkbox" role="switch"
                       [checked]="operatingEnabled()"
-                      [disabled]="!canManage() || saving() || (mode==='view' && original()?.status !== 'PUBLISHED') || (Number.isFinite(selectedEnd()) && selectedEnd() <= now())"
+                      [disabled]="!canManage() || saving() || (mode==='view' && original()?.status !== 'PUBLISHED') || endTimePassed()"
                       [attr.aria-checked]="operatingEnabled()"
                       (change)="setOperatingEnabled(detailActivation.checked,detailActivation)">
                     <span class="flash-editor__switch-track" aria-hidden="true"></span>
@@ -100,7 +100,7 @@
                   <span class="flash-editor__switch">
                     <input #formActivation type="checkbox" role="switch"
                       [checked]="operatingEnabled()"
-                      [disabled]="!canManage() || saving() || (mode==='view' && original()?.status !== 'PUBLISHED') || (Number.isFinite(selectedEnd()) && selectedEnd() <= now())"
+                      [disabled]="!canManage() || saving() || (mode==='view' && original()?.status !== 'PUBLISHED') || endTimePassed()"
                       [attr.aria-checked]="operatingEnabled()"
                       (change)="setOperatingEnabled(formActivation.checked,formActivation)">
                     <span class="flash-editor__switch-track" aria-hidden="true"></span>
