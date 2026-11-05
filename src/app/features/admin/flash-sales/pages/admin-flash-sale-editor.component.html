@@ -45,15 +45,13 @@
       @if (validation()) {
         <p class="flash-editor__validation" role="alert">{{validation()}}</p>
       }
-      <div class="flash-editor__top" [class.flash-editor__top--with-status]="showOperatingSection()">
+      <div class="flash-editor__top">
         <section class="flash-editor__panel flash-editor__info">
           <div class="flash-editor__info-heading">
             <h2>Thông tin chương trình</h2>
-            @if (!showOperatingSection()) {
-              <span class="flash-editor__badge" [attr.data-state]="mode==='create'?'DRAFT':currentState()">
-                {{ mode==='create'?'Bản nháp':stateLabels[currentState()] }}
-              </span>
-            }
+            <span class="flash-editor__badge" [attr.data-state]="mode==='create'?'DRAFT':currentState()">
+              {{ mode==='create'?'Bản nháp':stateLabels[currentState()] }}
+            </span>
           </div>
           @if (mode==='view') {
             @if (original(); as sale) {
@@ -61,6 +59,20 @@
                 <div><span>Tên chương trình</span><strong>{{sale.name}}</strong></div>
                 <div><span>Thời gian bắt đầu</span><strong>{{date(sale.startAt)}}</strong></div>
                 <div><span>Thời gian kết thúc</span><strong>{{date(sale.endAt)}}</strong></div>
+                <div class="flash-editor__activation-field">
+                <span class="flash-editor__activation-caption">{{ isPreStart() ? 'Chế độ kích hoạt' : 'Trạng thái chương trình' }}</span>
+                <label class="flash-editor__switch-row">
+                  <span class="flash-editor__switch">
+                    <input #detailActivation type="checkbox" role="switch"
+                      [checked]="operatingEnabled()"
+                      [disabled]="!canManage() || saving() || (mode==='view' && original()?.status !== 'PUBLISHED') || (Number.isFinite(selectedEnd()) && selectedEnd() <= now())"
+                      [attr.aria-checked]="operatingEnabled()"
+                      (change)="setOperatingEnabled(detailActivation.checked,detailActivation)">
+                    <span class="flash-editor__switch-track" aria-hidden="true"></span>
+                  </span>
+                  <span class="flash-editor__switch-text">{{ operatingLabel() }}</span>
+                </label>
+              </div>
                 @if (sale.description) {
                   <div class="flash-editor__summary-wide"><span>Mô tả</span><strong>{{sale.description}}</strong></div>
                 }
@@ -82,6 +94,20 @@
                 <input #to type="datetime-local" [value]="form().to"
                   [min]="form().from || minimumStartAt()" (change)="update('to',to.value)" [disabled]="!editable()">
               </label>
+              <div class="flash-editor__activation-field">
+                <span class="flash-editor__activation-caption">{{ isPreStart() ? 'Chế độ kích hoạt' : 'Trạng thái chương trình' }}</span>
+                <label class="flash-editor__switch-row">
+                  <span class="flash-editor__switch">
+                    <input #formActivation type="checkbox" role="switch"
+                      [checked]="operatingEnabled()"
+                      [disabled]="!canManage() || saving() || (mode==='view' && original()?.status !== 'PUBLISHED') || (Number.isFinite(selectedEnd()) && selectedEnd() <= now())"
+                      [attr.aria-checked]="operatingEnabled()"
+                      (change)="setOperatingEnabled(formActivation.checked,formActivation)">
+                    <span class="flash-editor__switch-track" aria-hidden="true"></span>
+                  </span>
+                  <span class="flash-editor__switch-text">{{ operatingLabel() }}</span>
+                </label>
+              </div>
               <label class="flash-editor__wide">Mô tả (không bắt buộc)
                 <textarea #description rows="3" [value]="form().description"
                   (input)="update('description',description.value)" [disabled]="!editable()"
@@ -90,22 +116,6 @@
             </div>
           }
         </section>
-        @if (showOperatingSection()) {
-          <aside class="flash-editor__panel flash-editor__status-panel" aria-label="Thiết lập trạng thái chương trình">
-            <h2>{{ isPreStart() ? 'Chế độ kích hoạt' : 'Trạng thái chương trình' }}</h2>
-            <label class="flash-editor__switch-row">
-              <span class="flash-editor__switch">
-                <input #activeSwitch type="checkbox" role="switch"
-                  [checked]="operatingEnabled()"
-                  [disabled]="!canManage() || saving()"
-                  [attr.aria-checked]="operatingEnabled()"
-                  (change)="setOperatingEnabled(activeSwitch.checked,activeSwitch)">
-                <span class="flash-editor__switch-track" aria-hidden="true"></span>
-              </span>
-              <span class="flash-editor__switch-text">{{ operatingLabel() }}</span>
-            </label>
-          </aside>
-        }
       </div>
 
       <section class="flash-editor__panel flash-editor__products">
