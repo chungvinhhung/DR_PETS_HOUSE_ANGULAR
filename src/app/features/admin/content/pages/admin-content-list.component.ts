@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { finalize, Observable } from 'rxjs';
 
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
@@ -20,7 +20,7 @@ type ContentMode='articles'|'first-aid'|'community'|'rescue'|'adoptions';
  changeDetection:ChangeDetectionStrategy.OnPush,
 })
 export class AdminContentListComponent{
- private readonly route=inject(ActivatedRoute);private readonly api=inject(AdminContentService);private readonly session=inject(AuthSessionService);
+ private readonly route=inject(ActivatedRoute);private readonly router=inject(Router);private readonly api=inject(AdminContentService);private readonly session=inject(AuthSessionService);
  readonly mode=this.route.snapshot.data['contentMode'] as ContentMode;
  readonly rows=signal<any[]>([]);readonly loading=signal(true);readonly error=signal('');readonly search=signal('');readonly filter=signal('');readonly status=signal('');readonly page=signal(1);readonly notice=signal('');
  readonly communityDialog=signal<any|null>(null);readonly rejectionReason=signal('');readonly actionBusy=signal(false);
@@ -60,7 +60,11 @@ export class AdminContentListComponent{
  readonly totalPages=computed(()=>Math.max(1,Math.ceil(this.filtered().length/this.pageSize)));
  readonly pageNumbers=computed(()=>adminPageWindowWithEdges(this.page(),this.totalPages()));
  readonly visible=computed(()=>this.filtered().slice((this.page()-1)*this.pageSize,this.page()*this.pageSize));
- ngOnInit():void{this.load();}
+ ngOnInit():void{
+  const notice=this.route.snapshot.queryParamMap.get('notice');
+  if (notice==='Đã lưu bản nháp bài viết.' || notice==='Đã xuất bản bài viết.') this.notice.set(notice);
+  this.load();
+ }
  load():void{
   this.loading.set(true);this.error.set('');
   let request:Observable<any[]>;
@@ -69,6 +73,10 @@ export class AdminContentListComponent{
  }
  onFilter():void{this.page.set(1);} goToPage(p:number):void{this.page.set(Math.max(1,Math.min(p,this.totalPages())));}
  openCreate():void{
+  if(this.mode==='articles') {
+   void this.router.navigate(['/admin/content/articles/new']);
+   return;
+  }
   this.editing.set(null);this.editorError.set('');
   if(this.mode==='articles'||this.mode==='first-aid'){
    this.postDraft.set({title:'',category:'',excerpt:'',content:'',status:'DRAFT',emergencyPhone:'1900-PET-HELP'});
@@ -80,6 +88,12 @@ export class AdminContentListComponent{
   }
  }
  openEdit(row:any):void{
+  if(this.mode==='articles') {
+   const id=String(row?._id||row?.id||row?.post_id||'');
+   if(!id){this.notice.set('Bài viết chưa có mã để chỉnh sửa. Vui lòng tải lại danh sách.');return;}
+   void this.router.navigate(['/admin/content/articles',id,'edit']);
+   return;
+  }
   this.editing.set(row);this.editorError.set('');
   if(this.mode==='articles'||this.mode==='first-aid'){
    this.postDraft.set({
