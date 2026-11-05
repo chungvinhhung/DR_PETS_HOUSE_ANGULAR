@@ -60,10 +60,8 @@ export class AdminVoucherEditorComponent {
   readonly validation = signal('');
   readonly dirty = signal(false);
   readonly maxDiscountUnlimited = signal(true);
-  readonly disableDialog = signal(false);
   readonly leaveDialogOpen = signal(false);
   private leaveResolver: ((allow: boolean) => void) | null = null;
-  readonly disableNote = signal('');
   readonly discountTypeLabels: Record<VoucherDiscountType,string> = {
     PERCENTAGE:'Theo phần trăm', FIXED:'Tiền cố định',
   };
@@ -208,7 +206,6 @@ export class AdminVoucherEditorComponent {
   @HostListener('document:keydown.escape')
   dismissDialogOnEscape(): void {
     if (this.leaveDialogOpen()) this.resolveLeave(false);
-    else if (this.disableDialog()) this.closeDisableDialog();
   }
   cancel(): void {void this.router.navigateByUrl('/admin/vouchers');}
   private iso(date: string, time: string): string | null {
@@ -277,30 +274,6 @@ export class AdminVoucherEditorComponent {
         this.toast.show(adminErrorMessage(err,'Không lưu được voucher. Vui lòng kiểm tra dữ liệu và thử lại.'),'error');
       },
     });
-  }
-  openDisableDialog(): void {
-    if (this.mode!=='view' || !this.canWrite() || !this.original() || this.saving()) return;
-    this.disableNote.set('');this.disableDialog.set(true);
-  }
-  closeDisableDialog(): void {if (!this.saving()) this.disableDialog.set(false);}
-  toggleStatus(): void {
-    const v=this.original();
-    if (!v || !this.canWrite() || this.saving()) return;
-    // BE PATCH accepts status only; note is not stored by BE.
-    this.saving.set(true);
-    this.api.update(v.id,{status:v.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'})
-      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: updated => {
-          this.saving.set(false);this.disableDialog.set(false);
-          this.original.set(updated);
-          this.toast.show(updated.status === 'ACTIVE'?'Đã bật lại voucher.':'Đã tắt voucher.','success');
-          this.load();
-        },
-        error: err => {
-          this.saving.set(false);
-          this.toast.show(adminErrorMessage(err,'Không thay đổi được trạng thái voucher.'),'error');
-        },
-      });
   }
   offer(v: AdminVoucher): string{return voucherOffer(v);}
   when(value?:string|null):string{return voucherDate(value);}
