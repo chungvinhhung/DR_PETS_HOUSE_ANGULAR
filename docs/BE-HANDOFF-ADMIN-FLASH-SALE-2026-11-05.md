@@ -4,6 +4,19 @@
 **FE branch:** `feature/admin-flash-sale-content-management`  
 **Trạng thái:** FE đã dựng giao diện + API client; BE foundation-v6 chưa có routes quản trị Flash Sale trong module `src/`. Trong `legacy/` / `build/` có source cũ, **không phải bằng chứng API đang triển khai**.
 
+## CẬP NHẬT ƯU TIÊN 05/11/2026 — AUTO / MANUAL TRƯỚC GIỜ, ACTIVE / PAUSED TRONG GIỜ
+
+Quy tắc thay thế những ghi chú cũ về việc switch chỉ hiện khi chọn ngày hôm nay:
+
+1. **Bất kỳ ngày/giờ bắt đầu hợp lệ trong tương lai**: switch với nhãn bật = `Tự động hoạt động theo lịch` (`activationMode:'AUTO', isPaused:false`), nhãn tắt = `Kích hoạt thủ công` (`activationMode:'MANUAL', isPaused:true`). Điều này áp dụng cả trường hợp startAt là ngày mai hoặc các ngày sau.
+2. **Từ startAt đến trước endAt**: cùng switch hiển thị bật = `Đang hoạt động` (`isPaused:false`), tắt = `Tạm ngừng` (`isPaused:true`). Nếu Admin chọn MANUAL trước giờ bắt đầu, tại thời điểm startAt chương trình **phải giữ PAUSED**, không được tự chuyển RUNNING.
+3. **Sau endAt**: không cho bật lại hoặc mua theo giá Flash Sale. BE phải kiểm soát bằng đồng hồ server, không phụ thuộc đồng hồ FE.
+4. `FlashSaleWriteBody` phải lưu thật `activationMode:'AUTO'|'MANUAL'` cùng `isPaused`. `POST /flash-sales/:id/publish` nhận `{activationMode,isPaused}` và thực hiện transaction nguyên tử. `PATCH /flash-sales/:id/pause` nhận `{activationMode,isPaused}` và cập nhật nguyên tử; đừng chỉ lưu `activationMode` rồi chờ cron.
+5. `GET /flash-sales`, `GET /flash-sales/:id` cần trả lại `activationMode` và `isPaused` đã persist. Nếu BE không hỗ trợ toàn bộ contract, FE không được coi là E2E PASS.
+6. **Voucher** dùng hai giai đoạn UI y hệt, nhưng dựa vào BE đã có `status:'ACTIVE'|'INACTIVE'`: trước giờ, ACTIVE = AUTO, INACTIVE = MANUAL; trong giờ ACTIVE = Đang hoạt động, INACTIVE = Tạm ngừng. Voucher INACTIVE trước giờ **phải tiếp tục INACTIVE sau khi đến giờ**; không được tự bật lại. Eligibility checkout phải kiểm tra đồng thời status, effectiveFrom/effectiveTo, quota và các điều kiện giao dịch.
+
+**Bổ sung UAT:** kiểm thử lúc 1 phút trước giờ bắt đầu → đúng giờ → 1 phút sau, đối với cả AUTO và MANUAL; kiểm tra reload, chuyển tab, tài khoản khác, scheduler, và mua hàng lúc chương trình MANUAL đang tạm ngừng. Mỗi trạng thái phải được duy trì thật trong DB và được Checkout enforce.
+
 ## 1. Vị trí UI và các quyết định đã chốt
 
 - Admin → Bán hàng → Khuyến mãi → localtab **Voucher | Flash Sale**.
