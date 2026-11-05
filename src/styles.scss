@@ -6704,3 +6704,65 @@ app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
 .flash-editor__load-more:hover:not(:disabled){
   background:#f2f7fc;border-color:#e2eaf4
 }
+
+/* WEB2 Flash Sale + Voucher two-phase activation controls (shared visual rhythm). */
+/* Never let the status strip stretch to the height of the information form. */
+app-admin-flash-sale-editor .flash-editor__top,
+.flash-editor__top {
+  display:flex;flex-direction:column;align-items:center;
+  gap:18px;margin-bottom:26px;
+}
+app-admin-flash-sale-editor .flash-editor__top > .flash-editor__panel,
+.flash-editor__top > .flash-editor__panel {
+  margin:0;align-self:center;width:100%;
+}
+app-admin-flash-sale-editor .flash-editor__status-panel,
+.flash-editor__top .flash-editor__status-panel {
+  max-width:1020px;width:100%;height:auto;min-height:88px;
+  display:flex;flex-direction:row;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;
+  gap:14px 28px;padding:18px 24px;
+}
+app-admin-flash-sale-editor .flash-editor__status-panel h2 {margin:0;font-size:18px}
+app-admin-flash-sale-editor .flash-editor__status-panel .flash-editor__switch-row {
+  display:inline-flex;align-items:center;gap:12px;justify-content:flex-start;
+  margin:0;white-space:normal;
+}
+app-admin-flash-sale-editor .flash-editor__switch-text {font-size:13px;line-height:20px;white-space:normal}
+app-admin-flash-sale-editor .flash-editor__switch {flex:0 0 48px;width:48px;height:26px}
+app-admin-flash-sale-editor .flash-editor__switch-track {width:48px;height:26px}
+app-admin-flash-sale-editor .flash-editor__switch-track::after {
+  top:3px;left:3px;width:20px;height:20px;
+}
+app-admin-flash-sale-editor .flash-editor__switch input:checked+.flash-editor__switch-track::after {transform:translateX(22px)}
+/* The Voucher form uses a dedicated compact status strip below its two-column conditions. */
+app-admin-voucher-editor .voucher-editor__activation-panel {
+  display:flex;flex-direction:row;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:14px 28px;min-height:88px;
+  margin-top:18px;margin-bottom:18px;padding:18px 24px;
+}
+app-admin-voucher-editor .voucher-editor__activation-panel h2 {
+  margin:0;font-size:18px;line-height:26px;font-weight:650;
+}
+app-admin-voucher-editor .voucher-editor__activation-row {
+  display:inline-flex;align-items:center;justify-content:flex-start;gap:12px;
+  font-size:13px;line-height:20px;font-weight:500;white-space:normal;cursor:pointer
+}
+app-admin-voucher-editor .voucher-editor__activation-row .voucher-editor__switch {
+  flex:0 0 48px;width:48px;height:26px;
+}
+app-admin-voucher-editor .voucher-editor__activation-row .voucher-editor__switch input[type="checkbox"] {
+  position:absolute;z-index:1;inset:0;
+  width:48px!important;height:26px!important;min-height:0!important;
+  margin:0!important;padding:0!important;opacity:0;cursor:pointer
+}
+app-admin-voucher-editor .voucher-editor__activation-panel .voucher-editor__switch-track{
+  width:48px;height:26px
+}
+@media(max-width:700px){
+  app-admin-flash-sale-editor .flash-editor__status-panel,
+  app-admin-voucher-editor .voucher-editor__activation-panel{
+    align-items:flex-start;flex-direction:column;gap:12px;
+  }
+  app-admin-flash-sale-editor .flash-editor__top{margin-bottom:20px}
+}
