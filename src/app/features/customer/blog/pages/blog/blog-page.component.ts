@@ -106,6 +106,10 @@ export class BlogPageComponent {
             if (apiFeatured) this.featuredPost.set(apiFeatured);
             if (apiTrending.length) this.trendingPosts.set(apiTrending);
             if (apiPosts.posts.length) {
+              // Admin-selected featured frame takes precedence only if the
+              // published API actually persisted and returned layoutType.
+              const featured = apiPosts.posts.find((post: any) => post.layoutType === 'FEATURED');
+              if (featured) this.featuredPost.set(featured);
               this.allPosts.set(apiPosts.posts);
               return;
             }
