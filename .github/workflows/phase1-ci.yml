@@ -8,6 +8,7 @@ on:
       - feat/figma-branch-v2-admin
       - integration/branch-v2-service-pricing-staff
       - feature/admin-order-management-phase1
+      - feature/admin-flash-sale-content-management
   pull_request:
     branches:
       - develop
