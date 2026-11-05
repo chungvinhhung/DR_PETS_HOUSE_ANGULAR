@@ -45,25 +45,36 @@ function normalizeAppointmentStatus(appointment: any) {
   const paymentStatus = String(appointment.payment_status || appointment.paymentStatus || '').toLowerCase();
   const paymentMethod = String(appointment.payment_method || appointment.paymentMethod || '').toLowerCase();
 
+  const isDirectClinic =
+    paymentMethod === "store" ||
+    paymentMethod === "pay_at_store" ||
+    paymentMethod === "cash" ||
+    paymentMethod === "pay_at_clinic" ||
+    paymentMethod === "direct" ||
+    paymentMethod.includes("store") ||
+    paymentMethod.includes("clinic") ||
+    paymentMethod.includes("cash") ||
+    paymentMethod.includes("direct") ||
+    paymentStatus === "waiting_store_payment";
+
   if (rawStatus === "missed" || rawStatus === "no_show" || rawStatus === "noshow") return "no_show";
-  if (rawStatus === "pending_payment" || rawStatus === "pending_confirmation") return "pending_payment";
-  if (rawStatus === "pending" && (paymentStatus === "waiting_store_payment" || paymentMethod === "store" || paymentMethod === "pay_at_store")) {
+  if (rawStatus === "completed") return "completed";
+  if (rawStatus === "cancelled") return "cancelled";
+
+  // For clinic/direct payment, status is always confirmed (ready for appointment at clinic)
+  if (isDirectClinic) {
     return "confirmed";
   }
+
+  if (rawStatus === "pending_payment" || rawStatus === "pending_confirmation") return "pending_payment";
   if (rawStatus === "pending") return "pending_payment";
   if (
     (paymentStatus === "unpaid" || paymentStatus === "pending") &&
-    paymentMethod !== "store" &&
-    paymentMethod !== "pay_at_store" &&
-    rawStatus !== "cancelled" &&
-    rawStatus !== "completed" &&
     rawStatus !== "confirmed"
   ) {
     return "pending_payment";
   }
   if (rawStatus === "confirmed") return "confirmed";
-  if (rawStatus === "completed") return "completed";
-  if (rawStatus === "cancelled") return "cancelled";
   return rawStatus || "confirmed";
 }
 
@@ -130,7 +141,15 @@ export function normalizeAppointmentHistoryItem(appointment: any = {}) {
   const status = normalizeAppointmentStatus(appointment);
   const pet = appointment.pet || appointment.petSnapshot || {};
   const speciesName = pet.species?.species_name || pet.species || appointment.pet_species_snapshot || "";
-  const petName = pet.name || pet.pet_name || appointment.pet_name_snapshot || appointment.petSnapshot?.name || "Thú cưng";
+  let petName = (pet.name && pet.name !== "Thú cưng") ? pet.name : (pet.pet_name || appointment.pet_name_snapshot || appointment.petSnapshot?.name || "");
+  if (!petName || petName === "Thú cưng") {
+    if (appointment.condition_description) {
+      petName = appointment.condition_description.split(" - ")[0].trim();
+    } else if (appointment.conditionDescription) {
+      petName = appointment.conditionDescription.split(" - ")[0].trim();
+    }
+  }
+  if (!petName) petName = pet.name || "Thú cưng";
   const breedName = pet.breed?.breed_name || pet.breed || appointment.pet_breed_snapshot || appointment.petSnapshot?.breed || speciesName || "Thú cưng";
   const petAge = pet.age || (pet.ageYears ? `${pet.ageYears} tuổi` : "");
   const petGender = pet.gender === "male" ? "Đực" : (pet.gender === "female" ? "Cái" : (pet.gender || ""));
@@ -372,12 +391,44 @@ export class BookingApiService {
       branchId: resolvedBranch,
       serviceIds: resolvedServiceIds,
     };
+
+    const localAppointments = getLocalAppointments().filter((apt: any) => {
+      const aptDate = apt.rawDate || apt.appointment_date || apt.scheduledStart;
+      const aptDateFormatted = aptDate ? String(aptDate).split("T")[0] : "";
+      const aptBranchId = apt.branch?.id || apt.branchId;
+      const matchesBranch = !aptBranchId || aptBranchId === resolvedBranch;
+      return aptDateFormatted === dateFormatted && matchesBranch && apt.status !== "cancelled";
+    });
+
+    const adjustWithLocal = (grouped: any[]) => {
+      if (localAppointments.length === 0) return grouped;
+      return grouped.map((slot: any) => {
+        const timeVal = slot.value?.split(" - ")[0] || slot.value;
+        const bookedLocal = localAppointments.filter((apt: any) => {
+          const aptTime = apt.service?.time || apt.start_time;
+          return aptTime && (aptTime === timeVal || slot.value?.includes(aptTime));
+        }).length;
+
+        const bookedCount = (slot.bookedCount || 0) + bookedLocal;
+        const maxAppointments = slot.maxAppointments || 3;
+        const remaining = Math.max(0, maxAppointments - bookedCount);
+        const available = slot.available && remaining > 0;
+
+        return {
+          ...slot,
+          bookedCount,
+          remaining,
+          available,
+        };
+      });
+    };
+
     try {
       const response = await this.http.get("/appointments/slots", { params });
       const slots = assertSuccess(response);
       const slotsList = Array.isArray(slots) ? slots : Array.isArray(slots?.slots) ? slots.slots : [];
       if (slotsList.length > 0) {
-        return groupSlotsByTime(slotsList.map(normalizeSlot));
+        return adjustWithLocal(groupSlotsByTime(slotsList.map(normalizeSlot)));
       }
     } catch {
       // Fallback to availability
@@ -388,7 +439,7 @@ export class BookingApiService {
       const slots = assertSuccess(response);
       const slotsList = Array.isArray(slots) ? slots : Array.isArray(slots?.slots) ? slots.slots : [];
       if (slotsList.length > 0) {
-        return groupSlotsByTime(slotsList.map(normalizeSlot));
+        return adjustWithLocal(groupSlotsByTime(slotsList.map(normalizeSlot)));
       }
     } catch {
       // Fallback to operational slots
@@ -411,7 +462,7 @@ export class BookingApiService {
       slotStart: `${dateFormatted}T${time}:00.000Z`,
       slotEnd: `${dateFormatted}T${time}:30.000Z`,
     }));
-    return groupSlotsByTime(defaultSlots.map(normalizeSlot));
+    return adjustWithLocal(groupSlotsByTime(defaultSlots.map(normalizeSlot)));
   }
 
   async bookAppointment(bookingData: any) {

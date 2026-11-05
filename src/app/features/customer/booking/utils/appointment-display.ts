@@ -32,8 +32,8 @@ const STATUS_STYLES = {
   },
 };
 
-const ONLINE_PAYMENT_METHODS = new Set<any>(["momo", "zalopay", "vnpay", "bank", "atm", "card", "online"]);
-const CLINIC_PAYMENT_METHODS = new Set<any>(["cash", "pay_at_clinic", "store"]);
+const ONLINE_PAYMENT_METHODS = new Set<any>(["momo", "zalopay", "vnpay", "bank", "atm", "card", "online", "online_mock"]);
+const CLINIC_PAYMENT_METHODS = new Set<any>(["cash", "pay_at_clinic", "store", "pay_at_store", "direct", "offline"]);
 
 export const APPOINTMENT_FILTERS = [
   { value: "all", label: "Tất cả" },
@@ -45,18 +45,38 @@ export const APPOINTMENT_FILTERS = [
 ];
 
 export function isOnlinePayment(appointment: any) {
-  return ONLINE_PAYMENT_METHODS.has(appointment.paymentMethod);
+  if (!appointment) return false;
+  const method = String(appointment.paymentMethod || appointment.payment_method || '').toLowerCase();
+  return (
+    ONLINE_PAYMENT_METHODS.has(method) ||
+    method.includes('online') ||
+    method.includes('momo') ||
+    method.includes('vnpay') ||
+    method.includes('zalopay') ||
+    method.includes('card')
+  );
 }
 
 export function isClinicPayment(appointment: any) {
-  return CLINIC_PAYMENT_METHODS.has(appointment.paymentMethod);
+  if (!appointment) return true;
+  const method = String(appointment.paymentMethod || appointment.payment_method || '').toLowerCase();
+  const paymentStatus = String(appointment.paymentStatus || appointment.payment_status || '').toLowerCase();
+  return (
+    CLINIC_PAYMENT_METHODS.has(method) ||
+    method.includes('store') ||
+    method.includes('clinic') ||
+    method.includes('cash') ||
+    method.includes('direct') ||
+    paymentStatus === 'waiting_store_payment' ||
+    !isOnlinePayment(appointment)
+  );
 }
 
 export function getAppointmentDisplayStatus(appointment: any) {
-  const status =
-    appointment.status === "pending_payment" && isClinicPayment(appointment)
-      ? "confirmed"
-      : appointment.status;
+  let status = String(appointment?.status || 'confirmed').toLowerCase();
+  if (isClinicPayment(appointment) && (status === "pending_payment" || status === "pending" || status === "pending_confirmation")) {
+    status = "confirmed";
+  }
 
   return {
     value: status,

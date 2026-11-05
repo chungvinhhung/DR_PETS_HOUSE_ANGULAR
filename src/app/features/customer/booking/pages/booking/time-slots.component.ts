@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 
 import { BookingCardComponent } from './booking-card.component';
 import { isBeforeToday, isSlotInPast } from './booking-page.helpers';
@@ -26,4 +26,17 @@ export class TimeSlotsComponent {
   protected readonly isBeforeToday: any = isBeforeToday;
   protected readonly isSlotInPast: any = isSlotInPast;
 
+  readonly visibleSlots = computed<any>(() => {
+    const slots = this.timeSlots() || [];
+    const date = this.selectedDate();
+    return slots.filter((slot: any) => {
+      // Must be available and have remaining capacity
+      if (slot.available === false) return false;
+      if (typeof slot.remaining === 'number' && slot.remaining <= 0) return false;
+      if (slot.maxAppointments && slot.bookedCount >= slot.maxAppointments) return false;
+      // Must not be in the past for today
+      if (date && isSlotInPast(slot.value, date)) return false;
+      return true;
+    });
+  });
 }
