@@ -121,14 +121,11 @@ export class AdminFlashSaleEditorComponent {
       ? Date.parse(sale.endAt)
       : Date.parse(utcFromVietnam(this.form().to) ?? '');
   });
+  // Even before dates are selected, the default is automatic scheduled activation.
   readonly isPreStart = computed(() =>
-    Number.isFinite(this.selectedStart()) && this.selectedStart() > this.now());
-  readonly showOperatingSection = computed(() =>
-    Number.isFinite(this.selectedStart()) &&
-    (!Number.isFinite(this.selectedEnd()) || this.selectedEnd() > this.now()) &&
-    (this.mode === 'create' || this.original()?.status !== 'DRAFT' || this.mode === 'edit'));
+    !Number.isFinite(this.selectedStart()) || this.selectedStart() > this.now());
   readonly operatingLabel = computed(() => this.isPreStart()
-    ? this.operatingEnabled() ? 'Tự động hoạt động theo lịch' : 'Kích hoạt thủ công'
+    ? this.operatingEnabled() ? 'Tự động kích hoạt theo lịch' : 'Kích hoạt thủ công'
     : this.operatingEnabled() ? 'Đang hoạt động' : 'Tạm ngừng');
   private modeFor(sale: AdminFlashSale | null, enabled: boolean): FlashSaleActivationMode {
     return sale?.activationMode ??
