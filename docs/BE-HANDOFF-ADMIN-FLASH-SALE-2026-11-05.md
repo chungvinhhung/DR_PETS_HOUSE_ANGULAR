@@ -12,7 +12,8 @@
 - Không nhập tay “Sắp diễn ra”, “Đang diễn ra” hoặc “Đã kết thúc”.
 - Admin có `DRAFT` (Lưu bản nháp), `PUBLISHED` (Lưu chương trình, bao gồm lên lịch trước khi bắt đầu), và **switch** `isPaused` để tạm ngừng/tiếp tục chương trình đã kích hoạt trong khoảng thời gian chạy.
 - FE tạo/sửa bản nháp có 3 nút phân cấp: Hủy bỏ, Lưu bản nháp, Lưu chương trình. “Lưu chương trình” gọi create/update rồi publish; nếu `now < startAt` thì trạng thái hiển thị **Sắp diễn ra** chứ không chạy ngay; nếu `startAt <= now < endAt` thì **Đang diễn ra**.
-- Section switch “Trạng thái chương trình” chỉ hiển thị khi chương trình đã PUBLISHED và thời gian hiện tại nằm trong `startAt..endAt`. Switch BẬT = hoạt động (`isPaused: false`); TẮT = tạm ngừng (`isPaused: true`). Hết thời gian kết thúc không được publish hoặc resume.
+- Section switch “Trạng thái chương trình” hiển thị ngay trong form tạo/sửa bản nháp khi **ngày bắt đầu là ngày hôm nay** (giờ Việt Nam), hoặc ở chương trình PUBLISHED đang hiệu lực / sắp bắt đầu trong hôm nay. Switch BẬT = sẽ hoạt động đúng lịch (`isPaused: false`); TẮT = tạm ngừng (`isPaused: true`). Hết thời gian kết thúc không được publish hoặc resume. Nếu chuyển ngày bắt đầu sang ngày tương lai thì trạng thái tạm ngừng chưa áp dụng được đặt lại về BẬT.
+- Khi tạo/sửa DRAFT, `isPaused` trong request phải được **lưu thật** cùng chương trình. `POST /flash-sales/:id/publish` chấp nhận body `{ "isPaused": boolean }` và BE **phải commit trạng thái publish + isPaused trong cùng một transaction**, không được cho chương trình chạy một khoảng ngắn rồi mới tạm ngừng. Có thể dùng `PATCH /pause` riêng cho thay đổi trạng thái chương trình đã PUBLISHED.
 - Display state do BE tính bằng UTC server time: `DRAFT`, `PAUSED`, `UPCOMING`, `RUNNING`, `ENDED`. Precedence: DRAFT → ENDED → PAUSED → UPCOMING → RUNNING. Thời gian form FE được nhập theo Asia/Ho_Chi_Minh và gửi ISO UTC.
 
 ## 2. REST contract FE đang gọi (cần BE xác nhận/triển khai)
@@ -23,7 +24,7 @@
 | GET | `/api/v1/flash-sales/:id` | ADMIN, MANAGER | Chi tiết kèm SKU, giá, quota và đã bán |
 | POST | `/api/v1/flash-sales` | ADMIN | Tạo **DRAFT** idempotent; yêu cầu header `Idempotency-Key` |
 | PATCH | `/api/v1/flash-sales/:id` | ADMIN | Cập nhật form, kiểm tra version khi cần |
-| POST | `/api/v1/flash-sales/:id/publish` | ADMIN | DRAFT → PUBLISHED; idempotent |
+| POST | `/api/v1/flash-sales/:id/publish` | ADMIN | DRAFT → PUBLISHED và áp dụng `isPaused` nguyên tử; idempotent |
 | PATCH | `/api/v1/flash-sales/:id/pause` | ADMIN | Body `{ "isPaused": true/false }` |
 | GET | `/api/v1/flash-sales/active?limit=12` | CUSTOMER/Public | Chương trình thực sự đang chạy và các SKU eligible, cùng `endAt` do BE trả |
 
@@ -75,7 +76,8 @@ Mẫu chỉ minh họa **schema**, không phải dữ liệu seed hoặc API đ�
   "endAt": "2026-11-08T16:59:00.000Z",
   "items": [
     {"productId": "PRODUCT_ID", "variantId": "VARIANT_ID", "salePrice": 199000, "quantityLimit": 50}
-  ]
+  ],
+  "isPaused": false
 }
 ```
 
@@ -93,6 +95,8 @@ BE lấy tên/SKU/giá retail thật từ Product/Variant, **không tin client g
 8. Flash Sale SKU có thể hiển thị nhiều branch phục vụ fulfillment, nhưng **không thêm field chọn branch trong Admin Flash Sale**.
 9. Role ADMIN write, MANAGER read, STAFF không được sửa. 400/401/403/404/409/422/429/500 trả code và correlationId chuẩn.
 10. Tất cả thao tác persist và có audit actor/time, version; API không được fake success khi chưa có DB transaction.
+11. FE không cho chọn `startAt` cũ hơn thời điểm hiện tại theo giờ Việt Nam ở màn tạo/bản nháp (datetime-local min cập nhật mỗi phút); BE bắt buộc kiểm tra lại theo server clock. Bản PUBLISHED đã bắt đầu khóa thay đổi `startAt`, nhưng vẫn cho xem và cập nhật các trường hợp lệ được phép.
+12. Giá Flash Sale chọn theo SKU, nhập VND nguyên dương và cho tăng/giảm **bước 1.000đ** giống giá bán ở form sản phẩm; BE kiểm tra điều kiện thấp hơn giá retail và không tin giá từ client.
 
 ## 4. Data + UAT: bắt buộc trước khi BE đóng task
 
