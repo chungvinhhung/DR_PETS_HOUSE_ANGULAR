@@ -20,7 +20,7 @@
 </div>
 <div class="ml-6 flex shrink-0 flex-col items-end gap-3">
   <div class="text-xl font-bold leading-7 text-[#031635]">{{ formatMoney(appointment().service.price) }}</div>
-  @if (status().value === 'pending_payment') {
+  @if (status().value === 'pending_payment' && !isClinic()) {
     <span app-payment-countdown [remainingSeconds]="remainingSeconds()"></span>
   }
   <div class="flex flex-wrap justify-end gap-2">

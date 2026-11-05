@@ -41,11 +41,22 @@ export class BlogPageComponent {
   // --- Giá trị tính toán (computed) ---
   readonly filteredPosts = computed<any>(() => {
     const keyword = this.searchQuery().trim().toLocaleLowerCase("vi");
+    const activeCat = this.category();
     return this.allPosts().filter((post: any) => {
-      if (this.category() !== "all" && post.category !== this.category()) return false;
+      if (activeCat !== "all") {
+        const postCat = String(post.category || "").toLowerCase();
+        const postLabel = String(post.categoryLabel || "").toLowerCase();
+        const activeTarget = String(activeCat).toLowerCase();
+        const matchesCat =
+          postCat === activeTarget ||
+          postLabel === activeTarget ||
+          postLabel.includes(activeTarget) ||
+          activeTarget.includes(postCat);
+        if (!matchesCat) return false;
+      }
       if (!keyword) return true;
       return [post.title, post.excerpt, post.categoryLabel].some((value: any) =>
-        value.toLocaleLowerCase("vi").includes(keyword),
+        value && String(value).toLocaleLowerCase("vi").includes(keyword),
       );
     });
   });

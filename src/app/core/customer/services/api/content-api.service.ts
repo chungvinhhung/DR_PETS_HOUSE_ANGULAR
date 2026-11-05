@@ -90,7 +90,8 @@ function getFirstAidCategoryId(category: any) {
 
 export function normalizePost(post: any = {}) {
   const category = post.category || {};
-  const categoryLabel = category.category_name || "Kiến thức";
+  const categoryLabel = typeof category === 'string' ? category : (category.category_name || category.name || category.label || "Kiến thức");
+  const categoryId = typeof category === 'string' ? ((blogCategoryAliases as any)[slugify(category)] || slugify(category)) : getBlogCategoryId(category);
   const contentText = post.content || post.excerpt || "";
   const paragraphs = (String(contentText)
     .split(/\n{2,}|\r?\n/)
@@ -99,19 +100,19 @@ export function normalizePost(post: any = {}) {
 
   return {
     ...post,
-    id: post.slug || String(post.post_id || post.id || ""),
-    backendId: String(post.post_id || ""),
-    section: post.post_type === "community" ? "community" : "knowledge",
-    category: getBlogCategoryId(category),
+    id: post.slug || String(post._id || post.post_id || post.id || ""),
+    backendId: String(post._id || post.post_id || post.id || ""),
+    section: post.postType === "FIRST_AID" ? "first_aid" : (post.post_type === "community" ? "community" : "knowledge"),
+    category: categoryId,
     categoryLabel,
     title: post.title || "Bài viết",
     excerpt: post.excerpt || paragraphs[0] || "Thông tin hữu ích giúp bạn chăm sóc thú cưng mỗi ngày.",
     content: contentText,
     paragraphs,
-    image: post.thumbnail_url || blogImages.postPlaceholder,
-    author: post.author?.full_name || "Dr. Pet's House",
-    authorImage: post.author?.avatar_url || blogImages.authorMinhAnh,
-    publishedAt: formatDate(post.created_at),
+    image: post.thumbnailUrl || post.thumbnail_url || post.thumbnail || blogImages.postPlaceholder,
+    author: post.authorId?.fullName || post.author?.full_name || post.authorNameSnapshot || post.author || "Dr. Pet's House",
+    authorImage: post.author?.avatar_url || post.authorAvatar || blogImages.authorMinhAnh,
+    publishedAt: formatDate(post.publishedAt || post.createdAt || post.created_at || new Date()),
     intro: post.excerpt || paragraphs[0] || "",
     description: paragraphs.slice(0, 2).join("\n\n") || post.excerpt || "",
     highlightTitle: "Điểm cần lưu ý",
@@ -123,8 +124,31 @@ export function normalizePost(post: any = {}) {
       ? (String(post.hashtags).split(/[,\s]+/).filter(Boolean) as any[]).map((tag: any) => (tag.startsWith("#") ? tag : `#${tag}`))
       : [`#${slugify(categoryLabel) || "petcare"}`],
     commentsCount: post._count?.comments || post.commentsCount || 0,
-    likesCount: post.likes_count || 0,
-    views: post.view_count || 0,
+    likesCount: post.likesCount || post.likes_count || 0,
+    views: post.viewCount || post.view_count || post.views || 0,
+  };
+}
+
+export function normalizeCommunityPostFromApi(item: any = {}) {
+  const author = item.authorNameSnapshot || item.authorCustomerId?.fullName || item.author?.full_name || item.author || "Thành viên yêu thú cưng";
+  const imageUrl = (Array.isArray(item.imageUrls) && item.imageUrls[0]) || item.image || item.thumbnailUrl || null;
+  const id = String(item._id || item.id || `comm-${Date.now()}`);
+  return {
+    ...item,
+    id,
+    backendId: String(item._id || item.id || ""),
+    title: item.title || "",
+    content: item.content || "",
+    author,
+    avatar: item.authorAvatarSnapshot || item.avatar || null,
+    initials: author.slice(0, 1).toUpperCase(),
+    time: formatDate(item.createdAt || item.created_at || new Date()),
+    image: imageUrl,
+    video: item.videoUrl || item.video || null,
+    type: item.type || "Khoảnh khắc",
+    likes: Number(item.likesCount ?? item.likes ?? 0),
+    comments: Number(item.commentsCount ?? item.comments ?? 0),
+    tags: Array.isArray(item.tags) ? item.tags : ["#cộng_đồng", "#thúcưng"],
   };
 }
 
@@ -219,7 +243,8 @@ export class ContentApiService {
     try {
       const response = await this.http.get("/posts/featured");
       const post = assertSuccess(response);
-      return post ? normalizePost(post) : null;
+      const single = Array.isArray(post) ? post[0] : (post?.items?.[0] || post);
+      return single ? normalizePost(single) : null;
     } catch {
       return null;
     }
@@ -229,7 +254,7 @@ export class ContentApiService {
     try {
       const response = await this.http.get("/posts/trending", { params: { limit } });
       const data = assertSuccess(response);
-      const list = Array.isArray(data) ? data : [];
+      const list = Array.isArray(data) ? data : (data?.items || []);
       return list.map(normalizePost);
     } catch {
       return [];
@@ -237,7 +262,13 @@ export class ContentApiService {
   }
 
   async getPostsPage(params: any = {}) {
-    const response = await this.http.get("/posts", { params });
+    const queryParams: any = { ...params };
+    if (params.type === 'official_blog') {
+      queryParams.postType = 'OFFICIAL_BLOG';
+    } else if (params.type === 'first_aid') {
+      queryParams.postType = 'FIRST_AID';
+    }
+    const response = await this.http.get("/posts", { params: queryParams });
     const payload = assertSuccess(response);
     const posts = Array.isArray(payload)
       ? payload
@@ -247,6 +278,30 @@ export class ContentApiService {
       totalRows: Number(payload?.totalRows ?? payload?.total ?? posts.length),
       totalPages: Number(payload?.totalPages || 1),
     };
+  }
+
+  async getCommunityPosts(params: any = {}) {
+    try {
+      const response = await this.http.get("/community/posts", { params });
+      const payload = assertSuccess(response);
+      const items = Array.isArray(payload)
+        ? payload
+        : (Array.isArray(payload?.items) ? payload.items : (Array.isArray(payload?.posts) ? payload.posts : []));
+      return {
+        items: items.map(normalizeCommunityPostFromApi),
+        total: Number(payload?.total || items.length),
+        page: Number(payload?.page || 1),
+        totalPages: Number(payload?.totalPages || 1),
+      };
+    } catch {
+      return { items: [], total: 0, page: 1, totalPages: 1 };
+    }
+  }
+
+  async createCommunityPost(data: { title?: string; content: string; imageUrls?: string[] }) {
+    const response = await this.http.post("/community/posts", data);
+    const resData = assertSuccess(response);
+    return normalizeCommunityPostFromApi(resData);
   }
 
   async getPostBySlug(slug: any) {

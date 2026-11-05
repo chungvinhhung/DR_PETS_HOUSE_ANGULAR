@@ -256,15 +256,39 @@ export function normalizeBranch(branch: any) {
   };
 }
 
+export const BLOCKED_SLOTS_STORAGE_KEY = 'dr_pet_conflicted_slots';
+
+export function getBlockedSlots(): string[] {
+  try {
+    const raw = localStorage.getItem(BLOCKED_SLOTS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveBlockedSlot(key: string) {
+  try {
+    const current = getBlockedSlots();
+    if (!current.includes(key)) {
+      current.push(key);
+      localStorage.setItem(BLOCKED_SLOTS_STORAGE_KEY, JSON.stringify(current));
+    }
+  } catch {}
+}
+
 export function normalizeSlot(slot: any) {
   const startRaw = slot.start || slot.start_time || slot.startTime;
   const endRaw = slot.end || slot.end_time || slot.endTime;
   const start = formatTime(startRaw);
   const end = formatTime(endRaw);
-  const remaining = Number(slot.remaining ?? (slot.available ? 1 : 0));
+  const statusStr = String(slot.status || "").toLowerCase();
+  const isFullOrBlocked = statusStr === "full" || statusStr === "blocked";
+  const rawRemaining = typeof slot.remaining === "number" ? slot.remaining : (slot.available === false ? 0 : undefined);
+  const remaining = isFullOrBlocked ? 0 : Number(rawRemaining ?? (slot.available ? 1 : 0));
   const bookedCount = Number(slot.booked_count || slot.bookedCount || 0);
-  const maxAppointments = Number(slot.max_booking || slot.maxAppointments || (remaining + bookedCount) || 3);
-  const isAvailable = slot.status === "available" || remaining > 0 || slot.available === true;
+  const maxAppointments = Number(slot.max_booking || slot.maxAppointments || (remaining + bookedCount) || 1);
+  const isAvailable = !isFullOrBlocked && (statusStr === "available" || remaining > 0 || slot.available === true);
 
   const id = String(slot.id || slot.slot_id || slot.start || Math.random());
   const value = start && end ? `${start} - ${end}` : (start || String(slot.value || "09:00 - 10:00"));
@@ -277,7 +301,7 @@ export function normalizeSlot(slot: any) {
     value,
     bookedCount,
     maxAppointments,
-    remaining: remaining > 0 ? remaining : Math.max(0, maxAppointments - bookedCount),
+    remaining: isFullOrBlocked ? 0 : (remaining > 0 ? remaining : Math.max(0, maxAppointments - bookedCount)),
     available: isAvailable,
   };
 }
@@ -287,21 +311,21 @@ function groupSlotsByTime(slots: any) {
 
   slots.forEach((slot: any) => {
     const current = groupedSlots.get(slot.value);
-    const remaining = Math.max(0, slot.maxAppointments - slot.bookedCount);
+    const slotRemaining = typeof slot.remaining === 'number' ? slot.remaining : (slot.available ? 1 : 0);
 
     if (!current) {
       groupedSlots.set(slot.value, {
         ...slot,
-        bookedCount: slot.bookedCount,
-        maxAppointments: slot.maxAppointments,
-        available: slot.available,
-        remaining,
+        bookedCount: slot.bookedCount || 0,
+        maxAppointments: slot.maxAppointments || 1,
+        available: Boolean(slot.available && slotRemaining > 0),
+        remaining: slotRemaining,
       });
       return;
     }
 
-    const currentRemaining = Math.max(0, current.maxAppointments - current.bookedCount);
-    const shouldUseSlotForBooking = slot.available && (!current.available || remaining > currentRemaining);
+    const currentRemaining = current.remaining || 0;
+    const shouldUseSlotForBooking = slot.available && (!current.available || slotRemaining > currentRemaining);
 
     groupedSlots.set(slot.value, {
       ...current,
@@ -314,14 +338,14 @@ function groupSlotsByTime(slots: any) {
             status: slot.status,
           }
         : {}),
-      bookedCount: current.bookedCount + slot.bookedCount,
-      maxAppointments: current.maxAppointments + slot.maxAppointments,
-      available: current.available || slot.available,
-      remaining: current.remaining + remaining,
+      bookedCount: (current.bookedCount || 0) + (slot.bookedCount || 0),
+      maxAppointments: (current.maxAppointments || 1) + (slot.maxAppointments || 1),
+      available: Boolean((current.available || slot.available) && (currentRemaining + slotRemaining > 0)),
+      remaining: currentRemaining + slotRemaining,
     });
   });
 
-  return (Array.from(groupedSlots.values()) as any).map(({ remaining, ...slot }: any) => slot);
+  return Array.from(groupedSlots.values());
 }
 
 export const LOCAL_APPOINTMENTS_KEY = 'dr_pet_customer_appointments';
@@ -362,6 +386,15 @@ export class BookingApiService {
   private readonly http = inject(CustomerHttpService);
   private readonly authService = inject(CustomerAuthService);
 
+  markSlotAsBlocked(date: string, branchId: string, slotValue: string) {
+    const timeVal = slotValue?.split(" - ")[0] || slotValue;
+    const dateFormatted = date ? String(date).split("T")[0] : "";
+    const key1 = `${dateFormatted}_${timeVal}`;
+    const key2 = `${dateFormatted}_${slotValue}`;
+    saveBlockedSlot(key1);
+    saveBlockedSlot(key2);
+  }
+
   async getBranches() {
     const response = await this.http.get("/branches");
     const data = assertSuccess(response);
@@ -401,18 +434,23 @@ export class BookingApiService {
     });
 
     const adjustWithLocal = (grouped: any[]) => {
-      if (localAppointments.length === 0) return grouped;
+      const blockedList = getBlockedSlots();
       return grouped.map((slot: any) => {
         const timeVal = slot.value?.split(" - ")[0] || slot.value;
+        const key1 = `${dateFormatted}_${timeVal}`;
+        const key2 = `${dateFormatted}_${slot.value}`;
+        const isBlocked = blockedList.includes(key1) || blockedList.includes(key2);
+
         const bookedLocal = localAppointments.filter((apt: any) => {
           const aptTime = apt.service?.time || apt.start_time;
           return aptTime && (aptTime === timeVal || slot.value?.includes(aptTime));
         }).length;
 
+        const maxAppointments = slot.maxAppointments || 1;
         const bookedCount = (slot.bookedCount || 0) + bookedLocal;
-        const maxAppointments = slot.maxAppointments || 3;
-        const remaining = Math.max(0, maxAppointments - bookedCount);
-        const available = slot.available && remaining > 0;
+        const baseRemaining = typeof slot.remaining === 'number' ? slot.remaining : Math.max(0, maxAppointments - (slot.bookedCount || 0));
+        const remaining = isBlocked ? 0 : Math.max(0, baseRemaining - bookedLocal);
+        const available = !isBlocked && slot.available && remaining > 0;
 
         return {
           ...slot,

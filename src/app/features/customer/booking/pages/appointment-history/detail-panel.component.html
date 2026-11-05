@@ -99,7 +99,7 @@
   </section>
 </div>
 <footer class="border-t border-[#c2c6d4] bg-white px-6 pb-6 pt-5">
-  @if (status().value === 'pending_payment') {
+  @if (status().value === 'pending_payment' && !isClinic()) {
     <div class="mb-4 text-center"><span app-payment-countdown [remainingSeconds]="remainingSeconds()"></span></div>
   }
   @if (showDeadline()) {

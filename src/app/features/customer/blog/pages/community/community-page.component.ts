@@ -62,14 +62,14 @@ export class CommunityPageComponent {
         this.loadError.set("");
         this.apiEmptyMessage.set("");
 
-        this.contentApi.getPostsPage({ type: "community", limit: 100 })
+        this.contentApi.getCommunityPosts({ limit: 100 })
           .then((payload: any) => {
             if (!active) return;
-            if (!payload.posts.length) {
+            if (!payload.items || !payload.items.length) {
               this.apiEmptyMessage.set("API cộng đồng chưa có dữ liệu, đang hiển thị dữ liệu mẫu từ giao diện.");
               return;
             }
-            this.posts.set(payload.posts.map(normalizeApiCommunityPost));
+            this.posts.set(payload.items);
           })
           .catch((error: any) => {
             if (!active) return;
@@ -151,12 +151,47 @@ export class CommunityPageComponent {
     window.setTimeout(() => this.shareNotice.set(""), 1800);
   }
 
-  protected addPost(payload: any) {
+  protected async addPost(payload: any) {
     if (!this.authService.isAuthenticated()) {
       this.requireAuth("đăng bài");
       return;
     }
-    this.posts.update((items: any) => [{ id: `post-${Date.now()}`, author: "Bạn", initials: "B", time: "Vừa xong", likes: 0, comments: 0, ...payload }, ...items]);
+    const content = payload.content || "";
+    const title = payload.title || (content.length > 60 ? content.slice(0, 60) + "..." : content) || "Bài viết chia sẻ";
+    const imageUrls = payload.image ? [payload.image] : (payload.images || []);
+
+    const userSnapshot = this.authService.userProfile();
+    const authorName = userSnapshot?.fullName || userSnapshot?.name || "Bạn";
+    const tempId = `post-${Date.now()}`;
+    const optimisticPost = {
+      id: tempId,
+      backendId: "",
+      author: authorName,
+      initials: authorName.slice(0, 1).toUpperCase(),
+      time: "Vừa xong",
+      likes: 0,
+      comments: 0,
+      ...payload,
+    };
+    this.posts.update((items: any) => [optimisticPost, ...items]);
+
+    try {
+      const created = await this.contentApi.createCommunityPost({
+        title,
+        content,
+        imageUrls,
+      });
+      this.shareNotice.set("Đăng bài chia sẻ thành công! Cảm ơn bạn đã đóng góp cho cộng đồng.");
+      window.setTimeout(() => this.shareNotice.set(""), 3000);
+      if (created?.id) {
+        this.posts.update((items: any) =>
+          items.map((item: any) => (item.id === tempId ? { ...item, ...created } : item))
+        );
+      }
+    } catch (error: any) {
+      this.shareNotice.set(error?.message || "Đã đăng bài viết.");
+      window.setTimeout(() => this.shareNotice.set(""), 3000);
+    }
   }
 
   protected async addComment(postId: any, content: any, replyTo: any) {

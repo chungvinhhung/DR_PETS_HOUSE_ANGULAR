@@ -339,11 +339,39 @@ export class BookingPageComponent {
       });
       this.success.set(true);
     } catch (error: any) {
-      const errorMsg = error?.data?.detail || error?.data?.message || error?.message || "Không thể đặt lịch.";
+      const rawErrorMsg = error?.data?.detail || error?.data?.message || error?.message || "Không thể đặt lịch.";
       const errorList = Array.isArray(error?.data?.errors)
         ? error.data.errors.map((e: any) => `${e.field || ''}: ${e.message || ''}`.trim()).filter(Boolean).join("; ")
         : "";
-      this.bookingError.set(errorList ? `${errorMsg} (${errorList})` : errorMsg);
+      const isSlotConflict =
+        error?.status === 409 ||
+        String(rawErrorMsg).includes("already reserved") ||
+        String(rawErrorMsg).includes("SLOT_UNAVAILABLE") ||
+        String(rawErrorMsg).includes("kín lịch") ||
+        String(rawErrorMsg).includes("staff") ||
+        String(rawErrorMsg).includes("khung giờ");
+
+      if (isSlotConflict) {
+        // 1. Mark slot as blocked in local cache so it won't appear again
+        const slotVal = selectedSlotRecord.value;
+        const dateKey = getDateKey(this.selectedDate());
+        this.bookingApi.markSlotAsBlocked(dateKey, this.ownerInfo().branch, slotVal);
+
+        // 2. Remove the conflicted slot from currently loaded slots
+        this.timeSlots.update((slots: any[]) => slots.filter((s: any) => s.value !== slotVal));
+        this.selectedSlot.set(null);
+
+        // 3. Take user back to Step 1 to pick an available slot
+        this.step.set(1);
+        this.bookingError.set(
+          "Khung giờ này vừa có khách khác đặt hoặc nhân viên phụ trách đã kín lịch. Hệ thống đã tự động gỡ khung giờ, quý khách vui lòng chọn khung giờ khác."
+        );
+        window.requestAnimationFrame(() => {
+          window.scrollTo({ top: 200, behavior: "smooth" });
+        });
+      } else {
+        this.bookingError.set(errorList ? `${rawErrorMsg} (${errorList})` : rawErrorMsg);
+      }
     } finally {
       this.bookingSubmitting.set(false);
     }
