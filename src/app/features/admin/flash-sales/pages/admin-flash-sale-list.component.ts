@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
+import { ADMIN_TABLE_PAGE_SIZE, adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
@@ -35,7 +35,7 @@ export class AdminFlashSaleListComponent {
   readonly previousCursors = signal<(string | null)[]>([]);
   readonly totalCount = signal<number | null>(null);
   readonly page = computed(() => this.previousCursors().length + 1);
-  readonly totalPages = computed(() => this.totalCount() === null ? null : Math.max(1, Math.ceil(this.totalCount()! / 10)));
+  readonly totalPages = computed(() => this.totalCount() === null ? null : Math.max(1, Math.ceil(this.totalCount()! / ADMIN_TABLE_PAGE_SIZE)));
   readonly visiblePages = computed(() => this.totalPages() === null ? [this.page()] : adminPageWindow(this.page(), this.totalPages()!));
   readonly now = signal(Date.now());
   readonly stateLabels = FLASH_SALE_STATE_LABELS;
@@ -80,7 +80,7 @@ export class AdminFlashSaleListComponent {
       search: this.search(),
       state: this.stateFilter(),
       cursor: this.cursor(),
-      limit: 10,
+      limit: ADMIN_TABLE_PAGE_SIZE,
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: data => {
         if (version !== this.requestVersion) return;
@@ -142,7 +142,7 @@ export class AdminFlashSaleListComponent {
         cursor = next;
         if (step + 1 < target) {
           const result = await firstValueFrom(this.api.list({
-            search:this.search(), state:this.stateFilter(),cursor,limit:10,
+            search:this.search(), state:this.stateFilter(),cursor,limit:ADMIN_TABLE_PAGE_SIZE,
           }));
           if (version !== this.requestVersion || this.destroyRef.destroyed) return;
           next = result.nextCursor;
