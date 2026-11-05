@@ -49,6 +49,10 @@ export class AdminContentService {
     }).pipe(map(r=>arrayFrom(unwrap(r))));
   }
 
+  getPost(id:string):Observable<any> {
+    return this.api.get<any>(`/admin/posts/${encodeURIComponent(id)}`).pipe(map(unwrap));
+  }
+
   createPost(body:any):Observable<any> {
     return this.api.post<any>('/admin/posts',body).pipe(map(unwrap));
   }
