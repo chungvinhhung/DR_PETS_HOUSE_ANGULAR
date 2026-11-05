@@ -152,8 +152,15 @@ export class AdminArticleEditorComponent {
     this.category.set(selected?.label || categoryValue);
     this.excerpt.set(String(row.excerpt || ''));
     this.coverUrl.set(String(row.thumbnail_url || row.thumbnailUrl || row.coverImage || ''));
-    const rawTags=Array.isArray(row.hashtags) ? row.hashtags.join(',') : String(row.hashtags || '');
-    this.tags.set([...new Set(rawTags.split(/[,;\s]+/).map(t=>this.normalizeTag(t)).filter(Boolean))].slice(0,12));
+    const rawTags: string = Array.isArray(row.hashtags)
+      ? row.hashtags.map((tag: unknown) => String(tag)).join(',')
+      : String(row.hashtags || '');
+    const normalizedTags: string[] = [...new Set<string>(
+      rawTags.split(/[,;\s]+/)
+        .map((tag: string) => this.normalizeTag(tag))
+        .filter((tag: string) => tag.length > 0),
+    )].slice(0, 12);
+    this.tags.set(normalizedTags);
     const layout = row.layoutType || row.layout_type;
     this.layout.set(layout === 'FEATURED' ? 'FEATURED' : 'STANDARD');
     const blocks = normalizedBlocks(row.contentBlocks || row.content_blocks, String(row.content || ''));
