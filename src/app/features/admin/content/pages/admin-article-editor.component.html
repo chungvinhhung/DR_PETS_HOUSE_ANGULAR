@@ -48,17 +48,45 @@
               </label>
               <label class="article-studio__field">
                 <span>Chủ đề <b>*</b></span>
-                <input type="text" list="article-category-list" placeholder="Nhập hoặc chọn chủ đề"
-                  [disabled]="!canWrite() || saving()" [ngModel]="category()" (ngModelChange)="setField('category',$event)">
-                <datalist id="article-category-list">
-                  @for (name of suggestedCategories(); track name) { <option [value]="name"></option> }
-                </datalist>
+                <select [disabled]="!canWrite() || saving()" [ngModel]="category()"
+                  (ngModelChange)="setField('category',$event)" aria-label="Chọn chủ đề bài viết">
+                  <option value="" disabled>Chọn chủ đề</option>
+                  @for (item of categories; track item.id) {
+                    <option [value]="item.label">{{item.label}}</option>
+                  }
+                </select>
               </label>
-              <label class="article-studio__field">
-                <span>Thẻ nội dung</span>
-                <input type="text" placeholder="Ví dụ: chăm sóc, dinh dưỡng"
-                  [disabled]="!canWrite() || saving()" [ngModel]="tags()" (ngModelChange)="setField('tags',$event)">
-              </label>
+              <div class="article-studio__field">
+                <label for="article-tag-input">Thẻ nội dung (Hashtag)</label>
+                <div class="article-studio__tag-editor">
+                  <div class="article-studio__tag-entry">
+                    <span aria-hidden="true">#</span>
+                    <input id="article-tag-input" type="text" maxlength="41"
+                      placeholder="Ví dụ: SucKhoeThuCung"
+                      [disabled]="!canWrite() || saving() || tags().length >= 12"
+                      [ngModel]="tagDraft()" (ngModelChange)="tagDraft.set($event)"
+                      (keydown)="handleTagKey($event)" (blur)="commitTag()"
+                      aria-describedby="article-tag-help">
+                    <button type="button" aria-label="Thêm thẻ nội dung"
+                      [disabled]="!canWrite() || saving() || !tagDraft().trim() || tags().length >= 12"
+                      (click)="commitTag()">Thêm</button>
+                  </div>
+                  @if (tags().length) {
+                    <div class="article-studio__tag-chips" aria-label="Các thẻ nội dung đã chọn">
+                      @for (tag of tags(); track tag) {
+                        <span class="article-studio__tag-chip">
+                          #{{tag}}
+                          <button type="button" [attr.aria-label]="'Xóa thẻ '+tag"
+                            [disabled]="!canWrite() || saving()" (click)="removeTag(tag)">×</button>
+                        </span>
+                      }
+                    </div>
+                  }
+                </div>
+                <small id="article-tag-help" class="article-studio__field-help">
+                  Nhập từng thẻ rồi nhấn Enter hoặc Thêm. Thẻ hiển thị cuối bài viết trên web như #SucKhoeThuCung.
+                </small>
+              </div>
               <label class="article-studio__field article-studio__field--wide">
                 <span>Tóm tắt</span>
                 <textarea rows="3" maxlength="500" placeholder="Tóm tắt ngắn để hiển thị trên thẻ bài viết"
@@ -105,13 +133,11 @@
                       </label>
                     }
                   } @else {
-                    <label class="article-studio__field">
-                      <span class="article-studio__sr-only">Nội dung {{typeNames[block.type]}}</span>
-                      <textarea [rows]="block.type==='heading' ? 2 : block.type==='list' ? 4 : 5"
-                        [placeholder]="block.type==='list' ? 'Mỗi dòng là một mục trong danh sách' : block.type==='heading' ? 'Nhập tiêu đề phụ' : 'Nhập nội dung...'"
-                        [disabled]="!canWrite() || saving()" [ngModel]="block.text"
-                        (ngModelChange)="updateBlock(block.id,'text',$event)"></textarea>
-                    </label>
+                    <app-admin-article-rich-block
+                      [type]="$any(block.type)" [text]="block.text" [html]="block.html || ''"
+                      [disabled]="!canWrite() || saving()"
+                      (contentChange)="updateRichBlock(block.id,$event)">
+                    </app-admin-article-rich-block>
                   }
                 </div>
               } @empty {
@@ -120,7 +146,7 @@
             </div>
             <div class="article-studio__add-block">
               <label for="article-block-type">Loại nội dung</label>
-              <select id="article-block-type" #blockType [disabled]="saving() || !canWrite()">
+              <select id="article-block-type" #blockType [disabled]="saving() || !canWrite()" aria-label="Loại khối nội dung">
                 <option value="paragraph">Đoạn văn</option>
                 <option value="heading">Tiêu đề phụ</option>
                 <option value="list">Danh sách</option>
@@ -198,20 +224,32 @@
                 @if (excerpt()) { <p class="article-studio__preview-intro">{{excerpt()}}</p> }
                 @for (block of previewBlocks(); track block.id) {
                   @switch (block.type) {
-                    @case ('heading') { <h4>{{block.text}}</h4> }
-                    @case ('quote') { <blockquote>{{block.text}}</blockquote> }
+                    @case ('heading') {
+                      <h4>@if (block.html) { <span [innerHTML]="block.html"></span> } @else { {{block.text}} }</h4>
+                    }
+                    @case ('quote') {
+                      <blockquote>@if (block.html) { <span [innerHTML]="block.html"></span> } @else { {{block.text}} }</blockquote>
+                    }
                     @case ('list') {
-                      <ul>
-                        @for (line of block.text.split('\n'); track $index) {
-                          @if (line.trim()) { <li>{{line}}</li> }
+                      <div class="article-studio__numbered-content">
+                        @if (block.html) {
+                          <div [innerHTML]="block.html"></div>
+                        } @else {
+                          <ol>
+                            @for (line of block.text.split('\n'); track $index) {
+                              @if (line.trim()) { <li>{{line}}</li> }
+                            }
+                          </ol>
                         }
-                      </ul>
+                      </div>
                     }
                     @case ('image') { <img class="article-studio__preview-inline-image" [src]="block.text" [alt]="block.alt || ''"> }
                     @case ('video') {
                       <div class="article-studio__preview-video">Video: {{block.text}}</div>
                     }
-                    @default { <p>{{block.text}}</p> }
+                    @default {
+                      <p>@if (block.html) { <span [innerHTML]="block.html"></span> } @else { {{block.text}} }</p>
+                    }
                   }
                 }
                 @if (categoryTags().length) {
