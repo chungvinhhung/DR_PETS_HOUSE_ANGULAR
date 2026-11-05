@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, ViewChild, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -68,6 +68,10 @@ function utcFromVietnam(value: string): string | null {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminFlashSaleEditorComponent {
+  @ViewChild('pickerDialog') private pickerDialog?: ElementRef<HTMLElement>;
+  @ViewChild('productSearch') private productSearchInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('addProductTrigger') private addProductTrigger?: ElementRef<HTMLButtonElement>;
+
   private readonly api = inject(AdminFlashSaleApiService);
   private readonly productsApi = inject(AdminProductService);
   private readonly session = inject(AuthSessionService);
@@ -105,6 +109,7 @@ export class AdminFlashSaleEditorComponent {
   private pickerRequest = 0;
   private pickerSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private nowInterval: ReturnType<typeof setInterval> | null = null;
+  private focusTimeout: ReturnType<typeof setTimeout> | null = null;
   private readonly createKey = 'flash-create-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
 
   constructor() {
@@ -112,6 +117,7 @@ export class AdminFlashSaleEditorComponent {
     this.destroyRef.onDestroy(() => {
       if (this.nowInterval) clearInterval(this.nowInterval);
       if (this.pickerSearchTimer) clearTimeout(this.pickerSearchTimer);
+      if (this.focusTimeout) clearTimeout(this.focusTimeout);
       this.leaveResolver?.(false);
       this.leaveResolver = null;
     });
@@ -273,11 +279,32 @@ export class AdminFlashSaleEditorComponent {
     this.pickerSelected.set([]);this.pickerSearch.set('');
     this.pickerOptions.set([]);this.pickerNextCursor.set(null);
     this.pickerOpen.set(true);this.loadProducts();
+    this.focusTimeout = setTimeout(() => this.productSearchInput?.nativeElement.focus(), 0);
   }
   closePicker(): void {
     this.pickerOpen.set(false);++this.pickerRequest;this.pickerSelected.set([]);
     if(this.pickerSearchTimer)clearTimeout(this.pickerSearchTimer);
+    if(this.focusTimeout)clearTimeout(this.focusTimeout);
+    this.focusTimeout=setTimeout(() => this.addProductTrigger?.nativeElement.focus(), 0);
   }
+  @HostListener('document:keydown', ['$event'])
+  keepFocusInProductDialog(event: KeyboardEvent): void {
+    if (event.key !== 'Tab' || !this.pickerOpen()) return;
+    const dialog = this.pickerDialog?.nativeElement;
+    if (!dialog) return;
+    const controls = Array.from(dialog.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), select:not([disabled]), a[href]',
+    )).filter(element => element.getClientRects().length > 0);
+    if (!controls.length) return;
+    const first = controls[0], last = controls[controls.length - 1];
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || !dialog.contains(active))) {
+      event.preventDefault();last.focus();
+    } else if (!event.shiftKey && (active === last || !dialog.contains(active))) {
+      event.preventDefault();first.focus();
+    }
+  }
+
   searchProducts(query: string): void {
     this.pickerSearch.set(query);
     if(this.pickerSearchTimer)clearTimeout(this.pickerSearchTimer);
