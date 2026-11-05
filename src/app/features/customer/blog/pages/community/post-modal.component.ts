@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, ElementRef, input, output, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, input, output, signal, viewChild } from '@angular/core';
 
+import { CustomerAuthService } from '../../../../../core/customer/services/customer-auth.service';
 import { AuthorComponent } from './author.component';
 import { TypeBadgeComponent } from './type-badge.component';
 import { ActionsComponent } from './actions.component';
@@ -24,6 +25,9 @@ import { blogImages } from '../../../../../shared/customer/assets/blog-images';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostModalComponent {
+  // --- Service dùng chung ---
+  protected readonly authService = inject(CustomerAuthService);
+
   // --- Input / Output (props của React) ---
   readonly post = input<any>(undefined);
   readonly comments = input<any>(undefined);
@@ -37,6 +41,12 @@ export class PostModalComponent {
 
   // --- Dữ liệu & hàm dùng trong template ---
   protected readonly blogImages: any = blogImages;
+
+  // --- Giá trị tính toán (computed) ---
+  readonly currentUserAvatar = computed(() => {
+    const profile = this.authService.userProfile();
+    return profile?.avatarUrl || profile?.avatar || "";
+  });
 
   // --- Trạng thái (signal = useState / useRef) ---
   readonly value = signal<any>("");

@@ -76,9 +76,14 @@ export function normalizeOrder(order: any = {}) {
   const rawItems = Array.isArray(order.items) ? order.items : (Array.isArray(order.order_items) ? order.order_items : []);
   const products = rawItems.map(normalizeOrderProduct);
   const createdAt = order.created_at || order.createdAt || order.orderedAt || new Date().toISOString();
-  const totalAmount = Number(order.total_amount ?? order.pricing?.totalAmount ?? order.totalAmount ?? 0);
-  const shippingFee = Number(order.shipping_fee ?? order.pricing?.shippingFee ?? order.shippingFee ?? 0);
+  let shippingFee = Number(order.shipping_fee ?? order.pricing?.shippingFee ?? order.shippingFee ?? 0);
   const discount = Number(order.discount_amount ?? order.pricing?.voucherDiscount ?? order.discount ?? 0) + Number(order.points_discount_amount || 0);
+  const subtotal = products.reduce((acc: number, p: any) => acc + (Number(p.price || 0) * Number(p.quantity || 1)), 0);
+  const hasDelivery = Boolean(order.shippingAddress || order.shipping_address || (order.recipient?.address && order.recipient.address !== "Tại cửa hàng"));
+  if (hasDelivery && subtotal > 0 && subtotal < 500000 && shippingFee === 0) {
+    shippingFee = 30000;
+  }
+  const totalAmount = Number(order.total_amount ?? order.pricing?.totalAmount ?? order.totalAmount ?? Math.max(0, subtotal + shippingFee - discount));
 
   return {
     ...order,

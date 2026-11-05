@@ -20,7 +20,7 @@
       <div class="flex w-full items-center gap-2">
         <h2 class="shrink-0 text-[24px] font-bold leading-8 text-[#111827]">Bài viết</h2>
         <div class="ml-2 h-1 flex-1 bg-[#FDD835]"></div>
-        <div class="flex gap-3">
+        <div class="flex flex-wrap gap-3">
           @for (item of categories(); track item.id) {
             <button
               type="button"
@@ -31,7 +31,10 @@
                       : 'border-[#0D47A1] bg-white text-[rgba(0,0,0,0.87)] hover:bg-[#E3F2FD]'
                   }`"
             >
-              <app-category-icon [category]="item.id" [className]="'h-4 w-4'" />{{ item.label }}</button>
+              @if (item.id === 'all') {
+                <app-category-icon [category]="item.id" [className]="'h-4 w-4'" />
+              }
+              {{ item.label }}</button>
           }
         </div>
       </div>

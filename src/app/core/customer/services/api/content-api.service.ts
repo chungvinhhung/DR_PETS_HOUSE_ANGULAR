@@ -54,14 +54,16 @@ const firstAidCategoryAliases: Record<string, string> = {
 };
 
 function normalizeBlogCategory(category: any = {}) {
-  const label = category.category_name || category.label || "Chủ đề";
-  const rawId = String(category.post_category_id || category.id || slugify(label));
-  const mappedId = (blogCategoryAliases as any)[slugify(label)] || rawId;
+  const label = typeof category === 'string' ? category : (category.name || category.category_name || category.label || category.title || "Chủ đề");
+  const rawId = typeof category === 'string' ? slugify(category) : String(category.post_category_id || category.id || category.slug || slugify(label));
+  const slug = category.slug || slugify(label);
+  const mappedId = (blogCategoryAliases as any)[slug] || rawId;
 
   return {
     id: mappedId,
     backendId: String(category.post_category_id || category.id || ""),
     label,
+    slug,
   };
 }
 
@@ -78,7 +80,10 @@ function normalizeFirstAidCategory(category: any = {}) {
 }
 
 function getBlogCategoryId(category: any) {
-  return (blogCategoryAliases as any)[slugify(category?.category_name)] || String(category?.post_category_id || "care");
+  if (!category) return "care";
+  const name = typeof category === 'string' ? category : (category.name || category.category_name || category.label || "");
+  const slug = slugify(name);
+  return (blogCategoryAliases as any)[slug] || String(category.post_category_id || category.id || slug || "care");
 }
 
 function getFirstAidCategoryId(category: any) {
@@ -153,23 +158,31 @@ export function normalizeCommunityPostFromApi(item: any = {}) {
 }
 
 function normalizePostComment(comment: any = {}) {
-  const replies = Array.isArray(comment.children)
-    ? comment.children.map((child: any) => ({
-        id: child.comment_id || child.id,
-        author: child.user?.full_name || "Người dùng",
-        avatar: child.user?.avatar_url || "",
-        content: child.content || "",
-        replyTo: comment.user?.full_name || null,
-        time: formatDate(child.created_at),
-      }))
+  const author = comment.author || comment.user?.full_name || comment.user?.fullName || comment.user?.name || comment.authorName || "Người dùng";
+  const avatar = comment.avatar || comment.user?.avatar_url || comment.user?.avatar || comment.user?.avatarUrl || comment.user?.photoUrl || "";
+  const time = comment.time || (comment.created_at || comment.createdAt ? formatDate(comment.created_at || comment.createdAt) : "") || "Vừa xong";
+
+  const replies = Array.isArray(comment.children || comment.replies)
+    ? (comment.children || comment.replies).map((child: any) => {
+        const replyAuthor = child.author || child.user?.full_name || child.user?.fullName || child.user?.name || "Người dùng";
+        const replyAvatar = child.avatar || child.user?.avatar_url || child.user?.avatar || child.user?.avatarUrl || child.user?.photoUrl || "";
+        return {
+          id: child.comment_id || child.id,
+          author: replyAuthor,
+          avatar: replyAvatar,
+          content: child.content || "",
+          replyTo: child.replyTo || comment.user?.full_name || comment.author || null,
+          time: child.time || (child.created_at || child.createdAt ? formatDate(child.created_at || child.createdAt) : "") || "Vừa xong",
+        };
+      })
     : [];
 
   return {
     id: comment.comment_id || comment.id,
-    author: comment.user?.full_name || "Người dùng",
-    avatar: comment.user?.avatar_url || "",
+    author,
+    avatar,
     content: comment.content || "",
-    time: formatDate(comment.created_at),
+    time,
     replies,
   };
 }
@@ -388,10 +401,12 @@ export class ContentApiService {
     }
   }
 
-  async createPostComment(postId: any, content: any) {
+  async createPostComment(postId: any, content: any, authorInfo: any = {}) {
+    const author = authorInfo.fullName || authorInfo.name || "Bạn";
+    const avatar = authorInfo.avatarUrl || authorInfo.avatar || "";
     let result: any = null;
     try {
-      const response = await this.http.post(`/posts/${postId}/comments`, { content });
+      const response = await this.http.post(`/posts/${postId}/comments`, { content, author, avatar });
       result = assertSuccess(response);
     } catch {
       // Continue to local persistence
@@ -401,8 +416,8 @@ export class ContentApiService {
       const newComment = {
         id: result?.id || `cmt-${Date.now()}`,
         content,
-        author: "Bạn",
-        avatar: "",
+        author: result?.author || author,
+        avatar: result?.avatar || avatar,
         time: "Vừa xong",
         createdAt: new Date().toISOString(),
         replies: [],
@@ -420,9 +435,11 @@ export class ContentApiService {
     }
   }
 
-  async replyPostComment(commentId: any, content: any) {
+  async replyPostComment(commentId: any, content: any, authorInfo: any = {}) {
+    const author = authorInfo.fullName || authorInfo.name || "Bạn";
+    const avatar = authorInfo.avatarUrl || authorInfo.avatar || "";
     try {
-      const response = await this.http.post(`/posts/comments/${commentId}/reply`, { content });
+      const response = await this.http.post(`/posts/comments/${commentId}/reply`, { content, author, avatar });
       return assertSuccess(response);
     } catch {
       return { success: true };

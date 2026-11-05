@@ -130,8 +130,12 @@ export const getOrderSubtotal = (order: any) =>
     0,
   );
 
-export const getOrderTotal = (order: any) =>
-  Math.max(0, getOrderSubtotal(order) + order.shippingFee - order.discount);
+export const getOrderTotal = (order: any) => {
+  if (order.totalAmount !== undefined && order.totalAmount !== null && Number(order.totalAmount) > 0) {
+    return Number(order.totalAmount);
+  }
+  return Math.max(0, getOrderSubtotal(order) + Number(order.shippingFee || 0) - Number(order.discount || 0));
+};
 
 export const formatCurrency = (value: any) => formatVnd(value);
 

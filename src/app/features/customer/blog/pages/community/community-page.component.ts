@@ -208,15 +208,21 @@ export class CommunityPageComponent {
       return;
     }
 
+    const userSnapshot = this.authService.userProfile();
+    const authorInfo = {
+      fullName: userSnapshot?.fullName || userSnapshot?.name || "Bạn",
+      avatarUrl: userSnapshot?.avatarUrl || userSnapshot?.avatar || "",
+    };
+
     try {
       const parentComment = replyTo
         ? ((this.commentsByPost() as any)[postId] || []).find((comment: any) => comment.author === replyTo)
         : null;
 
       if (replyTo && parentComment?.id) {
-        await this.contentApi.replyPostComment(parentComment.id, content);
+        await this.contentApi.replyPostComment(parentComment.id, content, authorInfo);
       } else {
-        await this.contentApi.createPostComment(selected.backendId, content);
+        await this.contentApi.createPostComment(selected.backendId, content, authorInfo);
       }
 
       const payload = await this.contentApi.getPostComments(selected.backendId, { limit: 50 });

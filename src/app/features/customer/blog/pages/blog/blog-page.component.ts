@@ -15,6 +15,15 @@ import { productImages } from '../../../../../shared/customer/assets/product-ima
 import { BLOG_CATEGORIES, FEATURED_BLOG_POST, ALL_BLOG_POSTS, TRENDING_BLOG_POSTS } from '../../../../../shared/customer/data/blog-data';
 import { PAGE_SIZE } from './blog-page.helpers';
 
+function slugify(value: any = "") {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
 /**
  * BlogPage — chuyển từ React: src/pages/Blog/BlogPage.jsx
  */
@@ -42,16 +51,27 @@ export class BlogPageComponent {
   readonly filteredPosts = computed<any>(() => {
     const keyword = this.searchQuery().trim().toLocaleLowerCase("vi");
     const activeCat = this.category();
+    const activeCatObj = this.categories().find((item: any) => item.id === activeCat);
+    const targetLabel = activeCatObj?.label || activeCat;
+    const targetSlug = activeCatObj?.slug || slugify(targetLabel);
+
     return this.allPosts().filter((post: any) => {
       if (activeCat !== "all") {
         const postCat = String(post.category || "").toLowerCase();
         const postLabel = String(post.categoryLabel || "").toLowerCase();
+        const postSlug = slugify(postLabel || postCat);
         const activeTarget = String(activeCat).toLowerCase();
+
         const matchesCat =
           postCat === activeTarget ||
           postLabel === activeTarget ||
           postLabel.includes(activeTarget) ||
-          activeTarget.includes(postCat);
+          activeTarget.includes(postCat) ||
+          (targetSlug && postSlug === targetSlug) ||
+          (targetSlug && postSlug.includes(targetSlug)) ||
+          (targetSlug && targetSlug.includes(postSlug)) ||
+          (targetLabel && postLabel.includes(String(targetLabel).toLowerCase())) ||
+          (targetLabel && String(targetLabel).toLowerCase().includes(postLabel));
         if (!matchesCat) return false;
       }
       if (!keyword) return true;
