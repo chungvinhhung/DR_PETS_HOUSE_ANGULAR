@@ -59,6 +59,16 @@ The Flash Sale Admin follows existing WEB 2 Admin UI, not a new dashboard langua
 - Modal SKU search dùng một container cao 44px, input lấp đầy chiều cao mà không có outline lồng nhau; footer rút ngắn thành “Đã chọn: N sản phẩm”; nút “Tải thêm sản phẩm” đổi sang tertiary nhẹ.
 - 20/20 điều kiện static QA đã kiểm tra trên source sau thay đổi. Angular build/render/E2E vẫn phải xác minh tại môi trường local/CI có repo đầy đủ.
 
+## Follow-up refinement — date rules, price controls and WEB2 typography (05/11/2026)
+
+- Breadcrumbs in Create/Edit/Detail start from **Flash Sale**; remove the redundant “Khuyến mãi” parent.
+- The main information card is centered with a 1020px maximum width when no operating-status card is needed, avoiding extremely long form fields. The SKU pricing table remains full-width below, so SKU/price columns do not get cramped.
+- The operating-status panel appears instantly when the Admin selects **today in Vietnam** for the start date, including a future hour today; also remains available for a currently running PUBLISHED program. The switch is staged on DRAFT, persisted through `isPaused` in create/update, and passed to publish atomically. For a future start time today, the enabled label reads “Sẽ hoạt động theo lịch”, not “Đang hoạt động”. Selection of a future date hides the panel and resets any hidden pause choice.
+- Start `datetime-local` has a minimum of **the next Vietnam-local minute**, not just midnight. Out-of-range manual input is clamped and saving is blocked if the start has become past. A PUBLISHED campaign already started has its original start timestamp locked during editing. End must be after start and for an active PUBLISHED edit cannot be in the past.
+- Price input follows Product Add/Edit: native number arrow-step `1000` VND, selected value on focus, preserving strict positive integer and below-retail validation.
+- Both **Voucher** and **Flash Sale** headings now use 28px/36px, weight 700; both local tabs use 16px/24px with 46px tab height and three-pixel active underline, aligning with Orders local tabs.
+- Static source QA passed for these changes, but local Angular production build and browser-render UAT remain pending. Do not mark BE integration or E2E complete.
+
 ## Related work
 BE contract and end-to-end acceptance: `docs/BE-HANDOFF-ADMIN-FLASH-SALE-2026-11-05.md`.
 Do not merge this branch into main or sign off Phase 3/4 while BE contract and CI/runtime checks remain pending.
