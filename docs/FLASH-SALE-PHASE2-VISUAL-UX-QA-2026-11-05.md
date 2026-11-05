@@ -103,3 +103,12 @@ Manual browser render and end-to-end BE checkout integration are still pending; 
 - The Create form no longer displays a misleading `Bản nháp` badge before saving. Historical DRAFT records remain readable for compatibility, but Admin cannot create a new draft through this form.
 - To avoid orphan drafts, the new client contract uses **one atomic create+publish POST** (`status:'PUBLISHED'`) and an atomic PATCH for converting historical DRAFT records. The previous 2-step create-then-publish fallback is removed. FE checks that BE confirms `PUBLISHED` and the selected pause state before showing success.
 - **BLOCKER:** BE has not been verified implementing the new atomic contract. Do not claim a successful end-to-end save until BE deploy, database persistence, API response validation, Angular build and live UAT pass.
+
+
+## Follow-up cross-module QA — inventory, Voucher tabs, service materials (2026-11-05)
+
+- Flash Sale item table adds **Tổng tồn kho**, aligned against the exact SKU/variant, not product-level stock. FE aggregates persisted InventoryStock quantities across branches via InventoryItem SKU, falling back to the optional ProductVariant.availableStock/FlashSaleItem.totalStock when needed; if neither is available, show **—** (never fabricate 0). Headers and delete actions share centered alignment.
+- Voucher and Flash Sale local tabs keep font weight 500 on active/focus states, with active blue underline as the primary visual cue. Voucher scoped SCSS and global selectors should be checked together during visual UAT.
+- Service Catalog → Add/Edit Service → Vật liệu mặc định now uses a Flash Sale-style search modal with selectable inventory items, duplicate prevention, incremental local result display, keyboard focus cycling, and a selected-item count. Confirmed items are shown as rows where default quantity and unit are still edited before saving. `defaultMaterials` remains keyed by real InventoryItem IDs.
+- BE needs to ensure branch stocks cover all branches and SKU mappings are complete. FE must not treat a failed stock query or missing InventoryItem as zero.
+- Runtime build, screenshot/layout QA and API UAT on a deployed dataset remain unverified.
