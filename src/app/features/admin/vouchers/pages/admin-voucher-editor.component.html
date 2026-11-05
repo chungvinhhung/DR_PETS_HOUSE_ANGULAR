@@ -43,7 +43,7 @@
                     (change)="toggleActivationFromView(viewActivation)">
                   <span class="voucher-editor__switch-track" aria-hidden="true"></span>
                 </span>
-                <span>{{activationLabel()}}</span>
+                <span class="voucher-editor__activation-text">{{activationLabel()}}</span>
               </label>
             </div>
             <div><span>Phạm vi áp dụng</span><strong>{{ scopeLabels[voucher.scope] }}</strong></div>
@@ -99,7 +99,7 @@
                   (change)="changeActivation(editActivation.checked)">
                 <span class="voucher-editor__switch-track" aria-hidden="true"></span>
               </span>
-              <span>{{activationLabel()}}</span>
+              <span class="voucher-editor__activation-text">{{activationLabel()}}</span>
             </label>
           </div>
           <label class="voucher-editor__fields--full">Mô tả
