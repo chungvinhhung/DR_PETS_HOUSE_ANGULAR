@@ -73,6 +73,14 @@ The Flash Sale Admin follows existing WEB 2 Admin UI, not a new dashboard langua
 BE contract and end-to-end acceptance: `docs/BE-HANDOFF-ADMIN-FLASH-SALE-2026-11-05.md`.
 Do not merge this branch into main or sign off Phase 3/4 while BE contract and CI/runtime checks remain pending.
 
+## Latest visual refinement — full-width inline switch (05/11/2026)
+
+- Flash Sale program-information panel now fills **100% of the Admin content area**, with 3 aligned fields in the time row: Start time, End time, and the inline scheduled activation switch. No separate activation panel remains; product section retains a clean vertical gap.
+- Voucher retains its existing benefit/time two-column arrangement. The activation switch is placed **inside Thời gian & giới hạn**, aligned to the right of the date/time controls; it no longer consumes a separate full-width card.
+- Both forms show the switch **before any date has been selected**, defaulting ON with **Tự động kích hoạt theo lịch**; OFF displays **Kích hoạt thủ công**. Once the selected start time is reached, the same switch changes labels to **Đang hoạt động / Tạm ngừng**.
+- An expired promotion's switch is disabled. On narrow screens the 3-column layouts wrap to 2 and then 1 column without truncating labels.
+- Source QA checked template structure, absence of separate status cards, default state, API contract and responsive CSS. Browser screenshot review and build remain unverified.
+
 ## Follow-up UX revision — two-stage activation, shared with Voucher (05/11/2026)
 
 This section supersedes older screenshots/notes about switches only showing for today's start and about the large status sidebar.
