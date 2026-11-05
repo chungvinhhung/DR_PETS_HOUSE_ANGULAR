@@ -281,7 +281,9 @@ export class BookingPageComponent {
     this.bookingError.set("");
     try {
       const selectedPetId = this.selectedPets()[0]?.pet_id || this.selectedPets()[0]?.id;
-      const validPetId = /^\d+$/.test(String(selectedPetId || "")) ? selectedPetId : undefined;
+      const isObjectId = /^[a-f0-9]{24}$/i.test(String(selectedPetId || ''));
+      const isNumericId = /^\d+$/.test(String(selectedPetId || ''));
+      const validPetId = (isObjectId || isNumericId) ? String(selectedPetId) : undefined;
       const petData = !validPetId && firstPetInfo.name
         ? {
             pet_name: firstPetInfo.name,
@@ -318,7 +320,11 @@ export class BookingPageComponent {
       });
       this.success.set(true);
     } catch (error: any) {
-      this.bookingError.set(error?.message || "Không thể đặt lịch.");
+      const errorMsg = error?.data?.detail || error?.data?.message || error?.message || "Không thể đặt lịch.";
+      const errorList = Array.isArray(error?.data?.errors)
+        ? error.data.errors.map((e: any) => `${e.field || ''}: ${e.message || ''}`.trim()).filter(Boolean).join("; ")
+        : "";
+      this.bookingError.set(errorList ? `${errorMsg} (${errorList})` : errorMsg);
     } finally {
       this.bookingSubmitting.set(false);
     }

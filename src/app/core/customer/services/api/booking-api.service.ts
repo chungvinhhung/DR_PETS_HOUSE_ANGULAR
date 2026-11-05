@@ -8,6 +8,7 @@
 import { Injectable, inject } from '@angular/core';
 
 import { CustomerHttpService, assertSuccess } from '../customer-http.service';
+import { CustomerAuthService } from '../customer-auth.service';
 
 function formatTime(value: any) {
   if (!value) return "";
@@ -271,6 +272,7 @@ function groupSlotsByTime(slots: any) {
 @Injectable({ providedIn: 'root' })
 export class BookingApiService {
   private readonly http = inject(CustomerHttpService);
+  private readonly authService = inject(CustomerAuthService);
 
   async getBranches() {
     const response = await this.http.get("/branches");
@@ -371,33 +373,59 @@ export class BookingApiService {
       serviceIds,
       slotStart,
       paymentMethod,
-      note: bookingData.note || undefined,
     };
 
+    if (bookingData.note) {
+      payload.note = String(bookingData.note).trim();
+    }
+    if (bookingData.condition_description || bookingData.conditionDescription) {
+      payload.conditionDescription = String(bookingData.condition_description || bookingData.conditionDescription).trim();
+    }
+
+    const isCustomer = this.authService.isAuthenticated();
+
     if (bookingData.pet_id || bookingData.petId) {
-      payload.petId = bookingData.pet_id || bookingData.petId;
-    } else {
-      payload.contact = {
-        fullName: bookingData.customer_name_snapshot || bookingData.customerName || bookingData.fullName || "Khách hàng",
-        phone: bookingData.customer_phone_snapshot || bookingData.customerPhone || bookingData.phone || "0912345678",
-        email: bookingData.customerEmail || bookingData.email || undefined,
+      payload.petId = String(bookingData.pet_id || bookingData.petId);
+    } else if (bookingData.pet_data || bookingData.pet) {
+      const p = bookingData.pet_data || bookingData.pet;
+      payload.pet = {
+        name: String(p.pet_name || p.name || "Bé cưng").trim(),
+        species: String(p.species_id || p.species || "DOG").trim().toUpperCase(),
+        weightKg: Number(p.weight_kg || p.weightKg || p.weight || 3),
       };
-      if (bookingData.pet_data) {
-        payload.pet = {
-          name: bookingData.pet_data.pet_name || "Bé cưng",
-          species: bookingData.pet_data.species_id || "DOG",
-          breed: bookingData.pet_data.breed || undefined,
-          weightKg: Number(bookingData.pet_data.weight_kg || 3),
-        };
+      if (p.breed && String(p.breed).trim()) {
+        payload.pet.breed = String(p.breed).trim();
       }
     }
 
+    // Customer appointments must NOT supply contact per OpenAPI spec and backend schema.
+    // Guest appointments MUST supply contact with name and phone.
+    if (!isCustomer) {
+      const rawEmail = bookingData.customerEmail || bookingData.email;
+      const cleanEmail = rawEmail && String(rawEmail).trim().includes('@') ? String(rawEmail).trim().toLowerCase() : undefined;
+      payload.contact = {
+        name: String(bookingData.customer_name_snapshot || bookingData.customerName || bookingData.fullName || "Khách hàng").trim(),
+        phone: String(bookingData.customer_phone_snapshot || bookingData.customerPhone || bookingData.phone || "0912345678").trim(),
+        ...(cleanEmail ? { email: cleanEmail } : {}),
+      };
+    }
+
+    const idempotencyKey = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `idemp-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+
+    const options = {
+      headers: {
+        'Idempotency-Key': idempotencyKey,
+      },
+    };
+
     try {
-      const response = await this.http.post("/appointments", payload);
+      const response = await this.http.post("/appointments", payload, options);
       return assertSuccess(response);
     } catch (err: any) {
       if (err?.status === 404) {
-        const response = await this.http.post("/appointments/book", payload);
+        const response = await this.http.post("/appointments/book", payload, options);
         return assertSuccess(response);
       }
       throw err;
