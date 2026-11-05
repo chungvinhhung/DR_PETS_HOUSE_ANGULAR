@@ -10,6 +10,7 @@ import { AuthSessionService } from '../../../../core/services/auth-session.servi
 import { AdminContentService } from '../services/admin-content.service';
 import { FIRST_AID_CATEGORIES } from '../../../../shared/customer/data/first-aid-data';
 import { blogImages } from '../../../../shared/customer/assets/blog-images';
+import { FirstAidCardComponent } from '../../../customer/blog/pages/first-aid/first-aid-card.component';
 
 type AidUrgency = 'NORMAL' | 'URGENT';
 type AidStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
@@ -26,7 +27,7 @@ function safeHttpUrl(value:string):boolean {
 @Component({
   selector:'app-admin-first-aid-editor',
   standalone:true,
-  imports:[CommonModule,FormsModule,AdminCatalogShellComponent,AdminBreadcrumbComponent],
+  imports:[CommonModule,FormsModule,AdminCatalogShellComponent,AdminBreadcrumbComponent,FirstAidCardComponent],
   templateUrl:'./admin-first-aid-editor.component.html',
   styleUrl:'./admin-first-aid-editor.component.scss',
   changeDetection:ChangeDetectionStrategy.OnPush,
