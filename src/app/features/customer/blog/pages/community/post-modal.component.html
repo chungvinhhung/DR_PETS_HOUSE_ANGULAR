@@ -39,17 +39,19 @@
     <div class="min-h-0 flex-1 overflow-y-auto p-6">
       @if (comments().length) {
         @for (comment of comments(); track comment.id) {
+          @let authorName = getCommentAuthorName(comment);
+          @let avatarUrl = getCommentAvatar(comment);
           <div class="mb-4 flex gap-3">
-            @if (comment.avatar) {
-              <img [attr.src]="comment.avatar" [attr.alt]="comment.author" class="h-8 w-8 shrink-0 rounded-full object-cover" />
+            @if (avatarUrl) {
+              <img [attr.src]="avatarUrl" [attr.alt]="authorName" class="h-8 w-8 shrink-0 rounded-full object-cover" />
             } @else {
               <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0D47A1] text-xs font-bold text-white uppercase">
-                {{ (comment.author || 'U').charAt(0) }}
+                {{ (authorName || 'U').charAt(0) }}
               </div>
             }
             <div class="flex-1">
               <div class="rounded-bl-[16px] rounded-br-[16px] rounded-tr-[16px] bg-[#F3F3F3] p-3">
-                <p class="text-[14px] font-bold text-[#1A1C1C]">{{ comment.author }}</p>
+                <p class="text-[14px] font-bold text-[#1A1C1C]">{{ authorName }}</p>
                 @if (comment.replyTo) {
                   <p class="text-xs text-[#005AB4]">Trả lời {{ comment.replyTo }}</p>
                 }
@@ -92,7 +94,7 @@
         @if (replyTo()) {
           <div class="mb-2 flex justify-between text-[12px] text-[#414753]">
             <span>Đang trả lời <b>{{ replyTo() }}</b></span>
-            <button (click)="replyTo.set(null)"><app-customer-icon name="x" className="h-3 w-3" /></button>
+            <button (click)="replyTo.set(null); replyingComment.set(null)"><app-customer-icon name="x" className="h-3 w-3" /></button>
           </div>
         }
         <textarea

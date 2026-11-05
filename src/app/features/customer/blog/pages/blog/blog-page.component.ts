@@ -167,12 +167,11 @@ export class BlogPageComponent {
       if (typeof cleanup === 'function') this.destroyRef.onDestroy(cleanup);
     });
 
-    // useEffect(..., [location.hash, category])
+    // useEffect(..., [location.hash]) -> chỉ cuộn khi hash là #latest-posts
     effect((onCleanup: any) => {
-      this.navService.location().hash;
-      this.category();
+      const hash = this.navService.location().hash;
       const cleanup = untracked(() => {
-        if (this.navService.location().hash !== "#latest-posts") return;
+        if (hash !== "#latest-posts") return;
         window.requestAnimationFrame(() => {
           (document.getElementById("latest-posts") as any)?.scrollIntoView({ behavior: "smooth", block: "start" });
         });
@@ -182,10 +181,21 @@ export class BlogPageComponent {
   }
 
   protected updateParams(nextCategory: any, keyword: any) {
-    const params: any = {};
-    if (nextCategory !== "all") params.category = nextCategory;
-    if (keyword) params.keyword = keyword;
-    this.navService.setSearchParams(params);
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (nextCategory !== "all") {
+      params.set("category", nextCategory);
+    } else {
+      params.delete("category");
+    }
+    if (keyword) {
+      params.set("keyword", keyword);
+    } else {
+      params.delete("keyword");
+    }
+    const query = params.toString();
+    const newUrl = window.location.pathname + (query ? `?${query}` : "") + window.location.hash;
+    window.history.replaceState(window.history.state, "", newUrl);
   }
 
   protected selectCategory(id: any) {

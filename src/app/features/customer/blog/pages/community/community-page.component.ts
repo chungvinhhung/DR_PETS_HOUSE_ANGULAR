@@ -113,23 +113,39 @@ export class CommunityPageComponent {
     this.commentsLoading.set(true);
     try {
       const payload = await this.contentApi.getPostComments(selected.backendId, { limit: 50 });
-      const flattenedComments = payload.comments.flatMap((comment: any) => [
-        {
-          id: comment.id,
-          author: comment.author,
-          avatar: comment.avatar,
-          content: comment.content,
-          time: comment.time,
-        },
-        ...comment.replies.map((reply: any) => ({
-          id: reply.id,
-          author: reply.author,
-          avatar: reply.avatar,
-          content: reply.content,
-          replyTo: reply.replyTo,
-          time: reply.time,
-        })),
-      ]);
+      const currentProfile = this.authService.userProfile();
+      const currentUserId = currentProfile?.userId || currentProfile?.id || "";
+      const currentUserName = (currentProfile?.fullName || currentProfile?.name || "").trim().toLowerCase();
+
+      const flattenedComments = payload.comments.flatMap((comment: any) => {
+        const commentAuthor = String(comment.author || "").trim().toLowerCase();
+        const isSelf = comment.isOwn || (comment.userId && comment.userId === currentUserId) || commentAuthor === "bạn" || (Boolean(currentUserName) && commentAuthor === currentUserName);
+        return [
+          {
+            id: comment.id,
+            author: comment.author,
+            avatar: comment.avatar,
+            content: comment.content,
+            time: comment.time,
+            userId: comment.userId,
+            isOwn: isSelf,
+          },
+          ...comment.replies.map((reply: any) => {
+            const replyAuthor = String(reply.author || "").trim().toLowerCase();
+            const replyIsSelf = reply.isOwn || (reply.userId && reply.userId === currentUserId) || replyAuthor === "bạn" || (Boolean(currentUserName) && replyAuthor === currentUserName);
+            return {
+              id: reply.id,
+              author: reply.author,
+              avatar: reply.avatar,
+              content: reply.content,
+              replyTo: reply.replyTo,
+              time: reply.time,
+              userId: reply.userId,
+              isOwn: replyIsSelf,
+            };
+          }),
+        ];
+      });
 
       this.commentsByPost.update((state: any) => ({
         ...state,
@@ -193,7 +209,7 @@ export class CommunityPageComponent {
     }
   }
 
-  protected async addComment(postId: any, content: any, replyTo: any) {
+  protected async addComment(postId: any, content: any, replyTo: any, parentCommentId: any = null) {
     const selected = this.allPosts().find((post: any) => post.id === postId);
     if (!selected) return;
 
@@ -212,37 +228,57 @@ export class CommunityPageComponent {
     const authorInfo = {
       fullName: userSnapshot?.fullName || userSnapshot?.name || "Bạn",
       avatarUrl: userSnapshot?.avatarUrl || userSnapshot?.avatar || "",
+      userId: userSnapshot?.userId || userSnapshot?.id || "",
     };
 
     try {
-      const parentComment = replyTo
-        ? ((this.commentsByPost() as any)[postId] || []).find((comment: any) => comment.author === replyTo)
-        : null;
+      const existingList = (this.commentsByPost() as any)[postId] || [];
+      const parentComment = parentCommentId
+        ? existingList.find((c: any) => c.id === parentCommentId)
+        : (replyTo
+          ? existingList.find((c: any) => c.author === replyTo || (replyTo === "Bạn" && c.isOwn))
+          : null);
 
       if (replyTo && parentComment?.id) {
-        await this.contentApi.replyPostComment(parentComment.id, content, authorInfo);
+        await this.contentApi.replyPostComment(selected.backendId, parentComment.id, content, authorInfo, replyTo);
       } else {
         await this.contentApi.createPostComment(selected.backendId, content, authorInfo);
       }
 
       const payload = await this.contentApi.getPostComments(selected.backendId, { limit: 50 });
-      const flattenedComments = payload.comments.flatMap((comment: any) => [
-        {
-          id: comment.id,
-          author: comment.author,
-          avatar: comment.avatar,
-          content: comment.content,
-          time: comment.time,
-        },
-        ...comment.replies.map((reply: any) => ({
-          id: reply.id,
-          author: reply.author,
-          avatar: reply.avatar,
-          content: reply.content,
-          replyTo: reply.replyTo,
-          time: reply.time,
-        })),
-      ]);
+      const currentProfile = this.authService.userProfile();
+      const currentUserId = currentProfile?.userId || currentProfile?.id || "";
+      const currentUserName = (currentProfile?.fullName || currentProfile?.name || "").trim().toLowerCase();
+
+      const flattenedComments = payload.comments.flatMap((comment: any) => {
+        const commentAuthor = String(comment.author || "").trim().toLowerCase();
+        const isSelf = comment.isOwn || (comment.userId && comment.userId === currentUserId) || commentAuthor === "bạn" || (Boolean(currentUserName) && commentAuthor === currentUserName);
+        return [
+          {
+            id: comment.id,
+            author: comment.author,
+            avatar: comment.avatar,
+            content: comment.content,
+            time: comment.time,
+            userId: comment.userId,
+            isOwn: isSelf,
+          },
+          ...comment.replies.map((reply: any) => {
+            const replyAuthor = String(reply.author || "").trim().toLowerCase();
+            const replyIsSelf = reply.isOwn || (reply.userId && reply.userId === currentUserId) || replyAuthor === "bạn" || (Boolean(currentUserName) && replyAuthor === currentUserName);
+            return {
+              id: reply.id,
+              author: reply.author,
+              avatar: reply.avatar,
+              content: reply.content,
+              replyTo: reply.replyTo,
+              time: reply.time,
+              userId: reply.userId,
+              isOwn: replyIsSelf,
+            };
+          }),
+        ];
+      });
 
       this.commentsByPost.update((state: any) => ({ ...state, [postId]: flattenedComments }));
       this.posts.update((items: any) =>

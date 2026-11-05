@@ -64,7 +64,7 @@
     [comments]="commentsLoading() ? EMPTY_COMMENTS : (commentsByPost()[selectedPost().id] || EMPTY_COMMENTS)"
     [state]="getState(selectedPost().id)"
     (onClose)="selectedId.set(null)"
-    (onAddComment)="addComment(selectedPost().id, $any($event)[0], $any($event)[1])"
+    (onAddComment)="addComment(selectedPost().id, $any($event)[0], $any($event)[1], $any($event)[2])"
     (onLike)="handleLikePost(selectedPost())"
     (onShare)="sharePost(selectedPost())"
     [canInteract]="authService.isAuthenticated()"

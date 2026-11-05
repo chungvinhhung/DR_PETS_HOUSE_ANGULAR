@@ -161,6 +161,8 @@ function normalizePostComment(comment: any = {}) {
   const author = comment.author || comment.user?.full_name || comment.user?.fullName || comment.user?.name || comment.authorName || "Người dùng";
   const avatar = comment.avatar || comment.user?.avatar_url || comment.user?.avatar || comment.user?.avatarUrl || comment.user?.photoUrl || "";
   const time = comment.time || (comment.created_at || comment.createdAt ? formatDate(comment.created_at || comment.createdAt) : "") || "Vừa xong";
+  const userId = comment.userId || comment.user?.id || comment.user?._id || "";
+  const isOwn = Boolean(comment.isOwn);
 
   const replies = Array.isArray(comment.children || comment.replies)
     ? (comment.children || comment.replies).map((child: any) => {
@@ -172,6 +174,8 @@ function normalizePostComment(comment: any = {}) {
           avatar: replyAvatar,
           content: child.content || "",
           replyTo: child.replyTo || comment.user?.full_name || comment.author || null,
+          userId: child.userId || child.user?.id || child.user?._id || "",
+          isOwn: Boolean(child.isOwn),
           time: child.time || (child.created_at || child.createdAt ? formatDate(child.created_at || child.createdAt) : "") || "Vừa xong",
         };
       })
@@ -183,6 +187,8 @@ function normalizePostComment(comment: any = {}) {
     avatar,
     content: comment.content || "",
     time,
+    userId,
+    isOwn,
     replies,
   };
 }
@@ -404,9 +410,10 @@ export class ContentApiService {
   async createPostComment(postId: any, content: any, authorInfo: any = {}) {
     const author = authorInfo.fullName || authorInfo.name || "Bạn";
     const avatar = authorInfo.avatarUrl || authorInfo.avatar || "";
+    const userId = authorInfo.userId || "";
     let result: any = null;
     try {
-      const response = await this.http.post(`/posts/${postId}/comments`, { content, author, avatar });
+      const response = await this.http.post(`/posts/${postId}/comments`, { content, author, avatar, userId });
       result = assertSuccess(response);
     } catch {
       // Continue to local persistence
@@ -418,6 +425,8 @@ export class ContentApiService {
         content,
         author: result?.author || author,
         avatar: result?.avatar || avatar,
+        userId: result?.userId || userId,
+        isOwn: true,
         time: "Vừa xong",
         createdAt: new Date().toISOString(),
         replies: [],
@@ -435,12 +444,49 @@ export class ContentApiService {
     }
   }
 
-  async replyPostComment(commentId: any, content: any, authorInfo: any = {}) {
+  async replyPostComment(postId: any, commentId: any, content: any, authorInfo: any = {}, replyTo: any = "") {
     const author = authorInfo.fullName || authorInfo.name || "Bạn";
     const avatar = authorInfo.avatarUrl || authorInfo.avatar || "";
+    const userId = authorInfo.userId || "";
+    let result: any = null;
     try {
-      const response = await this.http.post(`/posts/comments/${commentId}/reply`, { content, author, avatar });
-      return assertSuccess(response);
+      const response = await this.http.post(`/posts/comments/${commentId}/reply`, { content, author, avatar, userId, replyTo });
+      result = assertSuccess(response);
+    } catch {
+      // Continue to local persistence
+    }
+
+    try {
+      const key = `dr_pets_comments_${postId}`;
+      const existing = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
+      const list = existing ? JSON.parse(existing) : [];
+      const parent = list.find((c: any) => c.id === commentId);
+      const newReply = {
+        id: result?.id || `reply-${Date.now()}`,
+        content,
+        author: result?.author || author,
+        avatar: result?.avatar || avatar,
+        userId: result?.userId || userId,
+        replyTo: replyTo || parent?.author || "",
+        isOwn: true,
+        time: "Vừa xong",
+        createdAt: new Date().toISOString(),
+      };
+      if (parent) {
+        if (!Array.isArray(parent.replies)) {
+          parent.replies = [];
+        }
+        parent.replies.push(newReply);
+      } else {
+        list.push({
+          ...newReply,
+          replies: [],
+        });
+      }
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(key, JSON.stringify(list));
+      }
+      return result || { success: true, data: newReply };
     } catch {
       return { success: true };
     }
