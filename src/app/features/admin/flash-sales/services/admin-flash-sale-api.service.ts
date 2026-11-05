@@ -102,9 +102,10 @@ export class AdminFlashSaleApiService {
   private readonly api = inject(ApiClientService);
   private readonly root = '/flash-sales';
 
-  list(filters: {search?: string; cursor?: string | null; limit?: number} = {}): Observable<FlashSalePage> {
+  list(filters: {search?: string; state?: FlashSaleDisplayState | 'ALL'; cursor?: string | null; limit?: number} = {}): Observable<FlashSalePage> {
     let params = new HttpParams().set('limit', String(filters.limit ?? 10));
     if (filters.search?.trim()) params = params.set('search', filters.search.trim());
+    if (filters.state && filters.state !== 'ALL') params = params.set('state', filters.state);
     if (filters.cursor) params = params.set('cursor', filters.cursor);
     return this.api.get<unknown>(this.root, {params}).pipe(map(response => {
       if (!response || typeof response !== 'object' ||
