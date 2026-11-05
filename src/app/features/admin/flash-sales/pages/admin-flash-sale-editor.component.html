@@ -11,25 +11,26 @@
         @if (mode==='view') {
           @if (original()?.status==='DRAFT' && canManage()) {
             <button type="button" class="flash-editor__btn flash-editor__btn--primary"
-              [disabled]="saving()" (click)="publish()">{{ saving()?'Đang kích hoạt...':'Kích hoạt chương trình' }}</button>
+              [disabled]="saving()" (click)="publish()">{{ saving()?'Đang lưu...':'Kích hoạt chương trình' }}</button>
           }
           @if (canManage() && currentState()!=='ENDED') {
             <a class="flash-editor__btn flash-editor__btn--outline"
               [routerLink]="['/admin/flash-sales',id,'edit']">Chỉnh sửa</a>
           }
         } @else {
-          <button type="button" class="flash-editor__btn flash-editor__btn--outline"
+          <button type="button" class="flash-editor__btn flash-editor__btn--neutral"
             [disabled]="saving()" (click)="cancel()">Hủy bỏ</button>
-          <button type="button" class="flash-editor__btn"
-            [class.flash-editor__btn--outline]="mode==='create' || original()?.status==='DRAFT'"
-            [class.flash-editor__btn--primary]="mode==='edit' && original()?.status==='PUBLISHED'"
-            [disabled]="!editable() || loading()" (click)="save(false)">
-            {{ saving()?'Đang lưu...':mode==='create'?'Lưu bản nháp':'Lưu thay đổi' }}
-          </button>
           @if (mode==='create' || original()?.status==='DRAFT') {
+            <button type="button" class="flash-editor__btn flash-editor__btn--outline"
+              [disabled]="!editable() || loading()" (click)="save(false)">
+              {{ saving()?'Đang lưu...':'Lưu bản nháp' }}
+            </button>
             <button type="button" class="flash-editor__btn flash-editor__btn--primary"
-              [disabled]="!editable() || loading()" (click)="save(true)">
-              Lưu &amp; kích hoạt
+              [disabled]="!editable() || loading()" (click)="save(true)">Lưu chương trình</button>
+          } @else {
+            <button type="button" class="flash-editor__btn flash-editor__btn--primary"
+              [disabled]="!editable() || loading()" (click)="save(false)">
+              {{ saving()?'Đang lưu...':'Cập nhật chương trình' }}
             </button>
           }
         }
@@ -45,28 +46,15 @@
       @if (validation()) {
         <p class="flash-editor__validation" role="alert">{{validation()}}</p>
       }
-      <div class="flash-editor__top">
+      <div class="flash-editor__top" [class.flash-editor__top--with-status]="showOperatingSection()">
         <section class="flash-editor__panel flash-editor__info">
           <div class="flash-editor__info-heading">
             <h2>Thông tin chương trình</h2>
-            <div class="flash-editor__status-inline">
+            @if (!showOperatingSection()) {
               <span class="flash-editor__badge" [attr.data-state]="mode==='create'?'DRAFT':currentState()">
                 {{ mode==='create'?'Bản nháp':stateLabels[currentState()] }}
               </span>
-              @if (original()?.status==='PUBLISHED' && currentState()!=='ENDED') {
-                <label class="flash-editor__switch-row">
-                  <span class="flash-editor__switch">
-                    <input #pauseSwitch type="checkbox" role="switch"
-                      [checked]="original()?.isPaused ?? false"
-                      [disabled]="!canManage() || saving()"
-                      [attr.aria-checked]="original()?.isPaused ?? false"
-                      (change)="togglePaused(pauseSwitch.checked, pauseSwitch)">
-                    <span class="flash-editor__switch-track" aria-hidden="true"></span>
-                  </span>
-                  <span>Tạm ngừng chương trình</span>
-                </label>
-              }
-            </div>
+            }
           </div>
           @if (mode==='view') {
             @if (original(); as sale) {
@@ -102,6 +90,22 @@
             </div>
           }
         </section>
+        @if (showOperatingSection()) {
+          <aside class="flash-editor__panel flash-editor__status-panel">
+            <h2>Trạng thái chương trình</h2>
+            <label class="flash-editor__switch-row">
+              <span class="flash-editor__switch">
+                <input #activeSwitch type="checkbox" role="switch"
+                  [checked]="!(original()?.isPaused ?? false)"
+                  [disabled]="!canManage() || saving()"
+                  [attr.aria-checked]="!(original()?.isPaused ?? false)"
+                  (change)="togglePaused(!activeSwitch.checked, activeSwitch)">
+                <span class="flash-editor__switch-track" aria-hidden="true"></span>
+              </span>
+              <span>{{ original()?.isPaused ? 'Tạm ngừng' : 'Đang hoạt động' }}</span>
+            </label>
+          </aside>
+        }
       </div>
 
       <section class="flash-editor__panel flash-editor__products">
@@ -110,7 +114,7 @@
           @if (mode!=='view' && canManage()) {
             <button #addProductTrigger type="button" class="flash-editor__btn flash-editor__btn--outline"
               [disabled]="!editable()" (click)="openPicker()">
-              <span aria-hidden="true">+</span> Thêm sản phẩm
+              <span class="web2-add-icon" aria-hidden="true">+</span> Thêm sản phẩm
             </button>
           }
         </div>
@@ -213,12 +217,12 @@
           </table>
           @if (pickerLoading()) { <p class="flash-editor__muted">Đang tải sản phẩm...</p> }
           @if (pickerNextCursor() && !pickerLoading()) {
-            <button type="button" class="flash-editor__btn flash-editor__btn--outline flash-editor__load-more"
-              (click)="loadProducts(pickerNextCursor())">Xem thêm sản phẩm</button>
+            <button type="button" class="flash-editor__btn flash-editor__btn--tertiary flash-editor__load-more"
+              (click)="loadProducts(pickerNextCursor())">Tải thêm sản phẩm</button>
           }
         </div>
         <footer class="flash-editor__dialog-actions">
-          <span>Đã chọn: {{pickerSelected().length}} sản phẩm / biến thể</span>
+          <span>Đã chọn: {{pickerSelected().length}} sản phẩm</span>
           <button type="button" class="flash-editor__btn flash-editor__btn--outline" (click)="closePicker()">Hủy bỏ</button>
           <button type="button" class="flash-editor__btn flash-editor__btn--primary"
             [disabled]="!pickerSelected().length" (click)="applySelection()">Thêm sản phẩm</button>
