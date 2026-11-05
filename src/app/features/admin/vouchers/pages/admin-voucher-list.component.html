@@ -1,8 +1,12 @@
 <app-admin-catalog-shell activeItem="vouchers">
   <main class="voucher-list">
     <header class="voucher-list__heading">
-      <h1>Khuyến mãi</h1>
+      <h1>Quản lý khuyến mãi</h1>
     </header>
+    <nav class="voucher-list__tabs" aria-label="Loại khuyến mãi">
+      <a routerLink="/admin/vouchers" class="voucher-list__tab--active" aria-current="page">Voucher</a>
+      <a routerLink="/admin/flash-sales">Flash Sale</a>
+    </nav>
     <section class="voucher-list__toolbar web2-filterbar" aria-label="Tìm kiếm và lọc voucher">
       <label class="voucher-list__search">
         <img src="/assets/service-catalog/search.svg" width="18" height="18" alt="">
