@@ -12,7 +12,7 @@
     <div class="columns">
       <div class="left-column">
         <section class="panel basic-panel">
-          <h2><img class="panel-icon-img" src="/assets/admin-product/icon-basic.svg" alt="">Thông tin cơ bản</h2>
+          <h2>Thông tin cơ bản</h2>
           <label class="form-field" [class.field-invalid]="nameInvalid"><span>Tên sản phẩm <b>*</b></span><input [(ngModel)]="name" [attr.aria-invalid]="nameInvalid" placeholder="Nhập tên sản phẩm">@if (nameInvalid) {<small class="field-help-error">Vui lòng nhập tên sản phẩm.</small>}</label>
           <div class="two-fields product-type-usage-row">
             <div class="form-field"><span>Loại sản phẩm <b>*</b></span><div class="radios">
@@ -28,7 +28,7 @@
           <label class="form-field"><span>Mô tả sản phẩm</span><textarea [(ngModel)]="description" rows="5" placeholder="Nhập mô tả chi tiết về sản phẩm..."></textarea></label>
         </section>
         <section class="panel price-panel">
-          <h2><img class="panel-icon-img" src="/assets/admin-product/icon-price.svg" alt="">Giá bán</h2>
+          <h2>Giá bán</h2>
           @if (hasVariants) {
             <div class="price-summary"><strong>Khoảng giá</strong><span>{{ priceRange }}</span></div>
           } @else {
@@ -43,11 +43,11 @@
       </div>
       <div class="right-column">
         <section class="panel status-panel">
-          <h2><img class="panel-icon-img" src="/assets/admin-product/icon-status.svg" alt="">Trạng thái sản phẩm</h2>
+          <h2>Trạng thái sản phẩm</h2>
           <div class="status-row"><button class="switch" type="button" role="switch" [attr.aria-checked]="active" [class.on]="active" (click)="setProductActive(!active)"><span></span></button><span>{{ active ? 'Đang hoạt động' : 'Tạm ngưng' }}</span></div>
         </section>
         <section class="panel image-panel">
-          <h2><img class="panel-icon-img" src="/assets/admin-product/icon-images.svg" alt="">Hình ảnh</h2>
+          <h2>Hình ảnh</h2>
           <label class="upload-preview" [class.upload-preview--disabled]="product()?.status === 'ARCHIVED'">
             <input type="file" hidden multiple accept=".jpg,.jpeg,.png"
               [disabled]="product()?.status === 'ARCHIVED'"
@@ -106,7 +106,7 @@
     </div>
     @if (hasVariants) {
       <section class="panel variant-panel">
-        <h2><img class="panel-icon-img" src="/assets/admin-product/icon-variants.svg" alt="">Biến thể sản phẩm</h2>
+        <h2>Biến thể sản phẩm</h2>
         <button class="outline-btn add-variant" type="button" [disabled]="saving() || product()?.status === 'ARCHIVED'" (click)="toggleAddVariant()">
           <span class="variant-expand-icon" aria-hidden="true">{{ addVariantOpen() ? '×' : '+' }}</span>{{ addVariantOpen() ? 'Đóng biểu mẫu' : 'Thêm biến thể' }}
         </button>
