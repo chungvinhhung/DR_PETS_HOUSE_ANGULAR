@@ -99,6 +99,7 @@ export class AdminFlashSaleEditorComponent {
   readonly pickerNextCursor = signal<string | null>(null);
   readonly leaveOpen = signal(false);
   private leaveResolver: ((decision: boolean) => void) | null = null;
+  private allowSavedNavigation = false;
   private pickerRequest = 0;
   private pickerSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly createKey = 'flash-create-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
@@ -198,10 +199,12 @@ export class AdminFlashSaleEditorComponent {
           await firstValueFrom(this.api.publish(sale.id,'flash-publish-'+sale.id));
         }catch(err){
           this.toast.show('Đã lưu bản nháp nhưng chưa kích hoạt. '+this.message(err,'Vui lòng kích hoạt trong trang chi tiết.'),'error');
-          await this.router.navigate(['/admin/flash-sales',sale.id]);return;
+          this.allowSavedNavigation = true;
+      await this.router.navigate(['/admin/flash-sales',sale.id]);return;
         }
       }
       this.toast.show(publishAfterSave?'Đã kích hoạt Flash Sale.':'Đã lưu Flash Sale.','success');
+      this.allowSavedNavigation = true;
       await this.router.navigate(['/admin/flash-sales',sale.id]);
     }catch(err){
       this.validation.set(this.message(err,'Không thể lưu Flash Sale. Vui lòng thử lại.'));
@@ -218,7 +221,7 @@ export class AdminFlashSaleEditorComponent {
     finally{this.saving.set(false);}
   }
 
-  async togglePaused(checked: boolean): Promise<void> {
+  async togglePaused(checked: boolean, input: HTMLInputElement): Promise<void> {
     const sale=this.original();
     if (!this.canManage()||!sale||sale.status!=='PUBLISHED'||this.saving()||this.currentState()==='ENDED')return;
     this.saving.set(true);
@@ -226,12 +229,16 @@ export class AdminFlashSaleEditorComponent {
       const updated=await firstValueFrom(this.api.setPaused(sale.id,checked));
       this.original.set(updated);
       this.toast.show(checked?'Đã tạm ngừng Flash Sale.':'Đã tiếp tục Flash Sale.','success');
-    }catch(err){this.toast.show(this.message(err,'Không cập nhật được trạng thái chương trình.'),'error');}
+    }catch(err){
+      input.checked = sale.isPaused;
+      this.toast.show(this.message(err,'Không cập nhật được trạng thái chương trình.'),'error');
+    }
     finally{this.saving.set(false);}
   }
   cancel(): void {void this.router.navigateByUrl(this.mode==='create'?'/admin/flash-sales':'/admin/flash-sales/'+this.id);}
 
   canLeavePage(): boolean | Promise<boolean> {
+    if (this.allowSavedNavigation) return true;
     if (this.saving()) return false;
     if (!this.dirty()) return true;
     if (this.leaveResolver) return false;
