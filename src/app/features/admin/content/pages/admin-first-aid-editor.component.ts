@@ -110,8 +110,8 @@ export class AdminFirstAidEditorComponent {
   private hydrate(row:any):void {
     const rawCategory=row.category;
     const catText=String(typeof rawCategory==='string' ? rawCategory :
-      rawCategory?.id || rawCategory?.first_aid_category_id || rawCategory?.category_name ||
-      rawCategory?.name || rawCategory?.label || '');
+      rawCategory?.category_name || rawCategory?.name || rawCategory?.label ||
+      rawCategory?.id || rawCategory?.first_aid_category_id || '');
     const normalized=catText.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
     const matched=this.categories.find(c=>c.id===catText ||
       c.label===catText || c.label.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()===normalized);
@@ -120,7 +120,7 @@ export class AdminFirstAidEditorComponent {
     this.summary.set(String(row.situation_description || row.situationDescription || row.excerpt || ''));
     this.heroTitle.set(String(row.heroTitle || row.hero_title || ''));
     this.coverUrl.set(String(row.thumbnail_url || row.thumbnailUrl || row.cover_image_url || row.image_url || ''));
-    const rawUrgency=String(row.urgencyLevel || row.urgency_level || '').toUpperCase();
+    const rawUrgency=String(row.urgencyLevel || row.urgency_level || row.severity || '').toUpperCase();
     this.urgency.set(row.urgent === true || rawUrgency==='URGENT' || rawUrgency==='HIGH' ? 'URGENT' : 'NORMAL');
     this.hotline.set(String(row.emergency_phone || row.emergencyPhone || ''));
     const rawSteps=Array.isArray(row.steps)?row.steps:[];
