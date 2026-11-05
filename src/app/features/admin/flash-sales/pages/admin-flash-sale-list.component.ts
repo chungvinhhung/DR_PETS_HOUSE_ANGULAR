@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signa
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
@@ -33,6 +35,8 @@ export class AdminFlashSaleListComponent {
   readonly previousCursors = signal<(string | null)[]>([]);
   readonly totalCount = signal<number | null>(null);
   readonly page = computed(() => this.previousCursors().length + 1);
+  readonly totalPages = computed(() => this.totalCount() === null ? null : Math.max(1, Math.ceil(this.totalCount()! / 10)));
+  readonly visiblePages = computed(() => this.totalPages() === null ? [this.page()] : adminPageWindow(this.page(), this.totalPages()!));
   readonly now = signal(Date.now());
   readonly stateLabels = FLASH_SALE_STATE_LABELS;
   private requestVersion = 0;
@@ -112,5 +116,46 @@ export class AdminFlashSaleListComponent {
     this.cursor.set(prev[prev.length - 1]);
     this.previousCursors.set(prev.slice(0, -1));
     this.fetch();
+  }
+  async goToPage(target: number): Promise<void> {
+    if (!Number.isSafeInteger(target) || target < 1 || this.loading() ||
+        (this.totalPages() !== null && target > this.totalPages()!)) return;
+    const current = this.page();
+    if (target === current) return;
+    if (target === current + 1) {this.next();return;}
+    if (target < current) {
+      const previous = this.previousCursors();
+      this.cursor.set(previous[target-1] ?? null);
+      this.previousCursors.set(previous.slice(0,target-1));
+      this.fetch();return;
+    }
+    // Cursor pagination: walk verified cursor boundaries, never invent offsets.
+    const version = ++this.requestVersion;
+    let cursor = this.cursor();
+    let next = this.nextCursor();
+    let previous = [...this.previousCursors()];
+    this.loading.set(true);this.error.set('');
+    try {
+      for (let step = current; step < target; step++) {
+        if (!next) throw new Error('Trang không còn dữ liệu.');
+        previous = [...previous,cursor];
+        cursor = next;
+        if (step + 1 < target) {
+          const result = await firstValueFrom(this.api.list({
+            search:this.search(), state:this.stateFilter(),cursor,limit:10,
+          }));
+          if (version !== this.requestVersion || this.destroyRef.destroyed) return;
+          next = result.nextCursor;
+        }
+      }
+      if (version !== this.requestVersion) return;
+      this.previousCursors.set(previous);
+      this.cursor.set(cursor);
+      this.fetch();
+    } catch(err) {
+      if (version !== this.requestVersion) return;
+      this.loading.set(false);
+      this.toast.show(adminErrorMessage(err,'Không thể chuyển đến trang này.'),'error');
+    }
   }
 }
