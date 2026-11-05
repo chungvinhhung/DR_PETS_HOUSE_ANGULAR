@@ -231,6 +231,12 @@ export class AdminFlashSaleEditorComponent {
   update<K extends keyof Omit<SaleForm, 'items'>>(field: K, value: SaleForm[K]): void {
     if (!this.editable()) return;
     this.form.update(current=>({...current,[field]:value}));
+    // Hidden pause choice must never silently disable a future-day program.
+    if (field === 'from' && typeof value === 'string' &&
+        value.slice(0, 10) !== this.minimumStartAt().slice(0, 10) &&
+        this.original()?.status !== 'PUBLISHED') {
+      this.draftEnabled.set(true);
+    }
     this.resetCreateKeyWhenDraftChanges();
     this.validation.set('');this.dirty.set(true);
   }
