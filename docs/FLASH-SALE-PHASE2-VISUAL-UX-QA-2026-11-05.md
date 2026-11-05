@@ -95,3 +95,11 @@ This section supersedes older screenshots/notes about switches only showing for 
 
 Manual browser render and end-to-end BE checkout integration are still pending; static code review does not establish E2E PASS.
 
+
+## Latest refinement — unified Voucher switch and no new Flash Sale drafts (05/11/2026)
+
+- Voucher's activation label now uses a dedicated span and component-scoped `display:inline-flex` styling, ensuring the switch and value stay horizontally aligned with a 12px gap as in Flash Sale. Earlier global CSS could not reliably override the scoped form-label rule.
+- Flash Sale Create/Edit actions now use **Hủy bỏ** (blue outline) + **Lưu chương trình** (blue primary), or **Cập nhật chương trình** for already-published campaigns. **Lưu bản nháp** is removed.
+- The Create form no longer displays a misleading `Bản nháp` badge before saving. Historical DRAFT records remain readable for compatibility, but Admin cannot create a new draft through this form.
+- To avoid orphan drafts, the new client contract uses **one atomic create+publish POST** (`status:'PUBLISHED'`) and an atomic PATCH for converting historical DRAFT records. The previous 2-step create-then-publish fallback is removed. FE checks that BE confirms `PUBLISHED` and the selected pause state before showing success.
+- **BLOCKER:** BE has not been verified implementing the new atomic contract. Do not claim a successful end-to-end save until BE deploy, database persistence, API response validation, Angular build and live UAT pass.
