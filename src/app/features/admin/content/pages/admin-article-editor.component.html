@@ -4,12 +4,11 @@
     <header class="article-studio__heading">
       <div>
         <h1>{{isEditing ? 'Chỉnh sửa bài viết kiến thức' : 'Tạo bài viết kiến thức'}}</h1>
-        <p>Biên tập nội dung và xem trước bố cục trước khi xuất bản.</p>
       </div>
       <div class="article-studio__actions">
         <button type="button" class="article-studio__btn article-studio__btn--outline"
           [disabled]="saving()" (click)="cancel()">Hủy bỏ</button>
-        <button type="button" class="article-studio__btn article-studio__btn--outline"
+        <button type="button" class="article-studio__btn article-studio__btn--danger-outline"
           [disabled]="saving() || loading() || !canWrite()" (click)="save('DRAFT')">
           Lưu bản nháp
         </button>
@@ -66,7 +65,7 @@
                       [disabled]="!canWrite() || saving() || tags().length >= 12"
                       [ngModel]="tagDraft()" (ngModelChange)="tagDraft.set($event)"
                       (keydown)="handleTagKey($event)" (blur)="commitTag()"
-                      aria-describedby="article-tag-help">
+                      aria-label="Nhập hashtag">
                     <button type="button" aria-label="Thêm thẻ nội dung"
                       [disabled]="!canWrite() || saving() || !tagDraft().trim() || tags().length >= 12"
                       (click)="commitTag()">Thêm</button>
@@ -83,9 +82,6 @@
                     </div>
                   }
                 </div>
-                <small id="article-tag-help" class="article-studio__field-help">
-                  Nhập từng thẻ rồi nhấn Enter hoặc Thêm. Thẻ hiển thị cuối bài viết trên web như #SucKhoeThuCung.
-                </small>
               </div>
               <label class="article-studio__field article-studio__field--wide">
                 <span>Tóm tắt</span>
@@ -125,13 +121,6 @@
                       <input type="url" [placeholder]="block.type === 'image' ? 'https://.../image.jpg' : 'https://.../video.mp4'"
                         [disabled]="!canWrite() || saving()" [ngModel]="block.text" (ngModelChange)="updateBlock(block.id,'text',$event)">
                     </label>
-                    @if (block.type === 'image') {
-                      <label class="article-studio__field">
-                        <span>Mô tả hình ảnh</span>
-                        <input type="text" placeholder="Mô tả hình ảnh cho người đọc"
-                          [disabled]="!canWrite() || saving()" [ngModel]="block.alt || ''" (ngModelChange)="updateBlock(block.id,'alt',$event)">
-                      </label>
-                    }
                   } @else {
                     <app-admin-article-rich-block
                       [type]="$any(block.type)" [text]="block.text" [html]="block.html || ''"
@@ -149,7 +138,6 @@
               <select id="article-block-type" #blockType [disabled]="saving() || !canWrite()" aria-label="Loại khối nội dung">
                 <option value="paragraph">Đoạn văn</option>
                 <option value="heading">Tiêu đề phụ</option>
-                <option value="list">Danh sách</option>
                 <option value="quote">Trích dẫn</option>
                 <option value="image">Hình ảnh</option>
                 <option value="video">Video</option>
@@ -266,9 +254,6 @@
                 }
               </div>
             }
-            <p class="article-studio__preview-note">
-              Bản xem trước dùng dữ liệu đang nhập. Bố cục và media cần được BE lưu và Customer hỗ trợ mới hiển thị đầy đủ sau xuất bản.
-            </p>
           </section>
         </aside>
       </div>
