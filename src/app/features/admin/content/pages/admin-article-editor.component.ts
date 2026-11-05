@@ -57,6 +57,7 @@ export class AdminArticleEditorComponent {
   readonly layout = signal<ArticleLayout>('STANDARD');
   readonly blocks = signal<ArticleBlock[]>([{id:1,type:'paragraph',text:''}]);
   readonly previewMode = signal<'CARD'|'DETAIL'>('DETAIL');
+  readonly previewDevice = signal<'DESKTOP'|'MOBILE'>('DESKTOP');
   readonly suggestedCategories = signal<string[]>([]);
   readonly savedStatus = signal<'DRAFT'|'PUBLISHED'|'ARCHIVED'>('DRAFT');
   readonly loading = signal(this.isEditing);
@@ -174,7 +175,7 @@ export class AdminArticleEditorComponent {
     if (!content.trim()) {this.error.set('Bài viết cần có ít nhất một khối văn bản.');return null;}
     return {
       title,category,excerpt:this.excerpt().trim(),content,postType:'OFFICIAL_BLOG',
-      status:'DRAFT',thumbnail_url:this.coverUrl().trim() || null,
+      status:this.savedStatus(),thumbnail_url:this.coverUrl().trim() || null,
       hashtags:this.categoryTags().join(', '),layoutType:this.layout(),
       contentBlocks:blocks.map(({type,text,alt}) => ({type,text:text.trim(),alt:alt?.trim() || ''})),
     };
@@ -193,6 +194,10 @@ export class AdminArticleEditorComponent {
         id = storedId(created);
         if(!id) throw new Error('API không trả về mã bài viết; chưa thể xác minh trạng thái lưu.');
         this.savedId.set(id);
+        const actualStatus = String(created?.status || '').toUpperCase();
+        if (actualStatus && actualStatus !== 'DRAFT') {
+          throw new Error('BE trả về trạng thái khác bản nháp khi tạo bài viết. Vui lòng kiểm tra trước khi tiếp tục.');
+        }
       }
       // Status updates use the explicit endpoint. Do not report publication
       // success until this request confirms the requested state.
