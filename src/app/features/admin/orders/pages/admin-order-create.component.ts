@@ -1,8 +1,12 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { AdminOrderCheckoutService, AdminOrderQuote, AdminOrderQuoteRequest, AdminOrderCommitRequest } from '../services/admin-order-checkout.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
+import { AdminOrderNotificationService } from '../../../../shared/services/admin-order-notification.service';
 import {
   AdminOrderCreateLookupService, OrderCustomerLookup,
 } from '../services/admin-order-create-lookup.service';
@@ -39,14 +43,17 @@ const normalizePhone = (value: string): string => {
 @Component({
   selector: 'app-admin-order-create',
   standalone: true,
-  imports: [RouterLink, AdminCatalogShellComponent],
+  imports: [AdminCatalogShellComponent, AdminBreadcrumbComponent],
   templateUrl: './admin-order-create.component.html',
   styleUrl: './admin-order-create.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminOrderCreateComponent {
   private readonly api = inject(AdminOrderCreateLookupService);
+  private readonly checkout = inject(AdminOrderCheckoutService);
+  private readonly session = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
+  private readonly orderNotifications = inject(AdminOrderNotificationService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private customerRequest = 0;
@@ -54,6 +61,26 @@ export class AdminOrderCreateComponent {
   private pendingExitDecision: ((allow: boolean) => void) | null = null;
   private productTimer: ReturnType<typeof setTimeout> | null = null;
 
+  readonly quoteState=signal<'idle'|'loading'|'ready'|'error'>('idle');
+  readonly quoteError=signal('');
+  readonly quote=signal<AdminOrderQuote|null>(null);
+  readonly quoteFingerprint=signal('');
+  readonly confirmCreateOpen=signal(false);
+  readonly saving=signal(false);
+  readonly created=signal(false);
+  private quoteRequest=0;
+  private createKey: string|null=null;
+  readonly isOrderOperator=computed(()=>{
+    const user=this.session.user();
+    return user?.systemRole==='ADMIN' || user?.systemRole==='MANAGER' ||
+      (user?.systemRole==='STAFF' && user.staffSubRole==='RECEPTIONIST');
+  });
+  readonly canQuote=computed(()=>this.isOrderOperator() && this.lines().length>0 && !this.hasInvalidQuantities());
+  readonly quoteIsCurrent=computed(()=>!!this.quote() && this.quoteState()==='ready' && this.quoteFingerprint()===this.getQuoteFingerprint() && Date.now()<Date.parse(this.quote()!.quoteExpiresAt));
+  readonly canSubmit=computed(()=>this.quoteIsCurrent() && this.isDraftValid() && this.quote()!.eligible &&
+    this.quote()!.availability.canFulfillEntireCart &&
+    (!this.voucherCode().trim() || this.quote()!.pricing.voucherDiscount>0) &&
+    this.isOrderOperator() && !this.saving());
   readonly lookupPhone = signal('');
   readonly lookupState = signal<LookupState>('idle');
   readonly lookupIncomplete = signal(false);
@@ -68,6 +95,9 @@ export class AdminOrderCreateComponent {
   readonly shippingWard = signal('');
   readonly shippingRecipientName = signal('');
   readonly shippingRecipientPhone = signal('');
+  // Recipient auto-fills from lookup until the employee edits either field.
+  private recipientNameEdited = false;
+  private recipientPhoneEdited = false;
   readonly addressDialog = signal<AddressDialogMode | null>(null);
   readonly addressDialogError = signal('');
   readonly addressDraft = signal<ShippingAddressDraft>(this.emptyAddress());
@@ -119,8 +149,10 @@ export class AdminOrderCreateComponent {
     if (this.lines().length === 0) issues.push('Thêm ít nhất một sản phẩm vào đơn hàng.');
     if (this.hasInvalidQuantities()) issues.push('Kiểm tra lại số lượng sản phẩm trong đơn.');
     if (this.missingShippingAddress()) issues.push('Nhập đầy đủ địa chỉ giao hàng.');
-    if (this.selectedCustomer() && !this.addressWasConfirmed())
-      issues.push('Chọn hoặc xác nhận địa chỉ nhận hàng.');
+    if (!/^\d{9,15}$/.test(normalizePhone(this.shippingRecipientPhone() || this.customerPhone())))
+      issues.push('Số điện thoại người nhận hàng chưa hợp lệ.');
+    if (!(this.shippingRecipientName() || this.customerName()).trim())
+      issues.push('Nhập tên người nhận hàng.');
     if (this.paymentMethod() === 'ONLINE_MOCK' && !this.onlineProvider())
       issues.push('Chọn một hình thức thanh toán trực tuyến.');
     return issues;
@@ -156,8 +188,11 @@ export class AdminOrderCreateComponent {
   editLookupPhone(value: string): void {
     // Changing the search number invalidates previously selected customer and address.
     this.customerRequest += 1;
+    this.invalidateDraftPricing();
     this.lookupPhone.set(value);
     this.customerPhone.set(value);
+    if (!this.recipientPhoneEdited) this.shippingRecipientPhone.set(value);
+    if (!this.recipientNameEdited) this.shippingRecipientName.set('');
     this.selectedCustomer.set(null);
     this.lookupResults.set([]);
     this.lookupIncomplete.set(false);
@@ -191,18 +226,26 @@ export class AdminOrderCreateComponent {
         }
         this.lookupResults.set(matches);
         this.lookupState.set(matches.length ? 'found' : 'not-found');
-        if (matches.length === 1) this.selectCustomer(matches[0]);
+        // Even a unique match must be explicitly selected by the employee.
       },
       error: error => {
         if (version !== this.customerRequest) return;
         this.lookupState.set('error');
-        this.toast.show(adminErrorMessage(error, 'Chưa tra cứu được khách hàng.'));
+        const status = (error as { status?: number } | null)?.status;
+        const user = this.session.user();
+        this.toast.show(
+          status === 403 && user?.systemRole === 'STAFF' && user.staffSubRole === 'RECEPTIONIST'
+            ? 'BE chưa cấp quyền tra cứu khách hàng cho Lễ tân trên phiên bản hiện tại.'
+            : adminErrorMessage(error, 'Chưa tra cứu được khách hàng.'),
+          'error',
+        );
       },
     });
   }
 
   selectCustomer(customer: OrderCustomerLookup): void {
     this.customerRequest += 1;
+    this.invalidateDraftPricing();
     this.selectedCustomer.set(customer);
     this.customerName.set(customer.fullName ?? '');
     this.customerPhone.set(customer.phone ?? this.lookupPhone());
@@ -211,36 +254,33 @@ export class AdminOrderCreateComponent {
     this.lookupResults.set([]);
     this.lookupState.set('found');
     this.clearShippingAddress();
-    this.shippingRecipientName.set(customer.fullName ?? '');
-    this.shippingRecipientPhone.set(customer.phone ?? this.lookupPhone());
+    if (!this.recipientNameEdited) this.shippingRecipientName.set(customer.fullName ?? '');
+    if (!this.recipientPhoneEdited) this.shippingRecipientPhone.set(customer.phone ?? this.lookupPhone());
     // /customers currently exposes no saved/default address; do not fabricate one.
   }
 
-  updateCustomerName(value: string): void { this.customerName.set(value); }
-  updateCustomerPhone(value: string): void {
-    const previousPhone = this.customerPhone();
-    if (value === previousPhone && value === this.lookupPhone()) return;
-    // Both the lookup field and customer form represent the same contact number.
-    // A changed phone must invalidate any previously verified lookup result.
-    const priorCustomer = this.selectedCustomer();
-    this.customerRequest += 1;
-    this.customerPhone.set(value);
-    this.lookupPhone.set(value);
-    this.selectedCustomer.set(null);
-    this.lookupResults.set([]);
-    this.lookupIncomplete.set(false);
-    this.lookupState.set('idle');
-    if (priorCustomer) {
-      // Do not retain another customer's read-only profile or confirmed address.
-      this.customerName.set('');
-      this.customerEmail.set('');
-      this.clearShippingAddress();
-    } else if (this.shippingRecipientPhone() === previousPhone) {
-      this.shippingRecipientPhone.set(value);
-      this.addressWasConfirmed.set(false);
-    }
+  // Customer identity is immutable after a lookup result has been selected.
+  // Before selection, contact fields are an independent draft: only lookup -> contact syncs.
+  updateCustomerName(value: string): void {
+    if (this.selectedCustomer()) return;
+    this.customerName.set(value);
   }
-  updateCustomerEmail(value: string): void { this.customerEmail.set(value); }
+  updateCustomerPhone(value: string): void {
+    if (this.selectedCustomer()) return;
+    this.customerPhone.set(value);
+  }
+  updateCustomerEmail(value: string): void {
+    if (this.selectedCustomer()) return;
+    this.customerEmail.set(value);
+  }
+  updateShippingRecipientName(value: string): void {
+    this.recipientNameEdited = true;
+    this.shippingRecipientName.set(value);
+  }
+  updateShippingRecipientPhone(value: string): void {
+    this.recipientPhoneEdited = true;
+    this.shippingRecipientPhone.set(value);
+  }
   updateShippingLine1(value: string): void { this.shippingLine1.set(value); this.addressWasConfirmed.set(false); }
   updateShippingCity(value: string): void { this.shippingCity.set(value); this.addressWasConfirmed.set(false); }
   updateShippingDistrict(value: string): void { this.shippingDistrict.set(value); this.addressWasConfirmed.set(false); }
@@ -255,8 +295,6 @@ export class AdminOrderCreateComponent {
     this.shippingCity.set('');
     this.shippingDistrict.set('');
     this.shippingWard.set('');
-    this.shippingRecipientName.set('');
-    this.shippingRecipientPhone.set('');
     this.addressWasConfirmed.set(false);
     this.addressDialog.set(null);
     this.addressDraft.set(this.emptyAddress());
@@ -300,8 +338,8 @@ export class AdminOrderCreateComponent {
       this.addressDialogError.set('Vui lòng nhập đầy đủ người nhận, số điện thoại và địa chỉ giao hàng.');
       return;
     }
-    this.shippingRecipientName.set(draft.recipientName.trim());
-    this.shippingRecipientPhone.set(draft.recipientPhone.trim());
+    this.updateShippingRecipientName(draft.recipientName.trim());
+    this.updateShippingRecipientPhone(draft.recipientPhone.trim());
     this.shippingCity.set(draft.city.trim());
     this.shippingDistrict.set(draft.district.trim());
     this.shippingWard.set(draft.ward.trim());
@@ -479,16 +517,24 @@ export class AdminOrderCreateComponent {
   }
 
   updateVoucher(value: string): void {
+    this.invalidateDraftPricing();
     this.voucherCode.set(value.toUpperCase().trimStart());
     this.voucherPreviewState.set('idle');
   }
 
   clearVoucher(): void {
+    this.invalidateDraftPricing();
     this.voucherCode.set('');
     this.voucherPreviewState.set('idle');
   }
 
   private invalidateDraftPricing(): void {
+    ++this.quoteRequest;
+    this.createKey=null;
+    this.quote.set(null);
+    this.quoteFingerprint.set('');
+    this.quoteState.set('idle');
+    this.quoteError.set('');
     this.voucherPreviewState.set('idle');
   }
 
@@ -501,13 +547,115 @@ export class AdminOrderCreateComponent {
       this.toast.show('Vui lòng chọn sản phẩm và kiểm tra số lượng trước khi áp dụng mã.');
       return;
     }
-    // The current /vouchers/validate evaluates the authenticated Customer's cart.
-    // Never call it using the Admin session as that could validate the wrong cart.
-    this.voucherPreviewState.set('unverified');
+    this.requestQuote();
+  }
+
+  private getQuoteFingerprint():string {
+    return JSON.stringify({
+      customerId:this.selectedCustomer()?.id||null,
+      items:this.lines().map(l=>[l.productId,l.variantId,l.quantity]),
+      voucherCode:this.voucherCode().trim(),
+    });
+  }
+  private quoteBody():AdminOrderQuoteRequest {
+    return {
+      ...(this.selectedCustomer()?{customerId:this.selectedCustomer()!.id}:{}),
+      items:this.lines().map(l=>({productId:l.productId,variantId:l.variantId,quantity:l.quantity})),
+      ...(this.voucherCode().trim()?{voucherCode:this.voucherCode().trim()}:{}),
+    };
+  }
+  requestQuote(openConfirmation=false):void {
+    if(!this.canQuote() || this.quoteState()==='loading') {
+      this.toast.show('Vui lòng chọn sản phẩm hợp lệ trước khi xác nhận.');
+      return;
+    }
+    const version=++this.quoteRequest;
+    const fingerprint=this.getQuoteFingerprint();
+    this.quote.set(null);this.quoteState.set('loading');this.quoteError.set('');
+    this.checkout.quote(this.quoteBody()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:quote=>{
+        if(version!==this.quoteRequest || fingerprint!==this.getQuoteFingerprint())return;
+        this.quote.set(quote);this.quoteFingerprint.set(fingerprint);
+        this.quoteState.set('ready');
+        if(!quote.eligible || !quote.availability.canFulfillEntireCart)
+          this.toast.show('Một số sản phẩm không đủ tồn kho tại chi nhánh. Vui lòng kiểm tra lại.');
+        else if(this.voucherCode().trim() && quote.pricing.voucherDiscount===0)
+          this.toast.show('Mã giảm giá chưa đủ điều kiện áp dụng.');
+        else if(openConfirmation) {
+          if(!this.isDraftValid()) this.toast.show(this.reviewIssues()[0]||'Vui lòng kiểm tra thông tin đơn hàng.');
+          else this.confirmCreateOpen.set(true);
+        } else this.toast.show('Đã cập nhật báo giá từ hệ thống.','success');
+      },
+      error:err=>{
+        if(version!==this.quoteRequest)return;
+        this.quoteState.set('error');
+        this.quoteError.set(adminErrorMessage(err,'Chưa lấy được báo giá. Vui lòng thử lại.'));
+        this.toast.show(this.quoteError(),'error');
+      },
+    });
+  }
+  reviewCreate():void {
+    if (!this.isDraftValid()) {this.toast.show(this.reviewIssues()[0]||'Vui lòng kiểm tra thông tin đơn hàng.');return;}
+    if(this.quote() && Date.now()>=Date.parse(this.quote()!.quoteExpiresAt)) this.invalidateDraftPricing();
+    if (!this.quoteIsCurrent()) {this.requestQuote(true);return;}
+    if(!this.canSubmit()){
+      if(!this.isOrderOperator())this.toast.show('Tài khoản không có quyền tạo đơn tại quầy.');
+      else if(!this.isDraftValid())this.toast.show(this.reviewIssues()[0]||'Vui lòng kiểm tra thông tin đơn hàng.');
+      else this.toast.show('Vui lòng lấy báo giá hợp lệ, còn hiệu lực trước khi tạo đơn.');
+      return;
+    }
+    this.confirmCreateOpen.set(true);
+  }
+  closeCreate():void{if(!this.saving())this.confirmCreateOpen.set(false);}
+  submitCreate():void {
+    if(!this.confirmCreateOpen() || !this.canSubmit() || this.saving())return;
+    if(Date.now()>=Date.parse(this.quote()!.quoteExpiresAt)){
+      this.closeCreate();this.invalidateDraftPricing();
+      this.toast.show('Báo giá đã hết hạn. Vui lòng xem báo giá mới.');return;
+    }
+    const q=this.quote()!;
+    const body:AdminOrderCommitRequest={
+      ...this.quoteBody(),
+      ...(!this.selectedCustomer()?{guestContact:{
+        fullName:this.customerName().trim(),
+        phone:normalizePhone(this.customerPhone()||this.lookupPhone()),
+        ...(this.customerEmail().trim()?{email:this.customerEmail().trim()}:{}),
+      }}:{}),
+      branchId:q.fulfillmentBranchId,paymentMethod:this.paymentMethod(),
+      shippingAddress:{
+        recipientName:this.shippingRecipientName(),
+        phone:this.shippingRecipientPhone(),
+        line1:this.shippingLine1(),ward:this.shippingWard(),
+        district:this.shippingDistrict(),city:this.shippingCity(),
+      },
+      note:this.note().trim(),
+    };
+    this.createKey??=crypto.randomUUID();
+    this.saving.set(true);
+    this.checkout.commit(body,this.createKey).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:response=>{
+        this.saving.set(false);this.confirmCreateOpen.set(false);
+        if(!response?.order?.id || !response.order.code){
+          this.toast.show('Đơn đã được gửi nhưng chưa xác nhận được kết quả. Vui lòng kiểm tra danh sách đơn trước khi thử lại.','error');
+          return;
+        }
+        this.created.set(true);
+        this.orderNotifications.refresh();
+        this.toast.show(response.guestActivationStatus
+          ? 'Tạo đơn '+response.order.code+' thành công. Khách vãng lai đang chờ kích hoạt tài khoản.'
+          : 'Tạo đơn '+response.order.code+' thành công.','success');
+        void this.router.navigateByUrl('/admin/orders/'+encodeURIComponent(response.order.id));
+      },
+      error:err=>{
+        this.saving.set(false);
+        this.toast.show(adminErrorMessage(err,'Chưa xác nhận được kết quả tạo đơn. Vui lòng kiểm tra danh sách đơn trước khi thử lại.'),'error');
+        // Reuse the same idempotency key on retry, never create a second key.
+      },
+    });
   }
 
   canLeavePage(): boolean | Promise<boolean> {
-    if (!this.hasUnsavedChanges()) return true;
+    if (this.created() || !this.hasUnsavedChanges()) return true;
     // A single in-app confirmation applies to Cancel, Back and sidebar links.
     if (this.pendingExitDecision) return false;
     this.cancelDialogOpen.set(true);
@@ -535,6 +683,10 @@ export class AdminOrderCreateComponent {
     this.voucherCode.set('');
     this.note.set('');
     this.clearShippingAddress();
+    this.shippingRecipientName.set('');
+    this.shippingRecipientPhone.set('');
+    this.recipientNameEdited=false;
+    this.recipientPhoneEdited=false;
     const decide = this.pendingExitDecision;
     this.pendingExitDecision = null;
     if (decide) decide(true);

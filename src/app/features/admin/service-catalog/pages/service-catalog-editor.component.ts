@@ -11,23 +11,24 @@ import { AppHttpError } from '../../../../core/models/app-http-error.model';
 import { DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { catchError, firstValueFrom, from, map, mergeMap, of, toArray } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, from, map, mergeMap, of, switchMap, toArray } from 'rxjs';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { CatalogService, ServiceApiRecord, ServiceBookingMode, ServicePriceVariant, ServiceWrite } from '../models/service-catalog.model';
 import { ServiceCatalogApiService, serviceFromApi } from '../services/service-catalog-api.service';
 import { resolveServicePricing } from '../services/service-pricing.utils';
-import { AdminProductService } from '../../products/services/admin-product.service';
+import { AdminInventoryService } from '../../inventory/services/admin-inventory.service';
 import { AdminCategoryService } from '../../categories/services/admin-category.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
 import { DraftBranchSelection, ServiceBranchConfigFlowComponent } from '../components/service-branch-config-flow.component';
 
 type PriceMode = 'FIXED' | 'QUOTE';
 type Tier = { key: string; weight: string; mode: PriceMode; price: number | null };
-type MaterialOption = { sku: string; name: string; unit: string; image: string | null; categoryId: string; price: number };
-type MaterialLine = { key: number; sku: string; query: string; quantity: number | null; unit: string };
+type MaterialOption = { materialId: string; sku: string; name: string; unit: string; image: string | null; categoryId: string; price: number };
+type MaterialLine = { key: number; materialId: string; sku: string; query: string; quantity: number | null; unit: string };
 type BranchDetailRow = { id: string; name: string; summary: string };
 const TIER_WEIGHTS = [
   { key: 'XS', weight: '< 5 kg' },
@@ -43,14 +44,14 @@ const TIER_WEIGHTS = [
 @Component({
   selector: 'app-service-catalog-editor',
   standalone: true,
-  imports: [FormsModule, RouterLink, AdminCatalogShellComponent, ServiceBranchConfigFlowComponent],
+  imports: [FormsModule, RouterLink, AdminCatalogShellComponent, AdminDataStateComponent, ServiceBranchConfigFlowComponent],
   templateUrl: './service-catalog-editor.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServiceCatalogEditorComponent {
   private readonly repository = inject(ServiceCatalogApiService);
   private readonly branchesApi = inject(BranchManagementApiService);
-  private readonly productsApi = inject(AdminProductService);
+  private readonly inventoryApi = inject(AdminInventoryService);
   private readonly categoryApi = inject(AdminCategoryService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
@@ -59,7 +60,19 @@ export class ServiceCatalogEditorComponent {
   private readonly toast = inject(AdminToastService);
   private readonly previewToast = effect(() => {
     const message = this.notice();
+    if (message) this.toast.show(message, /thành công/i.test(message) ? 'success' : 'info');
+  });
+  private readonly branchErrorToast = effect(() => {
+    const message = this.branchLoadError();
+    if (message) this.toast.show(message, 'error');
+  });
+  private readonly activationToast = effect(() => {
+    const message = this.activationNotice();
     if (message) this.toast.show(message, 'info');
+  });
+  private readonly errorToast = effect(() => {
+    const message = this.errors()[0];
+    if (message) this.toast.show(message, 'error');
   });
 
   readonly editorMode = (this.route.snapshot.data['editorMode'] ?? 'create') as 'create' | 'edit' | 'view';
@@ -184,18 +197,34 @@ export class ServiceCatalogEditorComponent {
         for (const category of page.items) this.productCategoryNames.set(category.id, category.name);
       },
     });
-    this.productsApi.listProducts({ limit: 100, status: 'ACTIVE' }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (page) => {
-        this.productOptions = page.items.flatMap((product) => product.variants
-          .filter((variant) => variant.status === 'ACTIVE' && !!variant.sku)
-          .map((variant) => ({
-            sku: variant.sku,
-            name: product.name,
-            unit: '',
-            image: variant.image || product.images.find((item) => item.isPrimary)?.url || product.images[0]?.url || null,
+    forkJoin({
+      items: this.inventoryApi.listItems(),
+      products: this.inventoryApi.listCatalogProducts(),
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ items, products }) => {
+        const productBySku = new Map(products.flatMap(product => product.variants.map(variant => [
+          variant.sku,
+          {
+            image: variant.image || product.images.find(image => image.isPrimary)?.url || product.images[0]?.url || null,
             categoryId: product.categoryId,
             price: variant.finalPrice ?? variant.price,
-          })));
+          },
+        ] as const)));
+        this.productOptions = items
+          .filter(item => item.status === 'ACTIVE')
+          .map(item => {
+            const product = productBySku.get(item.sku);
+            return {
+              materialId: item.id,
+              sku: item.sku,
+              name: item.name,
+              unit: item.unit || '',
+              image: product?.image ?? null,
+              categoryId: product?.categoryId ?? '',
+              price: product?.price ?? 0,
+            };
+          });
+        this.refreshMaterialLabels();
       },
       error: () => { this.productOptions = []; },
     });
@@ -221,51 +250,38 @@ export class ServiceCatalogEditorComponent {
    * Branch names come from the BE branch scope. Individual config is displayed
    * only if BE returns it for the selected service and branch. */
   private loadBranchDetailRows(): void {
+    if (!this.serviceId) return;
     this.branchesLoading.set(true);
     this.branchLoadError.set('');
-    this.repository.listBranchesForServiceDetail().pipe(
+    this.repository.getBranchConfigs(this.serviceId).pipe(
       takeUntilDestroyed(this.destroyRef),
     ).subscribe({
-      next: (branches) => {
-        this.branchDetailRows.set(branches.map((branch) => ({
-          id: branch.id,
-          name: branch.name,
-          summary: 'Đang tải cấu hình...',
-        })));
+      next: (configs) => {
+        const role = this.authSessionRole;
+        const scope = new Set(this.authSession.user()?.branchScope ?? []);
+        const visible = role === 'ADMIN'
+          ? configs
+          : configs.filter((config) => scope.has(config.branchId));
+        this.branchDetailRows.set(visible.map((config) => {
+          const status = this.source?.status !== 'ACTIVE'
+            ? 'Chưa thể bật'
+            : config.branchStatus === 'INACTIVE'
+              ? 'Chi nhánh ngừng hoạt động'
+              : config.enabled && config.capacity > 0 ? 'Đang bật' : 'Đang tắt';
+          const availability = this.bookingMode === 'CONTACT_ONLY'
+            ? 'Liên hệ'
+            : 'Khả dụng theo lịch';
+          return {
+            id: config.branchId,
+            name: config.branchName,
+            summary: `${status} · Sức chứa ${config.capacity} · ${availability}`,
+          };
+        }));
         this.branchesLoading.set(false);
-        for (const branch of branches) {
-          this.repository.list({
-            search: this.serviceName,
-            branchId: branch.id,
-            mode: 'ALL',
-            status: 'ALL',
-            page: 1,
-            pageSize: 100,
-          }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-            next: (page) => {
-              const service = page.items.find((item) => item.id === this.serviceId);
-              const config = service?.branchServices.find((item) => item.branchId === branch.id);
-              if (!config) {
-                this.updateBranchSummary(branch.id, 'Chưa có dữ liệu cấu hình tại chi nhánh');
-                return;
-              }
-              const status = this.source?.status !== 'ACTIVE'
-                ? 'Chưa thể bật'
-                : config.enabled && config.capacity > 0 ? 'Đang bật' : 'Đang tắt';
-              const availability = service?.availabilityText ||
-                (this.bookingMode === 'CONTACT_ONLY' ? 'Liên hệ' : 'Khả dụng do Backend tính');
-              this.updateBranchSummary(
-                branch.id,
-                `${status} · Sức chứa ${config.capacity} · ${availability}`,
-              );
-            },
-            error: () => this.updateBranchSummary(branch.id, 'Chưa tải được cấu hình tại chi nhánh'),
-          });
-        }
       },
       error: () => {
         this.branchesLoading.set(false);
-        this.branchLoadError.set('Không tải được danh sách chi nhánh. Vui lòng thử lại.');
+        this.branchLoadError.set('Không tải được cấu hình chi nhánh. Vui lòng thử lại.');
       },
     });
   }
@@ -300,15 +316,15 @@ export class ServiceCatalogEditorComponent {
       this.priceTiers[0].mode = 'FIXED';
       this.priceTiers[0].price = pricing.confirmedBasePrice;
     }
-    // InventoryItem.materialId is NOT a Product SKU. Preserve existing
-    // materials server-side and show them read-only until Inventory lookup is ready.
     this.materials = (raw.defaultMaterials ?? []).map((m) => ({
       key: this.nextMaterialKey++,
-      sku: m.materialId,
+      materialId: m.materialId,
+      sku: '',
       query: m.materialId,
       quantity: m.defaultQuantity,
       unit: m.unit,
     }));
+    this.refreshMaterialLabels();
   }
 
   private errorLabel(error: HttpErrorResponse | AppHttpError): string {
@@ -431,7 +447,7 @@ export class ServiceCatalogEditorComponent {
   addMaterial(): void {
     this.materialsDirty = true;
     this.materials.push({
-      key: this.nextMaterialKey++, sku: '', query: '', quantity: null, unit: '',
+      key: this.nextMaterialKey++, materialId: '', sku: '', query: '', quantity: null, unit: '',
     });
     this.markDirty();
   }
@@ -449,6 +465,7 @@ export class ServiceCatalogEditorComponent {
     const normalized = text.trim().toLocaleLowerCase('vi');
     const product = this.productOptions.find((item) =>
       item.name.toLocaleLowerCase('vi') === normalized || item.sku.toLocaleLowerCase('vi') === normalized);
+    line.materialId = product?.materialId ?? '';
     line.sku = product?.sku ?? '';
     if (product && !line.unit) line.unit = product.unit;
     this.markDirty();
@@ -461,12 +478,26 @@ export class ServiceCatalogEditorComponent {
     ).slice(0, 20);
   }
 
+  private refreshMaterialLabels(): void {
+    if (!this.productOptions.length || !this.materials.length) return;
+    for (const line of this.materials) {
+      const option = this.productOptions.find(item =>
+        item.materialId === line.materialId || (!!line.sku && item.sku === line.sku));
+      if (!option) continue;
+      line.materialId = option.materialId;
+      line.sku = option.sku;
+      line.query = option.name;
+      if (!line.unit) line.unit = option.unit;
+    }
+  }
+
   productCategoryLabel(id: string): string {
     return this.productCategoryNames.get(id) || 'Chưa có danh mục';
   }
 
   chooseMaterial(line: MaterialLine, item: MaterialOption): void {
     line.query = item.name;
+    line.materialId = item.materialId;
     line.sku = item.sku;
     if (!line.unit) line.unit = item.unit;
     this.openMaterialKey.set(null);
@@ -511,6 +542,13 @@ export class ServiceCatalogEditorComponent {
     }
     if (/cấp cứu/i.test(this.serviceName) && this.bookingMode !== 'CONTACT_ONLY') {
       messages.push('Dịch vụ cấp cứu cần chọn hình thức “Liên hệ trực tiếp”.');
+    }
+
+    for (const material of this.materials) {
+      if (!material.materialId) messages.push('Vui lòng chọn vật liệu hợp lệ từ danh sách.');
+      if (!material.quantity || !Number.isFinite(material.quantity) || material.quantity <= 0) {
+        messages.push('Số lượng vật liệu mặc định phải lớn hơn 0.');
+      }
     }
 
     if (this.weightPricing) {
@@ -560,10 +598,6 @@ export class ServiceCatalogEditorComponent {
       this.notice.set('');
       return;
     }
-    if (this.materialsDirty) {
-      this.errors.set(['Hiện chưa thể lưu thay đổi vật liệu. Vui lòng giữ nguyên phần vật liệu để tiếp tục.']);
-      return;
-    }
     const prices = this.pricePayload();
     const body: ServiceWrite = {
       name: this.serviceName.trim(),
@@ -574,23 +608,41 @@ export class ServiceCatalogEditorComponent {
       requiredStaffRole: this.executorRole as ServiceWrite['requiredStaffRole'],
       durationMinutes: this.bookingMode === 'CONTACT_ONLY' ? this.durationMinutes : this.durationMinutes!,
       status: this.active ? 'ACTIVE' : 'INACTIVE',
+      defaultMaterials: this.materials.map(material => ({
+        materialId: material.materialId,
+        defaultQuantity: material.quantity ?? 1,
+        unit: material.unit.trim(),
+      })),
+      ...(this.isNew ? {
+        autoEnableActiveBranches: this.active,
+        branchConfigs: this.stagedBranchConfigs().map((item) => ({
+          branchId: item.branchId,
+          enabled: item.enabled && this.active,
+          capacity: item.capacity,
+          availability: [],
+        })),
+      } : {}),
       ...prices,
     };
-    // Never send Product SKU strings as InventoryItem IDs.
-    // On EDIT, leave existing defaultMaterials untouched in Backend.
     this.saving.set(true);
+    const updateBody = this.pricingDirty
+      ? body
+      : (({ basePrice: _price, priceVariants: _variants, autoEnableActiveBranches: _auto, branchConfigs: _branches, ...rest }) => rest)(body);
+    const shouldArchive = !this.isNew && this.source?.status === 'ACTIVE' && !this.active;
     const request = this.isNew
       ? this.repository.create(body, this.saveIdempotencyKey ??= crypto.randomUUID())
-      : this.repository.update(this.serviceId!, this.pricingDirty
-        ? body : (({ basePrice: _price, priceVariants: _variants, ...rest }) => rest)(body));
+      : this.repository.update(this.serviceId!, updateBody).pipe(
+          switchMap((saved) => shouldArchive
+            ? this.repository.archive(saved.id, crypto.randomUUID())
+            : of(saved)),
+        );
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (saved) => {
         this.dirty.set(false);
-        if (this.isNew && saved.id) {
-          // A successful POST must never be retried when branch provisioning fails.
+        if (!this.isNew && this.active && saved.id) {
+          // Existing services may predate automatic branch provisioning.
+          // Reconcile only missing configs; creation is already atomic in BE.
           this.pendingActivationServiceId.set(saved.id);
-        }
-        if ((this.active || this.stagedBranchConfigs().length > 0) && saved.id) {
           void this.enableUnconfiguredBranches(saved.id);
           return;
         }
@@ -606,13 +658,9 @@ export class ServiceCatalogEditorComponent {
   }
 
   /**
-   * FB #16: A newly created active Service defaults to being offered at all
-   * currently active branches. Persist this, never fake branch status in UI.
-   * Existing explicit branch settings always win: only missing configs are seeded.
-   *
-   * The current BE has no atomic "enable at all branches" operation. This
-   * retryable reconciliation is idempotent but does not cover branches created
-   * in the future. BE must enforce that long-term business rule.
+   * Existing services created before atomic branch provisioning may be missing
+   * BranchServiceConfig rows. Reconcile missing configs only for those records.
+   * New services send branchConfigs/autoEnableActiveBranches in the create payload.
    */
   async enableUnconfiguredBranches(serviceId: string): Promise<void> {
     if (!serviceId) return;

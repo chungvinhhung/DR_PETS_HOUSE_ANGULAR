@@ -1,0 +1,94 @@
+<app-admin-catalog-shell [activeItem]="activeItem">
+  <main class="moderation-page web2-admin-page">
+    <header class="web2-admin-page__header"><h1>{{title}}</h1></header>
+
+    <section class="filterbar web2-filterbar" role="search" aria-label="Tìm kiếm và lọc dữ liệu">
+      <label class="search search-field">
+        <img src="/assets/service-catalog/search.svg" alt="" aria-hidden="true">
+        <input type="search"
+          [placeholder]="mode === 'reviews' ? 'Tìm tên khách hàng, mã đơn hoặc mã lịch...' : mode === 'feedback' ? 'Tìm khách hàng...' : 'Tìm người báo cáo, bài đăng...'"
+          [ngModel]="search()" (ngModelChange)="search.set($event); onFilter()">
+      </label>
+      <div class="filters toolbar-selects">
+        @if (mode === 'reviews') {
+          <select class="web2-admin-filter-select" aria-label="Điểm đánh giá" [ngModel]="filter()" (ngModelChange)="filter.set($event); onFilter()">
+            <option value="">Tất cả điểm đánh giá</option><option value="5">5 sao</option><option value="4">4 sao</option><option value="3">≤ 3 sao</option>
+          </select>
+        }
+        @if (mode === 'reports') {
+          <select class="web2-admin-filter-select" aria-label="Lý do báo cáo" [ngModel]="filter()" (ngModelChange)="filter.set($event); onFilter()">
+            <option value="">Tất cả lý do</option><option>Spam / quảng cáo</option><option>Thông tin sai lệch</option><option>Nội dung không phù hợp</option>
+          </select>
+        }
+        <select class="web2-admin-filter-select" aria-label="Trạng thái" [ngModel]="status()" (ngModelChange)="status.set($event); onFilter()">
+          <option value="">Tất cả trạng thái</option>
+          @if (mode === 'reviews') { <option value="ACTIVE">Hiển thị</option><option value="HIDDEN">Ẩn</option> }
+          @else { <option value="NEW">Mới</option><option value="PROCESSING">Đang xử lý</option><option value="PROCESSED">Đã xử lý</option> }
+        </select>
+        <select class="web2-admin-filter-select" aria-label="Khoảng thời gian">
+          <option>30 ngày qua</option><option>7 ngày qua</option><option>90 ngày qua</option><option>Tất cả thời gian</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="table-card web2-admin-table-panel">
+      @if (loading()) {
+        <app-admin-data-state kind="loading" [title]="'Đang tải ' + title.toLocaleLowerCase('vi')" />
+      } @else if (error()) {
+        <app-admin-data-state kind="error" [title]="'Không thể tải ' + title.toLocaleLowerCase('vi')" [message]="error()" (retry)="load()" />
+      } @else {
+        <div class="table-scroll web2-admin-table-scroll">
+          <table class="web2-admin-table"
+            [class.web2-admin-table--reviews]="mode === 'reviews'"
+            [class.web2-admin-table--feedback]="mode === 'feedback'"
+            [class.web2-admin-table--reports]="mode === 'reports'">
+            @if (mode === 'reviews') {
+              <colgroup><col style="width:12%"><col style="width:9%"><col style="width:10%"><col style="width:14%"><col style="width:8%"><col style="width:24%"><col style="width:10%"><col style="width:13%"></colgroup>
+              <thead><tr><th>Tên đánh giá</th><th>Loại</th><th>Mã tham chiếu</th><th>Khách hàng</th><th class="is-center">Đánh giá</th><th>Nội dung</th><th class="is-center">Ngày</th><th class="is-center">Trạng thái</th></tr></thead>
+              <tbody>
+                @for (r of visible(); track r.id) {
+                  <tr>
+                    <td>{{r.targetType === 'SERVICE' ? 'Đánh giá dịch vụ' : 'Đánh giá sản phẩm'}}</td>
+                    <td>{{r.targetType === 'SERVICE' ? 'Dịch vụ' : 'Sản phẩm'}}</td>
+                    <td>—</td><td>{{r.displayName || 'Ẩn danh'}}</td>
+                    <td class="is-center">{{r.rating}} / 5</td><td>{{r.comment || '—'}}</td>
+                    <td class="is-center">{{date(r.createdAt)}}</td>
+                    <td class="is-center"><span class="badge" [attr.data-kind]="statusKind(r)">{{statusLabel(r)}}</span></td>
+                  </tr>
+                } @empty { <tr><td colspan="8" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có đánh giá" message="Hiện chưa có đánh giá phù hợp với bộ lọc." /></td></tr> }
+              </tbody>
+            } @else if (mode === 'feedback') {
+              <colgroup><col style="width:13%"><col style="width:8%"><col style="width:13%"><col style="width:17%"><col style="width:22%"><col style="width:10%"><col style="width:9%"><col style="width:8%"></colgroup>
+              <thead><tr><th>Khách hàng</th><th>Giới tính</th><th>Số điện thoại</th><th>Email</th><th>Nội dung</th><th class="is-center">Ngày gửi</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
+              <tbody>
+                @for (r of visible(); track r._id || r.id) {
+                  <tr>
+                    <td>{{r.name || '—'}}</td><td>{{r.gender || '—'}}</td><td>{{r.phone || '—'}}</td><td>{{r.email || '—'}}</td><td>{{r.message || r.subject || '—'}}</td>
+                    <td class="is-center">{{date(r.createdAt)}}</td>
+                    <td class="is-center"><span class="badge" [attr.data-kind]="statusKind(r)">{{statusLabel(r)}}</span></td>
+                    <td class="is-center"><a class="web2-admin-icon-button" [routerLink]="['/admin/moderation/feedback', r._id || r.id]" aria-label="Xem chi tiết phản hồi"><img src="/assets/admin-branch/figma-eye.svg" alt=""></a></td>
+                  </tr>
+                } @empty { <tr><td colspan="8" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có phản hồi" message="Hiện chưa có phản hồi phù hợp với bộ lọc." /></td></tr> }
+              </tbody>
+            } @else {
+              <colgroup><col style="width:18%"><col style="width:25%"><col style="width:20%"><col style="width:13%"><col style="width:14%"><col style="width:10%"></colgroup>
+              <thead><tr><th>Người báo cáo</th><th>Bài đăng bị báo cáo</th><th>Lý do</th><th class="is-center">Ngày báo cáo</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
+              <tbody><tr><td colspan="6" class="web2-admin-empty"><app-admin-data-state kind="technical" title="Chưa có dữ liệu báo cáo vi phạm" message="Backend hiện chưa cung cấp API Báo cáo vi phạm. Thông báo này sẽ được gỡ khi contract tương ứng sẵn sàng." /></td></tr></tbody>
+            }
+          </table>
+        </div>
+        <footer class="web2-admin-pagination">
+          <span>Đang hiển thị {{visible().length}} trên tổng số {{filtered().length}} {{mode === 'reviews' ? 'đánh giá' : mode === 'feedback' ? 'phản hồi' : 'báo cáo'}}</span>
+          <div class="web2-admin-pagination__controls">
+            <button type="button" class="web2-admin-page-arrow" aria-label="Trang trước" (click)="goToPage(page() - 1)" [disabled]="page() === 1"><img src="/assets/admin-product/expand_more.svg" alt=""></button>
+            @for (p of pageNumbers(); track $index) {
+              @if (p === '…') { <span class="pagination-ellipsis">…</span> }
+              @else { <button type="button" class="pagination-page" [class.pagination-page--active]="page() === p" [attr.aria-current]="page() === p ? 'page' : null" (click)="goToPage(p)">{{p}}</button> }
+            }
+            <button type="button" class="web2-admin-page-arrow" aria-label="Trang sau" (click)="goToPage(page() + 1)" [disabled]="page() === totalPages()"><img src="/assets/admin-product/expand_more.svg" alt=""></button>
+          </div>
+        </footer>
+      }
+    </section>
+  </main>
+</app-admin-catalog-shell>

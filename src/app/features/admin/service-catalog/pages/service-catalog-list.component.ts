@@ -1,8 +1,10 @@
+import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
 import {
   ChangeDetectionStrategy,
   Component,
   HostListener,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -20,6 +22,8 @@ import {
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from "../../../../shared/admin-data-state/admin-data-state.component";
+import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import {
   CatalogBranch,
   CatalogFilterMode,
@@ -36,7 +40,7 @@ type CatalogAction = 'view' | 'edit' | 'configure';
 @Component({
   selector: 'app-service-catalog-list',
   standalone: true,
-  imports: [AdminCatalogShellComponent, ServiceBranchConfigFlowComponent],
+  imports: [AdminCatalogShellComponent, AdminDataStateComponent, ServiceBranchConfigFlowComponent],
   templateUrl: './service-catalog-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -45,12 +49,17 @@ export class ServiceCatalogListComponent {
   private readonly authSession = inject(AuthSessionService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly toast = inject(AdminToastService);
 
   readonly allBranches = signal<readonly CatalogBranch[]>([]);
   readonly role = computed(() => this.authSession.user()?.systemRole ?? 'STAFF');
   readonly isAdmin = computed(() => this.role() === 'ADMIN');
   readonly canConfigure = computed(() => this.role() === 'ADMIN' || this.role() === 'MANAGER');
-  readonly scopedBranches = computed<readonly CatalogBranch[]>(() => this.allBranches());
+  readonly scopedBranches = computed<readonly CatalogBranch[]>(() => {
+    if (this.role() === 'ADMIN') return this.allBranches();
+    const scope = new Set(this.authSession.user()?.branchScope ?? []);
+    return this.allBranches().filter((branch) => scope.has(branch.id));
+  });
 
   readonly pageSize = 6;
   readonly rows = signal<readonly CatalogService[]>([]);
@@ -58,6 +67,14 @@ export class ServiceCatalogListComponent {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly notice = signal<string | null>(null);
+  private readonly notifyNotice = effect(() => {
+    const message = this.notice();
+    if (message) this.toast.show(message, 'info');
+  });
+  private readonly notifyError = effect(() => {
+    const message = this.error();
+    if (message) this.toast.show(message, 'error');
+  });
   readonly openMenuId = signal<string | null>(null);
   readonly configuringService = signal<CatalogService | null>(null);
   readonly searchText = signal('');
@@ -77,13 +94,7 @@ export class ServiceCatalogListComponent {
   readonly pageCount = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
   readonly rangeStart = computed(() => this.total() === 0 ? 0 : (this.currentPage() - 1) * this.pageSize + 1);
   readonly rangeEnd = computed(() => Math.min(this.total(), this.currentPage() * this.pageSize));
-  readonly pageNumbers = computed(() => {
-    const total = this.pageCount();
-    const active = this.currentPage();
-    const start = Math.max(1, Math.min(active - 2, total - 4));
-    const end = Math.min(total, Math.max(5, active + 2));
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  });
+  readonly pageNumbers = computed(() => adminPageWindow(this.currentPage(),this.pageCount()));
 
   constructor() {
     if (this.canConfigure()) {

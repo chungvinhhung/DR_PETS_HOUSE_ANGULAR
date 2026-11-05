@@ -10,6 +10,13 @@ export interface ServiceDefaultMaterial {
   defaultQuantity: number;
   unit: string;
 }
+export interface ServiceBranchConfigWrite {
+  branchId: string;
+  enabled: boolean;
+  capacity: number;
+  availability: readonly { dayOfWeek: number; open: string; close: string }[];
+}
+
 export interface ServiceWrite {
   name: string;
   serviceType: 'GROOMING' | 'MEDICAL';
@@ -21,6 +28,10 @@ export interface ServiceWrite {
   requiredStaffRole: 'CARE_STAFF_GROOMER' | 'NURSE' | 'VETERINARIAN';
   bookingMode: ServiceBookingMode;
   status: ServiceMasterStatus;
+  defaultMaterials?: ServiceDefaultMaterial[];
+  /** BE createService supports atomic initial branch provisioning. */
+  autoEnableActiveBranches?: boolean;
+  branchConfigs?: ServiceBranchConfigWrite[];
 }
 export interface ServiceApiRecord extends ServiceWrite {
   id: string;

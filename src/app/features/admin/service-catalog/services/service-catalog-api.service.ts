@@ -22,6 +22,23 @@ interface BranchApiPage {
 }
 interface BranchApiEnvelope { data?: BranchApiPage; items?: BranchApiPage['items']; nextCursor?: string | null; }
 
+export interface ServiceBranchConfigRecord {
+  branchId: string;
+  branchName: string;
+  branchCode?: string;
+  branchStatus?: 'ACTIVE' | 'INACTIVE';
+  enabled: boolean;
+  capacity: number;
+  availability?: readonly { dayOfWeek: number; open: string; close: string }[];
+  blockedWindows?: readonly unknown[];
+  version?: number;
+}
+interface ServiceBranchConfigsResponse {
+  serviceId: string;
+  serviceName: string;
+  configs: ServiceBranchConfigRecord[];
+}
+
 export function serviceFromApi(raw: ServiceApiRecord, branchId = 'ALL'): CatalogService {
   const pricing = resolveServicePricing(raw);
   const fixed = [...pricing.fixedTiers.values()];
@@ -91,6 +108,21 @@ export class ServiceCatalogApiService {
     return this.api.patch<ServiceApiRecord, Partial<ServiceWrite>>(
       '/services/' + encodeURIComponent(id), body,
     );
+  }
+
+  archive(id: string, idempotencyKey: string): Observable<ServiceApiRecord> {
+    const headers = new HttpHeaders({ 'Idempotency-Key': idempotencyKey });
+    return this.api.post<ServiceApiRecord, Record<string, never>>(
+      '/services/' + encodeURIComponent(id) + '/archive',
+      {},
+      { headers },
+    );
+  }
+
+  getBranchConfigs(id: string): Observable<ServiceBranchConfigRecord[]> {
+    return this.api.get<ServiceBranchConfigsResponse>(
+      '/services/' + encodeURIComponent(id) + '/branch-configs',
+    ).pipe(map((response) => response.configs ?? []));
   }
 
   /** All accessible branches for Service Detail, including inactive branches.

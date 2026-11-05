@@ -2,9 +2,6 @@
   <main class="schedule-page">
     <header class="schedule-heading"><h1>Quản lý nhân sự</h1></header>
     <nav class="schedule-tabs" aria-label="Nhân sự"><a routerLink="/admin/staff">Nhân viên</a><span aria-current="page">Lịch làm việc</span></nav>
-    @if (staffApi.loading() || staffApi.shiftLoading()) { <p role="status">Đang tải lịch nhân sự...</p> }
-    @if (staffApi.error()) { <p role="alert">{{ staffApi.error() }} <button type="button" (click)="staffApi.loadRoster(true)">Thử lại</button></p> }
-    @if (staffApi.shiftError()) { <p role="alert">{{ staffApi.shiftError() }}</p> }
     <div class="schedule-weekly-card">
     <section class="schedule-filter-panel" aria-label="Bộ lọc lịch làm việc">
       <div class="schedule-toolbar">
@@ -37,6 +34,13 @@
       </div>
     </section>
     <section class="schedule-panel" aria-label="Bảng lịch làm việc">
+      @if (staffApi.loading() || staffApi.shiftLoading()) {
+        <app-admin-data-state kind="loading" title="Đang tải lịch làm việc" />
+      } @else if (staffApi.error()) {
+        <app-admin-data-state kind="error" title="Không thể tải danh sách nhân sự" [message]="staffApi.error()" (retry)="retrySchedule()" />
+      } @else if (staffApi.shiftError()) {
+        <app-admin-data-state kind="error" title="Không thể tải lịch làm việc" [message]="staffApi.shiftError()" (retry)="retrySchedule()" />
+      } @else {
       <div class="schedule-scroller"><table>
         <colgroup><col class="schedule-col-staff">@for (day of days(); track day.iso) { <col class="schedule-col-day"> }</colgroup>
         <thead><tr><th>Nhân viên</th>@for (day of days(); track day.iso) { <th><span class="schedule-day"><span>{{ day.weekday }}</span><small>{{ day.dayMonth }}</small></span></th> }</tr></thead>
@@ -45,8 +49,10 @@
           <tr><th scope="row"><a [routerLink]="['/admin/staff',staff.id]">{{ displayName(staff) }}</a><small>{{ roleLabel(staff) }}</small></th>
             @for (day of days(); track day.iso) {
               <td>
-                <button type="button" class="schedule-cell" [attr.aria-label]="'Phân công ca cho '+displayName(staff)+' ngày '+day.iso"
-                  [disabled]="!branch() || staffApi.shiftLoading() || !!staffApi.shiftError()" (click)="openDay(staff,day.iso)">
+                <button type="button" class="schedule-cell"
+                  [attr.aria-label]="'Phân công ca cho '+displayName(staff)+' ngày '+day.iso"
+                  [disabled]="!branch() || staffApi.shiftLoading() || !!staffApi.shiftError()"
+                  (click)="onCellClick(staff,day.iso)">
                   @for (shift of shifts(staff.id,day.iso); track shift.shiftId || $index) {
                     <span class="schedule-shift"><strong>{{ shift.time }}</strong></span>
                   } @empty { <span class="schedule-cell-plus">+</span> }
@@ -57,6 +63,7 @@
         } @empty { <tr><td colspan="8" class="schedule-empty">{{ staffApi.loading() ? 'Đang tải nhân sự...' : staffApi.error() ? 'Không tải được nhân viên.' : 'Không có nhân viên phù hợp.' }}</td></tr> }
         </tbody>
       </table></div>
+      }
     </section>
     </div>
     @if (dialog(); as selected) {

@@ -1,0 +1,12 @@
+<nav class="admin-breadcrumb" aria-label="Đường dẫn">
+  @for (item of items; track $index; let last = $last) {
+    @if (item.link && !last) {
+      <a [routerLink]="item.link" [queryParams]="item.queryParams ?? null">{{ item.label }}</a>
+    } @else {
+      <span class="admin-breadcrumb__current" [attr.aria-current]="last ? 'page' : null">{{ item.label }}</span>
+    }
+    @if (!last) {
+      <span class="admin-breadcrumb__separator" aria-hidden="true">›</span>
+    }
+  }
+</nav>

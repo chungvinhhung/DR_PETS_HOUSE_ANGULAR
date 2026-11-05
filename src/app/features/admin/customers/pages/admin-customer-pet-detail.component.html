@@ -1,0 +1,58 @@
+<app-admin-catalog-shell activeItem="customers">
+  <main class="pet-detail web2-admin-page">
+    <app-admin-breadcrumb [items]="[
+      {label:'Quản lý khách hàng', link:'/admin/customers'},
+      {label:'Chi tiết khách hàng', link:['/admin/customers', customerId]},
+      {label:'Hồ sơ thú cưng'}
+    ]" />
+
+    @if (loading()) {
+      <app-admin-data-state kind="loading" title="Đang tải hồ sơ thú cưng" />
+    } @else if (error()) {
+      <app-admin-data-state kind="error" title="Không thể tải hồ sơ thú cưng" [message]="error()" (retry)="load()" />
+    } @else if (pet(); as p) {
+      <header class="web2-admin-page__header">
+        <h1>Hồ sơ thú cưng</h1>
+        <a class="web2-admin-btn web2-admin-btn--outline" [routerLink]="['/admin/customers', customerId]">Quay lại khách hàng</a>
+      </header>
+
+      <section class="pet-hero web2-admin-section web2-admin-pet-hero">
+        <img [src]="image(p)" [alt]="value(p.name, p.petName, p.pet_name)">
+        <div class="pet-hero__content">
+          <h2>{{value(p.name, p.petName, p.pet_name)}}</h2>
+          <p>{{value(p.breedName, p.breed_name, p.breed, p.speciesName, p.species)}}</p>
+          <div class="chips">
+            <span>{{value(p.gender, p.sex)}}</span>
+            <span>{{value(p.age)}} tuổi</span>
+            <span>{{value(p.weightKg, p.weight_kg, p.weight)}} kg</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="pet-grid web2-admin-summary-grid">
+        <article><span>Sức khỏe chung</span><strong>{{value(p.healthStatus, p.health_status, 'Chưa cập nhật')}}</strong></article>
+        <article><span>Tiêm phòng tiếp</span><strong>{{value(p.nextVaccinationAt, p.next_vaccination_at, 'Chưa có lịch')}}</strong></article>
+      </section>
+
+      <section class="card web2-admin-section">
+        <h2 class="web2-admin-section__title">Lưu ý y tế</h2>
+        <p>{{value(p.medicalNote, p.medical_note, p.note, 'Chưa có lưu ý y tế.')}}</p>
+      </section>
+
+      <section class="card web2-admin-section">
+        <h2 class="web2-admin-section__title">Thông tin hồ sơ</h2>
+        <dl class="pet-profile-grid web2-admin-detail-grid">
+          <div><dt>Loài</dt><dd>{{value(p.speciesName, p.species)}}</dd></div>
+          <div><dt>Giống</dt><dd>{{value(p.breedName, p.breed)}}</dd></div>
+          <div><dt>Màu lông</dt><dd>{{value(p.color)}}</dd></div>
+          <div><dt>Ngày sinh</dt><dd>{{value(p.birthDate, p.birth_date)}}</dd></div>
+        </dl>
+      </section>
+
+      <section class="card web2-admin-section">
+        <h2 class="web2-admin-section__title">Lịch sử bệnh án</h2>
+        <app-admin-data-state kind="technical" title="Chưa có lịch sử bệnh án" message="Backend Customer/Pet hiện chưa trả lịch sử bệnh án trong endpoint quản trị. Thông báo này sẽ được gỡ khi contract được bổ sung." />
+      </section>
+    }
+  </main>
+</app-admin-catalog-shell>

@@ -66,6 +66,10 @@ export class AuthRestoreService {
       systemRole: response.systemRole,
       staffSubRole: response.staffSubRole ?? null,
       avatarUrl: response.avatarUrl ?? null,
+      accountStatus: response.accountStatus,
+      activationStatus: response.activationStatus,
+      lastLogin: response.lastLogin ?? null,
+      branchScope: [...(response.branchScope ?? [])],
     };
   }
 }

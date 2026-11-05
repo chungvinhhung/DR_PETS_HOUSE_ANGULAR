@@ -3,6 +3,7 @@
 @use './app/features/admin/service-catalog/components/branch-service-config-dialog.component';
 @use './app/features/admin/service-catalog/pages/service-catalog-editor.component';
 @use './app/features/admin/service-catalog/pages/service-catalog-list.component';
+@use './app/shared/styles/admin-customer-content-moderation.styles';
 
 /* Global styles for Dr. Pet's House.
  * Tailwind CSS will be configured in a later foundation phase.
@@ -29,7 +30,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #f8fafc;
+  background: #f1f5f9;
   color: #0f172a;
 }
 
@@ -784,7 +785,7 @@ th:nth-child(3),td:nth-child(3) { width: 175px; }
 th:nth-child(4),td:nth-child(4) { width: 150px; }
 th:nth-child(7),td:nth-child(7),th:nth-child(8),td:nth-child(8) { text-align: center; }
 th:last-child, td:last-child { width: 88px; text-align: center; }
-.thumbnail { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 5px; background: #f8fafc; border: 1px solid #d9e3ef; color: #64748b; overflow: hidden; }
+.thumbnail { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 5px; background: #f1f5f9; border: 1px solid #d9e3ef; color: #64748b; overflow: hidden; }
 .thumbnail img { width: 100%; height: 100%; object-fit: cover; }
 .empty-photo { display: block; width: 100%; height: 100%; background-color: #fafafa; background-image: linear-gradient(45deg,#f0f2f5 25%,transparent 25%),linear-gradient(-45deg,#f0f2f5 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#f0f2f5 75%),linear-gradient(-45deg,transparent 75%,#f0f2f5 75%); background-size: 10px 10px; background-position: 0 0,0 5px,5px -5px,-5px 0; }
 .product-name strong { color: #142035; font-weight: 600; }
@@ -806,7 +807,9 @@ th:last-child, td:last-child { width: 88px; text-align: center; }
 .pagination-buttons { display: flex; align-items: center; border: 1px solid #e2e8f0; border-radius: 7px; overflow: hidden; }
 .pagination-buttons > * { display: grid; place-items: center; width: 37px; height: 35px; border: 0; border-right: 1px solid #e2e8f0; background: white; color: #475569; font-size: 17px; }
 .pagination-buttons > *:last-child { border-right: 0; }
-.pagination-buttons span { background: #e5f6fd; color: #0d47a1; outline: 1px solid #0d47a1; outline-offset: -1px; font-size: 13px; }
+/* Highlight only a real selected page, never the decorative ellipsis. */
+.pagination-buttons span:not(.pagination-ellipsis) { background: #e5f6fd; color: #0d47a1; outline: 1px solid #0d47a1; outline-offset: -1px; font-size: 13px; }
+.pagination-buttons .pagination-ellipsis { display: grid; place-items: center; background: #fff; color: #475569; border-right: 1px solid #e2e8f0; outline: none; box-shadow: none; font-size: 14px; font-weight: 400; }
 @media(max-width:900px) { .product-list-page { padding: 22px 16px; } h1 { font-size: 23px; } .filter-panel { right: 12px; } .pagination { flex-wrap: wrap; } }
 @media(max-width:600px) { .filter-columns { grid-template-columns: repeat(2,minmax(0,1fr)); } .filter-panel { top: 108px; } .toolbar-actions { margin-left: 0; width: 100%; justify-content: flex-end; } }
 }
@@ -845,7 +848,7 @@ th:last-child, td:last-child { width: 88px; text-align: center; }
 
 /* Product edit base styles moved here to share precedence with Figma alignment. */
 app-admin-product-edit-page {
-&{display:block;font-family:Roboto,Arial,sans-serif;color:#202e45}*{box-sizing:border-box}.edit-page{padding:32px 32px 64px}.page-heading{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:28px}.breadcrumb{font-size:12px;color:#6b7a8f;margin:0 0 10px}.breadcrumb span{padding:0 10px}.breadcrumb a{color:inherit;text-decoration:none}h1{color:#121b2a;font-size:28px;margin:0;font-weight:700}.actions{display:flex;gap:12px;align-items:center}.outline-btn,.primary-btn{cursor:pointer;text-decoration:none;border-radius:8px;padding:11px 16px;min-height:44px;font-size:14px;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center}.outline-btn{border:1px solid #0d47a1;color:#0d47a1;background:#fff}.primary-btn{border:1px solid #0d47a1;background:#0d47a1;color:#fff}button:disabled{opacity:.5;cursor:not-allowed}.columns{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(280px,1fr);gap:24px;align-items:start}.left-column,.right-column{min-width:0}.panel{border:1px solid #dee5f0;border-radius:12px;padding:28px 26px;margin-bottom:24px;background:#fff;min-width:0}h2{font-size:22px;margin:0 0 26px;color:#121b2a;display:flex;align-items:center;gap:12px;font-weight:700}.panel-icon{font-size:23px;line-height:1;color:#202e45}.panel-icon.blue{color:#0d47a1}.form-field{display:flex;flex-direction:column;gap:10px;font-size:14px;font-weight:600;margin-bottom:24px;min-width:0}.form-field>span:first-child{line-height:20px}.form-field b{color:#df3347}.two-fields{display:grid;grid-template-columns:1fr 1fr;gap:22px}.form-field input:not([type=radio]),.form-field select,.form-field textarea{width:100%;min-height:44px;border:1px solid #dee5f0;border-radius:8px;color:#202e45;padding:10px 12px;font:16px Roboto,Arial,sans-serif;background:#fff}.form-field select{padding-right:30px}.form-field textarea{height:148px;resize:vertical;min-height:100px}.basic-panel>.form-field:last-child{margin-bottom:0}.radios{display:flex;gap:20px;align-items:center;flex-wrap:wrap;min-height:44px}.radios label{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:400;white-space:nowrap}.radios input{accent-color:#0d47a1}.field-note{color:#718198;font-size:12px;font-weight:400;line-height:1.5}.unit-input{position:relative;display:flex;align-items:center}.unit-input input{padding-right:32px!important}.unit-input em{position:absolute;right:13px;pointer-events:none;font-style:normal;color:#607da2;font-weight:600}.single-prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.single-prices .form-field{margin-bottom:0}.unit-input.calculated{height:44px;border:1px solid #dee5f0;border-radius:8px;background:#e6f6fc;padding:0 12px;font-weight:600}.price-panel .field-note{margin:12px 0 0}.price-summary{display:flex;justify-content:space-between;border:1px solid #dee5f0;background:#f8fafc;padding:14px 16px;border-radius:8px}.status-panel{min-height:156px}.status-row{display:flex;justify-content:center;align-items:center;gap:10px;font-size:14px;color:#8b95a4}.switch{width:56px;height:32px;border:0;border-radius:20px;padding:4px;background:#d4d9e1;display:inline-flex;align-items:center;cursor:pointer;flex-shrink:0}.switch span{width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #a9b1be}.switch.on{background:#0d47a1;justify-content:flex-end}.switch.small{width:44px;height:26px;padding:3px}.switch.small span{width:20px;height:20px}.image-panel{min-height:320px}.upload-preview{height:156px;border:2px dashed #b9d0ed;border-radius:8px;background:#eef5ff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:14px}.upload-icon{font-size:34px;color:#285ba0}.upload-preview small{color:#7991b5;font-size:12px}.images{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.images img{width:86px;height:86px;border-radius:6px;object-fit:cover;border:1px solid #dee5f0}.variant-panel{margin-top:0}.variant-panel h2{margin-bottom:16px}.add-variant{margin-bottom:20px}.table-scroll{overflow-x:auto}table{width:100%;min-width:1030px;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #dce5f0;padding:10px;font-size:12px;text-align:left;vertical-align:middle}th{background:#e6f6fc;font-weight:700}td input{width:100%;min-height:38px;padding:8px 10px;border:1px solid #dee5f0;border-radius:7px;font-size:13px}th:first-child,td:first-child{width:70px;text-align:center}th:nth-child(2),td:nth-child(2){width:180px}th:nth-child(3),td:nth-child(3){width:160px}th:nth-child(4),td:nth-child(4){width:165px}th:nth-child(5),td:nth-child(5){width:130px}th:nth-child(6),td:nth-child(6){width:170px}th:nth-child(7),td:nth-child(7){width:95px;text-align:center}th:nth-child(8),td:nth-child(8){width:70px;text-align:center}.image-square{display:inline-flex;width:38px;height:38px;align-items:center;justify-content:center;border:1px solid #dee5f0;background:#f3f6fd;border-radius:6px}.final-price{display:inline-block;padding:8px;background:#e6f6fc;border-radius:7px}.delete-btn{background:transparent;border:0;cursor:pointer;font-size:19px;color:#364252}.notice{padding:13px;border-radius:8px;margin:0 0 20px}.error{background:#fff2f0;color:#a42620;border:1px solid #ffcbc5}.success{background:#effaf1;color:#246d3a;border:1px solid #c8e9d0}@media(max-width:1100px){.columns{grid-template-columns:1fr}.edit-page{padding:24px 16px}}@media(max-width:700px){.two-fields,.single-prices{grid-template-columns:1fr}.page-heading{align-items:flex-start;flex-wrap:wrap}.panel{padding:20px}}
+&{display:block;font-family:Roboto,Arial,sans-serif;color:#202e45}*{box-sizing:border-box}.edit-page{padding:32px 32px 64px}.page-heading{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:28px}.breadcrumb{font-size:12px;color:#6b7a8f;margin:0 0 10px}.breadcrumb span{padding:0 10px}.breadcrumb a{color:inherit;text-decoration:none}h1{color:#121b2a;font-size:28px;margin:0;font-weight:700}.actions{display:flex;gap:12px;align-items:center}.outline-btn,.primary-btn{cursor:pointer;text-decoration:none;border-radius:8px;padding:11px 16px;min-height:44px;font-size:14px;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center}.outline-btn{border:1px solid #0d47a1;color:#0d47a1;background:#fff}.primary-btn{border:1px solid #0d47a1;background:#0d47a1;color:#fff}button:disabled{opacity:.5;cursor:not-allowed}.columns{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(280px,1fr);gap:24px;align-items:start}.left-column,.right-column{min-width:0}.panel{border:1px solid #dee5f0;border-radius:12px;padding:28px 26px;margin-bottom:24px;background:#fff;min-width:0}h2{font-size:22px;margin:0 0 26px;color:#121b2a;display:flex;align-items:center;gap:12px;font-weight:700}.panel-icon{font-size:23px;line-height:1;color:#202e45}.panel-icon.blue{color:#0d47a1}.form-field{display:flex;flex-direction:column;gap:10px;font-size:14px;font-weight:600;margin-bottom:24px;min-width:0}.form-field>span:first-child{line-height:20px}.form-field b{color:#df3347}.two-fields{display:grid;grid-template-columns:1fr 1fr;gap:22px}.form-field input:not([type=radio]),.form-field select,.form-field textarea{width:100%;min-height:44px;border:1px solid #dee5f0;border-radius:8px;color:#202e45;padding:10px 12px;font:16px Roboto,Arial,sans-serif;background:#fff}.form-field select{padding-right:30px}.form-field textarea{height:148px;resize:vertical;min-height:100px}.basic-panel>.form-field:last-child{margin-bottom:0}.radios{display:flex;gap:20px;align-items:center;flex-wrap:wrap;min-height:44px}.radios label{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:400;white-space:nowrap}.radios input{accent-color:#0d47a1}.field-note{color:#718198;font-size:12px;font-weight:400;line-height:1.5}.unit-input{position:relative;display:flex;align-items:center}.unit-input input{padding-right:32px!important}.unit-input em{position:absolute;right:13px;pointer-events:none;font-style:normal;color:#607da2;font-weight:600}.single-prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.single-prices .form-field{margin-bottom:0}.unit-input.calculated{height:44px;border:1px solid #dee5f0;border-radius:8px;background:#e6f6fc;padding:0 12px;font-weight:600}.price-panel .field-note{margin:12px 0 0}.price-summary{display:flex;justify-content:space-between;border:1px solid #dee5f0;background:#f1f5f9;padding:14px 16px;border-radius:8px}.status-panel{min-height:156px}.status-row{display:flex;justify-content:center;align-items:center;gap:10px;font-size:14px;color:#8b95a4}.switch{width:56px;height:32px;border:0;border-radius:20px;padding:4px;background:#d4d9e1;display:inline-flex;align-items:center;cursor:pointer;flex-shrink:0}.switch span{width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #a9b1be}.switch.on{background:#0d47a1;justify-content:flex-end}.switch.small{width:44px;height:26px;padding:3px}.switch.small span{width:20px;height:20px}.image-panel{min-height:320px}.upload-preview{height:156px;border:2px dashed #b9d0ed;border-radius:8px;background:#eef5ff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:14px}.upload-icon{font-size:34px;color:#285ba0}.upload-preview small{color:#7991b5;font-size:12px}.images{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.images img{width:86px;height:86px;border-radius:6px;object-fit:cover;border:1px solid #dee5f0}.variant-panel{margin-top:0}.variant-panel h2{margin-bottom:16px}.add-variant{margin-bottom:20px}.table-scroll{overflow-x:auto}table{width:100%;min-width:1030px;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #dce5f0;padding:10px;font-size:12px;text-align:left;vertical-align:middle}th{background:#e6f6fc;font-weight:700}td input{width:100%;min-height:38px;padding:8px 10px;border:1px solid #dee5f0;border-radius:7px;font-size:13px}th:first-child,td:first-child{width:70px;text-align:center}th:nth-child(2),td:nth-child(2){width:180px}th:nth-child(3),td:nth-child(3){width:160px}th:nth-child(4),td:nth-child(4){width:165px}th:nth-child(5),td:nth-child(5){width:130px}th:nth-child(6),td:nth-child(6){width:170px}th:nth-child(7),td:nth-child(7){width:95px;text-align:center}th:nth-child(8),td:nth-child(8){width:70px;text-align:center}.image-square{display:inline-flex;width:38px;height:38px;align-items:center;justify-content:center;border:1px solid #dee5f0;background:#f3f6fd;border-radius:6px}.final-price{display:inline-block;padding:8px;background:#e6f6fc;border-radius:7px}.delete-btn{background:transparent;border:0;cursor:pointer;font-size:19px;color:#364252}.notice{padding:13px;border-radius:8px;margin:0 0 20px}.error{background:#fff2f0;color:#a42620;border:1px solid #ffcbc5}.success{background:#effaf1;color:#246d3a;border:1px solid #c8e9d0}@media(max-width:1100px){.columns{grid-template-columns:1fr}.edit-page{padding:24px 16px}}@media(max-width:700px){.two-fields,.single-prices{grid-template-columns:1fr}.page-heading{align-items:flex-start;flex-wrap:wrap}.panel{padding:20px}}
 
 .image-url-editor { margin-top: 12px; display: grid; gap: 10px; }
 .image-url-editor > label { font-weight: 600; font-size: 13px; }
@@ -1474,7 +1477,7 @@ app-admin-order-management .order-admin__table--returns thead th {
   height:44px;
   padding:10px 16px;
   color:#111827;
-  background:#f4f6f9;
+  background:#f2f7fc;
   font-size:12px;
   font-weight:600;
   white-space:nowrap
@@ -1705,23 +1708,31 @@ app-admin-order-management .order-admin__filter-warning {color:#ad394a}
 .create-order__address-actions strong {font-size:13px;font-weight:500}
 .create-order__address > small {display:block;color:var(--muted);margin:7px 0 0}
 .create-order__address-fields {display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px;margin-top:15px}
-.create-order__payment-grid {display:grid;grid-template-columns:1.15fr .85fr;gap:32px}
-.create-order__payment-fields {min-width:0}
-.create-order__payment-toggle {display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-bottom:16px;background:#f3f6fa;border-radius:8px}
-.create-order__payment-toggle button {height:37px;border:1px solid transparent;border-radius:7px;background:transparent;color:#617694}
-.create-order__payment-toggle button.is-active {background:#fff;color:var(--blue);border-color:var(--border);font-weight:500}
-.create-order__voucher-row {display:flex;gap:8px;margin-bottom:14px}
-.create-order__voucher-row input {flex:1;width:100%;min-width:0;height:42px;padding:0 12px}
-.create-order__payment-fields textarea {display:block;width:100%;padding:10px 12px;resize:vertical;min-height:62px}
-.create-order__summary {min-width:0}
-.create-order__breakdown,.create-order__total {margin:0;padding:15px;border-radius:8px;background:#f5f7fb}
-.create-order__breakdown div {display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
-.create-order__breakdown div:last-child {margin-bottom:0}
-.create-order__breakdown dt {color:var(--muted)}
-.create-order__breakdown dd {margin:0;font-weight:500;white-space:nowrap}
-.create-order__total {display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;background:#eaf2ff;color:var(--blue)}
-.create-order__total strong {font-size:15px}
-.create-order__total small {display:block;font-size:11px;font-weight:400}
+/* Keep Create Order payment visually aligned with the Appointment payment panel. */
+app-admin-order-create .create-order__payment-heading{display:flex;align-items:center;margin-bottom:15px}
+app-admin-order-create .create-order__payment-heading h2{margin:0}
+.create-order__payment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.create-order__payment-fields{min-width:0}
+.create-order__payment-toggle{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:0;padding:4px;border-radius:7px;background:#f4f6fa;margin-bottom:16px}
+.create-order__payment-toggle button{min-height:38px;padding:10px 6px;border:1px solid transparent;border-radius:6px;background:transparent;color:#8190a7;font-size:12px}
+.create-order__payment-toggle button.is-active{background:#fff;color:#0d47a1;border-color:#dde5f2;box-shadow:0 1px 3px #d6dfea;font-weight:600}
+.create-order__voucher-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.create-order__voucher-row input{flex:1;width:100%;min-width:0;height:44px;padding:0 12px}
+.create-order__voucher-row .create-order__button--voucher{min-height:44px;border-color:#d8e3f0;color:#0d47a1;background:#fff;font-weight:600}
+.create-order__voucher-row .create-order__button--voucher:hover{background:#f4f8ff}
+.create-order__payment-fields textarea{display:block;width:100%;padding:10px 12px;resize:vertical;min-height:66px}
+.create-order__summary{min-width:0}
+.create-order__breakdown,.create-order__total{margin:0;padding:16px;border-radius:7px;background:#f5f7fa}
+.create-order__breakdown{display:grid;gap:17px}
+.create-order__breakdown div{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;font-size:12px;color:#7d8fa9}
+.create-order__breakdown div:last-child{margin:0}
+.create-order__breakdown dt{color:#7d8fa9}
+.create-order__breakdown dd{margin:0;font-weight:600;color:#516b8f;white-space:nowrap}
+.create-order__total{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;background:#e9f2ff;color:#0d47a1}
+.create-order__total>div{display:flex;flex-direction:column;gap:2px}
+.create-order__total strong{font-size:18px}
+.create-order__total>div strong{font-size:13px;color:#22354b}
+.create-order__total small{display:block;font-size:11px;font-weight:400}
 .create-order__pending {padding:11px 14px;margin:0 0 16px;border:1px solid #f0d6a1;border-radius:8px;background:#fffaf0;color:#825c26;font-size:12px}
 .create-order__footer {display:flex;justify-content:flex-end;align-items:center;gap:10px}
 @media (max-width:1100px) {
@@ -1839,27 +1850,21 @@ app-admin-order-create .create-order__sr-only {
   position:absolute; width:1px; height:1px; padding:0; margin:-1px;
   overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
 }
-app-admin-order-create .create-order__online-methods {
-  display:flex; flex-direction:column; gap:5px; padding:8px;
-  margin:0 0 12px; border:0; border-radius:9px;
-  background:#f6f8fb; min-width:0;
+app-admin-order-create .create-order__online-methods{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+  padding:0;margin:12px 0;border:0;background:transparent;min-width:0
 }
-app-admin-order-create .create-order__online-method {
-  display:flex; align-items:center; gap:12px; min-height:40px;
-  padding:7px 12px; border:1px solid transparent; border-radius:7px;
-  background:#fff; color:#212e45; font-size:13px; cursor:pointer;
+app-admin-order-create .create-order__online-method{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:7px;min-height:68px;padding:8px 6px;border:1px solid #dbe5f0;
+  border-radius:6px;background:#fff;color:#24344c;font-size:11px;
+  font-family:inherit;cursor:pointer;text-align:center
 }
-app-admin-order-create .create-order__online-method:hover {
-  background:#f7fbff; border-color:#c9dbee;
+app-admin-order-create .create-order__online-method:hover{background:#f7fbff;border-color:#a9c6eb}
+app-admin-order-create .create-order__online-method.is-selected{
+  background:#f2f8ff;border-color:#0d47a1;color:#0d47a1;font-weight:600
 }
-app-admin-order-create .create-order__online-method.is-selected {
-  background:#edf4ff; border-color:#0e4aa8;
-  font-weight:500; color:#0e4aa8;
-}
-app-admin-order-create .create-order__online-method input {
-  width:18px; height:18px; margin:0; accent-color:#0e4aa8; flex:0 0 18px;
-}
-app-admin-order-create .create-order__online-provider-label { min-width:0; overflow-wrap:anywhere; }
+app-admin-order-create .create-order__online-provider-label{min-width:0;overflow-wrap:anywhere;line-height:1.25}
 app-admin-order-create .create-order__voucher-row {position:relative;align-items:center;}
 app-admin-order-create .create-order__voucher-row input {padding-right:35px;}
 app-admin-order-create .create-order__voucher-clear {
@@ -1891,7 +1896,7 @@ app-admin-order-create .create-order__review p {margin:6px 0 0;}
   app-admin-order-create .create-order__voucher-clear {right:118px;}
 }
 
-app-admin-order-create .create-order__provider-icon {width:32px;height:32px;object-fit:contain;flex:0 0 32px}
+app-admin-order-create .create-order__provider-icon {width:25px;height:25px;object-fit:contain;flex:0 0 25px}
 
 /* QA refinements for Admin Create Order */
 app-admin-order-create .create-order__search-error {
@@ -2262,7 +2267,7 @@ app-admin-voucher-editor .voucher-editor__create-grid .voucher-editor__fields se
   font-size:13px;
 }
 app-admin-voucher-editor .voucher-editor__create-grid .voucher-editor__fields input:disabled {
-  background:#f8fafc;
+  background:#f1f5f9;
 }
 app-admin-voucher-editor .voucher-editor__discount-options {
   display:flex;
@@ -2354,7 +2359,7 @@ app-admin-order-management .order-admin__product-thumb {
   display:inline-flex;align-items:center;justify-content:center;text-align:center;
   box-sizing:border-box;flex:0 0 52px;width:52px;height:52px;
   padding:4px;border:1px solid #e2e8f0;border-radius:8px;
-  background:#f8fafc;color:#708198;font-size:9px;line-height:1.2;
+  background:#f1f5f9;color:#708198;font-size:9px;line-height:1.2;
 }
 
 /* Compact selected number cells with separators; preserve cursor semantics. */
@@ -2376,7 +2381,7 @@ app-admin-staff-schedule .schedule-footer nav .schedule-page-number--active {
 app-admin-order-return-detail .return-detail__product-thumb{
   display:inline-flex;align-items:center;justify-content:center;text-align:center;
   box-sizing:border-box;width:52px;min-width:52px;height:52px;padding:4px;
-  background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;
+  background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;
   font:400 9px/1.2 Roboto,Arial,sans-serif;color:#708198;
 }
 
@@ -2560,7 +2565,7 @@ app-admin-order-management table.order-admin__table--returns.web2-product-table 
   padding:0 14px !important;
   border:0 !important;
   border-bottom:1px solid #e2e8f0 !important;
-  background:#f8fafc !important;
+  background:#f2f7fc !important;
   color:#17243a !important;
   font:700 12px/1.4 Roboto,Arial,sans-serif !important;
   text-align:left;
@@ -2600,10 +2605,9 @@ app-admin-order-management table.order-admin__table--returns.web2-product-table 
 app-admin-voucher-list table.voucher-list__table.web2-product-table :is(th,td):nth-child(6) {
   text-align:center !important;
 }
-/* Order list: fit the same available panel width as other admin tables.
-   Never force a 1160px minimum that adds a desktop horizontal scrollbar.
-   Give Giờ tạo its own 12% centered column between Ngày tạo and Khách hàng.
-   All eight colgroup percentages add up to 100%. */
+/* Order list: five middle fields use equal-width columns with aligned
+   header/value centers. The total stays at 100% and the table still fits its
+   desktop panel without introducing a horizontal scrollbar. */
 app-admin-order-management table.order-admin__table--figma.web2-product-table {
   box-sizing:border-box;
   width:100%;
@@ -2612,12 +2616,13 @@ app-admin-order-management table.order-admin__table--figma.web2-product-table {
   table-layout:fixed;
   border-collapse:collapse;
 }
-app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--code {width:17%}
-app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--date {width:11%}
-app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--time {width:12%}
-app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--customer {width:11%}
-app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--total {width:11%}
-app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--payment {width:16%}
+/* Mã đơn 16% + 5 × 12.4% + Trạng thái 14% + Thao tác 8% = 100%. */
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--code {width:16%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--date {width:12.4%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--time {width:12.4%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--customer {width:12.4%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--total {width:12.4%}
+app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--payment {width:12.4%}
 app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--status {width:14%}
 app-admin-order-management table.order-admin__table--figma.web2-product-table col.order-admin__col--action {width:8%}
 
@@ -2633,12 +2638,9 @@ app-admin-order-management table.order-admin__table--figma.web2-product-table :i
 app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):last-child {
   padding-right:20px !important;
 }
-app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(2) {
-  text-align:left !important;
-}
-/* Align the customer name and header at the CENTER of its own column:
-   time/customer/total centers now sit at ~34%/45.5%/56.5% of the table,
-   making the two visual gaps almost equal, regardless of name length. */
+/* Center the same five fields in both header and row so their centers
+   remain evenly spaced, even for long names wrapping onto two lines. */
+app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(2),
 app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(3),
 app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(4),
 app-admin-order-management table.order-admin__table--figma.web2-product-table :is(th,td:not([colspan])):nth-child(5),
@@ -3225,7 +3227,7 @@ app-admin-order-management .order-admin:has(.order-admin__card--detail) .order-a
   border:1px solid #dce5f0 !important;
 }
 app-admin-order-management .order-admin:has(.order-admin__card--detail) .order-admin__heading-actions .order-admin__btn--outline:hover {
-  background:#f8fafc !important;
+  background:#f1f5f9 !important;
 }
 app-admin-order-management .order-admin__modal .order-admin__field-value {
   display:block;min-height:20px;margin-top:6px;
@@ -4791,5 +4793,1681 @@ app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__group 
   app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__children[hidden],
   app-admin-catalog-shell .catalog-sidebar__nav--animated .catalog-sidebar__group {
     transition:none !important;
+  }
+}
+
+@media(max-width:550px){app-admin-order-create .create-order__online-methods{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* WEB2: inspection details inside return-confirmation modal. */
+app-admin-order-return-detail .return-detail__inspection{display:grid;gap:12px;max-height:48vh;overflow:auto;padding-right:3px}
+app-admin-order-return-detail .return-detail__inspection-item{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;align-items:end;border:1px solid #dce5f0;border-radius:8px;padding:12px}
+app-admin-order-return-detail .return-detail__inspection-item strong{font-size:13px}
+app-admin-order-return-detail .return-detail__inspection-item small{font-size:11px;color:#64748b}
+app-admin-order-return-detail .return-detail__inspection-item label{display:flex;flex-direction:column;gap:6px;font-size:12px}
+app-admin-order-return-detail .return-detail__inspection-item input,
+app-admin-order-return-detail .return-detail__inspection-item select{height:38px;padding:6px;border:1px solid #dce5f0;border-radius:6px;width:100%;min-width:0}
+@media(max-width:680px){app-admin-order-return-detail .return-detail__inspection-item{grid-template-columns:1fr 1fr}app-admin-order-return-detail .return-detail__inspection-item strong,app-admin-order-return-detail .return-detail__inspection-item small{grid-column:1/-1}}
+
+
+/* Web 2 consistency: one visible focus border for whole search-field surface. */
+app-admin-order-create .create-order__search-field:focus-within{
+  border-color:#0d47a1!important;
+  box-shadow:0 0 0 2px rgba(13,71,161,.14);
+}
+app-admin-order-create .create-order__search-field input:focus-visible{
+  outline:none!important;outline-offset:0!important;box-shadow:none!important;
+}
+app-admin-order-management .order-admin__transition-fields{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end;gap:16px;
+}
+app-admin-order-management .order-admin__transition-fields .order-admin__field{margin:12px 0;min-width:0}
+app-admin-order-management .order-admin__transition-fields .order-admin__field-value{
+  min-height:40px;display:flex;align-items:center;margin-top:8px;
+  border:1px solid #e2e8f0;border-radius:8px;padding:0 12px;color:#334155;font-weight:500;
+}
+app-admin-order-management .order-admin__modal .order-admin__field select{
+  appearance:none;-webkit-appearance:none;
+  background:#fff url('/assets/admin-product/expand_more.svg') no-repeat right 12px center;
+  background-size:18px 18px;
+  padding-right:40px;
+  outline:0;box-sizing:border-box;
+}
+app-admin-order-management .order-admin__modal .order-admin__field select:focus-visible{
+  border-color:#0d47a1;
+  box-shadow:0 0 0 2px rgba(13,71,161,.14);
+}
+app-admin-order-management .order-admin__page-ellipsis{
+  width:44px;min-width:44px;height:42px;display:grid;place-items:center;
+  border-left:1px solid #e2e8f0;color:#475569;font-size:14px;
+}
+app-admin-product-list-page .pagination-ellipsis{display:grid;place-items:center;color:#475569}
+@media(max-width:560px){
+  app-admin-order-management .order-admin__transition-fields{grid-template-columns:1fr}
+}
+/* Figma return status tokens. APPROVED and COMPLETED are both success. */
+app-admin-order-return-detail .return-detail__heading-badge[data-status="APPROVED"],
+app-admin-order-management .order-admin__badge--return[data-status="APPROVED"]{
+  background:#e8f5e9!important;color:#2e7d32!important;border-color:#d6eada!important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="COMPLETED"],
+app-admin-order-management .order-admin__badge--return[data-status="COMPLETED"]{
+  background:#e8f5e9!important;color:#2e7d32!important;border-color:#d6eada!important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="REQUESTED"],
+app-admin-order-management .order-admin__badge--return[data-status="REQUESTED"]{
+  background:#eeeeee!important;color:#757575!important;border-color:#dfdfdf!important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="PROCESSING"],
+app-admin-order-management .order-admin__badge--return[data-status="PROCESSING"]{
+  background:#fff3e0!important;color:#df8108!important;border-color:#f9e3bd!important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="RECEIVED"],
+app-admin-order-management .order-admin__badge--return[data-status="RECEIVED"]{
+  background:#e3f2fd!important;color:#1976d2!important;border-color:#d3eaff!important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="REJECTED"],
+app-admin-order-management .order-admin__badge--return[data-status="REJECTED"],
+app-admin-order-return-detail .return-detail__heading-badge[data-status="CANCELLED"],
+app-admin-order-management .order-admin__badge--return[data-status="CANCELLED"]{
+  background:#ffebeb!important;color:#cb3e48!important;border-color:#ffdada!important;
+}
+/* Return dialog follows Figma modal spacing and width by workflow state. */
+app-admin-order-return-detail .return-detail__dialog{
+  width:min(100%,636px);padding:25px;max-height:88vh;
+  border:1px solid #e2e8f0;border-radius:12px;
+  box-shadow:0 16px 45px rgba(15,23,42,.2);
+}
+app-admin-order-return-detail .return-detail__dialog--receive{width:min(100%,580px)}
+app-admin-order-return-detail .return-detail__dialog--process{width:min(100%,440px)}
+app-admin-order-return-detail .return-detail__dialog-heading{
+  padding:0 0 14px;margin:0 0 16px;align-items:start;
+}
+app-admin-order-return-detail .return-detail__dialog-heading h2{font-size:20px;font-weight:500}
+app-admin-order-return-detail .return-detail__notice{
+  background:#fff3e0;border-radius:9px;font-size:12px;line-height:1.5;
+  padding:13px;margin:0 0 16px;
+}
+app-admin-order-return-detail .return-detail__summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+app-admin-order-return-detail .return-detail__dialog .return-detail__field{font-weight:500;color:#475569}
+app-admin-order-return-detail .return-detail__dialog :is(textarea,input,select):focus-visible{
+  outline:none;border-color:#0d47a1;box-shadow:0 0 0 2px rgba(13,71,161,.14);
+}
+app-admin-order-return-detail .return-detail__dialog-actions{
+  padding:0;border:0;margin-top:18px;gap:8px;
+}
+app-admin-order-return-detail .return-detail__dialog-actions button{min-height:39px;border-radius:8px}
+@media(max-width:640px){
+  app-admin-order-return-detail .return-detail__summary{grid-template-columns:1fr}
+}
+
+
+
+app-admin-order-return-detail .return-detail__notice strong{
+  display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:6px;
+}
+app-admin-order-return-detail .return-detail__notice p{
+  margin:0;font-size:12px;line-height:1.5;color:#475569;
+}
+app-admin-order-return-detail .return-detail__summary--approve{
+  grid-template-columns:174fr 190fr 196fr;align-items:start;gap:12px;margin:0 0 12px;
+}
+app-admin-order-return-detail .return-detail__summary--approve label{
+  display:flex;flex-direction:column;gap:6px;min-width:0;
+  font:500 11px Roboto,Arial,sans-serif;color:#475569;
+}
+app-admin-order-return-detail .return-detail__summary--approve input{
+  width:100%;height:42px;min-width:0;box-sizing:border-box;
+  border:1px solid #e2e8f0;border-radius:9px;background:white;
+  padding:10px 12px;color:#334155;font:400 12px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__summary--approve input.return-detail__readonly{
+  background:#e5f6fd;
+}
+app-admin-order-return-detail .return-detail__refund-destination{
+  display:flex;flex-direction:column;gap:8px;margin:14px 0;
+}
+app-admin-order-return-detail .return-detail__refund-destination .return-detail__field{
+  margin:0;font-size:11px;font-weight:400;
+}
+app-admin-order-return-detail .return-detail__refund-destination-row{
+  display:flex;gap:14px;justify-content:space-between;align-items:center;
+  padding:12px;border:1px solid #eceff1;border-radius:8px;
+  font-size:12px;color:#475569;
+}
+app-admin-order-return-detail .return-detail__refund-destination-row strong{
+  color:#334155;font-weight:500;
+}
+app-admin-order-return-detail .return-detail__inspection-item label select{
+  padding-right:36px;appearance:none;
+  background:#fff url('/assets/admin-product/expand_more.svg') no-repeat right 11px center;
+  background-size:17px 17px;
+}
+app-admin-order-return-detail .return-detail__inspection-item{
+  grid-template-columns:minmax(110px,1.5fr) 70px minmax(120px,1fr) minmax(130px,1.2fr);
+  align-items:center;
+}
+app-admin-order-return-detail .return-detail__inspection-item strong,
+app-admin-order-return-detail .return-detail__inspection-item small{
+  overflow-wrap:anywhere;
+}
+@media(max-width:700px){
+ app-admin-order-return-detail .return-detail__summary--approve{grid-template-columns:1fr}
+ app-admin-order-return-detail .return-detail__inspection-item{grid-template-columns:repeat(2,minmax(0,1fr))}
+ app-admin-order-return-detail .return-detail__inspection-item strong,
+ app-admin-order-return-detail .return-detail__inspection-item small{grid-column:1 / -1}
+}
+
+/* Figma RR-02: compact one-item receive modal; more items use adaptive width. */
+app-admin-order-return-detail .return-detail__dialog--receive-single{width:min(100%,377px);padding:22px 24px}
+app-admin-order-return-detail .return-detail__dialog--receive-single .return-detail__dialog-heading{margin-bottom:12px}
+app-admin-order-return-detail .return-detail__receive-form{display:flex;flex-direction:column;gap:14px}
+app-admin-order-return-detail .return-detail__receive-overview{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;
+  align-items:end;border-bottom:1px solid #e2e8f0;padding-bottom:14px;
+}
+app-admin-order-return-detail .return-detail__receive-overview label,
+app-admin-order-return-detail .return-detail__receive-item-grid label,
+app-admin-order-return-detail .return-detail__receive-quality{
+  display:flex;flex-direction:column;gap:7px;min-width:0;
+  font:500 12px Roboto,Arial,sans-serif;color:#475569;
+}
+app-admin-order-return-detail .return-detail__receive-overview input{
+  box-sizing:border-box;height:40px;width:100%;min-width:0;
+  border:1px solid #dce5f0;border-radius:9px;padding:0 10px;
+  color:#475569;background:white;font:400 12px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__receive-count{display:flex;flex-direction:column;gap:7px;font-size:12px;color:#475569}
+app-admin-order-return-detail .return-detail__receive-count strong{
+  min-height:40px;display:grid;place-items:center;border:1px solid #dce5f0;
+  border-radius:9px;color:#1d2a42;font-weight:500;
+}
+app-admin-order-return-detail .return-detail__receive-form .return-detail__inspection{max-height:42vh;gap:12px}
+app-admin-order-return-detail .return-detail__receive-item{
+  display:flex;flex-direction:column;gap:10px;border-bottom:1px solid #e2e8f0;padding:0 0 12px;
+}
+app-admin-order-return-detail .return-detail__receive-item>strong{font-size:12px;color:#1d2a42;font-weight:500}
+app-admin-order-return-detail .return-detail__receive-item-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;
+}
+app-admin-order-return-detail .return-detail__stepper{
+  display:grid;grid-template-columns:36px minmax(0,1fr) 36px;
+  border:1px solid #dce5f0;border-radius:8px;overflow:hidden;height:39px;
+}
+app-admin-order-return-detail .return-detail__stepper button{
+  border:0;background:#fff;color:#334155;font-size:18px;
+  font-weight:400;cursor:pointer;
+}
+app-admin-order-return-detail .return-detail__stepper button:disabled{cursor:not-allowed;color:#94a3b8}
+app-admin-order-return-detail .return-detail__stepper input{
+  box-sizing:border-box;min-width:0;min-height:0;width:100%;height:39px;
+  text-align:center;border:0;border-left:1px solid #dce5f0;border-right:1px solid #dce5f0;
+  font:400 12px Roboto,Arial,sans-serif;background:#fff;color:#334155;
+  appearance:textfield;-moz-appearance:textfield;
+}
+app-admin-order-return-detail .return-detail__stepper input::-webkit-inner-spin-button,
+app-admin-order-return-detail .return-detail__stepper input::-webkit-outer-spin-button{
+  -webkit-appearance:none;margin:0
+}
+app-admin-order-return-detail .return-detail__stepper:focus-within{
+  border-color:#0d47a1;box-shadow:0 0 0 2px rgba(13,71,161,.12)
+}
+app-admin-order-return-detail .return-detail__stepper input:focus-visible{box-shadow:none!important}
+app-admin-order-return-detail .return-detail__stock-preview{
+  display:grid;place-items:center;height:39px;border:1px solid #dce5f0;
+  border-radius:8px;color:#334155;font-weight:500;background:#fff;
+}
+app-admin-order-return-detail .return-detail__receive-quality select{
+  display:block;box-sizing:border-box;width:100%;height:39px;
+  border:1px solid #dce5f0;border-radius:9px;
+  padding:0 36px 0 12px;color:#334155;font:400 12px Roboto,Arial,sans-serif;
+  appearance:none;background:#fff url('/assets/admin-product/expand_more.svg') no-repeat right 11px center;
+  background-size:18px 18px;
+}
+app-admin-order-return-detail .return-detail__receive-form .return-detail__field{margin:0;font-weight:500}
+app-admin-order-return-detail .return-detail__receive-form .return-detail__field textarea{
+  min-height:42px;max-height:95px;margin-top:7px;
+}
+@media(max-width:430px){
+ app-admin-order-return-detail .return-detail__receive-overview,
+ app-admin-order-return-detail .return-detail__receive-item-grid{grid-template-columns:1fr}
+}
+
+/* Consistent success/destructive badges in return detail cards and lists. */
+app-admin-order-return-detail .return-detail__badge[data-status="APPROVED"],
+app-admin-order-return-detail .return-detail__badge[data-status="COMPLETED"]{
+  background:#e8f5e9!important;color:#2e7d32!important;
+}
+app-admin-order-return-detail .return-detail__badge[data-status="REJECTED"],
+app-admin-order-return-detail .return-detail__badge[data-status="CANCELLED"]{
+  background:#ffebeb!important;color:#cb3e48!important;
+}
+
+app-admin-order-return-detail .return-detail__refund-destination-row--three{
+  display:grid;grid-template-columns:150fr 210fr 176fr;gap:12px;align-items:stretch;
+}
+app-admin-order-return-detail .return-detail__refund-destination-row--three>div{
+  display:flex;flex-direction:column;gap:6px;min-width:0;
+}
+app-admin-order-return-detail .return-detail__refund-destination-row--three strong{font-size:12px}
+@media(max-width:550px){
+  app-admin-order-return-detail .return-detail__refund-destination-row--three{grid-template-columns:1fr}
+}
+
+
+/* WEB2 2026-10-29: customer lookup and address form visibility. */
+app-admin-order-create .create-order__dialog-actions .create-order__button--primary{
+  display:inline-flex!important;visibility:visible!important;opacity:1!important;
+  background:#0d47a1!important;border:1px solid #0d47a1!important;color:white!important;
+  min-height:42px;min-width:155px;align-items:center;justify-content:center;
+}
+app-admin-order-create .create-order__dialog-actions .create-order__button--primary:hover{background:#093875!important}
+app-admin-order-create .create-order__dialog-actions{min-height:66px;flex-wrap:wrap}
+app-admin-order-create .create-order__recipient-row{margin:4px 0 20px!important}
+app-admin-order-create .create-order__recipient-row input,
+app-admin-order-create .create-order__region-fields .create-order__region-input{
+  width:100%;height:40px;box-sizing:border-box;border:1px solid #dce5f0;
+  border-radius:8px;background-color:#fff;color:#253248;padding:0 12px;
+}
+app-admin-order-create .create-order__region-fields .create-order__region-input{
+  padding-right:36px;background-image:url('/assets/admin-product/expand_more.svg');
+  background-repeat:no-repeat;background-position:right 11px center;background-size:18px;
+}
+app-admin-order-create .create-order__table th:nth-child(4){text-align:center}
+app-admin-order-create .create-order__qty{margin-inline:auto}
+app-admin-order-create .create-order__lookup-feedback{color:#64748b;font-size:12px;margin:8px 0 0}
+app-admin-order-create .create-order__suggestions{display:flex;flex-direction:column;gap:6px;padding:8px 0}
+app-admin-order-create .create-order__suggestion{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  gap:6px;padding:8px 12px;border:1px solid #dce5f0;border-radius:8px;background:#fff;
+}
+app-admin-order-create .create-order__suggestion:hover{background:#f3f8ff;border-color:#0d47a1}
+app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[data-status="PENDING"]{background:#fff3e0!important;color:#a1660a!important}
+app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[data-status="CONFIRMED"]{background:#e3f2fd!important;color:#1976d2!important}
+app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[data-status="PROCESSING"]{background:#f1e7ff!important;color:#7c3fc8!important}
+app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[data-status="SHIPPED"]{background:#e5f6fd!important;color:#0c6095!important}
+app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[data-status="COMPLETED"]{background:#e8f5e9!important;color:#2e7d32!important}
+app-admin-order-management .order-admin__badge:not(.order-admin__badge--return)[data-status="CANCELLED"]{background:#ffebeb!important;color:#cb3e48!important}
+
+
+/* WEB2 Return workflow: terminal position and state-specific status history. */
+app-admin-order-return-detail .return-detail__progress:has(.return-detail__progress--terminal){
+  grid-template-columns:repeat(6,minmax(0,1fr));
+}
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--terminal .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--terminal .return-detail__progress-bar{
+  background:#cb3e48!important;border-color:#cb3e48!important;
+}
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--terminal .return-detail__progress-head{
+  color:#cb3e48!important;font-weight:600;
+}
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--terminal[data-terminal="CANCELLED"] .return-detail__progress-dot,
+app-admin-order-return-detail .return-detail__progress li.return-detail__progress--terminal[data-terminal="CANCELLED"] .return-detail__progress-bar{
+  background:#64748b!important;border-color:#64748b!important;
+}
+app-admin-order-return-detail .return-detail__terminal-description{
+  margin:7px 0 0;color:#cb3e48;font-size:12px;font-weight:500;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li[data-status="REJECTED"] .return-detail__timeline-dot{
+  background:#cb3e48!important;border-color:#cb3e48!important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li[data-status="CANCELLED"] .return-detail__timeline-dot{
+  background:#64748b!important;border-color:#64748b!important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline li[data-status="REJECTED"]>strong{
+  color:#cb3e48!important;
+}
+app-admin-order-return-detail .return-detail__columns .return-detail__timeline .return-detail__history-phase{
+  color:#cb3e48!important;font-weight:500;
+}
+app-admin-order-return-detail .return-detail__required{color:#dc2626!important;font-weight:600;}
+app-admin-order-return-detail .return-detail__summary--approve label input[readonly]{
+  background:#e5f6fd!important;color:#334155!important;
+}
+app-admin-order-return-detail .return-detail__backend-limit{
+  margin:10px 0;color:#697f97;font-size:12px;line-height:1.4;
+}
+app-admin-order-return-detail .return-detail__refund-confirm{
+  font-size:14px;color:#253248;font-weight:500;margin:4px 0 16px;
+}
+app-admin-order-return-detail .return-detail__dialog--receive-single{
+  width:min(100%,377px)!important;max-height:min(90vh,650px);padding:22px 24px!important;
+}
+app-admin-order-return-detail .return-detail__dialog--receive .return-detail__receive-form .return-detail__field textarea{
+  height:58px!important;min-height:58px!important;max-height:100px!important;
+}
+app-admin-order-return-detail .return-detail__dialog--receive .return-detail__receive-item{gap:8px}
+app-admin-order-return-detail .return-detail__dialog--receive .return-detail__receive-form{gap:12px}
+app-admin-order-return-detail .return-detail__dialog--receive .return-detail__receive-overview{gap:12px}
+app-admin-order-return-detail .return-detail__dialog--receive .return-detail__receive-overview input{height:40px}
+app-admin-order-return-detail .return-detail__dialog--receive .return-detail__dialog-actions{margin-top:14px}
+app-admin-order-return-detail .return-detail__summary--approve~.return-detail__field textarea{min-height:48px}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="APPROVED"],
+app-admin-order-management .order-admin__badge--return[data-status="APPROVED"],
+app-admin-order-return-detail .return-detail__badge[data-status="APPROVED"]{
+  background:#f1e7ff!important;color:#7c3fc8!important;border-color:#e7d7ff!important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="COMPLETED"],
+app-admin-order-management .order-admin__badge--return[data-status="COMPLETED"],
+app-admin-order-return-detail .return-detail__badge[data-status="COMPLETED"]{
+  background:#e8f5e9!important;color:#2e7d32!important;border-color:#d6eada!important;
+}
+app-admin-order-return-detail .return-detail__heading-badge[data-status="CANCELLED"],
+app-admin-order-management .order-admin__badge--return[data-status="CANCELLED"],
+app-admin-order-return-detail .return-detail__badge[data-status="CANCELLED"]{
+  background:#eceff1!important;color:#607080!important;border-color:#dce3e9!important;
+}
+@media(max-width:760px){
+  app-admin-order-return-detail .return-detail__progress:has(.return-detail__progress--terminal){
+    overflow-x:auto;grid-template-columns:repeat(6,minmax(110px,1fr));
+  }
+}
+
+
+/* Product Management hybrid filter bar. Keeps Add Product on the same toolbar row. */
+app-admin-product-list-page .product-filter-toolbar.product-filter-toolbar {
+  position:relative;z-index:30;display:flex !important;flex-wrap:nowrap !important;
+  align-items:center !important;gap:12px !important;min-height:84px !important;
+  grid-template-columns:none !important;overflow:visible !important;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-search.product-filter-search {
+  flex:0 0 430px !important;width:430px !important;min-width:430px !important;
+  max-width:430px !important;margin:0 8px 0 0 !important;
+  box-sizing:border-box !important;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-actions.product-filter-actions {
+  display:flex !important;flex:1 1 auto !important;min-width:0 !important;
+  align-items:center !important;justify-content:flex-end !important;
+  flex-wrap:nowrap !important;gap:8px !important;margin:0 0 0 auto !important;
+}
+/* Keep the search input strictly inside its 430px column; reserve a real
+   gutter before the first dropdown instead of allowing touching borders. */
+app-admin-product-list-page .product-filter-toolbar .product-filter-search input {
+  box-sizing:border-box !important;width:100% !important;max-width:100% !important;
+  min-width:0 !important;
+}
+app-admin-product-list-page .product-filter-choices {
+  display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  flex:0 1 auto;min-width:0;white-space:nowrap;
+}
+app-admin-product-list-page .product-filter-control {position:relative;flex:0 0 auto;z-index:3}
+app-admin-product-list-page .product-filter-control--category {width:160px;flex:0 0 160px}
+app-admin-product-list-page .product-filter-control--status {width:156px;flex:0 0 156px}
+app-admin-product-list-page .product-filter-control--more {width:143px}
+app-admin-product-list-page .product-filter-toolbar .product-filter-trigger.product-filter-trigger {
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  width:100%;height:40px !important;min-height:40px !important;
+  padding:0 10px !important;border:1px solid #dce5f0;border-radius:8px;
+  background:#fff;color:#26364a;font:500 13px/20px Roboto,Arial,sans-serif !important;
+  cursor:pointer;white-space:nowrap;
+}
+app-admin-product-list-page .product-filter-trigger:hover:not(:disabled),
+app-admin-product-list-page .product-filter-trigger[aria-expanded="true"] {background:#f5f9ff;border-color:#adc8ec}
+app-admin-product-list-page .product-filter-trigger:disabled {color:#8b98aa;cursor:not-allowed}
+app-admin-product-list-page .product-filter-count {
+  display:inline-flex;justify-content:center;align-items:center;
+  min-width:19px;height:19px;border-radius:10px;padding:0 5px;
+  background:#e4f0fe;color:#0d47a1;font:600 11px/18px Roboto,Arial,sans-serif;
+}
+app-admin-product-list-page .product-filter-chevron {color:#64748b;font-size:17px;line-height:1;margin-left:auto}
+app-admin-product-list-page .product-filter-toolbar .product-add-button.product-add-button {
+  display:inline-flex !important;align-items:center;justify-content:center;
+  flex:0 0 auto !important;min-width:176px;white-space:nowrap !important;
+  position:relative;z-index:2;margin:0 0 0 auto !important;
+}
+app-admin-product-list-page .product-filter-dismiss {
+  position:fixed;inset:0;border:0;background:transparent;z-index:1;cursor:default;
+}
+app-admin-product-list-page .product-filter-popover {
+  box-sizing:border-box;position:absolute;top:calc(100% + 9px);right:0;
+  z-index:4;width:285px;max-width:calc(100vw - 32px);
+  background:#fff;border:1px solid #dbe4ef;border-radius:10px;
+  padding:16px;box-shadow:0 12px 32px #172a491f;
+  white-space:normal;color:#26364a;
+}
+app-admin-product-list-page .product-filter-popover--more {width:390px;padding:18px}
+app-admin-product-list-page .product-filter-popover h2,
+app-admin-product-list-page .product-filter-popover>strong {
+  display:block;margin:0 0 12px;font:600 15px/22px Roboto,Arial,sans-serif;
+}
+app-admin-product-list-page .product-filter-options {max-height:260px;overflow-y:auto}
+app-admin-product-list-page .product-filter-popover fieldset {min-width:0;margin:0;padding:0;border:0}
+app-admin-product-list-page .product-filter-popover legend {
+  font:600 13px/20px Roboto,Arial,sans-serif;margin:0 0 9px;
+}
+app-admin-product-list-page .product-filter-popover .check {font:400 13px/19px Roboto,Arial,sans-serif;margin-bottom:9px;gap:8px}
+app-admin-product-list-page .product-filter-popover .check input {width:15px;height:15px;flex:0 0 15px;accent-color:#0d47a1;margin:2px 0 0}
+app-admin-product-list-page .product-filter-popover .filter-footer {display:flex;align-items:center;justify-content:flex-end;gap:8px}
+app-admin-product-list-page .product-filter-popover .filter-footer button {height:36px !important;min-height:36px !important;padding:0 14px}
+app-admin-product-list-page .product-filter-groups {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 14px;
+  max-height:340px;overflow-y:auto;
+}
+app-admin-product-list-page .product-filter-compact-category,
+app-admin-product-list-page .product-filter-compact-status {display:none}
+app-admin-product-list-page .product-filter-chips {
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:-8px 0 18px;
+  min-height:28px;color:#62738b;font:400 12px/18px Roboto,Arial,sans-serif;
+}
+app-admin-product-list-page .product-filter-chip {
+  display:inline-flex;align-items:center;gap:9px;height:28px;padding:0 10px;
+  border:1px solid #dce5f0;border-radius:6px;background:#f3f7fc;
+  color:#344154;cursor:pointer;font:500 12px/18px Roboto,Arial,sans-serif;
+}
+app-admin-product-list-page .product-filter-chip:hover {background:#e9f2ff;border-color:#bcd0e8}
+app-admin-product-list-page .product-filter-chip span {color:#66758c;font-size:17px}
+app-admin-product-list-page .product-filter-clear-all {
+  padding:4px 7px;background:transparent;border:0;cursor:pointer;
+  color:#0d47a1;font:500 12px/18px Roboto,Arial,sans-serif;
+}
+app-admin-product-list-page .product-filter-chip:focus-visible,
+app-admin-product-list-page .product-filter-clear-all:focus-visible {outline:2px solid #0d47a1;outline-offset:2px}
+/* Keep the trailing Add action visible even after the sidebar reduces space. */
+@media(max-width:1500px){
+  app-admin-product-list-page .product-filter-control--status {display:none}
+  app-admin-product-list-page .product-filter-compact-status {display:block}
+}
+@media(max-width:1220px){
+  app-admin-product-list-page .product-filter-control--category {display:none}
+  app-admin-product-list-page .product-filter-compact-category {display:block}
+}
+@media(max-width:990px){
+  app-admin-product-list-page .product-filter-toolbar.product-filter-toolbar {
+    display:flex !important;flex-wrap:nowrap !important;min-width:0;
+    overflow-x:auto !important;overflow-y:visible !important;
+  }
+  app-admin-product-list-page .product-filter-toolbar .product-filter-search.product-filter-search {
+    flex:0 0 430px !important;max-width:430px !important;
+  }
+  app-admin-product-list-page .product-filter-toolbar .product-filter-actions.product-filter-actions {flex:0 0 auto !important}
+  app-admin-product-list-page .product-filter-popover {position:fixed;top:140px;left:16px;right:16px;width:auto;max-width:390px;margin-left:auto;max-height:70vh;overflow-y:auto}
+}
+
+/* WEB2 product toolbar refinement: pinned right group and Figma asset chevrons. */
+app-admin-product-list-page .product-filter-toolbar.product-filter-toolbar {
+  justify-content:space-between !important;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-actions.product-filter-actions {
+  margin-left:auto !important;
+  justify-content:flex-end !important;
+  gap:10px !important;
+}
+app-admin-product-list-page .product-filter-choices {
+  margin-left:auto !important;
+  justify-content:flex-end !important;
+  gap:10px !important;
+}
+app-admin-product-list-page .product-filter-toolbar .product-add-button.product-add-button {
+  margin-left:0 !important;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-trigger.product-filter-trigger {
+  justify-content:flex-start !important;
+  gap:10px !important;
+  padding-left:14px !important;
+  padding-right:15px !important;
+}
+app-admin-product-list-page .product-filter-toolbar img.product-filter-chevron {
+  display:block !important;
+  flex:0 0 18px !important;
+  width:18px !important;
+  height:18px !important;
+  margin:0 0 0 auto !important;
+  object-fit:contain;
+  opacity:.7;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-trigger[aria-expanded="true"] .product-filter-chevron {
+  transform:rotate(180deg);
+}
+app-admin-product-list-page .product-filter-toolbar img.product-filter-search-icon {
+  display:block !important;
+  position:absolute !important;
+  top:50% !important;
+  left:14px !important;
+  width:18px !important;
+  height:18px !important;
+  transform:translateY(-50%) !important;
+  object-fit:contain;
+  pointer-events:none;
+}
+app-admin-product-list-page .product-filter-toolbar img.product-filter-add-icon {
+  display:block !important;
+  position:static !important;
+  flex:0 0 12px !important;
+  width:12px !important;
+  height:12px !important;
+  filter:brightness(0) invert(1);
+}
+
+app-admin-product-list-page .product-filter-toolbar img.product-filter-funnel-icon {
+  display:block !important;position:static !important;flex:0 0 17px !important;
+  width:17px !important;height:14px !important;object-fit:contain;margin:0 !important;
+}
+
+/* Product filters — consistent trailing icons and single-select Status. */
+app-admin-product-list-page .product-filter-toolbar .product-filter-trigger-label {
+  display:block;white-space:nowrap;flex:1 1 auto;min-width:0;text-align:left;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-trigger-trailing {
+  display:inline-flex;align-items:center;justify-content:flex-end;
+  flex:0 0 auto;gap:8px;margin-left:auto;min-width:18px;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-trigger-trailing img.product-filter-chevron {
+  display:block !important;margin:0 !important;width:18px !important;height:18px !important;
+  flex:0 0 18px !important;object-fit:contain;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-trigger-trailing .product-filter-count {
+  flex:0 0 auto;white-space:nowrap;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-native-status,
+app-admin-product-list-page .product-filter-popover .product-filter-advanced-select {
+  box-sizing:border-box;display:block;width:100%;height:40px;
+  border:1px solid #dce5f0;border-radius:8px;
+  color:#26364a;background-color:#fff;
+  font:500 13px/20px Roboto,Arial,sans-serif;
+  appearance:none;-webkit-appearance:none;
+  padding:0 39px 0 14px;
+  background-image:url('/assets/admin-product/icon-chevron-down.svg');
+  background-repeat:no-repeat;background-position:right 14px center;
+  background-size:18px 18px;
+  cursor:pointer;text-overflow:ellipsis;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-native-status:hover:not(:disabled),
+app-admin-product-list-page .product-filter-toolbar .product-filter-native-status:focus-visible,
+app-admin-product-list-page .product-filter-popover .product-filter-advanced-select:focus-visible {
+  border-color:#adc8ec;background-color:#f5f9ff;
+}
+app-admin-product-list-page .product-filter-toolbar .product-filter-native-status:disabled {
+  color:#8b98aa;background-color:#f1f5f9;cursor:not-allowed;
+}
+app-admin-product-list-page .product-filter-popover .product-filter-advanced-select {
+  font-size:13px;height:38px;
+}
+
+
+/* ==========================================================================
+   WEB 2 — Unified focus design system (Admin + Customer)
+   All controls get one accessible blue focus indication. Search components
+   highlight their outer shell only; Product filter popovers and native select
+   use exactly the same click/open presentation.
+   ========================================================================== */
+:root {
+  --web2-focus-color: #0d47a1;
+  --web2-focus-border: #a9c5ed;
+  --web2-focus-surface: #f8fbff;
+  --web2-focus-halo: 0 0 0 2px rgba(13, 71, 161, .10);
+}
+/* Keyboard focus: one consistent, accessible outline across modules. */
+:root :is(
+  button:not(:disabled), a[href], input:not(:disabled),
+  select:not(:disabled), textarea:not(:disabled),
+  summary, [role="button"], [role="combobox"], [role="tab"],
+  [tabindex]:not([tabindex="-1"])
+):focus-visible {
+  outline: 2px solid var(--web2-focus-color) !important;
+  outline-offset: 2px !important;
+}
+/* Text controls keep their existing background and error state, but use one
+   focus border/ring instead of browser-dependent native outlines/shadows. */
+:root :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  select, textarea
+):focus:not([aria-invalid="true"]):not(.input-invalid) {
+  border-color: var(--web2-focus-border) !important;
+}
+:root :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  select, textarea
+):focus-visible {
+  box-shadow: none !important;
+}
+/* A composite search / numeric field has a single focus surface — the shell.
+   The inner input should not receive a duplicate outline. */
+:root :is(
+  .web2-management-search, .order-admin__search,
+  .voucher-list__search, .branch-v2-page__search,
+  .staff-search, .service-catalog__search,
+  .create-order__search-field, .search-field,
+  .staff-reset-input, .return-detail__stepper,
+  .variant-currency-input, .currency-input
+):focus-within {
+  outline: 2px solid var(--web2-focus-color) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+}
+:root :is(
+  .web2-management-search, .order-admin__search,
+  .voucher-list__search, .branch-v2-page__search,
+  .staff-search, .service-catalog__search,
+  .create-order__search-field, .search-field,
+  .staff-reset-input, .return-detail__stepper,
+  .variant-currency-input, .currency-input
+) input:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+/* Retain an error-colored focus indicator instead of masking invalid fields. */
+:root :is([aria-invalid="true"], .input-invalid):focus-visible {
+  outline-color: #dc2626 !important;
+}
+/* Popover-button and native select have the SAME active/focus treatment,
+   with only one subtle halo, and no double blue browser outline. */
+:root app-admin-product-list-page .product-filter-toolbar :is(
+  .product-filter-trigger:focus,
+  .product-filter-trigger[aria-expanded="true"],
+  .product-filter-native-status:focus
+) {
+  border-color: var(--web2-focus-border) !important;
+  background-color: var(--web2-focus-surface) !important;
+  box-shadow: var(--web2-focus-halo) !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+}
+:root app-admin-product-list-page .product-filter-popover :is(
+  button, input, select
+):focus-visible {
+  outline: 2px solid var(--web2-focus-color) !important;
+  outline-offset: 2px !important;
+}
+
+/* Consistent click/open focus for filter controls across all Admin modules. */
+:root app-admin-catalog-shell .web2-filterbar :is(
+  select:not(:disabled):focus,
+  button[aria-expanded="true"]:not(:disabled)
+) {
+  border-color: var(--web2-focus-border) !important;
+  background-color: var(--web2-focus-surface) !important;
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: var(--web2-focus-halo) !important;
+}
+
+/* Staff bulk-shift action matches the existing single-day "+ Tạo ca làm việc mới" button.
+   Global scope avoids exceeding the Angular per-component SCSS budget. */
+app-staff-bulk-shift-dialog .bulk-shift-add-toggle.bulk-shift-add-toggle {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:auto;
+  height:36px;
+  min-height:36px;
+  padding:0 13px;
+  border:1px solid #0d47a1;
+  border-radius:7px;
+  background:#fff;
+  color:#0d47a1;
+  white-space:nowrap;
+  text-decoration:none;
+  font:500 12px/18px Roboto,Arial,sans-serif;
+  cursor:pointer;
+}
+app-staff-bulk-shift-dialog .bulk-shift-add-toggle:hover:not(:disabled) {
+  background:#f2f7fe;
+}
+app-staff-bulk-shift-dialog .bulk-shift-add-toggle:disabled {
+  opacity:.55;
+  cursor:not-allowed;
+}
+
+/* WEB2 Product archive: same ellipsis/action-menu affordance as Service Catalog.
+   The menu uses viewport positioning to stay visible inside horizontally scrollable tables. */
+app-admin-product-list-page .product-archive-action-cell {
+  text-align:center;
+}
+app-admin-product-list-page .actions button.product-archive-more-button {
+  display:inline-grid;
+  place-items:center;
+  width:32px;
+  height:32px;
+  min-width:32px;
+  margin:0;
+  padding:0;
+  border:0;
+  border-radius:8px;
+  background:transparent;
+  color:#25354e;
+  cursor:pointer;
+}
+app-admin-product-list-page .product-archive-more-button svg {
+  display:block;
+  width:24px;
+  height:24px;
+}
+app-admin-product-list-page .actions button.product-archive-more-button:hover:not(:disabled),
+app-admin-product-list-page .actions button.product-archive-more-button[aria-expanded="true"] {
+  background:#edf3fd;
+}
+app-admin-product-list-page .product-archive-action-menu {
+  position:fixed;
+  z-index:9500;
+  width:195px;
+  padding:5px 0;
+  border:1px solid #dfe5ee;
+  border-radius:10px;
+  background:#fff;
+  box-shadow:0 8px 24px rgb(15 23 42 / 16%);
+  text-align:left;
+}
+app-admin-product-list-page .product-archive-action-menu button {
+  display:block;
+  width:100%;
+  min-height:34px;
+  padding:7px 14px;
+  border:0;
+  background:#fff;
+  color:#25354e;
+  font:400 12px/20px Roboto,Arial,sans-serif;
+  text-align:left;
+  cursor:pointer;
+}
+app-admin-product-list-page .product-archive-action-menu button:hover,
+app-admin-product-list-page .product-archive-action-menu button:focus-visible {
+  background:#eaf3ff;
+}
+app-admin-product-list-page .product-archive-action-menu .product-archive-danger-action {
+  color:#c12b2b;
+}
+app-admin-product-list-page .product-archive-action-menu .product-archive-danger-action:hover,
+app-admin-product-list-page .product-archive-action-menu .product-archive-danger-action:focus-visible {
+  background:#fff1f0;
+}
+app-admin-product-list-page .product-permanent-delete-confirm {
+  cursor:pointer;
+  min-height:42px;
+  padding:10px 14px;
+  border:1px solid #c62828;
+  border-radius:8px;
+  background:#c62828;
+  color:#fff;
+  font:600 14px Roboto,Arial,sans-serif;
+}
+app-admin-product-list-page .product-permanent-delete-confirm:hover:not(:disabled) {
+  background:#aa2424;
+}
+app-admin-product-list-page .product-permanent-delete-confirm:disabled {
+  opacity:.5;
+  cursor:not-allowed;
+}
+app-admin-product-list-page .product-permanent-delete-error {
+  color:#b42318;
+  background:#fff1f0;
+  border:1px solid #ffd1ce;
+  border-radius:8px;
+  padding:10px 12px;
+  font-size:13px;
+}
+
+/*
+ * All Admin management paginators now display both edge pages.
+ * On narrower layouts, allow the numeric strip to scroll without shrinking
+ * the 44px targets or overflowing the page. Native button behavior stays intact.
+ */
+@media (max-width: 700px) {
+  app-admin-catalog-shell :is(
+    .pagination,
+    .service-catalog__pagination,
+    .order-admin__pagination,
+    .staff-pagination,
+    .voucher-list__pagination,
+    .branch-v2-page__pagination,
+    .users-pagination
+  ) {
+    flex-wrap: wrap;
+  }
+  app-admin-catalog-shell :is(
+    .pagination-controls,
+    .pagination-buttons,
+    .service-catalog__pages,
+    .staff-pagination nav,
+    .voucher-list__pagination > div,
+    .order-admin__pagination > div,
+    .branch-v2-page__pagination nav,
+    .users-pagination nav,
+    .pages
+  ) {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+}
+
+/* OR-02b: detail-only warehouse card and Figma history layout. */
+app-admin-order-management {
+  .order-admin__inventory-card h2{margin-bottom:15px}
+  .order-admin__inventory-entry{
+    display:flex;align-items:center;gap:14px;min-height:88px;
+    background:#f3f7fc;border-radius:9px;padding:13px 16px
+  }
+  .order-admin__inventory-icon{
+    display:grid;place-items:center;flex:none;width:40px;height:40px;
+    background:#e1f0fc;border-radius:8px;color:#0d47a1;font-size:21px
+  }
+  .order-admin__inventory-info{display:flex;flex:1;flex-direction:column;gap:3px;min-width:0}
+  .order-admin__inventory-info strong{color:#233450;font-size:13px;font-weight:600}
+  .order-admin__inventory-info span{color:#667a94;font-size:12px;overflow-wrap:anywhere}
+  .order-admin__inventory-link{
+    display:inline-flex;align-items:center;justify-content:center;min-height:38px;
+    flex:none;border:1px solid #dbe4ef;border-radius:8px;padding:0 12px;
+    background:#fff;color:#0d47a1;font-size:12px;font-weight:600
+  }
+  .order-admin__inventory-link:hover{background:#eaf3fe}
+  .order-admin__inventory-empty{margin:0;color:#71849c;font-size:12px}
+  .order-admin__history li{display:grid;grid-template-columns:112px minmax(0,1fr);gap:0 12px}
+  .order-admin__history li small{grid-column:1;grid-row:1;margin:0}
+  .order-admin__history-content{grid-column:2;grid-row:1;min-width:0}
+  .order-admin__history-content p{margin:3px 0 0}
+}
+@media(max-width:620px){
+  app-admin-order-management .order-admin__inventory-entry{align-items:flex-start;flex-wrap:wrap}
+  app-admin-order-management .order-admin__inventory-link{margin-left:54px}
+  app-admin-order-management .order-admin__history li{grid-template-columns:95px minmax(0,1fr)}
+}
+
+/* Detail tables: preserve the Figma 48px product-image slot for real API photos. */
+app-admin-order-management .order-admin__product-thumb--image,
+app-admin-order-return-detail .return-detail__product-thumb--image {
+  display:block;
+  width:48px;
+  height:48px;
+  max-width:100%;
+  object-fit:contain;
+  padding:2px;
+  background:#fff;
+  border:1px solid #d9e5f0;
+  border-radius:7px;
+}
+
+/* Shared inventory transaction drawer: Figma Inventory details (8386:42133).
+   All cells are populated from persisted movement DTOs, never mock TXK/PNK data. */
+app-admin-inventory-transaction-drawer .inventory-transaction-overlay{
+  position:fixed;inset:0;z-index:9500;background:rgba(20,25,33,.35);
+  display:flex;justify-content:flex-end
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-drawer{
+  box-sizing:border-box;width:min(100vw,486px);height:100%;overflow-y:auto;
+  padding:24px;background:#fff;color:#25334b;font:12px/1.5 Roboto,Arial,sans-serif;
+  box-shadow:-12px 0 30px rgba(15,23,42,.12)
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-header{
+  display:flex;align-items:start;justify-content:space-between;gap:16px;
+  padding:0 0 16px;border-bottom:1px solid #dce5f0
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-header h2{
+  margin:0;font-size:18px;line-height:26px;font-weight:600
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-header span{
+  display:block;color:#0d47a1;font-weight:500;margin-top:3px
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-header button{
+  border:0;background:transparent;color:#1e293b;font-size:25px;line-height:24px;
+  cursor:pointer;padding:3px
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-header button img{
+  display:block;width:24px;height:24px
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-section{
+  padding:18px 0;border-bottom:1px solid #dce5f0
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-section:last-child{border-bottom:0}
+app-admin-inventory-transaction-drawer .inventory-transaction-section h3{
+  margin:0 0 13px;font-size:14px;line-height:20px;font-weight:600
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-metadata{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 22px
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-metadata span,
+app-admin-inventory-transaction-drawer .inventory-transaction-quantity span,
+app-admin-inventory-transaction-drawer .inventory-transaction-reference>span{
+  display:block;color:#74849a;font-size:11px;margin-bottom:4px
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-metadata strong{
+  font-size:12px;font-weight:500;overflow-wrap:anywhere
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-lines{
+  display:flex;flex-direction:column;gap:10px
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-item{
+  background:#f3f8fc;border-radius:9px;padding:13px
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-item-title{
+  display:flex;align-items:start;justify-content:space-between;gap:12px;margin-bottom:12px
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-item-title strong{font-size:12px;font-weight:600}
+app-admin-inventory-transaction-drawer .inventory-transaction-item-title small{
+  color:#697e96;font-size:10px;text-align:right;white-space:nowrap
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-quantity{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-quantity strong{font-size:12px;font-weight:600}
+app-admin-inventory-transaction-drawer .inventory-transaction-code{
+  display:block;color:#7e8da1;margin-top:9px;overflow-wrap:anywhere
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-reason{
+  background:#f3f8fc;border-radius:8px;margin:0 0 14px;padding:11px 13px;overflow-wrap:anywhere
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-reference a{
+  display:block;width:max-content;color:#0d47a1;text-decoration:none;font-weight:600
+}
+app-admin-inventory-transaction-drawer .inventory-transaction-reference a:hover{text-decoration:underline}
+app-admin-inventory-transaction-drawer .inventory-transaction-empty{color:#6b7e94}
+app-admin-order-return-detail .return-detail__receipt-code{
+  border:0;background:transparent;color:#0d47a1;font:600 12px Roboto,Arial,sans-serif;
+  padding:0;cursor:pointer;text-align:left;text-decoration:underline
+}
+app-admin-order-return-detail .return-detail__receipt-code:hover{color:#093977}
+@media(max-width:520px){
+  app-admin-inventory-transaction-drawer .inventory-transaction-drawer{padding:17px}
+  app-admin-inventory-transaction-drawer .inventory-transaction-metadata{gap:12px}
+}
+
+
+/* WEB2 Phase 1 — Inventory History scoped styles moved global to stay under Angular component-style budgets. */
+app-admin-inventory-page {
+  /* Phase 1: Inventory History follows the approved Figma history composition. */
+  .toolbar--history {
+    margin-top: 0;
+  }
+  
+  .toolbar--history .search-field {
+    max-width: 430px;
+  }
+  
+  .history-table td {
+    height: 76px;
+  }
+  
+  .history-table th:nth-child(1),
+  .history-table td:nth-child(1) {
+    padding-left: 16px;
+    padding-right: 10px;
+    text-align: left;
+  }
+  
+  .history-table th:nth-child(2),
+  .history-table td:nth-child(2) {
+    padding-left: 8px;
+    padding-right: 8px;
+    white-space: nowrap;
+  }
+  
+  .history-table th:nth-child(3),
+  .history-table td:nth-child(3) {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .history-table th:nth-child(4),
+  .history-table td:nth-child(4),
+  .history-table th:nth-child(5),
+  .history-table td:nth-child(5) {
+    padding-left: 10px;
+    padding-right: 8px;
+    text-align: left;
+  }
+  
+  .history-table th:nth-child(6),
+  .history-table td:nth-child(6),
+  .history-table th:nth-child(7),
+  .history-table td:nth-child(7) {
+    padding-left: 6px;
+    padding-right: 6px;
+    text-align: center;
+  }
+  
+  .history-table th:nth-child(8),
+  .history-table td:nth-child(8) {
+    padding-left: 8px;
+    padding-right: 10px;
+    text-align: left;
+  }
+  
+  .history-code-cell small {
+    color: #0d47a1;
+    font-size: 11px;
+    line-height: 16px;
+  }
+  
+  .history-code {
+    display: inline-block;
+    max-width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #0d47a1;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 18px;
+    text-align: left;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+  }
+  
+  .history-code:hover {
+    text-decoration: underline;
+  }
+  
+  .history-code:focus-visible {
+    border-radius: 3px;
+    outline: 2px solid #0d47a1;
+    outline-offset: 2px;
+  }
+  
+  @media (max-width: 980px) {
+    .table-scroll--history {
+      overflow-x: auto;
+    }
+  
+    .history-table {
+      min-width: 980px;
+    }
+  
+    .toolbar--history {
+      flex-wrap: wrap;
+    }
+  }
+  
+  /* Keep Inventory pagination identical to Product Management. */
+  .pagination-buttons > * {
+    min-width: 44px;
+    width: 44px;
+    height: 44px;
+  }
+  .pagination-buttons .pagination-ellipsis {
+    display: grid;
+    place-items: center;
+    min-width: 44px;
+    width: 44px;
+    height: 44px;
+    background: #fff;
+    color: #475569;
+    border-right: 1px solid #e2e8f0;
+    box-sizing: border-box;
+  }
+  .pagination-buttons .pagination-page--active {
+    font-weight: 700;
+  }
+}
+
+/* WEB2 Phase 2 — Order Detail scoped styles moved global to stay under Angular component-style budgets. */
+app-admin-order-management {
+  /* Phase 2 — Order detail, matched to Figma 8357:41326 / 8358:41400. */
+  .order-admin__heading:not(.order-admin__heading--list) h1 {
+    font-size: 24px;
+    line-height: 28px;
+    font-weight: 600;
+  }
+  
+  .order-admin__heading-actions .order-admin__btn {
+    min-height: 40px;
+    padding-inline: 12px;
+    font-size: 12px;
+  }
+  
+  .order-admin__card--detail {
+    padding: 18px;
+  }
+  
+  .order-admin__card--detail h2 {
+    margin: 0 0 15px;
+    font-size: 15px;
+    line-height: 18px;
+    font-weight: 600;
+  }
+  
+  .order-admin__card--detail[aria-label="Tiến trình xử lý đơn hàng"] h2 {
+    font-size: 14px;
+    line-height: 16px;
+  }
+  
+  .order-admin__inventory-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .order-admin__inventory-state {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 54px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 12px;
+  }
+  
+  .order-admin__inventory-state--error {
+    border: 1px solid #f2c9c6;
+    background: #fff7f6;
+    color: #a42620;
+  }
+  
+  .order-admin__inventory-retry {
+    min-height: 32px;
+    padding: 0 11px;
+    border: 1px solid #0d47a1;
+    border-radius: 7px;
+    background: #fff;
+    color: #0d47a1;
+    font: 500 12px Roboto, Arial, sans-serif;
+    cursor: pointer;
+  }
+  
+  .order-admin__inventory-empty {
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    color: #71849c;
+    font-size: 12px;
+  }
+  
+  .order-admin__history {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .order-admin__history li {
+    position: relative;
+    margin: 0;
+    padding: 0 0 18px 24px;
+    border-left: 0;
+  }
+  
+  .order-admin__history li:last-child {
+    padding-bottom: 0;
+  }
+  
+  .order-admin__history li::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 5px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #d7e0ea;
+    z-index: 1;
+  }
+  
+  .order-admin__history li::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 14px;
+    bottom: -5px;
+    width: 1px;
+    background: #dce5ef;
+  }
+  
+  .order-admin__history li:last-child::after {
+    display: none;
+  }
+  
+  .order-admin__history li.order-admin__history--latest::before {
+    background: #2f8f4e;
+  }
+  
+  .order-admin__history li.order-admin__history--latest::after {
+    background: #dce5ef;
+  }
+  
+  .order-admin__history-content strong {
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 600;
+    color: #26364c;
+  }
+  
+  .order-admin__history-content p {
+    line-height: 17px;
+  }
+  
+  .order-admin__grid {
+    align-items: stretch;
+  }
+  
+  .order-admin__grid > .order-admin__card {
+    margin-bottom: 0;
+    height: auto;
+  }
+  
+  .order-admin__field select {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 42px;
+    margin-top: 8px;
+    padding: 0 36px 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff url('/assets/admin-product/expand_more.svg') no-repeat right 10px center / 20px;
+    appearance: none;
+    color: var(--ink);
+  }
+  
+  @media (max-width: 620px) {
+    .order-admin__inventory-state {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+  
+  .order-admin__modal-close img {
+    display: block;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+
+/* Order status transition is deterministic; present the next state as read-only, not a dropdown. */
+app-admin-order-management .order-admin__modal .order-admin__field-value--next {
+  display:flex;
+  align-items:center;
+  box-sizing:border-box;
+  width:100%;
+  height:40px;
+  min-height:40px;
+  margin-top:8px;
+  padding:0 12px;
+  border:1px solid #dee5f0;
+  border-radius:8px;
+  background:#e5f6fd;
+  color:#334155;
+  font:400 13px/20px Roboto,Arial,sans-serif;
+}
+app-admin-order-management .order-admin__modal .order-admin__required{
+  display:inline;
+  margin:0 0 0 2px;
+  color:#d92d20;
+  font-weight:600;
+}
+
+/* Keep the reference row visible even when the transaction has no source reference. */
+app-admin-inventory-transaction-drawer .inventory-transaction-reference strong {
+  display:block;
+  color:#25334b;
+  font-size:12px;
+  font-weight:500;
+}
+
+
+/* Phase 3 — Return detail: Design System close icon and exact clicked stock receipt. */
+app-admin-order-return-detail .return-detail__close img {
+  display:block;
+  width:24px;
+  height:24px;
+}
+app-admin-order-return-detail .return-detail__close {
+  display:grid;
+  place-items:center;
+  width:32px;
+  min-width:32px;
+  height:32px;
+  padding:4px;
+}
+
+
+/* Phase 3 — Return processing timeline follows Figma's date / event two-column layout. */
+app-admin-order-return-detail .return-detail__timeline li {
+  display:grid;
+  grid-template-columns:112px minmax(0,1fr);
+  column-gap:12px;
+  align-items:start;
+  margin-left:6px;
+  padding:0 0 16px 20px;
+}
+app-admin-order-return-detail .return-detail__timeline-time {
+  grid-column:1;
+  grid-row:1;
+  margin:0;
+  padding-top:1px;
+  color:#64748b;
+  font:400 11px/16px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__timeline-content {
+  grid-column:2;
+  grid-row:1;
+  min-width:0;
+}
+app-admin-order-return-detail .return-detail__timeline-content strong {
+  display:block;
+  color:#253348;
+  font:600 12px/16px Roboto,Arial,sans-serif;
+}
+app-admin-order-return-detail .return-detail__timeline-content p {
+  margin:3px 0 0;
+}
+@media(max-width:600px) {
+  app-admin-order-return-detail .return-detail__timeline li {
+    grid-template-columns:92px minmax(0,1fr);
+  }
+}
+
+
+/* WEB2 Phase 4 — Admin Create Appointment styles scoped globally to stay under Angular component-style budget. */
+app-admin-appointment-create .lookup-results__item:hover{background:#f2f7fd}
+app-admin-appointment-create .pet-picker__existing{background:#fff}
+app-admin-appointment-create .pet-picker__existing+.pet-picker__existing{border-top:1px solid #e0e8f2}
+app-admin-appointment-create .pet-picker__existing--selected{background:#f4f8fe}
+app-admin-appointment-create .pet-picker__avatar{display:grid;place-items:center;width:35px;height:35px;overflow:hidden;border-radius:6px;background:#e7edf5;color:#64748b;font-size:12px;font-weight:600;flex:0 0 auto}
+app-admin-appointment-create .pet-picker__avatar img{width:35px;height:35px;object-fit:cover}
+app-admin-appointment-create .pet-picker__additional{display:block;padding:0 10px 10px;font-size:11px;color:#344154}
+app-admin-appointment-create .pet-picker__additional input{display:block;box-sizing:border-box;width:100%;height:37px;margin-top:6px;border:1px solid #dee5f0;border-radius:5px;background:#fff;padding:8px 12px;font:400 12px/18px Roboto,Arial,sans-serif;color:#344154}
+app-admin-appointment-create .pet-new__additional{margin-top:12px}
+app-admin-appointment-create .appointment-create__page-title{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+app-admin-appointment-create .appointment-create__header-cancel{min-height:39px;padding:8px 16px}
+
+
+/* Order status dialog: exact 40px readonly fields and explicit disabled state. */
+app-admin-order-management .order-admin__transition-fields .order-admin__field-value,
+app-admin-order-management .order-admin__transition-fields .order-admin__field-value--next{
+  box-sizing:border-box!important;
+  height:40px!important;
+  min-height:40px!important;
+  max-height:40px!important;
+  margin-top:8px!important;
+  padding:0 12px!important;
+  border:1px solid #dee5f0!important;
+  border-radius:8px!important;
+  line-height:20px!important;
+}
+app-admin-order-management .order-admin__transition-fields .order-admin__field-value--next{
+  background:#e5f6fd!important;
+  color:#334155!important;
+  font:400 13px/20px Roboto,Arial,sans-serif!important;
+}
+app-admin-order-management .order-admin__modal .order-admin__field--required>.order-admin__required{
+  display:inline!important;
+  margin-left:2px!important;
+  color:#d92d20!important;
+  font-weight:700!important;
+}
+app-admin-order-management .order-admin__modal-actions .order-admin__btn--primary:disabled{
+  opacity:1!important;
+  border-color:#cbd5e1!important;
+  background:#e2e8f0!important;
+  color:#94a3b8!important;
+  cursor:not-allowed!important;
+  box-shadow:none!important;
+}
+
+
+/* Unified management-table header surface across Admin modules. */
+:is(
+  app-admin-category-page,
+  app-admin-product-list-page,
+  app-service-catalog-list,
+  app-admin-order-management,
+  app-admin-voucher-list,
+  app-admin-appointments-page,
+  app-admin-service-records,
+  app-admin-inventory-page,
+  app-branch-management-page,
+  app-admin-staff-list,
+  app-admin-users-page,
+  app-admin-customer-list,
+  app-admin-content-list,
+  app-admin-moderation-list
+) thead th{
+  background:#f2f7fc!important;
+}
+
+/* Management filter selects use the same light focus/open treatment everywhere. */
+:root app-admin-catalog-shell .web2-filterbar select:not(:disabled):focus{
+  border-color:#a9c5ed!important;
+  background-color:#f8fbff!important;
+  outline:none!important;
+  outline-offset:0!important;
+  box-shadow:0 0 0 2px rgba(13,71,161,.10)!important;
+}
+
+
+/* Admin management table headers: restored blue-tinted fill requested by design review. */
+:is(
+  app-admin-category-page,
+  app-admin-product-list-page,
+  app-service-catalog-list,
+  app-admin-order-management,
+  app-admin-voucher-list,
+  app-admin-appointments-page,
+  app-admin-service-records,
+  app-admin-inventory-page,
+  app-branch-management-page,
+  app-admin-staff-list,
+  app-admin-users-page,
+  app-admin-customer-list,
+  app-admin-content-list,
+  app-admin-moderation-list
+) :is(table, .web2-admin-table) thead th{
+  background:#f2f7fc!important;
+}
+
+/* Service Record Phase 5 — Figma extra-material modal + inventory linkage */
+app-admin-service-record-detail {
+  .record-modal--material{width:min(530px,100%);padding:23px;border-radius:12px}
+  .modal-title-group{display:flex;min-width:0;flex:1;flex-direction:column;gap:5px}
+  .record-modal>header .modal-title-group h2{margin:0;color:#202b3c;font-size:18px;font-weight:600;line-height:22px}
+  .modal-title-group p{margin:0;color:#66778c;font-size:11px;line-height:16px}
+  .material-add-form{display:grid;grid-template-columns:154px minmax(0,1fr);gap:13px 20px;margin-top:14px}
+  .material-field{display:flex;min-width:0;flex-direction:column;gap:7px;color:#202b3c;font-size:12px;font-weight:600}
+  .material-field--full{grid-column:1/-1}.material-field b{color:#202b3c}
+  .material-field input,.material-field select{box-sizing:border-box;width:100%;height:40px;border:1px solid #d6e0eb;border-radius:7px;background:#fff;padding:0 12px;color:#34445a;font:inherit;font-weight:400;outline:none}
+  .material-field input:focus,.material-field select:focus{border-color:#175bb5}
+  .quantity-stepper{display:grid;grid-template-columns:40px minmax(0,1fr) 40px;height:40px;overflow:hidden;border:1px solid #d6e0eb;border-radius:7px;background:#fff}
+  .quantity-stepper button{border:0;background:#fff;color:#175bb5;font-size:20px;cursor:pointer}
+  .quantity-stepper button+input,.quantity-stepper input+button{border-left:1px solid #d6e0eb}
+  .quantity-stepper button:disabled{background:#f3f6f9;color:#9aa7b8;cursor:not-allowed}
+  .quantity-stepper input{height:38px;border:0;border-radius:0;padding:0;text-align:center;font-weight:600;-moz-appearance:textfield}
+  .quantity-stepper input::-webkit-outer-spin-button,.quantity-stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .inventory-inline-state{color:#718198;font-size:10px}.inventory-warning{margin:10px 0 0;color:#9a6700;font-size:10px}
+}
+@media(max-width:620px){app-admin-service-record-detail .material-add-form{grid-template-columns:1fr}app-admin-service-record-detail .material-field--full{grid-column:auto}}
+
+
+/* Phase 6 — shared disabled treatment for Order / Return / Appointment / Service Record.
+   Disabled controls must be visually inactive, not just lower opacity. */
+:is(
+  app-admin-order-create,
+  app-admin-order-management,
+  app-admin-order-return-detail,
+  app-admin-appointment-create,
+  app-admin-appointment-detail,
+  app-admin-service-record-detail
+) :is(button,select,textarea,input:not([type="checkbox"]):not([type="radio"])):disabled {
+  opacity:1;
+  background-color:#f1f5f9;
+  border-color:#d8e0ea;
+  color:#94a3b8;
+  cursor:not-allowed;
+  box-shadow:none;
+  pointer-events:none;
+}
+
+app-admin-order-create .create-order__dialog-close img{display:block;width:20px;height:20px}
+
+
+/* Phase 6 — Order/Return pagination matches the shared Product/Inventory pattern. */
+app-admin-order-management .order-admin__pagination > div{
+  display:flex;align-items:stretch;gap:0;max-width:100%;overflow-x:auto;
+  border:1px solid #e2e8f0;border-radius:8px;scrollbar-width:thin
+}
+app-admin-order-management .order-admin__pagination > div :is(button,span){
+  box-sizing:border-box;display:grid;place-items:center;
+  flex:0 0 48px;width:48px;min-width:48px;height:44px;min-height:44px;
+  padding:0;border:0;border-right:1px solid #e2e8f0;border-radius:0;
+  background:#fff;color:#475569;font:400 14px/20px Roboto,Arial,sans-serif
+}
+app-admin-order-management .order-admin__pagination > div :is(button,span):last-child{border-right:0}
+app-admin-order-management .order-admin__pagination > div button:first-child,
+app-admin-order-management .order-admin__pagination > div button:last-child{
+  flex-basis:44px;width:44px;min-width:44px
+}
+app-admin-order-management .order-admin__pagination .order-admin__page-number--active{
+  background:#e5f6fd;color:#0d47a1;box-shadow:inset 0 0 0 1px #0d47a1;font-weight:700
+}
+app-admin-order-management .order-admin__pagination .order-admin__page-ellipsis{color:#475569}
+app-admin-order-management .order-admin__pagination > div button:hover:not(:disabled):not(.order-admin__page-number--active){background:#f1f5f9}
+app-admin-order-management .order-admin__pagination > div button:disabled{background:#fff;color:#bac8d9;cursor:not-allowed}
+
+
+/* Appointment KPIs follow Order Management's summary cards.
+   Counts intentionally represent the loaded, authorized appointment subset. */
+app-admin-appointments-page .appointments__kpis{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;
+  margin:8px 0 20px
+}
+app-admin-appointments-page .appointments__kpi{
+  box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start;
+  justify-content:center;min-width:0;min-height:112px;padding:13px 18px 14px;
+  border:1px solid #e2e8f0;border-radius:9px;background:#fff
+}
+app-admin-appointments-page .appointments__kpi>span{
+  color:#475569;font:500 12px/20px Roboto,Arial,sans-serif
+}
+app-admin-appointments-page .appointments__kpi>strong{
+  color:#202e45;font:600 25px/33px Roboto,Arial,sans-serif
+}
+app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{color:#0d47a1}
+app-admin-appointments-page .appointments__kpi>small{
+  color:#64748b;font:400 11px/18px Roboto,Arial,sans-serif
+}
+@media(max-width:1100px){
+  app-admin-appointments-page .appointments__kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:630px){
+  app-admin-appointments-page .appointments__kpis{grid-template-columns:1fr;gap:10px}
+  app-admin-appointments-page .appointments__kpi{min-height:96px}
+}
+
+/* Seven balanced columns in Branch Management, including live staff totals. */
+app-branch-management-page .branch-v2-page .branch-v2-page__table--branches{
+  width:100%;min-width:1100px;table-layout:fixed
+}
+app-branch-management-page .branch-v2-page .branch-v2-page__table--branches th:nth-child(1){width:16%!important}
+app-branch-management-page .branch-v2-page .branch-v2-page__table--branches th:nth-child(2){width:26%!important}
+app-branch-management-page .branch-v2-page .branch-v2-page__table--branches th:nth-child(3){width:12%!important}
+app-branch-management-page .branch-v2-page .branch-v2-page__table--branches th:nth-child(4){width:11%!important}
+app-branch-management-page .branch-v2-page .branch-v2-page__table--branches th:nth-child(5){width:15%!important}
+app-branch-management-page .branch-v2-page .branch-v2-page__table--branches th:nth-child(6){width:10%!important}
+app-branch-management-page .branch-v2-page .branch-v2-page__table--branches th:nth-child(7){width:10%!important}
+app-branch-management-page .branch-v2-page .branch-v2-page__table--branches
+  :is(th,td):nth-child(3),
+app-branch-management-page .branch-v2-page .branch-v2-page__table--branches
+  :is(th,td):nth-child(4),
+app-branch-management-page .branch-v2-page .branch-v2-page__table--branches
+  :is(th,td):nth-child(5),
+app-branch-management-page .branch-v2-page .branch-v2-page__table--branches
+  :is(th,td):nth-child(6),
+app-branch-management-page .branch-v2-page .branch-v2-page__table--branches
+  :is(th,td):nth-child(7){
+  text-align:center!important
+}
+app-branch-management-page .branch-v2-page .branch-v2-page__table--branches
+  :is(th,td):nth-child(7){white-space:nowrap;overflow-wrap:normal}
+
+
+/* Compact KPI tiles — restrained Dr. Pet's House dashboard style.
+   Separate surfaces restore visual hierarchy without introducing more colors. */
+app-admin-order-management .order-admin__kpis,
+app-admin-appointments-page .appointments__kpis{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+  margin:0 0 16px;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  overflow:visible;
+}
+app-admin-order-management .order-admin__kpi,
+app-admin-appointments-page .appointments__kpi{
+  box-sizing:border-box;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:7px;
+  min-width:0;
+  min-height:86px;
+  padding:13px 18px;
+  border:1px solid #dce5f0;
+  border-radius:10px;
+  background:#f8fafc;
+  box-shadow:0 1px 2px rgba(20,43,70,.025);
+}
+app-admin-order-management .order-admin__kpi:last-child,
+app-admin-appointments-page .appointments__kpi:last-child{
+  border:1px solid #dce5f0;
+}
+app-admin-order-management .order-admin__kpi::before,
+app-admin-order-management .order-admin__kpi::after,
+app-admin-appointments-page .appointments__kpi::before,
+app-admin-appointments-page .appointments__kpi::after,
+app-admin-order-management .order-admin__kpi>span::before,
+app-admin-appointments-page .appointments__kpi>span::before{
+  content:none;
+  display:none;
+}
+app-admin-order-management .order-admin__kpi>span,
+app-admin-appointments-page .appointments__kpi>span{
+  display:block;
+  color:#526782;
+  font:500 13px/18px Roboto,Arial,sans-serif;
+  white-space:normal;
+}
+app-admin-order-management .order-admin__kpi>strong,
+app-admin-appointments-page .appointments__kpi>strong{
+  display:block;
+  color:#1d2a42;
+  font:600 27px/32px Roboto,Arial,sans-serif;
+  letter-spacing:-.3px;
+  font-variant-numeric:tabular-nums;
+}
+/* A single brand-tinted tile draws attention to work awaiting action.
+   All other metrics retain the same neutral palette. */
+app-admin-order-management .order-admin__kpi[data-kpi-tone="warning"],
+app-admin-appointments-page .appointments__kpi[data-kpi-tone="warning"]{
+  background:#f1f6fe;
+  border-color:#c5d8f1;
+}
+app-admin-order-management .order-admin__kpi[data-kpi-tone="warning"]>span,
+app-admin-appointments-page .appointments__kpi[data-kpi-tone="warning"]>span{
+  color:#315c99;
+}
+app-admin-order-management .order-admin__kpi>strong.order-admin__kpi-number--blue,
+app-admin-appointments-page .appointments__kpi>strong.appointments__kpi--blue{
+  color:#0d47a1;
+}
+@media(max-width:1100px){
+  app-admin-order-management .order-admin__kpis,
+  app-admin-appointments-page .appointments__kpis{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+}
+@media(max-width:540px){
+  app-admin-order-management .order-admin__kpis,
+  app-admin-appointments-page .appointments__kpis{
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+  app-admin-order-management .order-admin__kpi,
+  app-admin-appointments-page .appointments__kpi{
+    min-height:76px;
+    padding:11px 16px;
+  }
+  app-admin-order-management .order-admin__kpi>strong,
+  app-admin-appointments-page .appointments__kpi>strong{
+    font-size:25px;
+    line-height:29px;
   }
 }

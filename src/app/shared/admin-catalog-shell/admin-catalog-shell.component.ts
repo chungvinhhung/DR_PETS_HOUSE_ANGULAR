@@ -1,8 +1,11 @@
-import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, computed, inject, signal } from '@angular/core';
 import { AdminToastService } from '../services/admin-toast.service';
 import { RouterLink } from '@angular/router';
 import { AdminReturnNotificationService } from '../services/admin-return-notification.service';
+import { AdminOrderNotificationService } from '../services/admin-order-notification.service';
 import { AdminSidebarAccordionService, AdminSidebarGroup } from '../services/admin-sidebar-accordion.service';
+import { AdminNotificationService, AdminNotification } from '../services/admin-notification.service';
+import { AuthSessionService } from '../../core/services/auth-session.service';
 
 /**
  * Shared Admin catalog chrome for category, product and operations screens.
@@ -17,13 +20,24 @@ import { AdminSidebarAccordionService, AdminSidebarGroup } from '../services/adm
   styleUrl: './admin-catalog-shell.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminCatalogShellComponent {
+export class AdminCatalogShellComponent implements OnChanges {
   readonly toast = inject(AdminToastService);
   readonly returnNotifications = inject(AdminReturnNotificationService);
   readonly pendingReturnCount = this.returnNotifications.pendingCount;
+  readonly orderNotifications = inject(AdminOrderNotificationService);
+  readonly pendingOrderCount = this.orderNotifications.pendingCount;
+  readonly pendingSalesCount = computed(() => this.pendingOrderCount() + this.pendingReturnCount());
   private readonly accordion = inject(AdminSidebarAccordionService);
+  readonly notifications = inject(AdminNotificationService);
+  readonly session = inject(AuthSessionService);
+  readonly notificationOpen = signal(false);
 
-  @Input({ required: true }) activeItem!: 'categories' | 'products' | 'orders' | 'vouchers' | 'services' | 'branches' | 'staff' | 'inventory';
+  @Input({ required: true }) activeItem!:
+    | 'categories' | 'products' | 'orders' | 'vouchers'
+    | 'services' | 'appointments' | 'service-records'
+    | 'branches' | 'staff' | 'inventory' | 'customers'
+    | 'content-articles' | 'content-first-aid' | 'content-community' | 'content-rescue'
+    | 'moderation-reviews' | 'moderation-feedback' | 'moderation-reports';
 
   // Animation is intentionally disabled on each newly mounted shell. Route
   // initialization should NEVER replay the previous group's close animation.
@@ -37,11 +51,27 @@ export class AdminCatalogShellComponent {
 
   ngOnInit(): void {
     this.returnNotifications.ensureLoaded();
-    const group = this.groupForActiveItem();
-    this.accordion.openForRoute(group);
+    this.orderNotifications.ensureLoaded();
+    this.notifications.ensureLoaded();
+    this.syncSidebarToActiveItem();
   }
 
-  private groupForActiveItem(): AdminSidebarGroup {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['activeItem'] && !changes['activeItem'].firstChange) {
+      this.syncSidebarToActiveItem();
+    }
+  }
+
+  private syncSidebarToActiveItem(): void {
+    this.accordion.openForRoute(this.groupForActiveItem());
+  }
+
+  closeSidebarGroups(): void {
+    this.sidebarAnimationEnabled = true;
+    this.accordion.openForRoute(null);
+  }
+
+  private groupForActiveItem(): AdminSidebarGroup | null {
     switch (this.activeItem) {
       case 'categories':
       case 'products':
@@ -49,11 +79,24 @@ export class AdminCatalogShellComponent {
       case 'vouchers':
         return 'sales';
       case 'services':
+      case 'appointments':
+      case 'service-records':
         return 'services';
       case 'branches':
       case 'staff':
       case 'inventory':
         return 'operations';
+      case 'content-articles':
+      case 'content-first-aid':
+      case 'content-community':
+      case 'content-rescue':
+        return 'content';
+      case 'moderation-reviews':
+      case 'moderation-feedback':
+      case 'moderation-reports':
+        return 'feedback';
+      case 'customers':
+        return null;
     }
   }
 
@@ -66,5 +109,34 @@ export class AdminCatalogShellComponent {
   toggleServices(): void { this.toggleGroup('services'); }
   toggleOperations(): void { this.toggleGroup('operations'); }
   toggleContent(): void { this.toggleGroup('content'); }
+  toggleNotifications(): void {
+    this.notificationOpen.update(open=>!open);
+    if(this.notificationOpen())this.notifications.ensureLoaded();
+  }
+  closeNotifications(): void { this.notificationOpen.set(false); }
+  openNotification(item: AdminNotification): void {
+    this.notifications.markRead(item.id);
+    this.closeNotifications();
+  }
+  roleLabel(): string {
+    const user=this.session.user();
+    if(!user)return 'Tài khoản';
+    if(user.systemRole==='ADMIN')return 'Quản trị viên';
+    if(user.systemRole==='MANAGER')return 'Quản lý';
+    if(user.staffSubRole==='VETERINARIAN')return 'Bác sĩ thú y';
+    if(user.staffSubRole==='NURSE')return 'Y tá';
+    if(user.staffSubRole==='CARE_STAFF_GROOMER')return 'Nhân viên chăm sóc';
+    if(user.staffSubRole==='RECEPTIONIST')return 'Lễ tân';
+    return user.systemRole;
+  }
+  notificationTime(value:string): string {
+    const date=new Date(value);
+    if(Number.isNaN(date.getTime()))return '';
+    return new Intl.DateTimeFormat('vi-VN',{
+      day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false,
+      timeZone:'Asia/Ho_Chi_Minh',
+    }).format(date);
+  }
+
   toggleFeedback(): void { this.toggleGroup('feedback'); }
 }

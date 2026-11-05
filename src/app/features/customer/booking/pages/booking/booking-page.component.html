@@ -64,5 +64,5 @@
   <app-footer />
 </main>
 @if (success()) {
-  <div app-booking-success-modal></div>
+  <div app-booking-success-modal [status]="createdAppointment()?.status || 'CONFIRMED'" [holdExpiresAt]="createdAppointment()?.holdExpiresAt || null"></div>
 }

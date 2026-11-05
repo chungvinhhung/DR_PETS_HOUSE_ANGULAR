@@ -1,0 +1,136 @@
+<app-admin-catalog-shell activeItem="customers">
+  <main class="customer-detail web2-admin-page">
+    @if (loading()) {
+      <app-admin-data-state kind="loading" title="Đang tải chi tiết khách hàng" />
+    } @else if (error()) {
+      <app-admin-data-state kind="error" title="Không thể tải chi tiết khách hàng" [message]="error()" (retry)="load()" />
+    } @else if (customer(); as c) {
+      <app-admin-breadcrumb [items]="[
+        {label:'Quản lý khách hàng', link:'/admin/customers'},
+        {label:c.fullName || 'Khách hàng'}
+      ]" />
+
+      <header class="web2-admin-page__header">
+        <h1>{{c.fullName || 'Khách hàng'}}</h1>
+        @if (isAdmin() && c.activationStatus === 'ACTIVATED') {
+          <button type="button" class="web2-admin-btn web2-admin-btn--danger-outline"
+            [class.web2-admin-btn--outline]="c.accountStatus === 'BLOCKED'"
+            (click)="openAction(c.accountStatus === 'BLOCKED' ? 'unblock' : 'block')">
+            {{c.accountStatus === 'BLOCKED' ? 'Bỏ chặn tài khoản' : 'Chặn tài khoản'}}
+          </button>
+        }
+      </header>
+
+      <section class="web2-admin-summary-grid customer-summary-grid">
+        <article><span>Email</span><strong>{{c.email || '—'}}</strong></article>
+        <article><span>Số điện thoại</span><strong>{{c.phone || '—'}}</strong></article>
+        <article><span>Trạng thái tài khoản</span><strong class="status-text" [class.status-text--blocked]="c.accountStatus === 'BLOCKED'">{{accountLabel(c.accountStatus)}}</strong></article>
+        <article><span>Loại tài khoản</span><strong>{{activationLabel(c.activationStatus)}}</strong></article>
+      </section>
+
+      <section class="detail-card web2-admin-section address-card">
+        <h2 class="web2-admin-section__title">Địa chỉ liên hệ / nhận hàng</h2>
+        <app-admin-data-state kind="technical" title="Chưa có dữ liệu địa chỉ" message="Backend Customer Detail hiện chưa trả danh sách địa chỉ. Thông báo này sẽ được gỡ khi contract được bổ sung." />
+      </section>
+
+      <section class="detail-card web2-admin-section">
+        <h2 class="web2-admin-section__title">Thú cưng ({{pets().length}})</h2>
+        <div class="pet-grid web2-admin-pet-grid">
+          @for (pet of pets(); track pet._id || pet.id) {
+            <a class="pet-card web2-admin-pet-card" [routerLink]="['/admin/customers', c.id, 'pets', pet._id || pet.id]">
+              <img [src]="petImage(pet)" [alt]="petName(pet)">
+              <div>
+                <strong>{{petName(pet)}}</strong>
+                <span>{{petBreed(pet)}}</span>
+                <small>{{pet.gender || pet.sex || '—'}} · {{pet.age || '—'}} tuổi</small>
+              </div>
+            </a>
+          } @empty {
+            <div class="empty-inline web2-admin-empty-inline">Khách hàng chưa có hồ sơ thú cưng.</div>
+          }
+        </div>
+      </section>
+
+      <section class="detail-card web2-admin-section">
+        <h2 class="web2-admin-section__title">Đơn hàng ({{orders().length}})</h2>
+        <div class="related-table web2-admin-table-scroll">
+          <table class="web2-admin-table web2-admin-table--customer-orders">
+            <colgroup><col style="width:18%"><col style="width:20%"><col style="width:22%"><col style="width:20%"><col style="width:20%"></colgroup>
+            <thead><tr><th>Ngày tạo</th><th>Mã đơn</th><th>Chi nhánh</th><th class="is-right">Tổng tiền</th><th class="is-center">Trạng thái</th></tr></thead>
+            <tbody>
+              @for (order of orders(); track order.id) {
+                <tr>
+                  <td>{{date(order.createdAt)}}</td>
+                  <td><a class="web2-admin-table-link" [routerLink]="['/admin/orders', order.id]">#{{order.code || order.id}}</a></td>
+                  <td>{{order.fulfillmentBranchId || '—'}}</td>
+                  <td class="is-right">{{money(order.pricing?.totalAmount || order.totalAmount)}}</td>
+                  <td class="is-center">{{orderStatus(order.status)}}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có đơn hàng" message="Khách hàng chưa có đơn hàng để hiển thị." /></td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="detail-card web2-admin-section">
+        <h2 class="web2-admin-section__title">Lịch hẹn ({{appointments().length}})</h2>
+        <div class="related-table web2-admin-table-scroll">
+          <table class="web2-admin-table web2-admin-table--customer-appointments">
+            <colgroup><col style="width:19%"><col style="width:20%"><col style="width:25%"><col style="width:18%"><col style="width:18%"></colgroup>
+            <thead><tr><th>Ngày giờ</th><th>Mã lịch hẹn</th><th>Dịch vụ</th><th>Chi nhánh</th><th class="is-center">Trạng thái</th></tr></thead>
+            <tbody>
+              @for (apt of appointments(); track apt.id) {
+                <tr>
+                  <td>{{date(apt.scheduledStart)}}</td>
+                  <td><a class="web2-admin-table-link" [routerLink]="['/admin/appointments', apt.id]">#{{apt.code || apt.id}}</a></td>
+                  <td>{{serviceNames(apt)}}</td>
+                  <td>{{apt.branchId || '—'}}</td>
+                  <td class="is-center">{{appointmentStatus(apt.status)}}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có lịch hẹn" message="Khách hàng chưa có lịch hẹn để hiển thị." /></td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="detail-card web2-admin-section">
+        <h2 class="web2-admin-section__title">Đánh giá &amp; Feedback ({{feedback().length}})</h2>
+        <div class="related-table web2-admin-table-scroll">
+          <table class="web2-admin-table web2-admin-table--customer-feedback">
+            <colgroup><col style="width:17%"><col style="width:14%"><col style="width:20%"><col style="width:31%"><col style="width:18%"></colgroup>
+            <thead><tr><th>Thời gian</th><th>Loại</th><th>Mã tham chiếu</th><th>Nội dung</th><th class="is-center">Trạng thái</th></tr></thead>
+            <tbody>
+              @for (item of feedback(); track item._id || item.id) {
+                <tr>
+                  <td>{{date(item.createdAt)}}</td><td>Feedback</td><td>{{item._id || item.id}}</td>
+                  <td>{{item.message || item.subject || '—'}}</td><td class="is-center">{{item.status || '—'}}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="web2-admin-empty"><app-admin-data-state kind="technical" title="Chưa có liên kết đánh giá" message="Backend hiện chưa trả khóa liên kết đánh giá/feedback theo khách hàng. Thông báo này sẽ được gỡ khi contract được bổ sung." /></td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  </main>
+
+  @if (dialog(); as mode) {
+    <div class="dialog-backdrop" (click)="closeAction()">
+      <section class="dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <header><h2>{{mode === 'block' ? 'Chặn tài khoản' : 'Bỏ chặn tài khoản'}}</h2><button type="button" aria-label="Đóng" (click)="closeAction()">×</button></header>
+        <p>{{mode === 'block' ? 'Tài khoản sẽ bị đăng xuất và không thể đăng nhập cho đến khi được mở chặn.' : 'Tài khoản sẽ được kích hoạt lại.'}}</p>
+        <label>Lý do <span>*</span><textarea rows="4" [ngModel]="reason()" (ngModelChange)="reason.set($event)" placeholder="Nhập lý do..."></textarea></label>
+        @if (actionError()) { <p class="dialog-error">{{actionError()}}</p> }
+        <footer>
+          <button type="button" class="btn-outline" (click)="closeAction()" [disabled]="busy()">Đóng</button>
+          <button type="button" class="btn-primary" (click)="submitAction()" [disabled]="busy()">{{busy() ? 'Đang xử lý...' : 'Xác nhận'}}</button>
+        </footer>
+      </section>
+    </div>
+  }
+</app-admin-catalog-shell>

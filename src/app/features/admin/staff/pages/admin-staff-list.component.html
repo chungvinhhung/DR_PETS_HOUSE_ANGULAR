@@ -29,13 +29,15 @@
             <option value="BLOCKED">Đã chặn</option>
           </select><img class="staff-filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" width="20" height="20" alt="" aria-hidden="true"></label>
         </div>
-        <a class="staff-add web2-add-button" routerLink="/admin/staff/new" title="API tạo tài khoản và hồ sơ nhân viên chưa được xác minh"><span class="web2-add-icon" aria-hidden="true">+</span><span>Thêm nhân viên</span></a>
+        <a class="staff-add web2-add-button" routerLink="/admin/staff/new" title="Thêm nhân viên"><span class="web2-add-icon" aria-hidden="true">+</span><span>Thêm nhân viên</span></a>
       </div>
     </section>
-    @if (loading()) { <p role="status">Đang tải danh sách nhân sự từ Backend...</p> }
-    @if (error()) { <p role="alert">{{ error() }} <button type="button" (click)="retry()">Thử lại</button></p> }
-    @if (shiftError()) { <p role="alert">{{ shiftError() }}</p> }
     <section class="staff-panel" aria-label="Danh sách nhân viên">
+      @if (loading()) {
+        <app-admin-data-state kind="loading" title="Đang tải danh sách nhân sự" />
+      } @else if (error()) {
+        <app-admin-data-state kind="error" title="Không thể tải danh sách nhân sự" [message]="error()" (retry)="retry()" />
+      } @else {
       <div class="staff-table-wrap"><table>
         <thead><tr><th>Mã nhân viên</th><th>Họ tên</th><th class="web2-cell-center">Vai trò nghiệp vụ</th><th class="web2-cell-center">Chi nhánh được phân công</th><th>Ca hôm nay</th><th>Trạng thái tài khoản</th><th>Thao tác</th></tr></thead>
         <tbody>
@@ -62,7 +64,7 @@
               </td>
             </tr>
           } @empty {
-            <tr><td colspan="7" class="staff-empty"><p>{{ loading() ? 'Đang tải nhân viên...' : error() ? 'Không thể tải nhân viên.' : 'Không có nhân viên phù hợp.' }}</p><button type="button" (click)="clearFilters()">Xóa bộ lọc</button></td></tr>
+            <tr><td colspan="7" class="staff-empty"><app-admin-data-state kind="empty" title="Không tìm thấy nhân viên" message="Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác." /></td></tr>
           }
         </tbody>
       </table></div>
@@ -70,14 +72,17 @@
         <span>Đang hiển thị {{ rows().length }} trên tổng số {{ filtered().length }} nhân viên</span>
         <nav aria-label="Phân trang nhân viên">
           <button type="button" aria-label="Trang trước" [disabled]="page() === 1" (click)="changePage(page() - 1)">‹</button>
-          @for (number of pageNumbers(); track number) {
-            @if (number <= pages()) {
+          @for (number of pageNumbers(); track $index) {
+            @if (number === '…') {
+              <span class="staff-pagination__ellipsis" aria-hidden="true">…</span>
+            } @else {
               <button type="button" [class.staff-page-selected]="number === page()" [attr.aria-current]="number === page() ? 'page' : null" (click)="changePage(number)">{{ number }}</button>
             }
           }
           <button type="button" aria-label="Trang sau" [disabled]="page() >= pages()" (click)="changePage(page() + 1)">›</button>
         </nav>
       </footer>
+      }
     </section>
   </main>
 </app-admin-catalog-shell>

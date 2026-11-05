@@ -6,10 +6,48 @@
 
     <div class="catalog-header__actions">
       <a routerLink="/" class="catalog-header__view-site">Xem trang web</a>
-      <img class="catalog-header__notification" src="/assets/admin-product/icon-notification.svg" alt="Thông báo" width="41" height="41">
-      <a routerLink="/admin/profile" class="catalog-header__profile" aria-label="Xem hồ sơ quản trị viên">
-        <img class="catalog-header__avatar" src="/assets/admin-product/avatar-figma.png" alt="" width="36" height="36">
-        <span class="catalog-header__identity">Quản trị viên<small>Tên tài khoản</small></span>
+      <div class="catalog-header__notification-wrap">
+        <button type="button" class="catalog-header__notification-button"
+          [attr.aria-expanded]="notificationOpen()" aria-label="Thông báo"
+          (click)="toggleNotifications()">
+          <img class="catalog-header__notification" src="/assets/admin-product/icon-notification.svg" alt="" width="41" height="41">
+          @if (notifications.unreadCount() > 0) {
+            <span class="catalog-header__notification-count">{{ notifications.unreadCount() > 99 ? '99+' : notifications.unreadCount() }}</span>
+          }
+        </button>
+        @if (notificationOpen()) {
+          <section class="catalog-header__notifications" aria-label="Danh sách thông báo">
+            <header>
+              <strong>Thông báo</strong>
+              @if (notifications.unreadCount() > 0) {
+                <button type="button" (click)="notifications.markAllRead()">Đánh dấu đã đọc</button>
+              }
+            </header>
+            @if (notifications.loading()) {
+              <p class="catalog-header__notification-state">Đang tải thông báo...</p>
+            } @else if (notifications.error()) {
+              <p class="catalog-header__notification-state">{{ notifications.error() }}</p>
+            } @else {
+              <div class="catalog-header__notification-list">
+                @for (notice of notifications.items(); track notice.id) {
+                  <button type="button" class="catalog-header__notification-item"
+                    [class.catalog-header__notification-item--unread]="!notice.read"
+                    (click)="openNotification(notice)">
+                    <strong>{{ notice.title }}</strong>
+                    @if (notice.body) { <span>{{ notice.body }}</span> }
+                    <small>{{ notificationTime(notice.createdAt) }}</small>
+                  </button>
+                } @empty {
+                  <p class="catalog-header__notification-state">Chưa có thông báo.</p>
+                }
+              </div>
+            }
+          </section>
+        }
+      </div>
+      <a routerLink="/admin/profile" class="catalog-header__profile" aria-label="Xem hồ sơ tài khoản">
+        <img class="catalog-header__avatar" [src]="session.user()?.avatarUrl || '/assets/admin-product/avatar-figma.png'" alt="" width="36" height="36">
+        <span class="catalog-header__identity">{{ roleLabel() }}<small>{{ session.user()?.fullName || session.user()?.phone || 'Tài khoản' }}</small></span>
         <img class="catalog-header__chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true" width="16" height="16">
       </a>
     </div>
@@ -29,7 +67,7 @@
           (click)="toggleSales()">
           <img src="/assets/admin-product/icon-sales.svg" alt="" width="20" height="20">
           <span>Bán hàng</span>
-          @if (pendingReturnCount() > 0) { <span class="catalog-sidebar__return-badge web2-notification-badge web2-notification-badge--inverted" [attr.aria-label]="pendingReturnCount() + ' yêu cầu trả hàng chờ tiếp nhận'">{{ pendingReturnCount() }}</span> }
+          @if (pendingSalesCount() > 0) { <span class="catalog-sidebar__return-badge web2-notification-badge web2-notification-badge--inverted" [attr.aria-label]="pendingOrderCount() + ' đơn chờ xác nhận và ' + pendingReturnCount() + ' yêu cầu trả hàng chờ tiếp nhận'">{{ pendingSalesCount() }}</span> }
           <img class="catalog-sidebar__group-chevron"
             [src]="salesExpanded ? '/assets/admin-product/expand_less.svg' : '/assets/admin-product/expand_more.svg'"
             alt="" aria-hidden="true" width="16" height="16">
@@ -49,14 +87,14 @@
           </a>
           <a class="catalog-sidebar__sub" routerLink="/admin/orders"
             [class.catalog-sidebar__sub--active]="activeItem === 'orders'"
-            [attr.aria-current]="activeItem === 'orders' ? 'page' : null"><span>Đơn hàng</span> @if (pendingReturnCount() > 0) { <span class="catalog-sidebar__return-badge web2-notification-badge">{{ pendingReturnCount() }}</span> }</a>
+            [attr.aria-current]="activeItem === 'orders' ? 'page' : null"><span>Đơn hàng</span> @if (pendingSalesCount() > 0) { <span class="catalog-sidebar__return-badge web2-notification-badge" [attr.aria-label]="pendingOrderCount() + ' đơn chờ xác nhận và ' + pendingReturnCount() + ' yêu cầu trả hàng chờ tiếp nhận'">{{ pendingSalesCount() }}</span> }</a>
           <a class="catalog-sidebar__sub" routerLink="/admin/vouchers"
             [class.catalog-sidebar__sub--active]="activeItem === 'vouchers'"
             [attr.aria-current]="activeItem === 'vouchers' ? 'page' : null">Khuyến mãi</a>
         </div>
 
         <button type="button" class="catalog-sidebar__group"
-          [class.catalog-sidebar__group--active]="activeItem === 'services'"
+          [class.catalog-sidebar__group--active]="activeItem === 'services' || activeItem === 'appointments' || activeItem === 'service-records'"
           [attr.aria-expanded]="servicesExpanded" aria-controls="admin-services-submenu"
           (click)="toggleServices()">
           <img src="/assets/admin-product/icon-services.svg" alt="" width="20" height="20">
@@ -72,8 +110,8 @@
             [attr.aria-current]="activeItem === 'services' ? 'page' : null">
             Danh mục dịch vụ
           </a>
-          <a class="catalog-sidebar__sub" routerLink="/admin/appointments">Lịch hẹn</a>
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Hồ sơ dịch vụ</span>
+          <a class="catalog-sidebar__sub" routerLink="/admin/appointments" [class.catalog-sidebar__sub--active]="activeItem === 'appointments'" [attr.aria-current]="activeItem === 'appointments' ? 'page' : null">Lịch hẹn</a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/service-records" [class.catalog-sidebar__sub--active]="activeItem === 'service-records'" [attr.aria-current]="activeItem === 'service-records' ? 'page' : null">Hồ sơ dịch vụ</a>
         </div>
 
         <button type="button" class="catalog-sidebar__group"
@@ -100,11 +138,15 @@
             [class.catalog-sidebar__sub--active]="activeItem === 'staff'"
             [attr.aria-current]="activeItem === 'staff' ? 'page' : null">Nhân sự</a>
         </div>
-        <a class="catalog-sidebar__link" routerLink="/admin/users">
+        <a class="catalog-sidebar__link" routerLink="/admin/customers"
+          (click)="closeSidebarGroups()"
+          [class.catalog-sidebar__link--active]="activeItem === 'customers'"
+          [attr.aria-current]="activeItem === 'customers' ? 'page' : null">
           <img src="/assets/admin-product/icon-users.svg" alt="" width="20" height="20">
-          Quản lý người dùng
+          Quản lý khách hàng
         </a>
         <button type="button" class="catalog-sidebar__group"
+          [class.catalog-sidebar__group--active]="activeItem === 'content-articles' || activeItem === 'content-first-aid' || activeItem === 'content-community' || activeItem === 'content-rescue'"
           [attr.aria-expanded]="contentExpanded" aria-controls="admin-content-submenu"
           (click)="toggleContent()">
           <img src="/assets/admin-product/icon-content.svg" alt="" width="20" height="20">
@@ -115,13 +157,18 @@
         </button>
         <div id="admin-content-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
           [hidden]="!contentExpanded" aria-label="Các mục thuộc Nội dung và Cộng đồng">
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Bài viết / Kiến thức</span>
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Cẩm nang sơ cứu</span>
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Bài đăng cộng đồng</span>
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Cứu trợ &amp; Nhận nuôi</span>
+          <a class="catalog-sidebar__sub" routerLink="/admin/content/articles"
+            [class.catalog-sidebar__sub--active]="activeItem === 'content-articles'">Bài viết kiến thức</a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/content/first-aid"
+            [class.catalog-sidebar__sub--active]="activeItem === 'content-first-aid'">Cẩm nang sơ cứu</a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/content/community"
+            [class.catalog-sidebar__sub--active]="activeItem === 'content-community'">Bài đăng cộng đồng</a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/content/rescue"
+            [class.catalog-sidebar__sub--active]="activeItem === 'content-rescue'">Cứu trợ &amp; Nhận nuôi</a>
         </div>
 
         <button type="button" class="catalog-sidebar__group"
+          [class.catalog-sidebar__group--active]="activeItem === 'moderation-reviews' || activeItem === 'moderation-feedback' || activeItem === 'moderation-reports'"
           [attr.aria-expanded]="feedbackExpanded" aria-controls="admin-feedback-submenu"
           (click)="toggleFeedback()">
           <img src="/assets/admin-product/icon-reviews.svg" alt="" width="20" height="20">
@@ -132,9 +179,12 @@
         </button>
         <div id="admin-feedback-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
           [hidden]="!feedbackExpanded" aria-label="Các mục thuộc Đánh giá và Phản hồi">
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Đánh giá</span>
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Phản hồi khách hàng</span>
-          <span class="catalog-sidebar__sub catalog-sidebar__sub--disabled" aria-disabled="true" title="Tính năng chưa được triển khai">Báo cáo vi phạm</span>
+          <a class="catalog-sidebar__sub" routerLink="/admin/moderation/reviews"
+            [class.catalog-sidebar__sub--active]="activeItem === 'moderation-reviews'">Đánh giá</a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/moderation/feedback"
+            [class.catalog-sidebar__sub--active]="activeItem === 'moderation-feedback'">Phản hồi khách hàng</a>
+          <a class="catalog-sidebar__sub" routerLink="/admin/moderation/reports"
+            [class.catalog-sidebar__sub--active]="activeItem === 'moderation-reports'">Báo cáo vi phạm</a>
         </div>
       </nav>
     </aside>

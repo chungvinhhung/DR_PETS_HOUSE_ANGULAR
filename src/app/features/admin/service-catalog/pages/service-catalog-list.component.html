@@ -86,39 +86,21 @@
         </thead>
         <tbody>
           @if (loading()) {
-            @for (row of [1, 2, 3, 4, 5, 6]; track row) {
-              <tr aria-hidden="true">
-                @for (column of (filters().branchId === 'ALL' ? [1,2,3,4,5,6,7,8] : [1,2,3,4,5,6,7,8,9]); track column) {
-                  <td><span class="service-catalog__skeleton"></span></td>
-                }
-              </tr>
-            }
+            <tr><td [attr.colspan]="filters().branchId === 'ALL' ? 8 : 9" class="service-catalog__empty-cell">
+              <app-admin-data-state kind="loading" title="Đang tải danh mục dịch vụ" />
+            </td></tr>
           } @else if (error()) {
             <tr>
               <td [attr.colspan]="filters().branchId === 'ALL' ? 8 : 9" class="service-catalog__empty-cell">
-                <div class="service-catalog__state" role="alert">
-                  <strong>Không tải được danh sách</strong>
-                  <p>{{ error() }}</p>
-                  <button type="button" (click)="retry()">Thử lại</button>
-                </div>
+                <app-admin-data-state kind="error" title="Không thể tải danh mục dịch vụ" [message]="error() || ''" (retry)="retry()" />
               </td>
             </tr>
           } @else if (!rows().length) {
             <tr>
               <td [attr.colspan]="filters().branchId === 'ALL' ? 8 : 9" class="service-catalog__empty-cell">
-                <div class="service-catalog__state">
-                  @if (searchText().trim() || filters().mode !== 'ALL' || filters().status !== 'ALL' || filters().branchId !== 'ALL') {
-                    <strong>Không tìm thấy dịch vụ nào</strong>
-                    <p>Thử từ khóa khác hoặc bỏ bớt bộ lọc.</p>
-                    <button type="button" (click)="clearFilters()">Xóa bộ lọc</button>
-                  } @else {
-                    <strong>Chưa có dịch vụ nào</strong>
-                    <p>Danh mục hiện chưa có dữ liệu.</p>
-                    @if (isAdmin()) {
-                      <button type="button" class="web2-add-button" (click)="createService()"><span class="web2-add-icon" aria-hidden="true">+</span><span>Thêm dịch vụ</span></button>
-                    }
-                  }
-                </div>
+                <app-admin-data-state kind="empty"
+                  [title]="searchText().trim() || filters().mode !== 'ALL' || filters().status !== 'ALL' || filters().branchId !== 'ALL' ? 'Không tìm thấy dịch vụ' : 'Chưa có dịch vụ'"
+                  [message]="searchText().trim() || filters().mode !== 'ALL' || filters().status !== 'ALL' || filters().branchId !== 'ALL' ? 'Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác.' : 'Danh mục dịch vụ hiện đang trống.'" />
               </td>
             </tr>
           } @else {
@@ -211,24 +193,13 @@
         <nav class="service-catalog__pages" aria-label="Phân trang danh sách dịch vụ">
           <button type="button" (click)="goToPage(currentPage() - 1)"
             [disabled]="currentPage() === 1" aria-label="Trang trước">‹</button>
-          @if (pageNumbers()[0] > 1) {
-            <button type="button" (click)="goToPage(1)">1</button>
-            @if (pageNumbers()[0] > 2) {
-              <span aria-hidden="true">…</span>
+          @for (number of pageNumbers(); track $index) {
+            @if(number === '…') {<span aria-hidden="true">…</span>}
+            @else {
+              <button type="button" (click)="goToPage(number)"
+                [attr.aria-current]="currentPage()===number?'page':null"
+                [class.service-catalog__page--selected]="currentPage()===number">{{number}}</button>
             }
-          }
-          @for (page of pageNumbers(); track page) {
-            <button type="button" (click)="goToPage(page)"
-              [attr.aria-current]="currentPage() === page ? 'page' : null"
-              [class.service-catalog__page--selected]="currentPage() === page">
-              {{ page }}
-            </button>
-          }
-          @if (pageNumbers()[pageNumbers().length - 1] < pageCount()) {
-            @if (pageNumbers()[pageNumbers().length - 1] < pageCount() - 1) {
-              <span aria-hidden="true">…</span>
-            }
-            <button type="button" (click)="goToPage(pageCount())">{{ pageCount() }}</button>
           }
           <button type="button" (click)="goToPage(currentPage() + 1)"
             [disabled]="currentPage() === pageCount()" aria-label="Trang tiếp">›</button>

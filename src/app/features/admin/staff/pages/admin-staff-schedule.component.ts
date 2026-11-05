@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.component';
 import { formatStaffWeekRange } from '../utils/staff-week-range';
 import { AdminStaffApiService, staffTodayISO } from '../services/admin-staff-api.service';
@@ -23,11 +25,11 @@ const dateFor = (monday: string, offset: number): string =>
   new Date(new Date(monday + 'T00:00:00Z').getTime() + offset * DAY).toISOString().slice(0, 10);
 const readable = (iso: string): string => iso.slice(8, 10) + '/' + iso.slice(5, 7);
 
-/** Phase 5: readonly FE preview. Real shifts must come from the scoped Shift API. */
+/** Weekly staff schedule backed by the scoped Staff/Shift APIs. */
 @Component({
   selector: 'app-admin-staff-schedule',
   standalone: true,
-  imports: [AdminCatalogShellComponent, RouterLink, AdminStaffWeekNavComponent, StaffShiftAssignmentDialogComponent],
+  imports: [AdminCatalogShellComponent, AdminDataStateComponent, RouterLink, AdminStaffWeekNavComponent, StaffShiftAssignmentDialogComponent],
   templateUrl: './admin-staff-schedule.component.html',
   styleUrl: './admin-staff-schedule.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -86,12 +88,19 @@ export class AdminStaffScheduleComponent {
   selectBranch(value: string) { if (!this.branches().some(b=>b.id===value)) return; this.branch.set(value); this.createdOptions.set([]); }
   changeWeek(delta: number) { this.monday.set(dateFor(this.monday(), delta * 7)); }
   goToday(): void { this.monday.set(mondayOf(todayIso())); }
+  retrySchedule(): void {
+    if (this.staffApi.error()) this.staffApi.loadRoster(true);
+    else this.staffApi.loadWeek(this.monday(), true);
+  }
 
   selectDate(value: string): void {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return;
     const parsed = new Date(value + 'T00:00:00Z');
     if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) return;
     this.monday.set(mondayOf(value));
+  }
+  onCellClick(employee: StaffPreview, date: string): void {
+    this.openDay(employee, date);
   }
   openDay(employee: StaffPreview, date: string): void {
     if (!this.branch() || this.staffApi.shiftLoading() || !!this.staffApi.shiftError()) return;
@@ -109,13 +118,39 @@ export class AdminStaffScheduleComponent {
     const dialog=this.dialog();if(!dialog)return [];
     return this.staffApi.shifts().filter(s=>s.staffId===dialog.employee.id && s.isoDate===dialog.date && s.branchId!==this.branch());
   }
-  checkAssignment(data:{draft:DayShiftDraft[];scope:'day'|'weekly';from:string;to:string}):void {
-    // BE only exposes create/update/cancel individual shifts, not an atomic
-    // day replacement or weekly recurrence operation. Do not write a partial
-    // result and claim that the entire assignment has been saved.
-    this.toast.show(data.scope==='weekly'
-      ? 'Đã kiểm tra lịch lặp. Chưa thể lưu vì hệ thống chưa hỗ trợ phân ca lặp hằng tuần.'
-      : 'Đã kiểm tra bản phân công. Chưa thể lưu đồng loạt các thay đổi lên hệ thống.', 'info');
+  async checkAssignment(data:{draft:DayShiftDraft[];scope:'day'|'weekly';from:string;to:string}):Promise<void> {
+    if (data.scope !== 'day') {
+      this.toast.show('Phân ca lặp hằng tuần chưa được hệ thống hỗ trợ.', 'info');
+      return;
+    }
+    const existing=this.forDay();
+    const desiredIds=new Set(data.draft.map(row=>row.shiftId).filter((id):id is string=>!!id));
+    const removed=existing.filter(row=>row.shiftId&&!desiredIds.has(row.shiftId));
+    const added=data.draft.filter(row=>!row.shiftId);
+    if (added.length) {
+      this.toast.show('Để thêm ca mới, dùng “Tạo ca làm việc mới” để lưu trực tiếp và kiểm tra trùng giờ.', 'info');
+      return;
+    }
+    if (!removed.length) {
+      this.closeDay();
+      return;
+    }
+    let cancelled=0;
+    for(const row of removed){
+      try{
+        await firstValueFrom(this.staffApi.cancelShift(row.shiftId!));
+        cancelled++;
+      }catch(err){
+        this.staffApi.loadWeek(this.monday(),true);
+        this.toast.show(cancelled
+          ? 'Đã gỡ '+cancelled+'/'+removed.length+' ca. Một số ca còn lại không thể gỡ do đang có lịch hẹn hoặc quyền hạn.'
+          : 'Không thể gỡ ca làm việc. Ca có thể đang gắn với lịch hẹn đã xác nhận.', 'error');
+        return;
+      }
+    }
+    this.closeDay();
+    this.staffApi.loadWeek(this.monday(),true);
+    this.toast.show('Đã cập nhật ca làm việc trong ngày.', 'success');
   }
   beginNewTemplate():void {this.showCreateTemplate.set(true);this.templateError.set('');}
   cancelNewTemplate():void {this.showCreateTemplate.set(false);this.templateError.set('');}
@@ -168,7 +203,7 @@ export class AdminStaffScheduleComponent {
       },
       error: () => {
         this.createSaving.set(false);
-        this.templateError.set('Không thể tạo ca trên hệ thống. Kiểm tra quyền và API POST /shifts của Backend; chưa có ca nào được lưu.');
+        this.templateError.set('Không thể tạo ca làm việc. Vui lòng kiểm tra quyền truy cập và thử lại; chưa có thay đổi nào được lưu.');
       },
     });
   }

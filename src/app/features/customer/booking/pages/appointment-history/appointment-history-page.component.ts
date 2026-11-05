@@ -9,7 +9,6 @@ import { DetailPanelComponent } from './detail-panel.component';
 import { ReviewModalComponent } from './review-modal.component';
 import { appointmentImages } from '../../../../../shared/customer/assets/appointment-images';
 import { APPOINTMENT_FILTERS, getAppointmentDisplayStatus } from '../../utils/appointment-display';
-import { MOCK_APPOINTMENTS } from '../../data/mock-appointments';
 import { getAppointmentDate } from './appointment-history-page.helpers';
 
 /**
@@ -105,8 +104,8 @@ export class AppointmentHistoryPageComponent {
           })
           .catch((error: any) => {
             if (!active) return;
-            this.appointments.set(MOCK_APPOINTMENTS);
-            this.loadError.set(error?.message || "Không thể tải lịch sử đặt lịch, đang hiển thị dữ liệu mẫu.");
+            this.appointments.set([]);
+            this.loadError.set(error?.message || "Không thể tải lịch sử đặt lịch. Vui lòng thử lại.");
           })
           .finally(() => {
             if (active) this.isLoading.set(false);
@@ -166,52 +165,15 @@ export class AppointmentHistoryPageComponent {
     }
 
     if (actionKey === "pay") {
-      this.decisionModalService.openDecisionModal({
-        type: "cancel",
-        title: "XÁC NHẬN",
-        message: "Xác nhận thanh toán lịch hẹn tại phòng khám?\nHệ thống sẽ ghi nhận trạng thái chờ thanh toán tại quầy",
-        confirmLabel: "Xác nhận",
-        onConfirm: async () => {
-          this.actionLoadingId.set(appointment.id);
-          this.actionMessage.set(null);
-
-          try {
-            await this.bookingApi.checkoutAppointment(appointment.id, { paymentMethod: "store" });
-            this.appointments.update((current: any) =>
-              current.map((item: any) =>
-                item.id === appointment.id
-                  ? {
-                      ...item,
-                      status: "confirmed",
-                      paymentMethod: "store",
-                      paymentStatus: "waiting_store_payment",
-                      canCancel: true,
-                      canReschedule: true,
-                    }
-                  : item,
-              ));
-            this.actionMessage.set({
-              type: "success",
-              text: "Đã xác nhận lịch hẹn. Bạn có thể thanh toán tại phòng khám khi đến sử dụng dịch vụ.",
-            });
-            this.decisionModalService.showSuccessModal({
-              message: "Đã xác nhận lịch hẹn thành công.\nBạn có thể tiếp tục hoặc quay về trang chủ",
-            });
-          } catch (error: any) {
-            this.actionMessage.set({
-              type: "error",
-              text: error?.message || "Không thể xác nhận thanh toán lịch hẹn lúc này.",
-            });
-          } finally {
-            this.actionLoadingId.set(null);
-          }
-        },
+      this.actionMessage.set({
+        type: "error",
+        text: "Phương thức hoàn tất thanh toán cho lịch hẹn này hiện chưa sẵn sàng. Vui lòng liên hệ phòng khám để được hỗ trợ.",
       });
       return;
     }
 
     if (actionKey === "reschedule") {
-      this.actionMessage.set({ type: "error", text: "Backend chưa có endpoint đổi lịch, tạm thời hãy đặt lịch mới nếu cần đổi giờ." });
+      this.actionMessage.set({ type: "error", text: "Chức năng đổi lịch hiện chưa sẵn sàng. Bạn có thể đặt lịch mới nếu cần đổi giờ." });
       return;
     }
 
@@ -239,7 +201,7 @@ export class AppointmentHistoryPageComponent {
       return;
     }
 
-    this.actionMessage.set({ type: "error", text: "Chức năng này chưa có API phù hợp để xử lý." });
+    this.actionMessage.set({ type: "error", text: "Chức năng này hiện chưa sẵn sàng." });
   }
 
   protected async handleReviewSubmit({ targetId, rating, review }: any) {

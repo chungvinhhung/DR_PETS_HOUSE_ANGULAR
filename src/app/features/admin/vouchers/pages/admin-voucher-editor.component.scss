@@ -68,3 +68,6 @@
 @media(max-width:1100px){.voucher-editor__detail-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.voucher-editor__detail-grid .voucher-editor__summary,
 .voucher-editor__detail-grid .voucher-editor__summary--usage{grid-template-columns:1fr}}
+
+.voucher-editor__button--danger-outline{color:#de414c;border:1px solid #ed6b72;background:#fff}
+.voucher-editor__button--danger-outline:hover:not(:disabled){background:#fff1f1}

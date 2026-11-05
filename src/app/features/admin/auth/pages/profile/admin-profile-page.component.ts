@@ -71,6 +71,42 @@ import { AdminProfileService } from '../../services/admin-profile.service';
             {{ saving() ? 'Đang lưu...' : 'Lưu thay đổi' }}
           </button>
         </form>
+
+        <section class="password-section">
+          <div>
+            <h2>Đổi mật khẩu</h2>
+            <p>Đổi mật khẩu của tài khoản đang đăng nhập.</p>
+          </div>
+
+          <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+            <label>
+              <span>Mật khẩu hiện tại</span>
+              <input type="password" formControlName="oldPassword" autocomplete="current-password" />
+            </label>
+            <label>
+              <span>Mật khẩu mới</span>
+              <input type="password" formControlName="newPassword" autocomplete="new-password" />
+              @if (passwordForm.controls.newPassword.invalid && passwordForm.controls.newPassword.touched) {
+                <small class="field-error">Ít nhất 8 ký tự, có 1 chữ hoa và 1 chữ số.</small>
+              }
+            </label>
+            <label>
+              <span>Xác nhận mật khẩu mới</span>
+              <input type="password" formControlName="confirmPassword" autocomplete="new-password" />
+            </label>
+
+            @if (passwordNotice()) {
+              <p class="notice" role="status">{{ passwordNotice() }}</p>
+            }
+            @if (passwordError()) {
+              <p class="error" role="alert">{{ passwordError() }}</p>
+            }
+
+            <button type="submit" [disabled]="changingPassword()">
+              {{ changingPassword() ? 'Đang đổi...' : 'Đổi mật khẩu' }}
+            </button>
+          </form>
+        </section>
       </section>
     </section>
   `,
@@ -217,6 +253,32 @@ import { AdminProfileService } from '../../services/admin-profile.service';
       opacity: 0.65;
     }
 
+    .password-section {
+      display: grid;
+      gap: 16px;
+      margin-top: 24px;
+      padding-top: 22px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .password-section h2 {
+      margin: 0;
+      color: #0f172a;
+      font-size: 1rem;
+    }
+
+    .password-section > div > p {
+      margin: 5px 0 0;
+      color: #64748b;
+      font-size: .82rem;
+    }
+
+    .field-error {
+      color: #b91c1c;
+      font-size: .75rem;
+      font-weight: 600;
+    }
+
     .notice,
     .error {
       margin: 0;
@@ -252,10 +314,22 @@ export class AdminProfilePageComponent {
   readonly saving = signal(false);
   readonly notice = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
+  readonly changingPassword = signal(false);
+  readonly passwordNotice = signal<string | null>(null);
+  readonly passwordError = signal<string | null>(null);
 
   readonly form = this.formBuilder.nonNullable.group({
     fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
     email: ['', [Validators.email]],
+  });
+
+  readonly passwordForm = this.formBuilder.nonNullable.group({
+    oldPassword: ['', [Validators.required]],
+    newPassword: ['', [
+      Validators.required,
+      Validators.pattern(/^(?=.*[A-Z])(?=.*\d).{8,}$/),
+    ]],
+    confirmPassword: ['', [Validators.required]],
   });
 
   constructor() {
@@ -312,6 +386,58 @@ export class AdminProfilePageComponent {
           this.errorMessage.set(this.messageForError(error));
         },
       });
+  }
+
+  changePassword(): void {
+    this.passwordNotice.set(null);
+    this.passwordError.set(null);
+    this.passwordForm.markAllAsTouched();
+
+    if (this.passwordForm.invalid || this.changingPassword()) return;
+
+    const value = this.passwordForm.getRawValue();
+    if (value.newPassword !== value.confirmPassword) {
+      this.passwordError.set('Mật khẩu xác nhận không khớp.');
+      return;
+    }
+
+    this.changingPassword.set(true);
+    this.profileService.changePassword(value)
+      .pipe(finalize(() => this.changingPassword.set(false)))
+      .subscribe({
+        next: () => {
+          this.passwordForm.reset({
+            oldPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+          });
+          this.passwordNotice.set('Đã đổi mật khẩu.');
+        },
+        error: (error: unknown) => {
+          if (error instanceof AppHttpError) {
+            const code = this.backendErrorCode(error.details);
+            if (code === 'INVALID_OLD_PASSWORD') {
+              this.passwordError.set('Mật khẩu hiện tại không đúng.');
+              return;
+            }
+            if (code === 'PASSWORD_TOO_WEAK') {
+              this.passwordError.set('Mật khẩu mới chưa đáp ứng yêu cầu bảo mật.');
+              return;
+            }
+            this.passwordError.set(error.message);
+            return;
+          }
+          this.passwordError.set('Không thể đổi mật khẩu. Vui lòng thử lại.');
+        },
+      });
+  }
+
+  private backendErrorCode(details: unknown): string | null {
+    if (typeof details === 'object' && details !== null && 'code' in details &&
+        typeof (details as { code?: unknown }).code === 'string') {
+      return (details as { code: string }).code;
+    }
+    return null;
   }
 
   private patchForm(fullName: string, email: string | null): void {

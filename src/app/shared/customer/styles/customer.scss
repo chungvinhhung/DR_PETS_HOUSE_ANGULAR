@@ -732,9 +732,10 @@ html:has(.customer-root) {
   }
 
   .focus-ring-brand:focus-visible {
-    box-shadow:
-      0 0 0 2px #fff,
-      0 0 0 4px rgba(25, 118, 210, 0.65);
+    /* Shared WEB2 focus token; do not stack a second Customer-only halo. */
+    outline: 2px solid var(--web2-focus-color, #0d47a1);
+    outline-offset: 2px;
+    box-shadow: none;
   }
 
   /* ---- Yellow CTA (navbar, home) ---- */

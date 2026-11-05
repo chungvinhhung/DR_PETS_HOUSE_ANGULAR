@@ -1,6 +1,8 @@
+import { adminPageWindow } from '../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from "../../../../shared/admin-data-state/admin-data-state.component";
 import { RouterLink } from '@angular/router';
 import { JOB_LABELS, StaffPreview, JobRole, StaffStatus, displayStaffName, displayStaffShift } from '../models/staff-preview.model';
 import { AdminStaffApiService, staffTodayISO, staffWeekMonday } from '../services/admin-staff-api.service';
@@ -8,7 +10,7 @@ import { AdminStaffApiService, staffTodayISO, staffWeekMonday } from '../service
 @Component({
   selector: 'app-admin-staff-list',
   standalone: true,
-  imports: [AdminCatalogShellComponent, FormsModule, RouterLink],
+  imports: [AdminCatalogShellComponent, AdminDataStateComponent, FormsModule, RouterLink],
   templateUrl: './admin-staff-list.component.html',
   styleUrl: './admin-staff-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,12 +46,7 @@ export class AdminStaffListComponent {
     );
   });
   readonly pages = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.pageSize)));
-  readonly pageNumbers = computed(() => {
-    const total = this.pages();
-    const current = this.page();
-    const start = Math.max(1, Math.min(current - 1, total - 2));
-    return Array.from({ length: Math.min(3, total) }, (_, index) => start + index);
-  });
+  readonly pageNumbers = computed(() => adminPageWindow(this.page(), this.pages()));
   readonly rows = computed(() => this.filtered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
 
   displayName(staff: StaffPreview): string {
@@ -63,7 +60,7 @@ export class AdminStaffListComponent {
       staff.accountStatus === 'BLOCKED' ? 'Đã chặn' : 'Chưa có dữ liệu';
   }
   todayShift(staff: StaffPreview): string {
-    if (this.staffApi.shiftError()) return 'Không tải được';
+    if (this.staffApi.shiftError()) return 'Chưa tải được';
     if (this.staffApi.loadedMonday() !== staffWeekMonday(staffTodayISO())) return 'Đang tải...';
     const shifts = this.staffApi.shifts().filter(shift => shift.staffId === staff.id && shift.isoDate === staffTodayISO());
     return shifts.length ? shifts.map(shift => this.displayShift(shift.time)).join('; ') : '—';
