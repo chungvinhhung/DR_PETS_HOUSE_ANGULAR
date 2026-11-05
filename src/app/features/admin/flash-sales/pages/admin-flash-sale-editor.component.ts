@@ -11,7 +11,7 @@ import { AdminToastService, adminErrorMessage } from '../../../../shared/service
 import { AdminProductService } from '../../products/services/admin-product.service';
 import { AdminProduct, ProductVariant } from '../../products/models/admin-product.model';
 import {
-  AdminFlashSale, AdminFlashSaleApiService, FlashSaleItemWrite, FlashSaleWriteBody,
+  AdminFlashSale, AdminFlashSaleApiService, FlashSaleActivationMode, FlashSaleItemWrite, FlashSaleWriteBody,
   flashSaleState, flashSaleDate, flashSaleMoney, FLASH_SALE_STATE_LABELS,
 } from '../services/admin-flash-sale-api.service';
 
@@ -109,23 +109,31 @@ export class AdminFlashSaleEditorComponent {
   readonly operatingEnabled = computed(() =>
     this.original()?.status === 'PUBLISHED'
       ? !this.original()!.isPaused : this.draftEnabled());
-  readonly startsLaterToday = computed(() => {
-    const start = this.mode === 'view'
-      ? this.original()?.startAt : utcFromVietnam(this.form().from);
-    return Boolean(start && Date.parse(start) > this.now());
-  });
-  readonly showOperatingSection = computed(() => {
+  readonly selectedStart = computed(() => {
     const sale = this.original();
-    const startValue = sale?.status === 'PUBLISHED'
-      ? vietnamLocal(sale.startAt) : this.form().from;
-    if (!startValue) return false;
-    const startTime = utcFromVietnam(startValue);
-    const endTime = sale?.status === 'PUBLISHED' ? Date.parse(sale.endAt) : null;
-    const today = startValue.slice(0, 10) === this.minimumStartAt().slice(0, 10);
-    if (!sale || sale.status === 'DRAFT') return today;
-    return Boolean(endTime && endTime > this.now() &&
-      (today || (startTime && Date.parse(startTime) <= this.now())));
+    return sale?.status === 'PUBLISHED'
+      ? Date.parse(sale.startAt)
+      : Date.parse(utcFromVietnam(this.form().from) ?? '');
   });
+  readonly selectedEnd = computed(() => {
+    const sale = this.original();
+    return sale?.status === 'PUBLISHED'
+      ? Date.parse(sale.endAt)
+      : Date.parse(utcFromVietnam(this.form().to) ?? '');
+  });
+  readonly isPreStart = computed(() =>
+    Number.isFinite(this.selectedStart()) && this.selectedStart() > this.now());
+  readonly showOperatingSection = computed(() =>
+    Number.isFinite(this.selectedStart()) &&
+    (!Number.isFinite(this.selectedEnd()) || this.selectedEnd() > this.now()) &&
+    (this.mode === 'create' || this.original()?.status !== 'DRAFT' || this.mode === 'edit'));
+  readonly operatingLabel = computed(() => this.isPreStart()
+    ? this.operatingEnabled() ? 'Tự động hoạt động theo lịch' : 'Kích hoạt thủ công'
+    : this.operatingEnabled() ? 'Đang hoạt động' : 'Tạm ngừng');
+  private modeFor(sale: AdminFlashSale | null, enabled: boolean): FlashSaleActivationMode {
+    return sale?.activationMode ??
+      (sale?.status === 'PUBLISHED' ? (sale.isPaused ? 'MANUAL' : 'AUTO') : (enabled ? 'AUTO' : 'MANUAL'));
+  }
 
   readonly pickerOpen = signal(false);
   readonly pickerLoading = signal(false);
@@ -182,7 +190,7 @@ export class AdminFlashSaleEditorComponent {
           return;
         }
         this.original.set(sale);
-        this.draftEnabled.set(!sale.isPaused);
+        this.draftEnabled.set(sale.activationMode === 'MANUAL' ? false : !sale.isPaused);
         this.form.set({
           name:sale.name, description:sale.description,
           from:vietnamLocal(sale.startAt),to:vietnamLocal(sale.endAt),
@@ -231,12 +239,6 @@ export class AdminFlashSaleEditorComponent {
   update<K extends keyof Omit<SaleForm, 'items'>>(field: K, value: SaleForm[K]): void {
     if (!this.editable()) return;
     this.form.update(current=>({...current,[field]:value}));
-    // Hidden pause choice must never silently disable a future-day program.
-    if (field === 'from' && typeof value === 'string' &&
-        value.slice(0, 10) !== this.minimumStartAt().slice(0, 10) &&
-        this.original()?.status !== 'PUBLISHED') {
-      this.draftEnabled.set(true);
-    }
     this.resetCreateKeyWhenDraftChanges();
     this.validation.set('');this.dirty.set(true);
   }
@@ -289,7 +291,10 @@ export class AdminFlashSaleEditorComponent {
     return {
       name:f.name.trim(),description:f.description.trim(),
       startAt:from,endAt:to,items,
-      // BE must preserve initial pause on DRAFT and atomically apply it at publish.
+      activationMode: existing?.status === 'PUBLISHED'
+        ? this.modeFor(existing, this.operatingEnabled())
+        : this.draftEnabled() ? 'AUTO' : 'MANUAL',
+      // A manual scheduled deal must remain paused even after startAt passes.
       isPaused: existing?.status === 'PUBLISHED' ? existing.isPaused : !this.draftEnabled(),
     };
   }
@@ -309,7 +314,7 @@ export class AdminFlashSaleEditorComponent {
       this.original.set(sale);this.dirty.set(false);
       if (publishAfterSave && sale.status==='DRAFT') {
         try {
-          await firstValueFrom(this.api.publish(sale.id,'flash-publish-'+sale.id,body.isPaused));
+          await firstValueFrom(this.api.publish(sale.id,'flash-publish-'+sale.id,body.isPaused,body.activationMode));
         }catch(err){
           this.toast.show('Đã lưu bản nháp nhưng chưa kích hoạt. '+this.message(err,'Vui lòng kích hoạt trong trang chi tiết.'),'error');
           this.allowSavedNavigation = true;
@@ -338,7 +343,7 @@ export class AdminFlashSaleEditorComponent {
         this.toast.show('Chương trình đã hết thời gian áp dụng, không thể kích hoạt.','error');
         return;
       }
-      const updated=await firstValueFrom(this.api.publish(this.id,'flash-publish-'+this.id,this.original()!.isPaused));
+      const updated=await firstValueFrom(this.api.publish(this.id,'flash-publish-'+this.id,this.original()!.isPaused,this.modeFor(this.original(),!this.original()!.isPaused)));
       this.original.set(updated);
       this.toast.show(Date.parse(updated.startAt) > Date.now()
         ? 'Chương trình đã được lên lịch và sẽ tự bắt đầu đúng thời gian.'
@@ -352,7 +357,10 @@ export class AdminFlashSaleEditorComponent {
     if (!this.canManage()||!sale||sale.status!=='PUBLISHED'||this.saving()||this.currentState()==='ENDED')return;
     this.saving.set(true);
     try{
-      const updated=await firstValueFrom(this.api.setPaused(sale.id,checked));
+      const activationMode: FlashSaleActivationMode = this.isPreStart()
+        ? checked ? 'MANUAL' : 'AUTO'
+        : this.modeFor(sale, !checked);
+      const updated=await firstValueFrom(this.api.setPaused(sale.id,checked,activationMode));
       this.original.set(updated);
       this.toast.show(checked?'Đã tạm ngừng Flash Sale.':'Đã tiếp tục Flash Sale.','success');
     }catch(err){
