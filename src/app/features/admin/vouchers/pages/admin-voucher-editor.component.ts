@@ -72,6 +72,24 @@ export class AdminVoucherEditorComponent {
   readonly allowEditing = computed(() => this.mode !== 'view' && this.canWrite());
   readonly used = computed(() => this.original()?.usedCount ?? 0);
   readonly isEnabled = computed(() => this.original()?.status === 'ACTIVE');
+  readonly now = signal(Date.now());
+  readonly voucherStart = computed(() => this.mode === 'view'
+    ? Date.parse(this.original()?.effectiveFrom ?? '')
+    : Date.parse(this.iso(this.form().fromDate, this.form().fromTime) ?? ''));
+  readonly voucherEnd = computed(() => this.mode === 'view'
+    ? Date.parse(this.original()?.effectiveTo ?? '')
+    : Date.parse(this.iso(this.form().toDate, this.form().toTime) ?? ''));
+  readonly beforeStart = computed(() =>
+    Number.isFinite(this.voucherStart()) && this.now() < this.voucherStart());
+  readonly showActivation = computed(() =>
+    Number.isFinite(this.voucherStart()) &&
+    (!Number.isFinite(this.voucherEnd()) || this.now() < this.voucherEnd()));
+  readonly activationEnabled = computed(() =>
+    this.mode === 'view' ? this.original()?.status === 'ACTIVE' : this.form().status === 'ACTIVE');
+  readonly activationLabel = computed(() => this.beforeStart()
+    ? this.activationEnabled() ? 'Tự động hoạt động theo lịch' : 'Kích hoạt thủ công'
+    : this.activationEnabled() ? 'Đang hoạt động' : 'Tạm ngừng');
+  private nowInterval: ReturnType<typeof setInterval> | null = null;
   readonly remaining = computed(() => {
     const v = this.original();
     return v ? Math.max(0, v.quota - v.usedCount) : 0;
@@ -84,17 +102,21 @@ export class AdminVoucherEditorComponent {
   private readonly createKey = 'voucher-create-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
 
   constructor() {
+    this.nowInterval = setInterval(() => this.now.set(Date.now()), 60000);
+    this.destroyRef.onDestroy(() => {
+      if (this.nowInterval) clearInterval(this.nowInterval);
+    });
     if (this.mode !== 'create') this.load();
   }
   private fmtDate(iso: string): string {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return '';
-    return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
+    const ms = Date.parse(iso);
+    if (!Number.isFinite(ms)) return '';
+    return new Date(ms + 7 * 3600000).toISOString().slice(0, 10);
   }
   private fmtTime(iso: string): string {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return '';
-    return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+    const ms = Date.parse(iso);
+    if (!Number.isFinite(ms)) return '';
+    return new Date(ms + 7 * 3600000).toISOString().slice(11, 16);
   }
   private load(): void {
     this.loading.set(true);this.error.set('');
@@ -118,6 +140,37 @@ export class AdminVoucherEditorComponent {
     });
   }
   retry(): void {if (this.mode !== 'create') this.load();}
+  changeActivation(enabled: boolean): void {
+    if (!this.allowEditing() || this.saving()) return;
+    // ACTIVE is only eligible inside effectiveFrom/effectiveTo; INACTIVE
+    // remains disabled even once the start time arrives.
+    this.change('status', enabled ? 'ACTIVE' : 'INACTIVE');
+  }
+  toggleActivationFromView(input: HTMLInputElement): void {
+    const v = this.original();
+    if (!v || this.mode !== 'view' || !this.canWrite() || this.saving() ||
+        !this.showActivation()) {
+      input.checked = this.activationEnabled() ?? false;
+      return;
+    }
+    const status: VoucherStatus = input.checked ? 'ACTIVE' : 'INACTIVE';
+    this.saving.set(true);
+    this.api.update(v.id, {status})
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: saved => {
+          this.original.set(saved);
+          this.saving.set(false);
+          this.toast.show(this.beforeStart()
+            ? saved.status === 'ACTIVE' ? 'Đã chọn tự động hoạt động theo lịch.' : 'Đã chọn kích hoạt thủ công.'
+            : saved.status === 'ACTIVE' ? 'Đã bật voucher.' : 'Đã tạm ngừng voucher.', 'success');
+        },
+        error: err => {
+          input.checked = v.status === 'ACTIVE';
+          this.saving.set(false);
+          this.toast.show(adminErrorMessage(err, 'Không cập nhật được trạng thái voucher.'), 'error');
+        },
+      });
+  }
   change<K extends keyof VoucherFields>(field: K, value: VoucherFields[K]): void {
     if (!this.allowEditing() || this.saving()) return;
     this.form.update(f => ({...f,[field]: value}));
@@ -160,7 +213,7 @@ export class AdminVoucherEditorComponent {
   cancel(): void {void this.router.navigateByUrl('/admin/vouchers');}
   private iso(date: string, time: string): string | null {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) return null;
-    const t = new Date(date + 'T' + time + ':00');
+    const t = new Date(date + 'T' + time + ':00+07:00');
     return Number.isNaN(t.getTime()) ? null : t.toISOString();
   }
   private payload(): VoucherWriteBody | null {
