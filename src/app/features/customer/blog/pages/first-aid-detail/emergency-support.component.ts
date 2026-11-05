@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 import { CustomerIconComponent } from '../../../../../shared/customer/components/icon/customer-icon.component';
 import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
@@ -17,4 +17,5 @@ import { CustomerLinkDirective } from '../../../../../shared/customer/directives
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmergencySupportComponent {
+  readonly phone=input<string>('0868686868');
 }
