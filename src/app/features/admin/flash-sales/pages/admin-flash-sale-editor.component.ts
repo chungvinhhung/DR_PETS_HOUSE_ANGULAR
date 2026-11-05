@@ -69,6 +69,8 @@ function utcFromVietnam(value: string): string | null {
 })
 export class AdminFlashSaleEditorComponent {
   @ViewChild('pickerDialog') private pickerDialog?: ElementRef<HTMLElement>;
+  @ViewChild('leaveDialog') private leaveDialog?: ElementRef<HTMLElement>;
+  @ViewChild('keepEditing') private keepEditingButton?: ElementRef<HTMLButtonElement>;
   @ViewChild('productSearch') private productSearchInput?: ElementRef<HTMLInputElement>;
   @ViewChild('addProductTrigger') private addProductTrigger?: ElementRef<HTMLButtonElement>;
 
@@ -272,6 +274,8 @@ export class AdminFlashSaleEditorComponent {
     if (!this.dirty()) return true;
     if (this.leaveResolver) return false;
     this.leaveOpen.set(true);
+    if(this.focusTimeout) clearTimeout(this.focusTimeout);
+    this.focusTimeout=setTimeout(() => this.keepEditingButton?.nativeElement.focus(), 0);
     return new Promise<boolean>(resolve=>this.leaveResolver=resolve);
   }
   resolveLeave(decision: boolean): void {
@@ -299,8 +303,8 @@ export class AdminFlashSaleEditorComponent {
   }
   @HostListener('document:keydown', ['$event'])
   keepFocusInProductDialog(event: KeyboardEvent): void {
-    if (event.key !== 'Tab' || !this.pickerOpen()) return;
-    const dialog = this.pickerDialog?.nativeElement;
+    if (event.key !== 'Tab' || (!this.pickerOpen() && !this.leaveOpen())) return;
+    const dialog = this.leaveOpen() ? this.leaveDialog?.nativeElement : this.pickerDialog?.nativeElement;
     if (!dialog) return;
     const controls = Array.from(dialog.querySelectorAll<HTMLElement>(
       'button:not([disabled]), input:not([disabled]), select:not([disabled]), a[href]',
