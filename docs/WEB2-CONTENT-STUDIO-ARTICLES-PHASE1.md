@@ -38,3 +38,12 @@ Branch: feature/admin-flash-sale-content-management
 
 ## Scope boundary
 Do not start First Aid, Community posts, or Rescue/Adoption editor work until the user approves the Knowledge Articles tab.
+
+
+## Customer card preview visual correction (2026-11-06)
+
+- Previous handmade preview differed from Customer BlogCard: category/badge was beneath the image, the title and excerpt did not use Customer's exact dimensions, and the date/Read more row was missing.
+- Replaced preview CARD rendering with the existing **BlogCardComponent** for STANDARD and **FeaturedPostComponent** for FEATURED. The preview gets a computed post derived from current editor fields and the Customer Blog category set.
+- The Customer category badge (including the actual category icon) now sits at the top-left of the cover image. Standard preview keeps the 288×343 Customer card frame, two-line title/excerpt limits, published-date row, and “Đọc tiếp” affordance.
+- Actual Customer UI uses Customer lazy-loaded CSS; scoped preview CSS supplies the matching geometry within the Admin layout. Preview links are non-interactive and Desktop/Mobile sizing stays available.
+- Source/HTML static QA passed. **Still needs browser build and visual screenshot QA** before claiming pixel-level matching. Status for unsaved articles says “Chưa xuất bản” rather than inventing a publication date.
