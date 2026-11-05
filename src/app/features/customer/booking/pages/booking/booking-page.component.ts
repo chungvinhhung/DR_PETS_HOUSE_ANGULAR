@@ -76,6 +76,8 @@ export class BookingPageComponent {
   });
   readonly paymentMode = signal<any>("store");
   readonly success = signal<any>(false);
+  // Actual BE response is displayed by the shared booking success modal.
+  readonly createdAppointment = signal<{ status?: string | null; holdExpiresAt?: string | null } | null>(null);
 
   /** Hàm set kiểu React cho signal "selectedServiceType" (dùng khi truyền cho component con / callback) */
   protected readonly setSelectedServiceTypeFn = reactSetter(this.selectedServiceType);
@@ -273,6 +275,7 @@ export class BookingPageComponent {
 
     this.bookingSubmitting.set(true);
     this.bookingError.set("");
+    this.createdAppointment.set(null);
     try {
       const selectedPetId = this.selectedPets()[0]?.pet_id || this.selectedPets()[0]?.id;
       const validPetId = /^\d+$/.test(String(selectedPetId || "")) ? selectedPetId : undefined;
@@ -294,7 +297,7 @@ export class BookingPageComponent {
         return;
       }
 
-      await this.bookingApi.bookAppointment({
+      const appointment = await this.bookingApi.bookAppointment({
         branchId: this.ownerInfo().branch,
         date: getDateKey(this.selectedDate()),
         startTime: selectedSlotRecord.value?.split(" - ")[0] || "09:00",
@@ -312,6 +315,7 @@ export class BookingPageComponent {
         payment_method: this.paymentMode() === "store" ? "store" : "online",
         paymentMethod: this.paymentMode() === "store" ? "PAY_AT_STORE" : "ONLINE_MOCK",
       });
+      this.createdAppointment.set(appointment);
       this.success.set(true);
     } catch (error: any) {
       this.bookingError.set(error?.message || "Không thể đặt lịch.");
