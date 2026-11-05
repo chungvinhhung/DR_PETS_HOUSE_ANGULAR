@@ -227,7 +227,7 @@ export class ServiceCatalogEditorComponent {
     }
   }
 
-  private loadMaterialCatalog(): void {
+  loadMaterialCatalog(): void {
     this.materialCatalogLoading.set(true);
     this.materialCatalogError.set('');
     forkJoin({
