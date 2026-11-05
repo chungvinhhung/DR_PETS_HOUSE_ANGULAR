@@ -23,10 +23,10 @@ Quy tắc thay thế những ghi chú cũ về việc switch chỉ hiện khi ch
 - Các màn: danh sách, tạo mới, chọn SKU, chỉnh sửa, xem chi tiết.
 - **Không cấu hình Flash Sale theo chi nhánh**. Điều kiện mua vẫn cần tồn kho fulfillment theo Order hiện hành.
 - Không nhập tay “Sắp diễn ra”, “Đang diễn ra” hoặc “Đã kết thúc”.
-- Admin có `DRAFT` (Lưu bản nháp), `PUBLISHED` (Lưu chương trình, bao gồm lên lịch trước khi bắt đầu), và **switch** `isPaused` để tạm ngừng/tiếp tục chương trình đã kích hoạt trong khoảng thời gian chạy.
+- Admin có `DRAFT` (Lưu bản nháp), `PUBLISHED` (Lưu chương trình, bao gồm lên lịch trước khi bắt đầu). **Switch hai giai đoạn:** trước startAt là AUTO/MANUAL; trong thời gian chạy là hoạt động/tạm ngừng.
 - FE tạo/sửa bản nháp có 3 nút phân cấp: Hủy bỏ, Lưu bản nháp, Lưu chương trình. “Lưu chương trình” gọi create/update rồi publish; nếu `now < startAt` thì trạng thái hiển thị **Sắp diễn ra** chứ không chạy ngay; nếu `startAt <= now < endAt` thì **Đang diễn ra**.
-- Section switch “Trạng thái chương trình” hiển thị ngay trong form tạo/sửa bản nháp khi **ngày bắt đầu là ngày hôm nay** (giờ Việt Nam), hoặc ở chương trình PUBLISHED đang hiệu lực / sắp bắt đầu trong hôm nay. Switch BẬT = sẽ hoạt động đúng lịch (`isPaused: false`); TẮT = tạm ngừng (`isPaused: true`). Hết thời gian kết thúc không được publish hoặc resume. Nếu chuyển ngày bắt đầu sang ngày tương lai thì trạng thái tạm ngừng chưa áp dụng được đặt lại về BẬT.
-- Khi tạo/sửa DRAFT, `isPaused` trong request phải được **lưu thật** cùng chương trình. `POST /flash-sales/:id/publish` chấp nhận body `{ "isPaused": boolean }` và BE **phải commit trạng thái publish + isPaused trong cùng một transaction**, không được cho chương trình chạy một khoảng ngắn rồi mới tạm ngừng. Có thể dùng `PATCH /pause` riêng cho thay đổi trạng thái chương trình đã PUBLISHED.
+- Section điều khiển hiện khi có thời gian bắt đầu hợp lệ và chương trình chưa kết thúc, kể cả khi ngày bắt đầu là tương lai. Trước giờ bắt đầu: BẬT = Tự động hoạt động theo lịch; TẮT = Kích hoạt thủ công. Trong thời gian hiệu lực: BẬT = Đang hoạt động; TẮT = Tạm ngừng. Không hiển thị switch sau khi kết thúc.
+- Khi tạo/sửa DRAFT, `activationMode` và `isPaused` trong request phải được **lưu thật**. `POST /flash-sales/:id/publish` nhận cả hai field và BE phải commit `status=PUBLISHED`, `activationMode`, `isPaused` **trong cùng transaction**; chương trình MANUAL không bao giờ được chạy trước khi Admin bật. `PATCH /pause` dành cho chương trình PUBLISHED cũng nhận cả hai field.
 - Display state do BE tính bằng UTC server time: `DRAFT`, `PAUSED`, `UPCOMING`, `RUNNING`, `ENDED`. Precedence: DRAFT → ENDED → PAUSED → UPCOMING → RUNNING. Thời gian form FE được nhập theo Asia/Ho_Chi_Minh và gửi ISO UTC.
 
 ## 2. REST contract FE đang gọi (cần BE xác nhận/triển khai)
@@ -38,7 +38,7 @@ Quy tắc thay thế những ghi chú cũ về việc switch chỉ hiện khi ch
 | POST | `/api/v1/flash-sales` | ADMIN | Tạo **DRAFT** idempotent; yêu cầu header `Idempotency-Key` |
 | PATCH | `/api/v1/flash-sales/:id` | ADMIN | Cập nhật form, kiểm tra version khi cần |
 | POST | `/api/v1/flash-sales/:id/publish` | ADMIN | DRAFT → PUBLISHED và áp dụng `isPaused` nguyên tử; idempotent |
-| PATCH | `/api/v1/flash-sales/:id/pause` | ADMIN | Body `{ "isPaused": true/false }` |
+| PATCH | `/api/v1/flash-sales/:id/pause` | ADMIN | Body `{ "isPaused": boolean, "activationMode": "AUTO"/"MANUAL" }`, ghi nguyên tử |
 | GET | `/api/v1/flash-sales/active?limit=12` | CUSTOMER/Public | Chương trình thực sự đang chạy và các SKU eligible, cùng `endAt` do BE trả |
 
 Nếu BE chọn đường dẫn khác, bắt buộc cập nhật API contract/OpenAPI và phản hồi FE trước khi chạy UAT; không đổi UI có tính năng nhưng không API.
@@ -56,6 +56,7 @@ Nếu BE chọn đường dẫn khác, bắt buộc cập nhật API contract/Op
       "endAt": "2026-11-08T16:59:00.000Z",
       "status": "PUBLISHED",
       "isPaused": false,
+      "activationMode": "AUTO",
       "items": [
         {
           "productId": "PRODUCT_ID",
@@ -90,7 +91,8 @@ Mẫu chỉ minh họa **schema**, không phải dữ liệu seed hoặc API đ�
   "items": [
     {"productId": "PRODUCT_ID", "variantId": "VARIANT_ID", "salePrice": 199000, "quantityLimit": 50}
   ],
-  "isPaused": false
+  "isPaused": false,
+  "activationMode": "AUTO"
 }
 ```
 
