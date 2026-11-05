@@ -130,14 +130,23 @@ export class AdminFlashSaleApiService {
   get(id: string): Observable<AdminFlashSale> {
     return this.api.get<unknown>(this.root + '/' + encodeURIComponent(id)).pipe(map(asSale));
   }
-  create(body: FlashSaleWriteBody, key: string): Observable<AdminFlashSale> {
-    return this.api.post<unknown, FlashSaleWriteBody>(this.root, body, {
-      headers: new HttpHeaders({'Idempotency-Key': key}),
-    }).pipe(map(asSale));
+  /** Atomic create+publish: no intermediate DRAFT is exposed or silently retained. */
+  createPublished(body: FlashSaleWriteBody, key: string): Observable<AdminFlashSale> {
+    return this.api.post<unknown, FlashSaleWriteBody & {status: 'PUBLISHED'}>(
+      this.root, {...body, status: 'PUBLISHED'}, {
+        headers: new HttpHeaders({'Idempotency-Key': key}),
+      },
+    ).pipe(map(asSale));
   }
   update(id: string, body: FlashSaleWriteBody): Observable<AdminFlashSale> {
     return this.api.patch<unknown, FlashSaleWriteBody>(
       this.root + '/' + encodeURIComponent(id), body,
+    ).pipe(map(asSale));
+  }
+  /** Compatibility for historical DRAFT records; BE must update and publish atomically. */
+  updateAndPublish(id: string, body: FlashSaleWriteBody): Observable<AdminFlashSale> {
+    return this.api.patch<unknown, FlashSaleWriteBody & {status: 'PUBLISHED'}>(
+      this.root + '/' + encodeURIComponent(id), {...body, status: 'PUBLISHED'},
     ).pipe(map(asSale));
   }
   publish(id: string, key: string, isPaused: boolean, activationMode: FlashSaleActivationMode): Observable<AdminFlashSale> {
