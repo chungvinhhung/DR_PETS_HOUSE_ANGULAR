@@ -110,7 +110,14 @@ export class AdminFlashSaleEditorComponent {
   private pickerSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private nowInterval: ReturnType<typeof setInterval> | null = null;
   private focusTimeout: ReturnType<typeof setTimeout> | null = null;
-  private readonly createKey = 'flash-create-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+  private createKey = this.newCreateKey();
+
+  private newCreateKey(): string {
+    return 'flash-create-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+  }
+  private resetCreateKeyWhenDraftChanges(): void {
+    if (this.mode === 'create') this.createKey = this.newCreateKey();
+  }
 
   constructor() {
     this.nowInterval = setInterval(() => this.now.set(Date.now()), 60000);
@@ -163,16 +170,19 @@ export class AdminFlashSaleEditorComponent {
   update<K extends keyof Omit<SaleForm, 'items'>>(field: K, value: SaleForm[K]): void {
     if (!this.editable()) return;
     this.form.update(current=>({...current,[field]:value}));
+    this.resetCreateKeyWhenDraftChanges();
     this.validation.set('');this.dirty.set(true);
   }
   updateItem(index: number, key: 'salePrice'|'quantityLimit', value: string): void {
     if (!this.editable()) return;
     this.form.update(f=>({...f,items:f.items.map((item,i)=>i===index?{...item,[key]:value}:item)}));
+    this.resetCreateKeyWhenDraftChanges();
     this.validation.set('');this.dirty.set(true);
   }
   removeItem(index: number): void {
     if (!this.editable()) return;
     this.form.update(f=>({...f,items:f.items.filter((_,i)=>i!==index)}));
+    this.resetCreateKeyWhenDraftChanges();
     this.dirty.set(true);
   }
   money(value: number): string {return flashSaleMoney(value);}
@@ -363,7 +373,7 @@ export class AdminFlashSaleEditorComponent {
         originalPrice:opt.price,salePrice:'',quantityLimit:'',soldQuantity:0,
       }))],
     }));
-    if(picked.length){this.dirty.set(true);this.validation.set('');}
+    if(picked.length){this.resetCreateKeyWhenDraftChanges();this.dirty.set(true);this.validation.set('');}
     this.closePicker();
   }
 }
