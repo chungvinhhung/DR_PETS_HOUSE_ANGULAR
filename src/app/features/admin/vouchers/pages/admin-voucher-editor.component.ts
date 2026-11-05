@@ -77,15 +77,16 @@ export class AdminVoucherEditorComponent {
   readonly voucherEnd = computed(() => this.mode === 'view'
     ? Date.parse(this.original()?.effectiveTo ?? '')
     : Date.parse(this.iso(this.form().toDate, this.form().toTime) ?? ''));
+  // No date selected yet: show the default scheduling choice, not an active status.
   readonly beforeStart = computed(() =>
-    Number.isFinite(this.voucherStart()) && this.now() < this.voucherStart());
+    !Number.isFinite(this.voucherStart()) || this.now() < this.voucherStart());
   readonly showActivation = computed(() =>
     Number.isFinite(this.voucherStart()) &&
     (!Number.isFinite(this.voucherEnd()) || this.now() < this.voucherEnd()));
   readonly activationEnabled = computed(() =>
     this.mode === 'view' ? this.original()?.status === 'ACTIVE' : this.form().status === 'ACTIVE');
   readonly activationLabel = computed(() => this.beforeStart()
-    ? this.activationEnabled() ? 'Tự động hoạt động theo lịch' : 'Kích hoạt thủ công'
+    ? this.activationEnabled() ? 'Tự động kích hoạt theo lịch' : 'Kích hoạt thủ công'
     : this.activationEnabled() ? 'Đang hoạt động' : 'Tạm ngừng');
   private nowInterval: ReturnType<typeof setInterval> | null = null;
   readonly remaining = computed(() => {
