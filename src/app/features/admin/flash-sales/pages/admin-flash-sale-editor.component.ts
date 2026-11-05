@@ -93,7 +93,7 @@ export class AdminFlashSaleEditorComponent {
   readonly dirty = signal(false);
   readonly canManage = computed(() => this.session.user()?.systemRole === 'ADMIN');
   readonly editable = computed(() => this.mode !== 'view' && this.canManage() && !this.saving() &&
-    (!this.original() || flashSaleState(this.original()!) !== 'ENDED'));
+    (!this.original() || flashSaleState(this.original()!, this.now()) !== 'ENDED'));
   readonly currentState = computed(() => this.original() ? flashSaleState(this.original()!, this.now()) : 'DRAFT');
   readonly stateLabels = FLASH_SALE_STATE_LABELS;
   readonly now = signal(Date.now());
