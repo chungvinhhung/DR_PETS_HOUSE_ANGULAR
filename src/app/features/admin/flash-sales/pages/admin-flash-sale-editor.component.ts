@@ -159,7 +159,7 @@ export class AdminFlashSaleEditorComponent {
   }
 
   constructor() {
-    this.nowInterval = setInterval(() => this.now.set(Date.now()), 60000);
+    this.nowInterval = setInterval(() => this.now.set(Date.now()), 1000);
     this.destroyRef.onDestroy(() => {
       if (this.nowInterval) clearInterval(this.nowInterval);
       if (this.pickerSearchTimer) clearTimeout(this.pickerSearchTimer);
