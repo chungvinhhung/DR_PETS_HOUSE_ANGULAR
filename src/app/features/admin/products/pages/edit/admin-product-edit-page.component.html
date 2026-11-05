@@ -113,7 +113,7 @@
         @if (addVariantOpen()) {
           <form class="new-variant-form" (ngSubmit)="submitNewVariant()">
             <h3>Thêm biến thể mới</h3>
-            <p>Thông tin biến thể sẽ được tạo và đồng bộ vào bảng bên dưới sau khi lưu.</p>
+            
             <div class="new-variant-grid">
             <label>Tên biến thể <b>*</b><input type="text" name="newVariantLabel" [(ngModel)]="newVariantLabel" required placeholder="VD: 500g"></label>
             <label>Giá bán (VNĐ) <b>*</b><input type="number" (focus)="selectNumericInput($event)" name="newVariantPrice" [(ngModel)]="newVariantPrice" required min="1" step="1000" placeholder="Nhập giá bán"></label>
