@@ -289,7 +289,7 @@
           <h2 id="service-materials-title">Vật liệu mặc định ({{materials.length}})</h2>
           @if (mayEdit) {
             <button #materialAddTrigger type="button"
-              class="service-editor__btn service-editor__btn--secondary service-editor__material-add"
+              class="flash-editor__btn flash-editor__btn--outline"
               [disabled]="saving()" (click)="openMaterialPicker()">
               <span class="web2-add-icon" aria-hidden="true">+</span> Thêm vật liệu
             </button>
@@ -349,7 +349,7 @@
         <div class="service-editor__branch-section-heading">
           <h2 id="service-branches-title">Áp dụng tại chi nhánh</h2>
           @if (mayEdit) {
-            <button type="button" class="service-editor__btn service-editor__btn--secondary"
+            <button type="button" class="flash-editor__btn flash-editor__btn--outline"
               [disabled]="saving()" (click)="openBranchConfiguration()">
               Chọn chi nhánh để cấu hình
             </button>
