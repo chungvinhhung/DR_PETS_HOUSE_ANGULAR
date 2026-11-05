@@ -9,6 +9,7 @@ import { ApiClientService } from '../../../../core/services/api-client.service';
  * for price, allocation, time, checkout eligibility, quota and lifecycle.
  */
 export type FlashSalePublishState = 'DRAFT' | 'PUBLISHED';
+export type FlashSaleActivationMode = 'AUTO' | 'MANUAL';
 export type FlashSaleDisplayState = 'DRAFT' | 'UPCOMING' | 'RUNNING' | 'PAUSED' | 'ENDED';
 
 export interface FlashSaleItem {
@@ -32,6 +33,8 @@ export interface AdminFlashSale {
   endAt: string;
   status: FlashSalePublishState;
   isPaused: boolean;
+  /** AUTO becomes eligible at startAt, MANUAL stays paused until Admin enables it. */
+  activationMode?: FlashSaleActivationMode;
   items: FlashSaleItem[];
   createdAt?: string;
   updatedAt?: string;
@@ -49,8 +52,9 @@ export interface FlashSaleWriteBody {
   startAt: string;
   endAt: string;
   items: FlashSaleItemWrite[];
-  /** Initial enabled/paused state persists even when the program is only a draft. */
-  isPaused?: boolean;
+  /** MANUAL must remain disabled at startAt until Admin explicitly turns it on. */
+  activationMode: FlashSaleActivationMode;
+  isPaused: boolean;
 }
 export interface FlashSalePage {
   items: AdminFlashSale[];
@@ -136,17 +140,17 @@ export class AdminFlashSaleApiService {
       this.root + '/' + encodeURIComponent(id), body,
     ).pipe(map(asSale));
   }
-  publish(id: string, key: string, isPaused?: boolean): Observable<AdminFlashSale> {
-    // BE must commit publication and initial pause as one atomic transition.
-    return this.api.post<unknown, {isPaused?: boolean}>(
+  publish(id: string, key: string, isPaused: boolean, activationMode: FlashSaleActivationMode): Observable<AdminFlashSale> {
+    // BE must commit publication, scheduling mode and initial pause atomically.
+    return this.api.post<unknown, {isPaused: boolean; activationMode: FlashSaleActivationMode}>(
       this.root + '/' + encodeURIComponent(id) + '/publish',
-      isPaused === undefined ? {} : {isPaused},
+      {isPaused, activationMode},
       {headers: new HttpHeaders({'Idempotency-Key': key})},
     ).pipe(map(asSale));
   }
-  setPaused(id: string, isPaused: boolean): Observable<AdminFlashSale> {
-    return this.api.patch<unknown, {isPaused: boolean}>(
-      this.root + '/' + encodeURIComponent(id) + '/pause', {isPaused},
+  setPaused(id: string, isPaused: boolean, activationMode: FlashSaleActivationMode): Observable<AdminFlashSale> {
+    return this.api.patch<unknown, {isPaused: boolean; activationMode: FlashSaleActivationMode}>(
+      this.root + '/' + encodeURIComponent(id) + '/pause', {isPaused, activationMode},
     ).pipe(map(asSale));
   }
 }
