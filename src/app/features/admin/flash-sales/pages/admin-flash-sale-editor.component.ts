@@ -2,13 +2,14 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, ViewChild, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, forkJoin } from 'rxjs';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { AdminProductService } from '../../products/services/admin-product.service';
+import { AdminInventoryService } from '../../inventory/services/admin-inventory.service';
 import { AdminProduct, ProductVariant } from '../../products/models/admin-product.model';
 import {
   AdminFlashSale, AdminFlashSaleApiService, FlashSaleActivationMode, FlashSaleItemWrite, FlashSaleWriteBody,
@@ -26,6 +27,7 @@ interface DraftProduct {
   salePrice: string;
   quantityLimit: string;
   soldQuantity: number;
+  totalStock: number | null;
 }
 interface SaleForm {
   name: string;
@@ -43,6 +45,7 @@ interface ProductOption {
   imageUrl: string;
   sku: string;
   price: number;
+  totalStock: number | null;
 }
 
 const EMPTY_FORM: SaleForm = {name:'', description:'', from:'', to:'', items:[]};
@@ -76,6 +79,7 @@ export class AdminFlashSaleEditorComponent {
 
   private readonly api = inject(AdminFlashSaleApiService);
   private readonly productsApi = inject(AdminProductService);
+  private readonly inventoryApi = inject(AdminInventoryService);
   private readonly session = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
   private readonly router = inject(Router);
@@ -138,6 +142,32 @@ export class AdminFlashSaleEditorComponent {
   readonly pickerError = signal('');
   readonly pickerSearch = signal('');
   readonly pickerOptions = signal<ProductOption[]>([]);
+  // Sum actual stock records over all branches, joined by InventoryItem SKU.
+  // Unavailable stock must not be reported as zero.
+  readonly stockBySku = signal<Record<string, number>>({});
+  stockFor(product: DraftProduct): number | null {
+    const stock = this.stockBySku()[product.sku];
+    return Number.isFinite(stock) ? stock : product.totalStock;
+  }
+  private loadStockTotals(): void {
+    forkJoin({
+      items: this.inventoryApi.listItems(),
+      stocks: this.inventoryApi.listStocks(),
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({items, stocks}) => {
+        const skuById = new Map(items.filter(item => item.kind === 'PRODUCT')
+          .map(item => [item.id, item.sku] as const));
+        const counts: Record<string, number> = {};
+        for (const row of stocks) {
+          const sku = skuById.get(row.inventoryItemId);
+          if (!sku || !Number.isFinite(row.quantity)) continue;
+          counts[sku] = (counts[sku] ?? 0) + row.quantity;
+        }
+        this.stockBySku.set(counts);
+      },
+      error: () => this.stockBySku.set({}),
+    });
+  }
   readonly pickerSelected = signal<ProductOption[]>([]);
   readonly pickerNextCursor = signal<string | null>(null);
   readonly leaveOpen = signal(false);
@@ -165,6 +195,7 @@ export class AdminFlashSaleEditorComponent {
       this.leaveResolver?.(false);
       this.leaveResolver = null;
     });
+    this.loadStockTotals();
     if (this.mode !== 'create') this.load();
   }
 
@@ -198,6 +229,7 @@ export class AdminFlashSaleEditorComponent {
             imageUrl:x.imageUrl??'',originalPrice:x.originalPrice,
             salePrice:String(x.salePrice),quantityLimit:String(x.quantityLimit),
             soldQuantity:x.soldQuantity,
+            totalStock:typeof x.totalStock === 'number' ? x.totalStock : null,
           })),
         });
         this.dirty.set(false);this.loading.set(false);
@@ -470,6 +502,7 @@ export class AdminFlashSaleEditorComponent {
       key:p.id+'::'+v.id,productId:p.id,variantId:v.id,
       productName:p.name,variantName:v.label,sku:v.sku,imageUrl:image??'',
       price:Number(v.finalPrice??v.price),
+      totalStock:typeof v.availableStock === 'number' ? v.availableStock : null,
     };
   }
   isInForm(opt:ProductOption):boolean{
@@ -488,6 +521,7 @@ export class AdminFlashSaleEditorComponent {
         productId:opt.productId,variantId:opt.variantId,sku:opt.sku,
         productName:opt.productName,variantName:opt.variantName,imageUrl:opt.imageUrl,
         originalPrice:opt.price,salePrice:'',quantityLimit:'',soldQuantity:0,
+        totalStock:opt.totalStock,
       }))],
     }));
     if(picked.length){this.resetCreateKeyWhenDraftChanges();this.dirty.set(true);this.validation.set('');}
