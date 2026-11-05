@@ -58,11 +58,11 @@ export interface FlashSalePage {
 
 export function flashSaleState(sale: AdminFlashSale, now = Date.now()): FlashSaleDisplayState {
   if (sale.status === 'DRAFT') return 'DRAFT';
-  if (sale.isPaused) return 'PAUSED';
   const from = Date.parse(sale.startAt);
   const to = Date.parse(sale.endAt);
   if (Number.isNaN(from) || Number.isNaN(to)) return 'DRAFT';
   if (to <= now) return 'ENDED';
+  if (sale.isPaused) return 'PAUSED';
   return from > now ? 'UPCOMING' : 'RUNNING';
 }
 export const FLASH_SALE_STATE_LABELS: Record<FlashSaleDisplayState, string> = {
