@@ -78,7 +78,11 @@ function normalizeFirstAidCategory(category: any = {}) {
 }
 
 function getBlogCategoryId(category: any) {
-  return (blogCategoryAliases as any)[slugify(category?.category_name)] || String(category?.post_category_id || "care");
+  const label = typeof category === 'string'
+    ? category : (category?.category_name || category?.label || category?.name || '');
+  const key = slugify(label);
+  return (blogCategoryAliases as any)[key] ||
+    (['health','nutrition','psychology','grooming','care'].includes(key) ? key : String(category?.post_category_id || 'care'));
 }
 
 function getFirstAidCategoryId(category: any) {
@@ -90,7 +94,8 @@ function getFirstAidCategoryId(category: any) {
 
 export function normalizePost(post: any = {}) {
   const category = post.category || {};
-  const categoryLabel = category.category_name || "Kiến thức";
+  const categoryLabel = typeof category === 'string'
+    ? category : (category.category_name || category.label || category.name || 'Kiến thức');
   const contentText = post.content || post.excerpt || "";
   // New Content Studio blocks are optional. Preserve the old plain-text
   // renderer when BE does not return these fields.
@@ -101,7 +106,9 @@ export function normalizePost(post: any = {}) {
         typeof block?.text === 'string' && block.text.trim())
       .map((block: any) => ({
         type:block.type, text:block.text,
-        alt:typeof block.alt === 'string' ? block.alt : ''
+        alt:typeof block.alt === 'string' ? block.alt : '',
+        // Angular sanitizes contentBlocks.html again at [innerHTML] sinks.
+        html:typeof block.html === 'string' ? block.html : ''
       }))
     : [];
   const paragraphs = (String(contentText)
