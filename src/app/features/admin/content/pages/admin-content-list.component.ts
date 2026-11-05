@@ -78,7 +78,7 @@ export class AdminContentListComponent{
    return;
   }
   this.editing.set(null);this.editorError.set('');
-  if(this.mode==='articles'||this.mode==='first-aid'){
+  if(this.mode==='first-aid'){
    this.postDraft.set({title:'',category:'',excerpt:'',content:'',status:'DRAFT',emergencyPhone:'1900-PET-HELP'});
    this.editorDialog.set('post');return;
   }
@@ -95,7 +95,7 @@ export class AdminContentListComponent{
    return;
   }
   this.editing.set(row);this.editorError.set('');
-  if(this.mode==='articles'||this.mode==='first-aid'){
+  if(this.mode==='first-aid'){
    this.postDraft.set({
     title:String(row.title||''),category:String(row.category||''),excerpt:String(row.excerpt||''),
     content:String(row.content||''),status:String(row.status||'DRAFT'),emergencyPhone:String(row.emergencyPhone||'1900-PET-HELP'),
