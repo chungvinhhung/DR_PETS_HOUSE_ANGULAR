@@ -108,7 +108,7 @@
               <tbody>
                 @for (r of visible(); track r.id || r._id || $index) {
                   <tr>
-                    <td>{{name(r)}}</td><td>{{category(r)}}</td><td>{{r.urgencyLevel || r.severity || '—'}}</td>
+                    <td>{{name(r)}}</td><td>{{category(r)}}</td><td>{{urgencyLabel(r)}}</td>
                     <td class="is-center">{{date(r)}}</td>
                     <td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
                     <td class="is-center actions">
