@@ -14,17 +14,29 @@
     @for (block of post().contentBlocks; track $index) {
       @switch (block.type) {
         @case ('heading') {
-          <h2 class="mt-7 mb-3 text-[24px] font-semibold leading-8 text-[#005AB4]">{{block.text}}</h2>
+          <h2 class="mt-7 mb-3 text-[24px] font-semibold leading-8 text-[#005AB4]">
+            @if (block.html) { <span class="web2-article-rich" [innerHTML]="block.html"></span> }
+            @else { {{block.text}} }
+          </h2>
         }
         @case ('quote') {
-          <blockquote class="my-6 rounded-r-[8px] border-l-4 border-[#1976D2] bg-[#F3F4F6] px-6 py-6 whitespace-pre-line">{{block.text}}</blockquote>
+          <blockquote class="my-6 rounded-r-[8px] border-l-4 border-[#1976D2] bg-[#F3F4F6] px-6 py-6 whitespace-pre-line">
+            @if (block.html) { <div class="web2-article-rich" [innerHTML]="block.html"></div> }
+            @else { {{block.text}} }
+          </blockquote>
         }
         @case ('list') {
-          <ul class="my-5 list-disc space-y-2 pl-6">
-            @for (line of block.text.split('\n'); track $index) {
-              @if (line.trim()) { <li>{{line.trim()}}</li> }
+          <div class="web2-article-rich-list my-5">
+            @if (block.html) {
+              <div class="web2-article-rich-html" [innerHTML]="block.html"></div>
+            } @else {
+              <ol>
+                @for (line of block.text.split('\n'); track $index) {
+                  @if (line.trim()) { <li>{{line.trim().replace(/^\d+[.)]\s*/, '')}}</li> }
+                }
+              </ol>
             }
-          </ul>
+          </div>
         }
         @case ('image') {
           <figure class="my-6">
@@ -36,7 +48,10 @@
           <video class="my-6 w-full rounded-[12px] bg-black" [src]="block.text" controls preload="metadata"></video>
         }
         @default {
-          <p class="mt-5 whitespace-pre-line">{{block.text}}</p>
+          <div class="web2-article-rich mt-5 whitespace-pre-line">
+            @if (block.html) { <div [innerHTML]="block.html"></div> }
+            @else { {{block.text}} }
+          </div>
         }
       }
     }
