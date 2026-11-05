@@ -9,6 +9,7 @@ import { Injectable, inject } from '@angular/core';
 
 import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 import { blogImages } from '../../../../shared/customer/assets/blog-images';
+import { FIRST_AID_CATEGORIES } from '../../../../shared/customer/data/first-aid-data';
 
 function formatDate(value: any) {
   const date = new Date(value);
@@ -172,52 +173,46 @@ function normalizePostComment(comment: any = {}) {
 }
 
 export function normalizeFirstAidGuide(guide: any = {}, index: any = 0) {
-  const category = guide.category || {};
-  const mediaImage = guide.media?.find?.((item: any) => item.media_type === "image")?.file_url;
-  const stepImage = guide.steps?.find?.((step: any) => step.image_url || step.mediaUrl)?.image_url || guide.steps?.find?.((step: any) => step.image_url || step.mediaUrl)?.mediaUrl;
-  const image =
-    guide.thumbnail_url ||
-    guide.thumbnailUrl ||
-    guide.thumbnail ||
-    guide.cover_image_url ||
-    guide.image_url ||
-    mediaImage ||
-    stepImage ||
-    blogImages.postPlaceholder;
-  const urgent = /hoc|nghet|kho tho|cap cuu|soc|ngo doc/i.test(slugify(`${guide.title} ${guide.situation_description || guide.excerpt || ""}`));
-  const steps = (guide.steps || []).map((step: any, sIdx: number) => ({
+  const category = guide.category || guide.categoryId || guide.category_id || {};
+  const mediaImage = guide.media?.find?.((item: any) => item.media_type === 'image')?.file_url;
+  const stepImage = guide.steps?.find?.((step: any) => step.image_url || step.mediaUrl)?.image_url ||
+    guide.steps?.find?.((step: any) => step.image_url || step.mediaUrl)?.mediaUrl;
+  const image = guide.thumbnail_url || guide.thumbnailUrl || guide.thumbnail ||
+    guide.cover_image_url || guide.image_url || mediaImage || stepImage || blogImages.postPlaceholder;
+  const urgency = String(guide.urgencyLevel || guide.urgency_level || '').toUpperCase();
+  const urgent = guide.urgent === true || ['URGENT','HIGH','EMERGENCY'].includes(urgency);
+  const steps = (Array.isArray(guide.steps) ? guide.steps : []).map((step: any, sIdx: number) => ({
     title: step.title || `Bước ${step.step_number || step.stepNumber || sIdx + 1}`,
-    description: step.step_content || step.instruction || step.description || "",
+    description: step.step_content || step.instruction || step.description || '',
   }));
-
-  const categoryLabel = typeof category === 'string' ? category : (category.category_name || category.name || category.label || "Sơ cứu");
-
+  const categoryLabel = typeof category === 'string'
+    ? (FIRST_AID_CATEGORIES.find((item:any) => item.id === category)?.label || category)
+    : (category.category_name || category.name || category.label ||
+      FIRST_AID_CATEGORIES.find((item:any)=>item.id===guide.categoryId)?.label || 'Sơ cứu');
+  const videoUrl = String(guide.video_url || guide.videoUrl || guide.video?.url || '').trim();
+  const videoHighlights = guide.video_highlights || guide.videoHighlights || guide.video?.highlights || [];
   return {
     ...guide,
-    id: guide.slug || String(guide.guide_id || guide._id || guide.id || ""),
-    backendId: String(guide.guide_id || guide._id || guide.id || ""),
+    id: guide.slug || String(guide.guide_id || guide._id || guide.id || ''),
+    backendId: String(guide.guide_id || guide._id || guide.id || ''),
     category: getFirstAidCategoryId(category),
     categoryLabel,
-    variant: urgent || index === 0 ? "urgent" : image ? "image" : "text",
-    urgent,
-    image,
-    title: guide.title || "Hướng dẫn sơ cứu",
-    heroTitle: guide.title || "Hướng dẫn sơ cứu",
-    description: guide.situation_description || guide.excerpt || (guide.content ? String(guide.content).split('\n')[0] : "Các bước xử lý ban đầu trước khi đưa thú cưng đến cơ sở thú y."),
-    steps: steps.length
-      ? steps
-      : [
-          { title: "Giữ bình tĩnh", description: "Đưa thú cưng đến khu vực an toàn và hạn chế kích động." },
-          { title: "Quan sát dấu hiệu", description: "Ghi nhận triệu chứng, thời điểm xảy ra và các yếu tố liên quan." },
-          { title: "Liên hệ bác sĩ", description: "Gọi phòng khám hoặc đưa thú cưng đi cấp cứu khi tình trạng nặng." },
-        ],
-    video: {
-      title: guide.video_url ? "Xem video hướng dẫn chi tiết" : "Hướng dẫn xử lý an toàn",
-      description: guide.video_url || "Thực hiện các bước sơ cứu nhẹ nhàng, tránh tự dùng thuốc khi chưa có chỉ định.",
-      highlights: ["Giữ đường thở thông thoáng", "Theo dõi phản ứng của thú cưng"],
-      url: guide.video_url || "",
-    },
-    emergencyPhone: guide.emergency_phone || guide.emergencyPhone || "1900-PET-HELP",
+    variant: urgent ? 'urgent' : image ? 'image' : 'text',
+    urgent,image,
+    title: guide.title || 'Hướng dẫn sơ cứu',
+    heroTitle: guide.heroTitle || guide.hero_title || guide.title || 'Hướng dẫn sơ cứu',
+    description: guide.situation_description || guide.situationDescription ||
+      guide.excerpt || (guide.content ? String(guide.content).split('\n')[0] : ''),
+    // Missing API steps are not an invitation to invent medical instructions.
+    steps,
+    video: videoUrl ? {
+      title: guide.video_title || guide.videoTitle || guide.video?.title || 'Video hướng dẫn',
+      description: guide.video_description || guide.videoDescription || guide.video?.description || '',
+      highlights: Array.isArray(videoHighlights) ? videoHighlights :
+        String(videoHighlights).split(/\r?\n/).filter(Boolean),
+      url: videoUrl,
+    } : null,
+    emergencyPhone: guide.emergency_phone || guide.emergencyPhone || '0868686868',
   };
 }
 
