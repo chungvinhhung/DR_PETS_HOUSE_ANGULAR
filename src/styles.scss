@@ -6956,3 +6956,50 @@ app-admin-voucher-list .voucher-list__tabs a:focus-visible,
 app-admin-flash-sale-list .flash-list__tabs a:focus-visible {
   outline:2px solid #0d47a1; outline-offset:-4px; border-radius:4px 4px 0 0;
 }
+
+
+/* WEB2 Flash Sale — six-column SKU table, inventory and aligned actions. */
+.flash-editor__table--applied{min-width:940px}
+.flash-editor__table--applied th:first-child{width:30%}
+.flash-editor__table--applied th:nth-child(2){width:13%}
+.flash-editor__table--applied th:nth-child(3){width:13%}
+.flash-editor__table--applied th:nth-child(4){width:18%}
+.flash-editor__table--applied th:nth-child(5){width:15%}
+.flash-editor__table--applied th:nth-child(6){width:11%}
+.flash-editor__table--applied td,.flash-editor__table--applied th{vertical-align:middle}
+.flash-editor__table--applied th.flash-editor__actions-column,
+.flash-editor__table--applied td.flash-editor__remove{
+  text-align:center;vertical-align:middle;white-space:nowrap
+}
+.flash-editor__table--applied .flash-editor__remove button{
+  display:inline-flex;align-items:center;justify-content:center;padding:0;
+  margin:0 auto;vertical-align:middle;
+}
+.flash-editor__table--applied td.flash-editor__stock{
+  font-variant-numeric:tabular-nums;text-align:left;white-space:nowrap;
+}
+
+/* Service Catalog material picker reuses Flash Sale search/selection components. */
+.service-editor__material-picker.flash-editor__dialog{
+  width:min(100%,790px);
+  max-height:min(88vh,760px);
+  box-sizing:border-box;
+}
+.service-editor__material-picker .flash-editor__picker-scroll{
+  min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  padding-bottom:14px;
+}
+.service-editor__material-picker-scroll{width:100%;overflow-x:auto}
+.service-editor__material-picker-table{min-width:580px}
+.service-editor__material-picker-table th:first-child{width:9%}
+.service-editor__material-picker-table th:nth-child(2){width:44%}
+.service-editor__material-picker-table th:nth-child(3){width:32%}
+.service-editor__material-picker-table th:nth-child(4){width:15%}
+.service-editor__material-picker-table th:last-child,
+.service-editor__material-picker-table td:last-child{text-align:left}
+.service-editor__material-picker-table input[type=checkbox]{
+  width:17px;height:17px;accent-color:#0d47a1;cursor:pointer
+}
+.service-editor__material-picker-table input[type=checkbox]:disabled{cursor:not-allowed}
+.service-editor__material-picker .flash-editor__dialog-actions{flex:none}
+.service-editor__material-picker .flash-editor__picker-search{flex:none}
