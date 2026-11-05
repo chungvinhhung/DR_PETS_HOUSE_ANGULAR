@@ -7150,3 +7150,17 @@ app-admin-product-edit-page :is(.unit-input,.variant-currency-input) input:is(:f
   outline:0!important;
   box-shadow:none!important;
 }
+
+/* Promotion list searches use the same single outer focus ring as picker search. */
+app-admin-voucher-list .voucher-list__search:focus-within,
+app-admin-flash-sale-list .flash-list__search:focus-within {
+  border-color:#0d47a1;
+  box-shadow:0 0 0 2px rgba(13,71,161,.12);
+}
+app-admin-voucher-list .voucher-list__search input:is(:focus,:focus-visible),
+app-admin-flash-sale-list .flash-list__search input:is(:focus,:focus-visible) {
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  background:transparent;
+}
