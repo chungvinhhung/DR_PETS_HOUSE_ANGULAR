@@ -265,6 +265,9 @@ export class AdminFlashSaleEditorComponent {
       this.validation.set('Vui lòng chọn thời gian kết thúc sau thời gian bắt đầu.');return null;
     }
     const existing = this.original();
+    if (existing?.status === 'PUBLISHED' && Date.parse(to) <= Date.now()) {
+      this.validation.set('Thời gian kết thúc phải sau thời điểm hiện tại.');return null;
+    }
     if ((this.mode === 'create' || existing?.status === 'DRAFT' ||
       !this.startTimeLocked()) && Date.parse(from) < Date.now()) {
       this.validation.set('Thời gian bắt đầu không được ở quá khứ.');return null;
