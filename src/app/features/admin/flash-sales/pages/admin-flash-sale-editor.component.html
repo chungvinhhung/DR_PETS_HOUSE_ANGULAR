@@ -102,7 +102,7 @@
                   (change)="setOperatingEnabled(activeSwitch.checked,activeSwitch)">
                 <span class="flash-editor__switch-track" aria-hidden="true"></span>
               </span>
-              <span>{{ operatingEnabled() ? (startsLaterToday() ? 'Sẽ hoạt động theo lịch' : 'Đang hoạt động') : 'Tạm ngừng' }}</span>
+              <span>{{ operatingEnabled() ? 'Đang hoạt động' : 'Tạm ngừng' }}</span>
             </label>
           </aside>
         }
