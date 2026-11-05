@@ -100,7 +100,7 @@
                   <span class="flash-editor__switch">
                     <input #formActivation type="checkbox" role="switch"
                       [checked]="operatingEnabled()"
-                      [disabled]="!canManage() || saving() || (mode==='view' && original()?.status !== 'PUBLISHED') || endTimePassed()"
+                      [disabled]="!editable() || endTimePassed()"
                       [attr.aria-checked]="operatingEnabled()"
                       (change)="setOperatingEnabled(formActivation.checked,formActivation)">
                     <span class="flash-editor__switch-track" aria-hidden="true"></span>
