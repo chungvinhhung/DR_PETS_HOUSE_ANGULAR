@@ -44,8 +44,28 @@
         <p class="flash-editor__validation" role="alert">{{validation()}}</p>
       }
       <div class="flash-editor__top">
-        <section class="flash-editor__panel">
-          <h2>Thông tin chương trình</h2>
+        <section class="flash-editor__panel flash-editor__info">
+          <div class="flash-editor__info-heading">
+            <h2>Thông tin chương trình</h2>
+            <div class="flash-editor__status-inline">
+              <span class="flash-editor__badge" [attr.data-state]="mode==='create'?'DRAFT':currentState()">
+                {{ mode==='create'?'Bản nháp':stateLabels[currentState()] }}
+              </span>
+              @if (original()?.status==='PUBLISHED' && currentState()!=='ENDED') {
+                <label class="flash-editor__switch-row">
+                  <span class="flash-editor__switch">
+                    <input #pauseSwitch type="checkbox" role="switch"
+                      [checked]="original()?.isPaused ?? false"
+                      [disabled]="!canManage() || saving()"
+                      [attr.aria-checked]="original()?.isPaused ?? false"
+                      (change)="togglePaused(pauseSwitch.checked, pauseSwitch)">
+                    <span class="flash-editor__switch-track" aria-hidden="true"></span>
+                  </span>
+                  <span>Tạm ngừng chương trình</span>
+                </label>
+              }
+            </div>
+          </div>
           @if (mode==='view') {
             @if (original(); as sale) {
               <div class="flash-editor__summary">
@@ -80,25 +100,6 @@
             </div>
           }
         </section>
-        <aside class="flash-editor__panel flash-editor__status-panel">
-          <h2>Trạng thái chương trình</h2>
-          <span class="flash-editor__badge" [attr.data-state]="mode==='create'?'DRAFT':currentState()">
-            {{ mode==='create'?'Bản nháp':stateLabels[currentState()] }}
-          </span>
-          @if (original()?.status==='PUBLISHED' && currentState()!=='ENDED') {
-            <label class="flash-editor__switch-row">
-              <span>Tạm ngừng chương trình</span>
-              <span class="flash-editor__switch">
-                <input #pauseSwitch type="checkbox" role="switch"
-                  [checked]="original()?.isPaused ?? false"
-                  [disabled]="!canManage() || saving()"
-                  [attr.aria-checked]="original()?.isPaused ?? false"
-                  (change)="togglePaused(pauseSwitch.checked, pauseSwitch)">
-                <span class="flash-editor__switch-track" aria-hidden="true"></span>
-              </span>
-            </label>
-          }
-        </aside>
       </div>
 
       <section class="flash-editor__panel flash-editor__products">
