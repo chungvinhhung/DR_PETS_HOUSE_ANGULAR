@@ -225,10 +225,15 @@
                 @for (block of previewBlocks(); track block.id) {
                   @switch (block.type) {
                     @case ('heading') {
-                      <h4>@if (block.html) { <span [innerHTML]="block.html"></span> } @else { {{block.text}} }</h4>
+                      @if (block.html) {
+                        <div class="article-studio__preview-rich-heading" [innerHTML]="block.html"></div>
+                      } @else { <h4>{{block.text}}</h4> }
                     }
                     @case ('quote') {
-                      <blockquote>@if (block.html) { <span [innerHTML]="block.html"></span> } @else { {{block.text}} }</blockquote>
+                      <blockquote>
+                        @if (block.html) { <div class="article-studio__rich-html" [innerHTML]="block.html"></div> }
+                        @else { {{block.text}} }
+                      </blockquote>
                     }
                     @case ('list') {
                       <div class="article-studio__numbered-content">
@@ -248,7 +253,9 @@
                       <div class="article-studio__preview-video">Video: {{block.text}}</div>
                     }
                     @default {
-                      <p>@if (block.html) { <span [innerHTML]="block.html"></span> } @else { {{block.text}} }</p>
+                      @if (block.html) {
+                        <div class="article-studio__rich-html" [innerHTML]="block.html"></div>
+                      } @else { <p>{{block.text}}</p> }
                     }
                   }
                 }
