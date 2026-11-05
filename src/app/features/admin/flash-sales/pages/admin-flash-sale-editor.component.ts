@@ -243,10 +243,11 @@ export class AdminFlashSaleEditorComponent {
         }catch(err){
           this.toast.show('Đã lưu bản nháp nhưng chưa kích hoạt. '+this.message(err,'Vui lòng kích hoạt trong trang chi tiết.'),'error');
           this.allowSavedNavigation = true;
-      await this.router.navigate(['/admin/flash-sales',sale.id]);return;
+          await this.router.navigate(['/admin/flash-sales',sale.id]);
+          return;
         }
       }
-        const feedback = publishAfterSave
+      const feedback = publishAfterSave
         ? Date.parse(sale.startAt) > Date.now()
           ? 'Đã lưu chương trình. Flash Sale sẽ tự động bắt đầu theo lịch.'
           : 'Đã lưu chương trình. Flash Sale đang trong thời gian diễn ra.'
