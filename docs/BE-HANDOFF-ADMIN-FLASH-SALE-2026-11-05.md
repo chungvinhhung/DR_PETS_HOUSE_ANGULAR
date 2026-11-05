@@ -10,7 +10,9 @@
 - Các màn: danh sách, tạo mới, chọn SKU, chỉnh sửa, xem chi tiết.
 - **Không cấu hình Flash Sale theo chi nhánh**. Điều kiện mua vẫn cần tồn kho fulfillment theo Order hiện hành.
 - Không nhập tay “Sắp diễn ra”, “Đang diễn ra” hoặc “Đã kết thúc”.
-- Admin có `DRAFT` (lưu bản nháp), `PUBLISHED` (đã kích hoạt), và **switch** `isPaused` để tạm ngừng/tiếp tục một chương trình đã kích hoạt.
+- Admin có `DRAFT` (Lưu bản nháp), `PUBLISHED` (Lưu chương trình, bao gồm lên lịch trước khi bắt đầu), và **switch** `isPaused` để tạm ngừng/tiếp tục chương trình đã kích hoạt trong khoảng thời gian chạy.
+- FE tạo/sửa bản nháp có 3 nút phân cấp: Hủy bỏ, Lưu bản nháp, Lưu chương trình. “Lưu chương trình” gọi create/update rồi publish; nếu `now < startAt` thì trạng thái hiển thị **Sắp diễn ra** chứ không chạy ngay; nếu `startAt <= now < endAt` thì **Đang diễn ra**.
+- Section switch “Trạng thái chương trình” chỉ hiển thị khi chương trình đã PUBLISHED và thời gian hiện tại nằm trong `startAt..endAt`. Switch BẬT = hoạt động (`isPaused: false`); TẮT = tạm ngừng (`isPaused: true`). Hết thời gian kết thúc không được publish hoặc resume.
 - Display state do BE tính bằng UTC server time: `DRAFT`, `PAUSED`, `UPCOMING`, `RUNNING`, `ENDED`. Precedence: DRAFT → ENDED → PAUSED → UPCOMING → RUNNING. Thời gian form FE được nhập theo Asia/Ho_Chi_Minh và gửi ISO UTC.
 
 ## 2. REST contract FE đang gọi (cần BE xác nhận/triển khai)
