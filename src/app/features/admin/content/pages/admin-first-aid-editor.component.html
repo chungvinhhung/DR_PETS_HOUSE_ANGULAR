@@ -198,17 +198,10 @@
               </div>
             </div>
             @if (previewMode()==='CARD') {
-              <div class="aid-studio__card" [class.aid-studio__card--urgent]="urgency()==='URGENT'">
-                <div class="aid-studio__card-media">
-                  <img [src]="previewGuide().image" alt="Ảnh bìa xem trước">
-                  @if (urgency()==='URGENT') { <span class="aid-studio__urgent-badge">Cấp cứu khẩn cấp</span> }
-                </div>
-                <div class="aid-studio__card-body">
-                  <span class="aid-studio__card-category">{{categoryLabel()}}</span>
-                  <h3>{{previewGuide().title}}</h3>
-                  <p>{{previewGuide().description}}</p>
-                  <span class="aid-studio__read-more">Đọc ngay <span aria-hidden="true">→</span></span>
-                </div>
+              <div class="aid-studio__customer-card"
+                [class.aid-studio__customer-card--urgent]="urgency()==='URGENT'"
+                aria-label="Xem trước thẻ cẩm nang trên Customer">
+                <app-first-aid-card [post]="previewGuide()" />
               </div>
             } @else {
               <div class="aid-studio__detail">
