@@ -62,7 +62,7 @@ export class AdminContentListComponent{
  readonly visible=computed(()=>this.filtered().slice((this.page()-1)*this.pageSize,this.page()*this.pageSize));
  ngOnInit():void{
   const notice=this.route.snapshot.queryParamMap.get('notice');
-  if (notice==='Đã lưu bản nháp bài viết.' || notice==='Đã xuất bản bài viết.') this.notice.set(notice);
+  if (['Đã lưu bản nháp bài viết.','Đã xuất bản bài viết.','Đã lưu bản nháp cẩm nang.','Đã xuất bản cẩm nang.'].includes(notice||'')) this.notice.set(notice||'');
   this.load();
  }
  load():void{
@@ -77,11 +77,11 @@ export class AdminContentListComponent{
    void this.router.navigate(['/admin/content/articles/new']);
    return;
   }
-  this.editing.set(null);this.editorError.set('');
-  if(this.mode==='first-aid'){
-   this.postDraft.set({title:'',category:'',excerpt:'',content:'',status:'DRAFT',emergencyPhone:'1900-PET-HELP'});
-   this.editorDialog.set('post');return;
+  if(this.mode==='first-aid') {
+   void this.router.navigate(['/admin/content/first-aid/new']);
+   return;
   }
+  this.editing.set(null);this.editorError.set('');
   if(this.mode==='rescue'){
    this.rescueDraft.set({petName:'',species:'DOG',breed:'',ageDescription:'',healthStatus:'',rescueStory:'',status:'LOOKING_FOR_HOME'});
    this.editorDialog.set('rescue');
@@ -94,13 +94,13 @@ export class AdminContentListComponent{
    void this.router.navigate(['/admin/content/articles',id,'edit']);
    return;
   }
-  this.editing.set(row);this.editorError.set('');
   if(this.mode==='first-aid'){
-   this.postDraft.set({
-    title:String(row.title||''),category:String(row.category||''),excerpt:String(row.excerpt||''),
-    content:String(row.content||''),status:String(row.status||'DRAFT'),emergencyPhone:String(row.emergencyPhone||'1900-PET-HELP'),
-   });this.editorDialog.set('post');return;
+   const id=String(row?._id||row?.guide_id||row?.post_id||row?.id||'');
+   if(!id){this.notice.set('Cẩm nang chưa có mã để chỉnh sửa. Vui lòng tải lại danh sách.');return;}
+   void this.router.navigate(['/admin/content/first-aid',id,'edit']);
+   return;
   }
+  this.editing.set(row);this.editorError.set('');
   if(this.mode==='rescue'){
    this.rescueDraft.set({
     petName:String(row.petName||row.name||''),species:String(row.species||'DOG'),breed:String(row.breed||''),
