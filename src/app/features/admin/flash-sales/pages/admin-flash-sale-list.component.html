@@ -81,7 +81,15 @@
         <span>Đang hiển thị {{ displayRows().length }} trên tổng số {{ totalCount() === null ? 'chưa xác định' : totalCount() }} chương trình</span>
         <div>
           <button type="button" (click)="previous()" [disabled]="loading() || !previousCursors().length" aria-label="Trang trước">‹</button>
-          <strong aria-current="page">{{ page() }}</strong>
+          @for (index of visiblePages(); track $index) {
+            @if (index === '…') {
+              <span class="flash-list__ellipsis" aria-hidden="true">…</span>
+            } @else {
+              <button type="button" class="flash-list__page" [class.flash-list__page--active]="page() === index"
+                [attr.aria-current]="page() === index ? 'page' : null"
+                [attr.aria-label]="'Trang ' + index" [disabled]="loading()" (click)="goToPage(index)">{{ index }}</button>
+            }
+          }
           <button type="button" (click)="next()" [disabled]="loading() || !nextCursor()" aria-label="Trang sau">›</button>
         </div>
       </footer>
