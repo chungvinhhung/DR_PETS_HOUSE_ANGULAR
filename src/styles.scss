@@ -6906,3 +6906,53 @@ app-admin-flash-sale-editor .flash-editor__activation-field .flash-editor__switc
 app-admin-flash-sale-editor .flash-editor__activation-field .flash-editor__switch-text {
   text-align:left;
 }
+
+
+/* WEB2 promotion alignment QA: keep voucher switch and caption centered
+   as one group, with a real gap between the track and its label. */
+app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields > .voucher-editor__activation-control {
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  justify-self:stretch; min-width:0; width:100%; padding:0 12px; gap:8px;
+}
+app-admin-voucher-editor .voucher-editor__program-fields .voucher-editor__activation-caption {
+  display:block; width:100%; margin:0; text-align:center;
+  font:550 12px/18px Roboto,Arial,sans-serif; color:#475569;
+}
+app-admin-voucher-editor .voucher-editor__program-fields label.voucher-editor__activation-row {
+  display:inline-flex; flex-direction:row; align-items:center; justify-content:center;
+  gap:14px; width:auto; max-width:100%; min-height:44px;
+  margin:0; padding:0; white-space:normal; text-align:left;
+}
+app-admin-voucher-editor .voucher-editor__program-fields .voucher-editor__activation-row .voucher-editor__switch {
+  position:relative; display:inline-flex; flex:0 0 48px;
+  width:48px; height:26px; margin:0; padding:0;
+}
+app-admin-voucher-editor .voucher-editor__program-fields .voucher-editor__activation-row > span:last-child {
+  display:block; flex:0 1 auto; min-width:0; padding:0; margin:0;
+  color:#203047; font:400 13px/20px Roboto,Arial,sans-serif;
+}
+@media(max-width:720px) {
+  app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields > .voucher-editor__activation-control {
+    align-items:flex-start; padding:0; text-align:left;
+  }
+  app-admin-voucher-editor .voucher-editor__program-fields .voucher-editor__activation-caption {text-align:left}
+  app-admin-voucher-editor .voucher-editor__program-fields label.voucher-editor__activation-row {justify-content:flex-start}
+}
+
+/* Active local tab is indicated by color + underline, not heavier text.
+   Keyboard focus has a visible outline without changing type weight. */
+app-admin-voucher-list .voucher-list__tabs a,
+app-admin-flash-sale-list .flash-list__tabs a {
+  font:500 16px/24px Roboto,Arial,sans-serif;
+  letter-spacing:.2px; font-synthesis:none;
+}
+app-admin-voucher-list .voucher-list__tabs .voucher-list__tab--active,
+app-admin-flash-sale-list .flash-list__tabs .flash-list__tab--active {
+  color:#0d47a1; border-bottom-color:#0d47a1; font-weight:500;
+}
+app-admin-voucher-list .voucher-list__tabs a:focus,
+app-admin-flash-sale-list .flash-list__tabs a:focus {font-weight:500}
+app-admin-voucher-list .voucher-list__tabs a:focus-visible,
+app-admin-flash-sale-list .flash-list__tabs a:focus-visible {
+  outline:2px solid #0d47a1; outline-offset:-4px; border-radius:4px 4px 0 0;
+}
