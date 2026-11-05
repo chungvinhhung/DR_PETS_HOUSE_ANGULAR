@@ -7009,9 +7009,9 @@ app-admin-flash-sale-list .flash-list__tabs a:focus-visible {
 :root{
   --web2-form-section-heading-size:18px;
   --web2-form-section-heading-line:26px;
-  --web2-form-table-header-bg:#f0f5fa;
+  --web2-form-table-header-bg:#f2f6fa;
   --web2-form-table-border:#dce5f0;
-  --web2-form-table-ink:#1b2b43;
+  --web2-form-table-ink:#334155;
 }
 /* The same heading scale across Admin create, edit and detail sections. */
 app-service-catalog-editor .service-editor__card > h2,
@@ -7083,10 +7083,10 @@ app-admin-product-edit-page .basic-panel input[readonly]{
     app-admin-order-return-detail,app-admin-appointment-create,
     app-admin-appointment-detail,app-admin-service-record-detail,
     app-admin-staff-form,app-admin-staff-detail,app-admin-branch-detail)
-  table thead th {
+  :is(.service-editor__table,.flash-editor__table,.create-order__table,.voucher-editor__table,.order-admin__table,.variant-panel table,table) thead th {
   background:var(--web2-form-table-header-bg);
   color:var(--web2-form-table-ink);
-  font:600 13px/20px Roboto,Arial,sans-serif;
+  font:600 12px/20px Roboto,Arial,sans-serif;
   text-align:left;
   vertical-align:middle;
   white-space:nowrap;
@@ -7099,7 +7099,7 @@ app-admin-product-edit-page .basic-panel input[readonly]{
     app-admin-staff-form,app-admin-staff-detail,app-admin-branch-detail)
   :is(.service-editor__table-scroll,.flash-editor__scroll,.create-order__table-scroll,.table-scroll) {
   border:1px solid var(--web2-form-table-border);
-  border-radius:8px;
+  border-radius:12px;
   overflow-x:auto;
 }
 /* Preserve the center alignment of action columns. */
