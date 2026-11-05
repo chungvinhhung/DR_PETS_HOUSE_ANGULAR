@@ -22,6 +22,8 @@ export interface FlashSaleItem {
   salePrice: number;
   quantityLimit: number;
   soldQuantity: number;
+  /** Optional BE aggregate for this exact SKU, not the whole product. */
+  totalStock?: number | null;
   imageUrl?: string | null;
 }
 
