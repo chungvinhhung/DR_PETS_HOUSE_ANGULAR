@@ -11,22 +11,24 @@
         <input #searchInput type="search" [value]="search()" (input)="changeSearch(searchInput.value)"
           placeholder="Tìm tên chương trình..." aria-label="Tìm tên Flash Sale">
       </label>
-      <label class="flash-list__control">
-        <span class="sr-only">Trạng thái</span>
-        <select #stateInput [value]="stateFilter()" (change)="changeState(stateInput.value)" aria-label="Lọc trạng thái Flash Sale">
-          <option value="ALL">Tất cả trạng thái</option>
-          <option value="DRAFT">Bản nháp</option>
-          <option value="UPCOMING">Sắp diễn ra</option>
-          <option value="RUNNING">Đang diễn ra</option>
-          <option value="PAUSED">Tạm ngừng</option>
-          <option value="ENDED">Đã kết thúc</option>
-        </select>
-      </label>
-      @if (canManage()) {
-        <a class="flash-list__button flash-list__button--primary" routerLink="/admin/flash-sales/new">
-          <span aria-hidden="true" class="web2-add-icon">+</span> Tạo Flash Sale
-        </a>
-      }
+      <div class="flash-list__toolbar-actions">
+        <label class="flash-list__control">
+          <span class="sr-only">Trạng thái</span>
+          <select #stateInput [value]="stateFilter()" (change)="changeState(stateInput.value)" aria-label="Lọc trạng thái Flash Sale">
+            <option value="ALL">Tất cả trạng thái</option>
+            <option value="DRAFT">Bản nháp</option>
+            <option value="UPCOMING">Sắp diễn ra</option>
+            <option value="RUNNING">Đang diễn ra</option>
+            <option value="PAUSED">Tạm ngừng</option>
+            <option value="ENDED">Đã kết thúc</option>
+          </select>
+        </label>
+        @if (canManage()) {
+          <a class="flash-list__button flash-list__button--primary web2-add-button" routerLink="/admin/flash-sales/new">
+            <span aria-hidden="true" class="web2-add-icon">+</span><span>Tạo Flash Sale</span>
+          </a>
+        }
+      </div>
     </section>
     <section class="flash-list__panel" aria-label="Danh sách Flash Sale">
       <div class="flash-list__scroll">
