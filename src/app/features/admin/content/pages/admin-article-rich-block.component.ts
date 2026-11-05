@@ -38,7 +38,7 @@ import { DomSanitizer } from '@angular/platform-browser';
       }
     </div>
     @if (linkEditorOpen) {
-      <form class="article-rich-link-editor" (submit)="applyLink($event)"
+      <form class="article-rich-link-editor" (submit)="applyLink($event)" novalidate
         aria-label="Chèn liên kết ngay trong bài viết">
         <label>
           <span>Văn bản hiển thị</span>
@@ -47,8 +47,9 @@ import { DomSanitizer } from '@angular/platform-browser';
         </label>
         <label>
           <span>Đường dẫn URL</span>
-          <input type="url" [value]="linkUrl" (input)="linkUrl= $any($event.target).value"
-            placeholder="https://..." [disabled]="disabled" required>
+          <input type="text" inputmode="url" [value]="linkUrl"
+            (input)="linkUrl= $any($event.target).value" (keydown.escape)="closeLinkEditor()"
+            placeholder="https://..." [disabled]="disabled">
         </label>
         @if (linkError) { <p role="alert" class="article-rich-link-error">{{linkError}}</p> }
         <div class="article-rich-link-actions">
