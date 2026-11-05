@@ -158,6 +158,7 @@ export class AdminFlashSaleEditorComponent {
     this.dirty.set(true);
   }
   money(value: number): string {return flashSaleMoney(value);}
+  moneyFromText(value: string): string {return flashSaleMoney(Number(value));}
   date(value: string): string {return flashSaleDate(value);}
 
   private payload(): FlashSaleWriteBody | null {
