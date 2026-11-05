@@ -297,40 +297,46 @@ export class AdminFlashSaleEditorComponent {
     };
   }
 
-  async save(publishAfterSave=false): Promise<void> {
+  async save(): Promise<void> {
     if (!this.editable() || this.saving()) return;
-    const body=this.payload();if (!body) return;
-    if (publishAfterSave && Date.parse(body.endAt) <= Date.now()) {
-      this.validation.set('Thời gian kết thúc đã qua. Vui lòng chọn thời gian hợp lệ trước khi lưu chương trình.');
+    const body = this.payload();
+    if (!body) return;
+    if (Date.parse(body.endAt) <= Date.now()) {
+      this.validation.set('Thời gian kết thúc đã qua. Vui lòng chọn thời gian hợp lệ trước khi lưu.');
       return;
     }
-    this.saving.set(true);this.validation.set('');
+    this.saving.set(true);
+    this.validation.set('');
     try {
-      const sale=this.mode==='create'
-        ? await firstValueFrom(this.api.create(body,this.createKey))
-        : await firstValueFrom(this.api.update(this.id,body));
-      this.original.set(sale);this.dirty.set(false);
-      if (publishAfterSave && sale.status==='DRAFT') {
-        try {
-          await firstValueFrom(this.api.publish(sale.id,'flash-publish-'+sale.id,body.isPaused,body.activationMode));
-        }catch(err){
-          this.toast.show('Đã lưu bản nháp nhưng chưa kích hoạt. '+this.message(err,'Vui lòng kích hoạt trong trang chi tiết.'),'error');
-          this.allowSavedNavigation = true;
-          await this.router.navigate(['/admin/flash-sales',sale.id]);
-          return;
-        }
+      // The BE must create or update + publish in one atomic write. Never
+      // silently save a DRAFT as a fallback if publication fails.
+      const sale = this.mode === 'create'
+        ? await firstValueFrom(this.api.createPublished(body, this.createKey))
+        : this.original()?.status === 'DRAFT'
+          ? await firstValueFrom(this.api.updateAndPublish(this.id, body))
+          : await firstValueFrom(this.api.update(this.id, body));
+      if (sale.status !== 'PUBLISHED' ||
+          sale.isPaused !== body.isPaused ||
+          (sale.activationMode !== undefined && sale.activationMode !== body.activationMode)) {
+        throw new Error('Chức năng lưu và kích hoạt Flash Sale chưa đồng bộ. Vui lòng kiểm tra lại trạng thái chương trình.');
       }
-      const feedback = publishAfterSave
-        ? Date.parse(sale.startAt) > Date.now()
-          ? 'Đã lưu chương trình. Flash Sale sẽ tự động bắt đầu theo lịch.'
-          : 'Đã lưu chương trình. Flash Sale đang trong thời gian diễn ra.'
-        : sale.status === 'PUBLISHED' ? 'Đã cập nhật chương trình.' : 'Đã lưu bản nháp.';
-      this.toast.show(feedback,'success');
+      this.original.set(sale);
+      this.dirty.set(false);
       this.allowSavedNavigation = true;
-      await this.router.navigate(['/admin/flash-sales',sale.id]);
-    }catch(err){
+      const feedback = this.mode === 'edit'
+        ? 'Đã cập nhật chương trình.'
+        : sale.isPaused
+          ? 'Đã lưu chương trình. Flash Sale sẽ chờ bạn kích hoạt thủ công.'
+          : Date.parse(sale.startAt) > Date.now()
+            ? 'Đã lưu chương trình. Flash Sale sẽ tự động bắt đầu theo lịch.'
+            : 'Đã lưu chương trình. Flash Sale đang trong thời gian diễn ra.';
+      this.toast.show(feedback, 'success');
+      await this.router.navigate(['/admin/flash-sales', sale.id]);
+    } catch (err) {
       this.validation.set(this.message(err,'Không thể lưu Flash Sale. Vui lòng thử lại.'));
-    }finally{this.saving.set(false);}
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   async publish(): Promise<void> {
