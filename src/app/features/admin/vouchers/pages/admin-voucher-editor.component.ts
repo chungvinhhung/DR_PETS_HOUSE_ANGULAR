@@ -78,6 +78,7 @@ export class AdminVoucherEditorComponent {
     ? Date.parse(this.original()?.effectiveTo ?? '')
     : Date.parse(this.iso(this.form().toDate, this.form().toTime) ?? ''));
   // No date selected yet: show the default scheduling choice, not an active status.
+  readonly endTimePassed = computed(() => Number.isFinite(this.voucherEnd()) && this.now() >= this.voucherEnd());
   readonly beforeStart = computed(() =>
     !Number.isFinite(this.voucherStart()) || this.now() < this.voucherStart());
   readonly showActivation = computed(() =>
