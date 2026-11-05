@@ -121,7 +121,8 @@ export class AdminFlashSaleEditorComponent {
   private message(err: unknown, fallback: string): string {
     const status = err instanceof HttpErrorResponse ? err.status
       : (typeof err === 'object' && err && 'status' in err ? Number(err.status) : 0);
-    if ([404,405,501].includes(status)) return 'BE chưa hỗ trợ chức năng quản lý Flash Sale trên môi trường này.';
+    if (status === 404) return this.mode === 'create' ? 'Chức năng tạo Flash Sale chưa được BE hỗ trợ.' : 'Không tìm thấy chương trình Flash Sale.';
+    if ([405,501].includes(status)) return 'BE chưa hỗ trợ chức năng quản lý Flash Sale trên môi trường này.';
     return adminErrorMessage(err, fallback);
   }
 
