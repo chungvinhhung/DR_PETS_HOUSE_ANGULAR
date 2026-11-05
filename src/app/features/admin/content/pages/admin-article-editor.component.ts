@@ -8,6 +8,10 @@ import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-she
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminContentService } from '../services/admin-content.service';
+import { BlogCardComponent } from '../../../../shared/customer/components/blog-card/blog-card.component';
+import { FeaturedPostComponent } from '../../../customer/blog/pages/blog/featured-post.component';
+import { blogImages } from '../../../../shared/customer/assets/blog-images';
+import { BLOG_CATEGORIES } from '../../../../shared/customer/data/blog-data';
 
 export type ArticleBlockType = 'paragraph' | 'heading' | 'list' | 'quote' | 'image' | 'video';
 export type ArticleLayout = 'STANDARD' | 'FEATURED';
@@ -36,7 +40,7 @@ function normalizedBlocks(raw: unknown, fallback: string): ArticleBlock[] {
 @Component({
   selector: 'app-admin-article-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminCatalogShellComponent, AdminBreadcrumbComponent],
+  imports: [CommonModule, FormsModule, AdminCatalogShellComponent, AdminBreadcrumbComponent, BlogCardComponent, FeaturedPostComponent],
   templateUrl: './admin-article-editor.component.html',
   styleUrl: './admin-article-editor.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -56,10 +60,33 @@ export class AdminArticleEditorComponent {
   readonly tags = signal('');
   readonly layout = signal<ArticleLayout>('STANDARD');
   readonly blocks = signal<ArticleBlock[]>([{id:1,type:'paragraph',text:''}]);
-  readonly previewMode = signal<'CARD'|'DETAIL'>('DETAIL');
+  readonly previewMode = signal<'CARD'|'DETAIL'>('CARD');
   readonly previewDevice = signal<'DESKTOP'|'MOBILE'>('DESKTOP');
   readonly suggestedCategories = signal<string[]>([]);
   readonly savedStatus = signal<'DRAFT'|'PUBLISHED'|'ARCHIVED'>('DRAFT');
+  readonly articlePublishedDate = signal<string>('');
+  readonly previewCategoryId = computed(() => {
+    const value = this.category().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    const matched = BLOG_CATEGORIES.find(item =>
+      item.label.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase() === value ||
+      item.id === value);
+    if (matched) return matched.id;
+    if (value === 'cham soc') return 'care';
+    return 'other';
+  });
+  // Render the actual Customer BlogCard/FeaturedPost components, not a second,
+  // approximately styled interpretation of the card.
+  readonly previewPost = computed(() => ({
+    id: 'preview',
+    category: this.previewCategoryId(),
+    categoryLabel: this.category().trim() || 'Chủ đề',
+    title: this.title().trim() || 'Tiêu đề bài viết',
+    excerpt: this.summary() || 'Tóm tắt bài viết sẽ xuất hiện tại đây.',
+    image: this.coverUrl().trim() || blogImages.postPlaceholder,
+    author: "Dr. Pet's House",
+    authorImage: blogImages.authorMinhAnh,
+    publishedAt: this.articlePublishedDate() || 'Chưa xuất bản',
+  }));
   readonly loading = signal(this.isEditing);
   readonly loadError = signal('');
   readonly saving = signal(false);
@@ -124,6 +151,10 @@ export class AdminArticleEditorComponent {
     this.nextBlockId = Math.max(...blocks.map(b => b.id),0)+1;
     const status = String(row.status || 'DRAFT').toUpperCase();
     this.savedStatus.set(status === 'PUBLISHED' || status === 'ARCHIVED' ? status : 'DRAFT');
+    const rawDate = row.published_at || row.publishedAt || row.created_at || row.createdAt;
+    const parsedDate = rawDate ? new Date(rawDate) : null;
+    this.articlePublishedDate.set(parsedDate && !Number.isNaN(parsedDate.getTime()) ?
+      parsedDate.toLocaleDateString('vi-VN',{day:'2-digit',month:'long',year:'numeric'}) : '');
     this.dirty.set(false);
   }
   setField(field:'title'|'category'|'excerpt'|'coverUrl'|'tags', value:string):void {
