@@ -285,13 +285,22 @@
       </section>
 
       <section class="service-editor__card" aria-labelledby="service-materials-title">
-        <h2 id="service-materials-title">Vật liệu mặc định</h2>
+        <div class="service-editor__branch-section-heading">
+          <h2 id="service-materials-title">Vật liệu mặc định ({{materials.length}})</h2>
+          @if (mayEdit) {
+            <button #materialAddTrigger type="button"
+              class="service-editor__btn service-editor__btn--secondary web2-add-button"
+              [disabled]="saving()" (click)="openMaterialPicker()">
+              <span class="web2-add-icon" aria-hidden="true">+</span> Thêm vật liệu
+            </button>
+          }
+        </div>
 
         <div class="service-editor__table-scroll">
           <table class="service-editor__table service-editor__table--materials">
             <thead><tr>
               <th scope="col">Mã vật liệu</th>
-              <th scope="col">Tên vật liệu (tìm sản phẩm)</th>
+              <th scope="col">Tên vật liệu</th>
               <th scope="col">Số lượng mặc định</th>
               <th scope="col">Đơn vị</th>
               <th scope="col">Thao tác</th>
@@ -301,40 +310,8 @@
                 <tr>
                   <td><input class="service-editor__readonly" [value]="line.sku" placeholder="SKU" readonly tabindex="-1" aria-label="Mã SKU đã chọn"/></td>
                   <td>
-                    <div class="service-editor__product-combobox">
-                      <input type="text" role="combobox" autocomplete="off" [disabled]="!mayEdit"
-                        [attr.aria-expanded]="openMaterialKey() === line.key"
-                        [attr.aria-controls]="'service-material-results-' + line.key"
-                        [ngModel]="line.query" (focus)="openMaterialKey.set(line.key)"
-                        (input)="openMaterialKey.set(line.key)"
-                        (blur)="closeMaterialMenu(line.key)"
-                        (ngModelChange)="matchProduct(line, $event)"
-                        (keydown.escape)="openMaterialKey.set(null)"
-                        placeholder="Tìm SKU / tên sản phẩm..."
-                        [attr.aria-label]="'Tìm sản phẩm vật liệu dòng ' + ($index + 1)" />
-                      @if (mayEdit && openMaterialKey() === line.key) {
-                        <div class="service-editor__product-results" [id]="'service-material-results-' + line.key" role="listbox">
-                          @for (product of filteredMaterialOptions(line); track product.sku) {
-                            <button type="button" role="option" class="service-editor__product-option"
-                              (mousedown)="$event.preventDefault()"
-                              (click)="chooseMaterial(line, product)">
-                              @if (product.image) {
-                                <img class="service-editor__product-thumbnail" [src]="product.image"
-                                  alt="" loading="lazy" />
-                              } @else {
-                                <span class="service-editor__product-thumbnail service-editor__product-thumbnail--empty">Ảnh</span>
-                              }
-                              <span class="service-editor__product-description">
-                                <strong>{{ product.name }}</strong>
-                                <small>{{ product.sku }} · {{ productCategoryLabel(product.categoryId) }}</small>
-                              </span>
-                              <span class="service-editor__product-price">{{ formatMoney(product.price) }}đ</span>
-                            </button>
-                          } @empty {
-                            <p class="service-editor__product-empty">Không tìm thấy sản phẩm phù hợp.</p>
-                          }
-                        </div>
-                      }
+                    <div class="service-editor__product-description">
+                      <strong>{{line.query || line.sku || '—'}}</strong>
                     </div>
                   </td>
                   <td><input type="number" min="0.01" step="0.01" [disabled]="!mayEdit"
@@ -361,15 +338,11 @@
                 </tr>
               }
               @if (!materials.length) {
-                <tr><td colspan="5" class="service-editor__no-rows">Chưa có vật liệu. Bạn có thể thêm từ SKU hiện có.</td></tr>
+                <tr><td colspan="5" class="service-editor__no-rows">Chưa có vật liệu. Nhấn Thêm vật liệu để chọn.</td></tr>
               }
             </tbody>
           </table>
         </div>
-        @if (mayEdit) {
-          <button type="button" class="service-editor__btn service-editor__btn--secondary service-editor__add-material"
-            (click)="addMaterial()">+ Thêm vật liệu</button>
-        }
       </section>
 
       <section class="service-editor__card" aria-labelledby="service-branches-title">
@@ -411,6 +384,85 @@
     }
   </main>
 </app-admin-catalog-shell>
+@if (materialPickerOpen()) {
+  <div class="flash-editor__overlay" role="presentation" (click)="closeMaterialPicker()">
+    <section #materialPickerDialog class="flash-editor__dialog service-editor__material-picker"
+      role="dialog" aria-modal="true" aria-labelledby="service-material-picker-title"
+      (click)="$event.stopPropagation()">
+      <header class="flash-editor__dialog-heading">
+        <h2 id="service-material-picker-title">Thêm vật liệu</h2>
+        <button type="button" class="flash-editor__close" aria-label="Đóng"
+          (click)="closeMaterialPicker()">
+          <img src="/assets/admin-inventory/close-outlined.svg" width="18" height="18" alt="">
+        </button>
+      </header>
+      <label class="flash-editor__picker-search">
+        <img src="/assets/service-catalog/search.svg" width="18" height="18" alt="">
+        <input #materialSearchInput type="search" [value]="materialPickerSearch()"
+          (input)="setMaterialPickerSearch(materialSearchInput.value)"
+          placeholder="Tìm tên vật liệu hoặc SKU..." aria-label="Tìm vật liệu">
+      </label>
+      <div class="flash-editor__picker-scroll">
+        @if (materialCatalogError()) {
+          <div class="flash-editor__picker-error" role="alert">
+            <span>{{materialCatalogError()}}</span>
+            <button type="button" class="flash-editor__btn flash-editor__btn--outline"
+              (click)="loadMaterialCatalog()">Thử lại</button>
+          </div>
+        }
+        <div class="service-editor__material-picker-scroll">
+          <table class="flash-editor__table flash-editor__picker-table service-editor__material-picker-table">
+            <thead><tr>
+              <th scope="col">Chọn</th>
+              <th scope="col">Vật liệu</th>
+              <th scope="col">SKU / Phân loại</th>
+              <th scope="col">Đơn vị</th>
+            </tr></thead>
+            <tbody>
+              @for (item of materialPickerMatches().slice(0,materialPickerVisible()); track item.materialId) {
+                <tr>
+                  <td><input #choice type="checkbox"
+                    [checked]="materialPickerPending().includes(item.materialId) || materialAlreadyAdded(item.materialId)"
+                    [disabled]="materialAlreadyAdded(item.materialId)"
+                    (change)="toggleMaterialPending(item.materialId,choice.checked)"
+                    [attr.aria-label]="'Chọn vật liệu ' + item.name"></td>
+                  <td>
+                    <div class="flash-editor__product-info">
+                      @if (item.image) { <img [src]="item.image" width="36" height="36" alt=""> }
+                      <strong>{{item.name}}</strong>
+                    </div>
+                  </td>
+                  <td>{{item.sku}}<small>{{productCategoryLabel(item.categoryId)}}</small></td>
+                  <td>{{item.unit || '—'}}</td>
+                </tr>
+              } @empty {
+                @if (!materialCatalogLoading() && !materialCatalogError()) {
+                  <tr><td colspan="4" class="flash-editor__no-products">Không tìm thấy vật liệu phù hợp.</td></tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (materialCatalogLoading()) {
+          <p class="flash-editor__muted" role="status">Đang tải vật liệu...</p>
+        }
+        @if (!materialCatalogLoading() && !materialCatalogError() &&
+             materialPickerMatches().length > materialPickerVisible()) {
+          <button type="button" class="flash-editor__btn flash-editor__btn--tertiary flash-editor__load-more"
+            (click)="materialPickerVisible.set(materialPickerVisible()+20)">Tải thêm vật liệu</button>
+        }
+      </div>
+      <footer class="flash-editor__dialog-actions">
+        <span>Đã chọn: {{materialPickerPending().length}} vật liệu</span>
+        <button type="button" class="flash-editor__btn flash-editor__btn--outline"
+          (click)="closeMaterialPicker()">Hủy bỏ</button>
+        <button type="button" class="flash-editor__btn flash-editor__btn--primary"
+          [disabled]="!materialPickerPending().length || materialCatalogLoading()"
+          (click)="applyMaterials()">Thêm vật liệu</button>
+      </footer>
+    </section>
+  </div>
+}
 @if (branchConfigFlowOpen()) {
   <app-service-branch-config-flow
     [service]="branchConfigService"
