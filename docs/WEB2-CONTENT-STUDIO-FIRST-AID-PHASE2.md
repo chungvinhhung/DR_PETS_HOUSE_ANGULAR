@@ -1,7 +1,7 @@
 # WEB 2 — Phase Content 2: Cẩm nang sơ cứu
 Updated: 2026-11-06
 Branch: feature/admin-flash-sale-content-management
-Status: FE implemented, static source QA only; BE E2E and deployed visual QA NOT confirmed.
+Status: FE implemented; Angular production CI PASSED for code commit c235e79 (run 42088032628). BE E2E and deployed visual QA NOT confirmed.
 
 ## Scope in this phase
 - Dedicated First Aid editor routes:
@@ -49,3 +49,8 @@ Status: FE implemented, static source QA only; BE E2E and deployed visual QA NOT
 
 ## Out of scope
 No modifications to Community-post composer or Rescue/Adoption editor in this phase. Wait for user approval before next tab.
+
+## CI verification (2026-11-06)
+- Angular CI `npm run build` success: [Run #42088032628](https://github.com/chungvinhhung/DR_PETS_HOUSE_ANGULAR/actions/runs/42088032628), code commit `c235e79c73336e11b6b529c672acfc301978014e`.
+- Initial production CI revealed two unrelated pre-existing component style budget violations: Admin Catalog Shell and Admin Inventory. The excess rules were moved into globally scoped SCSS without changing component behavior; the final code build passed.
+- No browser screenshot verification and no BE data persistence smoke test has yet been performed. Do not mark BE/Customer E2E as accepted until the checklist above is completed.
