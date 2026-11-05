@@ -66,7 +66,7 @@ function normalizeOrderProduct(item: any = {}) {
     quantity: Number(item.quantity || 1),
     variant: item.variant_label || item.variantLabel || parsedVariant.variant,
     size: item.size || item.size_label || item.sizeLabel || parsedVariant.size,
-    image: item.product?.product_images?.[0]?.image_url || item.image || item.photoUrl || '/assets/customer/images/product/detail-image.png',
+    image: item.product?.product_images?.[0]?.image_url || item.image || item.photoUrl || item.photo_url || item.imageUrl || item.image_url || '/assets/customer/images/product/detail-image.png',
   };
 }
 

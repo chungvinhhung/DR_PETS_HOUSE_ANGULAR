@@ -78,22 +78,37 @@ export const profileToPetInfo = (pet: any) => ({
   notes: pet.medicalNotes || "",
 });
 
-export const findSpeciesId = (speciesOptions: any, speciesName: any) => {
+export const findSpeciesId = (speciesOptions: any = [], speciesName: any) => {
   const normalizedName = String(speciesName || "").trim().toLowerCase();
-  if (!normalizedName) return undefined;
+  if (!normalizedName) return "DOG";
 
-  const aliasMap = {
-    chó: ["cho", "chó", "dog", "canine"],
-    mèo: ["meo", "mèo", "cat", "feline"],
-  };
-  const aliases = (aliasMap as any)[normalizedName] || [normalizedName];
+  if (Array.isArray(speciesOptions) && speciesOptions.length > 0) {
+    const aliasMap: Record<string, string[]> = {
+      chó: ["cho", "chó", "dog", "canine"],
+      mèo: ["meo", "mèo", "cat", "feline"],
+      chim: ["chim", "bird"],
+      thỏ: ["tho", "thỏ", "rabbit"],
+      khác: ["khac", "khác", "other"],
+    };
+    const aliases = aliasMap[normalizedName] || [normalizedName];
 
-  const matchedSpecies = speciesOptions.find((species: any) => {
-    const backendName = String(species.species_name || species.name || "").trim().toLowerCase();
-    return aliases.some((alias: any) => backendName === alias || backendName.includes(alias));
-  });
+    const matchedSpecies = speciesOptions.find((species: any) => {
+      const backendName = String(species.species_name || species.name || "").trim().toLowerCase();
+      const backendId = String(species.species_id || species.id || "").trim().toLowerCase();
+      return aliases.some((alias: any) => backendName === alias || backendName.includes(alias) || backendId === alias);
+    });
 
-  return matchedSpecies?.species_id || matchedSpecies?.id;
+    if (matchedSpecies?.species_id || matchedSpecies?.id) {
+      return matchedSpecies.species_id || matchedSpecies.id;
+    }
+  }
+
+  // Fallback mapping directly to backend species enum
+  if (normalizedName.includes("mèo") || normalizedName.includes("meo") || normalizedName.includes("cat")) return "CAT";
+  if (normalizedName.includes("chim") || normalizedName.includes("bird")) return "BIRD";
+  if (normalizedName.includes("thỏ") || normalizedName.includes("tho") || normalizedName.includes("rabbit")) return "RABBIT";
+  if (normalizedName.includes("chó") || normalizedName.includes("cho") || normalizedName.includes("dog")) return "DOG";
+  return "OTHER";
 };
 
 export const toBackendHealthStatus = (status: any) => {

@@ -64,7 +64,12 @@ export class BookingPageComponent {
   readonly pets = signal<any>([]);
   readonly petsLoading = signal<any>(false);
   readonly petsError = signal<any>("");
-  readonly speciesOptions = signal<any>([]);
+  readonly speciesOptions = signal<any>([
+    { id: 'DOG', species_id: 'DOG', name: 'Chó' },
+    { id: 'CAT', species_id: 'CAT', name: 'Mèo' },
+    { id: 'BIRD', species_id: 'BIRD', name: 'Chim' },
+    { id: 'OTHER', species_id: 'OTHER', name: 'Khác' },
+  ]);
   readonly selectedPets = signal<any>([]);
   readonly petInfos = signal<any>((() => [createEmptyPetInfo()])());
   readonly ownerInfo = signal<any>({
@@ -156,8 +161,9 @@ export class BookingPageComponent {
     afterNextRender(() => {
       const cleanup = (() => {
         let active = true;
-        Promise.all([this.bookingApi.getBranches(), this.bookingApi.getServices()])
-          .then(([branchData, serviceData]: any) => {
+        Promise.all([this.bookingApi.getBranches(), this.bookingApi.getServices(), this.petApi.getPetSpecies().catch(() => [])])
+          .then(([branchData, serviceData, speciesData]: any) => {
+            if (Array.isArray(speciesData) && speciesData.length) this.speciesOptions.set(speciesData);
             if (!active) return;
             if (branchData.length) {
               this.branches.set(branchData);
@@ -288,10 +294,8 @@ export class BookingPageComponent {
           }
         : undefined;
 
-      if (!validPetId && !petData?.species_id) {
-        this.bookingError.set("Không tìm thấy mã loài thú cưng từ backend. Vui lòng chọn lại loài.");
-        this.bookingSubmitting.set(false);
-        return;
+      if (!validPetId && petData && !petData.species_id) {
+        petData.species_id = findSpeciesId(this.speciesOptions(), firstPetInfo?.species || "Chó") || "DOG";
       }
 
       await this.bookingApi.bookAppointment({
