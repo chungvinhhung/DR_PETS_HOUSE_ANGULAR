@@ -174,19 +174,19 @@
                 [attr.aria-pressed]="previewDevice()==='MOBILE'" (click)="previewDevice.set('MOBILE')">Mobile</button>
             </div>
             @if (previewMode() === 'CARD') {
-              <div class="article-studio__preview-card" [class.article-studio__preview-card--featured]="layout()==='FEATURED'">
-                <div class="article-studio__preview-cover">
-                  @if (coverUrl()) { <img [src]="coverUrl()" alt="Ảnh bìa xem trước"> }
-                  @else { <span>Ảnh bìa</span> }
-                </div>
-                <div class="article-studio__preview-card-content">
-                  <span class="article-studio__preview-category">{{category() || 'Chủ đề'}}</span>
-                  <h3>{{title() || 'Tiêu đề bài viết'}}</h3>
-                  <p>{{summary() || 'Tóm tắt bài viết sẽ xuất hiện tại đây.'}}</p>
-                  <small>Dr. Pet's House</small>
-                </div>
+              <div class="article-studio__customer-card-preview" aria-label="Xem trước thẻ bài viết Customer">
+                @if (layout() === 'FEATURED') {
+                  <div class="article-studio__featured-render">
+                    <div class="article-studio__featured-canvas">
+                      <app-featured-post [post]="previewPost()" />
+                    </div>
+                  </div>
+                } @else {
+                  <div class="article-studio__blog-card-render">
+                    <article app-blog-card [post]="previewPost()"></article>
+                  </div>
+                }
               </div>
-            } @else {
               <div class="article-studio__preview-detail">
                 <h3>{{title() || 'Tiêu đề bài viết'}}</h3>
                 <div class="article-studio__preview-author">Dr. Pet's House · {{category() || 'Chủ đề'}}</div>
