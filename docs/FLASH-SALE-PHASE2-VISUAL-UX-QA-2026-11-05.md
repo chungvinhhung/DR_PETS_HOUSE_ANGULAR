@@ -51,6 +51,14 @@ The Flash Sale Admin follows existing WEB 2 Admin UI, not a new dashboard langua
 - API error: no fake empty dataset/success; loading/error/empty use existing shared Admin component; toast wording is user-facing.
 - Security: Manager read-only; Admin create/edit/publish/pause; BE independently enforces RBAC, stock and quota.
 
+## Follow-up refinement — 05/11/2026 (screenshots 1–6)
+- Search Flash Sale cố định tối đa 360px bên trái; dropdown trạng thái và nút Tạo Flash Sale dồn phải, dùng shared `web2-add-icon` / `web2-add-button` như Voucher.
+- Ba CTA của màn tạo/bản nháp khác biệt: Hủy bỏ (trung tính), Lưu bản nháp (outline), Lưu chương trình (primary). Tạo/sửa chương trình đã đăng thì dùng Cập nhật chương trình (primary).
+- Lưu chương trình sẽ publish nhưng trạng thái hiển thị **theo lịch**: UPCOMING trước giờ, RUNNING khi tới giờ; không ép RUNNING khi chưa tới giờ. Chặn publish nếu đã quá `endAt`.
+- Khôi phục section Trạng thái chương trình riêng theo bố cục form Figma cho PUBLISHED đang trong thời gian chạy; switch ON = đang hoạt động, OFF = tạm ngừng. DRAFT, UPCOMING và ENDED không hiện switch.
+- Modal SKU search dùng một container cao 44px, input lấp đầy chiều cao mà không có outline lồng nhau; footer rút ngắn thành “Đã chọn: N sản phẩm”; nút “Tải thêm sản phẩm” đổi sang tertiary nhẹ.
+- 20/20 điều kiện static QA đã kiểm tra trên source sau thay đổi. Angular build/render/E2E vẫn phải xác minh tại môi trường local/CI có repo đầy đủ.
+
 ## Related work
 BE contract and end-to-end acceptance: `docs/BE-HANDOFF-ADMIN-FLASH-SALE-2026-11-05.md`.
 Do not merge this branch into main or sign off Phase 3/4 while BE contract and CI/runtime checks remain pending.
