@@ -6766,3 +6766,13 @@ app-admin-voucher-editor .voucher-editor__activation-panel .voucher-editor__swit
   }
   app-admin-flash-sale-editor .flash-editor__top{margin-bottom:20px}
 }
+
+/* Voucher information no longer contains a third switch field: keep two balanced columns. */
+app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+@media(max-width:720px) {
+  app-admin-voucher-editor .voucher-editor__fields.voucher-editor__program-fields {
+    grid-template-columns:1fr;
+  }
+}
