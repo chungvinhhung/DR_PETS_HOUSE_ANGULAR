@@ -7029,40 +7029,6 @@ app-admin-product-edit-page section.panel > h2,
   color:#182b45;
   letter-spacing:0;
 }
-/* Material picker is a secondary action, like Add product in Flash Sale. */
-app-service-catalog-editor .service-editor__branch-section-heading button.service-editor__material-add {
-  box-sizing:border-box;
-  display:inline-flex;
-  flex:0 0 auto;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  height:44px;
-  min-height:44px;
-  padding:0 16px;
-  border:1px solid #0d47a1;
-  border-radius:8px;
-  background:#fff;
-  color:#0d47a1;
-  font:600 14px/20px Roboto,Arial,sans-serif;
-  box-shadow:none;
-  white-space:nowrap;
-}
-app-service-catalog-editor .service-editor__branch-section-heading button.service-editor__material-add:hover:not(:disabled){
-  background:#f2f7fd;
-}
-app-service-catalog-editor .service-editor__branch-section-heading button.service-editor__material-add .web2-add-icon{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:16px;
-  height:16px;
-  color:inherit;
-  font-size:20px;
-  line-height:1;
-  font-weight:500;
-}
-
 /* Read-only SKU uses the same light-blue fill as calculated sale prices. */
 app-admin-product-create-page .variant-panel td input[readonly],
 app-admin-product-edit-page .variant-panel td input[readonly] {
