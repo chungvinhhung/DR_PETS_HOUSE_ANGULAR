@@ -66,4 +66,7 @@
 .voucher-list__tabs{display:flex;gap:24px;align-items:stretch;min-height:46px;border-bottom:1px solid #dce5f0;margin:0 0 24px}
 .voucher-list__tabs a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 24px;border-bottom:3px solid transparent;color:#475569;font:500 16px/24px Roboto,Arial,sans-serif;letter-spacing:.2px;white-space:nowrap;text-decoration:none}
 .voucher-list__tabs a:hover{color:#0d47a1}
-.voucher-list__tabs .voucher-list__tab--active{color:#0d47a1;border-bottom-color:#0d47a1;font-weight:600}
+.voucher-list__tabs .voucher-list__tab--active{color:#0d47a1;border-bottom-color:#0d47a1;font-weight:500}
+
+/* Active and keyboard-focused tabs retain the same type weight; only color/underline signal selection. */
+.voucher-list__tabs a:focus{font-weight:500}
