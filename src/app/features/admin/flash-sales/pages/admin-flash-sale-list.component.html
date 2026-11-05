@@ -73,6 +73,7 @@
           </tbody>
         </table>
       </div>
+      @if (!loading() && !error() && (displayRows().length > 0 || previousCursors().length > 0)) {
       <footer class="flash-list__pagination">
         <span>
           @if (totalCount() !== null) {
@@ -95,6 +96,7 @@
           <button type="button" (click)="next()" [disabled]="loading() || !nextCursor()" aria-label="Trang sau">›</button>
         </div>
       </footer>
+      }
     </section>
   </main>
 </app-admin-catalog-shell>
