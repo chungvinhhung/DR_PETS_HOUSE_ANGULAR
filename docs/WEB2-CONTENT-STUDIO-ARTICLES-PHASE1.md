@@ -60,3 +60,21 @@ Do not start First Aid, Community posts, or Rescue/Adoption editor work until th
 - **P0 BE REQUIREMENT:** persist and return the approved category taxonomy and hashtags without converting real categories into fallback values. Validate category against the four options on BE; category name/ID must map to Customer consistently.
 - **IMPORTANT:** Rich formatting depends on BE retaining the `html` field. If it strips this field, text falls back safely but loses bold, italic, underline, links and colors after reload/publication. This is a backend gap, not a verified E2E success.
 - **QA:** create with 4 categories, 3+ hashtag chips, inline formatting, multiple Enter-generated numbered items, then draft/save/reload/publish and compare preview with Customer detail. Test javascript: URLs, paste, broken HTML and permission checks; verify no XSS.
+
+
+## Phase 1 polishing — 2026-11-06: inline links, unified lists and spacing
+
+- Chèn liên kết now opens an inline form **inside the editor**, never native `window.prompt`/`window.alert`. The form accepts visible text and a URL, preserves selected text/range, checks `https://` / `http://`, displays errors inline, and inserts the link into the contenteditable document.
+- The separate **Danh sách** choice has been removed from **Loại nội dung** for newly added blocks. Ordered-list formatting remains directly in **Đoạn văn** through the 1.≡ toolbar control. Legacy persisted `type:'list'` blocks remain readable and editable.
+- Lists authored as rich HTML inside paragraph blocks now share the numbered light-blue circle style with Customer detail. Remove browser default `ol` padding/margins so list content aligns with neighboring text and images in the preview.
+- Composite hashtag entry and rich editor now have **one focus outline on the outer control**, not a nested input focus outline.
+- Removed the optional `Mô tả hình ảnh` entry (legacy image alt data still renders when present); removed subtitle, hashtag-helper and technical preview notes.
+- `Lưu bản nháp` receives the red outlined reject-button treatment (`#de414c` text and `#ed6b72` border, white fill) while action remains save-as-draft, not delete/reject.
+- Source/template/CSS static QA checked; **Angular build, inline-link keyboard interaction, focus, screen-size and actual Customer rendering are not yet runtime-verified**.
+
+### UAT specific to this patch
+1. Select text, click Liên kết, enter a URL and submit. Check correct selected text is linked; test link validation, cancel and a collapsed selection.
+2. Type a numbered list inside an ordinary Đoạn văn, press Enter for multiple items, check the circles align in editor and Detail preview. Save/reload/public Customer may depend on BE retaining `contentBlocks[].html`.
+3. Focus the Hashtag entry and contenteditable; confirm there is one outer focus ring only.
+4. Check red outline for Lưu bản nháp, and confirm it still saves a draft without affecting published posts.
+5. Check no orphan helper notes and that image URL remains functional without a separate alt-description field.
