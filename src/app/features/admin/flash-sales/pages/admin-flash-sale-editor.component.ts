@@ -122,6 +122,7 @@ export class AdminFlashSaleEditorComponent {
       : Date.parse(utcFromVietnam(this.form().to) ?? '');
   });
   // Even before dates are selected, the default is automatic scheduled activation.
+  readonly endTimePassed = computed(() => Number.isFinite(this.selectedEnd()) && this.selectedEnd() <= this.now());
   readonly isPreStart = computed(() =>
     !Number.isFinite(this.selectedStart()) || this.selectedStart() > this.now());
   readonly operatingLabel = computed(() => this.isPreStart()
