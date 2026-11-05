@@ -76,7 +76,7 @@ Do not merge this branch into main or sign off Phase 3/4 while BE contract and C
 ## Latest visual refinement — full-width inline switch (05/11/2026)
 
 - Flash Sale program-information panel now fills **100% of the Admin content area**, with 3 aligned fields in the time row: Start time, End time, and the inline scheduled activation switch. No separate activation panel remains; product section retains a clean vertical gap.
-- Voucher retains its existing benefit/time two-column arrangement. The activation switch is placed **inside Thời gian & giới hạn**, aligned to the right of the date/time controls; it no longer consumes a separate full-width card.
+- Voucher retains its existing benefit/time sections, but its activation switch is restored to the **third field in Thông tin chương trình**, beside Mã voucher and Tên chương trình, as in the reference screenshot. The label and switch group are centered. Flash Sale's switch remains in its third column beside End time, with caption and switch centered.
 - Both forms show the switch **before any date has been selected**, defaulting ON with **Tự động kích hoạt theo lịch**; OFF displays **Kích hoạt thủ công**. Once the selected start time is reached, the same switch changes labels to **Đang hoạt động / Tạm ngừng**.
 - An expired promotion's switch is disabled. On narrow screens the 3-column layouts wrap to 2 and then 1 column without truncating labels.
 - Source QA checked template structure, absence of separate status cards, default state, API contract and responsive CSS. Browser screenshot review and build remain unverified.
