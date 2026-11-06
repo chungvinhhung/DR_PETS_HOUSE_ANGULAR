@@ -11,6 +11,7 @@ import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-p
 import { AdminContentService } from '../services/admin-content.service';
 import { FIRST_AID_CATEGORIES } from '../../../../shared/customer/data/first-aid-data';
 import { COMMUNITY_POST_TYPE_LABELS } from '../../../../shared/customer/data/community-post-types';
+import { RESCUE_PARTNERS } from '../../../customer/rescue/data/rescue-data';
 
 type ContentMode='articles'|'first-aid'|'community'|'rescue'|'adoptions';
 
@@ -277,7 +278,13 @@ export class AdminContentListComponent{
  rescueSpecies(r:any):string{
   return ({DOG:'Chó',CAT:'Mèo',OTHER:'Khác'} as Record<string,string>)[String(r?.species||'').toUpperCase()]||String(r?.species||'—');
  }
- rescueArea(r:any):string{return r.branchId?.name||r.area||r.location||'—';}
+ rescueArea(r:any):string{
+  const partner=RESCUE_PARTNERS.find(p=>p.id===String(r?.supportPartnerId||''));
+  return partner?.region||'—';
+ }
+ rescuePartnerName(r:any):string{
+  return RESCUE_PARTNERS.find(p=>p.id===String(r?.supportPartnerId||''))?.name||'Chưa chọn đối tác';
+ }
  rescueCondition(r:any):string{return r.healthStatus||r.condition||'—';}
  adoptionCode(r:any):string{return r.requestCode||r.code||r.id||r._id||'—';}
  adoptionApplicant(r:any):string{return r.applicantInfo?.fullName||r.applicantName||r.name||'—';}
