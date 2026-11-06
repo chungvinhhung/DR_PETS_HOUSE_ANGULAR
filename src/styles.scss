@@ -7780,22 +7780,23 @@ app-admin-catalog-shell {
 .catalog-sidebar__group:has(.catalog-sidebar__return-badge) .catalog-sidebar__group-chevron{margin-left:0}
 
 
-/* Single-link menu items use the same selected state as expanded groups.
-   Scope + specificity prevent component link styles overriding white text. */
-app-admin-catalog-shell .catalog-sidebar__link:not(.catalog-sidebar__link--active):hover{
+/* Styles are already nested inside app-admin-catalog-shell above.
+   Do not repeat the host selector: that would target an impossible
+   app-admin-catalog-shell nested inside another shell. */
+.catalog-sidebar__link:not(.catalog-sidebar__link--active):hover{
   background:#d4ebf9;
 }
-app-admin-catalog-shell .catalog-sidebar__link.catalog-sidebar__link--active,
-app-admin-catalog-shell .catalog-sidebar__link.catalog-sidebar__link--active:hover,
-app-admin-catalog-shell .catalog-sidebar__link.catalog-sidebar__link--active:focus-visible{
+.catalog-sidebar__link.catalog-sidebar__link--active,
+.catalog-sidebar__link.catalog-sidebar__link--active:hover,
+.catalog-sidebar__link.catalog-sidebar__link--active:focus-visible{
   background:#0d47a1;
   color:#fff;
   font-weight:700;
 }
-app-admin-catalog-shell .catalog-sidebar__link.catalog-sidebar__link--active>img{
+.catalog-sidebar__link.catalog-sidebar__link--active>img{
   filter:brightness(0) invert(1);
 }
-app-admin-catalog-shell .catalog-sidebar__link:focus-visible{
+.catalog-sidebar__link:focus-visible{
   outline:2px solid #0d47a1;
   outline-offset:2px;
 }
