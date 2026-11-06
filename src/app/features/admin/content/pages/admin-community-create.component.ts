@@ -9,8 +9,8 @@ import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/ad
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { CommunityCardComponent } from '../../../customer/blog/pages/community/community-card.component';
 import { AdminContentService } from '../services/admin-content.service';
+import { COMMUNITY_POST_TYPE_LABELS, type CommunityPostType } from '../../../../shared/customer/data/community-post-types';
 
-type CommunityType = 'Chia sẻ'|'Hỏi đáp'|'Thông báo';
 type CommunityTarget = 'DRAFT'|'APPROVED';
 
 function safeImageUrl(value:string):boolean {
@@ -39,11 +39,11 @@ export class AdminCommunityCreateComponent {
     {label:'Bài đăng cộng đồng',link:'/admin/content/community'},
     {label:'Tạo bài đăng'},
   ];
-  readonly types:CommunityType[]=['Chia sẻ','Hỏi đáp','Thông báo'];
+  readonly types:CommunityPostType[]=COMMUNITY_POST_TYPE_LABELS;
   readonly isAdmin=computed(()=>this.session.user()?.systemRole==='ADMIN');
   readonly title=signal('');
   readonly content=signal('');
-  readonly type=signal<CommunityType>('Chia sẻ');
+  readonly type=signal<CommunityPostType>('Khoảnh khắc');
   readonly imageDraft=signal('');
   readonly imageUrls=signal<string[]>([]);
   readonly error=signal('');
@@ -69,7 +69,7 @@ export class AdminCommunityCreateComponent {
 
   setTitle(value:string):void {this.title.set(value);this.dirty.set(true);this.error.set('');}
   setContent(value:string):void {this.content.set(value);this.dirty.set(true);this.error.set('');}
-  setType(value:CommunityType):void {this.type.set(value);this.dirty.set(true);this.error.set('');}
+  setType(value:CommunityPostType):void {this.type.set(value);this.dirty.set(true);this.error.set('');}
   addImage():void {
     const url=this.imageDraft().trim();
     if(!url) return;
