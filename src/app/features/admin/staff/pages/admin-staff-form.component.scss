@@ -105,10 +105,6 @@
 
 /* Manager is a system-level multi-branch role. Keep the form consistent with
    existing staff controls while making the BE dependency explicit. */
-.manager-branch-hint{
-  margin:2px 0 0;color:#687d99;
-  font:400 12px/18px Roboto,Arial,sans-serif;
-}
 .manager-api-note{
   display:flex;flex-direction:column;align-items:flex-start;gap:6px;
   padding:14px 16px;border:1px solid #d6e3f4;border-radius:10px;
