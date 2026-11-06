@@ -57,3 +57,14 @@ Status: FE community list, moderation and Admin composer implemented; Admin crea
 - Admin cannot create post as MANAGER; Manager can moderate, not delete.
 - 4xx/5xx API failures never report success or insert fabricated records.
 - Production Angular CI + browser UI QA on actual deployed API/DB must both pass before phase sign-off.
+
+
+## UX correction after user visual QA (2026-11-06)
+- On the Admin community list, **Tạo bài đăng** now opens the existing Customer page `https://drpetshouse.lat/bai-viet/cong-dong` in a new tab. The separate Admin composer route built earlier remains a technical draft but is **not linked from the Admin list**; do not describe it as the current Add flow.
+- The Admin review modal has one contextual primary action (approve/restore) and an overflow menu for hide/reject/delete. Reject and delete confirmations are embedded in the modal.
+- **Xem trên trang web** goes to `/bai-viet/cong-dong?postId=<id>` for `APPROVED` posts. It is disabled for `PENDING`, `REJECTED`, `HIDDEN`, since the BE public endpoint returns only approved posts. The Customer route reads the ID and opens the matching public post from the loaded feed.
+- Customer composer now submits text posts to the existing authenticated `POST /community/posts`. Backend requires a title; FE derives it from the first nonempty content line and verifies returned `PENDING` status. Failed requests keep the draft; approved-feed items are not fabricated.
+- Uploading local images/videos in the Customer composer is **still blocked** pending a real public media upload endpoint; the UI shows a clear message rather than uploading a blob/object URL or claiming success.
+- Customer post type selection is forwarded as metadata but is not currently persisted in the backend `CommunityPost` schema. Add schema/storage/read mapping.
+- Link opening the **production** Customer site and direct-post navigation will show the new behavior there only after this FE branch is reviewed and deployed. Local code updates alone do not modify the existing production page.
+- Authentication for the Customer composer uses a CUSTOMER login, not an ADMIN session; BE should decide whether an Admin-originated public announcement feature needs a separate contract.
