@@ -40,7 +40,7 @@
           <div class="col-span-3 flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">Đang tải danh sách nhận nuôi...</div>
         } @else if (pets().length) {
           @for (pet of pets(); track pet.id) {
-            <article app-rescue-pet-card [pet]="pet" (onAdopt)="selectedAdoptionPet.set($event)"></article>
+            <article app-rescue-pet-card [pet]="pet"></article>
           }
         } @else {
           <div class="col-span-3 flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#414753]">Không tìm thấy bạn nhỏ phù hợp.</div>
@@ -124,10 +124,4 @@
   </main>
   <app-footer [variant]="'white'" />
 </div>
-<app-adoption-application-modal
-  [open]="compute4()"
-  [pet]="selectedAdoptionPet()"
-  (onClose)="selectedAdoptionPet.set(null)"
-  (onSubmitApplication)="handleSubmitAdoptionApplication($any($event))"
-  [hasOnSubmitApplication]="true"
-/>
+
