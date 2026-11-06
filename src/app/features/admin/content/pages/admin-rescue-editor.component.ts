@@ -152,7 +152,9 @@ export class AdminRescueEditorComponent {
       // Current BE/dev accepts the request but drops partner-support metadata.
       const stored=await firstValueFrom(this.api.getRescuePet(this.savedId).pipe(timeout({first:30000})));
       if(String(stored?.supportPartnerId||'')!==this.draft().supportPartnerId||
-        String(stored?.supportNeeds||'')!==this.draft().supportNeeds.trim()){
+        String(stored?.supportNeeds||'')!==this.draft().supportNeeds.trim()||
+        !Array.isArray(stored?.images)||stored.images[0]!==this.draft().image||
+        (this.isEditing&&String(stored?.status||'')!==this.savedStatus())){
         this.error.set('Hồ sơ đã được ghi nhận nhưng BE chưa lưu đối tác và nhu cầu hỗ trợ. Đã giữ nguyên dữ liệu nhập; cần BE bổ sung supportPartnerId và supportNeeds. Không tạo lại hồ sơ để tránh trùng.');
         this.dirty.set(true);
         return;
