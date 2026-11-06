@@ -9,6 +9,7 @@ export type StaffSubRole =
 
 export interface AuthUser {
   id: string;
+  username?: string | null;
   phone: string;
   fullName: string;
   email: string | null;
@@ -23,6 +24,7 @@ export interface AuthUser {
 
 export interface CurrentUserResponse {
   id?: string;
+  username?: string | null;
   _id?: string;
   phone: string;
   fullName: string;
