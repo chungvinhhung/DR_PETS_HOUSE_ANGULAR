@@ -72,22 +72,10 @@
                   (ngModelChange)="setField('summary',$event)"></textarea>
               </label>
               <label class="article-studio__field article-studio__field--wide">
-                <span>Tiêu đề trên banner (không bắt buộc)</span>
-                <input type="text" maxlength="200" placeholder="Mặc định dùng tiêu đề cẩm nang"
-                  [disabled]="!canWrite() || saving()" [ngModel]="heroTitle()"
-                  (ngModelChange)="setField('heroTitle',$event)">
-              </label>
-              <label class="article-studio__field article-studio__field--wide">
                 <span>Đường dẫn ảnh bìa</span>
                 <input type="url" placeholder="https://.../anh-bia.jpg"
                   [disabled]="!canWrite() || saving()" [ngModel]="coverUrl()"
                   (ngModelChange)="setField('coverUrl',$event)">
-              </label>
-              <label class="article-studio__field article-studio__field--wide">
-                <span>Hotline hỗ trợ (không bắt buộc)</span>
-                <input type="tel" maxlength="30" placeholder="Số điện thoại hỗ trợ thực tế"
-                  [disabled]="!canWrite() || saving()" [ngModel]="hotline()"
-                  (ngModelChange)="setField('hotline',$event)">
               </label>
             </div>
           </section>
@@ -96,6 +84,33 @@
             <div class="article-studio__section-heading">
               <h2 id="aid-steps-heading">Các bước sơ cứu tại chỗ</h2>
               <span class="article-studio__count">{{steps().length}} bước</span>
+            </div>
+            <div class="aid-studio__badge-field">
+              <label for="aid-step-badge-input">Nhãn lưu ý sơ cứu</label>
+              <div class="article-studio__tag-editor aid-studio__badge-editor">
+                <div class="article-studio__tag-entry">
+                  <input id="aid-step-badge-input" type="text" maxlength="40"
+                    placeholder="Ví dụ: Thực hiện chậm, Quan sát kỹ"
+                    [disabled]="!canWrite() || saving() || stepBadges().length >= 6"
+                    [ngModel]="badgeDraft()" (ngModelChange)="badgeDraft.set($event)"
+                    (keydown)="handleStepBadgeKey($event)" (blur)="commitStepBadge()"
+                    aria-label="Nhập nhãn lưu ý sơ cứu">
+                  <button type="button" aria-label="Thêm nhãn lưu ý"
+                    [disabled]="!canWrite() || saving() || !badgeDraft().trim() || stepBadges().length >= 6"
+                    (click)="commitStepBadge()">Thêm</button>
+                </div>
+                @if (stepBadges().length) {
+                  <div class="article-studio__tag-chips" aria-label="Nhãn lưu ý đã thêm">
+                    @for (badge of stepBadges(); track badge) {
+                      <span class="article-studio__tag-chip aid-studio__badge-chip">
+                        {{badge}}
+                        <button type="button" [attr.aria-label]="'Xóa nhãn '+badge"
+                          [disabled]="!canWrite() || saving()" (click)="removeStepBadge(badge)">×</button>
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
             </div>
             <div class="aid-studio__steps-edit">
               @for (step of steps(); track step.id; let idx=$index) {
@@ -209,18 +224,28 @@
                   <img [src]="previewGuide().image" alt="Banner cẩm nang">
                   <div class="aid-studio__hero-gradient"></div>
                   <div class="aid-studio__hero-content">
-                    @if (urgency()==='URGENT') { <span class="aid-studio__urgent-badge">Cấp cứu khẩn cấp</span> }
+                    @if (urgency()==='URGENT') {
+                      <span class="aid-studio__urgent-badge">
+                        <app-customer-icon name="siren" className="h-4 w-4" /> Cấp cứu khẩn cấp
+                      </span>
+                    }
                     <h3>{{previewGuide().heroTitle}}</h3>
                     <p>{{previewGuide().description}}</p>
                   </div>
                 </div>
-                @if (hotline()) {
-                  <div class="aid-studio__emergency">
-                    <strong>Gọi hỗ trợ ngay!</strong>
-                    <span>Hotline: {{hotline()}}</span>
-                  </div>
-                }
-                <h4>Các bước sơ cứu tại chỗ</h4>
+                <div class="aid-studio__emergency-preview" inert>
+                  <aside app-emergency-support></aside>
+                </div>
+                <div class="aid-studio__steps-heading">
+                  <h4>Các bước sơ cứu tại chỗ</h4>
+                  @if (stepBadges().length) {
+                    <div class="aid-studio__steps-badges">
+                      @for (badge of stepBadges(); track badge) {
+                        <span>{{badge}}</span>
+                      }
+                    </div>
+                  }
+                </div>
                 <ol class="aid-studio__detail-steps">
                   @for (step of completedSteps(); track step.id; let idx=$index) {
                     <li>
