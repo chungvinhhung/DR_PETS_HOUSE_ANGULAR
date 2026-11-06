@@ -108,25 +108,65 @@
             <div class="article-studio__section-heading">
               <h2 id="rescue-photo-heading">Hình ảnh thú cưng</h2>
             </div>
-            <div class="rescue-studio__upload-area">
+            <div class="rescue-studio__upload-area"
+              [class.rescue-studio__upload-area--filled]="!!draft().image"
+              [class.rescue-studio__upload-area--dragging]="dragging()"
+              [class.rescue-studio__upload-area--busy]="uploading()"
+              (dragover)="onImageDragOver($event)"
+              (dragleave)="onImageDragLeave($event)"
+              (drop)="onImageDrop($event)">
               <input #photoInput type="file" class="rescue-studio__file-input"
                 accept="image/jpeg,image/png,image/webp" aria-label="Chọn ảnh thú cưng tải lên"
                 [disabled]="uploading() || saving() || !canWrite()"
                 (change)="onImageSelected($event)">
               @if(draft().image){
-                <img class="rescue-studio__upload-thumb" [src]="draft().image" alt="Ảnh thú cưng đã tải lên" />
-              }
-              <div class="rescue-studio__upload-controls">
-                <button type="button" class="web2-admin-btn web2-admin-btn--outline"
-                  [disabled]="uploading() || saving() || !canWrite()" (click)="photoInput.click()">
-                  {{uploading()?'Đang tải ảnh lên...':draft().image?'Thay ảnh':'Tải ảnh lên'}}
+                <div class="rescue-studio__upload-preview">
+                  <img class="rescue-studio__upload-thumb" [src]="draft().image"
+                    alt="Ảnh thú cưng đã tải lên">
+                  <div class="rescue-studio__upload-detail">
+                    <span class="rescue-studio__upload-success">
+                      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="m4.5 10 3.7 3.7 7.3-7.4" stroke="currentColor"
+                          stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      Ảnh đã tải lên
+                    </span>
+                    <strong>Ảnh đại diện thú cưng</strong>
+                    <span class="rescue-studio__upload-hint">JPG, PNG, WebP · Tối đa 5 MB</span>
+                    <div class="rescue-studio__upload-actions">
+                      <button type="button" class="rescue-studio__upload-replace"
+                        [disabled]="uploading() || saving() || !canWrite()"
+                        (click)="photoInput.click()">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M20 7v5h-5M4 17v-5h5M5.5 9A7 7 0 0 1 18 7l2 5M4 12l2 5a7 7 0 0 0 12.5-2"
+                            stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                            stroke-linejoin="round"/>
+                        </svg>
+                        Thay ảnh
+                      </button>
+                      <button type="button" class="rescue-studio__upload-remove"
+                        [disabled]="uploading() || saving() || !canWrite()"
+                        (click)="removeImage()">Xóa ảnh</button>
+                    </div>
+                  </div>
+                </div>
+              } @else {
+                <button type="button" class="rescue-studio__upload-pick"
+                  [disabled]="uploading() || saving() || !canWrite()"
+                  (click)="photoInput.click()">
+                  <span class="rescue-studio__upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"
+                        stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                  <strong>{{uploading() ? 'Đang tải ảnh lên...' : 'Tải ảnh thú cưng lên'}}</strong>
+                  <span class="rescue-studio__upload-subtitle">Kéo thả ảnh vào đây hoặc</span>
+                  <span class="rescue-studio__upload-select">Chọn ảnh từ máy</span>
+                  <span class="rescue-studio__upload-hint">JPG, PNG, WebP · Tối đa 5 MB</span>
                 </button>
-                @if(draft().image){
-                  <button type="button" class="web2-admin-btn web2-admin-btn--outline rescue-studio__remove"
-                    [disabled]="uploading() || saving() || !canWrite()" (click)="removeImage()">Xóa ảnh</button>
-                }
-                <span>JPG, PNG, WebP · Tối đa 5 MB</span>
-              </div>
+              }
             </div>
             @if(uploadError()){
               <p class="rescue-studio__field-error" role="alert">{{uploadError()}}</p>
