@@ -47,6 +47,7 @@ export class AdminRescueEditorComponent {
   readonly loading=signal(this.isEditing);
   readonly saving=signal(false);
   readonly uploading=signal(false);
+  readonly dragging=signal(false);
   readonly loadError=signal('');
   readonly error=signal('');
   readonly uploadError=signal('');
@@ -99,7 +100,26 @@ export class AdminRescueEditorComponent {
   async onImageSelected(event:Event):Promise<void>{
     const input=event.target as HTMLInputElement;
     const file=input.files?.[0];input.value='';
-    if(!file||this.uploading()||this.saving())return;
+    if(file)await this.uploadImage(file);
+  }
+  onImageDragOver(event:DragEvent):void{
+    event.preventDefault();
+    if(this.canWrite()&&!this.uploading()&&!this.saving())this.dragging.set(true);
+  }
+  onImageDragLeave(event:DragEvent):void{
+    // Ignore moves between children of the dropzone.
+    if(!(event.currentTarget as HTMLElement)?.contains(event.relatedTarget as Node|null)){
+      this.dragging.set(false);
+    }
+  }
+  async onImageDrop(event:DragEvent):Promise<void>{
+    event.preventDefault();this.dragging.set(false);
+    if(!this.canWrite()||this.uploading()||this.saving())return;
+    const file=event.dataTransfer?.files?.[0];
+    if(file)await this.uploadImage(file);
+  }
+  private async uploadImage(file:File):Promise<void>{
+    if(!this.canWrite()||this.uploading()||this.saving())return;
     if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){
       this.uploadError.set('Chỉ nhận ảnh JPG, PNG hoặc WebP, dung lượng tối đa 5 MB.');return;
     }
