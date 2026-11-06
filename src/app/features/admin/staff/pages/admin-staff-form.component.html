@@ -7,17 +7,17 @@
           <span aria-hidden="true">›</span>
           <strong>{{ isEdit ? 'Chỉnh sửa nhân viên' : 'Thêm mới' }}</strong>
         </nav>
-        <h1>{{ isEdit ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên' }}</h1>
+        <h1>{{ isEdit ? 'Chỉnh sửa nhân viên' : (isManager ? 'Thêm quản lý' : 'Thêm nhân viên') }}</h1>
       </div>
       <div class="head-actions">
         <button type="button" class="secondary" (click)="cancel()">Hủy bỏ</button>
-        @if (!isEdit) {
+        @if (!isEdit && !isManager) {
           <button type="button" class="secondary icon-button" (click)="submit('assign')">
             <img src="/assets/admin-staff/calendar-today.svg" width="16" height="16" alt="" aria-hidden="true">
             Tạo và phân ca
           </button>
         }
-        <button type="button" class="primary" (click)="submit('save')">{{ isEdit ? 'Lưu thay đổi' : 'Tạo nhân viên' }}</button>
+        <button type="button" class="primary" (click)="submit('save')">{{ isEdit ? 'Lưu thay đổi' : (isManager ? 'Tạo quản lý' : 'Tạo nhân viên') }}</button>
         @if (isEdit) {
           @if (canManageAccount && staff) {
             <button type="button" class="danger-outline" (click)="openAccountStatusDialog()">
@@ -40,7 +40,7 @@
     } @else {
       <form [formGroup]="form" (ngSubmit)="submit('save')" novalidate>
         <section class="panel">
-          <h2>{{ isEdit ? 'Hồ sơ nhân viên' : 'Thông tin nhân viên' }}</h2>
+          <h2>{{ isEdit ? 'Hồ sơ nhân viên' : (isManager ? 'Thông tin quản lý' : 'Thông tin nhân viên') }}</h2>
           <div class="fields basic-fields">
             <label>
               <span class="field-label">Họ và tên <em>*</em></span>
@@ -53,7 +53,7 @@
               @if (fieldError('phone')) { <small class="error">{{ fieldError('phone') }}</small> }
             </label>
             <label>
-              <span class="field-label">Vai trò nghiệp vụ <em>*</em></span>
+              <span class="field-label">Vai trò nhân sự <em>*</em></span>
               <span class="select-wrap">
                 <select formControlName="jobRole">
                   @for (role of roles; track role) { <option [value]="role">{{ labels[role] }}</option> }
@@ -72,8 +72,9 @@
 
         <div class="lower-cards">
           <section class="panel branch-panel">
-            <h2>Phân công chi nhánh</h2>
-            <div class="fields stacked" [class.edit-branch-fields]="isEdit">
+            <h2>{{ isManager ? 'Phạm vi quản lý chi nhánh' : 'Phân công chi nhánh' }}</h2>
+            <div class="fields stacked" [class.edit-branch-fields]="isEdit && !isManager">
+              @if (!isManager) {
               <label>
                 <span class="field-label">Chi nhánh chính @if (!isEdit) { <em>*</em> }</span>
                 <span class="select-wrap">
@@ -87,8 +88,9 @@
                 </span>
                 @if (fieldError('homeBranch')) { <small class="error">{{ fieldError('homeBranch') }}</small> }
               </label>
+              }
               <div class="multi-field">
-                <span class="field-label">{{ isEdit ? 'Chi nhánh được phân công' : 'Chi nhánh làm việc' }} @if (!isEdit) { <em>*</em> }</span>
+                <span class="field-label">{{ isManager ? 'Chi nhánh quản lý' : (isEdit ? 'Chi nhánh được phân công' : 'Chi nhánh làm việc') }} <em>*</em></span>
                 <div class="branch-picker">
                   <button type="button" class="branch-trigger" (click)="toggleBranchMenu()"
                     [attr.aria-expanded]="branchMenuOpen" aria-controls="staff-branch-options">
@@ -96,7 +98,7 @@
                     <img src="/assets/admin-product/expand_more.svg" width="17" height="17" alt="" aria-hidden="true">
                   </button>
                   @if (branchMenuOpen) {
-                    <div class="branch-menu" id="staff-branch-options" role="group" aria-label="Danh sách chi nhánh làm việc">
+                    <div class="branch-menu" id="staff-branch-options" role="group" [attr.aria-label]="isManager ? 'Danh sách chi nhánh quản lý' : 'Danh sách chi nhánh làm việc'">
                       @for (branch of branches; track branch) {
                         <label class="branch-option">
                           <input type="checkbox" [checked]="selectedBranches.has(branch)"
@@ -108,12 +110,21 @@
                   }
                 </div>
                 @if (fieldError('assignedBranches')) { <small class="error">{{ fieldError('assignedBranches') }}</small> }
+                @if (isManager) {
+                  <p class="manager-branch-hint">Chọn một hoặc nhiều chi nhánh mà Quản lý được phép phụ trách.</p>
+                }
               </div>
             </div>
           </section>
 
           <section class="panel account-panel">
             <h2>{{ isEdit ? 'Tài khoản đăng nhập' : 'Tạo tài khoản đăng nhập' }}</h2>
+            @if (isManager) {
+              <div class="manager-api-note" role="status">
+                <strong>Chờ kết nối Backend</strong>
+                <span>Chức năng tạo tài khoản Quản lý nhiều chi nhánh đang chờ API BE. Bấm Tạo quản lý sẽ kiểm tra thông tin, nhưng chưa ghi tài khoản vào hệ thống.</span>
+              </div>
+            }
             @if (isEdit) {
               <div class="account-edit-layout">
                 <div class="account-data">
@@ -134,7 +145,7 @@
           </section>
         </div>
 
-        @if (isEdit) {
+        @if (isEdit && !isManager) {
           <section class="panel schedule-panel" aria-labelledby="schedule-heading">
             <div class="schedule-header">
               <h2 id="schedule-heading">Lịch làm việc theo tuần</h2>
