@@ -105,6 +105,7 @@
   color:#0d47a1;font-weight:600;font-size:13px;text-decoration:none;
 }
 .community-review__web-link:hover{text-decoration:underline;text-underline-offset:3px}
+.community-review__web-link--disabled{border:0;background:transparent;padding:0;opacity:.48;cursor:not-allowed;text-decoration:none}
 .community-review__web-link:focus-visible{outline:2px solid #0d47a1;outline-offset:4px;border-radius:4px}
 .community-review__unpublished{
   font-size:12px;line-height:18px;color:#64748b;
