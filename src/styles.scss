@@ -7834,3 +7834,33 @@ app-admin-inventory-page {
 }
 
 }
+
+
+/* First Aid Phase 2: checklist text editing and published video descriptions.
+   Only this studio uses checkmarks; knowledge articles retain numbered lists. */
+.aid-studio app-admin-article-rich-block .article-rich-editable :is(ul,ol),
+.first-aid-video-rich :is(ul,ol){
+  display:flex;flex-direction:column;gap:9px;
+  list-style:none!important;margin:12px 0!important;padding:0!important;
+}
+.aid-studio app-admin-article-rich-block .article-rich-editable :is(ul,ol)>li,
+.first-aid-video-rich :is(ul,ol)>li{
+  position:relative;list-style:none!important;
+  min-height:23px;margin:0!important;padding:0 0 0 30px!important;
+  counter-increment:none!important;
+}
+.aid-studio app-admin-article-rich-block .article-rich-editable :is(ul,ol)>li::before,
+.first-aid-video-rich :is(ul,ol)>li::before{
+  content:'✓'!important;position:absolute;top:2px;left:0;
+  width:19px;height:19px;border:1.5px solid currentColor;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:transparent;color:inherit;font:700 12px/16px Roboto,Arial,sans-serif;
+}
+.aid-studio app-admin-article-rich-block .article-rich-editable :is(ul,ol)>li::before{
+  border-color:#0d47a1;color:#0d47a1;
+}
+.first-aid-video-rich{min-width:0;overflow-wrap:anywhere;white-space:normal}
+.first-aid-video-rich :is(p,div){margin:0 0 10px;line-height:1.55}
+.first-aid-video-rich :is(p,div):last-child{margin-bottom:0}
+.first-aid-video-rich a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.first-aid-video-rich :is(ul,ol){margin-top:14px!important}
