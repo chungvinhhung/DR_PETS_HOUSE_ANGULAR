@@ -30,10 +30,11 @@ export class AdminContentListComponent{
  readonly postDraft=signal({title:'',category:'',excerpt:'',content:'',status:'DRAFT',emergencyPhone:'1900-PET-HELP'});
  readonly rescueDraft=signal({petName:'',species:'DOG',breed:'',ageDescription:'',healthStatus:'',rescueStory:'',status:'LOOKING_FOR_HOME'});
  readonly pageSize=7;
+ readonly hasCommunityTypes=computed(()=>this.rows().some(row=>Boolean(this.communityType(row))));
  readonly title=({articles:'Bài viết kiến thức','first-aid':'Cẩm nang sơ cứu',community:'Bài đăng cộng đồng',rescue:'Cứu trợ & Nhận nuôi',adoptions:'Đơn đăng ký nhận nuôi'} as Record<ContentMode,string>)[this.mode];
  readonly activeItem=({articles:'content-articles','first-aid':'content-first-aid',community:'content-community',rescue:'content-rescue',adoptions:'content-rescue'} as const)[this.mode];
  readonly isAdmin=computed(()=>this.session.user()?.systemRole==='ADMIN');
- readonly canCreate=computed(()=>this.mode==='rescue' || ((this.mode==='articles'||this.mode==='first-aid') && this.isAdmin()));
+ readonly canCreate=computed(()=>this.mode==='rescue' || ((this.mode==='articles'||this.mode==='first-aid'||this.mode==='community') && this.isAdmin()));
  readonly postCategories=computed(()=>this.mode==='first-aid'
   ? FIRST_AID_CATEGORIES.filter(c=>c.id!=='all').map(c=>c.label)
   : [...new Set(this.rows()
@@ -64,10 +65,14 @@ export class AdminContentListComponent{
         ? String(row.species??'').toUpperCase()===selected
         : (this.mode==='articles'||this.mode==='first-aid')
           ? this.postCategory(row).toLocaleLowerCase('vi')===selected.toLocaleLowerCase('vi')
-          : true
+          : this.mode==='community'
+            ? this.communityType(row).toLocaleLowerCase('vi')===selected.toLocaleLowerCase('vi')
+            : true
     );
     return (!q||text.includes(q)) && categoryMatches &&
-      (!this.status()||String(row.status??row.visibility??'').toUpperCase()===this.status());
+      (!this.status() || (this.mode==='community'
+        ? this.communityStatus(row)===this.status()
+        : String(row.status??row.visibility??'').toUpperCase()===this.status()));
   });
  });
  readonly totalPages=computed(()=>Math.max(1,Math.ceil(this.filtered().length/this.pageSize)));
@@ -75,7 +80,7 @@ export class AdminContentListComponent{
  readonly visible=computed(()=>this.filtered().slice((this.page()-1)*this.pageSize,this.page()*this.pageSize));
  ngOnInit():void{
   const notice=this.route.snapshot.queryParamMap.get('notice');
-  if (['Đã lưu bản nháp bài viết.','Đã xuất bản bài viết.','Đã lưu bản nháp cẩm nang.','Đã xuất bản cẩm nang.'].includes(notice||'')) this.notice.set(notice||'');
+  if (['Đã lưu bản nháp bài viết.','Đã xuất bản bài viết.','Đã lưu bản nháp cẩm nang.','Đã xuất bản cẩm nang.','Đã lưu bản nháp bài đăng.','Đã đăng bài cộng đồng.'].includes(notice||'')) this.notice.set(notice||'');
   this.load();
  }
  load():void{
@@ -92,6 +97,10 @@ export class AdminContentListComponent{
   }
   if(this.mode==='first-aid') {
    void this.router.navigate(['/admin/content/first-aid/new']);
+   return;
+  }
+  if(this.mode==='community') {
+   void this.router.navigate(['/admin/content/community/new']);
    return;
   }
   this.editing.set(null);this.editorError.set('');
@@ -192,11 +201,25 @@ export class AdminContentListComponent{
   });
  }
  name(r:any):string{return r.title||r.name||r.petName||r.pet_name||r.content||r.message||'—';}
- category(r:any):string{if(this.mode==='community')return 'Bài chia sẻ';return r.category?.label||r.category?.name||r.category||r.group||r.species||r.type||'—';}
- author(r:any):string{return r.authorId?.fullName||r.author?.name||r.authorNameSnapshot||r.authorName||r.displayName||r.ownerName||'Dr. Pet’s House';}
+ communityType(r:any):string {
+  const raw=r?.type ?? r?.postType ?? r?.category ?? r?.post_type;
+  if(!raw)return '';
+  const v=typeof raw==='string'?raw:String(raw?.label||raw?.name||'');
+  return ({SHARE:'Chia sẻ',QNA:'Hỏi đáp',QUESTION:'Hỏi đáp',ANNOUNCEMENT:'Thông báo'} as Record<string,string>)[v.toUpperCase()]||v;
+ }
+ communityStatus(r:any):string {
+  const value=String(r?.status||r?.visibility||'').toUpperCase();
+  const reported=Number(r?.reportCount??r?.reportsCount??0)>0 || r?.isReported===true || value==='REPORTED';
+  return reported && value!=='HIDDEN' ? 'REPORTED' : value;
+ }
+ category(r:any):string{
+  if(this.mode==='community')return this.communityType(r)||'—';
+  return r.category?.label||r.category?.name||r.category||r.group||r.species||r.type||'—';
+ }
+ author(r:any):string{return r.authorCustomerId?.fullName||r.authorId?.fullName||r.author?.fullName||r.author?.name||r.authorNameSnapshot||r.authorName||r.displayName||r.ownerName||'—';}
  date(r:any):string{const v=r.updatedAt||r.publishedAt||r.createdAt||r.created_at; if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('vi-VN');}
- statusLabel(r:any):string{const v=String(r.status||r.visibility||'PUBLISHED').toUpperCase();return ({PUBLISHED:'Đã xuất bản',ARCHIVED:'Đã lưu trữ',ACTIVE:'Đã xuất bản',DRAFT:'Bản nháp',HIDDEN:'Ẩn',NORMAL:'Bình thường',REPORTED:'Bị báo cáo',AVAILABLE:'Còn chờ',LOOKING_FOR_HOME:'Chưa có tổ ấm',ADOPTED:'Đã có tổ ấm',PENDING:'Chờ duyệt',UNDER_REVIEW:'Đang xem xét',APPROVED:'Đã duyệt',REJECTED:'Từ chối'} as Record<string,string>)[v]??v;}
- statusClass(r:any):string{const v=String(r.status||r.visibility||'PUBLISHED').toUpperCase();return /HIDDEN|REJECTED|REPORTED/.test(v)?'danger':/DRAFT|PENDING|ARCHIVED/.test(v)?'pending':/UNDER_REVIEW/.test(v)?'info':'success';}
+ statusLabel(r:any):string{const v=this.mode==='community'?this.communityStatus(r):String(r.status||r.visibility||'PUBLISHED').toUpperCase();if(this.mode==='community'&&v==='APPROVED')return 'Bình thường';return ({PUBLISHED:'Đã xuất bản',ARCHIVED:'Đã lưu trữ',ACTIVE:'Đã xuất bản',DRAFT:'Bản nháp',HIDDEN:'Ẩn',NORMAL:'Bình thường',REPORTED:'Bị báo cáo',AVAILABLE:'Còn chờ',LOOKING_FOR_HOME:'Chưa có tổ ấm',ADOPTED:'Đã có tổ ấm',PENDING:'Chờ duyệt',UNDER_REVIEW:'Đang xem xét',APPROVED:'Đã duyệt',REJECTED:'Từ chối'} as Record<string,string>)[v]??v;}
+ statusClass(r:any):string{const v=this.mode==='community'?this.communityStatus(r):String(r.status||r.visibility||'PUBLISHED').toUpperCase();return /HIDDEN|REJECTED|REPORTED/.test(v)?'danger':/DRAFT|PENDING|ARCHIVED/.test(v)?'pending':/UNDER_REVIEW/.test(v)?'info':'success';}
  rescueArea(r:any):string{return r.branchId?.name||r.area||r.location||'—';}
  rescueCondition(r:any):string{return r.healthStatus||r.condition||'—';}
  adoptionCode(r:any):string{return r.requestCode||r.code||r.id||r._id||'—';}
@@ -204,5 +227,5 @@ export class AdminContentListComponent{
  adoptionPet(r:any):string{return r.rescuePetId?.petName||r.petName||'—';}
  adoptionHousing(r:any):string{return r.applicantInfo?.housingType||r.housingType||'—';}
  adoptionExperience(r:any):string{return r.applicantInfo?.hasPetExperience===true?'Có kinh nghiệm':r.applicantInfo?.hasPetExperience===false?'Chưa có kinh nghiệm':r.aloneTime||'—';}
- likes(r:any):number{return Number(r.likesCount||r.likes||0);} comments(r:any):number{return Number(r.commentsCount||r.comments||0);}
+ likes(r:any):number{return Number(r.likesCount??r.likes??0);} comments(r:any):number{return Number(r.commentsCount??r.comments??0);}
 }
