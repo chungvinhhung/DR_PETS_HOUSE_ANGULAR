@@ -50,7 +50,7 @@
           aria-label="Mở menu tài khoản" aria-haspopup="menu"
           [attr.aria-expanded]="profileMenuOpen()"
           aria-controls="admin-account-menu" (click)="toggleProfileMenu()">
-          <img class="catalog-header__avatar" [src]="session.user()?.avatarUrl || '/assets/admin-product/avatar-figma.png'" alt="" width="36" height="36">
+          <img class="catalog-header__avatar" src="/assets/admin-product/admin-mascot-avatar.png" alt="" width="36" height="36">
           <span class="catalog-header__identity">{{ roleLabel() }}<small>{{ session.user()?.fullName || session.user()?.phone || 'Tài khoản' }}</small></span>
           <img class="catalog-header__chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true" width="16" height="16">
         </button>
@@ -61,16 +61,6 @@
               <span>{{ session.user()?.email || session.user()?.phone || 'Tài khoản' }}</span>
             </div>
             <div class="catalog-header__account-divider"></div>
-            @if (canViewAccountProfile()) {
-              <a role="menuitem" routerLink="/admin/profile" class="catalog-header__account-action"
-                (click)="closeProfileMenu()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <circle cx="12" cy="8" r="3.5"/><path d="M5 20v-2.5a7 7 0 0 1 14 0V20"/>
-                </svg>
-                Thông tin tài khoản
-              </a>
-            }
             <button type="button" role="menuitem" class="catalog-header__account-action"
               [disabled]="isLoggingOut()" (click)="logout()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
@@ -220,6 +210,21 @@
             [class.catalog-sidebar__sub--active]="activeItem === 'moderation-reports'">Báo cáo vi phạm</a>
         </div>
       </nav>
+      @if (canViewAccountProfile()) {
+        <div class="catalog-sidebar__footer">
+          <a routerLink="/admin/profile" class="catalog-sidebar__link catalog-sidebar__account-link"
+            [class.catalog-sidebar__link--active]="activeItem === 'account-profile'"
+            [attr.aria-current]="activeItem === 'account-profile' ? 'page' : null"
+            (click)="closeSidebarGroups()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+            </svg>
+            <span>Thông tin tài khoản</span>
+          </a>
+        </div>
+      }
     </aside>
     <div class="catalog-layout__content">
       <ng-content />
