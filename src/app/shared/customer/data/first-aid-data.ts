@@ -3,6 +3,9 @@
  */
 import { blogImages } from '../assets/blog-images';
 
+// Shared support line for every first-aid guide (confirm the production number with BE).
+export const FIRST_AID_SUPPORT_PHONE = '0868686868';
+
 export const FIRST_AID_CATEGORIES = [
   { id: "all", label: "Tất cả" },
   { id: "accident", label: "Tai nạn" },
@@ -110,6 +113,7 @@ export const FIRST_AID_DETAILS = {
     description: "Khi chó có dấu hiệu nghẹt thở, khó thở hoặc liên tục dùng chân cào vào miệng, rất có thể chúng đang bị hóc dị vật. Đây là tình huống đe dọa tính mạng cần được xử lý bình tĩnh và chính xác ngay lập tức.",
     image: blogImages.firstAidChoking,
     steps: FIRST_AID_STEPS,
+    stepBadges: ['Thực hiện chậm', 'Quan sát kỹ'],
     video: {
       title: "Xem video hướng dẫn chi tiết",
       description: "Trực quan hóa các thao tác giúp bạn bình tĩnh và thực hiện chính xác hơn. Video được thực hiện bởi các bác sĩ thú y giàu kinh nghiệm tại Dr. Pet's House.",
