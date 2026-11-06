@@ -282,30 +282,74 @@
             <div class="content-dialog__error" role="alert">{{communityError()}}</div>
           }
           @if (rejecting()) {
-            <label>
-              Lý do từ chối <span class="content-editor__required">*</span>
-              <textarea rows="3" [ngModel]="rejectionReason()" (ngModelChange)="rejectionReason.set($event)"
-                placeholder="Nhập lý do từ chối bài đăng"></textarea>
-            </label>
+            <div class="community-review__inline-action">
+              <label for="community-rejection-reason">Lý do từ chối <span aria-hidden="true">*</span></label>
+              <textarea id="community-rejection-reason" rows="3" maxlength="1000"
+                [ngModel]="rejectionReason()" (ngModelChange)="rejectionReason.set($event)"
+                placeholder="Cho biết vì sao bài đăng không được duyệt"></textarea>
+            </div>
+          }
+          @if (confirmCommunityDelete()) {
+            <div class="community-review__delete-confirm" role="alert">
+              <strong>Xóa vĩnh viễn bài đăng này?</strong>
+              <span>Thao tác này không thể hoàn tác.</span>
+            </div>
           }
         </div>
-        <footer>
-          @if (post.status !== 'HIDDEN') {
-            <button type="button" class="web2-admin-btn web2-admin-btn--outline" [disabled]="actionBusy()" (click)="moderateCommunity('HIDDEN')">Ẩn bài</button>
-          }
-          @if (isAdmin()) {
-            <button type="button" class="web2-admin-btn web2-admin-btn--outline community-review__delete" [disabled]="actionBusy()" (click)="deleteRow(post)">Xóa</button>
-          }
-          <span class="content-dialog__spacer"></span>
-          @if (post.status !== 'REJECTED') {
-            <button type="button" class="web2-admin-btn web2-admin-btn--outline" [disabled]="actionBusy()"
-              (click)="rejecting() ? moderateCommunity('REJECTED') : rejecting.set(true)">
-              {{rejecting() ? 'Xác nhận từ chối' : 'Từ chối'}}
-            </button>
-          }
-          @if (post.status !== 'APPROVED') {
-            <button type="button" class="web2-admin-btn web2-admin-btn--primary" [disabled]="actionBusy()"
-              (click)="moderateCommunity('APPROVED')">{{post.status === 'HIDDEN' ? 'Hiện bài' : 'Duyệt bài'}}</button>
+        <footer class="community-review__footer">
+          @if (rejecting() || confirmCommunityDelete()) {
+            <button type="button" class="web2-admin-btn web2-admin-btn--outline"
+              [disabled]="actionBusy()" (click)="cancelCommunityAction()">Hủy</button>
+            <span class="content-dialog__spacer"></span>
+            @if (rejecting()) {
+              <button type="button" class="web2-admin-btn web2-admin-btn--primary"
+                [disabled]="actionBusy() || rejectionReason().trim().length < 3"
+                (click)="moderateCommunity('REJECTED')">
+                {{actionBusy() ? 'Đang xử lý...' : 'Xác nhận từ chối'}}
+              </button>
+            } @else {
+              <button type="button" class="web2-admin-btn community-review__danger"
+                [disabled]="actionBusy()" (click)="deleteRow(post)">
+                {{actionBusy() ? 'Đang xóa...' : 'Xóa bài đăng'}}
+              </button>
+            }
+          } @else {
+            @if (isCommunityPublic(post)) {
+              <a class="community-review__web-link" routerLink="/bai-viet/cong-dong"
+                [queryParams]="{postId: post._id || post.id}" target="_blank"
+                rel="noopener noreferrer" aria-label="Xem bài đăng này trên trang Cộng đồng">
+                Xem trên trang web <span aria-hidden="true">↗</span>
+              </a>
+            } @else {
+              <span class="community-review__unpublished" title="Chỉ bài đăng đã duyệt mới hiển thị trên trang Customer">Chưa hiển thị công khai</span>
+            }
+            <span class="content-dialog__spacer"></span>
+            <div class="community-review__more">
+              <button type="button" class="community-review__more-trigger"
+                aria-label="Thao tác khác" title="Thao tác khác"
+                aria-haspopup="menu" [attr.aria-expanded]="communityMenuOpen()"
+                [disabled]="actionBusy()" (click)="toggleCommunityMenu()">•••</button>
+              @if (communityMenuOpen()) {
+                <div class="community-review__menu" role="menu">
+                  @if (post.status !== 'HIDDEN') {
+                    <button type="button" role="menuitem" (click)="communityMenuOpen.set(false);moderateCommunity('HIDDEN')">Ẩn bài đăng</button>
+                  }
+                  @if (post.status !== 'REJECTED') {
+                    <button type="button" role="menuitem" (click)="startCommunityRejection()">Từ chối bài đăng</button>
+                  }
+                  @if (isAdmin()) {
+                    <button type="button" role="menuitem" class="community-review__menu-danger"
+                      (click)="startCommunityDeletion()">Xóa bài đăng</button>
+                  }
+                </div>
+              }
+            </div>
+            @if (post.status !== 'APPROVED') {
+              <button type="button" class="web2-admin-btn web2-admin-btn--primary"
+                [disabled]="actionBusy()" (click)="moderateCommunity('APPROVED')">
+                {{actionBusy() ? 'Đang xử lý...' : (post.status === 'HIDDEN' ? 'Hiện bài' : 'Duyệt bài')}}
+              </button>
+            }
           }
         </footer>
       </section>
