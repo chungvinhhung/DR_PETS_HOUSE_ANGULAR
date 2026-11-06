@@ -56,7 +56,11 @@
               <span class="field-label">Vai trò nhân sự <em>*</em></span>
               <span class="select-wrap">
                 <select formControlName="jobRole">
-                  @for (role of roles; track role) { <option [value]="role">{{ labels[role] }}</option> }
+                  @for (role of roles; track role) {
+                    @if (role !== 'MANAGER' || canCreateManager) {
+                      <option [value]="role">{{ labels[role] }}</option>
+                    }
+                  }
                 </select>
                 <img src="/assets/admin-product/expand_more.svg" width="16" height="16" alt="" aria-hidden="true">
               </span>
