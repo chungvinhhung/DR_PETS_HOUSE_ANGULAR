@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, afterNextRender, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import { CustomerAuthService } from '../../../../../core/customer/services/customer-auth.service';
 import { ContentApiService } from '../../../../../core/customer/services/api/content-api.service';
@@ -30,6 +31,7 @@ export class CommunityPageComponent {
   protected readonly authService = inject(CustomerAuthService);
   protected readonly contentApi = inject(ContentApiService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
 
   // --- Dữ liệu & hàm dùng trong template ---
   protected readonly blogImages: any = blogImages;
@@ -63,8 +65,16 @@ export class CommunityPageComponent {
         this.contentApi.getCommunityPostsPage({ page: 1, limit: 100 })
           .then((payload: any) => {
             if (!active) return;
-            this.posts.set(payload.posts.map(normalizeApiCommunityPost));
-            if (!payload.posts.length) {
+            const approvedPosts = payload.posts.map(normalizeApiCommunityPost);
+            this.posts.set(approvedPosts);
+            const requestedId = this.route.snapshot.queryParamMap.get('postId');
+            if (requestedId) {
+              if (approvedPosts.some((post: any) => post.id === requestedId)) {
+                void this.openPost(requestedId);
+              } else {
+                this.apiEmptyMessage.set('Không tìm thấy bài đăng trong danh sách công khai đang tải.');
+              }
+            } else if (!payload.posts.length) {
               this.apiEmptyMessage.set("Chưa có bài đăng cộng đồng đã được duyệt.");
             }
           })
