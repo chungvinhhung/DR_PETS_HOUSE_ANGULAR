@@ -128,10 +128,10 @@ export class AdminFirstAidEditorComponent {
       id:index+1,title:String(step.title || ''),
       description:String(step.step_content || step.instruction || step.description || ''),
     }));
-    if(parsedSteps.length) this.steps.set(parsedSteps);
-    else if(String(row.content || '').trim()) {
-      this.steps.set([{id:1,title:'Hướng dẫn sơ cứu',description:String(row.content).trim()}]);
-    }
+    // Preserve the structured steps returned by BE. Never manufacture a first-aid
+    // instruction from an unrelated free-text content field.
+    this.steps.set(parsedSteps);
+
     this.nextStepId=Math.max(...this.steps().map(s=>s.id))+1;
     this.videoUrl.set(String(row.video_url || row.videoUrl || row.video?.url || ''));
     this.videoTitle.set(String(row.video_title || row.videoTitle || row.video?.title || ''));
