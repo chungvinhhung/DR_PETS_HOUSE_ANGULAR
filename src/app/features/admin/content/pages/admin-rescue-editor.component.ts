@@ -2,26 +2,24 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AdminContentService } from '../services/admin-content.service';
-import { BranchManagementApiService, BranchApiRecord } from '../../branch-management/services/branch-management-api.service';
+import { AdminProductService } from '../../products/services/admin-product.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { RESCUE_PARTNERS } from '../../../customer/rescue/data/rescue-data';
 
 type RescueSpecies='DOG'|'CAT'|'OTHER';
-type RescueGender='MALE'|'FEMALE'|'UNKNOWN';
 type RescueDraft={
-  petName:string;species:RescueSpecies;breed:string;gender:RescueGender;
-  ageDescription:string;healthStatus:string;rescueStory:string;
-  imagesText:string;branchId:string;
+  petName:string;species:RescueSpecies;rescueStory:string;healthStatus:string;
+  supportNeeds:string;supportPartnerId:string;image:string;
 };
-const newRescueDraft=():RescueDraft=>({
-  petName:'',species:'DOG',breed:'',gender:'UNKNOWN',
-  ageDescription:'',healthStatus:'',rescueStory:'',imagesText:'',branchId:'',
+const blank=():RescueDraft=>({
+  petName:'',species:'DOG',rescueStory:'',healthStatus:'',
+  supportNeeds:'',supportPartnerId:'',image:'',
 });
-
 @Component({
   selector:'app-admin-rescue-editor',
   standalone:true,
@@ -34,7 +32,7 @@ export class AdminRescueEditorComponent {
   private readonly route=inject(ActivatedRoute);
   private readonly router=inject(Router);
   private readonly api=inject(AdminContentService);
-  private readonly branchesApi=inject(BranchManagementApiService);
+  private readonly uploader=inject(AdminProductService);
   private readonly auth=inject(AuthSessionService);
   readonly id=this.route.snapshot.paramMap.get('id')||'';
   readonly isEditing=Boolean(this.id);
@@ -43,120 +41,129 @@ export class AdminRescueEditorComponent {
     {label:'Cứu trợ & Nhận nuôi',link:'/admin/content/rescue'},
     {label:this.isEditing?'Chỉnh sửa hồ sơ':'Thêm hồ sơ'},
   ];
-  readonly draft=signal<RescueDraft>(newRescueDraft());
-  readonly branches=signal<BranchApiRecord[]>([]);
-  readonly branchesError=signal('');
+  readonly partners=RESCUE_PARTNERS;
+  readonly draft=signal<RescueDraft>(blank());
+  readonly selectedPartner=computed(()=>this.partners.find(p=>p.id===this.draft().supportPartnerId));
   readonly loading=signal(this.isEditing);
   readonly saving=signal(false);
+  readonly uploading=signal(false);
   readonly loadError=signal('');
   readonly error=signal('');
+  readonly uploadError=signal('');
   readonly dirty=signal(false);
   readonly petCode=signal('');
   readonly savedStatus=signal('LOOKING_FOR_HOME');
+  // Preserve pre-existing BE-only attributes in old records, even though the
+  // partner-card editor does not expose fields absent from the Customer card.
+  private legacyFields:{breed:string;ageDescription:string;gender:string;branchId:string|null}={
+    breed:'Chưa cập nhật',ageDescription:'Chưa cập nhật',gender:'UNKNOWN',branchId:null,
+  };
+  private savedId='';
   private leaving=false;
-  readonly previewImages=computed(()=>this.draft().imagesText
-    .split(/\r?\n/).map(s=>s.trim()).filter(Boolean));
-  readonly previewImage=computed(()=>this.previewImages()[0]||'');
-  readonly branchName=computed(()=>{
-    const id=this.draft().branchId;
-    return this.branches().find(item=>item.id===id)?.name || '';
-  });
-
-  ngOnInit():void {
-    void this.loadBranches();
-    if(this.isEditing)void this.load();
-  }
-  private async loadBranches():Promise<void> {
-    try {
-      const items=await firstValueFrom(this.branchesApi.listBranches());
-      this.branches.set(Array.isArray(items)?items:[]);
-    } catch {
-      this.branchesError.set('Không tải được danh sách chi nhánh. Bạn vẫn có thể lưu mà không thay đổi chi nhánh.');
-    }
-  }
-  private async load():Promise<void> {
+  ngOnInit():void {if(this.isEditing)void this.load();}
+  private async load():Promise<void>{
     this.loading.set(true);this.loadError.set('');
-    try {
-      const row=await firstValueFrom(this.api.getRescuePet(this.id));
-      if(!row?._id && !row?.id)throw Error('Không tìm thấy hồ sơ cứu trợ trên BE.');
+    try{
+      const row=await firstValueFrom(this.api.getRescuePet(this.id).pipe(timeout({first:30000})));
+      if(!row?._id&&!row?.id)throw Error('Không tìm thấy hồ sơ cứu trợ.');
+      this.savedId=String(row._id||row.id);
       this.petCode.set(String(row.petCode||''));
       this.savedStatus.set(String(row.status||'LOOKING_FOR_HOME'));
+      this.legacyFields={
+        breed:String(row.breed||'Chưa cập nhật'),
+        ageDescription:String(row.ageDescription||'Chưa cập nhật'),
+        gender:String(row.gender||'UNKNOWN'),
+        branchId:String(row.branchId?._id||row.branchId?.id||
+          (typeof row.branchId==='string'?row.branchId:'')||'')||null,
+      };
       this.draft.set({
-        petName:String(row.petName||''),
-        species:(['DOG','CAT','OTHER'].includes(row.species)?row.species:'DOG') as RescueSpecies,
-        breed:String(row.breed||''),
-        gender:(['MALE','FEMALE','UNKNOWN'].includes(row.gender)?row.gender:'UNKNOWN') as RescueGender,
-        ageDescription:String(row.ageDescription||''),
-        healthStatus:String(row.healthStatus||''),
-        rescueStory:String(row.rescueStory||''),
-        imagesText:Array.isArray(row.images)?row.images.filter((v:unknown):v is string=>typeof v==='string').join('\n'):'',
-        branchId:String(row.branchId?._id||row.branchId?.id||(typeof row.branchId==='string'?row.branchId:'')||''),
+        petName:String(row.petName||''),species:(['DOG','CAT','OTHER'].includes(row.species)?row.species:'DOG') as RescueSpecies,
+        rescueStory:String(row.rescueStory||''),healthStatus:String(row.healthStatus||''),
+        supportNeeds:String(row.supportNeeds||''),
+        supportPartnerId:String(row.supportPartnerId||''),
+        image:Array.isArray(row.images)?String(row.images[0]||''):'',
       });
       this.dirty.set(false);
-    } catch(err:any) {
-      this.loadError.set(err?.error?.message||err?.message||'Không thể tải hồ sơ cứu trợ.');
-    } finally {
-      this.loading.set(false);
-    }
+    }catch(err:any){this.loadError.set(err?.error?.message||err?.message||'Không thể tải hồ sơ cứu trợ.');}
+    finally{this.loading.set(false);}
   }
-  setField<K extends keyof RescueDraft>(key:K,value:RescueDraft[K]):void {
+  setField<K extends keyof RescueDraft>(key:K,value:RescueDraft[K]):void{
     this.draft.update(current=>({...current,[key]:value}));
     this.dirty.set(true);this.error.set('');
   }
-  private buildPayload():Record<string,unknown>|null {
+  async onImageSelected(event:Event):Promise<void>{
+    const input=event.target as HTMLInputElement;
+    const file=input.files?.[0];input.value='';
+    if(!file||this.uploading()||this.saving())return;
+    if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){
+      this.uploadError.set('Chỉ nhận ảnh JPG, PNG hoặc WebP, dung lượng tối đa 5 MB.');return;
+    }
+    this.uploading.set(true);this.uploadError.set('');
+    try{
+      // Reuse the existing authenticated, multipart image uploader until BE
+      // provides a dedicated /uploads/rescue contract.
+      const response=await firstValueFrom(this.uploader.uploadImages([file]).pipe(timeout({first:45000})));
+      const url=response.items?.[0]?.url;
+      if(!url||!/^https?:\/\//i.test(url))throw Error('Máy chủ không trả về URL ảnh hợp lệ.');
+      this.setField('image',url);
+    }catch(err:any){
+      this.uploadError.set(err?.error?.message||err?.message||'Không thể tải ảnh lên máy chủ.');
+    }finally{this.uploading.set(false);}
+  }
+  removeImage():void{if(!this.uploading()&&!this.saving())this.setField('image','');}
+  private buildPayload():Record<string,unknown>|null{
     const d=this.draft();
-    if(!d.petName.trim()||!d.breed.trim()||!d.ageDescription.trim()||
-       !d.healthStatus.trim()||!d.rescueStory.trim()){
-      this.error.set('Vui lòng nhập đầy đủ các trường bắt buộc.');return null;
+    if(!d.petName.trim()||!d.rescueStory.trim()||!d.healthStatus.trim()||!d.supportNeeds.trim()){
+      this.error.set('Vui lòng nhập đủ tên thú cưng, câu chuyện, tình trạng và nhu cầu hỗ trợ.');return null;
     }
-    const images=this.previewImages();
-    if(images.length===0){
-      this.error.set('Vui lòng cung cấp ít nhất một URL ảnh thật; BE hiện tự thay bằng ảnh mẫu khi bỏ trống.');return null;
+    if(!d.supportPartnerId||!this.selectedPartner()){
+      this.error.set('Vui lòng chọn đúng đối tác cứu trợ phụ trách bé.');return null;
     }
-    if(images.length>8){
-      this.error.set('Tối đa 8 ảnh cho mỗi hồ sơ.');return null;
-    }
-    for(const src of images){
-      try {
-        if(!['http:','https:'].includes(new URL(src).protocol))throw Error('invalid protocol');
-      } catch {
-        this.error.set('Đường dẫn ảnh không hợp lệ. Mỗi dòng phải là URL http(s) của ảnh đã lưu trên máy chủ.');
-        return null;
-      }
+    if(!d.image){
+      this.error.set('Vui lòng tải ảnh thú cưng lên máy chủ trước khi lưu.');return null;
     }
     return {
-      petName:d.petName.trim(),species:d.species,breed:d.breed.trim(),gender:d.gender,
-      ageDescription:d.ageDescription.trim(),healthStatus:d.healthStatus.trim(),
-      rescueStory:d.rescueStory.trim(),images,
-      branchId:d.branchId||null,
+      petName:d.petName.trim(),species:d.species,
+      breed:this.legacyFields.breed,ageDescription:this.legacyFields.ageDescription,
+      gender:this.legacyFields.gender,
+      ...(this.legacyFields.branchId?{branchId:this.legacyFields.branchId}:{}),
+      rescueStory:d.rescueStory.trim(),healthStatus:d.healthStatus.trim(),
+      supportNeeds:d.supportNeeds.trim(),supportPartnerId:d.supportPartnerId,
+      images:[d.image],
     };
   }
-  async save():Promise<void> {
-    if(!this.canWrite()||this.loading()||this.saving())return;
+  async save():Promise<void>{
+    if(!this.canWrite()||this.loading()||this.saving()||this.uploading())return;
     const body=this.buildPayload();if(!body)return;
     this.saving.set(true);this.error.set('');
-    try {
-      const result=await firstValueFrom(this.isEditing
-        ? this.api.updateRescuePet(this.id,body)
-        : this.api.createRescuePet(body));
-      if(!result?._id && !result?.id){
-        throw Error('BE chưa xác nhận mã hồ sơ sau khi lưu. Vui lòng kiểm tra danh sách trước khi thử lại.');
+    try{
+      const id=this.savedId||this.id;
+      const result=await firstValueFrom((id?this.api.updateRescuePet(id,body):this.api.createRescuePet(body))
+        .pipe(timeout({first:45000})));
+      if(!result?._id&&!result?.id)throw Error('BE chưa xác nhận mã hồ sơ; kiểm tra trước khi thử lại.');
+      this.savedId=String(result._id||result.id);
+      this.dirty.set(false);
+      // Current BE/dev silently drops these new schema fields. Do not claim
+      // the contact association was saved until both values are round-tripped.
+      if(result.supportPartnerId!==this.draft().supportPartnerId||
+        result.supportNeeds!==this.draft().supportNeeds.trim()){
+        this.error.set('BE đã nhận hồ sơ nhưng chưa lưu đối tác và nhu cầu hỗ trợ. Cần bổ sung supportPartnerId và supportNeeds trên BE trước khi hồ sơ có thể liên kết đúng tới đối tác.');
+        return;
       }
-      this.dirty.set(false);this.leaving=true;
+      this.leaving=true;
       await this.router.navigate(['/admin/content/rescue'],{
         queryParams:{notice:this.isEditing?'Đã cập nhật hồ sơ cứu trợ.':'Đã tạo hồ sơ cứu trợ.'},
       });
-    } catch(err:any) {
-      this.error.set(err?.error?.message||err?.message||'Không thể lưu hồ sơ cứu trợ. Vui lòng thử lại.');
-    } finally {this.saving.set(false);}
+    }catch(err:any){this.error.set(err?.error?.message||err?.message||'Không thể lưu hồ sơ. Vui lòng thử lại.');}
+    finally{this.saving.set(false);}
   }
-  cancel():void {
-    if(this.dirty() && typeof window!=='undefined' &&
+  cancel():void{
+    if(this.dirty()&&typeof window!=='undefined'&&
       !window.confirm('Nội dung chưa lưu sẽ bị mất. Bạn có muốn rời trang?'))return;
     this.leaving=true;void this.router.navigate(['/admin/content/rescue']);
   }
   @HostListener('window:beforeunload',['$event'])
-  beforeUnload(event:BeforeUnloadEvent):void {
+  beforeUnload(event:BeforeUnloadEvent):void{
     if(this.dirty()&&!this.leaving)event.preventDefault();
   }
 }
