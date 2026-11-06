@@ -320,7 +320,10 @@
                 Xem trên trang web <span aria-hidden="true">↗</span>
               </a>
             } @else {
-              <span class="community-review__unpublished" title="Chỉ bài đăng đã duyệt mới hiển thị trên trang Customer">Chưa hiển thị công khai</span>
+              <button type="button" class="community-review__web-link community-review__web-link--disabled"
+                disabled title="Bài đăng đang chờ duyệt, bị từ chối hoặc bị ẩn nên chưa thể xem trên trang Customer">
+                Xem trên trang web <span aria-hidden="true">↗</span>
+              </button>
             }
             <span class="content-dialog__spacer"></span>
             <div class="community-review__more">
