@@ -17,3 +17,9 @@
 .moderation-page__dialog-body textarea{width:100%;min-height:90px;resize:vertical;box-sizing:border-box;border:1px solid #ccdbea;border-radius:9px;padding:10px 12px;font:400 14px/22px Roboto,Arial,sans-serif}
 .moderation-page__dialog-body textarea:focus-visible{outline:2px solid #0d47a1;outline-offset:1px}
 .moderation-page__dialog footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:14px 24px;border-top:1px solid #edf0f5}
+
+.moderation-page__review-context{display:flex;flex-direction:column;gap:6px;margin:12px 0;color:#63758d;font:400 12px/19px Roboto,Arial,sans-serif}
+.moderation-page__customer-link{display:inline-flex;align-items:center;gap:7px;margin-right:auto;color:#0d47a1;text-decoration:none;font:600 13px/19px Roboto,Arial,sans-serif}
+.moderation-page__customer-link:hover{text-decoration:underline;text-underline-offset:3px}
+.moderation-page__customer-link:focus-visible{outline:2px solid #0d47a1;outline-offset:3px;border-radius:3px}
+@media(max-width:560px){.moderation-page__dialog footer{flex-wrap:wrap}.moderation-page__customer-link{flex-basis:100%}}
