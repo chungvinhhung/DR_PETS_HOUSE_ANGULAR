@@ -189,6 +189,15 @@ export function normalizeFirstAidGuide(guide: any = {}, index: any = 0) {
     ? (FIRST_AID_CATEGORIES.find((item:any) => item.id === category)?.label || category)
     : (category.category_name || category.name || category.label ||
       FIRST_AID_CATEGORIES.find((item:any)=>item.id===guide.categoryId)?.label || 'Sơ cứu');
+  const rawBadges = guide.step_badges ?? guide.stepBadges;
+  // Only render badges returned by BE; never inject hardcoded tips into published guides.
+  const stepBadges: string[] = Array.isArray(rawBadges)
+    ? [...new Set<string>(
+        rawBadges.filter((value: unknown): value is string => typeof value === 'string')
+          .map((value: string) => value.trim().replace(/\s+/g, ' ').slice(0, 40))
+          .filter((value: string) => Boolean(value)),
+      )].slice(0, 6)
+    : [];
   const videoUrl = String(guide.video_url || guide.videoUrl || guide.video?.url || '').trim();
   const videoHighlights = guide.video_highlights || guide.videoHighlights || guide.video?.highlights || [];
   return {
@@ -205,6 +214,7 @@ export function normalizeFirstAidGuide(guide: any = {}, index: any = 0) {
       guide.excerpt || (guide.content ? String(guide.content).split('\n')[0] : ''),
     // Missing API steps are not an invitation to invent medical instructions.
     steps,
+    stepBadges,
     video: videoUrl ? {
       title: guide.video_title || guide.videoTitle || guide.video?.title || 'Video hướng dẫn',
       description: guide.video_description || guide.videoDescription || guide.video?.description || '',
