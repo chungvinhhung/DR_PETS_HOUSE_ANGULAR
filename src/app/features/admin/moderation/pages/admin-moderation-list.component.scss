@@ -1,1 +1,19 @@
 :host{display:block;min-width:0}
+.moderation-page__notice{margin:0 0 14px;padding:10px 14px;border:1px solid #bde2cf;background:#f2fbf5;color:#21663e;border-radius:9px;font:500 13px/20px Roboto,Arial,sans-serif}
+.moderation-page__clickable{cursor:pointer}
+.moderation-page__clickable:hover{background:#f7faff}
+.moderation-page__clickable:focus-visible{outline:2px solid #0d47a1;outline-offset:-3px}
+.moderation-page__scrim{position:fixed;inset:0;z-index:1400;display:flex;align-items:center;justify-content:center;background:rgba(22,34,54,.45);padding:16px}
+.moderation-page__dialog{display:flex;flex-direction:column;width:min(560px,100%);max-height:min(650px,92vh);overflow:hidden;border:1px solid #dce5f0;border-radius:16px;background:#fff;box-shadow:0 20px 60px rgba(15,23,42,.18)}
+.moderation-page__dialog header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:22px 24px 18px;border-bottom:1px solid #edf0f5}
+.moderation-page__dialog header h2{font:700 19px/27px Roboto,Arial,sans-serif;color:#202e45;margin:0;overflow-wrap:anywhere}
+.moderation-page__dialog header span{display:block;margin-top:6px;color:#64748b;font:400 13px/19px Roboto,Arial,sans-serif}
+.moderation-page__close{border:0;background:none;color:#64748b;font-size:25px;cursor:pointer}
+.moderation-page__dialog-body{padding:22px 24px;overflow-y:auto}
+.moderation-page__rating{display:flex;align-items:center;gap:12px;color:#0d47a1;font:700 14px/21px Roboto,Arial,sans-serif}
+.moderation-page__dialog-body p{margin:16px 0;white-space:pre-wrap;overflow-wrap:anywhere;color:#354259;font:400 14px/23px Roboto,Arial,sans-serif}
+.moderation-page__dialog-body label{display:block;margin:15px 0 8px;color:#203750;font:600 13px/21px Roboto,Arial,sans-serif}
+.moderation-page__dialog-body label strong{color:#c62828}
+.moderation-page__dialog-body textarea{width:100%;min-height:90px;resize:vertical;box-sizing:border-box;border:1px solid #ccdbea;border-radius:9px;padding:10px 12px;font:400 14px/22px Roboto,Arial,sans-serif}
+.moderation-page__dialog-body textarea:focus-visible{outline:2px solid #0d47a1;outline-offset:1px}
+.moderation-page__dialog footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:14px 24px;border-top:1px solid #edf0f5}
