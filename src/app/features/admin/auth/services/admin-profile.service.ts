@@ -53,6 +53,7 @@ export class AdminProfileService {
   private normalizeUser(response: CurrentUserResponse): AuthUser {
     return {
       id: response.id ?? response._id ?? '',
+      username: response.username ?? null,
       phone: response.phone,
       fullName: response.fullName,
       email: response.email ?? null,
