@@ -178,7 +178,7 @@ export class AdminContentListComponent{
   this.actionBusy.set(true);this.notice.set('');
   const req=this.mode==='rescue'?this.api.deleteRescuePet(id):(this.mode==='community'?this.api.deleteCommunity(id):this.api.deletePost(id));
   req.pipe(finalize(()=>this.actionBusy.set(false))).subscribe({
-   next:()=>{this.rows.update(rows=>rows.filter(r=>String(r?._id||r?.id)!==id));if(this.mode==='community')this.closeCommunity();this.notice.set('Đã xóa nội dung.');},
+   next:()=>{this.rows.update(rows=>rows.filter(r=>String(r?._id||r?.id)!==id));if(this.mode==='community'){this.communityDialog.set(null);this.rejecting.set(false);this.communityError.set('');}this.notice.set('Đã xóa nội dung.');},
    error:()=>{if(this.mode==='community'&&this.communityDialog())this.communityError.set('Không thể xóa bài đăng. Vui lòng thử lại.');else this.notice.set('Không thể xóa nội dung. Vui lòng thử lại.');},
   });
  }
