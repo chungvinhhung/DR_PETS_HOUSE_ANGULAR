@@ -10,8 +10,7 @@ import { FooterComponent } from '../../../../../layouts/customer/components/foot
 import { PostModalComponent } from './post-modal.component';
 import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
 import { blogImages } from '../../../../../shared/customer/assets/blog-images';
-import { COMMUNITY_POSTS, FEATURED_COMMUNITY_POST, INITIAL_COMMUNITY_COMMENTS } from '../../../../../shared/customer/data/community-data';
-import { EMPTY_COMMENTS, normalizeCommunityPost, normalizeApiCommunityPost, splitBalanced } from './community-page.helpers';
+import { EMPTY_COMMENTS, normalizeApiCommunityPost, splitBalanced } from './community-page.helpers';
 
 /**
  * CommunityPage — chuyển từ React: src/pages/Blog/CommunityPage.jsx
@@ -37,15 +36,14 @@ export class CommunityPageComponent {
   protected readonly EMPTY_COMMENTS: any = EMPTY_COMMENTS;
 
   // --- Giá trị tính toán (computed) ---
-  readonly featured = computed<any>(() => ({ ...normalizeCommunityPost(FEATURED_COMMUNITY_POST), featured: true }));
-  readonly allPosts = computed<any>(() => [this.featured(), ...this.posts()]);
+  readonly allPosts = computed<any>(() => this.posts());
   readonly columns = computed<any>(() => splitBalanced(this.allPosts()));
   readonly selectedPost = computed<any>(() => this.allPosts().find((post: any) => post.id === this.selectedId()));
 
   // --- Trạng thái (signal = useState / useRef) ---
-  readonly posts = signal<any>((() => COMMUNITY_POSTS.map(normalizeCommunityPost))());
+  readonly posts = signal<any[]>([]);
   readonly selectedId = signal<any>(null);
-  readonly commentsByPost = signal<any>({ [this.featured().id]: INITIAL_COMMUNITY_COMMENTS });
+  readonly commentsByPost = signal<any>({});
   readonly postState = signal<any>({});
   readonly shareNotice = signal<any>("");
   readonly isLoading = signal<any>(false);
@@ -62,18 +60,18 @@ export class CommunityPageComponent {
         this.loadError.set("");
         this.apiEmptyMessage.set("");
 
-        this.contentApi.getPostsPage({ type: "community", limit: 100 })
+        this.contentApi.getCommunityPostsPage({ page: 1, limit: 100 })
           .then((payload: any) => {
             if (!active) return;
-            if (!payload.posts.length) {
-              this.apiEmptyMessage.set("API cộng đồng chưa có dữ liệu, đang hiển thị dữ liệu mẫu từ giao diện.");
-              return;
-            }
             this.posts.set(payload.posts.map(normalizeApiCommunityPost));
+            if (!payload.posts.length) {
+              this.apiEmptyMessage.set("Chưa có bài đăng cộng đồng đã được duyệt.");
+            }
           })
           .catch((error: any) => {
             if (!active) return;
-            this.apiEmptyMessage.set(error?.message || "Không thể tải bài viết cộng đồng, đang hiển thị dữ liệu mẫu từ giao diện.");
+            this.posts.set([]);
+            this.loadError.set(error?.message || "Không thể tải bài đăng cộng đồng. Vui lòng thử lại.");
           })
           .finally(() => {
             if (active) this.isLoading.set(false);
