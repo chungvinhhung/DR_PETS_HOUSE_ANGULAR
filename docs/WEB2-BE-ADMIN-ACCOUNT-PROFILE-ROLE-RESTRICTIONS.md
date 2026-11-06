@@ -34,3 +34,9 @@ Figma reference: `6059:19324` (avatar dropdown); new account page reuses AdminCa
 - UAT-AC07 Authenticated logout clears session, opens login; accessing profile after logout requires login.
 
 **Handoff:** BE deployed SHA/environment, example sanitized DTOs/errors, UAT logs, seed ADMIN account evidence. Do not mark E2E PASS until FE browser UAT on the same deployed API.
+
+## P0 – Username required by Admin profile
+- `User.username` exists and Admin can authenticate by username, but BE/dev `src/modules/auth/auth.serializer.js` `formatMe` currently omits it, even though `GET /auth/me` and `PUT /auth/me` use the serializer.
+- Add `username: user.username || null` to the safe `formatMe` DTO (and OpenAPI schema, auth login response for consistency); do not derive it from phone/email or let users edit it from the profile form.
+- FE shows the **Tên đăng nhập** card using the server-provided `username`. Until BE ships the field, it displays `—` rather than claiming a fabricated identifier.
+- UAT: seed Admin username returned unchanged by GET /auth/me; after updating name/email, response still includes same username; refresh retains it. MANAGER/STAFF still blocked from /admin/profile.
