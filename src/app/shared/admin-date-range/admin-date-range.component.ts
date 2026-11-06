@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, HostListener, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, computed, inject, input, output, signal } from '@angular/core';
 
 export interface AdminDateRange {
   from: string;
@@ -21,6 +21,7 @@ function localDay(date: Date): string {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminDateRangeComponent {
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly from = input('');
   readonly to = input('');
   readonly rangeChange = output<AdminDateRange>();
@@ -95,12 +96,7 @@ export class AdminDateRangeComponent {
   @HostListener('document:click', ['$event'])
   onOutside(event: MouseEvent): void {
     if (this.open() && event.target instanceof Node
-      && !this.hostContains(event.target)) this.close();
-  }
-
-  private hostContains(node: Node): boolean {
-    return Boolean((node as Element).parentElement?.closest('app-admin-date-range')
-      || (node as Element).closest?.('app-admin-date-range'));
+      && !this.host.nativeElement.contains(event.target)) this.close();
   }
 
   @HostListener('document:keydown.escape')
