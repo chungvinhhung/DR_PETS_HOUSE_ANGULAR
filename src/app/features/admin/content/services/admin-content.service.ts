@@ -97,6 +97,10 @@ export class AdminContentService {
     return this.api.delete<any>(`/admin/community/posts/${encodeURIComponent(id)}`);
   }
 
+  getRescuePet(id:string):Observable<any> {
+    return this.api.get<any>(`/admin/rescue/pets/${encodeURIComponent(id)}`).pipe(map(unwrap));
+  }
+
   createRescuePet(body:any):Observable<any> {
     return this.api.post<any>('/admin/rescue/pets',body).pipe(map(unwrap));
   }
