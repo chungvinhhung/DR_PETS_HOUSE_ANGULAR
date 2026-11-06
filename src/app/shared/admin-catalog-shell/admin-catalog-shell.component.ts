@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, computed, inject, signal } from '@angular/core';
 import { AdminToastService } from '../services/admin-toast.service';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { HostListener } from '@angular/core';
+import { finalize } from 'rxjs';
+import { AdminAuthService } from '../../features/admin/auth/services/admin-auth.service';
 import { AdminReturnNotificationService } from '../services/admin-return-notification.service';
 import { AdminOrderNotificationService } from '../services/admin-order-notification.service';
 import { AdminSidebarAccordionService, AdminSidebarGroup } from '../services/admin-sidebar-accordion.service';
@@ -30,6 +33,11 @@ export class AdminCatalogShellComponent implements OnChanges {
   private readonly accordion = inject(AdminSidebarAccordionService);
   readonly notifications = inject(AdminNotificationService);
   readonly session = inject(AuthSessionService);
+  private readonly router = inject(Router);
+  private readonly adminAuth = inject(AdminAuthService);
+  readonly profileMenuOpen = signal(false);
+  readonly isLoggingOut = signal(false);
+  readonly canViewAccountProfile = computed(() => this.session.hasAnyRole(['ADMIN']));
   readonly notificationOpen = signal(false);
 
   @Input({ required: true }) activeItem!:
@@ -37,7 +45,7 @@ export class AdminCatalogShellComponent implements OnChanges {
     | 'services' | 'appointments' | 'service-records'
     | 'branches' | 'staff' | 'inventory' | 'customers'
     | 'content-articles' | 'content-first-aid' | 'content-community' | 'content-rescue'
-    | 'moderation-reviews' | 'moderation-feedback' | 'moderation-reports';
+    | 'moderation-reviews' | 'moderation-feedback' | 'moderation-reports' | 'account-profile';
 
   // Animation is intentionally disabled on each newly mounted shell. Route
   // initialization should NEVER replay the previous group's close animation.
@@ -96,6 +104,7 @@ export class AdminCatalogShellComponent implements OnChanges {
       case 'moderation-reports':
         return 'feedback';
       case 'customers':
+      case 'account-profile':
         return null;
     }
   }
@@ -129,6 +138,35 @@ export class AdminCatalogShellComponent implements OnChanges {
     if(user.staffSubRole==='RECEPTIONIST')return 'Lễ tân';
     return user.systemRole;
   }
+  toggleProfileMenu(): void {
+    this.profileMenuOpen.update(open => !open);
+    if (this.profileMenuOpen()) this.closeNotifications();
+  }
+
+  closeProfileMenu(): void { this.profileMenuOpen.set(false); }
+
+  @HostListener('document:click', ['$event'])
+  closeMenusOnOutside(event: MouseEvent): void {
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+    if (this.profileMenuOpen() && !(target as Element).parentElement?.closest('.catalog-header__profile-wrap')
+        && !(target as Element).closest?.('.catalog-header__profile-wrap')) this.closeProfileMenu();
+  }
+
+  @HostListener('document:keydown.escape')
+  closeMenusOnEscape(): void { this.closeProfileMenu(); }
+
+  logout(): void {
+    if (this.isLoggingOut()) return;
+    this.closeProfileMenu();
+    this.isLoggingOut.set(true);
+    this.adminAuth.logout().pipe(finalize(() => this.isLoggingOut.set(false)))
+      .subscribe({
+        next: () => void this.router.navigateByUrl('/admin/login'),
+        error: () => void this.router.navigateByUrl('/admin/login'),
+      });
+  }
+
   notificationTime(value:string): string {
     const date=new Date(value);
     if(Number.isNaN(date.getTime()))return '';
