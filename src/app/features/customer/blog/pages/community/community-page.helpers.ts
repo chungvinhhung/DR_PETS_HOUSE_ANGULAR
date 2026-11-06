@@ -2,15 +2,11 @@
  * Hằng số & hàm tiện ích dùng chung cho các component trong thư mục này.
  * (Chuyển từ phần code nằm ngoài component trong React: src/pages/Blog/CommunityPage.jsx)
  */
-import { blogImages } from '../../../../../shared/customer/assets/blog-images';
-import { COMMUNITY_POSTS, FEATURED_COMMUNITY_POST, INITIAL_COMMUNITY_COMMENTS } from '../../../../../shared/customer/data/community-data';
+import { COMMUNITY_POST_TYPES } from '../../../../../shared/customer/data/community-post-types';
 
-export const POST_TYPES = {
-  "Khoảnh khắc": "bg-[#E3F2FD] text-[#005AB4]",
-  "Hỏi đáp": "bg-[#F3E8EE] text-[#672950]",
-  "Mẹo vặt": "bg-[#DDF4F1] text-[#346461]",
-  "Kinh nghiệm": "bg-[#FFF1D6] text-[#8A5700]",
-};
+// Keep the existing Customer composer / badge API backed by the same four
+// labels as the Admin Loại bài filter.
+export const POST_TYPES = COMMUNITY_POST_TYPES;
 
 export const EMPTY_COMMENTS: any = [];
 
