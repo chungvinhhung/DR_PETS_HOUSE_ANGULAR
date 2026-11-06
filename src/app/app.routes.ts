@@ -419,6 +419,14 @@ export const routes: Routes = [
       ).then((component) => component.AdminForbiddenPageComponent),
   },
   {
+    path: 'admin/profile',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () =>
+      import('./features/admin/auth/pages/profile/admin-profile-page.component')
+        .then(c => c.AdminProfilePageComponent),
+  },
+  {
     path: 'admin/categories',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN'] },
@@ -489,13 +497,6 @@ export const routes: Routes = [
           import(
             './features/admin/users/pages/admin-users-page.component'
           ).then((component) => component.AdminUsersPageComponent),
-      },
-      {
-        path: 'profile',
-        loadComponent: () =>
-          import(
-            './features/admin/auth/pages/profile/admin-profile-page.component'
-          ).then((component) => component.AdminProfilePageComponent),
       },
     ],
   },
