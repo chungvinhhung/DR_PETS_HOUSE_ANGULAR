@@ -12,12 +12,29 @@
 
       <header class="web2-admin-page__header">
         <h1>Phản hồi của {{f.name || 'khách hàng'}}</h1>
-        <button type="button" class="web2-admin-btn web2-admin-btn--primary" (click)="process()" [disabled]="!canAction() || busy()">
+        <button type="button" class="web2-admin-btn web2-admin-btn--primary" (click)="startProcess()" [disabled]="!canAction() || busy()">
           {{busy() ? 'Đang xử lý...' : actionLabel()}}
         </button>
       </header>
 
-      @if (error()) { <div class="web2-admin-inline-error">{{error()}}</div> }
+      @if (error()) { <div class="web2-admin-inline-error" role="alert">{{error()}}</div> }
+      @if (success()) { <div class="feedback-detail__success" role="status">{{success()}}</div> }
+      @if (actionPanel()) {
+        <section class="feedback-detail__action" aria-labelledby="feedback-review-title">
+          <h2 id="feedback-review-title">{{actionLabel()}}</h2>
+          <p>{{['NEW','READ'].includes(f.status) ? 'Phản hồi sẽ chuyển sang Đang xử lý để theo dõi tiến độ.' : 'Phản hồi sẽ được đánh dấu Đã xử lý.'}}</p>
+          <label for="feedback-processing-note">Ghi chú xử lý (không bắt buộc)</label>
+          <textarea id="feedback-processing-note" rows="3" maxlength="2000"
+            placeholder="Ghi lại nội dung đã kiểm tra hoặc hướng giải quyết..."
+            [ngModel]="processingNote()" (ngModelChange)="processingNote.set($event)" [disabled]="busy()"></textarea>
+          <div class="feedback-detail__action-buttons">
+            <button type="button" class="web2-admin-btn web2-admin-btn--outline"
+              [disabled]="busy()" (click)="cancelProcess()">Hủy</button>
+            <button type="button" class="web2-admin-btn web2-admin-btn--primary"
+              [disabled]="busy()" (click)="process()">{{busy()?'Đang lưu...':'Xác nhận'}}</button>
+          </div>
+        </section>
+      }
 
       <section class="web2-admin-summary-grid feedback-summary">
         <article><span>Tên của bạn</span><strong>{{f.name || '—'}}</strong></article>
@@ -31,6 +48,13 @@
         <p>{{f.message || f.subject || '—'}}</p>
       </section>
 
+      @if(f.processingNotes || f.responseMessage){
+        <section class="content-card web2-admin-section">
+          <h2 class="web2-admin-section__title">Lịch sử xử lý</h2>
+          @if(f.processingNotes){ <p>{{f.processingNotes}}</p> }
+          @if(f.responseMessage){ <p>{{f.responseMessage}}</p> }
+        </section>
+      }
       <section class="meta-grid web2-admin-summary-grid feedback-meta">
         <article><span>Ngày gửi</span><strong>{{date(f.createdAt)}}</strong></article>
         <article><span>Nguồn</span><strong>Form phản hồi trên website</strong></article>
