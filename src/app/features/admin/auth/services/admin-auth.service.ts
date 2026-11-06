@@ -20,10 +20,23 @@ export class AdminAuthService {
       .post<LoginResponse, LoginRequest>('/auth/login', request)
       .pipe(
         tap((response) => {
+          // /auth/login authenticates by username, email or phone. If BE omits
+          // username from its serializer, only a verified username login is a
+          // trustworthy temporary source (never infer it from name or email).
+          const identifier = request.identifier.trim();
+          const wasUsernameLogin = !identifier.includes('@') &&
+            !/^0[0-9]{9}$/.test(identifier);
+          const verifiedUsername = response.user.systemRole === 'ADMIN' && wasUsernameLogin
+            ? identifier.toLowerCase()
+            : null;
+          const user = {
+            ...response.user,
+            username: response.user.username || verifiedUsername,
+          };
           this.authSession.setSession({
             accessToken: response.accessToken,
-            roles: [response.user.systemRole],
-            user: response.user,
+            roles: [user.systemRole],
+            user,
           });
         }),
       );
