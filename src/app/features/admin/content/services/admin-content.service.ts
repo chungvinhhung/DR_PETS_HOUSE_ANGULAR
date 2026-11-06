@@ -1,6 +1,6 @@
 import { HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { EMPTY, Observable, expand, map, reduce } from 'rxjs';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
 
@@ -48,16 +48,37 @@ export class AdminContentService {
     return this.api.post<any>('/admin/community/posts',body).pipe(map(unwrap));
   }
 
+  /** Retrieve every BE page for the existing client-side 7-row Admin table.
+   * Rescue/adoption routes expose page, limit and totalPages; unlike other
+   * content types they cannot silently stop at the first 100 rows.
+   */
+  private listAllRescuePages(path:string):Observable<any[]> {
+    const load=(page:number)=>this.api.get<any>(path,{
+      params:new HttpParams().set('page',String(page)).set('limit','100'),
+    }).pipe(map(response=>{
+      const data=unwrap(response);
+      const items=arrayFrom(data);
+      const rawTotalPages=Number(data?.totalPages);
+      const total=Number(data?.total);
+      const totalPages=Number.isFinite(rawTotalPages)&&rawTotalPages>0
+        ? rawTotalPages
+        : Number.isFinite(total)&&total>0?Math.ceil(total/100):1;
+      return {items,page,totalPages};
+    }));
+    return load(1).pipe(
+      expand(result=>result.page<Math.min(100, result.totalPages)
+        ? load(result.page+1)
+        : EMPTY),
+      reduce((rows,part)=>rows.concat(part.items),[] as any[]),
+    );
+  }
+
   listRescuePets():Observable<any[]> {
-    return this.api.get<any>('/admin/rescue/pets', {
-      params:this.page100,
-    }).pipe(map(r=>arrayFrom(unwrap(r))));
+    return this.listAllRescuePages('/admin/rescue/pets');
   }
 
   listAdoptionRequests():Observable<any[]> {
-    return this.api.get<any>('/admin/rescue/requests', {
-      params:this.page100,
-    }).pipe(map(r=>arrayFrom(unwrap(r))));
+    return this.listAllRescuePages('/admin/rescue/requests');
   }
 
   getPost(id:string):Observable<any> {
