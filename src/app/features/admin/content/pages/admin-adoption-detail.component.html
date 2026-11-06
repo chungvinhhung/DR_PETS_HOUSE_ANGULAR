@@ -15,21 +15,50 @@
         <h1>Đơn {{d.requestCode || id}} · {{pet(d).petName || 'Thú cưng'}}</h1>
         <div class="web2-admin-page__actions">
           @if (isPending(d)) {
-          <button type="button" class="web2-admin-btn web2-admin-btn--outline" [disabled]="busy()" (click)="review('REJECTED')">Từ chối</button>
-          <button type="button" class="web2-admin-btn web2-admin-btn--primary" [disabled]="busy()" (click)="review('APPROVED')">Duyệt đơn</button>
+          <button type="button" class="web2-admin-btn web2-admin-btn--outline" [disabled]="busy()" (click)="startReview('REJECTED')">Từ chối</button>
+          <button type="button" class="web2-admin-btn web2-admin-btn--primary" [disabled]="busy()" (click)="startReview('APPROVED')">Duyệt đơn</button>
         }
         </div>
       </header>
 
+      @if (notice()) { <div class="adoption-detail__notice" role="status">{{notice()}}</div> }
       @if (actionError()) { <div class="web2-admin-inline-error" role="alert">{{actionError()}}</div> }
+      @if (reviewChoice(); as choice) {
+        <section class="adoption-detail__review" aria-labelledby="adoption-review-heading">
+          <h2 id="adoption-review-heading">{{choice==='APPROVED'?'Xác nhận duyệt đơn nhận nuôi':'Xác nhận từ chối đơn nhận nuôi'}}</h2>
+          <p>{{choice==='APPROVED'
+            ? 'Sau khi duyệt, hồ sơ thú cưng sẽ chuyển sang Đã có tổ ấm trên website.'
+            : 'Đơn sẽ được lưu ở trạng thái Đã từ chối, không xóa lịch sử đăng ký.'}}</p>
+          <label for="adoption-review-note">{{choice==='REJECTED'?'Lý do từ chối *':'Ghi chú xét duyệt (không bắt buộc)'}}</label>
+          <textarea id="adoption-review-note" rows="3" maxlength="1000"
+            [ngModel]="reviewNote()" (ngModelChange)="reviewNote.set($event)"
+            [disabled]="busy()" placeholder="Nhập ghi chú xét duyệt"></textarea>
+          <div class="adoption-detail__review-actions">
+            <button type="button" class="web2-admin-btn web2-admin-btn--outline"
+              [disabled]="busy()" (click)="cancelReview()">Hủy</button>
+            <button type="button" class="web2-admin-btn web2-admin-btn--primary"
+              [disabled]="busy() || (choice==='REJECTED' && reviewNote().trim().length < 3)"
+              (click)="review()">{{busy()?'Đang xử lý...':choice==='APPROVED'?'Xác nhận duyệt':'Xác nhận từ chối'}}</button>
+          </div>
+        </section>
+      }
 
       <section class="web2-admin-summary-grid adoption-summary">
         <article><span>Người đăng ký</span><strong>{{value(applicant(d).fullName, d.applicantName, d.name)}}</strong></article>
         <article><span>Thú cưng</span><strong>{{value(pet(d).petName, d.petName)}}</strong></article>
-        <article><span>Ngày gửi</span><strong>{{value(d.createdAt)}}</strong></article>
+        <article><span>Ngày gửi</span><strong>{{date(d.createdAt)}}</strong></article>
         <article><span>Trạng thái</span><strong>{{statusLabel(d.status)}}</strong></article>
       </section>
 
+      @if(d.reviewedAt && d.reviewNote){
+        <section class="card web2-admin-section">
+          <h2 class="web2-admin-section__title">Ghi chú xét duyệt</h2>
+          <dl class="web2-admin-detail-grid">
+            <div><dt>Ngày xét duyệt</dt><dd>{{date(d.reviewedAt)}}</dd></div>
+            <div><dt>Ghi chú</dt><dd>{{d.reviewNote}}</dd></div>
+          </dl>
+        </section>
+      }
       <section class="card web2-admin-section">
         <h2 class="web2-admin-section__title">1. Thông tin liên hệ</h2>
         <dl class="web2-admin-detail-grid">
