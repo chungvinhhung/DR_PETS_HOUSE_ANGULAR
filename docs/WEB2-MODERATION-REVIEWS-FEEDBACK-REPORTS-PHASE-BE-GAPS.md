@@ -42,3 +42,23 @@ Scope: `Đánh giá`, `Phản hồi khách hàng`, `Báo cáo vi phạm`, chi ti
 - FE changes have been committed to the feature branch, but visual browser QA and BE end-to-end verification are still pending.
 - Angular CI verifies build only; it does not establish complete Customer-to-Admin data flow.
 - Never merge or deploy automatically.
+
+## Customer-first source reconciliation (2026-11-06; verified against Customer FE and BE/dev)
+
+**Review creation and display on Customer:**
+- `WriteReviewFormComponent` has the fields **Tên của bạn**, **Đánh giá của bạn** (1–5 stars) and free-text review. Product detail renders **author**, **star rating**, **review content**, **like UI**, **created date**. Service review is collected via the appointment-history modal using the same form and `targetType=SERVICE`.
+- Real BE review records expose `id,targetType,targetId,rating,comment,displayName,anonymous,hidden,createdAt`. The form's manually entered name is NOT currently stored as the review author; BE chooses the authenticated Customer name. Customer normalization now reads `displayName`, fixing the prior “Khách hàng” fallback for named reviews.
+- Admin review details/list should use only these real fields. `sourceId`, `sourceType`, code of order/appointment, target name and like count are **not returned** by current Admin review API (even though the BE Mongoose model stores sourceType/sourceId). Admin must use `—` or a type label instead of inventing values.
+- For visible **PRODUCT** reviews only, Admin links directly to `/product-details/:productId?tab=reviews&reviewId=:reviewId`. Customer shows the original review from public `GET /reviews/:id` even if not loaded on page one, and opens the review tab. Hidden reviews intentionally have no public link. For **SERVICE** reviews, there is no per-review Customer destination yet; do not invent one.
+- Customer currently has **no staff reply form** in the product detail review card, and BE has no review reply schema or endpoint. The chat suggestion to “trả lời ngay bên Customer” is **not E2E implementable yet**. Required: agree a Customer-facing reply component, Admin/Manager reply permission, stored `replyText/repliedBy/repliedAt`, edit/hide rules, and an API contract. Only then add any “Đã trả lời/Đã giải quyết” labels.
+- The Customer review card displays a like affordance; currently there is no confirmed review-like BE route in `review.routes.js`. Its count/like behavior is not validated; no invented likes field should appear in Admin.
+
+**Customer contact form and Admin feedback:**
+- Actual form at `/lien-he` collects **Tên của bạn**, **Giới tính** (male/female/other), **Số điện thoại**, **Địa chỉ email**, and **Nội dung**. It does **not** ask the Customer for a `subject` or a sentiment/category.
+- Previously the form sent `POST /contacts` while BE/dev exposes `POST /feedback`, requiring `name,subject,message`. FE now routes the form to **POST /feedback** with the Customer's actual fields and a truthful fixed `subject='Liên hệ từ website'`, `category=GENERAL`. This aligns the Customer submission with the Admin `GET /feedback` collection.
+- BE Feedback schema/service currently **discard gender**, even though Customer collects it. FE retains the Customer field in the submitted payload, but Admin displays `—` until BE supports `gender`. Add nullable `gender: female|male|other` to schema and persist it in create/list/detail; historical records must remain unspecified.
+- Admin details reflect Customer's real `name,gender (if persisted),phone,email,message` and the returned subject. Do NOT invent a Customer-entered subject or “tích cực/tiêu cực” sentiment. BE categories COMPLAINT/SUGGESTION are available for other inputs, but this public form currently submits GENERAL only.
+- The Admin feedback state selector now exposes only BE-supported transitions NEW→READ/PROCESSING/REJECTED; READ→PROCESSING/REJECTED; PROCESSING→NEED_CONTACT/PROCESSED/REJECTED; NEED_CONTACT→PROCESSING/PROCESSED/REJECTED. Reject requires reason; actions validate BE response before success.
+- `responseMessage` stored in BE is **not proof of an outbound reply to the Customer**. Do not call a notes/status change “Đã trả lời”; add a real reply-and-notify workflow before acceptance.
+
+**Acceptance after BE work:** Submit a Customer contact with gender and message → Admin detail shows exactly those fields after reload; submit a named review → Customer product detail and Admin show identical author/rating/content/date; approved product review deep-link opens correct public card; service review waits for an actual Customer destination. Run manual browser tests plus CI (CI alone does not validate E2E).
