@@ -154,7 +154,7 @@ export class CommunityPageComponent {
   }
 
   protected async sharePost(post: any) {
-    const url = `${window.location.origin}/blog/cong-dong#${post.id}`;
+    const url = `${window.location.origin}/bai-viet/cong-dong?postId=${encodeURIComponent(String(post.id))}`;
     if (navigator.share) await navigator.share({ title: post.title || "Bài viết cộng đồng", url }).catch(() => {});
     else await navigator.clipboard?.writeText(url);
     this.shareNotice.set("Đã sao chép liên kết bài viết");
