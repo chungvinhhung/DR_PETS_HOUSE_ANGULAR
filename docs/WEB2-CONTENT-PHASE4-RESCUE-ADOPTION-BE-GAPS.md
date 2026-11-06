@@ -22,7 +22,7 @@
 
 ## FE changes in Phase 4
 
-1. **Rescue Admin**: full-page `/admin/content/rescue/new` and `/admin/content/rescue/:id/edit` use confirmed BE create/get/update routes. The form includes canonical required fields, optional gender and branch selection, image URL list, card preview, input validation and navigation with unsaved-change guard. Status is read-only in the editor because the adoption approval workflow is the authoritative transition.
+1. **Rescue Admin**: full-page `/admin/content/rescue/new` and `/admin/content/rescue/:id/edit` use confirmed BE create/get/update routes. After user QA, the form was reduced to the fields needed for partner-owned Customer cards: pet identifier (name/species), rescue story, condition, support needs, responsible rescue partner, and uploaded image. Existing breed/age/branch metadata is preserved on edits; legacy BE requires explicit unknown placeholders on creates. Rescue partner-confirmed adopted/waiting status may be changed on edit. Unsaved-change guard and persisted-data verification remain enabled.
 2. **List**: species/health/location/date columns are mapped to real BE fields; saved date shows createdAt. Filtered list loads BE pages rather than truncating at the first 100.
 3. **Adoption Admin**: Figma date filter (7, 30, 90 days, all), correct **Ở một mình** label/data (no false substitution with hasPetExperience), real status filtering, detail page with inline approve/reject confirmation, required rejection reason, review note and persisted status validation.
 4. **Customer**: list no longer falls back to sample rescue pets when the API is empty or fails, and displays loading/error/empty states. My adoption requests normalize real Mongo `_id`, `rescuePetId`, uppercase status and applicant message.
