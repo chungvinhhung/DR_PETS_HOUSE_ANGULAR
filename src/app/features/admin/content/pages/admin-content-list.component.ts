@@ -208,6 +208,10 @@ export class AdminContentListComponent{
  isCommunityPublic(row:any):boolean {
    return String(row?.status || '').toUpperCase()==='APPROVED' && Boolean(row?._id || row?.id);
  }
+ communityPostPublicUrl(row:any):string {
+   const id=String(row?._id || row?.id || '').trim();
+   return 'https://drpetshouse.lat/bai-viet/cong-dong?postId='+encodeURIComponent(id);
+ }
  moderateCommunity(status:'APPROVED'|'REJECTED'|'HIDDEN'):void{
   const row=this.communityDialog();const id=String(row?._id||row?.id||'');
   if(!id||this.actionBusy())return;
