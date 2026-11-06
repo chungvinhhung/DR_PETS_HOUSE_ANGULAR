@@ -356,8 +356,28 @@
                   }
                 </div>
               </div>
+              <!-- The Customer review selected from Admin is shown in its
+                   original product context even when not on page one. -->
+              @if (focusedReview(); as selectedReview) {
+                <div class="w-full rounded-[14px] border-2 border-[#0D47A1] bg-white px-4 py-[16px]"
+                  [attr.data-review-id]="selectedReview.id">
+                  <div class="mb-3 text-[13px] font-semibold text-[#0D47A1]">Đánh giá được chọn</div>
+                  <div class="flex gap-5">
+                    <img [attr.src]="selectedReview.authorAvatar || productImages.reviewAvatarBlock"
+                      alt="" class="h-[52px] w-[52px] shrink-0 rounded-full object-cover"/>
+                    <div class="flex min-w-0 flex-1 flex-col gap-2">
+                      <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="font-['Oxygen'] text-[16px] text-[#3D3D3D]">{{ selectedReview.authorName }}</span>
+                        <app-product-rating [value]="selectedReview.rating"/>
+                      </div>
+                      <p class="whitespace-pre-wrap break-words font-['Oxygen'] text-[16px] leading-[1.705] text-[#575757]">{{ selectedReview.content }}</p>
+                      <span class="font-['Oxygen'] text-[13px] text-[#949494]">{{ formatReviewTime(selectedReview.createdAt) }}</span>
+                    </div>
+                  </div>
+                </div>
+              }
               <!-- Review items -->
-              @for (review of reviewItems(); track review.id) {
+              @for (review of paginatedReviewItems(); track review.id) {
                 <div class="group w-full rounded-[14px] border border-[#90CAF9] bg-white px-4 py-[15px] transition-shadow duration-micro hover:shadow-[0_2px_12px_rgba(144,202,249,0.4)]">
                   <div class="flex gap-5">
                     <img
