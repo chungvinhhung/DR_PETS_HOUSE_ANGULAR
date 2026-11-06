@@ -16,8 +16,10 @@ import {
   StaffPreview,
 } from '../models/staff-preview.model';
 
+// MANAGER is a system role (not staffSubRole). The form can prepare a manager
+// draft, but must never submit it through the Staff creation endpoint.
 const JOB_ROLES = (Object.keys(JOB_LABELS) as JobRole[])
-  .filter(role => role !== 'UNKNOWN' && role !== 'MANAGER');
+  .filter(role => role !== 'UNKNOWN');
 const STRONG_PASSWORD = /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
 const PHONE = /^0[0-9]{9}$/;
 const WEEK_MS = 7 * 86400000;
@@ -58,6 +60,8 @@ export class AdminStaffFormComponent {
   readonly roles = JOB_ROLES;
   readonly labels = JOB_LABELS;
   get branches(): string[] { return this.staffApi.branches().map(b => b.name); }
+  get isManager(): boolean { return this.form.controls.jobRole.value === 'MANAGER'; }
+  get canCreateManager(): boolean { return this.session.hasAnyRole(['ADMIN']); }
   readonly form = this.fb.nonNullable.group({
     fullName: [this.staff?.fullName ?? '', [Validators.required, Validators.maxLength(120)]],
     jobRole: [this.staff?.jobRole ?? 'VETERINARIAN' as JobRole, Validators.required],
@@ -175,6 +179,13 @@ export class AdminStaffFormComponent {
   shifts: Record<string, { branch: string; template: string; hours: string }> = {};
 
   constructor() {
+    this.form.controls.jobRole.valueChanges.subscribe(() => {
+      this.updateRoleValidation();
+      this.submitted = false;
+      this.branchMenuOpen = false;
+      this.cdr.markForCheck();
+    });
+    this.updateRoleValidation();
     this.form.controls.loginIdentifier.disable({ emitEvent: false });
     this.form.controls.password.disable({ emitEvent: false });
     if (this.isEdit) {
@@ -196,6 +207,7 @@ export class AdminStaffFormComponent {
           loginIdentifier: staff.loginUsername ?? '',
         }, { emitEvent: false });
         this.selectedBranches = new Set(staff.branches);
+        this.updateRoleValidation();
         this.form.markAsPristine();
         this.hydrated = true;
         this.cdr.markForCheck();
@@ -223,7 +235,16 @@ export class AdminStaffFormComponent {
   }
   get branchText(): string {
     const count = this.selectedBranches.size;
-    return count ? [...this.selectedBranches].join(', ') : 'Chọn một hoặc nhiều chi nhánh';
+    return count ? [...this.selectedBranches].join(', ') :
+      (this.isManager ? 'Chọn các chi nhánh quản lý' : 'Chọn một hoặc nhiều chi nhánh');
+  }
+  private updateRoleValidation(): void {
+    // Managers do not have a home working branch. Their permission scope comes
+    // from assignedBranchIds on User, not StaffProfile.homeBranchId.
+    const homeBranch = this.form.controls.homeBranch;
+    if (this.isManager) homeBranch.clearValidators();
+    else homeBranch.setValidators(Validators.required);
+    homeBranch.updateValueAndValidity({ emitEvent: false });
   }
   get weekLabel(): string { return formatStaffWeekRange(this.weekMonday); }
   get weekDays(): ShiftDay[] {
@@ -275,7 +296,7 @@ export class AdminStaffFormComponent {
     this.selectedBranches = new Set(this.selectedBranches);
     this.form.controls.assignedBranches.setValue([...this.selectedBranches].join(','));
     this.form.controls.assignedBranches.markAsDirty();
-    if (!this.selectedBranches.has(this.form.controls.homeBranch.value)) {
+    if (!this.isManager && !this.selectedBranches.has(this.form.controls.homeBranch.value)) {
       this.form.controls.homeBranch.setValue('');
     }
   }
@@ -297,8 +318,12 @@ export class AdminStaffFormComponent {
       return;
     }
     const homeBranchName = this.form.controls.homeBranch.value;
-    if (!this.selectedBranches.size || !homeBranchName || !this.selectedBranches.has(homeBranchName)) {
-      this.toast.show('Vui lòng chọn chi nhánh làm việc phù hợp với chi nhánh chính.', 'error');
+    if (!this.selectedBranches.size) {
+      this.toast.show(this.isManager ? 'Vui lòng chọn ít nhất một chi nhánh quản lý.' : 'Vui lòng chọn chi nhánh làm việc.', 'error');
+      return;
+    }
+    if (!this.isManager && (!homeBranchName || !this.selectedBranches.has(homeBranchName))) {
+      this.toast.show('Chi nhánh chính phải thuộc các chi nhánh làm việc.', 'error');
       return;
     }
     if (this.form.invalid) {
@@ -308,9 +333,22 @@ export class AdminStaffFormComponent {
     const branchIds = [...this.selectedBranches]
       .map(name => this.staffApi.branches().find(branch => branch.name === name)?.id ?? '')
       .filter(Boolean);
-    const homeBranchId = this.staffApi.branches().find(branch => branch.name === homeBranchName)?.id ?? '';
-    if (!branchIds.length || !homeBranchId) {
+    const homeBranchId = this.isManager ? '' :
+      (this.staffApi.branches().find(branch => branch.name === homeBranchName)?.id ?? '');
+    if (branchIds.length !== this.selectedBranches.size || (!this.isManager && !homeBranchId)) {
       this.toast.show('Không xác định được mã chi nhánh. Vui lòng tải lại dữ liệu.', 'error');
+      return;
+    }
+    if (this.isManager) {
+      // P0: BE /staff always creates systemRole=STAFF, and there is no verified
+      // POST /admin/users for MANAGER on the inspected BE dev branch.
+      // Blocking here prevents accidentally creating a STAFF with manager UI.
+      this.toast.show(
+        this.canCreateManager
+          ? 'Chưa thể lưu quản lý: BE cần API tạo tài khoản MANAGER với danh sách chi nhánh quản lý. Dữ liệu trên form vẫn được giữ nguyên.'
+          : 'Chỉ Quản trị viên hệ thống có quyền tạo hoặc phân công Quản lý.',
+        this.canCreateManager ? 'info' : 'error',
+      );
       return;
     }
     const role = this.form.controls.jobRole.value === 'CARE_STAFF'
