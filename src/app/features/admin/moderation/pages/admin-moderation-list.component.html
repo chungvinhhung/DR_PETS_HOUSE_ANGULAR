@@ -23,8 +23,20 @@
         }
         <select class="web2-admin-filter-select" aria-label="Trạng thái" [ngModel]="status()" (ngModelChange)="status.set($event); onFilter()">
           <option value="">Tất cả trạng thái</option>
-          @if (mode === 'reviews') { <option value="ACTIVE">Hiển thị</option><option value="HIDDEN">Ẩn</option> }
-          @else { <option value="NEW">Mới</option><option value="PROCESSING">Đang xử lý</option><option value="PROCESSED">Đã xử lý</option> }
+          @if (mode === 'reviews') {
+            <option value="ACTIVE">Hiển thị</option><option value="HIDDEN">Ẩn</option>
+          } @else if (mode === 'feedback') {
+            <option value="NEW">Mới</option>
+            <option value="READ">Đã đọc</option>
+            <option value="PROCESSING">Đang xử lý</option>
+            <option value="NEED_CONTACT">Cần liên hệ</option>
+            <option value="PROCESSED">Đã xử lý</option>
+            <option value="REJECTED">Từ chối</option>
+          } @else {
+            <option value="PENDING">Chờ xử lý</option>
+            <option value="UNDER_REVIEW">Đang xem xét</option>
+            <option value="NO_VIOLATION">Không vi phạm</option>
+          }
         </select>
         <select class="web2-admin-filter-select" aria-label="Khoảng thời gian"
           [ngModel]="period()" (ngModelChange)="period.set($event); onFilter()">
