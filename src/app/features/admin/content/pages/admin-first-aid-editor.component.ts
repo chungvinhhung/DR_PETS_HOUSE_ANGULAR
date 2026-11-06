@@ -12,6 +12,7 @@ import { FIRST_AID_CATEGORIES } from '../../../../shared/customer/data/first-aid
 import { CustomerIconComponent } from '../../../../shared/customer/components/icon/customer-icon.component';
 import { blogImages } from '../../../../shared/customer/assets/blog-images';
 import { FirstAidCardComponent } from '../../../customer/blog/pages/first-aid/first-aid-card.component';
+import { AdminArticleRichBlockComponent } from './admin-article-rich-block.component';
 
 type AidUrgency = 'NORMAL' | 'URGENT';
 type AidStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
@@ -25,10 +26,32 @@ function safeHttpUrl(value:string):boolean {
   catch { return false; }
 }
 
+function escapeVideoHtml(value:string):string {
+  return value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function legacyVideoHtml(description:string,highlights:string[]):string {
+  const paragraph=description.trim() ? `<p>${escapeVideoHtml(description.trim()).replace(/\r?\n/g,'<br>')}</p>` : '';
+  const checklist=highlights.length ? '<ul>'+highlights.map(v=>'<li>'+escapeVideoHtml(v)+'</li>').join('')+'</ul>' : '';
+  return paragraph+checklist;
+}
+function legacyVideoFields(html:string):{description:string;highlights:string[]} {
+  if(typeof DOMParser==='undefined')return {description:'',highlights:[]};
+  // DOMParser creates an inert document; the rich editor already sanitizes HTML.
+  const parsed=new DOMParser().parseFromString(html,'text/html');
+  const highlights=[...parsed.body.querySelectorAll('ul > li, ol > li')]
+    .map(li=>li.textContent?.trim() || '').filter(Boolean);
+  const copy=parsed.body.cloneNode(true) as HTMLElement;
+  copy.querySelectorAll('ul,ol').forEach(list=>list.remove());
+  const description=[...copy.childNodes].map(node=>node.textContent?.trim() || '')
+    .filter(Boolean).join('\n');
+  return {description,highlights};
+}
+
 @Component({
   selector:'app-admin-first-aid-editor',
   standalone:true,
-  imports:[CommonModule,FormsModule,AdminCatalogShellComponent,AdminBreadcrumbComponent,FirstAidCardComponent,CustomerIconComponent],
+  imports:[CommonModule,FormsModule,AdminCatalogShellComponent,AdminBreadcrumbComponent,FirstAidCardComponent,CustomerIconComponent,AdminArticleRichBlockComponent],
   templateUrl:'./admin-first-aid-editor.component.html',
   styleUrl:'./admin-first-aid-editor.component.scss',
   changeDetection:ChangeDetectionStrategy.OnPush,
@@ -54,6 +77,7 @@ export class AdminFirstAidEditorComponent {
   readonly videoUrl=signal('');
   readonly videoTitle=signal('');
   readonly videoDescription=signal('');
+  readonly videoDescriptionHtml=signal('');
   readonly videoHighlights=signal('');
   readonly previewMode=signal<'CARD'|'DETAIL'>('CARD');
   readonly savedStatus=signal<AidStatus>('DRAFT');
@@ -88,6 +112,7 @@ export class AdminFirstAidEditorComponent {
     videoUrl:this.videoUrl().trim(),
     videoTitle:this.videoTitle().trim(),
     videoDescription:this.videoDescription().trim(),
+    videoDescriptionHtml:this.videoDescriptionHtml(),
     videoHighlights:this.videoPoints(),
   }));
 
@@ -137,17 +162,29 @@ export class AdminFirstAidEditorComponent {
     this.nextStepId=Math.max(0,...this.steps().map(s=>s.id))+1;
     this.videoUrl.set(String(row.video_url || row.videoUrl || row.video?.url || ''));
     this.videoTitle.set(String(row.video_title || row.videoTitle || row.video?.title || ''));
-    this.videoDescription.set(String(row.video_description || row.videoDescription || row.video?.description || ''));
+    const description=String(row.video_description || row.videoDescription || row.video?.description || '');
     const highlights=row.video_highlights || row.videoHighlights || row.video?.highlights || [];
-    this.videoHighlights.set(Array.isArray(highlights)?highlights.join('\n'):String(highlights||''));
+    const highlightList=(Array.isArray(highlights)?highlights.map(v=>String(v)):String(highlights||'').split(/\r?\n/)).filter(Boolean);
+    const richHtml=String(row.video_description_html || row.videoDescriptionHtml || row.video?.descriptionHtml || '');
+    this.videoDescriptionHtml.set(richHtml || legacyVideoHtml(description,highlightList));
+    const structured=richHtml ? legacyVideoFields(richHtml) : {description,highlights:highlightList};
+    this.videoDescription.set(structured.description);
+    this.videoHighlights.set(structured.highlights.join('\n'));
     const status=String(row.status || 'DRAFT').toUpperCase();
     this.savedStatus.set(status==='PUBLISHED'||status==='ARCHIVED'?status:'DRAFT');
     this.dirty.set(false);
   }
-  setField(field:'title'|'category'|'summary'|'coverUrl'|'videoUrl'|'videoTitle'|'videoDescription'|'videoHighlights',value:string):void {
+  setField(field:'title'|'category'|'summary'|'coverUrl'|'videoUrl'|'videoTitle',value:string):void {
     this[field].set(value);this.dirty.set(true);this.error.set('');
   }
   setUrgency(value:AidUrgency):void {this.urgency.set(value);this.dirty.set(true);}
+  updateVideoRichContent(value:{text:string;html:string}):void {
+    this.videoDescriptionHtml.set(value.html);
+    const fields=legacyVideoFields(value.html);
+    this.videoDescription.set(fields.description);
+    this.videoHighlights.set(fields.highlights.join('\n'));
+    this.dirty.set(true);this.error.set('');
+  }
   private normalizeBadge(value:string):string {
     return value.trim().replace(/\s+/g,' ').slice(0,40);
   }
@@ -227,6 +264,7 @@ export class AdminFirstAidEditorComponent {
       video_url:this.videoUrl().trim() || null,
       video_title:this.videoTitle().trim(),
       video_description:this.videoDescription().trim(),
+      video_description_html:this.videoDescriptionHtml().trim() || null,
       video_highlights:this.videoPoints(),
       content:normalizedSteps.map(s=>s.step_number+'. '+s.title+'\n'+s.step_content).join('\n\n'),
     };
