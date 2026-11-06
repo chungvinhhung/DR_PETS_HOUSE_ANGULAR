@@ -46,6 +46,7 @@ export class ProductDetailsPageComponent implements OnInit {
   // --- Trạng thái (signal = useState / useRef) ---
   readonly product = signal<any>(null);
   readonly reviewsData = signal<any>(EMPTY_REVIEWS_DATA);
+  readonly focusedReview = signal<any|null>(null);
   readonly similarProducts = signal<any>([]);
   readonly isLoading = signal<any>(true);
   readonly loadError = signal<any>("");
@@ -76,6 +77,10 @@ export class ProductDetailsPageComponent implements OnInit {
   readonly selectedImage = computed<any>(() => this.variantImage() || (this.thumbnails() as any)[this.selectedImageIdx()] || this.thumbnails()[0]);
   readonly totalReviewPages = computed<any>(() => this.reviewsData().totalPages || 1);
   readonly reviewItems = computed<any>(() => Array.isArray(this.reviewsData().items) ? this.reviewsData().items : []);
+  readonly paginatedReviewItems = computed<any[]>(() => {
+    const focusedId=String(this.focusedReview()?.id||'');
+    return this.reviewItems().filter((item:any)=>!focusedId||String(item.id)!==focusedId);
+  });
   readonly SIM_CARD_WIDTH = computed<any>(() => 170);
   readonly SIM_CARD_GAP = computed<any>(() => 20);
   readonly SIM_VISIBLE_COUNT = computed<any>(() => 6);
@@ -214,6 +219,36 @@ export class ProductDetailsPageComponent implements OnInit {
       if (typeof cleanup === 'function') onCleanup(cleanup);
     });
 
+    // Moderator links open the original Customer review section, not a
+    // fabricated Admin-only review view. Fetch one public review by ID because
+    // its record may not be included in the first paginated review list.
+    effect((onCleanup:any)=>{
+      const productId=String(this.navService.params()['productId']||'');
+      const reviewId=this.navService.searchParams().get('reviewId')||'';
+      this.focusedReview.set(null);
+      if(!productId||!reviewId)return;
+      let active=true;
+      this.productApi.getProductReviewById(reviewId).then((review:any)=>{
+        if(!active)return;
+        const matches=String(review?.targetType||'').toUpperCase()==='PRODUCT'
+          && String(review?.targetId||'')===productId
+          && review?.hidden!==true;
+        this.focusedReview.set(matches?review:null);
+      }).catch(()=>{if(active)this.focusedReview.set(null);});
+      onCleanup(()=>{active=false;});
+    });
+
+    // Scroll to reviews only after product content has rendered.
+    effect((onCleanup:any)=>{
+      const show=this.navService.searchParams().get('tab')==='reviews'
+        ||Boolean(this.navService.searchParams().get('reviewId'));
+      if(!show||!this.product())return;
+      const task=setTimeout(()=>{
+        this.tabSectionRef()?.nativeElement?.scrollIntoView({behavior:'smooth',block:'start'});
+      },200);
+      onCleanup(()=>clearTimeout(task));
+    });
+
     // useEffect(..., [productId])
     effect((onCleanup: any) => {
       this.navService.params()['productId'];
@@ -246,7 +281,9 @@ export class ProductDetailsPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.isReviewTab.set(this.showWriteReview());
+    this.isReviewTab.set(Boolean(this.showWriteReview())
+      || this.navService.searchParams().get('tab')==='reviews'
+      || Boolean(this.navService.searchParams().get('reviewId')));
   }
 
   protected selectVariant(i: number, variant: any) {
