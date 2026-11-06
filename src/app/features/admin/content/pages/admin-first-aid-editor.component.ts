@@ -8,9 +8,8 @@ import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-she
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminContentService } from '../services/admin-content.service';
-import { FIRST_AID_CATEGORIES, FIRST_AID_SUPPORT_PHONE } from '../../../../shared/customer/data/first-aid-data';
+import { FIRST_AID_CATEGORIES } from '../../../../shared/customer/data/first-aid-data';
 import { CustomerIconComponent } from '../../../../shared/customer/components/icon/customer-icon.component';
-import { EmergencySupportComponent } from '../../../customer/blog/pages/first-aid-detail/emergency-support.component';
 import { blogImages } from '../../../../shared/customer/assets/blog-images';
 import { FirstAidCardComponent } from '../../../customer/blog/pages/first-aid/first-aid-card.component';
 
@@ -29,7 +28,7 @@ function safeHttpUrl(value:string):boolean {
 @Component({
   selector:'app-admin-first-aid-editor',
   standalone:true,
-  imports:[CommonModule,FormsModule,AdminCatalogShellComponent,AdminBreadcrumbComponent,FirstAidCardComponent,CustomerIconComponent,EmergencySupportComponent],
+  imports:[CommonModule,FormsModule,AdminCatalogShellComponent,AdminBreadcrumbComponent,FirstAidCardComponent,CustomerIconComponent],
   templateUrl:'./admin-first-aid-editor.component.html',
   styleUrl:'./admin-first-aid-editor.component.scss',
   changeDetection:ChangeDetectionStrategy.OnPush,
@@ -51,7 +50,6 @@ export class AdminFirstAidEditorComponent {
   readonly urgency=signal<AidUrgency>('NORMAL');
   readonly stepBadges=signal<string[]>([]);
   readonly badgeDraft=signal('');
-  readonly emergencyHotline=FIRST_AID_SUPPORT_PHONE;
   readonly steps=signal<AidStep[]>([{id:1,title:'',description:''}]);
   readonly videoUrl=signal('');
   readonly videoTitle=signal('');
@@ -86,7 +84,6 @@ export class AdminFirstAidEditorComponent {
     urgent:this.urgency()==='URGENT',
     variant:this.urgency()==='URGENT' ? 'urgent' : 'image',
     steps:this.completedSteps(),
-    emergencyPhone:this.emergencyHotline,
     stepBadges:this.stepBadges(),
     videoUrl:this.videoUrl().trim(),
     videoTitle:this.videoTitle().trim(),
