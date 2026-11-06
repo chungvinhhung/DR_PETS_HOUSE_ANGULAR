@@ -2,13 +2,6 @@
   <main class="content-admin web2-admin-page">
     <header class="web2-admin-page__header">
       <h1>{{title}}</h1>
-      @if (mode === 'community' && canCreate()) {
-        <a class="web2-add-button" href="https://drpetshouse.lat/bai-viet/cong-dong" target="_blank"
-          rel="noopener noreferrer" aria-label="Tạo bài đăng trên trang Cộng đồng">
-          <img src="/assets/admin-product/icon-add.svg" alt="" aria-hidden="true">
-          <span>Tạo bài đăng</span>
-        </a>
-      }
     </header>
 
     @if (mode === 'rescue' || mode === 'adoptions') {
@@ -80,11 +73,20 @@
           }
         </select>
       </div>
-      @if (canCreate() && mode !== 'community') {
-        <button type="button" class="web2-add-button" (click)="openCreate()">
-          <img src="/assets/admin-product/icon-add.svg" alt="" aria-hidden="true">
-          <span>{{mode === 'rescue' ? 'Thêm hồ sơ nhận nuôi' : mode === 'first-aid' ? 'Thêm cẩm nang' : 'Thêm bài viết'}}</span>
-        </button>
+      @if (canCreate()) {
+        @if (mode === 'community') {
+          <a class="web2-add-button" href="https://drpetshouse.lat/bai-viet/cong-dong"
+            target="_blank" rel="noopener noreferrer"
+            aria-label="Tạo bài đăng trên trang Cộng đồng">
+            <img src="/assets/admin-product/icon-add.svg" alt="" aria-hidden="true">
+            <span>Tạo bài đăng</span>
+          </a>
+        } @else {
+          <button type="button" class="web2-add-button" (click)="openCreate()">
+            <img src="/assets/admin-product/icon-add.svg" alt="" aria-hidden="true">
+            <span>{{mode === 'rescue' ? 'Thêm hồ sơ nhận nuôi' : mode === 'first-aid' ? 'Thêm cẩm nang' : 'Thêm bài viết'}}</span>
+          </button>
+        }
       }
     </section>
 
@@ -326,27 +328,31 @@
               </button>
             }
             <span class="content-dialog__spacer"></span>
-            <div class="community-review__more">
-              <button type="button" class="community-review__more-trigger"
-                aria-label="Thao tác khác" title="Thao tác khác"
-                aria-haspopup="menu" [attr.aria-expanded]="communityMenuOpen()"
-                [disabled]="actionBusy()" (click)="toggleCommunityMenu()">•••</button>
-              @if (communityMenuOpen()) {
-                <div class="community-review__menu" role="menu">
-                  @if (post.status !== 'HIDDEN') {
-                    <button type="button" role="menuitem" (click)="communityMenuOpen.set(false);moderateCommunity('HIDDEN')">Ẩn bài đăng</button>
-                  }
-                  @if (post.status !== 'REJECTED') {
-                    <button type="button" role="menuitem" (click)="startCommunityRejection()">Từ chối bài đăng</button>
-                  }
-                  @if (isAdmin()) {
-                    <button type="button" role="menuitem" class="community-review__menu-danger"
-                      (click)="startCommunityDeletion()">Xóa bài đăng</button>
-                  }
-                </div>
-              }
-            </div>
-            @if (post.status !== 'APPROVED') {
+            @if (communityIsPending(post)) {
+              <button type="button" class="web2-admin-btn web2-admin-btn--outline"
+                [disabled]="actionBusy()" (click)="startCommunityRejection()">Từ chối</button>
+            }
+            @if (communityHasMoreActions(post)) {
+              <div class="community-review__more">
+                <button type="button" class="community-review__more-trigger"
+                  aria-label="Thao tác khác" title="Thao tác khác"
+                  aria-haspopup="menu" [attr.aria-expanded]="communityMenuOpen()"
+                  [disabled]="actionBusy()" (click)="toggleCommunityMenu()">•••</button>
+                @if (communityMenuOpen()) {
+                  <div class="community-review__menu" role="menu">
+                    @if (communityIsApproved(post)) {
+                      <button type="button" role="menuitem"
+                        (click)="communityMenuOpen.set(false);moderateCommunity('HIDDEN')">Ẩn bài đăng</button>
+                    }
+                    @if (communityCanDelete(post)) {
+                      <button type="button" role="menuitem" class="community-review__menu-danger"
+                        (click)="startCommunityDeletion()">Xóa vĩnh viễn</button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+            @if (!communityIsApproved(post)) {
               <button type="button" class="web2-admin-btn web2-admin-btn--primary"
                 [disabled]="actionBusy()" (click)="moderateCommunity('APPROVED')">
                 {{actionBusy() ? 'Đang xử lý...' : (post.status === 'HIDDEN' ? 'Hiện bài' : 'Duyệt bài')}}
