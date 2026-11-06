@@ -24,7 +24,7 @@ export class AdminContentListComponent{
  private readonly route=inject(ActivatedRoute);private readonly router=inject(Router);private readonly api=inject(AdminContentService);private readonly session=inject(AuthSessionService);
  readonly mode=this.route.snapshot.data['contentMode'] as ContentMode;
  readonly rows=signal<any[]>([]);readonly loading=signal(true);readonly error=signal('');readonly search=signal('');readonly filter=signal('');readonly status=signal('');readonly page=signal(1);readonly notice=signal('');
- readonly communityDialog=signal<any|null>(null);readonly rejectionReason=signal('');readonly rejecting=signal(false);readonly communityError=signal('');readonly actionBusy=signal(false);
+ readonly communityDialog=signal<any|null>(null);readonly rejectionReason=signal('');readonly rejecting=signal(false);readonly communityMenuOpen=signal(false);readonly confirmCommunityDelete=signal(false);readonly communityError=signal('');readonly actionBusy=signal(false);
  readonly editorDialog=signal<'post'|'rescue'|null>(null);readonly editing=signal<any|null>(null);
  readonly editorError=signal('');
  readonly postDraft=signal({title:'',category:'',excerpt:'',content:'',status:'DRAFT',emergencyPhone:'1900-PET-HELP'});
@@ -99,10 +99,6 @@ export class AdminContentListComponent{
    void this.router.navigate(['/admin/content/first-aid/new']);
    return;
   }
-  if(this.mode==='community') {
-   void this.router.navigate(['/admin/content/community/new']);
-   return;
-  }
   this.editing.set(null);this.editorError.set('');
   if(this.mode==='rescue'){
    this.rescueDraft.set({petName:'',species:'DOG',breed:'',ageDescription:'',healthStatus:'',rescueStory:'',status:'LOOKING_FOR_HOME'});
@@ -174,16 +170,44 @@ export class AdminContentListComponent{
  }
  deleteRow(row:any):void{
   const id=String(row?._id||row?.id||'');if(!id||this.actionBusy())return;
-  if(typeof window!=='undefined'&&!window.confirm('Bạn có chắc muốn xóa nội dung này?'))return;
+  if(typeof window!=='undefined' && !(this.mode==='community' && this.confirmCommunityDelete()) && !window.confirm('Bạn có chắc muốn xóa nội dung này?'))return;
   this.actionBusy.set(true);this.notice.set('');
   const req=this.mode==='rescue'?this.api.deleteRescuePet(id):(this.mode==='community'?this.api.deleteCommunity(id):this.api.deletePost(id));
   req.pipe(finalize(()=>this.actionBusy.set(false))).subscribe({
-   next:()=>{this.rows.update(rows=>rows.filter(r=>String(r?._id||r?.id)!==id));if(this.mode==='community'){this.communityDialog.set(null);this.rejecting.set(false);this.communityError.set('');}this.notice.set('Đã xóa nội dung.');},
+   next:()=>{this.rows.update(rows=>rows.filter(r=>String(r?._id||r?.id)!==id));if(this.mode==='community'){this.communityDialog.set(null);this.rejecting.set(false);this.communityMenuOpen.set(false);this.confirmCommunityDelete.set(false);this.communityError.set('');}this.notice.set('Đã xóa nội dung.');},
    error:()=>{if(this.mode==='community'&&this.communityDialog())this.communityError.set('Không thể xóa bài đăng. Vui lòng thử lại.');else this.notice.set('Không thể xóa nội dung. Vui lòng thử lại.');},
   });
  }
- openCommunity(r:any):void{this.communityDialog.set(r);this.rejectionReason.set('');this.rejecting.set(false);this.communityError.set('');this.notice.set('');}
- closeCommunity():void{if(this.actionBusy())return;this.communityDialog.set(null);this.rejectionReason.set('');this.rejecting.set(false);this.communityError.set('');}
+ openCommunity(r:any):void{
+   this.communityDialog.set(r);this.rejectionReason.set('');
+   this.rejecting.set(false);this.communityMenuOpen.set(false);
+   this.confirmCommunityDelete.set(false);this.communityError.set('');this.notice.set('');
+ }
+ closeCommunity():void{
+   if(this.actionBusy())return;
+   this.communityDialog.set(null);this.rejectionReason.set('');
+   this.rejecting.set(false);this.communityMenuOpen.set(false);
+   this.confirmCommunityDelete.set(false);this.communityError.set('');
+ }
+ toggleCommunityMenu():void {
+   if(!this.actionBusy())this.communityMenuOpen.update(open=>!open);
+ }
+ startCommunityRejection():void {
+   this.communityMenuOpen.set(false);this.confirmCommunityDelete.set(false);
+   this.communityError.set('');this.rejecting.set(true);
+ }
+ startCommunityDeletion():void {
+   if(!this.isAdmin())return;
+   this.communityMenuOpen.set(false);this.rejecting.set(false);
+   this.communityError.set('');this.confirmCommunityDelete.set(true);
+ }
+ cancelCommunityAction():void {
+   this.communityMenuOpen.set(false);this.rejecting.set(false);
+   this.confirmCommunityDelete.set(false);this.communityError.set('');
+ }
+ isCommunityPublic(row:any):boolean {
+   return String(row?.status || '').toUpperCase()==='APPROVED' && Boolean(row?._id || row?.id);
+ }
  moderateCommunity(status:'APPROVED'|'REJECTED'|'HIDDEN'):void{
   const row=this.communityDialog();const id=String(row?._id||row?.id||'');
   if(!id||this.actionBusy())return;
@@ -198,7 +222,7 @@ export class AdminContentListComponent{
       this.communityError.set('BE chưa xác nhận trạng thái kiểm duyệt chính xác. Vui lòng tải lại dữ liệu.');return;
     }
     this.rows.update(rows=>rows.map(item=>String(item?._id||item?.id)===id?{...item,...updated,status}:item));
-    this.communityDialog.set(null);this.rejectionReason.set('');this.rejecting.set(false);
+    this.communityDialog.set(null);this.rejectionReason.set('');this.rejecting.set(false);this.communityMenuOpen.set(false);this.confirmCommunityDelete.set(false);
     this.notice.set(status==='APPROVED'?'Đã duyệt bài đăng.':status==='HIDDEN'?'Đã ẩn bài đăng.':'Đã từ chối bài đăng.');
    },
    error:(err:any)=>this.communityError.set(err?.error?.message||'Không thể cập nhật trạng thái bài đăng. Vui lòng thử lại.'),
