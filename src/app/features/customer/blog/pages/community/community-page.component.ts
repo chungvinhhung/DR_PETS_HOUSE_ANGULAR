@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, afterNextRender, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, afterNextRender, computed, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { CustomerAuthService } from '../../../../../core/customer/services/customer-auth.service';
@@ -44,6 +44,8 @@ export class CommunityPageComponent {
 
   // --- Trạng thái (signal = useState / useRef) ---
   readonly posts = signal<any[]>([]);
+  readonly posting=signal(false);
+  readonly composer=viewChild(ComposerComponent);
   readonly selectedId = signal<any>(null);
   readonly commentsByPost = signal<any>({});
   readonly postState = signal<any>({});
@@ -159,12 +161,42 @@ export class CommunityPageComponent {
     window.setTimeout(() => this.shareNotice.set(""), 1800);
   }
 
-  protected addPost(payload: any) {
+  protected async addPost(payload: any):Promise<void> {
     if (!this.authService.isAuthenticated()) {
       this.requireAuth("đăng bài");
       return;
     }
-    this.posts.update((items: any) => [{ id: `post-${Date.now()}`, author: "Bạn", initials: "B", time: "Vừa xong", likes: 0, comments: 0, ...payload }, ...items]);
+    if(this.posting())return;
+    const content=String(payload?.content||'').trim();
+    if(!content){
+      this.shareNotice.set('Vui lòng nhập nội dung bài đăng.');
+      return;
+    }
+    // Local blob URLs are not publicly accessible media; never pretend uploads worked.
+    if(payload?.image || payload?.video){
+      this.shareNotice.set('Chưa hỗ trợ tải ảnh/video lên máy chủ. Nội dung của bạn vẫn được giữ lại.');
+      return;
+    }
+    const title=(content.split(/\r?\n/).find(line=>line.trim())||content).trim().slice(0,120);
+    this.posting.set(true);
+    this.shareNotice.set('');
+    try {
+      const created=await this.contentApi.createCommunityPost({
+        title,content,imageUrls:[],type:String(payload?.type||''),
+      });
+      const id=String(created?._id || created?.id || '');
+      if(!id || String(created?.status||'').toUpperCase()!=='PENDING'){
+        throw new Error('API chưa xác nhận bài đăng đang chờ duyệt. Hãy kiểm tra trước khi gửi lại.');
+      }
+      // Keep the public feed unchanged until moderation approves the record.
+      this.composer()?.reset();
+      this.shareNotice.set('Đã gửi bài thành công. Bài đăng sẽ hiển thị sau khi được duyệt.');
+      window.setTimeout(()=>this.shareNotice.set(''),5000);
+    } catch(error:any) {
+      this.shareNotice.set(error?.message||'Không thể gửi bài đăng. Nội dung vẫn được giữ lại để thử lại.');
+    } finally {
+      this.posting.set(false);
+    }
   }
 
   protected async addComment(postId: any, content: any, replyTo: any) {
