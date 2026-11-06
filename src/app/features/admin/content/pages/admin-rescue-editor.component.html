@@ -1,0 +1,143 @@
+<app-admin-catalog-shell activeItem="content-rescue">
+  <main class="article-studio rescue-studio">
+    <app-admin-breadcrumb [items]="breadcrumb"/>
+    <header class="article-studio__heading">
+      <h1>{{isEditing ? 'Chỉnh sửa hồ sơ cứu trợ' : 'Thêm hồ sơ cứu trợ'}}</h1>
+      <div class="article-studio__actions">
+        <button type="button" class="article-studio__btn article-studio__btn--outline"
+          [disabled]="saving()" (click)="cancel()">Hủy bỏ</button>
+        <button type="button" class="article-studio__btn article-studio__btn--primary"
+          [disabled]="saving() || loading() || !canWrite()" (click)="save()">
+          {{saving() ? 'Đang lưu...' : (isEditing ? 'Lưu thay đổi' : 'Tạo hồ sơ')}}
+        </button>
+      </div>
+    </header>
+    @if(loading()){
+      <div class="article-studio__message" role="status">Đang tải hồ sơ cứu trợ...</div>
+    } @else if(loadError()){
+      <div class="article-studio__message article-studio__message--error" role="alert">{{loadError()}}</div>
+    } @else {
+      @if(error()){
+        <div class="article-studio__message article-studio__message--error" role="alert">{{error()}}</div>
+      }
+      <div class="article-studio__columns">
+        <div class="article-studio__editing">
+          <section class="article-studio__section" aria-labelledby="rescue-basic-heading">
+            <div class="article-studio__section-heading">
+              <h2 id="rescue-basic-heading">Thông tin thú cưng</h2>
+              @if (isEditing) { <span class="article-studio__status">{{petCode() || 'Hồ sơ hiện tại'}}</span> }
+            </div>
+            <div class="article-studio__fields">
+              <label class="article-studio__field article-studio__field--wide">
+                <span>Tên thú cưng <b>*</b></span>
+                <input type="text" maxlength="100" placeholder="Nhập tên thú cưng"
+                  [disabled]="saving() || !canWrite()" [ngModel]="draft().petName"
+                  (ngModelChange)="setField('petName',$event)">
+              </label>
+              <label class="article-studio__field">
+                <span>Loài <b>*</b></span>
+                <select [disabled]="saving() || !canWrite()" [ngModel]="draft().species"
+                  (ngModelChange)="setField('species',$event)">
+                  <option value="DOG">Chó</option><option value="CAT">Mèo</option><option value="OTHER">Khác</option>
+                </select>
+              </label>
+              <label class="article-studio__field">
+                <span>Giới tính</span>
+                <select [disabled]="saving() || !canWrite()" [ngModel]="draft().gender"
+                  (ngModelChange)="setField('gender',$event)">
+                  <option value="UNKNOWN">Chưa xác định</option>
+                  <option value="MALE">Đực</option><option value="FEMALE">Cái</option>
+                </select>
+              </label>
+              <label class="article-studio__field">
+                <span>Giống <b>*</b></span>
+                <input type="text" maxlength="120" placeholder="Ví dụ: Mèo tam thể"
+                  [disabled]="saving() || !canWrite()" [ngModel]="draft().breed"
+                  (ngModelChange)="setField('breed',$event)">
+              </label>
+              <label class="article-studio__field">
+                <span>Độ tuổi <b>*</b></span>
+                <input type="text" maxlength="100" placeholder="Ví dụ: 4 tháng tuổi"
+                  [disabled]="saving() || !canWrite()" [ngModel]="draft().ageDescription"
+                  (ngModelChange)="setField('ageDescription',$event)">
+              </label>
+              <label class="article-studio__field article-studio__field--wide">
+                <span>Chi nhánh / Khu vực</span>
+                <select [disabled]="saving() || !canWrite() || !!branchesError()" [ngModel]="draft().branchId"
+                  (ngModelChange)="setField('branchId',$event)">
+                  <option value="">Chưa chọn chi nhánh</option>
+                  @for(branch of branches();track branch.id){
+                    <option [value]="branch.id">{{branch.name}}</option>
+                  }
+                </select>
+                @if(branchesError()){ <small class="rescue-studio__field-error">{{branchesError()}}</small> }
+              </label>
+              @if(isEditing){
+                <div class="article-studio__field article-studio__field--wide">
+                  <span>Trạng thái nhận nuôi</span>
+                  <div class="rescue-studio__readonly-status">
+                    {{savedStatus()==='ADOPTED'?'Đã có tổ ấm':'Chưa có tổ ấm'}}
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+          <section class="article-studio__section" aria-labelledby="rescue-care-heading">
+            <div class="article-studio__section-heading"><h2 id="rescue-care-heading">Thông tin cứu trợ</h2></div>
+            <div class="article-studio__fields">
+              <label class="article-studio__field article-studio__field--wide">
+                <span>Tình trạng sức khỏe <b>*</b></span>
+                <textarea rows="3" maxlength="1200" placeholder="Tình trạng hiện tại và các lưu ý chăm sóc"
+                  [disabled]="saving() || !canWrite()" [ngModel]="draft().healthStatus"
+                  (ngModelChange)="setField('healthStatus',$event)"></textarea>
+              </label>
+              <label class="article-studio__field article-studio__field--wide">
+                <span>Câu chuyện cứu hộ <b>*</b></span>
+                <textarea rows="7" maxlength="6000" placeholder="Mô tả quá trình cứu hộ và tình trạng của bé"
+                  [disabled]="saving() || !canWrite()" [ngModel]="draft().rescueStory"
+                  (ngModelChange)="setField('rescueStory',$event)"></textarea>
+              </label>
+            </div>
+          </section>
+          <section class="article-studio__section" aria-labelledby="rescue-photos-heading">
+            <div class="article-studio__section-heading">
+              <h2 id="rescue-photos-heading">Hình ảnh thú cưng</h2>
+              <span class="article-studio__count">{{previewImages().length}}/8 ảnh</span>
+            </div>
+            <label class="article-studio__field article-studio__field--wide">
+              <span>Đường dẫn hình ảnh <b>*</b></span>
+              <textarea rows="4" placeholder="Mỗi dòng là một URL ảnh đã được tải lên máy chủ"
+                [disabled]="saving() || !canWrite()" [ngModel]="draft().imagesText"
+                (ngModelChange)="setField('imagesText',$event)"></textarea>
+            </label>
+            <div class="rescue-studio__image-grid">
+              @for(imageUrl of previewImages();track $index){
+                <img [src]="imageUrl" [alt]="'Ảnh thú cưng '+($index+1)" loading="lazy">
+              }
+            </div>
+            <p class="rescue-studio__field-error">Chưa có tính năng tải ảnh từ máy trong API hiện tại; vui lòng dùng URL ảnh đã lưu trên máy chủ.</p>
+          </section>
+        </div>
+        <aside class="article-studio__side" aria-label="Xem trước hồ sơ">
+          <section class="article-studio__section rescue-studio__preview">
+            <div class="article-studio__section-heading"><h2>Xem trước thẻ nhận nuôi</h2></div>
+            <div class="rescue-studio__card">
+              @if(previewImage()){
+                <img [src]="previewImage()" alt="Ảnh đại diện thú cưng" class="rescue-studio__cover">
+              } @else {
+                <div class="rescue-studio__empty-image">Chưa có ảnh</div>
+              }
+              <div class="rescue-studio__card-body">
+                <strong>{{draft().petName || 'Tên thú cưng'}}</strong>
+                <span>{{draft().breed || 'Giống thú cưng'}} · {{draft().ageDescription || 'Độ tuổi'}}</span>
+                <span>{{branchName() || 'Chưa chọn khu vực'}}</span>
+                <p>{{draft().healthStatus || 'Tình trạng sức khỏe sẽ hiển thị ở đây.'}}</p>
+                <span class="rescue-studio__status">{{savedStatus()==='ADOPTED'?'Đã có tổ ấm':'Chưa có tổ ấm'}}</span>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
+    }
+  </main>
+</app-admin-catalog-shell>
