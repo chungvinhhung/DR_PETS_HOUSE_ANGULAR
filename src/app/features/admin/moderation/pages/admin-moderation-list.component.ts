@@ -47,7 +47,7 @@ export class AdminModerationListComponent {
   const now=Date.now();
   return this.rows().filter(r=>{
    const text=this.mode==='reviews'
-    ? [r.targetName,r.targetId,r.displayName,r.comment,r.sourceId].join(' ')
+    ? [r.targetName,r.targetId,r.displayName,r.comment,r.sourceId,r.referenceCode].join(' ')
     : this.mode==='feedback'
       ? [r.name,r.email,r.phone,r.subject,r.message].join(' ')
       : [r.reporterName,r.postTitle,r.reason].join(' ');
@@ -103,6 +103,22 @@ export class AdminModerationListComponent {
  reviewReference(r:any):string {
   // Backend currently omits sourceType/sourceId. Never invent an order/appointment code.
   return r.referenceCode||r.sourceCode||r.sourceId||'—';
+ }
+ reviewAuthor(r:any):string {
+  return r?.anonymous===true?'Ẩn danh':String(r?.displayName||'Khách hàng');
+ }
+ customerReviewUrl(r:any):string {
+  if(this.mode!=='reviews'||this.rowStatus(r)!=='ACTIVE'||
+     String(r?.targetType||'').toUpperCase()!=='PRODUCT')return '';
+  const productId=String(r?.targetId||'').trim();
+  const reviewId=String(r?.id||r?._id||'').trim();
+  if(!productId||!reviewId)return '';
+  return '/product-details/'+encodeURIComponent(productId)
+    +'?tab=reviews&reviewId='+encodeURIComponent(reviewId);
+ }
+ feedbackGender(r:any):string {
+  const value=String(r?.gender||'').toLowerCase();
+  return ({male:'Nam',female:'Nữ',other:'Khác'} as Record<string,string>)[value]||'—';
  }
  openReview(row:any):void{
   this.reviewDialog.set(row);this.reviewReason.set('');this.reviewError.set('');
