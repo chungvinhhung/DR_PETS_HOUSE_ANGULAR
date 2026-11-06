@@ -54,10 +54,10 @@
                 @for (r of visible(); track r.id) {
                   <tr class="moderation-page__clickable" (click)="openReview(r)"
                     (keydown.enter)="openReview(r)" tabindex="0"
-                    [attr.aria-label]="'Kiểm duyệt đánh giá của '+(r.displayName||'khách hàng')">
+                    [attr.aria-label]="'Kiểm duyệt đánh giá của '+reviewAuthor(r)">
                     <td>{{reviewName(r)}}</td>
                     <td>{{r.targetType === 'SERVICE' ? 'Dịch vụ' : 'Sản phẩm'}}</td>
-                    <td>{{reviewReference(r)}}</td><td>{{r.displayName || 'Ẩn danh'}}</td>
+                    <td>{{reviewReference(r)}}</td><td>{{reviewAuthor(r)}}</td>
                     <td class="is-center">{{r.rating}} / 5</td><td>{{r.comment || '—'}}</td>
                     <td class="is-center">{{date(r.createdAt)}}</td>
                     <td class="is-center"><span class="badge" [attr.data-kind]="statusKind(r)">{{statusLabel(r)}}</span></td>
@@ -70,7 +70,7 @@
               <tbody>
                 @for (r of visible(); track r._id || r.id) {
                   <tr>
-                    <td>{{r.name || '—'}}</td><td>{{r.gender || '—'}}</td><td>{{r.phone || '—'}}</td><td>{{r.email || '—'}}</td><td>{{r.message || r.subject || '—'}}</td>
+                    <td>{{r.name || '—'}}</td><td>{{feedbackGender(r)}}</td><td>{{r.phone || '—'}}</td><td>{{r.email || '—'}}</td><td>{{r.message || r.subject || '—'}}</td>
                     <td class="is-center">{{date(r.createdAt)}}</td>
                     <td class="is-center"><span class="badge" [attr.data-kind]="statusKind(r)">{{statusLabel(r)}}</span></td>
                     <td class="is-center"><a class="web2-admin-icon-button" [routerLink]="['/admin/moderation/feedback', r._id || r.id]" aria-label="Xem chi tiết phản hồi"><img src="/assets/admin-branch/figma-eye.svg" alt=""></a></td>
@@ -103,7 +103,7 @@
           aria-labelledby="moderation-review-title" (click)="$event.stopPropagation()">
           <header>
             <div>
-              <h2 id="moderation-review-title">Đánh giá của {{review.displayName||'khách hàng'}}</h2>
+              <h2 id="moderation-review-title">Đánh giá của {{reviewAuthor(review)}}</h2>
               <span>{{reviewName(review)}} · {{date(review.createdAt)}}</span>
             </div>
             <button type="button" class="moderation-page__close" aria-label="Đóng"
@@ -114,6 +114,13 @@
               <span class="badge" [attr.data-kind]="statusKind(review)">{{statusLabel(review)}}</span>
             </div>
             <p>{{review.comment || 'Khách hàng không để lại nội dung.'}}</p>
+            <div class="moderation-page__review-context">
+              <span>Đối tượng: {{reviewName(review)}}</span>
+              <span>Ngày đánh giá: {{date(review.createdAt)}}</span>
+              @if(reviewReference(review)!=='—'){
+                <span>Mã tham chiếu: {{reviewReference(review)}}</span>
+              }
+            </div>
             @if(reviewError()){
               <div class="web2-admin-inline-error" role="alert">{{reviewError()}}</div>
             }
@@ -126,6 +133,13 @@
             }
           </div>
           <footer>
+            @if(customerReviewUrl(review)){
+              <a class="moderation-page__customer-link" [href]="customerReviewUrl(review)"
+                target="_blank" rel="noopener noreferrer"
+                aria-label="Mở đánh giá sản phẩm này trên trang Customer">
+                Xem trên trang web <span aria-hidden="true">↗</span>
+              </a>
+            }
             <button type="button" class="web2-admin-btn web2-admin-btn--outline"
               [disabled]="busy()" (click)="confirmHide() ? confirmHide.set(false) : closeReview()">
               {{confirmHide()?'Hủy':'Đóng'}}
