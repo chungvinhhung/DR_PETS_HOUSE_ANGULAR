@@ -124,7 +124,7 @@ export class AdminModerationListComponent {
    .pipe(finalize(()=>this.busy.set(false))).subscribe({
     next:updated=>{
       this.rows.update(rows=>rows.map(r=>String(r.id||r._id)===id?{...r,...updated,hidden:true}:r));
-      this.closeReview();this.notice.set('Đã ẩn đánh giá khỏi Customer.');
+      this.reviewDialog.set(null);this.confirmHide.set(false);this.reviewReason.set('');this.notice.set('Đã ẩn đánh giá khỏi Customer.');
     },
     error:err=>this.reviewError.set(err?.error?.message||'Không thể ẩn đánh giá.')
    });
@@ -136,7 +136,7 @@ export class AdminModerationListComponent {
   this.api.showReview(id).pipe(finalize(()=>this.busy.set(false))).subscribe({
    next:updated=>{
      this.rows.update(rows=>rows.map(r=>String(r.id||r._id)===id?{...r,...updated,hidden:false}:r));
-     this.closeReview();this.notice.set('Đã hiển thị lại đánh giá.');
+     this.reviewDialog.set(null);this.confirmHide.set(false);this.reviewReason.set('');this.notice.set('Đã hiển thị lại đánh giá.');
    },
    error:err=>this.reviewError.set(err?.error?.message||'Không thể hiển thị lại đánh giá.')
   });
