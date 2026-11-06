@@ -19,6 +19,10 @@
             </div>
           </div>
           <div class="account-profile__summary">
+            <div class="account-profile__summary-username">
+              <span>Tên đăng nhập</span>
+              <strong>{{ user()?.username || '—' }}</strong>
+            </div>
             <div><span>Số điện thoại liên hệ</span><strong>{{ user()?.phone || '—' }}</strong></div>
             <div><span>Vai trò hệ thống</span><strong>ADMIN</strong></div>
           </div>
@@ -57,7 +61,6 @@
         <section class="account-profile__card account-profile__password">
           <div class="account-profile__section-heading">
             <h2>Đổi mật khẩu</h2>
-            <p>Chỉ quản trị viên hệ thống được đổi mật khẩu tài khoản của mình.</p>
           </div>
           <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" novalidate>
             <div class="account-profile__password-fields">
