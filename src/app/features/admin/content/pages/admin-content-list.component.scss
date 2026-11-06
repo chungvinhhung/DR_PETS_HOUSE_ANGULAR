@@ -38,3 +38,28 @@
 /* Dropdown widths live in the shared admin stylesheet to override the
    management filter baseline; component styles only place the add button. */
 .content-admin .web2-filterbar>.web2-add-button{flex:0 0 auto;margin-left:0!important}
+
+/* Community management: Figma header action and review media. */
+.content-admin .web2-admin-page__header{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+}
+.content-admin .web2-admin-page__header>.web2-add-button{
+  flex:none;margin:0;
+}
+.community-review__meta{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin:0 0 16px;color:#64748b;font:400 12px/18px Roboto,Arial,sans-serif;
+}
+.community-review__images{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:10px;margin:12px 0 16px;
+}
+.community-review__images img{
+  display:block;width:100%;height:135px;object-fit:cover;
+  border:1px solid #dce5f0;border-radius:10px;
+}
+.content-dialog>footer .community-review__delete{color:#b42335;border-color:#f3c5cb}
+.content-dialog .content-dialog__error{
+  color:#b42335;background:#fff4f5;border:1px solid #f3c5cb;
+  padding:9px 12px;margin:0 0 13px;border-radius:8px;
+}
