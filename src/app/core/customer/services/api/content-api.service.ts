@@ -277,6 +277,23 @@ export class ContentApiService {
     };
   }
 
+  /**
+   * Community posts have a separate collection and API from official blog posts.
+   * The public endpoint returns APPROVED records only (BE-enforced).
+   */
+  async getCommunityPostsPage(params: any = {}) {
+    const response = await this.http.get('/community/posts', { params });
+    const payload = assertSuccess(response);
+    const posts = Array.isArray(payload)
+      ? payload : (Array.isArray(payload?.items) ? payload.items :
+        (Array.isArray(payload?.posts) ? payload.posts : []));
+    return {
+      posts,
+      totalRows: Number(payload?.total ?? payload?.totalRows ?? posts.length),
+      totalPages: Number(payload?.totalPages ?? 1),
+    };
+  }
+
   async getPostBySlug(slug: any) {
     const response = await this.http.get(`/posts/${slug}`);
     return normalizePost(assertSuccess(response));
