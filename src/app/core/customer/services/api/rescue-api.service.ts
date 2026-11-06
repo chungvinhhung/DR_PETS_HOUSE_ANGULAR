@@ -36,7 +36,15 @@ export function normalizeAdoptionPet(pet: any = {}) {
 }
 
 export function normalizeAdoptionRequest(request: any = {}) {
-  const pet = request.rescuePetId || request.adoption_pet || request.pet || {};
+  // My-requests GET populates rescuePetId, but POST can return an unpopulated
+  // ObjectId. Keep the selected Customer pet details for the immediate card.
+  const linkedPet=request.rescuePetId;
+  const pet=linkedPet && typeof linkedPet==='object' &&
+    (linkedPet.petName || linkedPet.name)
+      ? linkedPet
+      : (request.adoption_pet || request.pet || {});
+  const linkedPetId=typeof linkedPet==='string'?linkedPet
+    : String(linkedPet?._id||linkedPet?.id||'');
   const status = String(request.status || 'PENDING').toLowerCase();
   const statusLabels: Record<string,string> = {
     pending: 'Đang chờ duyệt',
@@ -47,7 +55,7 @@ export function normalizeAdoptionRequest(request: any = {}) {
   return {
     ...request,
     id:String(request._id || request.adoption_request_id || request.id || ''),
-    petId:String(pet._id || pet.adoption_pet_id || pet.id || request.adoption_pet_id || ''),
+    petId:String(linkedPetId || pet._id || pet.adoption_pet_id || pet.id || request.adoption_pet_id || ''),
     petName:pet.petName || pet.name || 'Bạn nhỏ',
     petImage:getPrimaryImage(pet.images || pet.adoption_pet_images || []),
     status,
