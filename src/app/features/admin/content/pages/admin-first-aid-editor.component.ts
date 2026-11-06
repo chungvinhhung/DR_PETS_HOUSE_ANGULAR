@@ -132,7 +132,7 @@ export class AdminFirstAidEditorComponent {
     // instruction from an unrelated free-text content field.
     this.steps.set(parsedSteps);
 
-    this.nextStepId=Math.max(...this.steps().map(s=>s.id))+1;
+    this.nextStepId=Math.max(0,...this.steps().map(s=>s.id))+1;
     this.videoUrl.set(String(row.video_url || row.videoUrl || row.video?.url || ''));
     this.videoTitle.set(String(row.video_title || row.videoTitle || row.video?.title || ''));
     this.videoDescription.set(String(row.video_description || row.videoDescription || row.video?.description || ''));
