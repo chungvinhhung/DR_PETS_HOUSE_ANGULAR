@@ -45,11 +45,44 @@
           </section>
         }
       </div>
-      <a routerLink="/admin/profile" class="catalog-header__profile" aria-label="Xem hồ sơ tài khoản">
-        <img class="catalog-header__avatar" [src]="session.user()?.avatarUrl || '/assets/admin-product/avatar-figma.png'" alt="" width="36" height="36">
-        <span class="catalog-header__identity">{{ roleLabel() }}<small>{{ session.user()?.fullName || session.user()?.phone || 'Tài khoản' }}</small></span>
-        <img class="catalog-header__chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true" width="16" height="16">
-      </a>
+      <div class="catalog-header__profile-wrap">
+        <button type="button" class="catalog-header__profile"
+          aria-label="Mở menu tài khoản" aria-haspopup="menu"
+          [attr.aria-expanded]="profileMenuOpen()"
+          aria-controls="admin-account-menu" (click)="toggleProfileMenu()">
+          <img class="catalog-header__avatar" [src]="session.user()?.avatarUrl || '/assets/admin-product/avatar-figma.png'" alt="" width="36" height="36">
+          <span class="catalog-header__identity">{{ roleLabel() }}<small>{{ session.user()?.fullName || session.user()?.phone || 'Tài khoản' }}</small></span>
+          <img class="catalog-header__chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true" width="16" height="16">
+        </button>
+        @if (profileMenuOpen()) {
+          <div id="admin-account-menu" class="catalog-header__account-menu" role="menu" aria-label="Menu tài khoản">
+            <div class="catalog-header__account-summary">
+              <strong>{{ roleLabel() }}</strong>
+              <span>{{ session.user()?.email || session.user()?.phone || 'Tài khoản' }}</span>
+            </div>
+            <div class="catalog-header__account-divider"></div>
+            @if (canViewAccountProfile()) {
+              <a role="menuitem" routerLink="/admin/profile" class="catalog-header__account-action"
+                (click)="closeProfileMenu()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="8" r="3.5"/><path d="M5 20v-2.5a7 7 0 0 1 14 0V20"/>
+                </svg>
+                Thông tin tài khoản
+              </a>
+            }
+            <button type="button" role="menuitem" class="catalog-header__account-action"
+              [disabled]="isLoggingOut()" (click)="logout()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5"/>
+                <path d="M14 7l5 5-5 5M8 12h11"/>
+              </svg>
+              {{ isLoggingOut() ? 'Đang đăng xuất...' : 'Đăng xuất' }}
+            </button>
+          </div>
+        }
+      </div>
     </div>
   </header>
 
