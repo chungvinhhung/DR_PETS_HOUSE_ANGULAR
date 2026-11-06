@@ -10,6 +10,7 @@ import { AdminDataStateComponent } from '../../../../shared/admin-data-state/adm
 import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-pagination';
 import { AdminContentService } from '../services/admin-content.service';
 import { FIRST_AID_CATEGORIES } from '../../../../shared/customer/data/first-aid-data';
+import { COMMUNITY_POST_TYPE_LABELS } from '../../../../shared/customer/data/community-post-types';
 
 type ContentMode='articles'|'first-aid'|'community'|'rescue'|'adoptions';
 
@@ -30,7 +31,8 @@ export class AdminContentListComponent{
  readonly postDraft=signal({title:'',category:'',excerpt:'',content:'',status:'DRAFT',emergencyPhone:'1900-PET-HELP'});
  readonly rescueDraft=signal({petName:'',species:'DOG',breed:'',ageDescription:'',healthStatus:'',rescueStory:'',status:'LOOKING_FOR_HOME'});
  readonly pageSize=7;
- readonly hasCommunityTypes=computed(()=>this.rows().some(row=>Boolean(this.communityType(row))));
+ readonly communityTypes=COMMUNITY_POST_TYPE_LABELS;
+ readonly hasCommunityTypes=computed(()=>this.rows().some(row=>this.communityTypes.some(type=>type===this.communityType(row))));
  readonly title=({articles:'Bài viết kiến thức','first-aid':'Cẩm nang sơ cứu',community:'Bài đăng cộng đồng',rescue:'Cứu trợ & Nhận nuôi',adoptions:'Đơn đăng ký nhận nuôi'} as Record<ContentMode,string>)[this.mode];
  readonly activeItem=({articles:'content-articles','first-aid':'content-first-aid',community:'content-community',rescue:'content-rescue',adoptions:'content-rescue'} as const)[this.mode];
  readonly isAdmin=computed(()=>this.session.user()?.systemRole==='ADMIN');
@@ -250,8 +252,10 @@ export class AdminContentListComponent{
  communityType(r:any):string {
   const raw=r?.type ?? r?.postType ?? r?.category ?? r?.post_type;
   if(!raw)return '';
-  const v=typeof raw==='string'?raw:String(raw?.label||raw?.name||'');
-  return ({SHARE:'Chia sẻ',QNA:'Hỏi đáp',QUESTION:'Hỏi đáp',ANNOUNCEMENT:'Thông báo'} as Record<string,string>)[v.toUpperCase()]||v;
+  const value=(typeof raw==='string'?raw:String(raw?.label||raw?.name||'')).trim();
+  // Normalize casing for real persisted Customer tags, without fabricating
+  // categories for old records whose type was not stored by BE.
+  return this.communityTypes.find(label=>label.toLocaleLowerCase('vi')===value.toLocaleLowerCase('vi')) ?? value;
  }
  communityStatus(r:any):string {
   const value=String(r?.status||r?.visibility||'').toUpperCase();
