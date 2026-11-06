@@ -21,6 +21,7 @@ export class ComposerComponent {
   // --- Input / Output (props của React) ---
   readonly onPost = output<any>();
   readonly canPost = input<any>(undefined);
+  readonly submitting = input<boolean>(false);
   readonly onRequireAuth = output<any>();
 
   // --- Dữ liệu & hàm dùng trong template ---
@@ -48,15 +49,28 @@ export class ComposerComponent {
     }
     const file = event.target.files?.[0];
     if (!file) return;
+    this.clearMedia();
     this.media.set({ kind, name: file.name, url: URL.createObjectURL(file) });
   }
 
   protected submit() {
-    if (!this.requirePostAuth()) return;
+    if (!this.requirePostAuth() || this.submitting()) return;
     if (!this.value().trim() && !this.media()) return;
+    // The parent confirms an API response before clearing the draft.
     this.onPost.emit({ content: this.value().trim(), type: this.type(), [this.media()?.kind]: this.media()?.url });
-    this.value.set("");
+  }
+
+  clearMedia():void {
+    const previous=this.media();
+    if(previous?.url && typeof URL!=='undefined')URL.revokeObjectURL(previous.url);
     this.media.set(null);
+    if(this.imageInput()?.nativeElement)this.imageInput()!.nativeElement.value='';
+    if(this.videoInput()?.nativeElement)this.videoInput()!.nativeElement.value='';
+  }
+
+  reset():void {
+    this.value.set("");
+    this.clearMedia();
     this.type.set("");
     this.showTypes.set(false);
   }
