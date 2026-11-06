@@ -36,24 +36,24 @@ export function normalizeAdoptionPet(pet: any = {}) {
 }
 
 export function normalizeAdoptionRequest(request: any = {}) {
-  const pet = request.adoption_pet || request.pet || {};
-  const status = request.status || "pending";
-  const statusLabels = {
-    pending: "Đang chờ duyệt",
-    approved: "Đã được chấp nhận",
-    rejected: "Đã bị từ chối",
+  const pet = request.rescuePetId || request.adoption_pet || request.pet || {};
+  const status = String(request.status || 'PENDING').toLowerCase();
+  const statusLabels: Record<string,string> = {
+    pending: 'Đang chờ duyệt',
+    approved: 'Đã được chấp nhận',
+    rejected: 'Đã bị từ chối',
+    cancelled: 'Đã hủy',
   };
-
   return {
     ...request,
-    id: String(request.adoption_request_id || request.id || ""),
-    petId: String(pet.adoption_pet_id || pet.id || request.adoption_pet_id || ""),
-    petName: pet.name || "Bạn nhỏ",
-    petImage: getPrimaryImage(pet.images || pet.adoption_pet_images || []),
+    id:String(request._id || request.adoption_request_id || request.id || ''),
+    petId:String(pet._id || pet.adoption_pet_id || pet.id || request.adoption_pet_id || ''),
+    petName:pet.petName || pet.name || 'Bạn nhỏ',
+    petImage:getPrimaryImage(pet.images || pet.adoption_pet_images || []),
     status,
-    statusLabel: (statusLabels as any)[status] || status,
-    submittedAt: request.created_at || request.createdAt || null,
-    reason: request.reason || "",
+    statusLabel:statusLabels[status] || status,
+    submittedAt:request.createdAt || request.created_at || null,
+    reason:request.applicantInfo?.message || request.reason || '',
   };
 }
 
@@ -76,14 +76,12 @@ export class RescueApiService {
   private readonly http = inject(CustomerHttpService);
 
   async getAdoptionPets() {
-    try {
-      const response = await this.http.get("/adoptions/pets");
-      const data = assertSuccess(response);
-      const list = Array.isArray(data) ? data : (data?.items || data?.pets || []);
-      return list.map(normalizeAdoptionPet);
-    } catch {
-      return [];
-    }
+    // Preserve API errors so Customer shows an error state instead of a fake
+    // adoption catalogue or a misleading empty-success state.
+    const response = await this.http.get('/adoptions/pets', {params:{page:1,limit:100}});
+    const data = assertSuccess(response);
+    const list = Array.isArray(data) ? data : (data?.items || data?.pets || []);
+    return list.map(normalizeAdoptionPet);
   }
 
   async getRescueStations() {
