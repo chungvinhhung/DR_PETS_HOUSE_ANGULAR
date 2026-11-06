@@ -1,20 +1,55 @@
 :host{display:block;min-width:0}
 
-/* Keep the preview column scrollable independently of the long editing form. */
-.aid-studio .article-studio__side{
-  position:sticky;top:16px;align-self:start;
-  max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);
-  overflow-y:auto;overscroll-behavior-y:contain;
-  scrollbar-gutter:stable;padding-right:6px;
-}
-.aid-studio .article-studio__side::-webkit-scrollbar{width:7px}
-.aid-studio .article-studio__side::-webkit-scrollbar-thumb{background:#cfdae9;border-radius:6px}
-.aid-studio .article-studio__side::-webkit-scrollbar-track{background:transparent}
-@media(max-width:1250px){
-  .aid-studio .article-studio__side{
-    position:static;max-height:none;overflow:visible;
-    padding-right:0;scrollbar-gutter:auto;
+/* Phase 2 editor desktop: two actual scroll panes, not a sticky preview trapped
+   inside a document-scrolling page. The entire card and all details stay in
+   normal content flow; the scrollbar is on the full column, never the card. */
+@media(min-width:1251px){
+  .aid-studio .article-studio__columns{
+    height:calc(100vh - 256px);
+    height:calc(100dvh - 256px);
+    min-height:400px;
+    align-items:stretch;
   }
+  .aid-studio .article-studio__editing,
+  .aid-studio .article-studio__side{
+    height:100%;min-height:0;max-height:none;
+    position:static;top:auto;align-self:stretch;
+    overflow-x:hidden;overflow-y:auto;
+    overscroll-behavior-y:contain;
+    scrollbar-gutter:stable;
+    scrollbar-width:thin;
+    scrollbar-color:#cad7e6 transparent;
+    padding:2px 9px 20px 2px;
+  }
+  .aid-studio .article-studio__editing > .article-studio__section,
+  .aid-studio .article-studio__side > .article-studio__section{flex-shrink:0}
+  .aid-studio .article-studio__editing::-webkit-scrollbar,
+  .aid-studio .article-studio__side::-webkit-scrollbar{width:8px}
+  .aid-studio .article-studio__editing::-webkit-scrollbar-thumb,
+  .aid-studio .article-studio__side::-webkit-scrollbar-thumb{
+    background:#cad7e6;border-radius:8px
+  }
+}
+/* Single document scroll on tablets and phones, without nested overflow. */
+@media(max-width:1250px){
+  .aid-studio .article-studio__columns{height:auto;min-height:0}
+  .aid-studio .article-studio__editing,
+  .aid-studio .article-studio__side{
+    position:static;max-height:none;height:auto;overflow:visible;
+    scrollbar-gutter:auto;padding:0;
+  }
+}
+/* The preview section must grow to its content height; never clip the card. */
+.aid-studio .aid-studio__preview{
+  overflow:visible;
+}
+.aid-studio .aid-studio__customer-card,
+.aid-studio .aid-studio__customer-card app-first-aid-card,
+.aid-studio .aid-studio__customer-card app-first-aid-card>a{
+  height:auto;max-height:none;overflow:visible;
+}
+.aid-studio .aid-studio__customer-card app-first-aid-card>a{
+  overflow:hidden; /* Clip at rounded card corners, not at the section bottom. */
 }
 
 /* Follow the Content Studio chip input pattern; use red for Customer safety labels. */
@@ -36,11 +71,6 @@
 }
 .aid-studio__urgent-badge app-customer-icon{
   display:inline-flex;width:16px;height:16px;align-items:center;justify-content:center
-}
-.aid-studio__emergency-preview{margin:18px 0 4px;pointer-events:none}
-.aid-studio__emergency-preview aside[app-emergency-support]{
-  width:100%;max-width:100%;height:auto;min-height:260px;
-  padding:22px;gap:16px;border-radius:18px;border-left-width:3px;
 }
 .aid-studio__steps-heading{
   display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:22px 0 16px
