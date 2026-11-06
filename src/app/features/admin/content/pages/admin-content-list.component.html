@@ -277,6 +277,9 @@
           @if (post.status === 'REJECTED' && post.rejectionReason) {
             <div class="content-dialog__reason"><span>Lý do từ chối trước đó</span><strong>{{post.rejectionReason}}</strong></div>
           }
+          @if (communityError()) {
+            <div class="content-dialog__error" role="alert">{{communityError()}}</div>
+          }
           @if (rejecting()) {
             <label>
               Lý do từ chối <span class="content-editor__required">*</span>
