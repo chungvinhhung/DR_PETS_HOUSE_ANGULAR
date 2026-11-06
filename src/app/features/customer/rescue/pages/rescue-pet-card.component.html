@@ -22,12 +22,21 @@
   </div>
   @if (!adopted()) {
     <div class="mt-auto flex flex-col gap-2">
-      <button
-        type="button"
-        (click)="onAdopt.emit(pet())"
-        class="h-9 rounded-[2px] bg-[#FDD835] text-[14px] leading-5 tracking-[0.28px] text-[rgba(0,0,0,0.87)] shadow-[0_1px_1px_rgba(0,0,0,0.05)] transition-colors hover:bg-[#FBC02D]"
-      >Nhận nuôi ngay</button>
-      <button class="h-[38px] rounded-[2px] border border-white bg-[#0D47A1] text-[14px] leading-5 tracking-[0.28px] text-white shadow-[0_1px_1px_rgba(0,0,0,0.05)]">Liên hệ để hỗ trợ</button>
+      @if (pet().supportPartnerHref) {
+        <a
+          [href]="pet().supportPartnerHref" target="_blank" rel="noopener noreferrer"
+          [attr.aria-label]="'Liên hệ '+pet().supportPartnerName+' để nhận nuôi'"
+          class="flex h-9 items-center justify-center rounded-[2px] bg-[#FDD835] text-[14px] leading-5 tracking-[0.28px] text-[rgba(0,0,0,0.87)] shadow-[0_1px_1px_rgba(0,0,0,0.05)] transition-colors hover:bg-[#FBC02D]"
+        >Nhận nuôi ngay</a>
+        <a
+          [href]="pet().supportPartnerHref" target="_blank" rel="noopener noreferrer"
+          [attr.aria-label]="'Liên hệ '+pet().supportPartnerName+' để hỗ trợ'"
+          class="flex h-[38px] items-center justify-center rounded-[2px] border border-white bg-[#0D47A1] text-[14px] leading-5 tracking-[0.28px] text-white shadow-[0_1px_1px_rgba(0,0,0,0.05)] hover:bg-[#0b408f]"
+        >Liên hệ để hỗ trợ</a>
+      } @else {
+        <span class="flex h-9 items-center justify-center rounded-[2px] bg-[#f4dda6] text-[14px] text-[#685e50] opacity-70" aria-disabled="true" title="Hồ sơ chưa được gắn đối tác cứu trợ">Nhận nuôi ngay</span>
+        <span class="flex h-[38px] items-center justify-center rounded-[2px] bg-[#6c8cb9] text-[14px] text-white opacity-70" aria-disabled="true" title="Hồ sơ chưa được gắn đối tác cứu trợ">Liên hệ để hỗ trợ</span>
+      }
     </div>
   }
 </div>
