@@ -81,6 +81,16 @@
                   }
                 </select>
               </label>
+              @if(isEditing){
+                <label class="article-studio__field article-studio__field--wide">
+                  <span>Trạng thái theo xác nhận của đối tác</span>
+                  <select [disabled]="saving() || !canWrite()" [ngModel]="savedStatus()"
+                    (ngModelChange)="updateStatus($event)">
+                    <option value="LOOKING_FOR_HOME">Còn chờ</option>
+                    <option value="ADOPTED">Đã có tổ ấm</option>
+                  </select>
+                </label>
+              }
             </div>
             @if(selectedPartner();as partner){
               <div class="rescue-studio__partner-info">
