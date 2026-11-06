@@ -7913,30 +7913,6 @@ app-admin-inventory-page {
 .community-review__unpublished{
   font-size:12px;line-height:18px;color:#64748b;
 }
-.community-review__more{position:relative;flex:none}
-.community-review__more-trigger{
-  display:grid;place-items:center;min-width:38px;height:38px;
-  border:1px solid #dce5ef;background:#fff;border-radius:8px;
-  font:700 13px/18px Roboto,Arial,sans-serif;color:#475569;cursor:pointer;
-  letter-spacing:1px;
-}
-.community-review__more-trigger:hover,.community-review__more-trigger[aria-expanded="true"]{
-  color:#0d47a1;background:#f3f7fc;border-color:#9ebbe3;
-}
-.community-review__more-trigger:focus-visible{outline:2px solid #0d47a1;outline-offset:2px}
-.community-review__menu{
-  position:absolute;z-index:30;right:0;bottom:calc(100% + 8px);
-  width:194px;padding:5px;border:1px solid #dce5ef;border-radius:10px;
-  background:#fff;box-shadow:0 12px 32px rgba(15,23,42,.16);
-}
-.community-review__menu button{
-  display:block;width:100%;height:37px;padding:0 12px;border:0;border-radius:7px;
-  background:#fff;color:#233856;font:500 13px/18px Roboto,Arial,sans-serif;
-  text-align:left;cursor:pointer;
-}
-.community-review__menu button:hover{background:#f1f6fc}
-.community-review__menu .community-review__menu-danger{color:#ba2935}
-.community-review__menu .community-review__menu-danger:hover{background:#fff1f2}
 .community-review__inline-action{margin:17px 0 0}
 .community-review__inline-action label{
   display:block;font:600 13px/20px Roboto,Arial,sans-serif;color:#26364a;
