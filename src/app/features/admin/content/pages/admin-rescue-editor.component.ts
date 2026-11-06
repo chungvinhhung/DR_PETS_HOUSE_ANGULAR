@@ -91,6 +91,11 @@ export class AdminRescueEditorComponent {
     this.draft.update(current=>({...current,[key]:value}));
     this.dirty.set(true);this.error.set('');
   }
+  updateStatus(value:string):void {
+    if(value!=='LOOKING_FOR_HOME'&&value!=='ADOPTED')return;
+    this.savedStatus.set(value);
+    this.dirty.set(true);this.error.set('');
+  }
   async onImageSelected(event:Event):Promise<void>{
     const input=event.target as HTMLInputElement;
     const file=input.files?.[0];input.value='';
@@ -129,6 +134,7 @@ export class AdminRescueEditorComponent {
       ...(this.legacyFields.branchId?{branchId:this.legacyFields.branchId}:{}),
       rescueStory:d.rescueStory.trim(),healthStatus:d.healthStatus.trim(),
       supportNeeds:d.supportNeeds.trim(),supportPartnerId:d.supportPartnerId,
+      ...(this.isEditing||this.savedId?{status:this.savedStatus()}:{}),
       images:[d.image],
     };
   }
