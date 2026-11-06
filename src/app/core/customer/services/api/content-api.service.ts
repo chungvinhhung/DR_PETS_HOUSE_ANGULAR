@@ -281,7 +281,7 @@ export class ContentApiService {
    * Community posts have a separate collection and API from official blog posts.
    * The public endpoint returns APPROVED records only (BE-enforced).
    */
-  async createCommunityPost(body:{title:string;content:string;imageUrls:string[]}) {
+  async createCommunityPost(body:{title:string;content:string;imageUrls:string[];type?:string}) {
     const response = await this.http.post('/community/posts',body);
     return assertSuccess(response);
   }
