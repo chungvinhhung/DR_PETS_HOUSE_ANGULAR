@@ -167,18 +167,16 @@
                   [disabled]="saving() || !canWrite()" [ngModel]="videoTitle()"
                   (ngModelChange)="setField('videoTitle',$event)">
               </label>
-              <label class="article-studio__field article-studio__field--wide">
+              <div class="article-studio__field article-studio__field--wide">
                 <span>Mô tả video</span>
-                <textarea rows="3" maxlength="600" placeholder="Mô tả ngắn cho video"
-                  [disabled]="saving() || !canWrite()" [ngModel]="videoDescription()"
-                  (ngModelChange)="setField('videoDescription',$event)"></textarea>
-              </label>
-              <label class="article-studio__field article-studio__field--wide">
-                <span>Điểm cần lưu ý trong video</span>
-                <textarea rows="3" placeholder="Mỗi dòng là một điểm cần lưu ý"
-                  [disabled]="saving() || !canWrite()" [ngModel]="videoHighlights()"
-                  (ngModelChange)="setField('videoHighlights',$event)"></textarea>
-              </label>
+                <app-admin-article-rich-block
+                  type="paragraph" listStyle="check"
+                  placeholder="Nhập mô tả video. Chọn ✓ để tạo danh sách lưu ý..."
+                  [text]="videoDescription()" [html]="videoDescriptionHtml()"
+                  [disabled]="saving() || !canWrite()"
+                  (contentChange)="updateVideoRichContent($event)">
+                </app-admin-article-rich-block>
+              </div>
             </div>
           </section>
         </div>
@@ -257,13 +255,12 @@
                 @if (videoUrl()) {
                   <div class="aid-studio__video">
                     <h4>{{videoTitle() || 'Video hướng dẫn'}}</h4>
-                    <p>{{videoDescription()}}</p>
-                    <div class="aid-studio__video-link">Video: {{videoUrl()}}</div>
-                    @if (videoPoints().length) {
-                      <ul>
-                        @for (point of videoPoints(); track $index) { <li>{{point}}</li> }
-                      </ul>
+                    @if (videoDescriptionHtml()) {
+                      <div class="first-aid-video-rich" [innerHTML]="videoDescriptionHtml()"></div>
+                    } @else if (videoDescription()) {
+                      <p>{{videoDescription()}}</p>
                     }
+                    <div class="aid-studio__video-link">Video: {{videoUrl()}}</div>
                   </div>
                 }
               </div>
