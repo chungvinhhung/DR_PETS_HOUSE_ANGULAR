@@ -50,7 +50,7 @@
           aria-label="Mở menu tài khoản" aria-haspopup="menu"
           [attr.aria-expanded]="profileMenuOpen()"
           aria-controls="admin-account-menu" (click)="toggleProfileMenu()">
-          <img class="catalog-header__avatar" src="/assets/admin-product/admin-mascot-avatar.png" alt="" width="36" height="36">
+          <img class="catalog-header__avatar" src="/assets/admin-product/admin-mascot-avatar.svg" alt="" width="36" height="36">
           <span class="catalog-header__identity">{{ roleLabel() }}<small>{{ session.user()?.fullName || session.user()?.phone || 'Tài khoản' }}</small></span>
           <img class="catalog-header__chevron" src="/assets/admin-product/icon-chevron-down.svg" alt="" aria-hidden="true" width="16" height="16">
         </button>
