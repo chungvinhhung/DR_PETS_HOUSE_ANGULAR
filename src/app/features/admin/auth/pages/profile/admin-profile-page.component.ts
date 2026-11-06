@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AppHttpError } from '../../../../../core/models/app-http-error.model';
@@ -11,7 +10,7 @@ import { AdminProfileService } from '../../services/admin-profile.service';
 @Component({
   selector: 'app-admin-profile-page',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, AdminCatalogShellComponent],
+  imports: [ReactiveFormsModule, AdminCatalogShellComponent],
   templateUrl: './admin-profile-page.component.html',
   styleUrl: './admin-profile-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
