@@ -25,8 +25,13 @@ import { DomSanitizer } from '@angular/platform-browser';
       <span class="article-rich-toolbar__separator" aria-hidden="true"></span>
       <button type="button" title="Gắn liên kết" aria-label="Gắn liên kết"
         [disabled]="disabled" (click)="openLinkEditor()">Liên kết</button>
-      <button type="button" title="Danh sách đánh số" aria-label="Danh sách đánh số"
-        [disabled]="disabled" (click)="format('insertOrderedList')">1. ≡</button>
+      @if (listStyle === 'check') {
+        <button type="button" title="Danh sách dấu tick" aria-label="Danh sách dấu tick"
+          [disabled]="disabled" (click)="format('insertUnorderedList')">✓ ≡</button>
+      } @else {
+        <button type="button" title="Danh sách đánh số" aria-label="Danh sách đánh số"
+          [disabled]="disabled" (click)="format('insertOrderedList')">1. ≡</button>
+      }
       <span class="article-rich-toolbar__separator" aria-hidden="true"></span>
       <span class="article-rich-toolbar__color-label">Màu chữ:</span>
       @for (swatch of colors; track swatch.value) {
@@ -61,7 +66,7 @@ import { DomSanitizer } from '@angular/platform-browser';
     <div #editor class="article-rich-editable" role="textbox"
       [attr.aria-label]="type === 'list' ? 'Danh sách đánh số' : 'Nội dung '+type"
       [attr.aria-multiline]="true"
-      [attr.data-placeholder]="type === 'list' ? 'Nhập mục đầu tiên, nhấn Enter để thêm mục tiếp theo...' : 'Nhập nội dung...'"
+      [attr.data-placeholder]="placeholder || (type === 'list' ? 'Nhập mục đầu tiên, nhấn Enter để thêm mục tiếp theo...' : 'Nhập nội dung...')"
       [attr.contenteditable]="disabled ? 'false' : 'true'"
       (input)="emitValue()" (blur)="emitValue()" (paste)="pastePlainText($event)">
     </div>
@@ -74,6 +79,8 @@ export class AdminArticleRichBlockComponent implements AfterViewInit {
   @Input() text = '';
   @Input() html = '';
   @Input() disabled = false;
+  @Input() listStyle: 'ordered' | 'check' = 'ordered';
+  @Input() placeholder = '';
   @Output() contentChange = new EventEmitter<{text:string;html:string}>();
   @ViewChild('editor',{static:true}) editor!: ElementRef<HTMLDivElement>;
 
