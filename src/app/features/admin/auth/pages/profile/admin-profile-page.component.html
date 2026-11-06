@@ -1,25 +1,17 @@
 <app-admin-catalog-shell activeItem="account-profile">
   <main class="account-profile web2-admin-page">
-    <nav class="account-profile__breadcrumb" aria-label="Đường dẫn">
-      <a routerLink="/admin/dashboard">Dashboard</a>
-      <span aria-hidden="true">›</span>
-      <span aria-current="page">Thông tin tài khoản</span>
-    </nav>
-
     <header class="account-profile__page-header">
       <div>
         <h1>Thông tin tài khoản</h1>
-        <p>Quản lý thông tin cá nhân và bảo mật tài khoản quản trị viên.</p>
       </div>
     </header>
 
     <div class="account-profile__columns">
-      <div class="account-profile__main">
-        <section class="account-profile__card">
+      <section class="account-profile__card">
           <h2>Thông tin cá nhân</h2>
           <div class="account-profile__identity">
             <img class="account-profile__avatar"
-              [src]="user()?.avatarUrl || '/assets/admin-product/avatar-figma.png'"
+              src="/assets/admin-product/admin-mascot-avatar.png"
               alt="Ảnh đại diện tài khoản" width="64" height="64">
             <div class="account-profile__identity-text">
               <strong>{{ user()?.fullName || 'Quản trị viên' }}</strong>
@@ -98,23 +90,6 @@
             </div>
           </form>
         </section>
-      </div>
-
-      <aside class="account-profile__side">
-        <section class="account-profile__card account-profile__role-card">
-          <div class="account-profile__role-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3 4 7v6c0 5 4 8 8 9 4-1 8-4 8-9V7l-8-4Z"/>
-              <path d="m9 12 2 2 4-4"/>
-            </svg>
-          </div>
-          <h2>Quyền tài khoản</h2>
-          <strong>Quản trị viên (ADMIN)</strong>
-          <p>Tài khoản quản trị được khởi tạo bởi hệ thống. Vai trò và số điện thoại đăng nhập không thể tự thay đổi tại đây.</p>
-          <div class="account-profile__role-status">Tài khoản đang hoạt động</div>
-        </section>
-      </aside>
     </div>
   </main>
 </app-admin-catalog-shell>
