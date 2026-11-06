@@ -142,14 +142,16 @@ export class AdminRescueEditorComponent {
         .pipe(timeout({first:45000})));
       if(!result?._id&&!result?.id)throw Error('BE chưa xác nhận mã hồ sơ; kiểm tra trước khi thử lại.');
       this.savedId=String(result._id||result.id);
-      this.dirty.set(false);
-      // Current BE/dev silently drops these new schema fields. Do not claim
-      // the contact association was saved until both values are round-tripped.
-      if(result.supportPartnerId!==this.draft().supportPartnerId||
-        result.supportNeeds!==this.draft().supportNeeds.trim()){
-        this.error.set('BE đã nhận hồ sơ nhưng chưa lưu đối tác và nhu cầu hỗ trợ. Cần bổ sung supportPartnerId và supportNeeds trên BE trước khi hồ sơ có thể liên kết đúng tới đối tác.');
+      // Verify after a fresh GET, rather than trusting the POST/PATCH echo.
+      // Current BE/dev accepts the request but drops partner-support metadata.
+      const stored=await firstValueFrom(this.api.getRescuePet(this.savedId).pipe(timeout({first:30000})));
+      if(String(stored?.supportPartnerId||'')!==this.draft().supportPartnerId||
+        String(stored?.supportNeeds||'')!==this.draft().supportNeeds.trim()){
+        this.error.set('Hồ sơ đã được ghi nhận nhưng BE chưa lưu đối tác và nhu cầu hỗ trợ. Đã giữ nguyên dữ liệu nhập; cần BE bổ sung supportPartnerId và supportNeeds. Không tạo lại hồ sơ để tránh trùng.');
+        this.dirty.set(true);
         return;
       }
+      this.dirty.set(false);
       this.leaving=true;
       await this.router.navigate(['/admin/content/rescue'],{
         queryParams:{notice:this.isEditing?'Đã cập nhật hồ sơ cứu trợ.':'Đã tạo hồ sơ cứu trợ.'},
