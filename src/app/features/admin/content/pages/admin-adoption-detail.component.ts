@@ -21,6 +21,9 @@ export class AdminAdoptionDetailComponent{
  readonly loading=signal(true);
  readonly error=signal('');
  readonly actionError=signal('');
+ readonly notice=signal('');
+ readonly reviewChoice=signal<'APPROVED'|'REJECTED'|null>(null);
+ readonly reviewNote=signal('');
  readonly busy=signal(false);
  readonly id=this.route.snapshot.paramMap.get('id')||'';
 
@@ -37,19 +40,45 @@ export class AdminAdoptionDetailComponent{
   });
  }
 
- review(status:'APPROVED'|'REJECTED'):void{
+ startReview(status:'APPROVED'|'REJECTED'):void {
+  if(!this.isPending(this.data())||this.busy())return;
+  this.reviewChoice.set(status);this.reviewNote.set('');
+  this.actionError.set('');this.notice.set('');
+ }
+ cancelReview():void {
+  if(this.busy())return;
+  this.reviewChoice.set(null);this.reviewNote.set('');this.actionError.set('');
+ }
+ review():void {
   const d=this.data();const id=String(d?._id||d?.id||this.id);
-  if(!id||this.busy()||String(d?.status||'').toUpperCase()!=='PENDING')return;
+  const status=this.reviewChoice();
+  if(!id||!status||this.busy()||!this.isPending(d))return;
+  if(status==='REJECTED' && this.reviewNote().trim().length<3){
+    this.actionError.set('Vui lòng nhập lý do từ chối tối thiểu 3 ký tự.');return;
+  }
   this.busy.set(true);this.actionError.set('');
-  this.api.reviewAdoptionRequest(id,status).pipe(finalize(()=>this.busy.set(false))).subscribe({
-   next:updated=>this.data.set({...d,...updated}),
-   error:()=>this.actionError.set(status==='APPROVED'?'Không thể duyệt đơn. Vui lòng thử lại.':'Không thể từ chối đơn. Vui lòng thử lại.'),
+  this.api.reviewAdoptionRequest(id,status,this.reviewNote()).pipe(finalize(()=>this.busy.set(false))).subscribe({
+   next:updated=>{
+    const actual=String(updated?.status||'').toUpperCase();
+    if(actual!==status){
+      this.actionError.set('BE chưa xác nhận đúng trạng thái xét duyệt. Vui lòng tải lại dữ liệu.');return;
+    }
+    this.data.set({...d,...updated});
+    this.reviewChoice.set(null);this.reviewNote.set('');
+    this.notice.set(status==='APPROVED'?'Đã duyệt đơn nhận nuôi.':'Đã từ chối đơn nhận nuôi.');
+   },
+   error:(err:any)=>this.actionError.set(err?.error?.message||
+     (status==='APPROVED'?'Không thể duyệt đơn. Vui lòng thử lại.':'Không thể từ chối đơn. Vui lòng thử lại.')),
   });
  }
 
  value(...v:any[]):string{return v.find(x=>x!==undefined&&x!==null&&String(x).trim()!=='')??'—';}
  applicant(d:any):any{return d?.applicantInfo||{};}
  pet(d:any):any{return d?.rescuePetId||{};}
- statusLabel(value:any):string{return ({PENDING:'Chờ duyệt',APPROVED:'Đã duyệt',REJECTED:'Đã từ chối'} as Record<string,string>)[String(value||'').toUpperCase()]||String(value||'—');}
+ statusLabel(value:any):string{return ({PENDING:'Chờ duyệt',APPROVED:'Đã duyệt',REJECTED:'Đã từ chối',CANCELLED:'Đã hủy'} as Record<string,string>)[String(value||'').toUpperCase()]||String(value||'—');}
+ date(value:any):string{
+  if(!value)return '—';const parsed=new Date(value);
+  return Number.isNaN(parsed.getTime())?'—':parsed.toLocaleDateString('vi-VN');
+ }
  isPending(d:any):boolean{return String(d?.status||'').toUpperCase()==='PENDING';}
 }
