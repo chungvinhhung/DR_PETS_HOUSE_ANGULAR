@@ -209,7 +209,8 @@ export function normalizeFirstAidGuide(guide: any = {}, index: any = 0) {
     variant: urgent ? 'urgent' : image ? 'image' : 'text',
     urgent,image,
     title: guide.title || 'Hướng dẫn sơ cứu',
-    heroTitle: guide.heroTitle || guide.hero_title || guide.title || 'Hướng dẫn sơ cứu',
+    // The Admin editor uses one canonical title for both the guide and hero banner.
+    heroTitle: guide.title || guide.heroTitle || guide.hero_title || 'Hướng dẫn sơ cứu',
     description: guide.situation_description || guide.situationDescription ||
       guide.excerpt || (guide.content ? String(guide.content).split('\n')[0] : ''),
     // Missing API steps are not an invitation to invent medical instructions.
