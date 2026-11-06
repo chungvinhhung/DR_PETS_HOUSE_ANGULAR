@@ -12,6 +12,13 @@
       </label>
       <div class="filters toolbar-selects">
         @if (mode === 'reviews') {
+          <select class="web2-admin-filter-select moderation-page__type-select"
+            aria-label="Loại đánh giá"
+            [ngModel]="reviewType()" (ngModelChange)="reviewType.set($event); onFilter()">
+            <option value="">Tất cả loại đánh giá</option>
+            <option value="PRODUCT">Đánh giá sản phẩm</option>
+            <option value="SERVICE">Đánh giá dịch vụ</option>
+          </select>
           <select class="web2-admin-filter-select" aria-label="Điểm đánh giá" [ngModel]="filter()" (ngModelChange)="filter.set($event); onFilter()">
             <option value="">Tất cả điểm đánh giá</option><option value="5">5 sao</option><option value="4">4 sao</option><option value="3">≤ 3 sao</option>
           </select>
@@ -38,13 +45,9 @@
             <option value="NO_VIOLATION">Không vi phạm</option>
           }
         </select>
-        <select class="web2-admin-filter-select" aria-label="Khoảng thời gian"
-          [ngModel]="period()" (ngModelChange)="period.set($event); onFilter()">
-          <option value="30">30 ngày qua</option>
-          <option value="7">7 ngày qua</option>
-          <option value="90">90 ngày qua</option>
-          <option value="ALL">Tất cả thời gian</option>
-        </select>
+        <app-admin-date-range
+          [from]="dateFrom()" [to]="dateTo()"
+          (rangeChange)="onDateRangeChange($event)" />
       </div>
     </section>
 
@@ -122,7 +125,17 @@
               [disabled]="busy()" (click)="closeReview()">×</button>
           </header>
           <div class="moderation-page__dialog-body">
-            <div class="moderation-page__rating">{{review.rating}} / 5 sao
+            <div class="moderation-page__rating">
+              <div class="moderation-page__stars" [attr.aria-label]="review.rating+' trên 5 sao'"
+                role="img">
+                @for(star of ratingStars; track star){
+                  <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"
+                    [attr.fill]="star <= review.rating ? '#FFC928' : '#E2E8F0'">
+                    <path d="m12 2 3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2Z"/>
+                  </svg>
+                }
+              </div>
+              <span class="moderation-page__rating-text">{{review.rating}} / 5 sao</span>
               <span class="badge" [attr.data-kind]="statusKind(review)">{{statusLabel(review)}}</span>
             </div>
             <p>{{review.comment || 'Khách hàng không để lại nội dung.'}}</p>
@@ -160,7 +173,7 @@
               <button type="button" class="web2-admin-btn web2-admin-btn--primary"
                 [disabled]="busy()" (click)="showReview()">Hiện đánh giá</button>
             } @else {
-              <button type="button" class="web2-admin-btn web2-admin-btn--primary"
+              <button type="button" class="web2-admin-btn web2-admin-btn--primary moderation-page__hide-button"
                 [disabled]="busy() || (confirmHide() && reviewReason().trim().length<3)"
                 (click)="confirmHide() ? hideReview() : confirmHide.set(true)">
                 {{confirmHide()?'Xác nhận ẩn':'Ẩn đánh giá'}}
