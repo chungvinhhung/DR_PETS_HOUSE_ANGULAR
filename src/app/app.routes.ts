@@ -311,6 +311,13 @@ export const routes: Routes = [
       .then(c => c.AdminContentListComponent),
   },
   {
+    path: 'admin/content/community/new',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () => import('./features/admin/content/pages/admin-community-create.component')
+      .then(c => c.AdminCommunityCreateComponent),
+  },
+  {
     path: 'admin/content/community',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN', 'MANAGER'], contentMode: 'community' },
