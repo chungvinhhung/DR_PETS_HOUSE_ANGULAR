@@ -8084,3 +8084,77 @@ app-admin-catalog-shell .catalog-sidebar__account-link:focus-visible {
     display:none;
   }
 }
+
+
+/* Login inputs: only the outer field receives focus. Neutralize Chrome
+   saved-credential fill and the nested autofill focus rectangle. */
+app-admin-login-page .admin-login .field > input,
+app-admin-login-page .admin-login .field > input:is(:focus,:focus-visible) {
+  appearance:none;
+  -webkit-appearance:none;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  background:transparent;
+  background-clip:padding-box;
+  caret-color:#0c213a;
+}
+app-admin-login-page .admin-login .field > input:-webkit-autofill,
+app-admin-login-page .admin-login .field > input:-webkit-autofill:hover,
+app-admin-login-page .admin-login .field > input:-webkit-autofill:focus,
+app-admin-login-page .admin-login .field > input:autofill {
+  -webkit-text-fill-color:#0c213a!important;
+  -webkit-box-shadow:0 0 0 1000px #fefeff inset!important;
+  box-shadow:0 0 0 1000px #fefeff inset!important;
+  caret-color:#0c213a!important;
+  border:0!important;
+  outline:0!important;
+  background-color:#fefeff!important;
+  transition:background-color 600000s ease-in-out 0s;
+}
+app-admin-login-page .admin-login .field > input::selection {
+  background:#e7eff9;
+  color:#0c213a;
+}
+app-admin-login-page .admin-login .field:focus-within {
+  border-color:#75c9ef;
+  box-shadow:0 0 0 0.32cqw rgba(88,190,233,.12);
+}
+/* Keep the avatar circular and legible, without clipping the mascot.
+   A wider account button reserves a distinct slot for its dropdown caret. */
+app-admin-catalog-shell .catalog-header__profile-wrap .catalog-header__profile {
+  width:218px;
+  max-width:100%;
+  gap:10px;
+  padding:5px 10px;
+}
+app-admin-catalog-shell .catalog-header__profile .catalog-header__identity {
+  overflow:hidden;
+  text-overflow:ellipsis;
+  flex:1 1 auto;
+}
+app-admin-catalog-shell .catalog-header__profile .catalog-header__identity small {
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+app-admin-catalog-shell .catalog-header__profile .catalog-header__chevron {
+  margin-left:auto;
+  flex:0 0 16px;
+}
+app-admin-catalog-shell .catalog-header__profile .catalog-header__avatar {
+  width:36px;
+  height:36px;
+  flex:0 0 36px;
+  padding:3px;
+  box-sizing:border-box;
+  border-radius:50%;
+  border:1.5px solid #253047;
+  background:#fff;
+  object-fit:contain;
+  object-position:center;
+}
+@media(max-width:550px) {
+  app-admin-catalog-shell .catalog-header__profile-wrap .catalog-header__profile {
+    width:auto;
+  }
+}
