@@ -26,12 +26,12 @@ Status: FE community list, moderation and Admin composer implemented; Admin crea
    {
      "title": "Tiêu đề hợp lệ",
      "content": "Nội dung bài đăng",
-     "type": "Chia sẻ",
+     "type": "Khoảnh khắc",
      "imageUrls": ["https://example.com/image.jpg"],
      "status": "APPROVED"
    }
    ```
-   `type` may be `Chia sẻ`, `Hỏi đáp`, `Thông báo`. Allow `status: DRAFT` for Save Draft.
+   `type` must use exactly one of the four Customer tag labels: `Khoảnh khắc`, `Hỏi đáp`, `Mẹo vặt`, `Kinh nghiệm`. Allow `status: DRAFT` for Save Draft.
 2. Support **Admin-originated authors** without a mandatory `authorCustomerId`; store author role/source and display name. Do not create fake Customer identity. Automatically render the actual Admin brand identity in Customer as agreed with product owner.
 3. Return `201` with a stable `_id` (or `id`) and **persisted** `status`; FE will not report success without both. For `APPROVED`, the created post must become visible in public `GET /community/posts`; `DRAFT` must never be public.
 4. Sanitize and validate title (required), content (required), post type taxonomy, image URLs (up to 5 valid http(s) URLs), request body size and permissions server-side. Reject unauthorized roles with 403; preserve media and type on read.
@@ -47,7 +47,7 @@ Status: FE community list, moderation and Admin composer implemented; Admin crea
 - Form validates title, content, optional images, type, and has Draft / Publish actions.
 - FE calls proposed `POST /admin/community/posts`; 404/405 shows explicit BE missing endpoint error and never shows fake success.
 - Moderation remains on existing confirmed API. Customer feed now uses `GET /community/posts` rather than generic blog `GET /posts?type=community`; fake featured/seed cards were removed from successful Customer read.
-- Existing BE returns no `type`, so Admin Type filter is disabled until real typed data is returned.
+- Customer and Admin now share one four-label taxonomy (`shared/customer/data/community-post-types.ts`); Admin displays and filters by the exact tag selected in Customer. If BE returns no recognized `type`, the filter remains disabled rather than pretending the category exists.
 
 ## QA / acceptance (not yet completed)
 - Admin creates DRAFT: stable ID and status returned, not visible in Customer, visible in Admin list.
@@ -74,3 +74,11 @@ Status: FE community list, moderation and Admin composer implemented; Admin crea
 - The pending moderation modal offers **Duyệt bài** and **Từ chối**. The latter records `REJECTED` and a mandatory reason, leaving the original row searchable/auditable; permanent deletion is not offered for pending posts.
 - `APPROVED` shows **Ẩn bài** and Admin-only **Xóa vĩnh viễn**; `HIDDEN` offers **Hiện bài** and Admin-only **Xóa vĩnh viễn**; `REJECTED` offers **Duyệt lại** and Admin-only **Xóa vĩnh viễn**. These two action buttons appear directly, without an overflow menu.
 - FE allows permanent deletion for `APPROVED`, `REJECTED`, or `HIDDEN` (ADMIN only), always after inline confirmation; `PENDING` must first be rejected or approved. BE currently allows deletion for any status from Admin. **BE should enforce** the `PENDING` safeguard if the workflow must hold across API clients (e.g. reject DELETE with 409); retain rejection reason and moderation timestamps when rejecting.
+
+## Customer tag → Admin filter contract (2026-11-06)
+- Canonical FE values, in the same display order: `Khoảnh khắc`, `Hỏi đáp`, `Mẹo vặt`, `Kinh nghiệm`.
+- Customer composer sends the selected label as `type` in `POST /api/v1/community/posts`; persist that exact label as `CommunityPost.type` (nullable only for legacy posts without a selection).
+- `GET /api/v1/admin/community/posts` and `GET /api/v1/community/posts` must return the same persisted `type` for each post so Admin table, filter, Customer badge, and post detail agree.
+- Reject unknown type values on new writes or publish a documented compatibility mapping. Do **not** infer types from content text or silently map old `Chia sẻ`/`Thông báo` to one of these four categories.
+- For existing records without a stored type, FE displays `—` in the Admin type column; those records appear only under `Tất cả loại bài`, not an invented filter result.
+- This is an FE taxonomy/schema handoff, **not** confirmation that the current deployed BE persists `type`. Integration QA with a genuinely typed Customer post is still pending.
