@@ -339,6 +339,20 @@ export const routes: Routes = [
       .then(c => c.AdminContentListComponent),
   },
   {
+    path: 'admin/content/rescue/new',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () => import('./features/admin/content/pages/admin-rescue-editor.component')
+      .then(c => c.AdminRescueEditorComponent),
+  },
+  {
+    path: 'admin/content/rescue/:id/edit',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () => import('./features/admin/content/pages/admin-rescue-editor.component')
+      .then(c => c.AdminRescueEditorComponent),
+  },
+  {
     path: 'admin/content/rescue',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN', 'MANAGER'], contentMode: 'rescue' },
