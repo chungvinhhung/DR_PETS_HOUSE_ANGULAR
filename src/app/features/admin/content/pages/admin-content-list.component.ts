@@ -31,6 +31,7 @@ export class AdminContentListComponent{
  readonly postDraft=signal({title:'',category:'',excerpt:'',content:'',status:'DRAFT',emergencyPhone:'1900-PET-HELP'});
  readonly rescueDraft=signal({petName:'',species:'DOG',breed:'',ageDescription:'',healthStatus:'',rescueStory:'',status:'LOOKING_FOR_HOME'});
  readonly pageSize=7;
+ readonly adoptionPeriod=signal<'7'|'30'|'90'|'ALL'>('30');
  readonly communityTypes=COMMUNITY_POST_TYPE_LABELS;
  readonly hasCommunityTypes=computed(()=>this.rows().some(row=>this.communityTypes.some(type=>type===this.communityType(row))));
  readonly title=({articles:'Bài viết kiến thức','first-aid':'Cẩm nang sơ cứu',community:'Bài đăng cộng đồng',rescue:'Cứu trợ & Nhận nuôi',adoptions:'Đơn đăng ký nhận nuôi'} as Record<ContentMode,string>)[this.mode];
@@ -71,7 +72,15 @@ export class AdminContentListComponent{
             ? this.communityType(row).toLocaleLowerCase('vi')===selected.toLocaleLowerCase('vi')
             : true
     );
-    return (!q||text.includes(q)) && categoryMatches &&
+    const period=this.adoptionPeriod();
+    const periodMatches=this.mode!=='adoptions'||period==='ALL'||(()=>{
+      const raw=row.createdAt||row.created_at;
+      if(!raw)return false;
+      const created=new Date(raw).getTime();
+      return Number.isFinite(created)&&created<=Date.now() &&
+        Date.now()-created<=Number(period)*24*60*60*1000;
+    })();
+    return (!q||text.includes(q)) && categoryMatches && periodMatches &&
       (!this.status() || (this.mode==='community'
         ? this.communityStatus(row)===this.status()
         : String(row.status??row.visibility??'').toUpperCase()===this.status()));
@@ -82,7 +91,7 @@ export class AdminContentListComponent{
  readonly visible=computed(()=>this.filtered().slice((this.page()-1)*this.pageSize,this.page()*this.pageSize));
  ngOnInit():void{
   const notice=this.route.snapshot.queryParamMap.get('notice');
-  if (['Đã lưu bản nháp bài viết.','Đã xuất bản bài viết.','Đã lưu bản nháp cẩm nang.','Đã xuất bản cẩm nang.','Đã lưu bản nháp bài đăng.','Đã đăng bài cộng đồng.'].includes(notice||'')) this.notice.set(notice||'');
+  if (['Đã lưu bản nháp bài viết.','Đã xuất bản bài viết.','Đã lưu bản nháp cẩm nang.','Đã xuất bản cẩm nang.','Đã lưu bản nháp bài đăng.','Đã đăng bài cộng đồng.','Đã cập nhật hồ sơ cứu trợ.','Đã tạo hồ sơ cứu trợ.'].includes(notice||'')) this.notice.set(notice||'');
   this.load();
  }
  load():void{
@@ -101,10 +110,8 @@ export class AdminContentListComponent{
    void this.router.navigate(['/admin/content/first-aid/new']);
    return;
   }
-  this.editing.set(null);this.editorError.set('');
   if(this.mode==='rescue'){
-   this.rescueDraft.set({petName:'',species:'DOG',breed:'',ageDescription:'',healthStatus:'',rescueStory:'',status:'LOOKING_FOR_HOME'});
-   this.editorDialog.set('rescue');
+   void this.router.navigate(['/admin/content/rescue/new']);return;
   }
  }
  openEdit(row:any):void{
@@ -120,13 +127,10 @@ export class AdminContentListComponent{
    void this.router.navigate(['/admin/content/first-aid',id,'edit']);
    return;
   }
-  this.editing.set(row);this.editorError.set('');
   if(this.mode==='rescue'){
-   this.rescueDraft.set({
-    petName:String(row.petName||row.name||''),species:String(row.species||'DOG'),breed:String(row.breed||''),
-    ageDescription:String(row.ageDescription||''),healthStatus:String(row.healthStatus||''),rescueStory:String(row.rescueStory||''),
-    status:String(row.status||'LOOKING_FOR_HOME'),
-   });this.editorDialog.set('rescue');
+   const id=String(row?._id||row?.id||'');
+   if(!id){this.notice.set('Không tìm thấy mã hồ sơ cần chỉnh sửa.');return;}
+   void this.router.navigate(['/admin/content/rescue',id,'edit']);return;
   }
  }
  updatePostDraft(field:'title'|'category'|'excerpt'|'content'|'status'|'emergencyPhone',value:string):void{
@@ -267,15 +271,18 @@ export class AdminContentListComponent{
   return r.category?.label||r.category?.name||r.category||r.group||r.species||r.type||'—';
  }
  author(r:any):string{return r.authorCustomerId?.fullName||r.authorId?.fullName||r.author?.fullName||r.author?.name||r.authorNameSnapshot||r.authorName||r.displayName||r.ownerName||'—';}
- date(r:any):string{const v=r.updatedAt||r.publishedAt||r.createdAt||r.created_at; if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('vi-VN');}
+ date(r:any):string{const v=(this.mode==='rescue'||this.mode==='adoptions')?(r.createdAt||r.created_at):(r.updatedAt||r.publishedAt||r.createdAt||r.created_at); if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('vi-VN');}
  statusLabel(r:any):string{const v=this.mode==='community'?this.communityStatus(r):String(r.status||r.visibility||'PUBLISHED').toUpperCase();if(this.mode==='community'&&v==='APPROVED')return 'Bình thường';return ({PUBLISHED:'Đã xuất bản',ARCHIVED:'Đã lưu trữ',ACTIVE:'Đã xuất bản',DRAFT:'Bản nháp',HIDDEN:'Ẩn',NORMAL:'Bình thường',REPORTED:'Bị báo cáo',AVAILABLE:'Còn chờ',LOOKING_FOR_HOME:'Chưa có tổ ấm',ADOPTED:'Đã có tổ ấm',PENDING:'Chờ duyệt',UNDER_REVIEW:'Đang xem xét',APPROVED:'Đã duyệt',REJECTED:'Từ chối'} as Record<string,string>)[v]??v;}
  statusClass(r:any):string{const v=this.mode==='community'?this.communityStatus(r):String(r.status||r.visibility||'PUBLISHED').toUpperCase();return /HIDDEN|REJECTED|REPORTED/.test(v)?'danger':/DRAFT|PENDING|ARCHIVED/.test(v)?'pending':/UNDER_REVIEW/.test(v)?'info':'success';}
+ rescueSpecies(r:any):string{
+  return ({DOG:'Chó',CAT:'Mèo',OTHER:'Khác'} as Record<string,string>)[String(r?.species||'').toUpperCase()]||String(r?.species||'—');
+ }
  rescueArea(r:any):string{return r.branchId?.name||r.area||r.location||'—';}
  rescueCondition(r:any):string{return r.healthStatus||r.condition||'—';}
  adoptionCode(r:any):string{return r.requestCode||r.code||r.id||r._id||'—';}
  adoptionApplicant(r:any):string{return r.applicantInfo?.fullName||r.applicantName||r.name||'—';}
  adoptionPet(r:any):string{return r.rescuePetId?.petName||r.petName||'—';}
  adoptionHousing(r:any):string{return r.applicantInfo?.housingType||r.housingType||'—';}
- adoptionExperience(r:any):string{return r.applicantInfo?.hasPetExperience===true?'Có kinh nghiệm':r.applicantInfo?.hasPetExperience===false?'Chưa có kinh nghiệm':r.aloneTime||'—';}
+ adoptionAloneTime(r:any):string{return r.aloneTime||r.applicantInfo?.aloneTime||'—';}
  likes(r:any):number{return Number(r.likesCount??r.likes??0);} comments(r:any):number{return Number(r.commentsCount??r.comments??0);}
 }
