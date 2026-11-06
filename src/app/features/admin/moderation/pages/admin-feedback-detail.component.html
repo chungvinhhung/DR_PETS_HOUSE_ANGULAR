@@ -22,8 +22,17 @@
       @if (actionPanel()) {
         <section class="feedback-detail__action" aria-labelledby="feedback-review-title">
           <h2 id="feedback-review-title">{{actionLabel()}}</h2>
-          <p>{{['NEW','READ'].includes(f.status) ? 'Phản hồi sẽ chuyển sang Đang xử lý để theo dõi tiến độ.' : 'Phản hồi sẽ được đánh dấu Đã xử lý.'}}</p>
-          <label for="feedback-processing-note">Ghi chú xử lý (không bắt buộc)</label>
+          <p>Chọn bước tiếp theo phù hợp với trạng thái hiện tại. Những trạng thái đã kết thúc không thể chuyển tiếp.</p>
+          <label for="feedback-next-status">Trạng thái tiếp theo <strong>*</strong></label>
+          <select id="feedback-next-status" [ngModel]="nextStatus()"
+            (ngModelChange)="nextStatus.set($event)" [disabled]="busy()">
+            @for(option of nextOptions();track option){
+              <option [value]="option">{{statusLabel(option)}}</option>
+            }
+          </select>
+          <label for="feedback-processing-note">
+            {{nextStatus()==='REJECTED'?'Lý do từ chối *':'Ghi chú xử lý (không bắt buộc)'}}
+          </label>
           <textarea id="feedback-processing-note" rows="3" maxlength="2000"
             placeholder="Ghi lại nội dung đã kiểm tra hoặc hướng giải quyết..."
             [ngModel]="processingNote()" (ngModelChange)="processingNote.set($event)" [disabled]="busy()"></textarea>
@@ -31,14 +40,15 @@
             <button type="button" class="web2-admin-btn web2-admin-btn--outline"
               [disabled]="busy()" (click)="cancelProcess()">Hủy</button>
             <button type="button" class="web2-admin-btn web2-admin-btn--primary"
-              [disabled]="busy()" (click)="process()">{{busy()?'Đang lưu...':'Xác nhận'}}</button>
+              [disabled]="busy() || !nextStatus() || (nextStatus()==='REJECTED' && processingNote().trim().length<3)"
+              (click)="process()">{{busy()?'Đang lưu...':'Xác nhận'}}</button>
           </div>
         </section>
       }
 
       <section class="web2-admin-summary-grid feedback-summary">
         <article><span>Tên của bạn</span><strong>{{f.name || '—'}}</strong></article>
-        <article><span>Giới tính</span><strong>{{f.gender || '—'}}</strong></article>
+        <article><span>Giới tính</span><strong>{{feedbackGender(f.gender)}}</strong></article>
         <article><span>Số điện thoại</span><strong>{{f.phone || '—'}}</strong></article>
         <article><span>Địa chỉ email</span><strong>{{f.email || '—'}}</strong></article>
       </section>
@@ -57,7 +67,7 @@
       }
       <section class="meta-grid web2-admin-summary-grid feedback-meta">
         <article><span>Ngày gửi</span><strong>{{date(f.createdAt)}}</strong></article>
-        <article><span>Nguồn</span><strong>Form phản hồi trên website</strong></article>
+        <article><span>Nguồn / Chủ đề</span><strong>{{f.subject || '—'}}</strong></article>
         <article class="status-card"><span>Trạng thái</span><strong><span class="badge" [attr.data-kind]="f.status === 'PROCESSED' ? 'success' : f.status === 'REJECTED' ? 'danger' : 'pending'">{{statusLabel(f.status)}}</span></strong></article>
       </section>
     }
