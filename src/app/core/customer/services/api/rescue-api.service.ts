@@ -84,12 +84,24 @@ export class RescueApiService {
   private readonly http = inject(CustomerHttpService);
 
   async getAdoptionPets() {
-    // Preserve API errors so Customer shows an error state instead of a fake
-    // adoption catalogue or a misleading empty-success state.
-    const response = await this.http.get('/adoptions/pets', {params:{page:1,limit:100}});
-    const data = assertSuccess(response);
-    const list = Array.isArray(data) ? data : (data?.items || data?.pets || []);
-    return list.map(normalizeAdoptionPet);
+    // Read all official BE pages (not the old static sample or first 100 only).
+    // Keep API failures visible to Customer rather than silently hiding them.
+    const results:any[]=[];
+    let page=1;
+    let pages=1;
+    do {
+      const response=await this.http.get('/adoptions/pets',{params:{page,limit:100}});
+      const data=assertSuccess(response);
+      const items=Array.isArray(data)?data:(data?.items || data?.pets || []);
+      if(!Array.isArray(items))throw new Error('Dữ liệu thú cưng cứu trợ không hợp lệ.');
+      results.push(...items);
+      const reported=Number(data?.totalPages);
+      const total=Number(data?.total ?? data?.totalRows);
+      pages=Number.isFinite(reported)&&reported>0?reported:
+        Number.isFinite(total)&&total>0?Math.ceil(total/100):1;
+      page+=1;
+    } while(page<=Math.min(100,pages));
+    return results.map(normalizeAdoptionPet);
   }
 
   async getRescueStations() {
