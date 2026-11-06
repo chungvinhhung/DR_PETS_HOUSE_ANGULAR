@@ -170,6 +170,12 @@ export class AdminContentListComponent{
  }
  deleteRow(row:any):void{
   const id=String(row?._id||row?.id||'');if(!id||this.actionBusy())return;
+  if(this.mode==='community') {
+   if(!this.communityCanDelete(row) || !this.confirmCommunityDelete() ||
+      String(this.communityDialog()?._id||this.communityDialog()?.id||'')!==id) {
+     this.communityError.set('Chỉ có thể xóa vĩnh viễn bài đăng đã từ chối hoặc đã ẩn.');return;
+   }
+  }
   if(typeof window!=='undefined' && !(this.mode==='community' && this.confirmCommunityDelete()) && !window.confirm('Bạn có chắc muốn xóa nội dung này?'))return;
   this.actionBusy.set(true);this.notice.set('');
   const req=this.mode==='rescue'?this.api.deleteRescuePet(id):(this.mode==='community'?this.api.deleteCommunity(id):this.api.deletePost(id));
@@ -196,8 +202,23 @@ export class AdminContentListComponent{
    this.communityMenuOpen.set(false);this.confirmCommunityDelete.set(false);
    this.communityError.set('');this.rejecting.set(true);
  }
+ communityIsPending(row:any):boolean {
+   return String(row?.status ?? '').toUpperCase()==='PENDING';
+ }
+ communityIsApproved(row:any):boolean {
+   return String(row?.status ?? '').toUpperCase()==='APPROVED';
+ }
+ communityCanDelete(row:any):boolean {
+   // Pending posts must be rejected (reason retained), not permanently deleted.
+   // Published posts should first be hidden before irreversible deletion.
+   const status=String(row?.status ?? '').toUpperCase();
+   return this.isAdmin() && (status==='REJECTED' || status==='HIDDEN');
+ }
+ communityHasMoreActions(row:any):boolean {
+   return this.communityIsApproved(row) || this.communityCanDelete(row);
+ }
  startCommunityDeletion():void {
-   if(!this.isAdmin())return;
+   if(!this.communityCanDelete(this.communityDialog()))return;
    this.communityMenuOpen.set(false);this.rejecting.set(false);
    this.communityError.set('');this.confirmCommunityDelete.set(true);
  }
