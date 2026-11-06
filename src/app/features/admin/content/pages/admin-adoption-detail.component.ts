@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
@@ -9,7 +10,7 @@ import { AdminContentService } from '../services/admin-content.service';
 @Component({
  selector:'app-admin-adoption-detail',
  standalone:true,
- imports:[AdminCatalogShellComponent,AdminBreadcrumbComponent,AdminDataStateComponent],
+ imports:[FormsModule,AdminCatalogShellComponent,AdminBreadcrumbComponent,AdminDataStateComponent],
  templateUrl:'./admin-adoption-detail.component.html',
  styleUrl:'./admin-adoption-detail.component.scss',
  changeDetection:ChangeDetectionStrategy.OnPush,
