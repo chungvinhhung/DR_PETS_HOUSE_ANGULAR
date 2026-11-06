@@ -12,23 +12,50 @@ import { AdminModerationService } from '../services/admin-moderation.service';
 @Component({selector:'app-admin-feedback-detail',standalone:true,imports:[CommonModule,FormsModule,AdminCatalogShellComponent,AdminBreadcrumbComponent,AdminDataStateComponent],templateUrl:'./admin-feedback-detail.component.html',styleUrl:'./admin-feedback-detail.component.scss',changeDetection:ChangeDetectionStrategy.OnPush})
 export class AdminFeedbackDetailComponent{
  private readonly route=inject(ActivatedRoute);private readonly api=inject(AdminModerationService);
- readonly data=signal<any|null>(null);readonly loading=signal(true);readonly error=signal('');readonly busy=signal(false);readonly actionPanel=signal(false);readonly processingNote=signal('');readonly success=signal('');readonly id=this.route.snapshot.paramMap.get('id')||'';
+ readonly data=signal<any|null>(null);readonly loading=signal(true);readonly error=signal('');readonly busy=signal(false);readonly actionPanel=signal(false);readonly processingNote=signal('');readonly success=signal('');readonly nextStatus=signal('');readonly id=this.route.snapshot.paramMap.get('id')||'';
  ngOnInit():void{this.load();}
  load():void{this.loading.set(true);this.error.set('');this.api.getFeedback(this.id).pipe(finalize(()=>this.loading.set(false))).subscribe({next:v=>this.data.set(v),error:()=>this.error.set('Không thể tải chi tiết phản hồi.')});}
- actionLabel():string{const s=String(this.data()?.status||'NEW');if(s==='NEW'||s==='READ')return'Bắt đầu xử lý';if(s==='PROCESSING'||s==='NEED_CONTACT')return'Đánh dấu đã xử lý';return'Đã xử lý';}
- canAction():boolean{return ['NEW','READ','PROCESSING','NEED_CONTACT'].includes(String(this.data()?.status||''));}
- startProcess():void{if(this.busy()||!this.canAction())return;this.actionPanel.set(true);this.processingNote.set('');this.error.set('');}
+ actionLabel():string{return 'Cập nhật trạng thái';}
+ private readonly allowed:Record<string,string[]>={
+  NEW:['READ','PROCESSING','REJECTED'],
+  READ:['PROCESSING','REJECTED'],
+  PROCESSING:['NEED_CONTACT','PROCESSED','REJECTED'],
+  NEED_CONTACT:['PROCESSING','PROCESSED','REJECTED'],
+  PROCESSED:[],REJECTED:[],
+ };
+ nextOptions():string[]{
+  const current=String(this.data()?.status||'NEW').toUpperCase();
+  return this.allowed[current]||[];
+ }
+ canAction():boolean{return this.nextOptions().length>0;}
+ feedbackGender(v:any):string{
+  return ({female:'Nữ',male:'Nam',other:'Khác'} as Record<string,string>)[String(v||'').toLowerCase()]||'—';
+ }
+ startProcess():void{
+  if(this.busy()||!this.canAction())return;
+  this.nextStatus.set(this.nextOptions()[0]);this.actionPanel.set(true);
+  this.processingNote.set('');this.error.set('');this.success.set('');
+ }
  cancelProcess():void{if(!this.busy())this.actionPanel.set(false);}
  process():void{
-  const d=this.data();if(!d||!this.canAction()||this.busy())return;
-  const current=String(d.status||'NEW');
-  const next=['NEW','READ'].includes(current)?'PROCESSING':'PROCESSED';
+  const d=this.data();const next=this.nextStatus();
+  if(!d||!this.canAction()||this.busy())return;
+  if(!this.nextOptions().includes(next)){
+    this.error.set('Trạng thái không hợp lệ cho bước xử lý hiện tại.');return;
+  }
+  if(next==='REJECTED'&&this.processingNote().trim().length<3){
+    this.error.set('Vui lòng nhập lý do từ chối ít nhất 3 ký tự.');return;
+  }
   this.busy.set(true);this.error.set('');this.success.set('');
-  this.api.updateFeedback(this.id,next,this.processingNote().trim()).pipe(finalize(()=>this.busy.set(false))).subscribe({
+  this.api.updateFeedback(this.id,next,this.processingNote().trim())
+    .pipe(finalize(()=>this.busy.set(false))).subscribe({
    next:v=>{
-    if(String(v?.status||'')!==next){this.error.set('BE chưa xác nhận trạng thái xử lý. Hãy tải lại dữ liệu.');return;}
-    this.data.set({...d,...v});this.actionPanel.set(false);this.processingNote.set('');
-    this.success.set(next==='PROCESSED'?'Đã đánh dấu phản hồi là đã xử lý.':'Đã chuyển phản hồi sang đang xử lý.');
+    if(String(v?.status||'').toUpperCase()!==next){
+      this.error.set('BE chưa xác nhận trạng thái xử lý. Hãy tải lại dữ liệu.');return;
+    }
+    this.data.set({...d,...v});this.actionPanel.set(false);
+    this.processingNote.set('');this.nextStatus.set('');
+    this.success.set('Đã cập nhật trạng thái: '+this.statusLabel(next)+'.');
    },
    error:err=>this.error.set(err?.error?.message||'Không thể cập nhật trạng thái phản hồi.')
   });
