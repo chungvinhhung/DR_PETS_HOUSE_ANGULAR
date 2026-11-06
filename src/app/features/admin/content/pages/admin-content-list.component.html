@@ -3,10 +3,11 @@
     <header class="web2-admin-page__header">
       <h1>{{title}}</h1>
       @if (mode === 'community' && canCreate()) {
-        <button type="button" class="web2-add-button" (click)="openCreate()">
+        <a class="web2-add-button" href="/bai-viet/cong-dong" target="_blank"
+          rel="noopener noreferrer" aria-label="Tạo bài đăng trên trang Cộng đồng">
           <img src="/assets/admin-product/icon-add.svg" alt="" aria-hidden="true">
           <span>Tạo bài đăng</span>
-        </button>
+        </a>
       }
     </header>
 
