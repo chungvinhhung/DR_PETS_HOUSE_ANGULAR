@@ -48,3 +48,28 @@
 - 7/30/90-day filtering matches the request createdAt dates; status, paginated results, branch filters and data totals are consistent beyond 100 records.
 - API failures show explicit error messages with no fake success/data. Test MANAGER review/ADMIN delete, expired sessions and repeated requests.
 - Passing Angular CI does not imply browser or BE E2E acceptance; both still need verification.
+
+
+## QA change – partner-owned rescue cards (2026-11-06, supersedes earlier rescue-editor assumptions)
+
+**Business owner:** Dr. Pet publishes rescue animals on behalf of the **external rescue partner network**. These animals are **not owned or housed by Dr. Pet**. The public Customer card has no pet-detail navigation. Neither "Nhận nuôi ngay" nor "Liên hệ để hỗ trợ" should create a Dr. Pet adoption request for this content. Both must open **the particular partner's own page** and must not default to some other organization.
+
+**Actual Customer card content:** uploaded cover image; rescue story/description (`rescueStory`); "Tình trạng" (`healthStatus`); "Cần hỗ trợ" (`supportNeeds`); waiting/adopted ribbon (`status`); two contact links to that animal's responsible partner. `petName` is only needed by Admin to identify a profile; `species` is needed by Admin filtering. No Customer detail page exists. Remove unneeded gender/age/breed/branch editor controls.
+
+**FE implementation:**
+- Admin full-page studio now has only pet name/species, story/condition/support needs, partner selector and file-upload photo. Partner selector uses the same `RESCUE_PARTNERS` registry already shown at `/cuu-tro` (six partner IDs).
+- Upload is an actual authenticated multipart upload, temporarily reusing the existing BE `POST /uploads/products` image service (JPG/PNG/WebP, 5 MB limit), returning a persisted URL stored in RescuePet.images[0]. This is technical debt, not a rescue-specific media contract. FE does not accept image URL pasting.
+- Card preview now matches the 3 text sections, ribbon, image and two buttons. Customer both CTA links go to the specific selected partner's existing `href` in a new tab. If there is no valid partner ID, CTA buttons are disabled, never linked to Dr. Pet or arbitrary partner.
+- Old Dr. Pet adoption request modal has been disconnected **for partner rescue cards**. Existing adoption-request list/detail remains for legacy requests; do not silently delete past request data.
+
+**P0 BE contract – mandatory before accepting Phase 4 as E2E working:**
+1. Extend `RescuePet` Mongoose model with `supportNeeds` (required nonblank string) and `supportPartnerId` (required valid string referencing the chosen partner in registry). Persist on both `POST /admin/rescue/pets` and `PATCH /admin/rescue/pets/:id`; return unchanged in Admin GET list/detail and public `GET /adoptions/pets` / `GET /rescue/pets`. Unknown IDs should be validation errors. Existing records need migration or explicit manual partner assignment, never auto-assignment.
+2. `breed`, `ageDescription`, `branchId` and `gender` are not business-required for external-partner cards. Current BE incorrectly requires breed + age even though they are never shown. Make these optional with sensible null/unknown semantics, preserving values on legacy records. FE temporarily sends explicit `Chưa cập nhật` for new records until this is fixed.
+3. Add a dedicated rescue-upload route or generic media contract (e.g. `POST /uploads/rescue`) with authorization, persistent object storage and URL response. Product-images upload service works as an interim transport but stores media in the product folder and must not become the long-term rescue media architecture. Avoid ephemeral local disk on production.
+4. Scope the status adoption workflow appropriately for partner-owned animals: Dr. Pet must not mark partner cases adopted based on an internal request. Provide partner-verified status changes or a documented manual Admin workflow; existing `PATCH /admin/rescue/pets/:id` can update status but needs audit rules.
+5. Request list and detail built in previous Phase 4 are for legacy Dr. Pet adoption submissions. Clarify whether future Customer applications belong to Dr. Pet at all; do not automatically attach a partner rescue card to internal AdoptionRequest without a new approved business contract.
+6. FE verifies round-tripped `supportNeeds` and `supportPartnerId` before reporting full save success. On current BE/dev, these fields are ignored: **creating a profile can persist the legacy fields but partner association will not persist**. FE keeps the draft and shows a specific BE gap message; it must not claim the CTA link is ready.
+
+**Acceptance:** upload one actual image → create rescue record for partner A → after refresh Admin details show partner A and need → public Customer card matches description/condition/need, shows real image → both CTA buttons go to partner A only. Repeat with partner B and ensure no cross-linking. Empty partner or unknown partner must not create enabled CTA. Check there is no Customer detail navigation or Dr. Pet internal adoption modal on these cards.
+
+**Access:** FE repository branch can be updated. The attempt to create the matching BE branch returned GitHub 403 `Resource not accessible by integration`; no backend code was edited.
