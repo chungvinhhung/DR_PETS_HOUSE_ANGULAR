@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 import { CustomerIconComponent } from '../../../../shared/customer/components/icon/customer-icon.component';
 
@@ -18,7 +18,6 @@ import { CustomerIconComponent } from '../../../../shared/customer/components/ic
 export class RescuePetCardComponent {
   // --- Input / Output (props của React) ---
   readonly pet = input<any>(undefined);
-  readonly onAdopt = output<any>();
 
   // --- Giá trị tính toán (computed) ---
   readonly adopted = computed<any>(() => this.pet().state === "adopted");
