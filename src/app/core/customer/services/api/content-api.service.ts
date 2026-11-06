@@ -219,6 +219,7 @@ export function normalizeFirstAidGuide(guide: any = {}, index: any = 0) {
     video: videoUrl ? {
       title: guide.video_title || guide.videoTitle || guide.video?.title || 'Video hướng dẫn',
       description: guide.video_description || guide.videoDescription || guide.video?.description || '',
+      descriptionHtml: guide.video_description_html || guide.videoDescriptionHtml || guide.video?.descriptionHtml || '',
       highlights: Array.isArray(videoHighlights) ? videoHighlights :
         String(videoHighlights).split(/\r?\n/).filter(Boolean),
       url: videoUrl,
