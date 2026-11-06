@@ -3,7 +3,7 @@
     <header class="web2-admin-page__header">
       <h1>{{title}}</h1>
       @if (mode === 'community' && canCreate()) {
-        <a class="web2-add-button" href="/bai-viet/cong-dong" target="_blank"
+        <a class="web2-add-button" href="https://drpetshouse.lat/bai-viet/cong-dong" target="_blank"
           rel="noopener noreferrer" aria-label="Tạo bài đăng trên trang Cộng đồng">
           <img src="/assets/admin-product/icon-add.svg" alt="" aria-hidden="true">
           <span>Tạo bài đăng</span>
@@ -253,7 +253,7 @@
 
   @if (communityDialog(); as post) {
     <div class="content-dialog-backdrop" (click)="closeCommunity()">
-      <section class="content-dialog" role="dialog" aria-modal="true" aria-labelledby="community-dialog-title" (click)="$event.stopPropagation()">
+      <section class="content-dialog content-dialog--community-review" role="dialog" aria-modal="true" aria-labelledby="community-dialog-title" (click)="$event.stopPropagation()">
         <header>
           <div>
             <h2 id="community-dialog-title">{{post.title || 'Bài đăng cộng đồng'}}</h2>
@@ -315,8 +315,7 @@
             }
           } @else {
             @if (isCommunityPublic(post)) {
-              <a class="community-review__web-link" routerLink="/bai-viet/cong-dong"
-                [queryParams]="{postId: post._id || post.id}" target="_blank"
+              <a class="community-review__web-link" [href]="communityPostPublicUrl(post)" target="_blank"
                 rel="noopener noreferrer" aria-label="Xem bài đăng này trên trang Cộng đồng">
                 Xem trên trang web <span aria-hidden="true">↗</span>
               </a>
