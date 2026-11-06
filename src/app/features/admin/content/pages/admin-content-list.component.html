@@ -38,10 +38,9 @@
             [ngModel]="filter()" (ngModelChange)="filter.set($event); onFilter()"
             [disabled]="!hasCommunityTypes()">
             <option value="">Tất cả loại bài</option>
-            <option value="Chia sẻ">Chia sẻ</option>
-            <option value="Hỏi đáp">Hỏi đáp</option>
-            <option value="Thông báo">Thông báo</option>
-            <option value="Mẹo vặt">Mẹo vặt</option>
+            @for (type of communityTypes; track type) {
+              <option [value]="type">{{type}}</option>
+            }
           </select>
         } @else if (mode === 'articles' || mode === 'first-aid') {
           <select class="web2-admin-filter-select" aria-label="Chủ đề / nhóm nội dung" [ngModel]="filter()" (ngModelChange)="filter.set($event); onFilter()">
