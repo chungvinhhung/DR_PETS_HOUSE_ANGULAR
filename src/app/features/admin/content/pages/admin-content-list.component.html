@@ -355,7 +355,7 @@
             @if (!communityIsApproved(post)) {
               <button type="button" class="web2-admin-btn web2-admin-btn--primary"
                 [disabled]="actionBusy()" (click)="moderateCommunity('APPROVED')">
-                {{actionBusy() ? 'Đang xử lý...' : (post.status === 'HIDDEN' ? 'Hiện bài' : 'Duyệt bài')}}
+                {{actionBusy() ? 'Đang xử lý...' : (post.status === 'HIDDEN' ? 'Hiện bài' : post.status === 'REJECTED' ? 'Duyệt lại' : 'Duyệt bài')}}
               </button>
             }
           }
