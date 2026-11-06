@@ -1,1 +1,19 @@
 :host{display:block;min-width:0}
+.adoption-detail__notice{
+  margin:16px 0;padding:11px 15px;border:1px solid #c8e6c9;border-radius:9px;
+  background:#effaf2;color:#256b3a;font:500 13px/20px Roboto,Arial,sans-serif
+}
+.adoption-detail__review{
+  display:flex;flex-direction:column;gap:12px;padding:20px 24px;margin:18px 0;
+  border:1px solid #d9e4f3;border-radius:12px;background:#fff
+}
+.adoption-detail__review h2{margin:0;font:700 17px/24px Roboto,Arial,sans-serif;color:#202e45}
+.adoption-detail__review p{margin:0;color:#64748b;font:400 13px/21px Roboto,Arial,sans-serif}
+.adoption-detail__review label{font:600 13px/20px Roboto,Arial,sans-serif;color:#26364a}
+.adoption-detail__review textarea{
+  width:100%;box-sizing:border-box;min-height:88px;resize:vertical;padding:11px 13px;
+  border:1px solid #dce5ef;border-radius:9px;
+  font:400 13px/21px Roboto,Arial,sans-serif;color:#202e45
+}
+.adoption-detail__review textarea:focus-visible{outline:2px solid #0d47a1;outline-offset:1px}
+.adoption-detail__review-actions{display:flex;justify-content:flex-end;gap:10px}
