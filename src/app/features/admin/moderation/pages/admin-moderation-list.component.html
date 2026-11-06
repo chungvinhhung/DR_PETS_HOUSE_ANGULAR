@@ -2,6 +2,7 @@
   <main class="moderation-page web2-admin-page">
     <header class="web2-admin-page__header"><h1>{{title}}</h1></header>
 
+    @if(notice()) { <div class="moderation-page__notice" role="status">{{notice()}}</div> }
     <section class="filterbar web2-filterbar" role="search" aria-label="Tìm kiếm và lọc dữ liệu">
       <label class="search search-field">
         <img src="/assets/service-catalog/search.svg" alt="" aria-hidden="true">
@@ -25,8 +26,12 @@
           @if (mode === 'reviews') { <option value="ACTIVE">Hiển thị</option><option value="HIDDEN">Ẩn</option> }
           @else { <option value="NEW">Mới</option><option value="PROCESSING">Đang xử lý</option><option value="PROCESSED">Đã xử lý</option> }
         </select>
-        <select class="web2-admin-filter-select" aria-label="Khoảng thời gian">
-          <option>30 ngày qua</option><option>7 ngày qua</option><option>90 ngày qua</option><option>Tất cả thời gian</option>
+        <select class="web2-admin-filter-select" aria-label="Khoảng thời gian"
+          [ngModel]="period()" (ngModelChange)="period.set($event); onFilter()">
+          <option value="30">30 ngày qua</option>
+          <option value="7">7 ngày qua</option>
+          <option value="90">90 ngày qua</option>
+          <option value="ALL">Tất cả thời gian</option>
         </select>
       </div>
     </section>
@@ -47,10 +52,12 @@
               <thead><tr><th>Tên đánh giá</th><th>Loại</th><th>Mã tham chiếu</th><th>Khách hàng</th><th class="is-center">Đánh giá</th><th>Nội dung</th><th class="is-center">Ngày</th><th class="is-center">Trạng thái</th></tr></thead>
               <tbody>
                 @for (r of visible(); track r.id) {
-                  <tr>
-                    <td>{{r.targetType === 'SERVICE' ? 'Đánh giá dịch vụ' : 'Đánh giá sản phẩm'}}</td>
+                  <tr class="moderation-page__clickable" (click)="openReview(r)"
+                    (keydown.enter)="openReview(r)" tabindex="0"
+                    [attr.aria-label]="'Kiểm duyệt đánh giá của '+(r.displayName||'khách hàng')">
+                    <td>{{reviewName(r)}}</td>
                     <td>{{r.targetType === 'SERVICE' ? 'Dịch vụ' : 'Sản phẩm'}}</td>
-                    <td>—</td><td>{{r.displayName || 'Ẩn danh'}}</td>
+                    <td>{{reviewReference(r)}}</td><td>{{r.displayName || 'Ẩn danh'}}</td>
                     <td class="is-center">{{r.rating}} / 5</td><td>{{r.comment || '—'}}</td>
                     <td class="is-center">{{date(r.createdAt)}}</td>
                     <td class="is-center"><span class="badge" [attr.data-kind]="statusKind(r)">{{statusLabel(r)}}</span></td>
@@ -90,5 +97,52 @@
         </footer>
       }
     </section>
+    @if(reviewDialog();as review){
+      <div class="moderation-page__scrim" (click)="closeReview()">
+        <section class="moderation-page__dialog" role="dialog" aria-modal="true"
+          aria-labelledby="moderation-review-title" (click)="$event.stopPropagation()">
+          <header>
+            <div>
+              <h2 id="moderation-review-title">Đánh giá của {{review.displayName||'khách hàng'}}</h2>
+              <span>{{reviewName(review)}} · {{date(review.createdAt)}}</span>
+            </div>
+            <button type="button" class="moderation-page__close" aria-label="Đóng"
+              [disabled]="busy()" (click)="closeReview()">×</button>
+          </header>
+          <div class="moderation-page__dialog-body">
+            <div class="moderation-page__rating">{{review.rating}} / 5 sao
+              <span class="badge" [attr.data-kind]="statusKind(review)">{{statusLabel(review)}}</span>
+            </div>
+            <p>{{review.comment || 'Khách hàng không để lại nội dung.'}}</p>
+            @if(reviewError()){
+              <div class="web2-admin-inline-error" role="alert">{{reviewError()}}</div>
+            }
+            @if(confirmHide()){
+              <label for="moderation-hide-reason">Lý do ẩn đánh giá <strong>*</strong></label>
+              <textarea id="moderation-hide-reason" rows="3" maxlength="1000"
+                placeholder="Nhập lý do ẩn đánh giá..."
+                [ngModel]="reviewReason()" (ngModelChange)="reviewReason.set($event)"
+                [disabled]="busy()"></textarea>
+            }
+          </div>
+          <footer>
+            <button type="button" class="web2-admin-btn web2-admin-btn--outline"
+              [disabled]="busy()" (click)="confirmHide() ? confirmHide.set(false) : closeReview()">
+              {{confirmHide()?'Hủy':'Đóng'}}
+            </button>
+            @if(rowStatus(review)==='HIDDEN'){
+              <button type="button" class="web2-admin-btn web2-admin-btn--primary"
+                [disabled]="busy()" (click)="showReview()">Hiện đánh giá</button>
+            } @else {
+              <button type="button" class="web2-admin-btn web2-admin-btn--primary"
+                [disabled]="busy() || (confirmHide() && reviewReason().trim().length<3)"
+                (click)="confirmHide() ? hideReview() : confirmHide.set(true)">
+                {{confirmHide()?'Xác nhận ẩn':'Ẩn đánh giá'}}
+              </button>
+            }
+          </footer>
+        </section>
+      </div>
+    }
   </main>
 </app-admin-catalog-shell>
