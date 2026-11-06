@@ -199,8 +199,8 @@ function normalizeReview(review: any) {
   const source = getPayload(review);
   return {
     ...source,
-    id: getFirstValue(source?.reviewId, source?.review_id, source?.id),
-    authorName: getFirstValue(source?.authorName, source?.author_name, source?.user?.full_name, source?.full_name, source?.user_name, source?.customer_name, "Khách hàng"),
+    id: String(getFirstValue(source?.reviewId, source?.review_id, source?.id, source?._id, '') || ''),
+    authorName: getFirstValue(source?.authorName, source?.displayName, source?.author_name, source?.user?.full_name, source?.full_name, source?.user_name, source?.customer_name, 'Khách hàng'),
     authorAvatar: normalizeImageUrl(getFirstValue(source?.authorAvatar, source?.author_avatar, source?.user?.avatar_url, source?.avatar_url, source?.avatar)),
     rating: getFirstValue(source?.rating, source?.star, source?.stars, 0),
     content: getFirstValue(source?.content, source?.comment, source?.review_content, ""),
@@ -304,6 +304,14 @@ export class ProductApiService {
 
   async getProductDetails(productId: any) {
     return normalizeProduct(unwrap(await this.http.get(`/products/${productId}`)));
+  }
+
+  /** Public review detail is the source for links from Admin moderation.
+   * Verify targetType / targetId on the consuming page before displaying it.
+   */
+  async getProductReviewById(reviewId: string) {
+    const payload = unwrap(await this.http.get(`/reviews/${encodeURIComponent(reviewId)}`));
+    return normalizeReview(payload);
   }
 
   async getProductReviews(productId: any, page: any = 1, pageSize: any = 2) {
