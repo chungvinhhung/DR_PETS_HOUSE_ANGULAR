@@ -6,15 +6,15 @@ import { finalize, Observable, of } from 'rxjs';
 
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
+import { AdminDateRangeComponent, type AdminDateRange } from '../../../../shared/admin-date-range/admin-date-range.component';
 import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-pagination';
 import { AdminModerationService } from '../services/admin-moderation.service';
 
 type Mode='reviews'|'feedback'|'reports';
-type Period='7'|'30'|'90'|'ALL';
 
 @Component({
  selector:'app-admin-moderation-list',standalone:true,
- imports:[CommonModule,FormsModule,RouterLink,AdminCatalogShellComponent,AdminDataStateComponent],
+ imports:[CommonModule,FormsModule,RouterLink,AdminCatalogShellComponent,AdminDataStateComponent,AdminDateRangeComponent],
  templateUrl:'./admin-moderation-list.component.html',
  styleUrl:'./admin-moderation-list.component.scss',
  changeDetection:ChangeDetectionStrategy.OnPush
@@ -29,8 +29,10 @@ export class AdminModerationListComponent {
  readonly notice=signal('');
  readonly search=signal('');
  readonly filter=signal('');
+ readonly reviewType=signal('');
  readonly status=signal('');
- readonly period=signal<Period>('30');
+ readonly dateFrom=signal('');
+ readonly dateTo=signal('');
  readonly page=signal(1);
  readonly pageSize=7;
  readonly busy=signal(false);
@@ -43,8 +45,8 @@ export class AdminModerationListComponent {
 
  readonly filtered=computed(()=>{
   const q=this.search().trim().toLocaleLowerCase('vi');
-  const status=this.status(), rating=this.filter(), period=this.period();
-  const now=Date.now();
+  const status=this.status(), rating=this.filter(), type=this.reviewType();
+  const start=this.dateFrom(), end=this.dateTo();
   return this.rows().filter(r=>{
    const text=this.mode==='reviews'
     ? [r.targetName,r.targetId,r.displayName,r.comment,r.sourceId,r.referenceCode].join(' ')
@@ -53,14 +55,21 @@ export class AdminModerationListComponent {
       : [r.reporterName,r.postTitle,r.reason].join(' ');
    const matchesSearch=!q||text.toLocaleLowerCase('vi').includes(q);
    const matchesStatus=!status||this.rowStatus(r)===status;
+   const matchesReviewType=this.mode!=='reviews'||!type
+     ||String(r.targetType||'').toUpperCase()===type;
    const matchesRating=this.mode!=='reviews'||!rating
      ||(rating==='3' ? Number(r.rating)<=3 : Number(r.rating)===Number(rating));
    const matchesCategory=this.mode!=='reports'||!rating||String(r.reason||'')===rating;
-   const created=new Date(r.createdAt||r.created_at||'').getTime();
-   const matchesPeriod=period==='ALL'||(
-      Number.isFinite(created)&&created<=now&&now-created<=Number(period)*86400000
-   );
-   return matchesSearch&&matchesStatus&&matchesRating&&matchesCategory&&matchesPeriod;
+   // Use the local calendar date so an ISO timestamp near midnight is
+   // included on the expected date. The range includes both endpoints.
+   const raw=r.createdAt||r.created_at;
+   const created=raw?new Date(raw):null;
+   const day=created&&!Number.isNaN(created.getTime())
+     ? [created.getFullYear(),String(created.getMonth()+1).padStart(2,'0'),
+        String(created.getDate()).padStart(2,'0')].join('-'):'';
+   const matchesDate=(!start&&!end)
+      ||(!!day&&(!start||day>=start)&&(!end||day<=end));
+   return matchesSearch&&matchesStatus&&matchesRating&&matchesCategory&&matchesReviewType&&matchesDate;
   });
  });
  readonly totalPages=computed(()=>Math.max(1,Math.ceil(this.filtered().length/this.pageSize)));
@@ -77,6 +86,11 @@ export class AdminModerationListComponent {
   });
  }
  onFilter():void{this.page.set(1);}
+ onDateRangeChange(value:AdminDateRange):void{
+  this.dateFrom.set(value.from);
+  this.dateTo.set(value.to);
+  this.onFilter();
+ }
  goToPage(value:number):void{this.page.set(Math.max(1,Math.min(value,this.totalPages())));}
  rowStatus(r:any):string {
   if(this.mode==='reviews')return r.hidden||String(r.status||'').toUpperCase()==='HIDDEN'?'HIDDEN':'ACTIVE';
@@ -116,6 +130,7 @@ export class AdminModerationListComponent {
   return '/product-details/'+encodeURIComponent(productId)
     +'?tab=reviews&reviewId='+encodeURIComponent(reviewId);
  }
+ readonly ratingStars=[1,2,3,4,5] as const;
  feedbackGender(r:any):string {
   const value=String(r?.gender||'').toLowerCase();
   return ({male:'Nam',female:'Nữ',other:'Khác'} as Record<string,string>)[value]||'—';
