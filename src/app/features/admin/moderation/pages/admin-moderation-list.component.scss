@@ -23,3 +23,24 @@
 .moderation-page__customer-link:hover{text-decoration:underline;text-underline-offset:3px}
 .moderation-page__customer-link:focus-visible{outline:2px solid #0d47a1;outline-offset:3px;border-radius:3px}
 @media(max-width:560px){.moderation-page__dialog footer{flex-wrap:wrap}.moderation-page__customer-link{flex-basis:100%}}
+
+/* Review details: preserve readable CTA text despite shared button overrides. */
+.moderation-page__dialog footer .moderation-page__hide-button{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:132px;min-height:44px;padding:0 16px;
+  border:1px solid #0d47a1!important;border-radius:8px;
+  background:#0d47a1!important;color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  font:600 14px/20px Roboto,Arial,sans-serif!important;
+  white-space:nowrap;opacity:1;letter-spacing:0;text-shadow:none;
+}
+.moderation-page__dialog footer .moderation-page__hide-button:hover:not(:disabled){
+  background:#093a82!important;border-color:#093a82!important;
+}
+.moderation-page__dialog footer .moderation-page__hide-button:disabled{
+  opacity:.65!important;cursor:not-allowed;
+}
+.moderation-page__stars{display:inline-flex;align-items:center;gap:3px;flex:none}
+.moderation-page__stars svg{display:block;flex:none}
+.moderation-page__rating{flex-wrap:wrap;gap:10px}
+.moderation-page__rating-text{color:#0d47a1;font-size:14px;font-weight:700;white-space:nowrap}
