@@ -37,6 +37,17 @@ export class AdminContentService {
     }).pipe(map(r=>arrayFrom(unwrap(r))));
   }
 
+  /**
+   * Proposed Admin create contract; NOT present in BE dev as of 2026-11-06.
+   * Backend must supply the endpoint and enforce ADMIN authorization.
+   */
+  createCommunityPost(body:{
+    title:string;content:string;type:string;imageUrls:string[];
+    status:'DRAFT'|'APPROVED';
+  }):Observable<any> {
+    return this.api.post<any>('/admin/community/posts',body).pipe(map(unwrap));
+  }
+
   listRescuePets():Observable<any[]> {
     return this.api.get<any>('/admin/rescue/pets', {
       params:this.page100,
