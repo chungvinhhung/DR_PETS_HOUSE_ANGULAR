@@ -78,14 +78,18 @@
       </div>
 
       <div class="admin-shell__account">
-        <a
-          class="admin-shell__profile"
-          routerLink="/admin/profile"
-          aria-label="Open account profile"
-        >
-          <strong>{{ user()?.fullName || 'Admin' }}</strong>
-          <small>{{ user()?.systemRole || 'ADMIN' }}</small>
-        </a>
+        @if (user()?.systemRole === 'ADMIN') {
+          <a class="admin-shell__profile" routerLink="/admin/profile"
+            aria-label="Thông tin tài khoản quản trị viên">
+            <strong>{{ user()?.fullName || 'Admin' }}</strong>
+            <small>{{ user()?.systemRole || 'ADMIN' }}</small>
+          </a>
+        } @else {
+          <div class="admin-shell__profile" aria-label="Vai trò tài khoản hiện tại">
+            <strong>{{ user()?.fullName || 'Tài khoản' }}</strong>
+            <small>{{ user()?.systemRole || '—' }}</small>
+          </div>
+        }
         <button
           class="admin-shell__logout"
           type="button"
