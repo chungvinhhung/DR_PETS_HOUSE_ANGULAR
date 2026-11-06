@@ -1,16 +1,21 @@
 <div class="w-[532px]">
   <h2 class="text-[32px] font-semibold leading-10">{{video()?.title}}</h2>
-  @if (video()?.description) {
-    <p class="mt-4 text-[16px] leading-6">{{video().description}}</p>
-  }
-  @if (video()?.highlights?.length) {
-    <ul class="mt-4 space-y-2">
-      @for (item of video().highlights; track item) {
-        <li class="flex items-center gap-2 text-[16px] leading-6">
-          <app-customer-icon name="check-circle-2" className="h-4 w-4" /> {{item}}
-        </li>
-      }
-    </ul>
+  @if (video()?.descriptionHtml) {
+    <div class="first-aid-video-rich mt-4 text-[16px] leading-6"
+      [innerHTML]="video().descriptionHtml"></div>
+  } @else {
+    @if (video()?.description) {
+      <p class="mt-4 text-[16px] leading-6">{{video().description}}</p>
+    }
+    @if (video()?.highlights?.length) {
+      <ul class="mt-4 space-y-2">
+        @for (item of video().highlights; track item) {
+          <li class="flex items-center gap-2 text-[16px] leading-6">
+            <app-customer-icon name="check-circle-2" className="h-4 w-4" /> {{item}}
+          </li>
+        }
+      </ul>
+    }
   }
 </div>
 @if (validUrl()) {
