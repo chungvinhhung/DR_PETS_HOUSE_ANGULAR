@@ -332,25 +332,13 @@
               <button type="button" class="web2-admin-btn web2-admin-btn--outline"
                 [disabled]="actionBusy()" (click)="startCommunityRejection()">Từ chối</button>
             }
-            @if (communityHasMoreActions(post)) {
-              <div class="community-review__more">
-                <button type="button" class="community-review__more-trigger"
-                  aria-label="Thao tác khác" title="Thao tác khác"
-                  aria-haspopup="menu" [attr.aria-expanded]="communityMenuOpen()"
-                  [disabled]="actionBusy()" (click)="toggleCommunityMenu()">•••</button>
-                @if (communityMenuOpen()) {
-                  <div class="community-review__menu" role="menu">
-                    @if (communityIsApproved(post)) {
-                      <button type="button" role="menuitem"
-                        (click)="communityMenuOpen.set(false);moderateCommunity('HIDDEN')">Ẩn bài đăng</button>
-                    }
-                    @if (communityCanDelete(post)) {
-                      <button type="button" role="menuitem" class="community-review__menu-danger"
-                        (click)="startCommunityDeletion()">Xóa vĩnh viễn</button>
-                    }
-                  </div>
-                }
-              </div>
+            @if (communityIsApproved(post)) {
+              <button type="button" class="web2-admin-btn web2-admin-btn--outline"
+                [disabled]="actionBusy()" (click)="moderateCommunity('HIDDEN')">Ẩn bài đăng</button>
+            }
+            @if (communityCanDelete(post)) {
+              <button type="button" class="web2-admin-btn web2-admin-btn--outline community-review__delete"
+                [disabled]="actionBusy()" (click)="startCommunityDeletion()">Xóa vĩnh viễn</button>
             }
             @if (!communityIsApproved(post)) {
               <button type="button" class="web2-admin-btn web2-admin-btn--primary"
