@@ -9,6 +9,7 @@ import { Injectable, inject } from '@angular/core';
 
 import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 import { rescueImages } from '../../../../shared/customer/assets/rescue-images';
+import { RESCUE_PARTNERS } from '../../../../features/customer/rescue/data/rescue-data';
 
 function getPrimaryImage(images: any = []) {
   if (!images || !images.length) return rescueImages.rescuePlaceholder;
@@ -18,20 +19,24 @@ function getPrimaryImage(images: any = []) {
 }
 
 export function normalizeAdoptionPet(pet: any = {}) {
-  const isAdopted = pet.status === "adopted" || pet.status === "ADOPTED";
-  const state = isAdopted ? "adopted" : "waiting";
-  const speciesLabel = pet.species === "DOG" ? "Chó" : pet.species === "CAT" ? "Mèo" : (pet.species || "Thú cưng");
-
+  const isAdopted=String(pet.status||'').toUpperCase()==='ADOPTED';
+  const partnerId=String(pet.supportPartnerId||'').trim();
+  // Only route to a known partner in the existing public partner network.
+  // Never redirect an unmatched pet to Dr. Pet or an arbitrary other rescue.
+  const partner=RESCUE_PARTNERS.find(item=>item.id===partnerId);
   return {
     ...pet,
-    id: String(pet.adoption_pet_id || pet._id || pet.id || pet.petCode || ""),
-    name: pet.petName || pet.name || "Bạn nhỏ",
-    image: getPrimaryImage(pet.images || pet.adoption_pet_images || []),
-    state,
-    ribbon: isAdopted ? "Đã có tổ ấm" : "Đang chờ nhận nuôi",
-    description: pet.rescueStory || pet.description || pet.personality || "Một bạn nhỏ đang chờ được yêu thương và chăm sóc.",
-    status: ([speciesLabel, pet.ageDescription || pet.age_text, pet.breed, pet.branchId?.name || pet.region].filter(Boolean) as any[]).join(" - ") || "Đang chờ nhận nuôi",
-    need: pet.healthStatus || pet.adoption_conditions || "Cần một gia đình có thời gian chăm sóc và đồng hành lâu dài.",
+    id:String(pet._id||pet.adoption_pet_id||pet.id||pet.petCode||''),
+    name:String(pet.petName||pet.name||'Bạn nhỏ'),
+    image:getPrimaryImage(pet.images||pet.adoption_pet_images||[]),
+    state:isAdopted?'adopted':'waiting',
+    ribbon:isAdopted?'ĐÃ CÓ TỔ ẤM':'CÒN CHỜ',
+    description:String(pet.rescueStory||pet.description||''),
+    status:String(pet.healthStatus||''),
+    need:String(pet.supportNeeds||''),
+    supportPartnerId:partner?.id||'',
+    supportPartnerName:partner?.name||'',
+    supportPartnerHref:partner?.href||'',
   };
 }
 
