@@ -63,7 +63,7 @@
             <option value="PENDING">Chờ duyệt</option>
             <option value="REJECTED">Đã từ chối</option>
           } @else if (mode === 'rescue') {
-            <option value="LOOKING_FOR_HOME">Chưa có tổ ấm</option>
+            <option value="LOOKING_FOR_HOME">Còn chờ</option>
             <option value="ADOPTED">Đã có tổ ấm</option>
           } @else {
             <option value="PENDING">Chờ duyệt</option>
@@ -164,11 +164,11 @@
               </tbody>
             } @else if (mode === 'rescue') {
               <colgroup><col style="width:11%"><col style="width:18%"><col style="width:12%"><col style="width:29%"><col style="width:9%"><col style="width:11%"><col style="width:10%"></colgroup>
-              <thead><tr><th>Thú cưng</th><th>Loài / Giống</th><th>Khu vực</th><th>Tình trạng</th><th class="is-center">Ngày đăng</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
+              <thead><tr><th>Thú cưng</th><th>Loài</th><th>Khu vực</th><th>Tình trạng</th><th class="is-center">Ngày đăng</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
               <tbody>
                 @for (r of visible(); track r.id || r._id || $index) {
                   <tr>
-                    <td>{{name(r)}}</td><td>{{rescueSpecies(r)}} / {{r.breed || '—'}}</td><td>{{rescueArea(r)}}</td><td>{{rescueCondition(r)}}</td>
+                    <td>{{name(r)}}</td><td>{{rescueSpecies(r)}}</td><td [title]="rescuePartnerName(r)">{{rescueArea(r)}}</td><td>{{rescueCondition(r)}}</td>
                     <td class="is-center">{{date(r)}}</td><td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
                     <td class="is-center actions">
                       <span class="rescue-action-group">
@@ -246,7 +246,7 @@
             @if (editing()) {
               <label>Trạng thái
                 <select [ngModel]="rescueDraft().status" (ngModelChange)="updateRescueDraft('status',$event)">
-                  <option value="LOOKING_FOR_HOME">Chưa có tổ ấm</option><option value="ADOPTED">Đã có tổ ấm</option>
+                  <option value="LOOKING_FOR_HOME">Còn chờ</option><option value="ADOPTED">Đã có tổ ấm</option>
                 </select>
               </label>
             }
