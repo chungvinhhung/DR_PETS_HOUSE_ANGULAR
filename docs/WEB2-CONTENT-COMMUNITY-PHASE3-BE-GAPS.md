@@ -47,7 +47,7 @@ Status: FE community list, moderation and Admin composer implemented; Admin crea
 - Form validates title, content, optional images, type, and has Draft / Publish actions.
 - FE calls proposed `POST /admin/community/posts`; 404/405 shows explicit BE missing endpoint error and never shows fake success.
 - Moderation remains on existing confirmed API. Customer feed now uses `GET /community/posts` rather than generic blog `GET /posts?type=community`; fake featured/seed cards were removed from successful Customer read.
-- Customer and Admin now share one four-label taxonomy (`shared/customer/data/community-post-types.ts`); Admin displays and filters by the exact tag selected in Customer. If BE returns no recognized `type`, the filter remains disabled rather than pretending the category exists.
+- Customer and Admin now share one four-label taxonomy (`shared/customer/data/community-post-types.ts`); Admin displays and filters by the exact tag selected in Customer. The dropdown remains accessible to verify its four choices, but entries without a persisted `type` never match a specific category. FE does not fabricate missing categories.
 
 ## QA / acceptance (not yet completed)
 - Admin creates DRAFT: stable ID and status returned, not visible in Customer, visible in Admin list.
