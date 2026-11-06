@@ -1,1 +1,54 @@
 :host{display:block;min-width:0}
+
+/* Keep the preview column scrollable independently of the long editing form. */
+.aid-studio .article-studio__side{
+  position:sticky;top:16px;align-self:start;
+  max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);
+  overflow-y:auto;overscroll-behavior-y:contain;
+  scrollbar-gutter:stable;padding-right:6px;
+}
+.aid-studio .article-studio__side::-webkit-scrollbar{width:7px}
+.aid-studio .article-studio__side::-webkit-scrollbar-thumb{background:#cfdae9;border-radius:6px}
+.aid-studio .article-studio__side::-webkit-scrollbar-track{background:transparent}
+@media(max-width:1250px){
+  .aid-studio .article-studio__side{
+    position:static;max-height:none;overflow:visible;
+    padding-right:0;scrollbar-gutter:auto;
+  }
+}
+
+/* Follow the Content Studio chip input pattern; use red for Customer safety labels. */
+.aid-studio__badge-field{display:flex;flex-direction:column;gap:8px;margin:0 0 20px}
+.aid-studio__badge-field>label{color:#283d5b;font:600 13px/20px Roboto,Arial,sans-serif}
+.aid-studio .aid-studio__badge-editor{min-height:48px}
+.aid-studio .aid-studio__badge-editor:focus-within{
+  border-color:#0d47a1;box-shadow:0 0 0 2px rgba(13,71,161,.12)
+}
+.aid-studio .aid-studio__badge-editor input:is(:focus,:focus-visible){
+  outline:0!important;border:0!important;box-shadow:none!important
+}
+.aid-studio .aid-studio__badge-chip{
+  background:#c62828;color:#fff;font-weight:600
+}
+.aid-studio .aid-studio__badge-chip button{color:#fff}
+.aid-studio .aid-studio__badge-chip button:hover:not(:disabled){
+  background:rgba(255,255,255,.19);color:#fff
+}
+.aid-studio__urgent-badge app-customer-icon{
+  display:inline-flex;width:16px;height:16px;align-items:center;justify-content:center
+}
+.aid-studio__emergency-preview{margin:18px 0 4px;pointer-events:none}
+.aid-studio__emergency-preview aside[app-emergency-support]{
+  width:100%;max-width:100%;height:auto;min-height:260px;
+  padding:22px;gap:16px;border-radius:18px;border-left-width:3px;
+}
+.aid-studio__steps-heading{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:22px 0 16px
+}
+.aid-studio__steps-heading h4{margin:0}
+.aid-studio__steps-badges{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
+.aid-studio__steps-badges span{
+  display:inline-flex;align-items:center;border-radius:99px;
+  padding:5px 11px;background:#c62828;color:#fff;
+  font:600 12px/18px Roboto,Arial,sans-serif;
+}
