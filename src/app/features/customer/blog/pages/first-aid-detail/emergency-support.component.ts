@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 
 import { CustomerIconComponent } from '../../../../../shared/customer/components/icon/customer-icon.component';
 import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
+import { FIRST_AID_SUPPORT_PHONE } from '../../../../../shared/customer/data/first-aid-data';
 
 /**
  * EmergencySupport — chuyển từ React: src/pages/Blog/FirstAidDetailPage.jsx
@@ -17,6 +18,6 @@ import { CustomerLinkDirective } from '../../../../../shared/customer/directives
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmergencySupportComponent {
-  readonly phone=input<string>('0868686868');
+  readonly phone=input<string>(FIRST_AID_SUPPORT_PHONE);
   readonly telHref=computed(()=> 'tel:' + this.phone().replace(/[^+0-9]/g,''));
 }
