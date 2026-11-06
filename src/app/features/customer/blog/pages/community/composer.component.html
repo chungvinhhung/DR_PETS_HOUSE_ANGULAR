@@ -11,7 +11,7 @@
       (input)="handle1($any($event))"
       (focusin)="requirePostAuth()"
       [attr.placeholder]="canPost() ? 'Sen đang nghĩ gì về các boss hôm nay...' : 'Đăng nhập để chia sẻ với cộng đồng...'"
-      [readOnly]="!canPost()"
+      [readOnly]="!canPost() || submitting()"
       class="h-[80px] w-full resize-none rounded-[24px] border border-white/80 bg-white/60 px-6 py-4 outline-none"
     ></textarea>
     @if (media()) {
@@ -22,7 +22,7 @@
           } @else {
             Video
           }: {{ media().name }}</span>
-        <button (click)="media.set(null)"><app-customer-icon name="x" className="h-4 w-4" /></button>
+        <button type="button" (click)="clearMedia()" [disabled]="submitting()" aria-label="Bỏ tệp đính kèm"><app-customer-icon name="x" className="h-4 w-4" /></button>
       </div>
     }
   </div>
@@ -45,13 +45,15 @@
     />
     <button
       type="button"
-      (click)="requirePostAuth() && imageInput?.click()"
+      (click)="!submitting() && requirePostAuth() && imageInput?.click()"
+      [disabled]="submitting()"
       class="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[#005AB4] shadow-sm"
     >
       <app-customer-icon name="image" className="h-[18px] w-[18px]" />Ảnh</button>
     <button
       type="button"
-      (click)="requirePostAuth() && videoInput?.click()"
+      (click)="!submitting() && requirePostAuth() && videoInput?.click()"
+      [disabled]="submitting()"
       class="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[#005AB4] shadow-sm"
     >
       <app-customer-icon name="video" className="h-[18px] w-[18px]" />Video</button>
@@ -59,6 +61,7 @@
       <button
         type="button"
         (click)="handle2()"
+        [disabled]="submitting()"
         [class]="`flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[#005AB4] shadow-sm ${POST_TYPES[type()]}`"
       >
         <app-customer-icon name="tag" className="h-[18px] w-[18px]" />{{ type() || 'Thẻ' }}</button>
@@ -81,7 +84,7 @@
   <button
     type="button"
     (click)="submit()"
-    [disabled]="canPost() && !value().trim() && !media()"
+    [disabled]="submitting() || (canPost() && !value().trim() && !media())"
     class="rounded-full bg-[#90CAF9] px-10 py-3 font-semibold shadow-lg transition-colors hover:bg-[#64B5F6] disabled:cursor-not-allowed disabled:opacity-50"
-  >Chia sẻ</button>
+  >{{submitting() ? 'Đang gửi...' : 'Chia sẻ'}}</button>
 </div>
