@@ -12,7 +12,7 @@ import { FooterComponent } from '../../../../layouts/customer/components/footer/
 import { AdoptionApplicationModalComponent } from '../components/adoption-application-modal.component';
 import { CustomerIconComponent } from '../../../../shared/customer/components/icon/customer-icon.component';
 import { rescueImages } from '../../../../shared/customer/assets/rescue-images';
-import { RESCUE_PARTNERS, RESCUE_PETS } from '../data/rescue-data';
+import { RESCUE_PARTNERS } from '../data/rescue-data';
 import { normalizeAdoptionRequest } from '../../../../core/customer/services/api/rescue-api.service';
 import { RESCUE_PAGE_SIZE } from './rescue-page.helpers';
 
@@ -63,7 +63,7 @@ export class RescuePageComponent {
   readonly status = signal<any>("all");
   readonly currentPage = signal<any>(1);
   readonly selectedAdoptionPet = signal<any>(null);
-  readonly rescuePets = signal<any>(RESCUE_PETS);
+  readonly rescuePets = signal<any[]>([]);
   readonly myRequests = signal<any>([]);
   readonly isLoading = signal<any>(false);
   readonly loadError = signal<any>("");
@@ -80,11 +80,12 @@ export class RescuePageComponent {
         this.rescueApi.getAdoptionPets()
           .then((apiPets: any) => {
             if (!active) return;
-            if (apiPets.length) this.rescuePets.set(apiPets);
+            this.rescuePets.set(apiPets);
           })
           .catch((error: any) => {
             if (!active) return;
-            this.loadError.set(error?.message || "Không thể tải dữ liệu cứu trợ, đang hiển thị dữ liệu mẫu.");
+            this.rescuePets.set([]);
+            this.loadError.set(error?.message || 'Không thể tải hồ sơ cứu trợ. Vui lòng thử lại.');
           })
           .finally(() => {
             if (active) this.isLoading.set(false);
