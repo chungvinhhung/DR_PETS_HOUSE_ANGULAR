@@ -68,3 +68,9 @@ Status: FE community list, moderation and Admin composer implemented; Admin crea
 - Customer post type selection is forwarded as metadata but is not currently persisted in the backend `CommunityPost` schema. Add schema/storage/read mapping.
 - Link opening the **production** Customer site and direct-post navigation will show the new behavior there only after this FE branch is reviewed and deployed. Local code updates alone do not modify the existing production page.
 - Authentication for the Customer composer uses a CUSTOMER login, not an ADMIN session; BE should decide whether an Admin-originated public announcement feature needs a separate contract.
+
+## Moderation actions refined after QA (2026-11-06)
+- The Admin `Tạo bài đăng` link is now inside the list **filter bar** (after the two filter selectors), matching the other management modules. It still opens the Customer Community page.
+- The pending moderation modal offers **Duyệt bài** and **Từ chối**. The latter records `REJECTED` and a mandatory reason, leaving the original row searchable/auditable; permanent deletion is not offered for pending posts.
+- `APPROVED` shows **Ẩn bài**. `HIDDEN` offers **Hiện bài** and Admin-only **Xóa vĩnh viễn**. `REJECTED` offers **Duyệt lại** and Admin-only **Xóa vĩnh viễn**.
+- FE requires `REJECTED` or `HIDDEN` for permanent deletion and requires an inline confirmation. BE currently allows deletion for any status from Admin. **BE should enforce** the same status rule if the workflow must hold across all API clients (reject invalid DELETE attempts with 409); retain rejection reason and moderation timestamps when rejecting.
