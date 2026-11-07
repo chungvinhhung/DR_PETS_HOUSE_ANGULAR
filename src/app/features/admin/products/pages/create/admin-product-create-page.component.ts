@@ -206,7 +206,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     }
 
     if (validFiles.length !== files.length) {
-      this.feedback = 'Chỉ hỗ trợ ảnh JPG/PNG, tối đa 5MB mỗi ảnh.';
+      this.feedback = 'Chỉ hỗ trợ ảnh JPG, PNG, WEBP, tối đa 5MB mỗi ảnh.';
     } else if (allowed.length !== validFiles.length) {
       this.feedback = 'Chỉ được tải tối đa 10 ảnh sản phẩm.';
     } else {
@@ -229,7 +229,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     const image = this.images.find(item => item.id === id);
     if (!image) return;
     if (!this.isValidImage(file)) {
-      this.feedback = 'Ảnh thay thế phải là JPG/PNG và không quá 5MB.';
+      this.feedback = 'Ảnh thay thế phải là JPG, PNG hoặc WEBP và không quá 5MB.';
       return;
     }
 
@@ -257,7 +257,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     input.value = '';
     if (!file) return;
     if (!this.isValidImage(file)) {
-      this.feedback = 'Ảnh biến thể phải là JPG/PNG và không quá 5MB.';
+      this.feedback = 'Ảnh biến thể phải là JPG, PNG hoặc WEBP và không quá 5MB.';
       return;
     }
 
