@@ -30,7 +30,7 @@ import { DraftBranchSelection, ServiceBranchConfigFlowComponent } from '../compo
 
 type PriceMode = 'FIXED' | 'QUOTE';
 type Tier = { key: string; weight: string; mode: PriceMode; price: number | null };
-type MaterialOption = { materialId: string; sku: string; name: string; unit: string; image: string | null; categoryId: string; price: number };
+type MaterialOption = { materialId: string; sku: string; name: string; unit: string; image: string | null; categoryId: string; variantLabel: string; price: number };
 type MaterialLine = { key: number; materialId: string; sku: string; query: string; quantity: number | null; unit: string };
 type BranchDetailRow = { id: string; name: string; summary: string };
 const TIER_WEIGHTS = [
@@ -240,6 +240,7 @@ export class ServiceCatalogEditorComponent {
           {
             image: variant.image || product.images.find(image => image.isPrimary)?.url || product.images[0]?.url || null,
             categoryId: product.categoryId,
+            variantLabel: variant.label || '',
             price: variant.finalPrice ?? variant.price,
           },
         ] as const)));
@@ -248,7 +249,7 @@ export class ServiceCatalogEditorComponent {
           return {
             materialId: item.id, sku: item.sku, name: item.name,
             unit: item.unit || '', image: product?.image ?? null,
-            categoryId: product?.categoryId ?? '', price: product?.price ?? 0,
+            categoryId: product?.categoryId ?? '', variantLabel: product?.variantLabel ?? '', price: product?.price ?? 0,
           };
         });
         this.refreshMaterialLabels();
