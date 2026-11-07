@@ -56,13 +56,28 @@ export function normalizePet(pet: any = {}) {
   const weightMatch = rawWeight !== undefined && rawWeight !== null ? String(rawWeight).match(/\d+(\.\d+)?/) : null;
   const numericWeight = weightMatch ? Number(weightMatch[0]) : null;
   
+
+  const SPECIES_MAP: Record<string, string> = {
+  dog: 'Chó', cho: 'Chó', 'chó': 'Chó',
+  cat: 'Mèo', meo: 'Mèo', 'mèo': 'Mèo',
+  rabbit: 'Thỏ', tho: 'Thỏ', 'thỏ': 'Thỏ',
+  bird: 'Chim', chim: 'Chim',
+  hamster: 'Hamster',
+  };
+
+  const rawSpecies = String(pet.species?.species_name ?? pet.species_name ?? pet.species ?? '').trim();
+  const lowerSpecies = rawSpecies.toLowerCase();
+  const normalizedSpecies = SPECIES_MAP[lowerSpecies]
+     || (rawSpecies ? rawSpecies.charAt(0).toUpperCase() + rawSpecies.slice(1) : '');
+
+
   return {
     id: String(pet.pet_id ?? pet.petId ?? pet.id ?? pet._id ?? ""),
     pet_id: pet.pet_id ?? pet.petId ?? pet.id ?? pet._id,
     speciesId: pet.species_id ?? pet.speciesId ?? pet.species?.species_id ?? "",
     breedId: pet.breed_id ?? pet.breedId ?? pet.breed?.breed_id ?? "",
     name: pet.pet_name ?? pet.name ?? "",
-    species: pet.species?.species_name ?? pet.species_name ?? pet.species ?? "",
+    species: normalizedSpecies,
     breed: pet.breed?.breed_name ?? pet.breed_name ?? pet.breed ?? "",
     age: pet.age ?? pet.ageYears ?? pet.age_years ?? "",
     gender: normalizedGender,

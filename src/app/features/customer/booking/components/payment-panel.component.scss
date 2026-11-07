@@ -1,0 +1,321 @@
+.payment-title {
+  margin-bottom: 20px; // mb-5
+  font-size: 20px; // text-xl
+  font-weight: 900; // font-black
+  color: #1e3a8a; // text-blue-900
+}
+
+// Thanh chọn chế độ Tại phòng khám / Trực tuyến
+.mode-tabs-wrapper {
+  margin-bottom: 24px; // mb-6
+  display: grid;
+  border-radius: 16px; // rounded-2xl
+  background-color: #f2f4f6;
+  padding: 6px; // p-1.5
+  text-align: center;
+  font-size: 14px; // text-sm
+  font-weight: 700; // font-bold
+
+  .mode-tabs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mode-tab-btn {
+    border-radius: 16px;
+    padding: 12px 8px;
+    color: #64748b; // text-slate-500
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    &:hover {
+      color: #1e3a8a;
+    }
+
+    &.is-active {
+      background-color: #ffffff;
+      color: #1e3a8a;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    }
+  }
+}
+
+// Khối chọn phương thức thanh toán trực tuyến
+.online-payment-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid #e2e8f0; // Đường gạch mờ phía trên
+  padding-top: 20px;
+  margin-bottom: 20px; // Tạo khoảng cách với đường gạch mờ bên dưới
+
+  .section-label {
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .method-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .method-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: #cbd5e1;
+    }
+
+    &.is-selected {
+      border-color: #1d70b8;
+      box-shadow: 0 0 0 1px #1d70b8;
+    }
+
+    .radio-circle {
+      width: 20px;
+      height: 20px;
+      border-radius: 9999px;
+      border: 2px solid #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color 0.2s ease;
+
+      &.is-selected {
+        border-color: #1d70b8;
+      }
+
+      .radio-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 9999px;
+        background-color: #1d70b8;
+      }
+    }
+
+    .method-logo {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .method-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: #0f172a;
+    }
+  }
+
+  .error-text {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #ef4444;
+  }
+}
+
+// Khối nhập mã giảm giá
+.coupon-section {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 20px;
+
+  .coupon-title {
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .coupon-row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .coupon-input-col {
+    display: flex;
+    min-width: 0;
+    flex: 1 1 0%;
+    flex-direction: column;
+  }
+
+  .coupon-input-box {
+    display: flex;
+    height: 40px;
+    width: 100%;
+    align-items: center;
+    border-radius: 16px;
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+    padding: 0 16px;
+    box-sizing: border-box;
+
+    &:focus-within {
+      border-color: #1e3a8a;
+    }
+
+    input {
+      width: 100%;
+      background: transparent;
+      font-size: 14px;
+      color: #0f172a;
+      outline: none;
+
+      &::placeholder {
+        color: #94a3b8;
+      }
+    }
+  }
+
+  .coupon-error {
+    width: 100%;
+    padding: 4px 16px 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: #dc2626;
+  }
+
+  .coupon-apply-btn {
+    display: flex;
+    height: 40px;
+    width: 104px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background-color: #facc15; // bg-secondary
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.46px;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    transition: all 0.15s ease;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #ffe454;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}
+
+// Bảng tóm tắt chi phí
+.price-summary-box {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 16px;
+  background-color: #f2f4f6;
+  padding: 20px;
+  font-size: 14px;
+
+  .pricing-loading {
+    font-size: 12px;
+    font-weight: 500;
+    color: #1e3a8a;
+  }
+
+  .pricing-error {
+    font-size: 12px;
+    font-weight: 500;
+    color: #b45309;
+  }
+}
+
+// Khung tổng cộng
+.total-box {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 16px;
+  background-color: #d5e4f3;
+  padding: 20px;
+
+  .total-label {
+    font-size: 20px;
+    font-weight: 900;
+    color: #1e3a8a;
+  }
+
+  .total-vat {
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  .total-amount {
+    font-size: 20px;
+    font-weight: 900;
+    color: #1e3a8a;
+
+    @media (min-width: 768px) {
+      font-size: 24px;
+    }
+  }
+}
+
+// Nút xác nhận đặt lịch
+.confirm-submit-btn {
+  width: 100%;
+  border-radius: 4px;
+  background-color: #facc15; // bg-secondary
+  padding: 12px 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.46px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+  transition: all 0.15s ease;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #ffe454;
+  }
+
+  &:active {
+    background-color: #f9a825;
+  }
+}
+
+// Dòng điều khoản chân trang
+.terms-footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  color: #475569;
+
+  .terms-link {
+    font-weight: 600;
+    color: #1e3a8a;
+    text-decoration: underline;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+}

@@ -16,6 +16,7 @@ import { serviceSelectedCheck, createEmptyPetInfo, profileToPetInfo, isPetInfoCo
   standalone: true,
   imports: [PetSummaryCardComponent, PetInfoCardComponent, BookingCardComponent, BookingFieldComponent, FlowButtonsComponent, PetSelectionModalComponent],
   templateUrl: './info-form.component.html',
+  styleUrl: './info-form.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

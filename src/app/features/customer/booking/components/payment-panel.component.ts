@@ -13,6 +13,7 @@ import { formatMoney } from './booking-payment-step.helpers';
   standalone: true,
   imports: [CardComponent, PriceRowComponent],
   templateUrl: './payment-panel.component.html',
+  styleUrl: './payment-panel.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

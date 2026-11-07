@@ -1,0 +1,188 @@
+.booking-layout {
+  display: grid;
+  gap: 20px; // gap-5
+
+  @media (min-width: 768px) {
+    gap: 32px; // md:gap-8
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: minmax(0, 2fr) 390px; // lg:grid-cols-[minmax(0,2fr)_390px]
+  }
+}
+
+.booking-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px; // space-y-6
+}
+
+.pet-type-grid {
+  display: grid;
+  gap: 12px; // gap-3
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)); // md:grid-cols-2
+    gap: 24px; // md:gap-6
+  }
+}
+
+.other-pet-btn {
+  position: relative;
+  min-height: 116px;
+  border-radius: 16px; // rounded-2xl
+  background-color: #ffffff;
+  padding: 20px; // p-5
+  text-align: left;
+  box-shadow: 0 4px 13px rgba(144, 202, 249, 0.85);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+
+  @media (min-width: 768px) {
+    padding: 24px; // md:p-6
+  }
+
+  &.is-active {
+    border-color: #1e3a8a; // border-blue-900
+
+    .other-pet-title {
+      color: #1e3a8a; // text-blue-900
+    }
+  }
+
+  .check-icon {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .other-pet-title {
+    display: block;
+    font-size: 20px; // text-xl
+    line-height: 28px;
+    color: #0f172a; // text-slate-900
+  }
+
+  .other-pet-desc {
+    display: block;
+    margin-top: 12px; // mt-3
+    font-size: 16px; // text-base
+    color: #475569; // text-slate-600
+  }
+}
+
+/* Đã sửa dùng flex + gap để tách rời các khung thông tin thú cưng */
+.pet-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px; // Khoảng cách giữa các khung (tương đương gap-6)
+}
+
+.add-pet-btn {
+  width: 100%;
+  border-radius: 16px; // rounded-2xl
+  border: 2px solid #1e3a8a; // border-blue-900
+  background-color: #ffffff;
+  padding: 16px 24px; // px-6 py-4
+  font-size: 16px; // text-base
+  font-weight: 700; // font-bold
+  color: #1e3a8a; // text-blue-900
+  box-shadow: 0 4px 13px rgba(144, 202, 249, 0.5);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #eff6ff; // hover:bg-blue-50
+  }
+}
+
+/* Lưu ý: Kiểm tra lại selector bên trong <app-booking-card> nếu thẻ này cũng dùng display: contents */
+::ng-deep .owner-card {
+  display: block;
+  width: 100%;
+  padding: 24px 20px;
+  box-sizing: border-box;
+
+  @media (min-width: 768px) {
+    padding: 32px;
+  }
+}
+
+.owner-title {
+  margin-top: 0;
+  margin-bottom: 20px; // mb-5
+  font-size: 20px; // text-xl
+  font-weight: 900; // font-black
+  color: #1e3a8a; // text-blue-900
+}
+
+.owner-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; 
+  width: 100%;
+  box-sizing: border-box;
+
+  
+  ::ng-deep label[app-booking-field],
+  ::ng-deep input:not([type="checkbox"]),
+  ::ng-deep select {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+.agreement-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 600; // Làm đậm toàn bộ dòng chữ "Tôi đồng ý với..."
+  line-height: 21px;
+  color: #0f172a; // Màu chữ tối đậm rõ nét hơn
+  cursor: pointer;
+
+  &.has-error {
+    border-color: #ef4444;
+    background-color: #fef2f2;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+  }
+
+  .agreement-checkbox {
+    margin-top: 3px;
+    width: 16px;
+    height: 16px;
+    accent-color: #1e3a8a; // Đồng bộ màu xanh navy của thương hiệu
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .policy-link {
+    color: #1e3a8a;
+    font-weight: 700; // Làm đậm riêng phần link chính sách
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+
+    &:hover {
+      color: #1d4ed8;
+    }
+  }
+
+
+
+  .agreement-checkbox {
+    margin-top: 4px; // mt-1
+  }
+
+  .policy-link {
+    color: #1e3a8a; // text-blue-900
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
