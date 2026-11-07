@@ -66,20 +66,55 @@
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Loài <span class="text-red-500">*</span></label>
-          <select
-            required
-            name="speciesId"
-            [selectValue]="selectedSpeciesId()"
-            (change)="selectedSpeciesId.set($any($event).target.value)"
-            class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white"
-          >
-            <option value="" disabled hidden>-- Chọn loài --</option>
-            @for (species of PET_SPECIES_OPTIONS; track species.value) {
-              <option [value]="species.value ?? ''">{{ species.label }}</option>
-            }
-          </select>
-        </div>
+  <label class="block text-sm font-medium text-slate-700 mb-1">
+    Loài <span class="text-red-500">*</span>
+  </label>
+
+  @if (selectedSpeciesId() === 'other') {
+    <!-- Khi chọn Khác: dropdown bên trái, ô nhập bên phải -->
+    <div class="flex items-center w-full border border-slate-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition overflow-hidden">
+
+      <select
+        required
+        name="speciesId"
+        [selectValue]="selectedSpeciesId()"
+        (change)="selectedSpeciesId.set($any($event).target.value)"
+        class="w-[105px] shrink-0 border-0 outline-none bg-transparent pl-3 pr-1 py-2.5 text-sm"
+      >
+        <option value="" disabled hidden>-- Chọn loài --</option>
+        @for (species of PET_SPECIES_OPTIONS; track species.value) {
+          <option [value]="species.value ?? ''">{{ species.label }}</option>
+        }
+      </select>
+
+      <div class="w-px h-6 bg-slate-300 shrink-0"></div>
+
+      <input
+        required
+        type="text"
+        name="customSpecies"
+        [value]="speciesOtherInput()"
+        (input)="speciesOtherInput.set($any($event).target.value)"
+        placeholder="VD: chim, rắn,..."
+        class="flex-1 min-w-0 w-full border-0 outline-none px-3 py-2.5 text-sm focus:ring-0"
+      />
+    </div>
+  } @else {
+    <!-- Khi chọn Chó/Mèo: dropdown bình thường -->
+    <select
+      required
+      name="speciesId"
+      [selectValue]="selectedSpeciesId()"
+      (change)="selectedSpeciesId.set($any($event).target.value)"
+      class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white"
+    >
+      <option value="" disabled hidden>-- Chọn loài --</option>
+      @for (species of PET_SPECIES_OPTIONS; track species.value) {
+        <option [value]="species.value ?? ''">{{ species.label }}</option>
+      }
+    </select>
+  }
+</div>
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-1">Giống <span class="text-red-500">*</span></label>
           <input

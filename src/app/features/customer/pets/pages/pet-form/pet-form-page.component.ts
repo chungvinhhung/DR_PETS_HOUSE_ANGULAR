@@ -47,6 +47,7 @@ export class PetFormPageComponent {
   // --- Trạng thái (signal = useState / useRef) ---
   readonly allPets = signal<any>([]);
   readonly selectedSpeciesId = signal<any>("");
+  readonly speciesOtherInput = signal<any>("");
   readonly breedInput = signal<any>("");
   readonly formError = signal<any>("");
   readonly saving = signal<any>(false);
@@ -83,7 +84,15 @@ export class PetFormPageComponent {
               const currentPet = pets.find((p: any) => p.id === this.navService.params()['id']);
               if (currentPet) {
                 this.selectedSpeciesId.set(getSpeciesInputValue(currentPet));
-                this.breedInput.set(currentPet.breed || currentPet.breedName || "");
+
+this.speciesOtherInput.set(
+  getSpeciesInputValue(currentPet) === 'other' &&
+  String(currentPet.species || currentPet.speciesName || currentPet.species_name || '').toLowerCase() !== 'khác'
+    ? currentPet.species || currentPet.speciesName || currentPet.species_name || ''
+    : ''
+);
+
+this.breedInput.set(currentPet.breed || currentPet.breedName || "");
                 if (currentPet.avatar) {
                   this.avatarPreview.set(currentPet.avatar);
                 } else if (currentPet.name && (petImages as any)[currentPet.name]) {
@@ -176,12 +185,18 @@ export class PetFormPageComponent {
     const genderValue = formData.get("gender");
     const weightInput = formData.get("weight");
     const ageInput = formData.get("age");
-    const selectedSpecies = PET_SPECIES_OPTIONS.find((option: any) => option.value === formData.get("speciesId"));
-
+    const customSpecies = String(formData.get("customSpecies") || "").trim();
+    const speciesId = String(formData.get("speciesId") || this.selectedSpeciesId() || "");
+    const selectedSpecies = PET_SPECIES_OPTIONS.find((option: any) => option.value === speciesId);
+    
     const petData = {
       name: formData.get("name"),
-      speciesId: selectedSpecies?.value || formData.get("speciesId"),
-      species: selectedSpecies?.label || "",
+      speciesId,
+
+      species: speciesId === "other"
+        ? customSpecies
+        : selectedSpecies?.label || "",
+
       breed: formData.get("breed"),
       age: ageInput || null, 
       gender: genderValue,
