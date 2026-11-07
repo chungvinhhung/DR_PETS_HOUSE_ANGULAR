@@ -175,7 +175,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
   }
 
   private isValidImage(file: File): boolean {
-    return ['image/jpeg', 'image/png'].includes(file.type) &&
+    return ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) &&
       file.size <= this.maxImageSize;
   }
 
