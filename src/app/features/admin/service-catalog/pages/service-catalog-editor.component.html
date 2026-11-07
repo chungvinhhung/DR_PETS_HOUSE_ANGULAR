@@ -432,7 +432,7 @@
                       <strong>{{item.name}}</strong>
                     </div>
                   </td>
-                  <td>{{item.sku}}<small>{{productCategoryLabel(item.categoryId)}}</small></td>
+                  <td class="service-editor__material-sku">{{item.sku}}<small>{{item.variantLabel || 'Không có biến thể'}}</small></td>
                   <td>{{item.unit || '—'}}</td>
                 </tr>
               } @empty {
