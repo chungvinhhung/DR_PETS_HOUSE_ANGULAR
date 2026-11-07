@@ -89,8 +89,22 @@ export class PetListPageComponent {
 
         this.petApi.getMyPets()
           .then((items: any) => {
-            if (active) this.pets.set(items);
-          })
+              if (active) {
+                const normalizedPets = items.map((pet: any) => ({
+                  ...pet,
+                  healthStatus:
+                    pet.healthStatus === 'NORMAL' ||
+                    pet.healthStatus === 'HEALTHY' ||
+                    pet.healthStatus === 'Khỏe mạnh'
+                      ? 'Bình thường'
+                      : pet.healthStatus === 'SICK' || pet.healthStatus === 'ILL'
+                        ? 'Bị bệnh'
+                        : pet.healthStatus || 'Bình thường',
+                }));
+
+                this.pets.set(normalizedPets);
+              }
+            })
           .catch((error: any) => {
             if (!active) return;
             const storedPets = readStoredPets();
