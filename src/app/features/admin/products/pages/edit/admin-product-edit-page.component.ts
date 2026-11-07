@@ -95,7 +95,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   variantLabelInvalid(v: ProductVariantWrite): boolean { return this.submitted && !v.label.trim(); }
   variantSkuInvalid(v: ProductVariantWrite): boolean { return this.submitted && !v.sku?.trim(); }
   variantPriceInvalid(v: ProductVariantWrite): boolean {
-    return this.submitted && (v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0);
+    return this.submitted && (v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) <= 0);
   }
   variantDiscountInvalid(v: ProductVariantWrite): boolean {
     return this.submitted && (v.discountPercent == null || !Number.isFinite(Number(v.discountPercent)) || Number(v.discountPercent) < 0 || Number(v.discountPercent) > 100);
@@ -121,7 +121,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     this.pricingInputRevision();
     // Use the discounted prices shown in the variant table, not raw list prices.
     const prices = this.variants
-      .filter(v => Number.isFinite(Number(v.price)) && Number(v.price) >= 0)
+      .filter(v => Number.isFinite(Number(v.price)) && Number(v.price) > 0)
       .map(v => {
         const discount = Math.min(100, Math.max(0, Number(v.discountPercent) || 0));
         return Math.round(Number(v.price) * (1 - discount / 100));
@@ -264,7 +264,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
         !this.categories().some(category => category.id === this.categoryId) ||
         !this.variants.length ||
         this.variants.some(v => !v.sku?.trim() || !v.label.trim() ||
-          v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0 ||
+          v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) <= 0 ||
           v.discountPercent == null || !Number.isFinite(Number(v.discountPercent)) ||
           Number(v.discountPercent) < 0 || Number(v.discountPercent) > 100)) {
       this.error.set('Vui lòng kiểm tra các trường bắt buộc và thông tin biến thể được đánh dấu đỏ.');
@@ -513,8 +513,8 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   }
 
   private checkImage(file: File): boolean {
-    if (!['image/jpeg', 'image/png'].includes(file.type)) {
-      this.imageError = 'Chỉ hỗ trợ ảnh JPG hoặc PNG.';
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      this.imageError = 'Chỉ hỗ trợ ảnh JPG, PNG hoặc WEBP.';
       this.toast.show(this.imageError);
       return false;
     }
