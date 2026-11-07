@@ -165,7 +165,10 @@
               <tr><td class="empty" colspan="10"><app-admin-data-state kind="empty" [title]="archiveView ? 'Chưa có sản phẩm lưu trữ' : 'Không tìm thấy sản phẩm'" [message]="archiveView ? 'Hiện chưa có sản phẩm nào được lưu trữ.' : 'Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác.'" /></td></tr>
             } @else {
               @for (product of products(); track product.id) {
-                <tr [class.out-of-stock]="product.outOfStock">
+                <tr [class.out-of-stock]="product.outOfStock" class="product-clickable-row"
+                  tabindex="0" [attr.aria-label]="'Mở thông tin sản phẩm ' + product.name"
+                  (click)="openProductRow(product, $event)"
+                  (keydown.enter)="openProductRow(product, $event)">
                   <td>{{ (pageNumber() - 1) * pageSize + $index + 1 }}</td>
                   <td><div class="thumbnail">
                     @if (product.images.length) { <img [src]="product.images[0].url" [alt]="product.name"> }
