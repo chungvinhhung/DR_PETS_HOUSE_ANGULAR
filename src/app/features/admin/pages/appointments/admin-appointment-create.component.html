@@ -15,7 +15,7 @@
       <div class="search-row">
         <div class="search-control">
           <img src="/assets/service-catalog/search.svg" width="16" height="16" alt="" />
-          <input id="appointment-lookup" type="tel" autocomplete="off" placeholder="Nhập số điện thoại..."
+          <input id="appointment-lookup" type="search" inputmode="tel" name="admin-appointment-customer-lookup" autocomplete="off" spellcheck="false" placeholder="Nhập số điện thoại..."
             [value]="lookupPhone()" (input)="editLookupPhone($any($event.target).value)"
             (keydown.enter)="searchCustomer()">
         </div>
