@@ -31,6 +31,12 @@ th:nth-child(9),td:nth-child(9) { width: 132px; text-align: center; }
 th:nth-child(10),td:nth-child(10) { width: 85px; text-align: center; }
 .thumbnail { width: 40px; height: 40px; margin: auto; border-radius: 4px; }
 .product-name strong { font-weight: 500; }
+/* Product rows navigate to edit; action buttons keep their own interaction. */
+.product-clickable-row { cursor: pointer; }
+.product-clickable-row:hover { background: #f4f9ff; }
+.product-clickable-row:focus-visible { outline: 2px solid #0d47a1; outline-offset: -2px; background: #f4f9ff; }
+.product-clickable-row .actions button,
+.product-clickable-row .actions a { cursor: pointer; }
 .price { min-width: 0; }
 .sku { max-width: 100%; overflow: hidden; }
 .status { min-height: 22px; padding: 2px 10px; font-size: 12px; line-height: 16px; }
