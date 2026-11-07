@@ -78,9 +78,9 @@
             <p [class]="`text-xs font-medium ${displayCheckup === 'Chưa khám' ? 'text-slate-400 italic' : 'text-slate-700'}`">{{ displayCheckup }}</p>
           </div>
           <div class="flex flex-col gap-2 mt-auto">
-            <a [appCustomerLink]="`/thu-cung-cua-toi/${pet.id}/chinh-sua`" class="w-full">
+            <!-- <a [appCustomerLink]="`/thu-cung-cua-toi/${pet.id}/chinh-sua`" class="w-full">
               <button class="w-full bg-[#fcd34d] hover:bg-[#fbbf24] rounded-md py-2 font-medium text-xs text-slate-900 transition">Chỉnh sửa hồ sơ</button>
-            </a>
+            </a> -->
             <a [appCustomerLink]="`/thu-cung-cua-toi/${pet.id}`" class="w-full">
               <button class="w-full bg-[#0a0f3a] hover:bg-[#070b29] rounded-md py-2 font-medium text-xs text-white transition">Xem chi tiết</button>
             </a>

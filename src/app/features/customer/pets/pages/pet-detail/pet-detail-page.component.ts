@@ -64,6 +64,9 @@ export class PetDetailPageComponent {
         calendarDays.push({ 
           date: i, 
           isCurrent: i === this.todayDay() && this.month() === this.todayMonth() && this.year() === this.todayYear(), 
+          isSelected: this.selectedDateObj()?.getDate() === i &&
+            this.selectedDateObj()?.getMonth() === this.month() &&
+            this.selectedDateObj()?.getFullYear() === this.year(),
           events: dayEvents.length > 0 ? dayEvents : null
         });
       }
@@ -80,7 +83,7 @@ export class PetDetailPageComponent {
   readonly showGeneralNoteModal = signal<any>(false);
   readonly showDayModal = signal<any>(false);
   readonly dayModalMode = signal<any>('view');
-  readonly selectedDateObj = signal<any>(null);
+  readonly selectedDateObj = signal<any>((() => new Date())());
   readonly dayEventsData = signal<any>([]);
   readonly activeEventDetail = signal<any>(null);
   readonly showHistoryModal = signal<any>(false);
@@ -102,6 +105,7 @@ export class PetDetailPageComponent {
   readonly selectedColor = signal<any>("");
   readonly existingFiles = signal<any>([]);
   readonly markedDeletions = signal<any>([]);
+  readonly isProfileHidden = signal<boolean>(false);
 
   constructor() {
     // useEffect(..., [currentPetId])
@@ -258,6 +262,21 @@ export class PetDetailPageComponent {
 
     this.dayModalMode.set('view');
     this.showDayModal.set(true);
+  }
+
+  protected handleSelectDay(day: any) {
+    if (!day) return;
+    const selectedDate = new Date(this.year(), this.month(), day);
+    this.selectedDateObj.set(selectedDate);
+    this.dayEventsData.set(
+      this.eventsList().filter((event: any) => isEventInDate(event, day, this.month(), this.year())),
+    );
+    this.activeEventDetail.set(null);
+  }
+
+  protected handleOpenSelectedDay() {
+    const selectedDate = this.selectedDateObj() || this.calendarDate();
+    this.handleOpenDayModal(selectedDate.getDate());
   }
 
   protected handleStartCreateNoteInDay() {
@@ -627,5 +646,27 @@ export class PetDetailPageComponent {
   protected handle4() {
     if (this.dayModalMode() === 'edit') this.dayModalMode.set('view');
     else this.showDayModal.set(false);
+  }
+
+  protected handleToggleHideProfile() {
+    const nextState = !this.isProfileHidden();
+    this.isProfileHidden.set(nextState);
+
+    // Nếu muốn gọi xác nhận qua DecisionModalService:
+    /*
+    this.decisionModalService.confirmDelete({
+      message: nextState 
+        ? "Bạn có chắc chắn muốn ẩn hồ sơ thú cưng này?" 
+        : "Hiển thị lại hồ sơ thú cưng này?",
+      confirmLabel: nextState ? "Ẩn hồ sơ" : "Hiển thị",
+      onConfirm: () => this.isProfileHidden.set(nextState),
+    });
+    */
+  }
+
+  protected handleEditProfile() {
+    const petId = this.currentPetId();
+    // Điều hướng sang trang chỉnh sửa hồ sơ (điều chỉnh route theo cấu hình dự án của bạn)
+    this.navService.navigate(`/customer/pets/${petId}/edit`);
   }
 }

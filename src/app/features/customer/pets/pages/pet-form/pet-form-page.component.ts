@@ -75,54 +75,62 @@ export class PetFormPageComponent {
       const cleanup = untracked(() => {
         let active = true;
 
-        this.petApi.getMyPets()
-          .then((pets: any) => {
-            if (!active) return;
-            this.allPets.set(pets);
+        const petId = this.navService.params()['id'];
+        const requests = this.isEdit()
+          ? Promise.allSettled([
+              this.petApi.getMyPets(),
+              this.petApi.getPetDetails(petId),
+              this.petApi.getMedicalRecordsByPet(petId),
+            ])
+          : Promise.resolve([]);
 
-            if (this.isEdit()) {
-              const currentPet = pets.find((p: any) => p.id === this.navService.params()['id']);
-              if (currentPet) {
-                this.selectedSpeciesId.set(getSpeciesInputValue(currentPet));
+        requests.then((results: any) => {
+          if (!active) return;
 
-this.speciesOtherInput.set(
-  getSpeciesInputValue(currentPet) === 'other' &&
-  String(currentPet.species || currentPet.speciesName || currentPet.species_name || '').toLowerCase() !== 'khác'
-    ? currentPet.species || currentPet.speciesName || currentPet.species_name || ''
-    : ''
-);
+          if (!this.isEdit()) return;
 
-this.breedInput.set(currentPet.breed || currentPet.breedName || "");
-                if (currentPet.avatar) {
-                  this.avatarPreview.set(currentPet.avatar);
-                } else if (currentPet.name && (petImages as any)[currentPet.name]) {
-                  this.avatarPreview.set((petImages as any)[currentPet.name]);
-                }
+          const petsResult: any = results[0];
+          const petResult: any = results[1];
+          const recordsResult: any = results[2];
+          const storedPets = readStoredPets();
+          const pets = petsResult?.status === "fulfilled" ? petsResult.value : storedPets;
+          this.allPets.set(pets);
 
-                if (currentPet.medicalRecords) {
-                  this.medicalRecords.set(currentPet.medicalRecords);
-                }
-              }
-            }
-          })
-          .catch((error: any) => {
-            if (!active) return;
-            const storedPets = readStoredPets();
-            this.allPets.set(storedPets);
+          const currentPet = petResult?.status === "fulfilled"
+            ? petResult.value
+            : pets.find((p: any) => String(p.id) === String(petId) || String(p.pet_id) === String(petId));
 
-            if (this.isEdit()) {
-              const currentPet = storedPets.find((p: any) => p.id === this.navService.params()['id'] || String(p.pet_id) === String(this.navService.params()['id']));
-              if (currentPet) {
-                this.selectedSpeciesId.set(getSpeciesInputValue(currentPet));
-                this.breedInput.set(currentPet.breed || currentPet.breedName || "");
-                this.avatarPreview.set(currentPet.avatar || (currentPet.name && (petImages as any)[currentPet.name]) || null);
-                this.medicalRecords.set(currentPet.medicalRecords || []);
-                return;
-              }
-            }
+          if (currentPet) {
+            this.allPets.update((currentPets: any[]) => {
+              const existingIndex = currentPets.findIndex(
+                (pet: any) => String(pet.id) === String(petId) || String(pet.pet_id) === String(petId),
+              );
+              if (existingIndex < 0) return [currentPet, ...currentPets];
+              return currentPets.map((pet: any, index: number) => index === existingIndex ? { ...pet, ...currentPet } : pet);
+            });
+            this.selectedSpeciesId.set(getSpeciesInputValue(currentPet));
+            this.speciesOtherInput.set(
+              getSpeciesInputValue(currentPet) === "other" &&
+              String(currentPet.species || currentPet.speciesName || currentPet.species_name || "").toLowerCase() !== "khác"
+                ? currentPet.species || currentPet.speciesName || currentPet.species_name || ""
+                : "",
+            );
+            this.breedInput.set(currentPet.breed || currentPet.breedName || "");
+            this.avatarPreview.set(
+              currentPet.avatar ||
+              (currentPet.name && (petImages as any)[currentPet.name]) ||
+              null,
+            );
+            this.medicalRecords.set(
+              recordsResult?.status === "fulfilled"
+                ? recordsResult.value
+                : currentPet.medicalRecords || [],
+            );
+            return;
+          }
 
-            this.formError.set(error?.message || "Không thể tải hồ sơ thú cưng");
-          });
+          this.formError.set("Không tìm thấy hồ sơ thú cưng");
+        });
 
         return () => {
           active = false;
