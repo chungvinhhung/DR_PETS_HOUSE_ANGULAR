@@ -37,7 +37,7 @@
 <label class="form-field description"><span class="field-label">Mô tả sản phẩm</span><textarea [(ngModel)]="description" placeholder="Nhập mô tả chi tiết về sản phẩm..."></textarea></label></section>
 <section class="panel price"><h2>Giá bán</h2>@if (hasVariants) {<div class="price-summary"><b>Khoảng giá</b><strong>{{ priceRange }}</strong></div>} @else {<div class="single-price-fields"><label class="form-field"><span class="field-label">Giá bán (VNĐ) <b>*</b></span><span class="currency-input"><input type="number" (focus)="selectNumericInput($event)" min="1" step="1000" [(ngModel)]="variants[0].price" [class.input-invalid]="variantPriceInvalid(variants[0])" [attr.aria-invalid]="variantPriceInvalid(variants[0])" aria-label="Giá bán (VNĐ)"><span>đ</span></span>@if (variantPriceInvalid(variants[0])) {<small class="field-help-error">Nhập số nguyên > 0.</small>}</label><label class="form-field"><span class="field-label">Khuyến mại (%)</span><span class="currency-input"><input type="number" (focus)="selectNumericInput($event)" min="0" max="100" step="1" [(ngModel)]="variants[0].discount" [class.input-invalid]="variantDiscountInvalid(variants[0])" [attr.aria-invalid]="variantDiscountInvalid(variants[0])" aria-label="Khuyến mại (%)"><span>%</span></span>@if (variantDiscountInvalid(variants[0])) {<small class="field-help-error">Khuyến mại từ 0–100%.</small>}</label><label class="form-field"><span class="field-label">Giá sau khuyến mại (VNĐ)</span><span class="currency-input calculated-price"><output>{{ variants[0].price === null ? '—' : finalPrice(variants[0]).toLocaleString('vi-VN') }}</output>@if (variants[0].price !== null) {<span>đ</span>}</span></label></div>}</section></div>
 <div class="right-column"><section class="panel status"><h2>Trạng thái sản phẩm</h2><div class="status-row"><button type="button" class="switch" [class.on]="active" (click)="setProductActive(!active)" [attr.aria-pressed]="active" aria-label="Đổi trạng thái sản phẩm"><span></span></button><span>{{active?'Hoạt động':'Tạm ngưng'}}</span></div></section>
-<section class="panel photos"><h2>Hình ảnh</h2><label class="upload"><input type="file" hidden multiple accept=".jpg,.jpeg,.png" (change)="onImagesSelected($event)"><img class="cloud" src="/assets/admin-product/icon-upload.svg" alt="">Tải lên ảnh sản phẩm<small>Hỗ trợ JPG, PNG (Tối đa 10 ảnh, 5MB/ảnh)</small></label>@if (images.length > 0) {
+<section class="panel photos"><h2>Hình ảnh</h2><label class="upload"><input type="file" hidden multiple accept=".jpg,.jpeg,.png,.webp" (change)="onImagesSelected($event)"><img class="cloud" src="/assets/admin-product/icon-upload.svg" alt="">Tải lên ảnh sản phẩm<small>Hỗ trợ JPG, PNG, WEBP (Tối đa 10 ảnh, 5MB/ảnh)</small></label>@if (images.length > 0) {
   <div class="previews">
     @for (photo of images; track photo.id) {
       <div class="product-thumbnail" [class.product-thumbnail--primary]="primaryImageId === photo.id">
@@ -47,7 +47,7 @@
           <span class="primary-image-badge">Ảnh chính</span>
         }
         <input #replaceImageInput type="file" class="file-input-hidden"
-          accept=".jpg,.jpeg,.png"
+          accept=".jpg,.jpeg,.png,.webp"
           [attr.aria-label]="'Chọn ảnh thay thế cho ảnh sản phẩm ' + ($index + 1)"
           (change)="replaceProductImage($event, photo.id)">
         <div class="product-thumbnail__actions">
@@ -81,7 +81,7 @@
   </div>
 }</section></div></div>
 @if (hasVariants) {<section class="panel variant-panel"><h2>Biến thể sản phẩm</h2><button type="button" class="btn-outline add" (click)="addVariant()" [disabled]="saving"><img class="btn-icon add-icon" src="/assets/admin-product/icon-add.svg" alt="">Thêm biến thể</button><div class="table-scroll"><table><thead><tr><th>Ảnh</th><th>Biến thể</th><th>SKU</th><th>Giá bán (VNĐ)</th><th>Khuyến mại (%)</th><th>Giá sau khuyến mại (VNĐ)</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>@for(v of variants;track $index){<tr><td class="variant-image-cell">
-  <input #variantImageInput class="file-input-hidden" type="file" accept=".jpg,.jpeg,.png"
+  <input #variantImageInput class="file-input-hidden" type="file" accept=".jpg,.jpeg,.png,.webp"
     [attr.aria-label]="'Tải lên hoặc thay ảnh cho biến thể ' + ($index + 1)"
     (change)="onVariantImageSelected($event, v)">
   <button type="button" class="image-picker variant-image-picker"
