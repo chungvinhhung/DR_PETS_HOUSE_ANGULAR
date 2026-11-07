@@ -12,7 +12,7 @@ import { getRelatedPolicies } from '../data/policy-data';
   imports: [CustomerLinkDirective],
   templateUrl: './policy-related-sidebar.component.html',
   host: {
-    'class': 'h-[630px] w-[330px] shrink-0 rounded-[12px] bg-white px-6 pt-6',
+    'class': 'w-full shrink-0 rounded-[12px] bg-white px-6 pb-6 pt-6 lg:h-[630px] lg:w-[330px] lg:pb-0',
     'data-node-id': '3102:10766',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,

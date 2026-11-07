@@ -11,7 +11,7 @@ import { PolicySectionComponent } from './policy-section.component';
   imports: [PolicySectionComponent],
   templateUrl: './policy-article.component.html',
   host: {
-    'class': 'policy-article w-[813px] shrink-0 rounded-[12px] bg-white px-8 pb-8 pt-6',
+    'class': 'policy-article w-full min-w-0 rounded-[12px] bg-white px-5 pb-8 pt-6 sm:px-8 lg:w-[813px] lg:shrink',
     'data-node-id': '3102:10676',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,

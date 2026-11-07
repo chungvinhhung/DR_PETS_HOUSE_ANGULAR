@@ -12,7 +12,7 @@ import { CustomerIconComponent } from '../../../../../shared/customer/components
   imports: [CategoryIconComponent, CustomerIconComponent],
   templateUrl: './article.component.html',
   host: {
-    'class': 'w-[813px] rounded-[12px] bg-white px-8 pb-8 pt-6',
+    'class': 'w-full rounded-[12px] bg-white px-5 pb-8 pt-6 sm:px-8',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
