@@ -17,7 +17,8 @@
   <div class="flex items-start justify-between gap-2">
     <div class="min-w-0">
       <h3 class="truncate text-[20px] font-bold leading-7 text-[#18181b]">{{ pet().name }}</h3>
-      <p class="mt-0.5 truncate text-[14px] leading-5 text-[#52525b]">{{ subtitle() }}</p>
+      <p class="mt-0.5 truncate text-[14px] leading-5 text-[#52525b]">{{ pet().breed || 'Chưa phân loại' }}</p>
+      <p class="mt-0.5 truncate text-[14px] leading-5 text-[#52525b]">{{ ageText() }}</p>
     </div>
     <app-gender-icon [gender]="pet().gender" className="mt-1 h-5 w-5 shrink-0 text-[#52525b]" />
   </div>
@@ -26,7 +27,7 @@
     <p [class]="`mt-0.5 text-[14px] leading-5 ${checkup() === 'Chưa khám' ? 'italic text-[#a1a1aa]' : 'text-[#27272a]'}`">{{ checkup() }}</p>
   </div>
   <a
-    [appCustomerLink]="`/thu-cung-cua-toi/${pet().id}`"
+    [appCustomerLink]="`/thu-cung-cua-toi/${petId()}`"
     class="mt-4 flex h-8 w-full items-center justify-center rounded-md bg-[#06105a] text-[13px] font-medium text-white transition hover:bg-[#0d1a7a]"
   >Xem chi tiết</a>
 </div>

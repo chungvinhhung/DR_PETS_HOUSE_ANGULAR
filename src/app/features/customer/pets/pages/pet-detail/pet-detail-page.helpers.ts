@@ -35,10 +35,31 @@ export const readFallbackPets = () => {
   }
 };
 
+export const extractShortIdFromSlug = (slugOrId: any) => {
+  const raw = String(slugOrId || '').trim();
+  if (!raw) return '';
+  // Nếu có dấu gạch ngang (vd: "bong-183") thì lấy phần đuôi sau dấu "-" cuối cùng
+  return raw.includes('-') ? raw.split('-').pop() || raw : raw;
+};
+
+export const matchPetBySlugOrId = (pets: any[], slugOrId: any) => {
+  if (!Array.isArray(pets) || !slugOrId) return null;
+  const target = String(slugOrId).trim();
+  const shortId = extractShortIdFromSlug(target);
+
+  return (
+    pets.find((item: any) => {
+      const fullId = String(item?.id || item?.pet_id || item?._id || '');
+      return fullId === target || (shortId && fullId.endsWith(shortId));
+    }) || null
+  );
+};
+
 export const getFallbackPet = (petId: any) => {
   const pets = readFallbackPets();
-  return pets.find((item: any) => item.id === petId || String(item.pet_id) === String(petId)) || pets[0];
+  return matchPetBySlugOrId(pets, petId) || pets[0];
 };
+
 
 export const syncFallbackMedicalRecords = (petId: any, records: any) => {
   const pets = readFallbackPets();

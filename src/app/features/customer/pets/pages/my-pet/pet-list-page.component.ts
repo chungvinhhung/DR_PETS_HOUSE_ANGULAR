@@ -7,7 +7,7 @@ import { GenderIconComponent } from './gender-icon.component';
 import { ReactStyleDirective } from '../../../../../shared/customer/directives/react-style.directive';
 import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
 import { MOCK_PETS } from '../../data/mock-pets';
-import { petImages, readStoredPets, getHealthStatusColor, parseAgeToDays, calculateAge, formatAgeText, getLatestCheckupDate, PET_STATUS_FILTERS } from './pet-list-page.helpers';
+import { petImages, readStoredPets, getHealthStatusColor, getPetStatusLabel, getLatestCheckupDate, getPetAgeText, getPetId, sortPets, PET_STATUS_FILTERS, toPetSlug } from './pet-list-page.helpers';
 
 /**
  * PetListPage — chuyển từ React: src/pages/Pet/MyPetPage.jsx
@@ -30,10 +30,13 @@ export class PetListPageComponent {
   // --- Dữ liệu & hàm dùng trong template ---
   protected readonly PET_STATUS_FILTERS: any = PET_STATUS_FILTERS;
   protected readonly getHealthStatusColor: any = getHealthStatusColor;
+  protected readonly getPetStatusLabel: any = getPetStatusLabel;
   protected readonly petImages: any = petImages;
-  protected readonly formatAgeText: any = formatAgeText;
-  protected readonly calculateAge: any = calculateAge;
+  protected readonly getPetAgeText: any = getPetAgeText;
+  protected readonly getPetId: any = getPetId;
   protected readonly getLatestCheckupDate: any = getLatestCheckupDate;
+  protected readonly toPetSlug = toPetSlug;
+
 
   // --- Giá trị tính toán (computed) ---
   readonly counts = computed<any>(() => {
@@ -42,7 +45,7 @@ export class PetListPageComponent {
         status === "Tất cả"
           ? this.pets().length
           : this.pets().filter((pet: any) => {
-              const displayStatus = pet.healthStatus === "Khỏe mạnh" ? "Bình thường" : (pet.healthStatus || "Bình thường");
+              const displayStatus = getPetStatusLabel(pet);
               return displayStatus === status;
             }).length;
       return acc;
@@ -51,7 +54,7 @@ export class PetListPageComponent {
   readonly filteredPets = computed<any>(() => {
     const normalizedSearch = this.searchQuery().trim().toLocaleLowerCase("vi");
     const result = this.pets().filter((pet: any) => {
-      const displayStatus = pet.healthStatus === "Khỏe mạnh" ? "Bình thường" : (pet.healthStatus || "Bình thường");
+      const displayStatus = getPetStatusLabel(pet);
       const matchesFilter = this.filterStatus() === "Tất cả" || displayStatus === this.filterStatus();
       const matchesSearch =
         !normalizedSearch ||
@@ -63,11 +66,9 @@ export class PetListPageComponent {
       return matchesFilter && matchesSearch;
     });
 
-    if (this.sortBy() === "age") {
-      return [...result].sort((a: any, b: any) => Number(parseAgeToDays(b.age)) - Number(parseAgeToDays(a.age)));
-    }
-
-    return [...result].sort((a: any, b: any) => a.name.localeCompare(b.name, "vi"));
+    const rawSort = this.sortBy();
+    const currentSort = typeof rawSort === 'object' && rawSort?.target ? rawSort.target.value : rawSort;
+    return sortPets(result, currentSort);
   });
 
   // --- Trạng thái (signal = useState / useRef) ---
@@ -92,14 +93,7 @@ export class PetListPageComponent {
               if (active) {
                 const normalizedPets = items.map((pet: any) => ({
                   ...pet,
-                  healthStatus:
-                    pet.healthStatus === 'NORMAL' ||
-                    pet.healthStatus === 'HEALTHY' ||
-                    pet.healthStatus === 'Khỏe mạnh'
-                      ? 'Bình thường'
-                      : pet.healthStatus === 'SICK' || pet.healthStatus === 'ILL'
-                        ? 'Bị bệnh'
-                        : pet.healthStatus || 'Bình thường',
+                  healthStatus: getPetStatusLabel(pet),
                 }));
 
                 this.pets.set(normalizedPets);

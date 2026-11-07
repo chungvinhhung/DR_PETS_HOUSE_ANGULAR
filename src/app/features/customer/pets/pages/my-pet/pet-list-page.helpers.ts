@@ -31,32 +31,105 @@ export const readStoredPets = () => {
 };
 
 export const getHealthStatusColor = (status: any) => {
-  const safeStatus = status === "Khỏe mạnh" ? "Bình thường" : status;
+  const safeStatus = getPetStatusLabel({ healthStatus: status });
   switch (safeStatus) {
     case "Đang điều trị":
-      return { bg: "#fef0c7", dot: "#d97706", text: "#b45309" }; 
-    case "Bình thường":
-      return { bg: "#dcfce3", dot: "#22c55e", text: "#15803d" }; 
-    case "Có bệnh nền":
-      return { bg: "#f3e8ff", dot: "#6366f1", text: "#4338ca" }; 
+      return { bg: "#fef0c7cc", dot: "#d97706", text: "#b45309" }; 
+    case "Khỏe mạnh":
+      return { bg: "#dcfce3cc", dot: "#22c55e", text: "#15803d" }; 
     case "Cần tái khám":
-      return { bg: "#fee2e2", dot: "#ef4444", text: "#b91c1c" }; 
+      return { bg: "#fee2e2cc", dot: "#ef4444", text: "#b91c1c" }; 
     default:
-      return { bg: "#dcfce3", dot: "#22c55e", text: "#15803d" };
+      return { bg: "#dcfce3cc", dot: "#22c55e", text: "#15803d" };
   }
 };
 
-export const parseAgeToDays = (ageString: any) => {
-  if (!ageString) return 0;
-  const str = ageString.toLowerCase();
-  const num = parseFloat(str); 
+
+export const getPetStatusLabel = (pet: any = {}) => {
+  const status = String(typeof pet === "string" ? pet : pet.healthStatus ?? pet.health_status ?? "").trim().toLowerCase();
+  if (["đang điều trị", "đang dieu tri", "treating", "treatment", "sick", "ill"].includes(status)) {
+    return "Đang điều trị";
+  }
+  if (["cần tái khám", "can tai kham", "need_recheck", "recheck"].includes(status)) {
+    return "Cần tái khám";
+  }
+  return "Khỏe mạnh";
+};
+
+export const parseAgeToDays = (ageValue: any) => {
+  if (ageValue === undefined || ageValue === null || ageValue === '') return 0;
+  
+  if (typeof ageValue === 'number') return ageValue * 365;
+
+  const str = String(ageValue).trim().toLowerCase();
+
+  // Xử lý ngày sinh dạng DD/MM/YYYY hoặc ISO.
+  const birthDate = str.includes("/")
+    ? (() => {
+        const parts = str.split("/");
+        return parts.length === 3 ? new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0])) : null;
+      })()
+    : /^\d{4}-\d{2}-\d{2}/.test(str)
+      ? new Date(str)
+      : null;
+  if (birthDate && !Number.isNaN(birthDate.getTime())) {
+    return Math.max(0, Math.floor((Date.now() - birthDate.getTime()) / (1000 * 60 * 60 * 24)));
+  }
+
+  // Cộng dồn từng phần, vd. "2 tuổi 3 tháng", "1 năm 2 tuần"
+  const UNIT_DAYS: Record<string, number> = { "tuổi": 365, "năm": 365, "tháng": 30, "tuần": 7, "ngày": 1 };
+  const parts = [...str.matchAll(/(\d+(?:[.,]\d+)?)\s*(tuổi|năm|tháng|tuần|ngày)/g)];
+  if (parts.length) {
+    return parts.reduce((total, [, value, unit]) => total + parseFloat(value.replace(",", ".")) * UNIT_DAYS[unit], 0);
+  }
+
+  const num = parseFloat(str);
   if (isNaN(num)) return 0;
 
-  if (str.includes("tuổi") || str.includes("năm")) return num * 365;
-  if (str.includes("tháng")) return num * 30;
-  if (str.includes("ngày")) return num;
-  return num; 
+  // Trường hợp chuỗi chỉ có số (ví dụ "3")
+  return num * 365;
 };
+
+/** Id dùng trên URL chi tiết / chỉnh sửa: /thu-cung-cua-toi/:id */
+export const getPetId = (pet: any = {}) => String(pet.id || pet.pet_id || pet.petId || "");
+
+/** Số ngày tuổi, null nếu chưa có thông tin tuổi / ngày sinh. */
+export const getPetAgeDays = (pet: any = {}) => {
+  const value = pet.age !== undefined && pet.age !== null && pet.age !== "" ? pet.age : pet.birthDate;
+  if (value === undefined || value === null || value === "") return null;
+  const days = Number(parseAgeToDays(value));
+  return Number.isFinite(days) ? days : null;
+};
+
+export const getPetAgeText = (pet: any = {}) =>
+  formatAgeText(pet.age) || (pet.birthDate ? calculateAge(pet.birthDate) : "Chưa rõ");
+
+const comparePetName = (a: any, b: any) =>
+  String(a.name ?? "").trim().localeCompare(String(b.name ?? "").trim(), "vi", { sensitivity: "base", numeric: true });
+
+export const PET_SORT_OPTIONS = [
+  { value: "name", label: "Tên A-Z" },
+  { value: "name-desc", label: "Tên Z-A" },
+  { value: "age-asc", label: "Tuổi tăng dần" },
+  { value: "age-desc", label: "Tuổi giảm dần" },
+];
+
+export const sortPets = (pets: any[], sortBy: string) => {
+  const sorted = [...pets];
+  if (sortBy === "name-desc" || sortBy === "z-a") return sorted.sort((a, b) => comparePetName(b, a));
+  if (sortBy === "age-asc" || sortBy === "age-desc" || sortBy === "age") {
+    const direction = sortBy === "age-asc" ? 1 : -1;
+    return sorted.sort((a, b) => {
+      const ageA = getPetAgeDays(a);
+      const ageB = getPetAgeDays(b);
+      // Thú cưng chưa rõ tuổi luôn nằm cuối danh sách
+      if (ageA === null || ageB === null) return ageA === ageB ? comparePetName(a, b) : ageA === null ? 1 : -1;
+      return (ageA - ageB) * direction || comparePetName(a, b);
+    });
+  }
+  return sorted.sort(comparePetName);
+};
+
 
 export const calculateAge = (birthDateString: any) => {
   if (!birthDateString) return "Chưa rõ";
@@ -117,5 +190,44 @@ export const getLatestCheckupDate = (pet: any) => {
   return pet.lastCheckup || "Chưa khám";
 };
 
-export const PET_STATUS_FILTERS = ["Tất cả", "Bình thường", "Đang điều trị", "Có bệnh nền", "Cần tái khám"];
+export const PET_STATUS_FILTERS = ["Tất cả", "Khỏe mạnh", "Đang điều trị", "Cần tái khám"];
+
+/**
+ * Chuyển tên + 3 ký tự cuối của ID: { name: "Bông", id: "...6510183" } -> "bong-183"
+ */
+export const toPetSlug = (pet: any = {}) => {
+  const id = getPetId(pet);
+  const rawName = String(pet.name || 'thu-cung')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  if (!id) return rawName || 'chi-tiet';
+  const shortId = id.slice(-3); // Lấy 3 ký tự cuối của ID
+  return `${rawName || 'pet'}-${shortId}`;
+};
+
+/**
+ * Tìm lại thú cưng trong danh sách của tài khoản từ slug trên URL
+ */
+export const matchPetBySlug = (pets: any[], slugParam: string) => {
+  if (!slugParam || !Array.isArray(pets)) return null;
+
+  // 1. Khớp chính xác toàn bộ ID gốc (nếu dùng link cũ)
+  const exactIdMatch = pets.find((p) => getPetId(p) === slugParam);
+  if (exactIdMatch) return exactIdMatch;
+
+  // 2. Khớp đúng cả slug "ten-xxx"
+  const exactSlugMatch = pets.find((p) => toPetSlug(p) === slugParam);
+  if (exactSlugMatch) return exactSlugMatch;
+
+  // 3. Dự phòng: đối chiếu 3 ký tự cuối sau dấu gạch ngang cuối cùng
+  const shortId = slugParam.split('-').pop() || '';
+  return pets.find((p) => getPetId(p).endsWith(shortId)) || null;
+};
 

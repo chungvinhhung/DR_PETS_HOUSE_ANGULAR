@@ -39,14 +39,14 @@ export function normalizePet(pet: any = {}) {
   };
 
   return {
-    id: String(pet.pet_id ?? pet.id ?? ""),
-    pet_id: pet.pet_id ?? pet.id,
+    id: String(pet.pet_id ?? pet.petId ?? pet.id ?? pet._id ?? ""),
+    pet_id: pet.pet_id ?? pet.petId ?? pet.id ?? pet._id,
     speciesId: pet.species_id ?? pet.speciesId ?? pet.species?.species_id ?? "",
     breedId: pet.breed_id ?? pet.breedId ?? pet.breed?.breed_id ?? "",
     name: pet.pet_name ?? pet.name ?? "",
     species: pet.species?.species_name ?? pet.species_name ?? pet.species ?? "",
     breed: pet.breed?.breed_name ?? pet.breed_name ?? pet.breed ?? "",
-    age: pet.age ?? "",
+    age: pet.age ?? pet.ageYears ?? pet.age_years ?? "",
     gender: pet.gender ?? "",
     weight: pet.weight_kg ? `${pet.weight_kg} kg` : pet.weight ?? "",
     weightKg: pet.weight_kg ?? null,

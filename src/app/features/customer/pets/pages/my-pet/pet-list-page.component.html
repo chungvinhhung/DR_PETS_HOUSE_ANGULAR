@@ -21,11 +21,11 @@
     app-my-pet-search-and-sort
     [searchInput]="searchInput()"
     (onSearchInputChange)="searchInput.set($event)"
-    (onSearch)="searchQuery.set(searchInput().trim())"
+    (onSearch)="searchQuery.set(searchInput())"
     (onClearSearch)="handle1()"
     [sortBy]="sortBy()"
     (onSortChange)="sortBy.set($event)"
-  ></form>
+></form>
   <a appCustomerLink="/thu-cung-cua-toi/them-moi" class="shrink-0">
     <button class="flex h-[52px] items-center gap-2 rounded-[42px] bg-[#fff176] px-5 text-[14px] font-bold text-[#031635] shadow-elevation transition hover:bg-[#fdd835]">
       <span class="text-xl leading-none">+</span> Tạo mới</button>
@@ -41,53 +41,94 @@
   <div class="py-12 text-center text-slate-500">Đang tải hồ sơ thú cưng...</div>
 } @else {
   <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-    @for (pet of filteredPets(); track $index) {
-      @let displayStatus = pet.healthStatus === 'Khỏe mạnh' ? 'Bình thường' : (pet.healthStatus || 'Bình thường');
+    @for (pet of filteredPets(); track getPetId(pet) || $index) {
+      @let displayStatus = pet.healthStatus || 'Khỏe mạnh';
       @let statusColor = getHealthStatusColor(displayStatus);
       @let currentPetImage = pet.avatar || (pet.name ? petImages[pet.name] : null);
-      @let displayAge = formatAgeText(pet.age) || (pet.birthDate ? calculateAge(pet.birthDate) : '');
+      @let displayAge = getPetAgeText(pet);
       @let displayCheckup = getLatestCheckupDate(pet);
-      <div class="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition flex flex-col">
-        <div class="relative h-40 bg-slate-100 flex items-center justify-center overflow-hidden">
+
+      <div>
+           <a [appCustomerLink]="`/thu-cung-cua-toi/${toPetSlug(pet)}`"
+            class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow font-sans cursor-pointer"
+          >
+        <!-- Phần hình ảnh & Badge trạng thái góc trên bên phải -->
+        <div class="relative w-full h-52 bg-slate-100 overflow-hidden">
           @if (currentPetImage) {
             <img [attr.src]="currentPetImage" [attr.alt]="pet.name" class="w-full h-full object-cover" />
           } @else {
-            <div class="text-5xl text-slate-300">🐾</div>
+            <div class="w-full h-full flex items-center justify-center text-5xl text-slate-300">
+              🐾
+            </div>
           }
+
+          <!-- Badge trạng thái góc phải trên -->
           <div
-            class="absolute top-2 right-2 flex items-center gap-1 px-2.5 py-1 rounded-full shadow-sm"
-            [appStyle]="{ backgroundColor: statusColor.bg }"
+            class="absolute top-3 right-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full backdrop-blur-xs shadow-xs text-[13px] font-semibold"
+            [style.background-color]="statusColor.bg"
+            [style.color]="statusColor.text"
           >
-            <div class="w-1.5 h-1.5 rounded-full" [appStyle]="{ backgroundColor: statusColor.dot }"></div>
-            <span class="text-[10px] font-semibold" [appStyle]="{ color: statusColor.text }">{{ displayStatus }}</span>
+            <span
+              class="h-2 w-2 rounded-full"
+              [style.background-color]="statusColor.dot"
+            ></span>
+            <span>{{ displayStatus }}</span>
           </div>
         </div>
-        <div class="flex-1 p-4 flex flex-col">
-          <div class="mb-3 flex items-start justify-between">
+
+        <!-- Phần nội dung thẻ -->
+        <div class="p-5 flex flex-col flex-1">
+          
+          <!-- Hàng Tên thú cưng + Icon giới tính (♂ / ♀) bên phải -->
+          <div class="flex items-start justify-between gap-2">
             <div>
-              <h3 class="text-base font-bold text-slate-900">{{ pet.name }}</h3>
-              <p class="text-xs text-slate-500 mt-0.5">{{ pet.breed }} • {{ displayAge }}</p>
+              <h3 class="text-[20px] leading-snug font-bold text-slate-900 tracking-tight">
+                {{ pet.name }}
+              </h3>
+              <p class="text-[14px] text-slate-500 font-normal mt-0.5">{{ pet.breed || 'Chưa phân loại' }}</p>
+              <p class="text-[14px] text-slate-500 font-normal mt-0.5">{{ displayAge }}</p>
             </div>
-            <div class="flex items-center gap-1.5">
-              <app-species-icon [species]="pet.species" [gender]="pet.gender" />
-              <app-gender-icon [gender]="pet.gender" />
+
+            <!-- Icon giới tính đực / cái bên phải (thay cho icon dấu chân cũ) -->
+            <div class="text-slate-600 pt-0.5 flex-shrink-0" [title]="pet.gender">
+              @if (pet.gender === '♀' || pet.gender === 'Cái' || pet.gender === 'FEMALE') {
+                <!-- Icon Giống cái ♀ -->
+                <svg xmlns="http://w3.org" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="9" r="5.5" />
+                  <path d="M12 14.5v6.5" />
+                  <path d="M9 18h6" />
+                </svg>
+              } @else {
+                <!-- Icon Giống đực ♂ -->
+                <svg xmlns="http://w3.org" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="10" cy="14" r="5.5" />
+                  <path d="M14 10l6-6" />
+                  <path d="M15 4h5v5" />
+                </svg>
+              }
             </div>
           </div>
-          <div class="mb-4 pb-3 border-t border-slate-100 pt-3">
-            <p class="text-[11px] text-slate-400 mb-0.5">Khám gần nhất</p>
-            <p [class]="`text-xs font-medium ${displayCheckup === 'Chưa khám' ? 'text-slate-400 italic' : 'text-slate-700'}`">{{ displayCheckup }}</p>
+
+          <!-- Đường kẻ ngang ngăn cách -->
+          <hr class="my-4 border-slate-100" />
+
+          <!-- Thông tin khám gần nhất -->
+          <div class="mb-5">
+            <p class="text-[13px] text-slate-400 font-normal">Khám gần nhất</p>
+            <p class="text-[15px] font-medium text-slate-800 mt-0.5">
+              {{ displayCheckup || 'Chưa khám' }}
+            </p>
           </div>
-          <div class="flex flex-col gap-2 mt-auto">
-            <!-- <a [appCustomerLink]="`/thu-cung-cua-toi/${pet.id}/chinh-sua`" class="w-full">
-              <button class="w-full bg-[#fcd34d] hover:bg-[#fbbf24] rounded-md py-2 font-medium text-xs text-slate-900 transition">Chỉnh sửa hồ sơ</button>
-            </a> -->
-            <a [appCustomerLink]="`/thu-cung-cua-toi/${pet.id}`" class="w-full">
-              <button class="w-full bg-[#0a0f3a] hover:bg-[#070b29] rounded-md py-2 font-medium text-xs text-white transition">Xem chi tiết</button>
-            </a>
-          </div>
+
+          <!-- Nút Xem chi tiết duy nhất màu xanh navy đậm -->
+          <a [appCustomerLink]="`/thu-cung-cua-toi/${toPetSlug(pet)}`" class="w-full">
+                  <button class="w-full bg-[#0a0f3a] hover:bg-[#070b29] rounded-md py-2 font-medium text-xs text-white transition">Xem chi tiết</button>
+                </a>
         </div>
+      </a>
       </div>
     }
+            
   </div>
 }
 @if (!isLoading() && filteredPets().length === 0) {

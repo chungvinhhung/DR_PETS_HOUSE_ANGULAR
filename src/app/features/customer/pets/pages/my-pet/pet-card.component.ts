@@ -3,9 +3,9 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { GenderIconComponent } from './gender-icon.component';
 import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
 import {
-  calculateAge,
-  formatAgeText,
   getLatestCheckupDate,
+  getPetAgeText,
+  getPetId,
   getPetBadgeColor,
   getPetStatusLabel,
   isPetHidden,
@@ -32,10 +32,8 @@ export class PetCardComponent {
     const pet = this.pet();
     return pet.avatar || (pet.name ? (petImages as any)[pet.name] : null);
   });
-  readonly ageText = computed(() => {
-    const pet = this.pet();
-    return formatAgeText(pet.age) || (pet.birthDate ? calculateAge(pet.birthDate) : '');
-  });
+  readonly ageText = computed(() => getPetAgeText(this.pet()));
+  readonly petId = computed(() => getPetId(this.pet()));
   readonly subtitle = computed(() => [this.pet().breed, this.ageText()].filter(Boolean).join(' • '));
   readonly checkup = computed(() => getLatestCheckupDate(this.pet()));
 }

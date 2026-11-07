@@ -27,12 +27,13 @@
     <path d="M1 1h16M1 6h10M1 11h5" stroke="currentColor" stroke-width="1.5" />
   </svg>
   <select
-    [selectValue]="sortBy()"
-    (change)="onSortChange.emit($any($event).target.value)"
+  [selectValue]="sortBy()"
+  (change)="onSortChange.emit($any($event.target).value)"
     class="w-full cursor-pointer appearance-none bg-transparent text-center text-[14px] font-medium outline-none"
     aria-label="Sắp xếp thú cưng"
   >
-    <option value="name">Tên A-Z</option>
-    <option value="age">Tuổi giảm dần</option>
+    @for (option of PET_SORT_OPTIONS; track option.value) {
+      <option [value]="option.value">{{ option.label }}</option>
+    }
   </select>
 </label>

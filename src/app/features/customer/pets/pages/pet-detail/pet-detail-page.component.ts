@@ -7,7 +7,7 @@ import { PetApiService } from '../../../../../core/customer/services/api/pet-api
 import { ReactStyleDirective } from '../../../../../shared/customer/directives/react-style.directive';
 import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
 import { INITIAL_PET_EVENTS } from '../../data/pet-events';
-import { petImages, getFallbackPet, syncFallbackMedicalRecords, calculateAge, formatAgeText, ACCEPTED_UPLOAD_FILE_TYPES, MAX_UPLOAD_FILE_SIZE, createUploadedFile, getFileUrl, isImageFile, getUploadFiles, getColorClass, convertTimeToInputFormat, formatTimeToSACH, toDateKey, isEventInDate } from './pet-detail-page.helpers';
+import { petImages, matchPetBySlugOrId, getFallbackPet, syncFallbackMedicalRecords, calculateAge, formatAgeText, ACCEPTED_UPLOAD_FILE_TYPES, MAX_UPLOAD_FILE_SIZE, createUploadedFile, getFileUrl, isImageFile, getUploadFiles, getColorClass, convertTimeToInputFormat, formatTimeToSACH, toDateKey, isEventInDate } from './pet-detail-page.helpers';
 
 const lunaImg = '/assets/customer/images/pets/luna.jpg';
 const patternBg = '/assets/customer/images/pets/patterntaddnote.jpg';
@@ -41,6 +41,8 @@ export class PetDetailPageComponent {
 
   // --- Giá trị tính toán (computed) ---
   readonly currentPetId = computed<any>(() => this.navService.params().id || this.navService.params().petId);
+  readonly routeParamId = computed<any>(() => this.navService.params().id || this.navService.params().petId);
+  readonly resolvedPetId = signal<string>('');
   readonly MAX_FILES = computed<any>(() => 3);
   readonly currentPetImage = computed<any>(() => this.pet()?.avatar || (this.pet()?.name ? (petImages as any)[this.pet().name] : lunaImg));
   readonly displayAge = computed<any>(() => formatAgeText(this.pet()?.age) || (this.pet()?.birthDate ? calculateAge(this.pet().birthDate) : "3 tuổi"));
@@ -110,47 +112,65 @@ export class PetDetailPageComponent {
   constructor() {
     // useEffect(..., [currentPetId])
     effect((onCleanup: any) => {
-      this.currentPetId();
+      const slugOrId = this.routeParamId();
       const cleanup = untracked(() => {
         let active = true;
-        const fallbackPet = getFallbackPet(this.currentPetId());
+        const fallbackPet = getFallbackPet(slugOrId);
 
         this.pet.set(fallbackPet);
         this.medicalHistoryList.set(fallbackPet?.medicalRecords || []);
         this.petLoadError.set("");
+        const fallbackId = fallbackPet?.id || fallbackPet?.pet_id || fallbackPet?._id || "";
+        this.resolvedPetId.set(String(fallbackId || slugOrId || ""));
 
-        Promise.allSettled([
-          this.petApi.getPetDetails(this.currentPetId()),
-          this.petApi.getMedicalRecordsByPet(this.currentPetId()),
-          this.petApi.getHealthDiariesByPet(this.currentPetId()),
-          this.petApi.getRemindersByPet(this.currentPetId()),
-        ]).then(([petResult, recordsResult, diariesResult, remindersResult]: any) => {
+        (async () => {
+          let realPetId = String(slugOrId || fallbackId || "");
+          const isDirectPetId =
+            /^pet[_-]/i.test(realPetId) ||
+            /^[0-9a-f]{24}$/i.test(realPetId) ||
+            /^\d+$/.test(realPetId);
+
+          if (realPetId && !isDirectPetId) {
+            try {
+              const myPets = await this.petApi.getMyPets();
+              const matched = matchPetBySlugOrId(myPets, realPetId);
+              if (matched) {
+                realPetId = String(matched.id || matched.pet_id || matched._id || realPetId);
+                if (active) this.pet.update((current: any) => ({ ...current, ...matched }));
+              }
+            } catch {
+              if (fallbackId) realPetId = String(fallbackId);
+            }
+          }
+
+          if (!active || !realPetId) return;
+          this.resolvedPetId.set(realPetId);
+
+          const results = await Promise.allSettled([
+            this.petApi.getPetDetails(realPetId),
+            this.petApi.getMedicalRecordsByPet(realPetId),
+            this.petApi.getHealthDiariesByPet(realPetId),
+            this.petApi.getRemindersByPet(realPetId),
+          ]);
           if (!active) return;
 
+          const [petResult, recordsResult, diariesResult, remindersResult]: any = results;
           if (petResult.status === "fulfilled") {
             this.pet.update((current: any) => ({ ...current, ...petResult.value }));
           }
-
           if (recordsResult.status === "fulfilled") {
             this.medicalHistoryList.set(recordsResult.value);
           }
-
           if (diariesResult.status === "fulfilled" || remindersResult.status === "fulfilled") {
             const diaryEvents = diariesResult.status === "fulfilled" ? diariesResult.value : [];
             const reminderEvents = remindersResult.status === "fulfilled" ? remindersResult.value : [];
             const apiEvents = [...diaryEvents, ...reminderEvents];
             if (apiEvents.length) this.eventsList.set(apiEvents);
           }
-
-          if (
-            petResult.status === "rejected" &&
-            recordsResult.status === "rejected" &&
-            diariesResult.status === "rejected" &&
-            remindersResult.status === "rejected"
-          ) {
+          if (results.every((result: any) => result.status === "rejected")) {
             this.petLoadError.set("Không thể tải hồ sơ mới nhất, đang hiển thị dữ liệu dự phòng.");
           }
-        });
+        })();
 
         return () => {
           active = false;
@@ -236,7 +256,7 @@ export class PetDetailPageComponent {
     };
     try {
       const savedEvent = await this.petApi.createHealthDiary({
-        petId: this.currentPetId(),
+        petId: this.resolvedPetId(),
         entryDate: this.noteDate(),
         entryTime: this.noteTime() || null,
         title: this.noteContent(),
@@ -319,7 +339,7 @@ export class PetDetailPageComponent {
       if (this.activeEventDetail()?.sourceType === "diary") {
         try {
           const savedEvent = await this.petApi.updateHealthDiary(this.editingNoteId(), {
-            petId: this.currentPetId(),
+            petId: this.resolvedPetId(),
             entryDate: targetDateKey,
             entryTime: this.noteTime() || null,
             title: this.noteContent(),
@@ -364,7 +384,7 @@ export class PetDetailPageComponent {
       };
       try {
         const savedEvent = await this.petApi.createHealthDiary({
-          petId: this.currentPetId(),
+          petId: this.resolvedPetId(),
           entryDate: targetDateKey,
           entryTime: this.noteTime() || null,
           title: this.noteContent(),
@@ -505,7 +525,7 @@ export class PetDetailPageComponent {
         );
       } else {
         const savedRecord = await this.petApi.createMedicalRecord({
-          petId: this.currentPetId(),
+          petId: this.resolvedPetId(),
           condition: this.newMedicalName(),
           visitDate: this.newMedicalDate(),
           notes: this.newMedicalNotes(),
@@ -519,7 +539,7 @@ export class PetDetailPageComponent {
 
     this.medicalHistoryList.set(newList);
     this.showAddMedicalModal.set(false);
-    syncFallbackMedicalRecords(this.currentPetId(), newList);
+    syncFallbackMedicalRecords(this.resolvedPetId(), newList);
 
     this.newMedicalName.set(""); this.newMedicalDoctor.set(""); this.newMedicalDate.set(""); this.newMedicalNotes.set("");
     this.newMedicalFile.set(null);
@@ -543,7 +563,7 @@ export class PetDetailPageComponent {
     }
     this.medicalHistoryList.set(newList);
     this.recordToDelete.set(null);
-    syncFallbackMedicalRecords(this.currentPetId(), newList);
+    syncFallbackMedicalRecords(this.resolvedPetId(), newList);
     this.decisionModalService.showSuccessModal({
       message: "Đã xóa bệnh án thành công.\nBạn có thể tiếp tục hoặc quay về trang chủ",
     });
@@ -665,8 +685,7 @@ export class PetDetailPageComponent {
   }
 
   protected handleEditProfile() {
-    const petId = this.currentPetId();
-    // Điều hướng sang trang chỉnh sửa hồ sơ (điều chỉnh route theo cấu hình dự án của bạn)
-    this.navService.navigate(`/customer/pets/${petId}/edit`);
+    const petId = this.resolvedPetId() || this.currentPetId();
+    this.navService.navigate(`/thu-cung-cua-toi/${petId}/chinh-sua`);
   }
 }
