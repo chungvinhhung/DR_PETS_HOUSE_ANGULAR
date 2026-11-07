@@ -12,7 +12,7 @@
       <div class="create-order__lookup-row">
         <div class="create-order__search-field">
           <img src="/assets/service-catalog/search.svg" alt="" width="18" height="18">
-          <input id="order-phone-lookup" type="tel" autocomplete="off"
+          <input id="order-phone-lookup" type="search" inputmode="tel" name="admin-order-customer-lookup" autocomplete="off" spellcheck="false"
             placeholder="Nhập số điện thoại..." [value]="lookupPhone()"
             (input)="editLookupPhone($any($event.target).value)"
             (keydown.enter)="lookupCustomer()">
