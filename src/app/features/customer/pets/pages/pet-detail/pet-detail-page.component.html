@@ -36,7 +36,7 @@
 
           <!-- Nút Sửa hồ sơ -->
           <a
-            [appCustomerLink]="`/thu-cung-cua-toi/${resolvedPetId()}/chinh-sua`"
+            [appCustomerLink]="`/thu-cung-cua-toi/${toPetSlug(pet())}/chinh-sua`"
             class="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#FEF08A] hover:bg-[#FDE047] text-slate-900 text-xs font-semibold transition-colors cursor-pointer shadow-xs"
           >
             <svg xmlns="http://w3.org" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -122,7 +122,7 @@
             </div>
             <p class="text-[10px] text-slate-500 font-medium mb-0.5 uppercase tracking-wide">Sức khỏe chung</p>
             <p class="text-xs font-bold text-slate-900">
-              @if (pet().healthStatus === 'Khỏe mạnh') {
+              @if (pet().healthStatus === 'Bình thường' || pet().healthStatus === 'Khỏe mạnh'|| pet().healthStatus === 'NORMAL') {
                 Bình thường
               } @else {
                 {{ pet().healthStatus || 'Bình thường' }}

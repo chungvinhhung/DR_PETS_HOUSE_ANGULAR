@@ -2,7 +2,6 @@
  * Hằng số & hàm tiện ích dùng chung cho các component trong thư mục này.
  * (Chuyển từ phần code nằm ngoài component trong React: src/pages/Pet/PetDetailPage.jsx)
  */
-import { MOCK_PETS } from '../../data/mock-pets';
 import { INITIAL_PET_EVENTS } from '../../data/pet-events';
 
 const buddyImg = '/assets/customer/images/pets/buddy.jpg';
@@ -19,21 +18,22 @@ export const petImages = {
   Snow: snowImg,
 };
 
-export const readFallbackPets = () => {
-  try {
-    const stored = localStorage.getItem("petsData");
-    const pets = stored ? JSON.parse(stored) : null;
+export const toPetSlug = (pet: any = {}) => {
+  const id = String(pet?.id || pet?.pet_id || pet?._id || '').trim();
+  const rawName = String(pet?.name || 'thu-cung')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 
-    if (!pets || (pets.length > 0 && pets[0].medicalRecords === undefined)) {
-      localStorage.setItem("petsData", JSON.stringify(MOCK_PETS));
-      return MOCK_PETS;
-    }
-
-    return pets;
-  } catch (error: any) {
-    return MOCK_PETS;
-  }
+  if (!id) return rawName || 'chi-tiet';
+  return `${rawName || 'pet'}-${id.slice(-3)}`;
 };
+
 
 export const extractShortIdFromSlug = (slugOrId: any) => {
   const raw = String(slugOrId || '').trim();
@@ -53,22 +53,6 @@ export const matchPetBySlugOrId = (pets: any[], slugOrId: any) => {
       return fullId === target || (shortId && fullId.endsWith(shortId));
     }) || null
   );
-};
-
-export const getFallbackPet = (petId: any) => {
-  const pets = readFallbackPets();
-  return matchPetBySlugOrId(pets, petId) || pets[0];
-};
-
-
-export const syncFallbackMedicalRecords = (petId: any, records: any) => {
-  const pets = readFallbackPets();
-  const updatedPets = pets.map((item: any) =>
-    item.id === petId || String(item.pet_id) === String(petId)
-      ? { ...item, medicalRecords: records }
-      : item,
-  );
-  localStorage.setItem("petsData", JSON.stringify(updatedPets));
 };
 
 export const calculateAge = (birthDateString: any) => {

@@ -32,12 +32,30 @@ function formatTimeText(value: any) {
 export function normalizePet(pet: any = {}) {
   const healthStatusCode = pet.health_status ?? pet.healthStatusCode ?? pet.healthStatus ?? "unknown";
   const healthStatusMap = {
+    normal: "Bình thường",
     healthy: "Bình thường",
+    "Khỏe mạnh": "Bình thường",
+    "bình thường": "Bình thường",
     treating: "Đang điều trị",
+    treatment: "Đang điều trị",
+    "đang điều trị": "Đang điều trị",
     need_recheck: "Cần tái khám",
+    recheck: "Cần tái khám",
+    "cần tái khám": "Cần tái khám",
     unknown: "",
   };
 
+  const rawGender = String(pet.gender ?? "").trim().toLowerCase();
+  const normalizedGender = ["♀", "cái", "cai", "female", "f"].includes(rawGender)
+    ? "female"
+    : ["♂", "đực", "duc", "male", "m"].includes(rawGender)
+      ? "male"
+      : pet.gender ?? "";
+  
+  const rawWeight = pet.weightKg ?? pet.weight_kg ?? pet.weight;
+  const weightMatch = rawWeight !== undefined && rawWeight !== null ? String(rawWeight).match(/\d+(\.\d+)?/) : null;
+  const numericWeight = weightMatch ? Number(weightMatch[0]) : null;
+  
   return {
     id: String(pet.pet_id ?? pet.petId ?? pet.id ?? pet._id ?? ""),
     pet_id: pet.pet_id ?? pet.petId ?? pet.id ?? pet._id,
@@ -47,9 +65,9 @@ export function normalizePet(pet: any = {}) {
     species: pet.species?.species_name ?? pet.species_name ?? pet.species ?? "",
     breed: pet.breed?.breed_name ?? pet.breed_name ?? pet.breed ?? "",
     age: pet.age ?? pet.ageYears ?? pet.age_years ?? "",
-    gender: pet.gender ?? "",
+    gender: normalizedGender,
     weight: pet.weight_kg ? `${pet.weight_kg} kg` : pet.weight ?? "",
-    weightKg: pet.weight_kg ?? null,
+    weightKg: numericWeight,
     birthDate: pet.birth_date ?? pet.birthDate ?? "",
     healthStatusCode,
     healthStatus: (healthStatusMap as any)[healthStatusCode] || pet.healthStatus || healthStatusCode,

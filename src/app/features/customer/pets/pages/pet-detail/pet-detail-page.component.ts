@@ -7,7 +7,7 @@ import { PetApiService } from '../../../../../core/customer/services/api/pet-api
 import { ReactStyleDirective } from '../../../../../shared/customer/directives/react-style.directive';
 import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
 import { INITIAL_PET_EVENTS } from '../../data/pet-events';
-import { petImages, matchPetBySlugOrId, getFallbackPet, syncFallbackMedicalRecords, calculateAge, formatAgeText, ACCEPTED_UPLOAD_FILE_TYPES, MAX_UPLOAD_FILE_SIZE, createUploadedFile, getFileUrl, isImageFile, getUploadFiles, getColorClass, convertTimeToInputFormat, formatTimeToSACH, toDateKey, isEventInDate } from './pet-detail-page.helpers';
+import { petImages, matchPetBySlugOrId, calculateAge, formatAgeText, ACCEPTED_UPLOAD_FILE_TYPES, MAX_UPLOAD_FILE_SIZE, createUploadedFile, getFileUrl, isImageFile, getUploadFiles, getColorClass, convertTimeToInputFormat, formatTimeToSACH, toDateKey, isEventInDate, toPetSlug } from './pet-detail-page.helpers';
 
 const lunaImg = '/assets/customer/images/pets/luna.jpg';
 const patternBg = '/assets/customer/images/pets/patterntaddnote.jpg';
@@ -38,6 +38,7 @@ export class PetDetailPageComponent {
   protected readonly isImageFile: any = isImageFile;
   protected readonly patternBg: any = patternBg;
   protected readonly getColorClass: any = getColorClass;
+  protected readonly toPetSlug = toPetSlug; 
 
   // --- Giá trị tính toán (computed) ---
   readonly currentPetId = computed<any>(() => this.navService.params().id || this.navService.params().petId);
@@ -77,11 +78,12 @@ export class PetDetailPageComponent {
   readonly defaultDateString = computed<any>(() => `${this.year()}-${String(this.month() + 1).padStart(2, '0')}-${String(this.selectedDay()).padStart(2, '0')}`);
 
   // --- Trạng thái (signal = useState / useRef) ---
-  readonly pet = signal<any>((() => getFallbackPet(this.currentPetId()))());
+  readonly pet = signal<any>({});
   readonly petLoadError = signal<any>("");
   readonly calendarDate = signal<any>((() => new Date())());
   readonly eventsList = signal<any>(INITIAL_PET_EVENTS);
-  readonly medicalHistoryList = signal<any>((() => getFallbackPet(this.currentPetId())?.medicalRecords || [])());
+  // Bệnh án chỉ lấy từ API theo đúng pet_id, không dùng dữ liệu local/mock
+  readonly medicalHistoryList = signal<any>([]);
   readonly showGeneralNoteModal = signal<any>(false);
   readonly showDayModal = signal<any>(false);
   readonly dayModalMode = signal<any>('view');
@@ -115,16 +117,13 @@ export class PetDetailPageComponent {
       const slugOrId = this.routeParamId();
       const cleanup = untracked(() => {
         let active = true;
-        const fallbackPet = getFallbackPet(slugOrId);
-
-        this.pet.set(fallbackPet);
-        this.medicalHistoryList.set(fallbackPet?.medicalRecords || []);
+        this.pet.set({});
+        this.medicalHistoryList.set([]);
         this.petLoadError.set("");
-        const fallbackId = fallbackPet?.id || fallbackPet?.pet_id || fallbackPet?._id || "";
-        this.resolvedPetId.set(String(fallbackId || slugOrId || ""));
+        this.resolvedPetId.set(String(slugOrId || ""));
 
         (async () => {
-          let realPetId = String(slugOrId || fallbackId || "");
+          let realPetId = String(slugOrId || "");
           const isDirectPetId =
             /^pet[_-]/i.test(realPetId) ||
             /^[0-9a-f]{24}$/i.test(realPetId) ||
@@ -139,7 +138,7 @@ export class PetDetailPageComponent {
                 if (active) this.pet.update((current: any) => ({ ...current, ...matched }));
               }
             } catch {
-              if (fallbackId) realPetId = String(fallbackId);
+              // Không tải được danh sách -> thử gọi trực tiếp bằng giá trị trên URL
             }
           }
 
@@ -159,7 +158,7 @@ export class PetDetailPageComponent {
             this.pet.update((current: any) => ({ ...current, ...petResult.value }));
           }
           if (recordsResult.status === "fulfilled") {
-            this.medicalHistoryList.set(recordsResult.value);
+            this.medicalHistoryList.set(recordsResult.value || []);
           }
           if (diariesResult.status === "fulfilled" || remindersResult.status === "fulfilled") {
             const diaryEvents = diariesResult.status === "fulfilled" ? diariesResult.value : [];
@@ -168,7 +167,7 @@ export class PetDetailPageComponent {
             if (apiEvents.length) this.eventsList.set(apiEvents);
           }
           if (results.every((result: any) => result.status === "rejected")) {
-            this.petLoadError.set("Không thể tải hồ sơ mới nhất, đang hiển thị dữ liệu dự phòng.");
+            this.petLoadError.set("Không thể tải hồ sơ thú cưng. Vui lòng thử lại.");
           }
         })();
 
@@ -479,67 +478,31 @@ export class PetDetailPageComponent {
     const [y, m, d] = this.newMedicalDate().split("-");
     const formattedDate = `${d}/${m}/${y}`;
 
-    let newList: any;
-    if (this.medicalModalMode() === 'edit' && this.editingMedicalId()) {
-      newList = this.medicalHistoryList().map((r: any) => {
-        if (r.id === this.editingMedicalId()) {
-          return {
-            ...r,
-            date: formattedDate,
-            condition: this.newMedicalName(),
-            doctor: this.newMedicalDoctor(),
-            notes: this.newMedicalNotes(),
-            name: this.newMedicalFile()?.name || r.name || this.newMedicalName() + ".pdf",
-            size: this.newMedicalFile()?.size || r.size || "PDF",
-            fileUrl: this.newMedicalFile()?.fileUrl || r.fileUrl || `${this.newMedicalName().replace(/\s+/g, '-')}.pdf`,
-            fileName: this.newMedicalFile()?.name || r.fileName || r.name,
-          };
-        }
-        return r;
-      });
-    } else {
-      const newRecord = {
-        id: Date.now(),
-        date: formattedDate,
-        condition: this.newMedicalName(),
-        doctor: this.newMedicalDoctor() || "Chưa rõ",
-        notes: this.newMedicalNotes() || "Không có ghi chú y tế.",
-        name: this.newMedicalFile()?.name || this.newMedicalName() + ".pdf",
-        size: this.newMedicalFile()?.size || "PDF",
-        fileUrl: this.newMedicalFile()?.fileUrl || `${this.newMedicalName().replace(/\s+/g, '-')}.pdf`,
-        fileName: this.newMedicalFile()?.name || this.newMedicalName() + ".pdf",
-      };
-      newList = [newRecord, ...this.medicalHistoryList()];
-    }
+    const payload = {
+      petId: this.resolvedPetId(),
+      condition: this.newMedicalName(),
+      doctor: this.newMedicalDoctor(),
+      visitDate: this.newMedicalDate(),
+      notes: this.newMedicalNotes(),
+      attachments: this.newMedicalFile()?.file ? [this.newMedicalFile().file] : [],
+    };
 
     try {
       if (this.medicalModalMode() === 'edit' && this.editingMedicalId()) {
-        const savedRecord = await this.petApi.updateMedicalRecord(this.editingMedicalId(), {
-          condition: this.newMedicalName(),
-          visitDate: this.newMedicalDate(),
-          notes: this.newMedicalNotes(),
-          attachments: this.newMedicalFile()?.file ? [this.newMedicalFile().file] : [],
-        });
-        newList = this.medicalHistoryList().map((record: any) =>
-          record.id === this.editingMedicalId() ? { ...record, ...newList.find((item: any) => item.id === this.editingMedicalId()), ...savedRecord } : record,
+        const savedRecord = await this.petApi.updateMedicalRecord(this.editingMedicalId(), payload);
+        this.medicalHistoryList.update((list: any[]) =>
+          list.map((record: any) => record.id === this.editingMedicalId() ? { ...record, ...savedRecord } : record),
         );
       } else {
-        const savedRecord = await this.petApi.createMedicalRecord({
-          petId: this.resolvedPetId(),
-          condition: this.newMedicalName(),
-          visitDate: this.newMedicalDate(),
-          notes: this.newMedicalNotes(),
-          attachments: this.newMedicalFile()?.file ? [this.newMedicalFile().file] : [],
-        });
-        newList = [{ ...newList[0], ...savedRecord }, ...this.medicalHistoryList()];
+        const savedRecord = await this.petApi.createMedicalRecord(payload);
+        this.medicalHistoryList.update((list: any[]) => [savedRecord, ...list]);
       }
     } catch (error: any) {
-      // Giữ fallback local để người dùng vẫn thao tác được khi API chưa bật.
+      alert(error?.message || "Không thể lưu bệnh án. Vui lòng thử lại.");
+      return;
     }
 
-    this.medicalHistoryList.set(newList);
     this.showAddMedicalModal.set(false);
-    syncFallbackMedicalRecords(this.resolvedPetId(), newList);
 
     this.newMedicalName.set(""); this.newMedicalDoctor.set(""); this.newMedicalDate.set(""); this.newMedicalNotes.set("");
     this.newMedicalFile.set(null);
@@ -555,15 +518,15 @@ export class PetDetailPageComponent {
   }
 
   protected async handleConfirmDeleteMedicalRecord(targetId: any = this.recordToDelete()) {
-    const newList = this.medicalHistoryList().filter((r: any) => r.id !== targetId);
     try {
       await this.petApi.deleteMedicalRecord(targetId);
     } catch (error: any) {
-      // API lỗi thì vẫn xóa khỏi fallback local để UI không bị kẹt.
+      this.recordToDelete.set(null);
+      alert(error?.message || "Không thể xóa bệnh án. Vui lòng thử lại.");
+      return;
     }
-    this.medicalHistoryList.set(newList);
+    this.medicalHistoryList.update((list: any[]) => list.filter((r: any) => r.id !== targetId));
     this.recordToDelete.set(null);
-    syncFallbackMedicalRecords(this.resolvedPetId(), newList);
     this.decisionModalService.showSuccessModal({
       message: "Đã xóa bệnh án thành công.\nBạn có thể tiếp tục hoặc quay về trang chủ",
     });
@@ -684,8 +647,12 @@ export class PetDetailPageComponent {
     */
   }
 
-  protected handleEditProfile() {
-    const petId = this.resolvedPetId() || this.currentPetId();
-    this.navService.navigate(`/thu-cung-cua-toi/${petId}/chinh-sua`);
+    protected handleEditProfile() {
+    const petData = {
+      ...this.pet(),
+      id: this.resolvedPetId() || this.pet()?.id || this.pet()?.pet_id || this.currentPetId(),
+    };
+    this.navService.navigate(`/thu-cung-cua-toi/${toPetSlug(petData)}/chinh-sua`);
   }
+
 }

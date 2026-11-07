@@ -2,7 +2,6 @@
  * Hằng số & hàm tiện ích dùng chung cho các component trong thư mục này.
  * (Chuyển từ phần code nằm ngoài component trong React: src/pages/Pet/MyPetPage.jsx)
  */
-import { MOCK_PETS } from '../../data/mock-pets';
 import { appointmentImages } from '../../../../../shared/customer/assets/appointment-images';
 
 const buddyImg = '/assets/customer/images/pets/buddy.jpg';
@@ -20,22 +19,12 @@ export const petImages = {
   Snow: snowImg,
 };
 
-export const readStoredPets = () => {
-  try {
-    const stored = localStorage.getItem("petsData");
-    const pets = stored ? JSON.parse(stored) : [];
-    return Array.isArray(pets) ? pets : [];
-  } catch (error: any) {
-    return [];
-  }
-};
-
 export const getHealthStatusColor = (status: any) => {
   const safeStatus = getPetStatusLabel({ healthStatus: status });
   switch (safeStatus) {
     case "Đang điều trị":
       return { bg: "#fef0c7cc", dot: "#d97706", text: "#b45309" }; 
-    case "Khỏe mạnh":
+    case "Bình thường":
       return { bg: "#dcfce3cc", dot: "#22c55e", text: "#15803d" }; 
     case "Cần tái khám":
       return { bg: "#fee2e2cc", dot: "#ef4444", text: "#b91c1c" }; 
@@ -53,7 +42,7 @@ export const getPetStatusLabel = (pet: any = {}) => {
   if (["cần tái khám", "can tai kham", "need_recheck", "recheck"].includes(status)) {
     return "Cần tái khám";
   }
-  return "Khỏe mạnh";
+  return "Bình thường";
 };
 
 export const parseAgeToDays = (ageValue: any) => {
@@ -190,7 +179,7 @@ export const getLatestCheckupDate = (pet: any) => {
   return pet.lastCheckup || "Chưa khám";
 };
 
-export const PET_STATUS_FILTERS = ["Tất cả", "Khỏe mạnh", "Đang điều trị", "Cần tái khám"];
+export const PET_STATUS_FILTERS = ["Tất cả", "Bình thường", "Đang điều trị", "Cần tái khám"];
 
 /**
  * Chuyển tên + 3 ký tự cuối của ID: { name: "Bông", id: "...6510183" } -> "bong-183"

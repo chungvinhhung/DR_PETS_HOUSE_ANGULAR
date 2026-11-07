@@ -42,7 +42,7 @@
 } @else {
   <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
     @for (pet of filteredPets(); track getPetId(pet) || $index) {
-      @let displayStatus = pet.healthStatus || 'Khỏe mạnh';
+      @let displayStatus = pet.healthStatus || 'Bình thường';
       @let statusColor = getHealthStatusColor(displayStatus);
       @let currentPetImage = pet.avatar || (pet.name ? petImages[pet.name] : null);
       @let displayAge = getPetAgeText(pet);
@@ -89,9 +89,9 @@
               <p class="text-[14px] text-slate-500 font-normal mt-0.5">{{ displayAge }}</p>
             </div>
 
-            <!-- Icon giới tính đực / cái bên phải (thay cho icon dấu chân cũ) -->
+            <!-- Icon giới tính đực / cái bên phải -->
             <div class="text-slate-600 pt-0.5 flex-shrink-0" [title]="pet.gender">
-              @if (pet.gender === '♀' || pet.gender === 'Cái' || pet.gender === 'FEMALE') {
+              @if (pet.gender === '♀' || pet.gender === 'Cái' || pet.gender === 'FEMALE'|| pet.gender === 'female') {
                 <!-- Icon Giống cái ♀ -->
                 <svg xmlns="http://w3.org" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="9" r="5.5" />

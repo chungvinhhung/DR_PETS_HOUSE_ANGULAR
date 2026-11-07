@@ -6,8 +6,7 @@ import { SpeciesIconComponent } from './species-icon.component';
 import { GenderIconComponent } from './gender-icon.component';
 import { ReactStyleDirective } from '../../../../../shared/customer/directives/react-style.directive';
 import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
-import { MOCK_PETS } from '../../data/mock-pets';
-import { petImages, readStoredPets, getHealthStatusColor, getPetStatusLabel, getLatestCheckupDate, getPetAgeText, getPetId, sortPets, PET_STATUS_FILTERS, toPetSlug } from './pet-list-page.helpers';
+import { petImages, getHealthStatusColor, getPetStatusLabel, getLatestCheckupDate, getPetAgeText, getPetId, sortPets, PET_STATUS_FILTERS, toPetSlug } from './pet-list-page.helpers';
 
 /**
  * PetListPage — chuyển từ React: src/pages/Pet/MyPetPage.jsx
@@ -101,9 +100,8 @@ export class PetListPageComponent {
             })
           .catch((error: any) => {
             if (!active) return;
-            const storedPets = readStoredPets();
-            this.pets.set(storedPets.length ? storedPets : MOCK_PETS);
-            this.loadError.set(error?.message || "Không thể tải hồ sơ thú cưng, đang hiển thị dữ liệu mẫu.");
+            this.pets.set([]);
+            this.loadError.set(error?.message || "Không thể tải hồ sơ thú cưng.");
           })
           .finally(() => {
             if (active) this.isLoading.set(false);
