@@ -541,7 +541,7 @@ export class AdminProductListPageComponent implements OnInit {
   closeArchiveMenuOnEscape(): void { this.closeArchiveMenu(); }
 
   /** Open product edit/detail from any non-interactive cell. */
-  openProductRow(product: AdminProduct, event: MouseEvent | KeyboardEvent): void {
+  openProductRow(product: AdminProduct, event: Event): void {
     const target = event.target;
     if (target instanceof Element && target.closest('a, button, input, select, textarea, [role="menu"]')) return;
     void this.router.navigate(['/admin/products', product.id, 'edit'], {
