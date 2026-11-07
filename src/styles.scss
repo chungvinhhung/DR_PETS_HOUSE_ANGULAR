@@ -8259,3 +8259,39 @@ app-admin-product-list-page .product-panel td.status-cell .status {
   font-size:11px;
   padding:2px 7px;
 }
+
+/* FEEDBACK: product filter actions must remain separated when admin sidebar narrows content. */
+@media (max-width:1500px) {
+  app-admin-product-list-page .product-filter-control--category { display:none !important; }
+  app-admin-product-list-page .product-filter-compact-category { display:block !important; }
+}
+@media (max-width:1350px) {
+  app-admin-product-list-page .product-filter-toolbar .product-filter-search.product-filter-search {
+    flex:1 1 220px !important;
+    min-width:180px !important;
+    width:auto !important;
+    max-width:430px !important;
+    margin-right:0 !important;
+  }
+}
+@media (max-width:990px) {
+  app-admin-product-list-page .product-filter-toolbar.product-filter-toolbar {
+    flex-wrap:wrap !important;
+    overflow:visible !important;
+    min-width:0;
+  }
+  app-admin-product-list-page .product-filter-toolbar .product-filter-search.product-filter-search {
+    flex:1 1 100% !important;
+    width:100% !important;
+    max-width:none !important;
+    min-width:0 !important;
+  }
+  app-admin-product-list-page .product-filter-toolbar .product-filter-actions.product-filter-actions {
+    flex:1 1 100% !important;
+    width:100% !important;
+    justify-content:space-between !important;
+  }
+  app-admin-product-list-page .product-filter-choices {
+    margin-left:0 !important;
+  }
+}
