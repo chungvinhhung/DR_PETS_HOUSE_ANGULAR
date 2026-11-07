@@ -54,6 +54,13 @@ export function normalizePet(pet: any = {}) {
     healthStatusCode,
     healthStatus: (healthStatusMap as any)[healthStatusCode] || pet.healthStatus || healthStatusCode,
     medicalNotes: pet.medical_note ?? pet.medicalNotes ?? "",
+    isHidden: Boolean(
+      pet.is_hidden ??
+        pet.isHidden ??
+        (pet.is_active === false ||
+          pet.isActive === false ||
+          ["HIDDEN", "INACTIVE", "ARCHIVED"].includes(String(pet.status ?? "").toUpperCase())),
+    ),
     lastCheckup: pet.latest_exam_date ?? pet.lastCheckup ?? null,
     avatar: getPrimaryImage(pet),
     medicalRecords: Array.isArray(pet.medicalRecords)

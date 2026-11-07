@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, Component, DestroyRef, afterNextRender, comput
 import { CustomerNavigationService } from '../../../../../core/customer/services/customer-navigation.service';
 import { ProductApiService } from '../../../../../core/customer/services/api/product-api.service';
 import { NavBarComponent } from '../../../../../layouts/customer/components/navbar/nav-bar.component';
-import { ScaledCanvasLayoutComponent } from '../../../../../shared/customer/components/scaled-canvas-layout/scaled-canvas-layout.component';
 import { BreadcrumbComponent } from '../../../../../shared/customer/components/breadcrumb/breadcrumb.component';
 import { FilterSidebarComponent } from './filter-sidebar.component';
 import { ProductSearchAndSortComponent } from './product-search-and-sort.component';
@@ -20,7 +19,7 @@ import { PAGE_SIZE, MULTI_CATEGORY_FETCH_LIMIT, buildCategoryOptions, toBackendS
 @Component({
   selector: 'div[app-product-page]',
   standalone: true,
-  imports: [NavBarComponent, ScaledCanvasLayoutComponent, BreadcrumbComponent, FilterSidebarComponent, ProductSearchAndSortComponent, ProductGridComponent, LoadMoreComponent, FooterComponent],
+  imports: [NavBarComponent, BreadcrumbComponent, FilterSidebarComponent, ProductSearchAndSortComponent, ProductGridComponent, LoadMoreComponent, FooterComponent],
   templateUrl: './product-page.component.html',
   host: {
     'class': 'min-h-screen bg-[#f5f5f5]',

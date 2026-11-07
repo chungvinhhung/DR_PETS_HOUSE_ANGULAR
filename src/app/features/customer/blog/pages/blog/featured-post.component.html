@@ -1,16 +1,16 @@
 <a
   [appCustomerLink]="href()"
-  class="group relative flex h-[452px] w-[1200px] overflow-hidden rounded-[32px] border border-[#FFF7ED] bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-transform hover:-translate-y-0.5"
+  class="group relative flex w-full max-w-[1200px] flex-col overflow-hidden md:h-[452px] md:flex-row rounded-[32px] border border-[#FFF7ED] bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-transform hover:-translate-y-0.5"
 >
-  <div class="relative h-[450px] w-[690px] shrink-0 overflow-hidden">
+  <div class="relative h-[240px] w-full shrink-0 overflow-hidden sm:h-[320px] md:h-[450px] md:w-[57.5%]">
     <img [attr.src]="post().image" [attr.alt]="post().title" class="h-full w-full object-cover" />
     <div class="absolute left-6 top-6 flex items-center gap-2 rounded-full bg-[#FDD835] px-5 py-2 text-[12px] font-bold uppercase tracking-[0.6px] text-[#D32F2F] shadow-lg">
       <app-customer-icon name="sparkles" className="h-3 w-3" /> Nổi bật</div>
   </div>
-  <div class="relative -ml-6 my-[7px] flex flex-1 flex-col justify-center rounded-l-[32px] bg-white p-12">
+  <div class="relative -mt-6 flex flex-1 flex-col justify-center rounded-t-[32px] bg-white p-6 sm:p-8 md:-ml-6 md:my-[7px] md:rounded-l-[32px] md:rounded-tr-none lg:p-12">
     <p class="flex items-center gap-2 text-[16px] font-bold uppercase tracking-[0.8px] text-[#0D47A1]">
       <app-category-icon [category]="post().category" [className]="'h-[17px] w-[17px]'" />{{ post().categoryLabel }}</p>
-    <h2 class="mt-3 max-w-[460px] text-[32px] font-bold leading-[40px] text-[#111827]">{{ post().title }}</h2>
+    <h2 class="mt-3 max-w-[460px] text-[24px] font-bold leading-[32px] text-[#111827] lg:text-[32px] lg:leading-[40px]">{{ post().title }}</h2>
     <p class="mt-4 max-w-[500px] text-[16px] leading-6 text-[#6B7280]">{{ post().excerpt }}</p>
     <div class="mt-6 flex items-center justify-between border-t border-[#FFF7ED] pt-6">
       <div class="flex items-center gap-3">

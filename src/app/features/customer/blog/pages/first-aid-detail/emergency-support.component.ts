@@ -12,7 +12,7 @@ import { CustomerLinkDirective } from '../../../../../shared/customer/directives
   imports: [CustomerIconComponent, CustomerLinkDirective],
   templateUrl: './emergency-support.component.html',
   host: {
-    'class': 'relative flex h-[364px] w-[373px] shrink-0 flex-col justify-center gap-6 rounded-[32px] border-l-4 border-[#C62828] bg-white px-10 shadow-md',
+    'class': 'relative flex min-h-[364px] w-full flex-col justify-center gap-6 rounded-[32px] border-l-4 border-[#C62828] bg-white px-6 py-8 shadow-md sm:px-10 lg:h-[364px] lg:py-0',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

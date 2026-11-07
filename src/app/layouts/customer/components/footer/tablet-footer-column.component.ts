@@ -11,7 +11,7 @@ import { TabletFooterLinkComponent } from './tablet-footer-link.component';
   imports: [TabletFooterLinkComponent],
   templateUrl: './tablet-footer-column.component.html',
   host: {
-    'class': 'w-[328px]',
+    'class': 'w-full min-w-0 max-w-[328px]',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -15,10 +15,10 @@
           ]"
       ></nav>
       @if (loadError()) {
-        <div class="mx-auto mt-2 w-[1200px] rounded-[12px] bg-[#E5F6FD] px-5 py-3 text-sm font-medium text-[#0D47A1]">{{ loadError() }}</div>
+        <div class="mx-auto mt-2 w-full max-w-[1200px] rounded-[12px] bg-[#E5F6FD] px-5 py-3 text-sm font-medium text-[#0D47A1]">{{ loadError() }}</div>
       }
       <!-- —— Product detail section —— -->
-      <section class="relative h-[778px] w-[1440px]">
+      <section class="relative mx-auto w-full max-w-[1440px] px-4 pb-12 sm:px-8 xl:h-[778px] xl:px-0 xl:pb-0">
         <!-- Breadcrumb -->
         <!-- <nav className="absolute left-[120px] top-[32px] flex items-center gap-[4px] text-[16px]" aria-label="Breadcrumb">
             <Link
@@ -31,12 +31,12 @@
             <span className="text-[rgba(0,0,0,0.87)] cursor-default">{product.name}</span>
           </nav> -->
         <!-- Product layout -->
-        <div class="absolute left-[120px] top-[20px] flex h-[622px] w-[1200px] items-start overflow-visible">
-          <div class="ml-[-18px] flex h-[644px] w-[1218px] items-start gap-[71px]">
+        <div class="relative mx-auto flex w-full max-w-[1200px] items-start overflow-visible pt-5 xl:absolute xl:left-[120px] xl:top-[20px] xl:h-[622px] xl:w-[1200px] xl:pt-0">
+          <div class="flex w-full flex-col items-center gap-10 lg:flex-row lg:items-start lg:gap-8 xl:ml-[-18px] xl:h-[644px] xl:w-[1218px] xl:gap-[71px]">
             <!-- Left: image gallery -->
-            <div class="flex w-[626px] gap-[24px] pl-[15px] pt-[8.5px]">
+            <div class="flex w-full max-w-[626px] gap-3 sm:gap-[24px] lg:w-[52%] lg:shrink-0 xl:w-[626px] xl:pl-[15px] xl:pt-[8.5px]">
               <!-- Thumbnails -->
-              <div class="flex h-[626px] flex-col justify-between rounded-[16px]">
+              <div class="flex shrink-0 flex-col justify-start gap-3 rounded-[16px] xl:h-[626px] xl:justify-between xl:gap-0">
                 @for (thumb of thumbnails(); track $index; let i = $index) {
                   <button
                     type="button"
@@ -56,7 +56,7 @@
                     <img
                       [attr.src]="thumb"
                       alt=""
-                      [class]="`h-[194px] w-[141px] object-cover transition-opacity duration-micro ${
+                      [class]="`aspect-[141/194] h-auto w-[64px] object-cover sm:w-[100px] xl:h-[194px] xl:w-[141px] transition-opacity duration-micro ${
                           i !== selectedImageIdx() && thumbHovered() !== i ? 'opacity-60 group-hover:opacity-80' : ''
                         }`"
                     />
@@ -67,16 +67,16 @@
               <img
                 [attr.src]="selectedImage()"
                 [attr.alt]="product().name"
-                class="h-[627px] w-[460px] rounded-[4px] object-cover"
+                class="aspect-[460/627] h-auto w-full min-w-0 flex-1 rounded-[4px] object-cover xl:h-[627px] xl:w-[460px] xl:flex-none"
               />
             </div>
             <!-- Right: product info -->
-            <div class="flex h-[644px] w-[511px] flex-col justify-between">
-              <div class="flex w-[489px] flex-col gap-[42px]">
+            <div class="flex w-full max-w-[626px] flex-col justify-between gap-8 lg:max-w-none lg:flex-1 xl:h-[644px] xl:w-[511px] xl:flex-none xl:gap-0">
+              <div class="flex w-full flex-col gap-[42px] xl:w-[489px]">
                 <div class="flex flex-col gap-[24px]">
                   <!-- Title + stars -->
                   <div class="flex flex-col gap-[12px]">
-                    <h1 class="w-[494px] font-['Roboto'] text-[32px] font-bold leading-[1.235] tracking-[0.25px] text-[#0D47A1]">{{ product().name }}</h1>
+                    <h1 class="w-full font-['Roboto'] text-[26px] sm:text-[32px] xl:w-full xl:w-[494px] font-bold leading-[1.235] tracking-[0.25px] text-[#0D47A1]">{{ product().name }}</h1>
                     <div class="flex items-center gap-[10px]">
                       <app-product-rating [value]="product().rating" />
                       <span class="font-['Oxygen'] text-[14px] leading-[23.87px] text-[#414141]">( {{ product().reviewCount || 0 }} review )</span>
@@ -89,9 +89,9 @@
                       }
                     </div>
                   </div>
-                  <div class="h-px w-[494px] bg-[#D7D7D7]"></div>
+                  <div class="h-px w-full xl:w-[494px] bg-[#D7D7D7]"></div>
                   <!-- Description + "Đọc thêm" scroll -->
-                  <div class="w-[494px] text-[16px] leading-[1.5] tracking-[0.15px] text-[#414141]">
+                  <div class="w-full xl:w-[494px] text-[16px] leading-[1.5] tracking-[0.15px] text-[#414141]">
                     <p
                       class="mb-0 overflow-hidden"
                       [appStyle]="{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2 }"
@@ -102,11 +102,11 @@
                       class="mt-[8px] text-[#0D47A1] underline underline-offset-2 hover:no-underline hover:text-[#1565C0] focus-ring-brand transition-all duration-micro"
                     >Đọc thêm...</button>
                   </div>
-                  <div class="h-px w-[494px] bg-[#D7D7D7]"></div>
+                  <div class="h-px w-full xl:w-[494px] bg-[#D7D7D7]"></div>
                   <!-- Type selection -->
-                  <div class="flex items-center gap-[24px] pb-7">
+                  <div class="flex flex-wrap items-center gap-[24px] pb-7">
                     <span class="font-['Roboto'] text-[20px] font-medium leading-[32px] tracking-[0.15px] text-[#1D2939]">Loại</span>
-                    <div class="flex gap-[24px]">
+                    <div class="flex flex-wrap gap-3 sm:gap-[24px]">
                       @for (variant of product().variants ?? []; track $index; let i = $index) {
                         <button
                           type="button"
@@ -126,8 +126,8 @@
                 </div>
               </div>
               <!-- Action buttons -->
-              <div class="flex w-[494px] flex-col gap-[15px]">
-                <div class="flex h-[49px] gap-[15px]">
+              <div class="flex w-full xl:w-[494px] flex-col gap-[15px]">
+                <div class="flex min-h-[49px] flex-wrap gap-[15px]">
                   <!-- Dropdown: 100ml -->
                   @if (dropdownOptions().length > 0) {
                     <div #dropdownRef class="relative">
@@ -211,11 +211,11 @@
                 <button
                   type="button"
                   (click)="handleBuyNow()"
-                  class="h-[43px] w-[494px] rounded-[4px] border border-[#FDD835] px-[22px] py-[8px] font-['Roboto'] text-[15px] font-medium uppercase tracking-[0.46px] text-[#FDD835] transition-all duration-micro hover:border-[#e6c233] hover:text-[#e6c233] focus-ring-brand active:scale-[0.98]"
+                  class="h-[43px] w-full xl:w-[494px] rounded-[4px] border border-[#FDD835] px-[22px] py-[8px] font-['Roboto'] text-[15px] font-medium uppercase tracking-[0.46px] text-[#FDD835] transition-all duration-micro hover:border-[#e6c233] hover:text-[#e6c233] focus-ring-brand active:scale-[0.98]"
                 >MUA NGAY</button>
               </div>
               <!-- Shipping info -->
-              <div class="w-[350px] space-y-[16px] pb-[2px] font-['Roboto'] text-[14px] leading-[normal] text-[#424242]">
+              <div class="w-full max-w-[350px] space-y-[16px] pb-[2px] font-['Roboto'] text-[14px] leading-[normal] text-[#424242]">
                 <div class="flex items-center gap-[20px]">
                   <img [attr.src]="productImages.truck" alt="" class="h-6 w-[26px]" />
                   @if (product().shipping?.freeShippingThreshold) {
@@ -224,7 +224,7 @@
                     Chính sách miễn phí vận chuyển đang cập nhật
                   }
                 </div>
-                <div class="flex items-center gap-[20px] whitespace-nowrap">
+                <div class="flex flex-wrap items-center gap-x-[20px] gap-y-1 sm:flex-nowrap sm:whitespace-nowrap">
                   <img [attr.src]="productImages.rotate3d" alt="" class="h-[26px] w-[26px]" />Giao hàng trong: {{ product().shipping?.deliveryEstimate || 'Đang cập nhật' }}                  <a
                     appCustomerLink="/policies/van-chuyen"
                     class="underline underline-offset-2 hover:no-underline hover:text-[#0D47A1] transition-colors duration-micro"
@@ -238,7 +238,7 @@
       <!-- —— Description / Review tabs —— -->
       <section
         #tabSectionRef
-        [class]="`w-[1440px] bg-[#E5F6FD] px-[120px] ${
+        [class]="`mx-auto w-full max-w-[1440px] bg-[#E5F6FD] px-4 sm:px-8 xl:px-[120px] ${
             showWriteReview()
               ? 'pb-[80px] pt-[80px]'
               : isReviewTab()
@@ -248,11 +248,11 @@
       >
         <div [class]="`flex w-full flex-col gap-[40px] transition-opacity duration-150 ${tabTransitioning() ? 'opacity-0' : 'opacity-100'}`">
           <!-- Tab bar -->
-          <div class="flex w-full items-start gap-[20px]">
+          <div class="flex w-full flex-wrap items-start gap-[20px]">
             <button
               type="button"
               (click)="handleTabMota()"
-              [class]="`font-['Roboto'] text-[32px] leading-[39.52px] tracking-[0.25px] transition-all duration-micro ${
+              [class]="`font-['Roboto'] text-[22px] leading-[30px] tracking-[0.25px] transition-all duration-micro sm:text-[32px] sm:leading-[39.52px] ${
                   !isReviewTab()
                     ? 'font-bold text-[#0D47A1]'
                     : 'font-normal text-[rgba(0,0,0,0.38)] hover:text-[#0D47A1] hover:font-medium'
@@ -268,7 +268,7 @@
             <button
               type="button"
               (click)="handleTabDanhGia()"
-              [class]="`font-['Roboto'] text-[32px] leading-[39.52px] tracking-[0.25px] transition-all duration-micro ${
+              [class]="`font-['Roboto'] text-[22px] leading-[30px] tracking-[0.25px] transition-all duration-micro sm:text-[32px] sm:leading-[39.52px] ${
                   isReviewTab()
                     ? 'font-bold text-[#0D47A1]'
                     : 'font-normal text-[rgba(0,0,0,0.38)] hover:text-[#0D47A1] hover:font-medium'
@@ -285,7 +285,7 @@
           } @else {
             <div class="flex w-full flex-col gap-[40px]">
               <!-- Summary -->
-              <div class="flex h-[139px] w-[1198px] items-start justify-center gap-[51px] self-center">
+              <div class="flex w-full max-w-[1198px] flex-wrap items-start justify-center gap-8 self-center md:h-[139px] md:flex-nowrap md:gap-[51px]">
                 <div class="w-[198px]">
                   <div class="font-['Roboto'] text-[32px] font-medium leading-[32px] tracking-[0.15px] text-black">{{ reviewsData().totalItems || 0 }} Đánh giá</div>
                   <div class="mt-[16px] h-[87px] rounded-[14px] bg-white px-[22px] py-[11px]">
@@ -433,7 +433,7 @@
         </div>
       </section>
       <!-- —— Similar Products —— -->
-      <section class="flex h-auto w-[1440px] flex-col items-center justify-center gap-[36px] px-[80px] py-[60px]">
+      <section class="mx-auto flex h-auto w-full max-w-[1440px] flex-col items-center justify-center gap-[36px] px-4 py-[60px] sm:px-8 xl:px-[80px]">
         <div class="w-full"><h3 class="text-[32px] font-bold leading-[1.235] tracking-[0.25px] text-[#0D47A1]">Sản phẩm tương tự</h3></div>
         <div class="relative flex w-full items-center gap-5">
           <!-- Prev button -->

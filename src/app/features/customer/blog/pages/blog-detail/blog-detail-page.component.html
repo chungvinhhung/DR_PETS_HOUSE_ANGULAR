@@ -1,6 +1,6 @@
 <div app-canvas-layout>
   <app-nav-bar />
-  <main class="flex min-h-[2245px] flex-col items-center gap-6 bg-[#E5F6FD] pb-12 pt-6">
+  <main class="flex min-h-[2245px] flex-col items-center gap-6 bg-[#E5F6FD] px-4 sm:px-6 pb-12 pt-6">
     <nav
       app-breadcrumb
       [items]="[
@@ -11,26 +11,26 @@
             { label: post().title }
           ]"
       [variant]="'blog'"
-      [className]="'w-[1200px]'"
+      [className]="'w-full max-w-[1200px]'"
     ></nav>
-    <div class="flex w-[1200px] items-start gap-12">
-      <div class="flex flex-col gap-3">
+    <div class="flex w-full max-w-[1200px] flex-col items-start gap-8 lg:flex-row lg:gap-12">
+      <div class="flex w-full min-w-0 flex-1 flex-col gap-3">
         @if (isLoading()) {
-          <div class="w-[813px] rounded-[12px] bg-white px-8 py-4 text-[#0D47A1]">Đang tải bài viết...</div>
+          <div class="w-full rounded-[12px] bg-white px-5 py-4 sm:px-8 text-[#0D47A1]">Đang tải bài viết...</div>
         }
         @if (loadError()) {
-          <div class="w-[813px] rounded-[12px] bg-white px-8 py-4 text-[#0D47A1]">{{ loadError() }}</div>
+          <div class="w-full rounded-[12px] bg-white px-5 py-4 sm:px-8 text-[#0D47A1]">{{ loadError() }}</div>
         }
         <article app-article [post]="post()"></article>
       </div>
       <aside app-blog-sidebar [selectedCategory]="post().category"></aside>
     </div>
-    <section class="w-[1206px] pt-6">
+    <section class="w-full max-w-[1206px] pt-6">
       <div app-section-heading>Sản phẩm liên quan</div>
       @if (productNotice()) {
         <p class="mt-4 rounded-xl bg-white px-5 py-3 text-sm font-medium text-[#0D47A1]">{{ productNotice() }}</p>
       }
-      <div class="mt-6 flex gap-9">
+      <div class="mt-6 grid grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 lg:flex lg:justify-start lg:gap-9">
         @for (product of relatedProducts(); track product.id) {
           <app-shopping-product-card [product]="product" [href]="'/product-details'" />
         }

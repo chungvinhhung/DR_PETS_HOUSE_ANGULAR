@@ -12,7 +12,7 @@ import { formatServicePrice, parseServicePrice } from './search-results-page.hel
   imports: [CustomerLinkDirective],
   templateUrl: './search-results-service-card.component.html',
   host: {
-    'class': 'flex h-[192px] w-full overflow-hidden rounded-[48px] border border-[rgba(127,118,98,0.1)] bg-white p-px shadow-[0_1px_2px_rgba(0,0,0,0.05)]',
+    'class': 'flex min-h-[192px] w-full overflow-hidden rounded-[32px] sm:h-[192px] sm:rounded-[48px] border border-[rgba(127,118,98,0.1)] bg-white p-px shadow-[0_1px_2px_rgba(0,0,0,0.05)]',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

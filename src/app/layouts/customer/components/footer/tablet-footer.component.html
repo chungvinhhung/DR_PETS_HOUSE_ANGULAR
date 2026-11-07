@@ -1,7 +1,7 @@
 <div class="flex w-full flex-col gap-8 overflow-hidden px-8 pb-10 pt-14">
-  <div class="flex h-[232px] w-full items-start justify-between overflow-hidden">
-    <section class="flex w-[329px] flex-col gap-6">
-      <div class="flex w-[335px] flex-col gap-[10px]">
+  <div class="flex min-h-[232px] w-full items-start justify-between gap-6 overflow-hidden">
+    <section class="flex w-full min-w-0 max-w-[329px] flex-col gap-6">
+      <div class="flex w-full max-w-[335px] flex-col gap-[10px]">
         <a appCustomerLink="/" aria-label="Dr. Pet's House - Trang chủ">
           <img
             [attr.src]="homeImages.logo"
@@ -14,7 +14,7 @@
       </div>
       <div app-tablet-social-links></div>
     </section>
-    <address class="flex w-[300px] flex-col gap-2 not-italic">
+    <address class="flex w-full min-w-0 max-w-[300px] flex-col gap-2 not-italic">
       <p app-tablet-contact-row [icon]="'phone'"><strong class="font-bold">Hotline:</strong> 086 8686868</p>
       <p app-tablet-contact-row [icon]="'mail'">Email: hello&#64;drpetshouse.vn</p>
       <p app-tablet-contact-row [icon]="'clock'">Thứ 2 - Chủ nhật: 8:00 - 20:00</p>
@@ -22,7 +22,7 @@
     </address>
   </div>
   <div class="flex w-full flex-col gap-8">
-    <div class="flex w-full gap-12">
+    <div class="flex w-full gap-6 sm:gap-12">
       <section
         app-tablet-footer-column
         [title]="'LIÊN KẾT NHANH'"
@@ -31,13 +31,13 @@
       ></section>
       <section app-tablet-footer-column [title]="'DỊCH VỤ NỔI BẬT'" [links]="SERVICE_LINKS"></section>
     </div>
-    <div class="flex w-full gap-12">
+    <div class="flex w-full gap-6 sm:gap-12">
       <section app-tablet-footer-column [title]="'THÔNG TIN CHUNG'" [links]="GENERAL_LINKS"></section>
       <section app-tablet-footer-column [title]="'HỖ TRỢ KHÁCH HÀNG'" [links]="SUPPORT_LINKS"></section>
     </div>
   </div>
 </div>
-<div class="flex w-full items-start justify-between bg-[#B8E6FA] px-8 py-[18px] font-['Roboto'] text-[13px]">
+<div class="flex w-full flex-wrap items-start justify-between gap-2 bg-[#B8E6FA] px-8 py-[18px] font-['Roboto'] text-[13px]">
   <p class="whitespace-nowrap font-normal leading-[1.35] text-[#526575]">© 2026 Dr.Pet's House. Bản quyền thuộc về Dr.Pet's House.</p>
   <nav
     aria-label="Liên kết pháp lý chân trang tablet"
