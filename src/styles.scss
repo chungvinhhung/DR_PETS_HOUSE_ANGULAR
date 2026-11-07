@@ -8171,3 +8171,91 @@ app-admin-catalog-shell .catalog-header__profile .catalog-header__avatar {
     width:auto;
   }
 }
+
+/* FEEDBACK Admin 2026-11-08: keep Service Catalog filters usable without overflow. */
+app-service-catalog-list .service-catalog__filters {
+  flex-wrap:wrap;
+  justify-content:space-between;
+}
+app-service-catalog-list .service-catalog__search {
+  flex:1 1 230px;
+  width:auto;
+  min-width:min(100%,220px);
+  max-width:none;
+}
+app-service-catalog-list .service-catalog__filter-selects {
+  flex:0 1 auto;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  min-width:0;
+  gap:8px;
+}
+app-service-catalog-list .service-catalog__select:nth-child(n) {
+  flex:1 1 145px;
+  width:auto;
+  min-width:135px;
+  max-width:190px;
+}
+@media (max-width:980px) {
+  app-service-catalog-list .service-catalog__filter-selects {
+    flex:1 1 100%;
+    justify-content:flex-start;
+  }
+  app-service-catalog-list .service-catalog__search { flex-basis:100%; }
+}
+/* Material SKU column must describe the SKU's variant, not the product taxonomy. */
+.service-editor__material-picker-table {
+  table-layout:fixed;
+  min-width:680px;
+}
+.service-editor__material-picker-table td,
+.service-editor__material-picker-table th {
+  overflow-wrap:anywhere;
+  vertical-align:middle;
+}
+.service-editor__material-picker-table .flash-editor__product-info {
+  min-width:0;
+}
+.service-editor__material-picker-table .flash-editor__product-info strong {
+  min-width:0;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.service-editor__material-sku small {
+  display:block;
+  margin-top:4px;
+  color:#64748b;
+  line-height:1.4;
+}
+/* Pricing header and its values share the same inset/alignment, including last column. */
+app-service-catalog-editor .service-editor__table--prices th,
+app-service-catalog-editor .service-editor__table--prices td {
+  box-sizing:border-box;
+  padding-left:16px;
+  padding-right:16px;
+  text-align:left;
+}
+app-service-catalog-editor .service-editor__table--prices th:last-child,
+app-service-catalog-editor .service-editor__table--prices td:last-child {
+  overflow-wrap:anywhere;
+  vertical-align:middle;
+}
+/* Keep long product values and status badges inside their own table cells. */
+app-admin-product-list-page .product-panel .table-scroll { overflow-x:auto; }
+app-admin-product-list-page .product-panel table { min-width:1180px; }
+app-admin-product-list-page .product-panel td.sku > span,
+app-admin-product-list-page .product-panel td.sku > small {
+  display:block;
+  max-width:100%;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+app-admin-product-list-page .product-panel td.status-cell .status {
+  display:inline-flex;
+  max-width:100%;
+  justify-content:center;
+  white-space:nowrap;
+  font-size:11px;
+  padding:2px 7px;
+}
