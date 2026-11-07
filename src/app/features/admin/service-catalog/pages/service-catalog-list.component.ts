@@ -61,8 +61,7 @@ export class ServiceCatalogListComponent {
     return this.allBranches().filter((branch) => scope.has(branch.id));
   });
 
-  // Show the full 19-service catalog on one page; paginate only when larger.
-  readonly pageSize = 20;
+  readonly pageSize = 6;
   readonly rows = signal<readonly CatalogService[]>([]);
   readonly total = signal(0);
   readonly loading = signal(true);
