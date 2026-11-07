@@ -3,10 +3,9 @@
   <img [attr.src]="medicalAssets.servicesTitleShape" alt="" />
 </div>
 <div class="medical-services__decor"><img [attr.src]="medicalAssets.servicesDecor" alt="" /></div>
-<img class="medical-services__paw" [attr.src]="medicalAssets.servicesPaw" alt="" aria-hidden="true" />
 <div class="medical-services__grid">
-  @for (service of services(); track service.title; let index = $index, count = $count) {
-    <article class="medical-service-card" [class.medical-service-card--center]="isCenteredLast(index, count)">
+  @for (service of services(); track service.title; let index = $index) {
+    <article class="medical-service-card">
       <div
         class="medical-service-card__media"
         [appStyle]="{
@@ -14,7 +13,7 @@
               maskImage: `url(${medicalAssets.serviceCardMask})`
             }"
       >
-        <img [attr.src]="service.image" [attr.alt]="service.title" [style.object-position]="service.imagePosition || 'center'" />
+        <img [attr.src]="service.image" alt="" />
         <div class="medical-service-card__shade"></div>
       </div>
       <div class="medical-service-card__number" aria-hidden="true"><div><span>{{ index + 1 }}</span></div></div>

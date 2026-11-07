@@ -39,11 +39,9 @@ export class ScaledCanvasLayoutComponent {
 
   constructor() {
     const destroyRef = inject(DestroyRef);
-    const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     afterNextRender(() => {
-      // Đo chiều rộng thật của khung chứa (không tính thanh cuộn) để canvas luôn vừa khít khi zoom / đổi kích thước.
       const updateScale = () => {
-        this.scale.set(computeCanvasScale(host.clientWidth || window.innerWidth, this.designWidth(), 0));
+        this.scale.set(computeCanvasScale(window.innerWidth, this.designWidth(), 0));
         measure();
       };
       const measure = () => {
@@ -55,12 +53,9 @@ export class ScaledCanvasLayoutComponent {
       const observer = new ResizeObserver(measure);
       const node = this.inner()?.nativeElement;
       if (node) observer.observe(node);
-      const hostObserver = new ResizeObserver(updateScale);
-      hostObserver.observe(host);
       destroyRef.onDestroy(() => {
         window.removeEventListener('resize', updateScale);
         observer.disconnect();
-        hostObserver.disconnect();
       });
     });
   }

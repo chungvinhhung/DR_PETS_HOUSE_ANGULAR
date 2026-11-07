@@ -1,11 +1,15 @@
 <app-admin-catalog-shell activeItem="staff">
   <main class="schedule-page">
-    <header class="schedule-heading"><h1>Quản lý nhân sự</h1><span class="preview">Lịch ca từ Backend Render</span></header>
+    <header class="schedule-heading"><h1>Quản lý nhân sự</h1></header>
     <nav class="schedule-tabs" aria-label="Nhân sự"><a routerLink="/admin/staff">Nhân viên</a><span aria-current="page">Lịch làm việc</span></nav>
+    @if (staffApi.loading() || staffApi.shiftLoading()) { <p role="status">Đang tải lịch nhân sự...</p> }
+    @if (staffApi.error()) { <p role="alert">{{ staffApi.error() }} <button type="button" (click)="staffApi.loadRoster(true)">Thử lại</button></p> }
+    @if (staffApi.shiftError()) { <p role="alert">{{ staffApi.shiftError() }}</p> }
+    <div class="schedule-weekly-card">
     <section class="schedule-filter-panel" aria-label="Bộ lọc lịch làm việc">
       <div class="schedule-toolbar">
-        <h2 class="schedule-toolbar__title">Lịch làm việc theo tuần</h2>
         <div class="schedule-toolbar__controls">
+          <h2 class="schedule-toolbar__title">Lịch làm việc theo tuần</h2>
           <app-admin-staff-week-nav
             [monday]="monday()" [label]="weekLabel()"
             (previousWeek)="changeWeek(-1)" (nextWeek)="changeWeek(1)"
@@ -23,8 +27,8 @@
             <label class="schedule-filter">
               <span class="sr-only">Chi nhánh</span>
               <select aria-label="Lọc chi nhánh" [value]="branch()" (change)="selectBranch($any($event.target).value)">
-                <option value="ALL">Tất cả chi nhánh</option>
-                @for (item of branches(); track item) { <option [value]="item">{{ item }}</option> }
+                <option value="" disabled>Chọn chi nhánh</option>
+                @for (item of branches(); track item.id) { <option [value]="item.id">{{ item.name }}</option> }
               </select>
               <img src="/assets/admin-product/icon-chevron-down.svg" width="18" height="18" alt="" aria-hidden="true">
             </label>
@@ -32,33 +36,48 @@
         </div>
       </div>
     </section>
-    @if (staffApi.loading() || staffApi.shiftLoading()) { <p role="status">Đang tải lịch nhân sự...</p> }
-    @if (staffApi.error()) { <p role="alert">{{ staffApi.error() }} <button type="button" (click)="staffApi.loadRoster(true)">Thử lại</button></p> }
-    @if (staffApi.shiftError()) { <p role="alert">{{ staffApi.shiftError() }}</p> }
     <section class="schedule-panel" aria-label="Bảng lịch làm việc">
       <div class="schedule-scroller"><table>
         <colgroup><col class="schedule-col-staff">@for (day of days(); track day.iso) { <col class="schedule-col-day"> }</colgroup>
         <thead><tr><th>Nhân viên</th>@for (day of days(); track day.iso) { <th><span class="schedule-day"><span>{{ day.weekday }}</span><small>{{ day.dayMonth }}</small></span></th> }</tr></thead>
         <tbody>
         @for (staff of rows(); track staff.id) {
-          <tr><th scope="row"><a [routerLink]="['/admin/staff',staff.id]">{{ displayName(staff) }}</a><small>{{ staff.id }}</small></th>
+          <tr><th scope="row"><a [routerLink]="['/admin/staff',staff.id]">{{ displayName(staff) }}</a><small>{{ roleLabel(staff) }}</small></th>
             @for (day of days(); track day.iso) {
               <td>
-                @for (shift of shifts(staff.id,day.iso); track $index) {
-                  <div class="schedule-shift"><strong>{{ shift.shiftName }} · {{ shift.time }}</strong><span>Chi nhánh {{ shift.branch }}</span></div>
-                } @empty { <span class="schedule-dash">—</span> }
+                <button type="button" class="schedule-cell" [attr.aria-label]="'Phân công ca cho '+displayName(staff)+' ngày '+day.iso"
+                  [disabled]="!branch() || staffApi.shiftLoading() || !!staffApi.shiftError()" (click)="openDay(staff,day.iso)">
+                  @for (shift of shifts(staff.id,day.iso); track shift.shiftId || $index) {
+                    <span class="schedule-shift"><strong>{{ shift.time }}</strong></span>
+                  } @empty { <span class="schedule-cell-plus">+</span> }
+                </button>
               </td>
             }
           </tr>
         } @empty { <tr><td colspan="8" class="schedule-empty">{{ staffApi.loading() ? 'Đang tải nhân sự...' : staffApi.error() ? 'Không tải được nhân viên.' : 'Không có nhân viên phù hợp.' }}</td></tr> }
         </tbody>
       </table></div>
-      <footer class="schedule-footer"><span>Đang hiển thị {{ rows().length }} trên tổng số {{ filtered().length }} nhân viên</span><nav aria-label="Phân trang nhân viên">
-        <button type="button" aria-label="Trang trước" [disabled]="page()===1" (click)="changePage(page()-1)">‹</button>
-        <span aria-current="page">{{ page() }}</span>
-        <button type="button" aria-label="Trang sau" [disabled]="page()>=pageCount()" (click)="changePage(page()+1)">›</button>
-      </nav></footer>
     </section>
-    <p class="schedule-note">Nguồn: API Shift trên Render. Dữ liệu chỉ được xác nhận khi tải thành công; không tự tạo slot đặt lịch.</p>
+    </div>
+    @if (dialog(); as selected) {
+      <app-staff-shift-assignment-dialog [employee]="selected.employee" [isoDate]="selected.date"
+        [branchName]="activeBranch()?.name || ''" [existing]="forDay()" [otherBranchShifts]="otherBranches()"
+        [options]="selectedOptions()" (closed)="closeDay()" (requestCreate)="beginNewTemplate()"
+        (checked)="checkAssignment($event)" />
+    }
+    @if (showCreateTemplate()) {
+      <div class="shift-assign-overlay shift-assign-overlay--front">
+        <section role="dialog" aria-modal="true" aria-labelledby="new-template-title" class="shift-assign-dialog">
+          <header class="shift-assign-header"><h2 id="new-template-title">Tạo ca làm việc mới</h2><button type="button" aria-label="Đóng" [disabled]="createSaving()" (click)="cancelNewTemplate()">×</button></header>
+          <p>Chi nhánh: {{ activeBranch()?.name }}</p>
+          <label class="shift-assign-field">Tên ca<input [value]="templateName()" (input)="templateName.set($any($event.target).value)" placeholder="Nhập tên ca"></label>
+          <label class="shift-assign-field">Bắt đầu<input type="time" [value]="templateStart()" (change)="templateStart.set($any($event.target).value)"></label>
+          <label class="shift-assign-field">Kết thúc<input type="time" [value]="templateEnd()" (change)="templateEnd.set($any($event.target).value)"></label>
+          @if (templateError()) { <p role="alert" class="shift-assign-error">{{ templateError() }}</p> }
+          <p class="shift-assign-hint">Ca mới được lưu trực tiếp vào lịch của nhân viên và ngày đã chọn. Chưa có API tạo mẫu ca dùng chung theo chi nhánh.</p>
+          <footer class="shift-assign-footer"><button type="button" [disabled]="createSaving()" (click)="cancelNewTemplate()">Hủy</button><button class="shift-assign-save" type="button" [disabled]="createSaving()" (click)="createShiftNow()">{{ createSaving() ? 'Đang tạo ca...' : 'Tạo ca làm việc' }}</button></footer>
+        </section>
+      </div>
+    }
   </main>
 </app-admin-catalog-shell>

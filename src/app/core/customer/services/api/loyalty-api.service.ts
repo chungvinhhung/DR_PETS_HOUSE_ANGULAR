@@ -25,19 +25,31 @@ export class LoyaltyApiService {
         serviceIds: serviceIds || undefined,
       });
       const data = assertSuccess(response);
+      if (data && data.valid === false) {
+        throw new Error(data?.reason || "Mã không tồn tại");
+      }
+      const discount = data?.discount ?? data?.discount_amount ?? data?.discountValue ?? 0;
       return {
         ...data,
-        discount: data?.discount ?? data?.discount_amount ?? data?.discountValue ?? 0,
-        valid: data?.valid ?? true,
-        reason: data?.reason ?? "",
+        discount,
+        discountAmount: discount,
       };
-    } catch {
+    } catch (err: any) {
+      if (err?.message === "Mã không tồn tại" || err?.message === "NOT_FOUND" || err?.message === "INACTIVE" || err?.message === "EXPIRED") {
+        throw err;
+      }
       const response = await this.http.post("/vouchers/apply", {
         code: formattedCode,
         scope,
         branchId: branchId || undefined,
       });
-      return assertSuccess(response);
+      const fallback = assertSuccess(response);
+      const discount = fallback?.discount ?? fallback?.discount_amount ?? fallback?.discountValue ?? 0;
+      return {
+        ...fallback,
+        discount,
+        discountAmount: discount,
+      };
     }
   }
 }

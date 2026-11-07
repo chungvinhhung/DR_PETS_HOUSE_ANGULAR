@@ -1,0 +1,140 @@
+:host { display:block; min-width:0; }
+.order-admin {
+  --ink:#1d2a42;--soft:#60748d;--line:#dce5f0;--brand:#0d47a1;
+  box-sizing:border-box;width:100%;min-width:0;padding:32px;
+  font:13px/1.5 Roboto,Arial,sans-serif;color:var(--ink);background:#fff;
+}
+.order-admin * {box-sizing:border-box}
+.order-admin button,.order-admin input,.order-admin select,.order-admin textarea {font:inherit}
+.order-admin button {cursor:pointer}
+.order-admin button:disabled {cursor:not-allowed;opacity:.52}
+.order-admin a {text-decoration:none}
+.order-admin :is(button,a,input,select,textarea):focus-visible {outline:2px solid #367dcd;outline-offset:2px}
+.order-admin__crumb {display:flex;align-items:center;gap:12px;color:var(--soft);margin:0 0 22px;font-size:13px}
+.order-admin__crumb a {color:var(--soft)}
+.order-admin__heading {display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:40px;margin-bottom:22px}
+.order-admin__heading h1 {font-size:28px;line-height:1.3;margin:0;color:var(--ink);font-weight:700}
+.order-admin__heading-actions {display:flex;gap:10px;flex-wrap:wrap}
+.order-admin__btn {display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:8px;border:1px solid var(--brand);white-space:nowrap;font-weight:500}
+.order-admin__btn--outline {color:var(--brand);background:#fff}
+.order-admin__btn--primary {color:#fff;background:var(--brand)}
+.order-admin__btn--danger {color:#fff;background:#b72b36;border-color:#b72b36}
+.order-admin__btn--primary:not(:disabled):hover {background:#093875}
+/* Order toolbar: compact shared 64px panel with a 430px search and clustered actions. */
+.order-admin__filters.order-admin__filters--figma {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-width:0;
+  min-height:64px;
+  padding:12px 16px;
+  margin-bottom:16px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+}
+.order-admin__filters--figma .order-admin__search {
+  display:flex;align-items:center;gap:10px;
+  flex:0 1 430px;
+  width:430px;max-width:430px;min-width:0;
+  height:40px;
+  padding:0 12px;
+  border:1px solid var(--line);border-radius:8px;
+  color:#60748d;background:#fff;
+}
+.order-admin__filter-actions {
+  display:flex;align-items:center;justify-content:flex-end;
+  flex:0 0 auto;gap:8px;margin-left:auto;
+}
+.order-admin__search input {border:0;outline:0;min-width:0;flex:1;color:var(--ink);width:100%;background:transparent}
+.order-admin__filters--figma select {
+  display:block;
+  box-sizing:border-box;
+  width:100%;
+  height:40px;
+  min-height:40px;
+  margin:0;
+  padding:0 35px 0 12px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  appearance:none;
+  background:#fff url('/assets/admin-product/expand_more.svg') no-repeat right 10px center;
+  background-size:20px;
+  color:var(--ink);
+  line-height:20px
+}
+.order-admin__filters--figma .order-admin__btn {
+  display:inline-flex;
+  box-sizing:border-box;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  height:40px;
+  min-height:40px;
+  padding:0 12px;
+  white-space:nowrap;
+  line-height:20px
+}
+.order-admin__filters--figma .order-admin__btn :is(svg,img) {
+  display:block;
+  flex:none;
+  margin:0
+}
+.order-admin__filters--figma .sr-only {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.order-admin__table-panel,.order-admin__card {background:#fff;border:1px solid var(--line);border-radius:12px}
+.order-admin__table-scroll {overflow-x:auto;border-radius:12px 12px 0 0}
+.order-admin__table {width:100%;min-width:890px;table-layout:fixed;border-collapse:separate;border-spacing:0;text-align:left}
+.order-admin__table thead th {background:#f2f6fa;color:#344c67;padding:13px 16px;font-weight:500;font-size:12px;height:52px;vertical-align:middle;white-space:nowrap}
+.order-admin__table tbody td {padding:15px 16px;height:73px;border-top:1px solid var(--line);font-size:13px;vertical-align:middle;color:#344760;overflow-wrap:anywhere}
+.order-admin__table tbody tr:hover td {background:#f8fbff}
+.order-admin__table td strong {font-weight:600;color:var(--ink)}
+.order-admin__table td small {display:block;color:#60748d;font-size:11px;margin-top:3px}
+.order-admin__table tbody td:first-child {font-weight:500}
+/* Column widths are defined per list table in styles.scss.
+   Detail tables must not inherit widths for unrelated columns. */
+.order-admin__link {color:var(--brand)}
+.order-admin__link:hover {text-decoration:underline}
+.order-admin__action-head {text-align:center}
+.order-admin__icon-link {display:inline-flex;width:32px;height:32px;border-radius:8px;align-items:center;justify-content:center;color:#1f3348}
+.order-admin__icon-link:hover {background:#e9f3ff}
+.order-admin__badge {display:inline-block;border-radius:99px;padding:4px 10px;white-space:nowrap;background:#eef3fb;color:#48658c;font-size:11px;font-weight:500}
+.order-admin__badge[data-status="PENDING"] {background:#fff3de;color:#a1660a}
+.order-admin__badge[data-status="CONFIRMED"],.order-admin__badge[data-status="PROCESSING"] {background:#eaf2ff;color:#1359a4}
+.order-admin__badge[data-status="SHIPPED"] {background:#e8f0ff;color:#284ab0}
+.order-admin__badge[data-status="COMPLETED"] {background:#e3f5e9;color:#237a3e}
+.order-admin__badge[data-status="CANCELLED"] {background:#f4ebeb;color:#aa454a}
+.order-admin__empty {text-align:center !important;padding:48px 16px !important;color:var(--soft) !important}
+.order-admin__empty p {margin:6px 0 16px}
+.order-admin__pagination {display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;min-height:72px;padding:12px 18px;color:#617894;font-size:12px;border-top:1px solid var(--line)}
+.order-admin__pagination > div {display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.order-admin__pagination button {height:40px;width:42px;color:var(--brand);background:white;border:0;font-size:22px}
+.order-admin__pagination strong {min-width:68px;height:40px;padding:10px;text-align:center;background:#eaf6fd;border-inline:1px solid var(--line)}
+.order-admin__data-note {font-size:12px;color:#6b7e92;margin:12px 0}
+.order-admin__feedback {border:1px solid var(--line);border-radius:12px;padding:34px 20px;text-align:center;color:var(--soft)}
+.order-admin__feedback p {margin:0 0 14px}
+
+/* Table density and centered column alignment, with symmetrical edge padding. */
+/* Order list fits its panel; Return table retains its wider multi-field layout. */
+.order-admin__table--figma{min-width:0}
+.order-admin__table--returns{min-width:960px}
+.order-admin__table--figma :is(th,td),
+.order-admin__table--returns :is(th,td){padding-inline:12px}
+.order-admin__table--figma :is(th,td):first-child,
+.order-admin__table--returns :is(th,td):first-child{padding-left:20px}
+.order-admin__table--figma :is(th,td):last-child,
+.order-admin__table--returns :is(th,td):last-child{padding-right:20px}
+.order-admin__pagination .order-admin__page-number{width:44px;height:42px;border-left:1px solid #e2e8f0;font-size:14px;color:#1b273b}
+.order-admin__pagination .order-admin__page-number--active{background:#e5f6fd;color:#0d47a1;box-shadow:inset 0 0 0 2px #0d47a1;font-weight:600}
+.order-admin__pagination button:disabled{color:#b1bfce}
+.order-admin__pagination>div{max-width:100%;overflow-x:auto}
+.order-admin__btn{width:max-content;max-width:100%}
+
+/* Figma 7432:38519 — consistent order detail cards, spacing and key-value grid. */
+.order-admin__card{padding:24px;margin-bottom:16px}
+.order-admin__card h2{font-size:18px;font-weight:600;line-height:26px}
+.order-admin__information{gap:20px 18px}
+.order-admin__heading{align-items:center}
+.order-admin__heading h1{font-size:28px;line-height:36px}
+.order-admin__table-panel{overflow:hidden}
+@media(max-width:800px){.order-admin__card{padding:16px}}

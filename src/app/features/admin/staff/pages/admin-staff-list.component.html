@@ -2,14 +2,14 @@
   <main class="staff-page">
     <header class="staff-heading">
       <div><h1>Quản lý nhân sự</h1></div>
-      <span class="staff-preview-label">Dữ liệu từ Backend Render</span>
+      
     </header>
     <nav class="staff-tabs" aria-label="Nhân sự">
       <span class="staff-tab staff-tab--active" aria-current="page">Nhân viên</span>
       <a class="staff-tab" routerLink="/admin/staff/schedule">Lịch làm việc</a>
     </nav>
     <section class="staff-filter-panel" aria-label="Tìm kiếm và lọc nhân viên">
-      <div class="staff-toolbar">
+      <div class="staff-toolbar web2-filterbar">
         <label class="staff-search">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.2 4.2"/></svg>
           <input type="search" aria-label="Tìm tên hoặc mã nhân viên" placeholder="Tìm tên hoặc mã nhân viên..." [ngModel]="query()" (ngModelChange)="updateQuery($event)">
@@ -29,7 +29,7 @@
             <option value="BLOCKED">Đã chặn</option>
           </select><img class="staff-filter-chevron" src="/assets/admin-product/icon-chevron-down.svg" width="20" height="20" alt="" aria-hidden="true"></label>
         </div>
-        <a class="staff-add" routerLink="/admin/staff/new" title="API tạo tài khoản và hồ sơ nhân viên chưa được xác minh">+ Thêm nhân viên</a>
+        <a class="staff-add web2-add-button" routerLink="/admin/staff/new" title="API tạo tài khoản và hồ sơ nhân viên chưa được xác minh"><span class="web2-add-icon" aria-hidden="true">+</span><span>Thêm nhân viên</span></a>
       </div>
     </section>
     @if (loading()) { <p role="status">Đang tải danh sách nhân sự từ Backend...</p> }
@@ -37,12 +37,12 @@
     @if (shiftError()) { <p role="alert">{{ shiftError() }}</p> }
     <section class="staff-panel" aria-label="Danh sách nhân viên">
       <div class="staff-table-wrap"><table>
-        <thead><tr><th>Mã nhân viên</th><th>Họ tên</th><th>Vai trò nghiệp vụ</th><th>Chi nhánh được phân công</th><th>Ca hôm nay</th><th>Trạng thái tài khoản</th><th>Thao tác</th></tr></thead>
+        <thead><tr><th>Mã nhân viên</th><th>Họ tên</th><th class="web2-cell-center">Vai trò nghiệp vụ</th><th class="web2-cell-center">Chi nhánh được phân công</th><th>Ca hôm nay</th><th>Trạng thái tài khoản</th><th>Thao tác</th></tr></thead>
         <tbody>
           @for (staff of rows(); track staff.id) {
             <tr>
               <td>{{ staffCode(staff) }}</td><td class="staff-name">{{ displayName(staff) }}</td>
-              <td>{{ roleName(staff.jobRole) }}</td><td>{{ staff.branches.join(' | ') }}</td>
+              <td class="web2-cell-center">{{ roleName(staff.jobRole) }}</td><td class="web2-cell-center">{{ staff.branches.join(' | ') }}</td>
               <td>{{ todayShift(staff) }}</td>
               <td><span class="staff-status" [class.staff-status--blocked]="staff.accountStatus === 'BLOCKED'">{{ accountLabel(staff) }}</span></td>
               <td class="staff-actions">
@@ -70,7 +70,7 @@
         <span>Đang hiển thị {{ rows().length }} trên tổng số {{ filtered().length }} nhân viên</span>
         <nav aria-label="Phân trang nhân viên">
           <button type="button" aria-label="Trang trước" [disabled]="page() === 1" (click)="changePage(page() - 1)">‹</button>
-          @for (number of [1,2,3,4,5,6,7,8,9,10]; track number) {
+          @for (number of pageNumbers(); track number) {
             @if (number <= pages()) {
               <button type="button" [class.staff-page-selected]="number === page()" [attr.aria-current]="number === page() ? 'page' : null" (click)="changePage(number)">{{ number }}</button>
             }
@@ -79,6 +79,5 @@
         </nav>
       </footer>
     </section>
-    <p class="staff-disclaimer">Nguồn: API Staff/Shift trên Render. Trạng thái tài khoản chỉ hiển thị khi Backend trả trường accountStatus; không suy đoán từ trạng thái hồ sơ nhân sự. Tạo/sửa tài khoản cần BE xác nhận hợp đồng ghi.</p>
   </main>
 </app-admin-catalog-shell>

@@ -1,9 +1,9 @@
 <app-nav-bar />
 <main
-  class="bg-gradient-to-b from-white to-[#E5F6FD] px-4 pt-6 sm:px-8 xl:px-[120px]"
+  class="bg-gradient-to-b from-white to-[#E5F6FD] px-[120px] pt-6"
   [appStyle]="{ minHeight: pageMinHeight() }"
 >
-  <div class="mx-auto flex w-full max-w-[1200px] flex-col items-start gap-6 lg:flex-row">
+  <div class="mx-auto flex w-full max-w-[1200px] items-start gap-6">
     <aside
       app-search-sidebar
       [activeType]="activeType()"
@@ -13,7 +13,7 @@
       (onClear)="selectedFilters.set({})"
       (onTypeChange)="handleTypeChange($any($event))"
     ></aside>
-    <section class="flex w-full min-w-0 flex-1 flex-col gap-8 pb-[75px]">
+    <section class="flex w-[893px] shrink-0 flex-col gap-8 pb-[75px]">
       <header
         app-results-header
         [query]="query()"

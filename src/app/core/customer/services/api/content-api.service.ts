@@ -40,11 +40,17 @@ const blogCategoryAliases = {
   "cham-soc": "care",
 };
 
-const firstAidCategoryAliases = {
+const firstAidCategoryAliases: Record<string, string> = {
   "tai-nan": "accident",
+  "so-cuu-khan-cap": "accident",
+  "khan-cap": "accident",
   "ngo-doc": "poisoning",
   "kho-tho": "breathing",
   "chan-thuong": "injury",
+  "cham-soc-vet-thuong": "injury",
+  "vet-thuong": "injury",
+  "benh-ly": "breathing",
+  "benh-ly-thuong-gap": "breathing",
 };
 
 function normalizeBlogCategory(category: any = {}) {
@@ -60,8 +66,8 @@ function normalizeBlogCategory(category: any = {}) {
 }
 
 function normalizeFirstAidCategory(category: any = {}) {
-  const label = category.category_name || category.label || "Chủ đề";
-  const rawId = String(category.first_aid_category_id || category.id || slugify(label));
+  const label = typeof category === 'string' ? category : (category.category_name || category.name || category.label || "Chủ đề");
+  const rawId = typeof category === 'string' ? slugify(category) : String(category.first_aid_category_id || category.id || slugify(label));
   const mappedId = (firstAidCategoryAliases as any)[slugify(label)] || rawId;
 
   return {
@@ -76,7 +82,10 @@ function getBlogCategoryId(category: any) {
 }
 
 function getFirstAidCategoryId(category: any) {
-  return (firstAidCategoryAliases as any)[slugify(category?.category_name)] || String(category?.first_aid_category_id || "accident");
+  if (!category) return "accident";
+  const name = typeof category === 'string' ? category : (category.category_name || category.name || category.label || "");
+  const slug = slugify(name);
+  return (firstAidCategoryAliases as any)[slug] || String(category.first_aid_category_id || category.id || slug || "accident");
 }
 
 export function normalizePost(post: any = {}) {
@@ -144,32 +153,36 @@ function normalizePostComment(comment: any = {}) {
 export function normalizeFirstAidGuide(guide: any = {}, index: any = 0) {
   const category = guide.category || {};
   const mediaImage = guide.media?.find?.((item: any) => item.media_type === "image")?.file_url;
-  const stepImage = guide.steps?.find?.((step: any) => step.image_url)?.image_url;
+  const stepImage = guide.steps?.find?.((step: any) => step.image_url || step.mediaUrl)?.image_url || guide.steps?.find?.((step: any) => step.image_url || step.mediaUrl)?.mediaUrl;
   const image =
     guide.thumbnail_url ||
+    guide.thumbnailUrl ||
+    guide.thumbnail ||
     guide.cover_image_url ||
     guide.image_url ||
     mediaImage ||
     stepImage ||
     blogImages.postPlaceholder;
-  const urgent = /hoc|nghet|kho tho|cap cuu|soc|ngo doc/i.test(slugify(`${guide.title} ${guide.situation_description}`));
-  const steps = (guide.steps || []).map((step: any) => ({
-    title: `Bước ${step.step_number}`,
-    description: step.step_content,
+  const urgent = /hoc|nghet|kho tho|cap cuu|soc|ngo doc/i.test(slugify(`${guide.title} ${guide.situation_description || guide.excerpt || ""}`));
+  const steps = (guide.steps || []).map((step: any, sIdx: number) => ({
+    title: step.title || `Bước ${step.step_number || step.stepNumber || sIdx + 1}`,
+    description: step.step_content || step.instruction || step.description || "",
   }));
+
+  const categoryLabel = typeof category === 'string' ? category : (category.category_name || category.name || category.label || "Sơ cứu");
 
   return {
     ...guide,
-    id: guide.slug || String(guide.guide_id || ""),
-    backendId: String(guide.guide_id || ""),
+    id: guide.slug || String(guide.guide_id || guide._id || guide.id || ""),
+    backendId: String(guide.guide_id || guide._id || guide.id || ""),
     category: getFirstAidCategoryId(category),
-    categoryLabel: category.category_name || "Sơ cứu",
+    categoryLabel,
     variant: urgent || index === 0 ? "urgent" : image ? "image" : "text",
     urgent,
     image,
     title: guide.title || "Hướng dẫn sơ cứu",
     heroTitle: guide.title || "Hướng dẫn sơ cứu",
-    description: guide.situation_description || "Các bước xử lý ban đầu trước khi đưa thú cưng đến cơ sở thú y.",
+    description: guide.situation_description || guide.excerpt || (guide.content ? String(guide.content).split('\n')[0] : "Các bước xử lý ban đầu trước khi đưa thú cưng đến cơ sở thú y."),
     steps: steps.length
       ? steps
       : [
@@ -183,7 +196,7 @@ export function normalizeFirstAidGuide(guide: any = {}, index: any = 0) {
       highlights: ["Giữ đường thở thông thoáng", "Theo dõi phản ứng của thú cưng"],
       url: guide.video_url || "",
     },
-    emergencyPhone: guide.emergency_phone || "0868686868",
+    emergencyPhone: guide.emergency_phone || guide.emergencyPhone || "1900-PET-HELP",
   };
 }
 
@@ -226,11 +239,13 @@ export class ContentApiService {
   async getPostsPage(params: any = {}) {
     const response = await this.http.get("/posts", { params });
     const payload = assertSuccess(response);
-    const posts = Array.isArray(payload.posts) ? payload.posts : [];
+    const posts = Array.isArray(payload)
+      ? payload
+      : (Array.isArray(payload?.posts) ? payload.posts : (Array.isArray(payload?.items) ? payload.items : []));
     return {
       posts: posts.map(normalizePost),
-      totalRows: Number(payload.totalRows ?? posts.length),
-      totalPages: Number(payload.totalPages || 1),
+      totalRows: Number(payload?.totalRows ?? payload?.total ?? posts.length),
+      totalPages: Number(payload?.totalPages || 1),
     };
   }
 
@@ -240,21 +255,29 @@ export class ContentApiService {
   }
 
   async getFirstAidCategories() {
-    const response = await this.http.get("/first-aid/categories");
-    return [{ id: "all", label: "Tất cả", backendId: "" }, ...assertSuccess(response).map(normalizeFirstAidCategory)];
+    try {
+      const response = await this.http.get("/first-aid/categories");
+      const data = assertSuccess(response);
+      const list = Array.isArray(data) ? data : (data?.items || []);
+      return [{ id: "all", label: "Tất cả", backendId: "" }, ...list.map(normalizeFirstAidCategory)];
+    } catch {
+      return [{ id: "all", label: "Tất cả", backendId: "" }];
+    }
   }
 
   async getFirstAidGuidesPage(params: any = {}) {
     const response = await this.http.get("/first-aid/guides", { params });
     const payload = assertSuccess(response);
-    const rawGuides = payload.guides || [];
+    const rawGuides = Array.isArray(payload)
+      ? payload
+      : (payload?.guides || payload?.items || payload?.posts || []);
     const guides = await Promise.all(
       rawGuides.map(async (guide: any, index: any) => {
         const normalizedGuide = normalizeFirstAidGuide(guide, index);
         const needsDetailImage = normalizedGuide.image === blogImages.postPlaceholder && guide.slug;
-  
+
         if (!needsDetailImage) return normalizedGuide;
-  
+
         try {
           const detailResponse = await this.http.get(`/first-aid/guides/${guide.slug}`);
           const detail = assertSuccess(detailResponse);
@@ -264,11 +287,11 @@ export class ContentApiService {
         }
       }),
     );
-  
+
     return {
       guides,
-      totalRows: Number(payload.totalRows || 0),
-      totalPages: Number(payload.totalPages || 1),
+      totalRows: Number(payload?.totalRows ?? payload?.total ?? guides.length),
+      totalPages: Number(payload?.totalPages || 1),
     };
   }
 

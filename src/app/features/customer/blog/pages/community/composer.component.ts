@@ -13,7 +13,7 @@ import { POST_TYPES } from './community-page.helpers';
   imports: [CustomerIconComponent],
   templateUrl: './composer.component.html',
   host: {
-    'class': 'relative w-full max-w-[1210px] overflow-visible rounded-[32px] border-2 border-dashed border-[rgba(0,90,180,0.2)] bg-[#FFF9C4] p-5 sm:p-8 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1)]',
+    'class': 'relative w-[1210px] overflow-visible rounded-[32px] border-2 border-dashed border-[rgba(0,90,180,0.2)] bg-[#FFF9C4] p-8 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1)]',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

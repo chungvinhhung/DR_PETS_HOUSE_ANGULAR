@@ -20,7 +20,7 @@ import { formatMoney, paymentMethodLabels } from './appointment-history-page.hel
   imports: [TimelineComponent, PaymentCountdownComponent, ActionButtonComponent],
   templateUrl: './detail-panel.component.html',
   host: {
-    'class': 'panel-slide-in fixed bottom-6 right-4 top-[60px] z-30 flex w-[508px] max-w-[calc(100vw-32px)] sm:right-8 lg:top-[92px] flex-col bg-white shadow-[0_24px_60px_rgba(3,22,53,0.14)]',
+    'class': 'panel-slide-in fixed bottom-6 right-8 top-[92px] z-30 flex w-[508px] flex-col bg-white shadow-[0_24px_60px_rgba(3,22,53,0.14)]',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

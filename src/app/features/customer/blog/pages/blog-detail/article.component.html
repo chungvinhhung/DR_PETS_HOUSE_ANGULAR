@@ -1,10 +1,10 @@
-<h1 class="text-[24px] font-bold leading-[32px] text-[#0D47A1] sm:text-[32px] sm:leading-[40px]">{{ post().title }}</h1>
-<div class="mt-4 flex min-h-[54px] flex-wrap items-center gap-x-6 gap-y-2 py-2 border-y border-[#C1C6D5] text-[14px] font-semibold tracking-[0.14px] text-[#414753]">
+<h1 class="text-[32px] font-bold leading-[40px] text-[#0D47A1]">{{ post().title }}</h1>
+<div class="mt-4 flex h-[54px] items-center gap-6 border-y border-[#C1C6D5] text-[14px] font-semibold tracking-[0.14px] text-[#414753]">
   <span class="flex items-center gap-2"><app-customer-icon name="user-round" className="h-4 w-4 text-[#0D47A1]" /> {{ post().author }}</span>
   <span class="flex items-center gap-2">
     <app-customer-icon name="calendar-days" className="h-5 w-[18px] text-[#0D47A1]" /> {{ post().publishedAt }}</span>
 </div>
-<div class="relative mt-4 h-[240px] overflow-hidden rounded-[12px] sm:h-[340px] lg:h-[450px]">
+<div class="relative mt-4 h-[450px] overflow-hidden rounded-[12px]">
   <img [attr.src]="post().image" [attr.alt]="post().title" class="h-full w-full object-cover" />
   <div class="absolute left-6 top-6 flex items-center gap-2 rounded-full bg-white/90 px-5 py-2 text-[12px] font-bold uppercase tracking-[0.6px] text-[#0D47A1] shadow-lg backdrop-blur-[4px]">
     <app-category-icon [category]="post().category" [className]="'h-4 w-4'" />{{ post().categoryLabel }}</div>

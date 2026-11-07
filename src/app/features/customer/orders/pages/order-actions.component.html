@@ -14,6 +14,7 @@
   <app-order-pages-yellow-button (onClick)="stopAndRun(onNavigateFn)($event)">Theo dõi</app-order-pages-yellow-button>
 } @else if (order().status === 'delivered') {
   <app-order-pages-yellow-button (onClick)="stopAndRun(onReviewFn)($event)" [disabled]="isActionLoading()">Đánh giá</app-order-pages-yellow-button>
+  <app-outline-button (onClick)="stopAndRun(onNavigateFn)($event)">Theo dõi</app-outline-button>
   <app-outline-button (onClick)="stopAndRun(onReorderFn)($event)" [disabled]="isActionLoading()">
     @if (isActionLoading()) {
       Đang thêm...
@@ -22,6 +23,7 @@
     }
   </app-outline-button>
 } @else {
+  <app-order-pages-yellow-button (onClick)="stopAndRun(onNavigateFn)($event)">Theo dõi</app-order-pages-yellow-button>
   <app-outline-button (onClick)="stopAndRun(onReorderFn)($event)" [disabled]="isActionLoading()">
     @if (isActionLoading()) {
       Đang thêm...

@@ -1,15 +1,15 @@
 <div app-canvas-layout>
   <app-nav-bar />
-  <main class="relative min-h-[1985px] overflow-hidden bg-[linear-gradient(180deg,#FFFFFF_0%,#E5F6FD_36%)] px-4 pb-[84px] pt-[34px] sm:px-8 lg:px-[60px] xl:px-[120px]">
-    <section class="relative mx-auto flex max-w-[1200px] flex-col items-center gap-8 lg:h-[486px] lg:flex-row lg:items-start lg:gap-0">
-      <div class="w-full pt-[34px] lg:w-[550px] lg:shrink-0">
+  <main class="relative min-h-[1985px] overflow-hidden bg-[linear-gradient(180deg,#FFFFFF_0%,#E5F6FD_36%)] px-[120px] pb-[84px] pt-[34px]">
+    <section class="relative flex h-[486px] items-start">
+      <div class="w-[550px] pt-[34px]">
         <div app-section-label>Tìm một người bạn thân</div>
-        <h1 class="mt-5 w-full max-w-[540px] font-display text-[40px] font-bold leading-[44px] text-[#111827] sm:text-[52px] sm:leading-[54px] xl:text-[64px] xl:leading-[62px]">Mọi chiếc đuôi đều xứng đáng có một <span class="text-[#FF9800]">tổ ấm </span>
+        <h1 class="mt-5 w-[540px] font-display text-[64px] font-bold leading-[62px] text-[#111827]">Mọi chiếc đuôi đều xứng đáng có một <span class="text-[#FF9800]">tổ ấm </span>
           <span class="text-[#0D47A1]">yêu thương </span>
         </h1>
-        <p class="mt-7 w-full max-w-[480px] text-[16px] leading-6 text-[#414753]">Từ hôm nay, danh mục cứu trợ là nơi để bạn chung tay giúp đỡ hoặc mở cửa nhà đón một bạn nhỏ cần được yêu thương.</p>
+        <p class="mt-7 w-[480px] text-[16px] leading-6 text-[#414753]">Từ hôm nay, danh mục cứu trợ là nơi để bạn chung tay giúp đỡ hoặc mở cửa nhà đón một bạn nhỏ cần được yêu thương.</p>
       </div>
-      <div class="relative mt-2 h-[470px] w-[520px] max-w-full origin-top max-sm:h-[330px] max-sm:w-[365px] lg:ml-auto xl:ml-[92px]"><div class="relative h-[470px] w-[520px] origin-top-left max-sm:scale-[0.7]">
+      <div class="relative ml-[92px] mt-2 h-[470px] w-[520px]">
         <div class="absolute right-0 top-0 h-[450px] w-[480px] rounded-[50%] bg-[#C7DAF7]"></div>
         <div class="absolute left-3 top-7 h-[422px] w-[422px] overflow-hidden rounded-full border-[10px] border-white shadow-[0_18px_35px_rgba(13,71,161,0.16)]">
           <img
@@ -25,25 +25,25 @@
             <p class="text-[10px] leading-3 text-[#64748B]">Thú cưng đã tìm được nhà</p>
           </div>
         </div>
-      </div></div>
+      </div>
     </section>
-    <section class="relative mx-auto max-w-[1200px]">
+    <section class="relative">
       <div app-section-label>Đang cần được hỗ trợ</div>
-      <h2 class="mt-3 text-[28px] font-bold leading-[36px] text-[#111827] sm:text-[40px] sm:leading-[48px]">Tìm kiếm người bạn bốn chân</h2>
+      <h2 class="mt-3 text-[40px] font-bold leading-[48px] text-[#111827]">Tìm kiếm người bạn bốn chân</h2>
       <img
         [attr.src]="rescueImages.yellowDoodle"
         alt=""
-        class="absolute right-[250px] top-[18px] hidden h-[38px] w-[55px] xl:block"
+        class="absolute left-[930px] top-[18px] h-[38px] w-[55px]"
       />
-      <div class="mt-7 grid w-full max-w-[1180px] grid-cols-1 justify-items-center gap-x-5 gap-y-8 md:grid-cols-2 xl:grid-cols-3">
+      <div class="mt-7 grid w-[1180px] grid-cols-3 gap-x-5 gap-y-8">
         @if (isLoading()) {
-          <div class="col-span-full flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">Đang tải danh sách nhận nuôi...</div>
+          <div class="col-span-3 flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">Đang tải danh sách nhận nuôi...</div>
         } @else if (pets().length) {
           @for (pet of pets(); track pet.id) {
             <article app-rescue-pet-card [pet]="pet" (onAdopt)="selectedAdoptionPet.set($event)"></article>
           }
         } @else {
-          <div class="col-span-full flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#414753]">Không tìm thấy bạn nhỏ phù hợp.</div>
+          <div class="col-span-3 flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#414753]">Không tìm thấy bạn nhỏ phù hợp.</div>
         }
       </div>
       @if (loadError()) {
@@ -84,38 +84,38 @@
         </button>
       </div>
     </section>
-    <section class="mx-auto mt-[54px] max-w-[1200px] rounded-[22px] border-4 border-[#0D47A1] border-r-[#FDD835] bg-white px-6 py-8 sm:px-[54px] sm:py-[38px]">
-      <blockquote class="w-full text-[20px] sm:text-[24px] font-bold leading-8 text-[#0D47A1]">“Cứu một con vật không thay đổi thế giới, nhưng với nó, thế giới đã thay đổi hoàn toàn.”</blockquote>
-      <p class="mt-4 w-full text-[15px] leading-6 text-[#414753]">Hãy cùng chúng tôi xây dựng mạng lưới cứu trợ vững mạnh nhất để không một mảnh đời nhỏ bé nào bị bỏ phía sau.</p>
+    <section class="mt-[54px] rounded-[22px] border-4 border-[#0D47A1] border-r-[#FDD835] bg-white px-[54px] py-[38px]">
+      <blockquote class="w-[1200px] text-[24px] font-bold leading-8 text-[#0D47A1]">“Cứu một con vật không thay đổi thế giới, nhưng với nó, thế giới đã thay đổi hoàn toàn.”</blockquote>
+      <p class="mt-4 w-[1200px] text-[15px] leading-6 text-[#414753]">Hãy cùng chúng tôi xây dựng mạng lưới cứu trợ vững mạnh nhất để không một mảnh đời nhỏ bé nào bị bỏ phía sau.</p>
     </section>
     @if (authService.isAuthenticated()) {
-      <section class="relative mx-auto mt-[54px] max-w-[1200px]">
+      <section class="relative mt-[54px]">
         <div app-section-label>Theo dõi hồ sơ</div>
-        <h2 class="mt-3 text-[28px] font-bold leading-[36px] text-[#111827] sm:text-[40px] sm:leading-[48px]">Đơn nhận nuôi của tôi</h2>
+        <h2 class="mt-3 text-[40px] font-bold leading-[48px] text-[#111827]">Đơn nhận nuôi của tôi</h2>
         <p class="mt-3 text-[16px] leading-6 text-[#475569]">Theo dõi nhanh trạng thái những đơn bạn đã gửi tới các bé đang chờ một mái nhà.</p>
-        <div class="mt-8 grid w-full grid-cols-1 gap-6 lg:grid-cols-2">
+        <div class="mt-8 grid w-[1200px] grid-cols-2 gap-6">
           @if (isLoadingMyRequests()) {
-            <div class="col-span-full flex h-36 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">Đang tải đơn nhận nuôi...</div>
+            <div class="col-span-2 flex h-36 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">Đang tải đơn nhận nuôi...</div>
           } @else if (myRequests().length) {
             @for (request of myRequests().slice(0, 4); track request.id) {
               <article app-adoption-request-card [request]="request"></article>
             }
           } @else {
-            <div class="col-span-full flex h-36 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#475569]">Bạn chưa có đơn nhận nuôi nào.</div>
+            <div class="col-span-2 flex h-36 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#475569]">Bạn chưa có đơn nhận nuôi nào.</div>
           }
         </div>
       </section>
     }
-    <section class="relative mx-auto mt-[70px] max-w-[1200px]">
+    <section class="relative mt-[70px]">
       <div app-section-label>Kết nối hỗ trợ</div>
-      <h2 class="mt-3 text-[28px] font-bold leading-[36px] text-[#111827] sm:text-[40px] sm:leading-[48px]">Mạng lưới đối tác cứu trợ</h2>
+      <h2 class="mt-3 text-[40px] font-bold leading-[48px] text-[#111827]">Mạng lưới đối tác cứu trợ</h2>
       <p class="mt-3 text-[16px] leading-6 text-[#475569]">Danh sách các đơn vị cứu hộ và trạm tạm trú đang đồng hành trong hành trình vì thú cưng.</p>
       <img
         [attr.src]="rescueImages.yellowDoodle"
         alt=""
-        class="absolute right-[170px] top-6 hidden h-[74px] w-[124px] xl:block"
+        class="absolute right-[170px] top-6 h-[74px] w-[124px]"
       />
-      <div class="mt-9 grid w-full grid-cols-1 justify-items-center gap-8 md:grid-cols-2 xl:grid-cols-3">
+      <div class="mt-9 grid w-[1200px] grid-cols-3 gap-8">
         @for (partner of RESCUE_PARTNERS; track partner.id) {
           <article app-partner-card [partner]="partner"></article>
         }

@@ -6,7 +6,7 @@
     aria-labelledby="grooming-pricing-title"
     (mousedown)="handle2($any($event))"
   >
-    <div class="relative flex max-h-[calc(100vh-64px)] w-[1280px] max-w-[calc(100vw-24px)] flex-col items-center overflow-hidden rounded-[24px] bg-white px-3 py-10 sm:px-0 shadow-[0px_20px_25px_-5px_rgba(255,237,213,0.5),0px_8px_10px_-6px_rgba(255,237,213,0.5)]">
+    <div class="relative flex max-h-[calc(100vh-64px)] w-[1280px] flex-col items-center overflow-hidden rounded-[24px] bg-white py-10 shadow-[0px_20px_25px_-5px_rgba(255,237,213,0.5),0px_8px_10px_-6px_rgba(255,237,213,0.5)]">
       <button
         type="button"
         class="focus-ring-brand absolute right-6 top-6 flex size-10 items-center justify-center rounded-full bg-[#FFF9C4] text-[#0D47A1] transition-colors hover:bg-[#FDD835]"
@@ -18,11 +18,11 @@
       <header class="flex w-full shrink-0 flex-col items-center">
         <h2
           id="grooming-pricing-title"
-          class="m-0 w-full text-center font-['Baloo_Tamma'] text-[34px] sm:text-[48px] lg:text-[64px] font-normal leading-[1.1] text-[#0D47A1]"
+          class="m-0 w-full text-center font-['Baloo_Tamma'] text-[64px] font-normal leading-[1.1] text-[#0D47A1]"
         >Bảng giá dịch vụ <span class="text-[#FBC02D]">Dr.Pet’s House</span>
         </h2>
       </header>
-      <div class="mt-6 flex min-h-[52px] w-full max-w-[1130px] shrink-0 flex-wrap items-center gap-[23px] pl-[15px]">
+      <div class="mt-6 flex h-[52px] w-[1130px] shrink-0 items-center gap-[23px] pl-[15px]">
         <div class="relative z-20 h-[40px] w-[232px] shrink-0">
           <button
             type="button"
@@ -83,7 +83,7 @@
           }
         </div>
       </div>
-      <div class="mt-2 w-full max-w-[1130px] min-h-0 flex-1 overflow-auto pr-[23px]">
+      <div class="mt-2 w-[1130px] min-h-0 flex-1 overflow-y-auto pr-[23px]">
         <div class="flex w-[1107px] flex-col items-start gap-[15px]">
           @for (row of displayRows(); track row.title) {
             <div class="flex w-[1107px] shrink-0 flex-col items-start px-4">

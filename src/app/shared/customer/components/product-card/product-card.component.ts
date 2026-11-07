@@ -100,6 +100,8 @@ export class ProductCardComponent {
       this.cartService.addToCart({
         id: getFirstValue(this.product()?.id, this.product()?.productId, this.product()?.slug, `${this.productName()}:${this.productPrice()}`),
         productId: getFirstValue(this.product()?.productId, this.product()?.id),
+        variantId: getFirstValue(this.product()?.variantId, this.product()?.variants?.[0]?.id, this.product()?.variants?.[0]?._id),
+        variants: this.product()?.variants,
         name: this.productName(),
         price: this.currentPriceValue() ?? 0,
         image: this.productImage(),

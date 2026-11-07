@@ -31,36 +31,47 @@ function formatTimeText(value: any) {
 
 export function normalizePet(pet: any = {}) {
   const healthStatusCode = pet.health_status ?? pet.healthStatusCode ?? pet.healthStatus ?? "unknown";
-  const healthStatusMap = {
+  const healthStatusMap: any = {
     healthy: "Bình thường",
     treating: "Đang điều trị",
     need_recheck: "Cần tái khám",
+    NORMAL: "Bình thường",
+    HEALTHY: "Bình thường",
+    TREATING: "Đang điều trị",
+    NEED_RECHECK: "Cần tái khám",
     unknown: "",
   };
 
+  const id = String(pet.id || pet._id || pet.pet_id || "");
+  const genderMap: any = {
+    MALE: "Đực",
+    FEMALE: "Cái",
+    male: "Đực",
+    female: "Cái",
+  };
+  const gender = genderMap[pet.gender] || pet.gender || "";
+
+  const age = pet.age ? String(pet.age) : (pet.ageYears ? `${pet.ageYears} tuổi` : "");
+  const weightVal = pet.weightKg ?? pet.weight_kg ?? pet.weight;
+  const weight = weightVal ? (typeof weightVal === 'number' ? `${weightVal} kg` : String(weightVal)) : "";
+
   return {
-    id: String(pet.pet_id ?? pet.id ?? ""),
-    pet_id: pet.pet_id ?? pet.id,
+    ...pet,
+    id,
+    pet_id: id,
     speciesId: pet.species_id ?? pet.speciesId ?? pet.species?.species_id ?? "",
     breedId: pet.breed_id ?? pet.breedId ?? pet.breed?.breed_id ?? "",
     name: pet.pet_name ?? pet.name ?? "",
     species: pet.species?.species_name ?? pet.species_name ?? pet.species ?? "",
     breed: pet.breed?.breed_name ?? pet.breed_name ?? pet.breed ?? "",
-    age: pet.age ?? "",
-    gender: pet.gender ?? "",
-    weight: pet.weight_kg ? `${pet.weight_kg} kg` : pet.weight ?? "",
-    weightKg: pet.weight_kg ?? null,
+    age,
+    gender,
+    weight,
+    weightKg: typeof weightVal === 'number' ? weightVal : parseFloat(weightVal) || null,
     birthDate: pet.birth_date ?? pet.birthDate ?? "",
     healthStatusCode,
-    healthStatus: (healthStatusMap as any)[healthStatusCode] || pet.healthStatus || healthStatusCode,
-    medicalNotes: pet.medical_note ?? pet.medicalNotes ?? "",
-    isHidden: Boolean(
-      pet.is_hidden ??
-        pet.isHidden ??
-        (pet.is_active === false ||
-          pet.isActive === false ||
-          ["HIDDEN", "INACTIVE", "ARCHIVED"].includes(String(pet.status ?? "").toUpperCase())),
-    ),
+    healthStatus: healthStatusMap[healthStatusCode] || pet.healthStatus || "Bình thường",
+    medicalNotes: pet.medical_note ?? pet.medicalNotes ?? pet.medicalNotes ?? "",
     lastCheckup: pet.latest_exam_date ?? pet.lastCheckup ?? null,
     avatar: getPrimaryImage(pet),
     medicalRecords: Array.isArray(pet.medicalRecords)
@@ -217,10 +228,14 @@ export class PetApiService {
 
   private resolveCustomerId(): string {
     try {
-      const profileStr = localStorage.getItem('drPetUserProfile');
-      if (profileStr) {
-        const p = JSON.parse(profileStr);
-        if (p.customerId || p.userId) return String(p.customerId || p.userId);
+      const keys = ['userProfile', 'drPetUserProfile', 'drPetProfile', 'user'];
+      for (const k of keys) {
+        const profileStr = localStorage.getItem(k);
+        if (profileStr) {
+          const p = JSON.parse(profileStr);
+          const cid = p.customerId || p.userId || p.id || p._id;
+          if (cid) return String(cid);
+        }
       }
     } catch {}
     return '';
@@ -232,11 +247,18 @@ export class PetApiService {
       try {
         const response = await this.http.get(`/customers/${cid}/pets`);
         const pets = assertSuccess(response);
-        return (Array.isArray(pets) ? pets : []).map(normalizePet);
+        const list = Array.isArray(pets) ? pets : (pets?.items || []);
+        if (list.length > 0) return list.map(normalizePet);
       } catch (err: any) {
         if (err?.status !== 404) console.warn('Customer pets API error:', err);
       }
     }
+    try {
+      const response = await this.http.get("/pets");
+      const pets = assertSuccess(response);
+      const list = Array.isArray(pets) ? pets : (pets?.items || []);
+      if (list.length > 0) return list.map(normalizePet);
+    } catch {}
     const response = await this.http.get("/my-pets").catch(() => []);
     const data = assertSuccess(response);
     const petsArray = Array.isArray(data) ? data : (data && Array.isArray(data.pets) ? data.pets : []);
@@ -287,9 +309,11 @@ export class PetApiService {
       try {
         const response = await this.http.post(`/customers/${cid}/pets`, payload);
         return normalizePet(assertSuccess(response));
-      } catch {}
+      } catch (e) {
+        console.warn('Customer pets post failed, falling back to /pets', e);
+      }
     }
-    const response = await this.http.post("/pets", toPetPayload(pet));
+    const response = await this.http.post("/pets", payload);
     return normalizePet(assertSuccess(response));
   }
 

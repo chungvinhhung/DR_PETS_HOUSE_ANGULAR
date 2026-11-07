@@ -27,7 +27,7 @@ export class AdminStaffListComponent {
   retry(): void { this.staffApi.loadRoster(true); }
   readonly pageSize = 6;
   readonly roles = JOB_LABELS;
-  readonly roleChoices = Object.keys(JOB_LABELS) as JobRole[];
+  readonly roleChoices = (Object.keys(JOB_LABELS) as JobRole[]).filter(role => role !== 'UNKNOWN');
   readonly branches = computed(() => [...new Set(this.staffApi.staff().flatMap(s => s.branches))].sort());
   readonly query = signal('');
   readonly roleFilter = signal<JobRole | 'ALL'>('ALL');
@@ -44,6 +44,12 @@ export class AdminStaffListComponent {
     );
   });
   readonly pages = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.pageSize)));
+  readonly pageNumbers = computed(() => {
+    const total = this.pages();
+    const current = this.page();
+    const start = Math.max(1, Math.min(current - 1, total - 2));
+    return Array.from({ length: Math.min(3, total) }, (_, index) => start + index);
+  });
   readonly rows = computed(() => this.filtered().slice((this.page() - 1) * this.pageSize, this.page() * this.pageSize));
 
   displayName(staff: StaffPreview): string {

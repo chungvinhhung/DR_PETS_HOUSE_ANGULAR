@@ -1,0 +1,192 @@
+app-admin-inventory-page {
+.modal-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, .72);
+}
+.stock-dialog {
+  box-sizing: border-box;
+  width: min(488px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 22px 24px 22px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  color: #1c2531;
+}
+.stock-dialog--compact { width: min(420px, calc(100vw - 32px)); }
+.stock-dialog h2 {
+  margin: 0 0 14px;
+  font-size: 18px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.dialog-body { display: flex; flex-direction: column; gap: 14px; }
+.context-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-height: 82px;
+  padding: 12px 14px;
+  border: 1px solid #dce5ef;
+  border-radius: 7px;
+  background: #f5f8fc;
+  font-size: 12px;
+}
+.context-card strong { font-size: 13px; font-weight: 600; }
+.context-card span { color: #62718a; }
+.context-card b { font-size: 12px; font-weight: 600; }
+.dialog-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.dialog-columns--product { grid-template-columns: minmax(0, 266fr) minmax(0, 158fr); }
+.field-label {
+  box-sizing: border-box;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+  color: #475569;
+  font-size: 12px;
+  line-height: 13px;
+  font-weight: 500;
+}
+.field-caption { display: inline-flex; align-items: baseline; gap: 3px; }
+.field-label input,
+.field-label select {
+  box-sizing: border-box;
+  width: 100%;
+  height: 40px;
+  min-width: 0;
+  padding: 0 12px;
+  border: 1px solid #dce5ef;
+  border-radius: 7px;
+  background-color: #fff;
+  color: #1c2531;
+  font: 13px Roboto, Arial, sans-serif;
+}
+.field-label input:focus-visible,
+.field-label select:focus-visible {
+  border-color: #0d47a1;
+  outline: 2px solid #d5e6ff;
+}
+.field-label select {
+  appearance: none;
+  padding-right: 36px;
+  background: white url("/assets/admin-inventory/chevron-down.svg") right 12px center / 18px 18px no-repeat;
+}
+.field-label input[readonly] { background: #eff6ff; color: #52647d; }
+.field-label .computed-input { background: #eff6ff; }
+.sku-input-wrap { position: relative; display: block; }
+.sku-input-wrap input { padding-left: 40px; }
+.sku-input-wrap img { position: absolute; left: 13px; top: 13px; width: 15px; height: 15px; pointer-events: none; }
+.required { color: #c62828; }
+.transaction-preview {
+  box-sizing: border-box;
+  min-height: 36px;
+  padding: 10px 12px;
+  border: 1px solid #dce5ef;
+  border-radius: 7px;
+  background: #eff6ff;
+  color: #26364a;
+  font-size: 12px;
+  line-height: 15px;
+}
+.transaction-preview strong { margin-left: 4px; font-weight: 600; }
+.transaction-preview:has(>span) { display: flex; flex-direction: column; gap: 4px; min-height: 62px; }
+.transaction-preview:has(>span) strong { margin: 0; }
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+.dialog-footer .secondary,
+.dialog-footer .primary {
+  box-sizing: border-box;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.dialog-footer .secondary {
+  width: 95px;
+  border: 1px solid #0d47a1;
+  background: #fff;
+  color: #0d47a1;
+  cursor: pointer;
+}
+.dialog-footer .primary { width: 140px; }
+@media (max-width: 520px) {
+  .stock-dialog { padding: 20px 16px; }
+  .dialog-columns--product { grid-template-columns: minmax(0, 1fr) 120px; }
+}
+
+/* Match the white Service Catalog product-lookup list instead of native datalist. */
+.stock-dialog:has(.inventory-sku-combobox) { overflow:visible; }
+.field-label--sku > label { display:block; font:inherit; }
+.inventory-sku-combobox { position:relative; width:100%; min-width:0; }
+.inventory-sku-combobox .sku-input-wrap { display:block; position:relative; }
+.inventory-sku-combobox input[type="search"] {
+  width:100%; height:40px; padding:0 30px 0 40px;
+  border:1px solid #dce5ef; border-radius:8px; background:#fff;
+  font:400 13px/20px Roboto,Arial,sans-serif; color:#26364a;
+}
+.inventory-sku-combobox input[type="search"]::placeholder {
+  font:400 13px/20px Roboto,Arial,sans-serif; color:#8793a6;
+}
+.inventory-product-results {
+  position:absolute; z-index:1005; top:calc(100% + 6px); left:0;
+  width:min(440px,calc(100vw - 80px)); max-height:320px; overflow-y:auto;
+  overscroll-behavior:contain; padding:5px; border:1px solid #dbe5f0;
+  border-radius:9px; background:#fff; box-shadow:0 10px 28px rgba(20,36,59,.17);
+}
+.inventory-product-option {
+  display:flex; align-items:center; box-sizing:border-box; width:100%;
+  min-height:68px; gap:12px; padding:8px 10px; border:0; border-radius:7px;
+  background:#fff; color:#22334b; font:inherit; text-align:left; cursor:pointer;
+}
+.inventory-product-option:hover,
+.inventory-product-option:focus-visible,
+.inventory-product-option--highlight { background:#eef5ff; }
+.inventory-product-thumbnail {
+  flex:0 0 48px; width:48px; height:48px;
+  border:1px solid #e3eaf3; border-radius:6px; object-fit:contain; background:#f7f9fc;
+}
+.inventory-product-thumbnail--empty {
+  display:grid; place-items:center; color:#8798ae; font-size:11px;
+}
+.inventory-product-description {
+  display:flex; flex:1 1 auto; min-width:0; flex-direction:column; gap:4px; text-align:left;
+}
+.inventory-product-description strong {
+  color:#203650; font:600 13px/18px Roboto,Arial,sans-serif; overflow-wrap:anywhere;
+}
+.inventory-product-description small {
+  display:block; margin:0; color:#6e8099;
+  font:400 11px/16px Roboto,Arial,sans-serif; overflow-wrap:anywhere;
+}
+.inventory-product-price {
+  flex:0 0 auto; margin-left:auto; color:#0d47a1;
+  font:600 12px/18px Roboto,Arial,sans-serif; white-space:nowrap;
+}
+.inventory-product-empty {
+  margin:0; padding:14px 10px; color:#6e8099;
+  font:400 12px/18px Roboto,Arial,sans-serif;
+}
+@media(max-width:600px) {
+  .inventory-product-results { width:min(410px,calc(100vw - 64px)); }
+}
+@media(max-height:650px) {
+  .stock-dialog:has(.inventory-sku-combobox) { overflow-y:auto; }
+  .inventory-product-results { max-height:220px; }
+}
+
+}

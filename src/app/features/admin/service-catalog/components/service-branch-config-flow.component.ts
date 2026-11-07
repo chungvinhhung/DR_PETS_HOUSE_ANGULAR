@@ -93,7 +93,7 @@ interface BranchOption {
                           <span class="branch-flow__status branch-flow__status--neutral">Không tải được</span>
                         } @else if (service.status !== 'ACTIVE') {
                           <span class="branch-flow__status branch-flow__status--off">Dịch vụ tạm ngưng</span>
-                        } @else if (option.config?.enabled && option.config.capacity > 0) {
+                        } @else if (option.config !== null && option.config.enabled && option.config.capacity > 0) {
                           <span class="branch-flow__status">Đang bật</span>
                         } @else {
                           <span class="branch-flow__status branch-flow__status--off">Chưa bật</span>

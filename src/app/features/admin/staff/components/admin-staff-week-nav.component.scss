@@ -50,14 +50,15 @@
 .staff-week-nav__picker {
   display: block;
   position: relative;
-  flex: 0 0 222px;
+  flex: 0 0 auto;
   min-width: 0;
 }
 
 .staff-week-nav .staff-week-nav__date {
-  justify-content: space-between;
-  gap: 10px;
-  width: 222px;
+  justify-content: flex-start;
+  gap: 8px;
+  width: max-content;
+  max-width: 100%;
   padding: 0 12px;
   white-space: nowrap;
   text-align: left;

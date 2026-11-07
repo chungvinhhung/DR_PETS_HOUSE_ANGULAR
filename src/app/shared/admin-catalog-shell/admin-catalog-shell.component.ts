@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 import { AdminToastService } from '../services/admin-toast.service';
 import { RouterLink } from '@angular/router';
+import { AdminReturnNotificationService } from '../services/admin-return-notification.service';
+import { AdminSidebarAccordionService, AdminSidebarGroup } from '../services/admin-sidebar-accordion.service';
 
 /**
- * Shared Admin catalog chrome for Category and Product screens.
- * Render the header/sidebar once here so switching routes keeps pixel-identical
- * dimensions, image rendering and navigation placement.
+ * Shared Admin catalog chrome for category, product and operations screens.
+ * The shell itself is rebuilt after navigating between routed child pages,
+ * so accordion state lives in AdminSidebarAccordionService across instances.
  */
 @Component({
   selector: 'app-admin-catalog-shell',
@@ -17,37 +19,52 @@ import { RouterLink } from '@angular/router';
 })
 export class AdminCatalogShellComponent {
   readonly toast = inject(AdminToastService);
-  @Input({ required: true }) activeItem!: 'categories' | 'products' | 'services' | 'branches' | 'staff';
+  readonly returnNotifications = inject(AdminReturnNotificationService);
+  readonly pendingReturnCount = this.returnNotifications.pendingCount;
+  private readonly accordion = inject(AdminSidebarAccordionService);
 
-  salesExpanded = false;
-  servicesExpanded = false;
-  operationsExpanded = false;
-  contentExpanded = false;
-  feedbackExpanded = false;
+  @Input({ required: true }) activeItem!: 'categories' | 'products' | 'orders' | 'vouchers' | 'services' | 'branches' | 'staff' | 'inventory';
+
+  // Animation is intentionally disabled on each newly mounted shell. Route
+  // initialization should NEVER replay the previous group's close animation.
+  sidebarAnimationEnabled = false;
+
+  get salesExpanded(): boolean { return this.accordion.expandedGroup() === 'sales'; }
+  get servicesExpanded(): boolean { return this.accordion.expandedGroup() === 'services'; }
+  get operationsExpanded(): boolean { return this.accordion.expandedGroup() === 'operations'; }
+  get contentExpanded(): boolean { return this.accordion.expandedGroup() === 'content'; }
+  get feedbackExpanded(): boolean { return this.accordion.expandedGroup() === 'feedback'; }
 
   ngOnInit(): void {
-    this.salesExpanded = this.activeItem === 'categories' || this.activeItem === 'products';
-    this.servicesExpanded = this.activeItem === 'services';
-    this.operationsExpanded = this.activeItem === 'branches' || this.activeItem === 'staff';
+    this.returnNotifications.ensureLoaded();
+    const group = this.groupForActiveItem();
+    this.accordion.openForRoute(group);
   }
 
-  toggleSales(): void {
-    this.salesExpanded = !this.salesExpanded;
+  private groupForActiveItem(): AdminSidebarGroup {
+    switch (this.activeItem) {
+      case 'categories':
+      case 'products':
+      case 'orders':
+      case 'vouchers':
+        return 'sales';
+      case 'services':
+        return 'services';
+      case 'branches':
+      case 'staff':
+      case 'inventory':
+        return 'operations';
+    }
   }
 
-  toggleServices(): void {
-    this.servicesExpanded = !this.servicesExpanded;
+  private toggleGroup(group: AdminSidebarGroup): void {
+    this.sidebarAnimationEnabled = true;
+    this.accordion.toggle(group);
   }
 
-  toggleOperations(): void {
-    this.operationsExpanded = !this.operationsExpanded;
-  }
-
-  toggleContent(): void {
-    this.contentExpanded = !this.contentExpanded;
-  }
-
-  toggleFeedback(): void {
-    this.feedbackExpanded = !this.feedbackExpanded;
-  }
+  toggleSales(): void { this.toggleGroup('sales'); }
+  toggleServices(): void { this.toggleGroup('services'); }
+  toggleOperations(): void { this.toggleGroup('operations'); }
+  toggleContent(): void { this.toggleGroup('content'); }
+  toggleFeedback(): void { this.toggleGroup('feedback'); }
 }

@@ -14,7 +14,7 @@ import { BLOG_CATEGORIES, QUICK_READ_POSTS } from '../../../../../shared/custome
   imports: [SidebarHeadingComponent, CategoryIconComponent, CustomerLinkDirective],
   templateUrl: './blog-sidebar.component.html',
   host: {
-    'class': 'flex w-full shrink-0 flex-col lg:w-[330px] gap-6 self-start',
+    'class': 'flex w-[330px] shrink-0 flex-col gap-6 self-start',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

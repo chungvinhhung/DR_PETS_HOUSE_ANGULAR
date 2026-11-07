@@ -11,7 +11,7 @@ import { ReactStyleDirective } from '../../directives/react-style.directive';
   imports: [ReactStyleDirective],
   templateUrl: './canvas-layout.component.html',
   host: {
-    'class': 'block w-full overflow-x-clip bg-white',
+    'class': 'w-full overflow-x-auto overscroll-x-contain scroll-smooth bg-white',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -13,7 +13,7 @@ import { CustomerIconComponent } from '../../../../shared/customer/components/ic
   imports: [DemandTabsComponent, FilterGroupComponent, CustomerIconComponent],
   templateUrl: './search-sidebar.component.html',
   host: {
-    'class': 'w-full shrink-0 lg:w-[283px]',
+    'class': 'w-[283px] shrink-0',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

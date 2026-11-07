@@ -2,17 +2,16 @@
 
 `features/` contains business functionality.
 
-Initial feature boundaries:
+Current feature boundaries:
 
 ```text
-auth/
-home/
-products/
-booking/
-pets/
-orders/
-admin/
+admin/      # Back-office and administration
+customer/   # Customer-facing web experience
+auth/       # Foundation placeholder
 ```
+
+The original Customer demo route placeholders (`home/`, `products/`, `booking/`, `pets/`, `orders/`) have been retired.
+Customer routes are defined in `features/customer/customer.routes.ts`, loaded by `app.routes.ts` through the Customer layout in `layouts/customer/`.
 
 ## Feature ownership
 

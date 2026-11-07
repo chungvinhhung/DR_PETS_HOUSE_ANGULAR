@@ -1,6 +1,6 @@
 <app-admin-catalog-shell activeItem="staff">
 <main class="assign-page">
-  <nav class="assign-crumb" aria-label="Breadcrumb"><span>Vận hành</span> › <a routerLink="/admin/staff">Nhân sự</a> › <a routerLink="/admin/staff/schedule">Lịch làm việc</a> › <strong>Phân ca</strong></nav>
+  <nav class="assign-crumb" aria-label="Đường dẫn"><span>Vận hành</span><span aria-hidden="true">›</span><a routerLink="/admin/staff">Nhân sự</a><span aria-hidden="true">›</span><a routerLink="/admin/staff/schedule">Lịch làm việc</a><span aria-hidden="true">›</span><strong aria-current="page">Phân ca</strong></nav>
   <header class="assign-header"><h1>Phân ca theo tuần</h1><div><button type="button" class="assign-cancel" (click)="requestClose()">Hủy</button><button type="button" class="assign-save" (click)="validatePreview()">Kiểm tra phân ca</button></div></header>
   <p class="assign-note">Danh sách nhân viên và ca hiện có lấy từ API Render. Thêm ca vẫn là bản nháp, chưa ghi Backend.</p>
   @if (staffApi.loading() || staffApi.shiftLoading()) { <p role="status">Đang tải nhân sự và ca làm...</p> }

@@ -11,7 +11,7 @@ import { ReactStyleDirective } from '../../../../../shared/customer/directives/r
   imports: [ReactStyleDirective],
   templateUrl: './load-more.component.html',
   host: {
-    'class': 'mx-auto mt-[32px] flex h-[202px] w-full max-w-[498px] flex-col items-center gap-[26px] py-[24px]',
+    'class': 'mx-auto mt-[32px] flex h-[202px] w-[498px] flex-col items-center gap-[26px] py-[24px]',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -50,12 +50,7 @@ export class ProductDetailsPageComponent implements OnInit {
   readonly reviewItems = computed<any>(() => Array.isArray(this.reviewsData().items) ? this.reviewsData().items : []);
   readonly SIM_CARD_WIDTH = computed<any>(() => 170);
   readonly SIM_CARD_GAP = computed<any>(() => 20);
-  /** Số thẻ "Sản phẩm tương tự" hiển thị cùng lúc — đổi theo chiều rộng màn hình (fluid layout). */
-  private readonly viewportWidth = signal<number>(typeof window === 'undefined' ? 1440 : window.innerWidth);
-  readonly SIM_VISIBLE_COUNT = computed<any>(() => {
-    const width = this.viewportWidth();
-    return Math.max(1, Math.min(6, Math.floor((width - 200) / (this.SIM_CARD_WIDTH() + this.SIM_CARD_GAP()))));
-  });
+  readonly SIM_VISIBLE_COUNT = computed<any>(() => 6);
   readonly safeSimilarProducts = computed<any>(() => Array.isArray(this.similarProducts()) ? this.similarProducts() : []);
   readonly canGoSimPrev = computed<any>(() => this.simOffset() > 0);
   readonly canGoSimNext = computed<any>(() => this.simOffset() < this.safeSimilarProducts().length - Number(this.SIM_VISIBLE_COUNT()));
@@ -169,12 +164,9 @@ export class ProductDetailsPageComponent implements OnInit {
         const handleKeyDown = (e: any) => {
           if (e.key === "Escape") this.dropdownOpen.set(false);
         };
-        const handleResize = () => this.viewportWidth.set(window.innerWidth);
         document.addEventListener("mousedown", handleClickOutside);
         document.addEventListener("keydown", handleKeyDown);
-        window.addEventListener("resize", handleResize);
         return () => {
-          window.removeEventListener("resize", handleResize);
           document.removeEventListener("mousedown", handleClickOutside);
           document.removeEventListener("keydown", handleKeyDown);
         };

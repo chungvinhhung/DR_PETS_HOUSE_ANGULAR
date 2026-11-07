@@ -1,14 +1,14 @@
 <div
-  class="flex h-[795px] max-h-[calc(100vh-48px)] w-[1024px] max-w-[calc(100vw-32px)] flex-col overflow-y-auto md:flex-row md:overflow-hidden rounded-[16px] border border-[#C1C6D5] bg-white shadow-2xl"
+  class="flex h-[795px] max-h-[calc(100vh-48px)] w-[1024px] max-w-[calc(100vw-32px)] overflow-hidden rounded-[16px] border border-[#C1C6D5] bg-white shadow-2xl"
   (mousedown)="$any($event).stopPropagation()"
 >
-  <div class="flex min-h-0 w-full shrink-0 flex-col border-b border-[#C1C6D5] md:w-[60.8%] md:shrink md:border-b-0 md:border-r">
+  <div class="flex min-h-0 w-[623px] flex-col border-r border-[#C1C6D5]">
     <div class="border-b border-[#C1C6D5] px-6 py-4">Bài viết của {{ post().author }}</div>
     @if (post().image) {
-      <img [attr.src]="post().image" alt="" class="h-[220px] w-full object-cover sm:h-[360px]" />
+      <img [attr.src]="post().image" alt="" class="h-[360px] w-full object-cover" />
     }
     @if (post().video) {
-      <video [attr.src]="post().video" controls class="h-[220px] w-full bg-black object-contain sm:h-[360px]"></video>
+      <video [attr.src]="post().video" controls class="h-[360px] w-full bg-black object-contain"></video>
     }
     <div class="min-h-0 flex-1 overflow-y-auto p-6">
       <div class="flex items-start justify-between">
@@ -31,7 +31,7 @@
       </div>
     </div>
   </div>
-  <div class="flex min-h-[420px] w-full flex-col md:min-h-0 md:w-[39.2%]">
+  <div class="flex min-h-0 w-[400px] flex-col">
     <div class="flex items-center justify-between border-b border-[#C1C6D5] px-6 py-4">
       <span>Bình luận ({{ comments().length }})</span>
       <button type="button" (click)="onClose.emit($event)"><app-customer-icon name="x" className="h-5 w-5" /></button>

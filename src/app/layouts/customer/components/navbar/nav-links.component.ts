@@ -13,7 +13,7 @@ import { NAV_LINKS } from '../../constants/navbar-menu-links';
   imports: [CustomerLinkDirective],
   templateUrl: './nav-links.component.html',
   host: {
-    '[class]': '`hidden flex-1 items-center justify-center gap-3 lg:flex xl:gap-[22px] ${className()}`',
+    '[class]': '`hidden flex-1 items-center justify-center gap-[22px] lg:flex ${className()}`',
     'aria-label': 'Menu chính',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,

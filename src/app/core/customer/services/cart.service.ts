@@ -15,6 +15,20 @@ function getCartItemOptionKey(item: any = {}): string {
   return `${item.productId || item.product_id || item.id}:${item.variantId || item.variant_id || 'default'}:${item.size || 'default'}`;
 }
 
+const CART_STORAGE_KEY = 'drPetCartItems';
+
+function loadLocalCart(): any[] {
+  try {
+    const saved = localStorage.getItem(CART_STORAGE_KEY);
+    if (!saved) return [];
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item: any) => Boolean(item && item.name && item.name.trim() && item.name !== 'Sản phẩm' && item.productId));
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Giỏ hàng + luồng thanh toán (thay cho context/CartContext.jsx của React).
  *
@@ -41,7 +55,7 @@ export class CartService {
   readonly lastOrderResult = signal<any>(null);
   readonly cartSyncError = signal('');
   readonly cartLoading = signal(false);
-  readonly cartItems = signal<any[]>([]);
+  readonly cartItems = signal<any[]>(loadLocalCart());
 
   constructor() {
     // Khi đăng nhập/đăng xuất -> tải lại giỏ hàng từ server
@@ -56,6 +70,16 @@ export class CartService {
         void this.reloadCart();
       });
     });
+    // Tự động lưu giỏ hàng vào localStorage khi có thay đổi
+    effect(() => {
+      const items = this.cartItems();
+      try {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+      } catch {
+        // ignore
+      }
+    });
+
     // Đổi trang -> đóng giỏ hàng
     inject(Router).events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => this.isCartOpen.set(false));
   }
@@ -74,7 +98,12 @@ export class CartService {
     this.cartSyncError.set('');
     try {
       const cart = await this.cartApi.getCart();
-      this.cartItems.set(cart.items);
+      const validItems = Array.isArray(cart?.items)
+        ? cart.items.filter((item: any) => Boolean(item && item.name && item.name.trim() && item.name !== 'Sản phẩm' && item.productId))
+        : [];
+      if (validItems.length > 0) {
+        this.cartItems.set(validItems);
+      }
     } catch (error: any) {
       this.cartSyncError.set(error?.message || 'Không thể tải giỏ hàng');
     } finally {
@@ -84,7 +113,6 @@ export class CartService {
 
   private syncFailed(error: any, fallback: string): void {
     this.cartSyncError.set(error?.message || fallback);
-    void this.reloadCart();
   }
 
   readonly toggleCartItem = (id: string): void => {
@@ -215,6 +243,12 @@ export class CartService {
 
   private showOrderSuccess(orderResult: any = null): void {
     if (orderResult) this.lastOrderResult.set(orderResult);
+    this.cartItems.set([]);
+    try {
+      localStorage.removeItem(CART_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
     this.isCartOpen.set(false);
     this.isCheckoutOpen.set(false);
     this.isBankTransferOpen.set(false);

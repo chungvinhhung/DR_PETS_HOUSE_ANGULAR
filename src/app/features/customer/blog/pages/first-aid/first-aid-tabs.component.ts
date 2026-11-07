@@ -11,7 +11,7 @@ import { CustomerLinkDirective } from '../../../../../shared/customer/directives
   imports: [CustomerLinkDirective],
   templateUrl: './first-aid-tabs.component.html',
   host: {
-    'class': 'flex h-14 w-full max-w-[1200px] items-center gap-6 overflow-x-auto whitespace-nowrap text-[16px] sm:gap-10',
+    'class': 'flex h-14 w-[1200px] items-center gap-10 text-[16px]',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

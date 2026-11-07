@@ -11,22 +11,27 @@ import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 import { rescueImages } from '../../../../shared/customer/assets/rescue-images';
 
 function getPrimaryImage(images: any = []) {
-  return images.find((item: any) => item.is_primary)?.image_url || images[0]?.image_url || rescueImages.rescuePlaceholder;
+  if (!images || !images.length) return rescueImages.rescuePlaceholder;
+  const first = images[0];
+  if (typeof first === 'string') return first;
+  return images.find((item: any) => item.is_primary)?.image_url || first?.image_url || rescueImages.rescuePlaceholder;
 }
 
 export function normalizeAdoptionPet(pet: any = {}) {
-  const state = pet.status === "adopted" ? "adopted" : "waiting";
+  const isAdopted = pet.status === "adopted" || pet.status === "ADOPTED";
+  const state = isAdopted ? "adopted" : "waiting";
+  const speciesLabel = pet.species === "DOG" ? "Chó" : pet.species === "CAT" ? "Mèo" : (pet.species || "Thú cưng");
 
   return {
     ...pet,
-    id: String(pet.adoption_pet_id || pet.id || ""),
-    name: pet.name || "Bạn nhỏ",
+    id: String(pet.adoption_pet_id || pet._id || pet.id || pet.petCode || ""),
+    name: pet.petName || pet.name || "Bạn nhỏ",
     image: getPrimaryImage(pet.images || pet.adoption_pet_images || []),
     state,
-    ribbon: state === "adopted" ? "Đã có tổ ấm" : "Đang chờ nhận nuôi",
-    description: pet.description || pet.personality || "Một bạn nhỏ đang chờ được yêu thương và chăm sóc.",
-    status: ([pet.species, pet.age_text, pet.region].filter(Boolean) as any[]).join(" - ") || "Đang chờ nhận nuôi",
-    need: pet.adoption_conditions || "Cần một gia đình có thời gian chăm sóc và đồng hành lâu dài.",
+    ribbon: isAdopted ? "Đã có tổ ấm" : "Đang chờ nhận nuôi",
+    description: pet.rescueStory || pet.description || pet.personality || "Một bạn nhỏ đang chờ được yêu thương và chăm sóc.",
+    status: ([speciesLabel, pet.ageDescription || pet.age_text, pet.breed, pet.branchId?.name || pet.region].filter(Boolean) as any[]).join(" - ") || "Đang chờ nhận nuôi",
+    need: pet.healthStatus || pet.adoption_conditions || "Cần một gia đình có thời gian chăm sóc và đồng hành lâu dài.",
   };
 }
 
@@ -74,7 +79,8 @@ export class RescueApiService {
     try {
       const response = await this.http.get("/adoptions/pets");
       const data = assertSuccess(response);
-      return (Array.isArray(data) ? data : data?.items || []).map(normalizeAdoptionPet);
+      const list = Array.isArray(data) ? data : (data?.items || data?.pets || []);
+      return list.map(normalizeAdoptionPet);
     } catch {
       return [];
     }
@@ -84,7 +90,8 @@ export class RescueApiService {
     try {
       const response = await this.http.get("/rescue/stations");
       const data = assertSuccess(response);
-      return (Array.isArray(data) ? data : data?.items || []).map(normalizeRescueStation);
+      const list = Array.isArray(data) ? data : (data?.items || []);
+      return list.map(normalizeRescueStation);
     } catch {
       return [];
     }
@@ -92,13 +99,23 @@ export class RescueApiService {
 
   async createAdoptionRequest(petId: any, values: any) {
     const response = await this.http.post("/adoptions/requests", {
+      rescuePetId: petId,
       adoption_pet_id: petId,
+      petId,
+      fullName: values.fullName,
       full_name: values.fullName,
       phone: values.phone,
+      email: values.email || 'customer@example.com',
       gender: values.gender,
+      birthYear: values.birthYear,
       birth_year: values.birthYear,
       address: values.address,
-      reason: values.adoptionReason || values.futurePlan || "Mong muốn nhận nuôi và chăm sóc thú cưng.",
+      housingType: values.housingType || 'HOUSE',
+      housing_type: values.housingType || 'HOUSE',
+      hasPetExperience: values.hasPetExperience ?? true,
+      has_pet_experience: values.hasPetExperience ?? true,
+      message: values.message || values.reason || values.adoptionReason || values.futurePlan || '',
+      reason: values.adoptionReason || values.futurePlan || values.message || values.reason || "Mong muốn nhận nuôi và chăm sóc thú cưng.",
       housing_info: ([
         values.housingType && `Nhà ở: ${values.housingType}`,
         values.familyConsent && `Gia đình đồng ý: ${values.familyConsent}`,

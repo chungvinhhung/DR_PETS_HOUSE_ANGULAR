@@ -3,6 +3,7 @@ import { CanDeactivateFn, Routes } from '@angular/router';
 import { adminLoginEntryGuard } from './core/guards/admin-login-entry.guard';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
+import { orderOperatorGuard } from './core/guards/order-operator.guard';
 
 const BACKOFFICE_ROLES = ['ADMIN', 'MANAGER', 'STAFF'];
 
@@ -13,6 +14,8 @@ interface ProductLeaveAware {
 const confirmProductLeave: CanDeactivateFn<ProductLeaveAware> = (component) => component.canLeavePage();
 
 const confirmStaffLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
+const confirmVoucherLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
+const confirmOrderCreateLeave: CanDeactivateFn<{ canLeavePage(): boolean | Promise<boolean> }> = component => component.canLeavePage();
 
 export const routes: Routes = [
   {
@@ -63,6 +66,12 @@ export const routes: Routes = [
   },
 
   {
+    path: 'admin/inventory',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () => import('./features/admin/inventory/pages/admin-inventory-page.component').then(c => c.AdminInventoryPageComponent),
+  },
+  {
     path: 'admin/branches/:id',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN', 'MANAGER'] },
@@ -110,6 +119,65 @@ export const routes: Routes = [
       import(
         './features/admin/service-catalog/pages/service-catalog-list.component'
       ).then((component) => component.ServiceCatalogListComponent),
+  },
+  {
+    path: 'admin/vouchers/new',
+    canActivate: [authGuard, roleGuard],
+    canDeactivate: [confirmVoucherLeave],
+    data: { roles: ['ADMIN'], mode: 'create' },
+    loadComponent: () => import('./features/admin/vouchers/pages/admin-voucher-editor.component')
+      .then(c => c.AdminVoucherEditorComponent),
+  },
+  {
+    path: 'admin/vouchers/:id/edit',
+    canActivate: [authGuard, roleGuard],
+    canDeactivate: [confirmVoucherLeave],
+    data: { roles: ['ADMIN'], mode: 'edit' },
+    loadComponent: () => import('./features/admin/vouchers/pages/admin-voucher-editor.component')
+      .then(c => c.AdminVoucherEditorComponent),
+  },
+  {
+    path: 'admin/vouchers/:id',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'], mode: 'view' },
+    loadComponent: () => import('./features/admin/vouchers/pages/admin-voucher-editor.component')
+      .then(c => c.AdminVoucherEditorComponent),
+  },
+  {
+    path: 'admin/vouchers',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () => import('./features/admin/vouchers/pages/admin-voucher-list.component')
+      .then(c => c.AdminVoucherListComponent),
+  },
+  {
+    path: 'admin/order-returns/:id',
+    canActivate: [authGuard, roleGuard, orderOperatorGuard],
+    data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+    loadComponent: () => import('./features/admin/orders/pages/admin-order-return-detail.component')
+      .then(component => component.AdminOrderReturnDetailComponent),
+  },
+  {
+    path: 'admin/orders/new',
+    canActivate: [authGuard, roleGuard],
+    canDeactivate: [confirmOrderCreateLeave],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () => import('./features/admin/orders/pages/admin-order-create.component')
+      .then(component => component.AdminOrderCreateComponent),
+  },
+  {
+    path: 'admin/orders/:id',
+    canActivate: [authGuard, roleGuard, orderOperatorGuard],
+    data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+    loadComponent: () => import('./features/admin/orders/pages/admin-order-management.component')
+      .then(component => component.AdminOrderManagementComponent),
+  },
+  {
+    path: 'admin/orders',
+    canActivate: [authGuard, roleGuard, orderOperatorGuard],
+    data: { roles: ['ADMIN', 'MANAGER', 'STAFF'] },
+    loadComponent: () => import('./features/admin/orders/pages/admin-order-management.component')
+      .then(component => component.AdminOrderManagementComponent),
   },
   {
     path: 'admin',
@@ -197,13 +265,6 @@ export const routes: Routes = [
           ).then((component) => component.AdminDashboardPageComponent),
       },
       {
-        path: 'orders',
-        loadComponent: () =>
-          import('./features/admin/pages/orders/admin-orders-page.component').then(
-            (component) => component.AdminOrdersPageComponent,
-          ),
-      },
-      {
         path: 'appointments',
         loadComponent: () =>
           import(
@@ -231,7 +292,7 @@ export const routes: Routes = [
     ],
   },
   {
-    // Giao diện khách hàng (Customer) - route chi tiết: features/customer/customer.routes.ts
+    // Customer UI is isolated in its own lazy-loaded layout and routes.
     path: '',
     loadComponent: () =>
       import('./layouts/customer/customer-layout/customer-layout.component').then(
@@ -239,5 +300,9 @@ export const routes: Routes = [
       ),
     loadChildren: () =>
       import('./features/customer/customer.routes').then((m) => m.CUSTOMER_ROUTES),
+  },
+  {
+    path: '**',
+    redirectTo: '',
   },
 ];

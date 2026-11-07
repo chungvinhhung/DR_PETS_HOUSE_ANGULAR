@@ -12,7 +12,7 @@ import { PRODUCT_PRICE_RANGES as PRICE_RANGES } from '../../../../../shared/cust
   imports: [FilterHeadingComponent],
   templateUrl: './filter-sidebar.component.html',
   host: {
-    'class': 'w-full shrink-0 lg:w-[283px] lg:pt-[75px]',
+    'class': 'w-[283px] shrink-0 pt-[75px]',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

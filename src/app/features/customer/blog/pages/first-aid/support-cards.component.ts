@@ -11,7 +11,7 @@ import { CustomerIconComponent } from '../../../../../shared/customer/components
   imports: [CustomerIconComponent],
   templateUrl: './support-cards.component.html',
   host: {
-    'class': 'mt-6 grid w-full grid-cols-1 gap-6 md:grid-cols-12',
+    'class': 'mt-6 grid w-full grid-cols-12 gap-6',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
