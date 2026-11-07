@@ -540,6 +540,15 @@ export class AdminProductListPageComponent implements OnInit {
   @HostListener('document:keydown.escape')
   closeArchiveMenuOnEscape(): void { this.closeArchiveMenu(); }
 
+  /** Open product edit/detail from any non-interactive cell. */
+  openProductRow(product: AdminProduct, event: MouseEvent | KeyboardEvent): void {
+    const target = event.target;
+    if (target instanceof Element && target.closest('a, button, input, select, textarea, [role="menu"]')) return;
+    void this.router.navigate(['/admin/products', product.id, 'edit'], {
+      ...(product.status === 'ARCHIVED' ? { queryParams: { view: 'archived' } } : {}),
+    });
+  }
+
   chooseArchiveAction(action: 'restore' | 'edit' | 'delete'): void {
     const product = this.archiveMenuProduct();
     this.closeArchiveMenu();
