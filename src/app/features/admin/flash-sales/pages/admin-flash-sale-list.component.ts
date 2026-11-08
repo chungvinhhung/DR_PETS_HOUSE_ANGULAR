@@ -52,11 +52,14 @@ export class AdminFlashSaleListComponent {
     });
   }
   readonly displayRows = computed(() => this.rows());
-  soldSummary(sale: AdminFlashSale): string {
-    if (!sale.items.length || sale.items.some(item => !Number.isFinite(item.soldQuantity) || !Number.isFinite(item.quantityLimit))) return '—';
+  /** Use only BE quantities; unknown values must never be presented as zero sales. */
+  soldProgress(sale: AdminFlashSale): { sold: number; limit: number; percent: number } | null {
+    if (!sale.items.length || sale.items.some(item =>
+      !Number.isFinite(item.soldQuantity) || item.soldQuantity < 0 ||
+      !Number.isFinite(item.quantityLimit) || item.quantityLimit < 0)) return null;
     const sold = sale.items.reduce((sum, item) => sum + item.soldQuantity, 0);
-    const quota = sale.items.reduce((sum, item) => sum + item.quantityLimit, 0);
-    return sold.toLocaleString('vi-VN') + ' / ' + quota.toLocaleString('vi-VN');
+    const limit = sale.items.reduce((sum, item) => sum + item.quantityLimit, 0);
+    return { sold, limit, percent: limit > 0 ? Math.min(100, sold / limit * 100) : 0 };
   }
   state(row: AdminFlashSale): FlashSaleDisplayState {
     return flashSaleState(row, this.now());
