@@ -989,3 +989,12 @@ app-service-catalog-editor {
 :host .service-editor__table--prices td:nth-child(5) {text-align:left;}
 :host .service-editor__table--prices :is(th,td) {padding:12px 16px; box-sizing:border-box; vertical-align:middle;}
 :host .service-editor__table--prices .service-editor__amount-words-cell { overflow-wrap:break-word; }
+
+/* Validation stays visible during typing; both input and helper use the same error color. */
+:host .service-editor__price-error{display:block;margin-top:5px;color:#c62828;font:500 12px/1.4 Roboto,Arial,sans-serif;}
+:host .service-editor__price-input--invalid{border-color:#c62828!important;background:#fff7f7;}
+:host .service-editor__price-input--invalid:focus-within{outline:0;box-shadow:0 0 0 2px rgba(198,40,40,.16);}
+:host .service-editor__table input[type="number"]:out-of-range,
+:host .service-editor__field input[type="number"]:out-of-range,
+:host .service-editor__table input[aria-invalid="true"],
+:host .service-editor__field input[aria-invalid="true"] {border-color:#c62828;background:#fff7f7;}
