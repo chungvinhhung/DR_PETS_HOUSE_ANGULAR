@@ -360,8 +360,11 @@
           <div class="dash__demo-list">
             @for (item of d.stocks; track item.name) {
               <div class="dash__demo-stock-row">
-                <span class="dash__demo-stock-alert" [class.dash__demo-stock-alert--zero]="item.quantity===0">!</span>
-                <span class="dash__demo-stock-name"><strong>{{item.name}}</strong><small>{{item.branch}}</small></span>
+                <span class="dash__demo-product-photo">
+                  <img [src]="item.imageUrl" [alt]="item.name" loading="lazy" decoding="async"
+                    (error)="onDemoStockImageError($event)" width="40" height="40" />
+                </span>
+                <span class="dash__demo-stock-name"><strong [title]="item.name">{{item.name}}</strong><small>{{item.branch}}</small></span>
                 <strong class="dash__demo-stock-number" [class.dash__demo-stock-number--zero]="item.quantity===0">{{item.quantity}} <span>/ {{item.threshold}}</span></strong>
               </div>
             }
