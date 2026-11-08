@@ -92,7 +92,7 @@ export function createDemoDashboard(from: string, to: string, branchId: string):
     summary: {
       orders, appointments,
       revenue: { amount: revenue, currency: 'VND' },
-      newCustomers: customers, lowStockItems: 4,
+      newCustomers: customers, lowStockItems: 5,
       breakdown: {
         orderCountsByStatus: {
           COMPLETED: orderStatusValues[0], PROCESSING: orderStatusValues[1],
