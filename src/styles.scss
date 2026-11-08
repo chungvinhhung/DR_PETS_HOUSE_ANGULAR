@@ -8295,3 +8295,33 @@ app-admin-product-list-page .product-panel td.status-cell .status {
     margin-left:0 !important;
   }
 }
+
+/* Admin Product: variant-specific photos are optional, main product image is the preview fallback. */
+app-admin-product-create-page .variant-image-clear,
+app-admin-product-edit-page .variant-image-clear {
+  display:block;
+  margin:4px auto 0;
+  padding:2px 3px;
+  border:0;
+  border-radius:3px;
+  background:transparent;
+  color:#0d47a1;
+  font:500 10px/14px Roboto,Arial,sans-serif;
+  white-space:nowrap;
+  cursor:pointer;
+}
+app-admin-product-create-page .variant-image-clear:hover,
+app-admin-product-edit-page .variant-image-clear:hover { text-decoration:underline; }
+app-admin-product-create-page .variant-image-clear:focus-visible,
+app-admin-product-edit-page .variant-image-clear:focus-visible { outline:2px solid #0d47a1;outline-offset:1px; }
+app-admin-product-create-page .variant-image-clear:disabled,
+app-admin-product-edit-page .variant-image-clear:disabled { opacity:.5;cursor:not-allowed; }
+app-admin-product-create-page .variant-image-fallback-label,
+app-admin-product-edit-page .variant-image-fallback-label {
+  display:block;
+  margin:4px auto 0;
+  color:#64748b;
+  font:400 10px/14px Roboto,Arial,sans-serif;
+  white-space:nowrap;
+  text-align:center;
+}
