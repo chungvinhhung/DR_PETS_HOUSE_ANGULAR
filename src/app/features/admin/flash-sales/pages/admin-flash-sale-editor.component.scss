@@ -10,9 +10,8 @@
   display:block;color:#697d96;font-size:12px;margin-bottom:8px;
 }
 :host .flash-editor__overview-name>strong{font-size:18px;font-weight:650;line-height:1.45;color:#18375a;overflow-wrap:anywhere;}
-:host .flash-editor__overview-timeline{display:grid;grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr);gap:12px;align-items:center;}
+:host .flash-editor__overview-timeline{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:center;}
 :host .flash-editor__overview-timeline strong{display:block;color:#173557;font-size:14px;line-height:1.45;white-space:nowrap;}
-:host .flash-editor__overview-arrow{color:#8ba3c1;font-size:22px;text-align:center;padding-top:13px;}
 :host .flash-editor__overview-description{padding-top:17px;border-top:1px solid #e8edf5;}
 :host .flash-editor__overview-description p{margin:0;color:#30465f;font-size:13px;line-height:1.7;overflow-wrap:anywhere;}
 :host .flash-editor__overview-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
@@ -39,19 +38,17 @@
 /* Dedicated columns for percentage and calculated / manually entered sale price. */
 :host .flash-editor__table--applied{min-width:1000px;width:100%;table-layout:fixed;}
 :host .flash-editor__table--editing th:nth-child(1){width:5%;}
-:host .flash-editor__table--editing th:nth-child(2){width:23%;}
-:host .flash-editor__table--editing th:nth-child(3){width:11%;}
-:host .flash-editor__table--editing th:nth-child(4){width:11%;}
-:host .flash-editor__table--editing th:nth-child(5){width:13%;}
-:host .flash-editor__table--editing th:nth-child(6){width:15%;}
-:host .flash-editor__table--editing th:nth-child(7){width:15%;}
-:host .flash-editor__table--editing th:nth-child(8){width:7%;}
-:host .flash-editor__table--view th:nth-child(1){width:31%;}
-:host .flash-editor__table--view th:nth-child(2){width:14%;}
-:host .flash-editor__table--view th:nth-child(3){width:13%;}
-:host .flash-editor__table--view th:nth-child(4){width:12%;}
-:host .flash-editor__table--view th:nth-child(5){width:14%;}
+:host .flash-editor__table--editing th:nth-child(2){width:25%;}
+:host .flash-editor__table--editing th:nth-child(n+3):nth-child(-n+6){width:13%;}
+:host .flash-editor__table--editing th:nth-child(7){width:12%;}
+:host .flash-editor__table--editing th:nth-child(8){width:6%;}
+:host .flash-editor__table--view th:nth-child(1){width:30%;}
+:host .flash-editor__table--view th:nth-child(n+2):nth-child(-n+5){width:13.5%;}
 :host .flash-editor__table--view th:nth-child(6){width:16%;}
+/* Align every middle header with its numeric content without moving the product and sold columns. */
+:host .flash-editor__table--view :is(th,td):nth-child(n+2):nth-child(-n+5),
+:host .flash-editor__table--editing :is(th,td):nth-child(n+3):nth-child(-n+7){text-align:center;}
+:host .flash-editor__table--editing input[type=number]{text-align:center;}
 :host .flash-editor__table--applied :is(th,td){padding:13px 11px;box-sizing:border-box;vertical-align:middle;}
 :host .flash-editor__table--applied .flash-editor__select-column{text-align:center;padding-inline:5px;}
 :host .flash-editor__table--applied input[type="checkbox"]{accent-color:#0d47a1;width:16px;height:16px;cursor:pointer;}
@@ -74,7 +71,6 @@
 }
 @media(max-width:600px){
   :host .flash-editor__overview-timeline{grid-template-columns:1fr;gap:5px;}
-  :host .flash-editor__overview-arrow{display:none;}
   :host .flash-editor__overview-stats{grid-template-columns:1fr;}
 }
 
