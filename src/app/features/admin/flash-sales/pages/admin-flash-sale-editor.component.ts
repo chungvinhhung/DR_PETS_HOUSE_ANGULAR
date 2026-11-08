@@ -497,7 +497,8 @@ export class AdminFlashSaleEditorComponent {
     });
   }
   private toOption(p:AdminProduct,v:ProductVariant): ProductOption {
-    const image=p.images?.find(img=>img.isPrimary)?.url??p.images?.[0]?.url??v.image??'';
+    // Prefer an image assigned to this SKU; otherwise inherit the product main image.
+    const image=v.image || p.images?.find(img=>img.isPrimary)?.url || p.images?.[0]?.url || '';
     return {
       key:p.id+'::'+v.id,productId:p.id,variantId:v.id,
       productName:p.name,variantName:v.label,sku:v.sku,imageUrl:image??'',
