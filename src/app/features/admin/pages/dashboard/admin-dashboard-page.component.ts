@@ -308,6 +308,14 @@ export class AdminDashboardPageComponent {
     return typeof value === 'number' && Number.isFinite(value)
       ? value.toLocaleString('vi-VN') + 'đ' : '—';
   }
+  onDemoStockImageError(event: Event): void {
+    // External preview photo can be unavailable or block hotlinking.
+    // Use the local catalog placeholder rather than leaving a broken image.
+    const image = event.target;
+    if (!(image instanceof HTMLImageElement)) return;
+    image.onerror = null;
+    image.src = '/assets/customer/images/product/card-placeholder.png';
+  }
   shortTime(value: string | null | undefined): string {
     if (!value || !Number.isFinite(Date.parse(value))) return '—';
     return new Intl.DateTimeFormat('vi-VN', {
