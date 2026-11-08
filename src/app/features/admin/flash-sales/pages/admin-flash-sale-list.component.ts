@@ -52,6 +52,12 @@ export class AdminFlashSaleListComponent {
     });
   }
   readonly displayRows = computed(() => this.rows());
+  soldSummary(sale: AdminFlashSale): string {
+    if (!sale.items.length || sale.items.some(item => !Number.isFinite(item.soldQuantity) || !Number.isFinite(item.quantityLimit))) return '—';
+    const sold = sale.items.reduce((sum, item) => sum + item.soldQuantity, 0);
+    const quota = sale.items.reduce((sum, item) => sum + item.quantityLimit, 0);
+    return sold.toLocaleString('vi-VN') + ' / ' + quota.toLocaleString('vi-VN');
+  }
   state(row: AdminFlashSale): FlashSaleDisplayState {
     return flashSaleState(row, this.now());
   }
@@ -62,7 +68,7 @@ export class AdminFlashSaleListComponent {
     this.searchTimer = setTimeout(() => {this.reset();}, 300);
   }
   changeState(value: string): void {
-    const choices = ['ALL','DRAFT','UPCOMING','RUNNING','PAUSED','ENDED'];
+    const choices = ['ALL','UPCOMING','RUNNING','PAUSED','ENDED'];
     if (!choices.includes(value)) return;
     this.stateFilter.set(value as FlashSaleDisplayState | 'ALL');
     this.reset();
