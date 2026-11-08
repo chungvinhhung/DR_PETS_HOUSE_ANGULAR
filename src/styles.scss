@@ -8782,3 +8782,65 @@ background:radial-gradient(ellipse 52% 38% at 8% 4%,rgba(144,188,239,.20),transp
 @media(max-width:840px){.dash{padding:22px 17px 28px}.dash__kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dash__middle,.dash__bottom{grid-template-columns:1fr}.dash__panel--revenue,.dash__panel--shortcuts{grid-column:auto}.dash__status-layout{flex-direction:row}.dash__heading-actions{gap:9px}}
 @media(max-width:530px){.dash__heading{align-items:start}.dash__heading-actions{flex-direction:row;align-items:stretch;justify-content:flex-start;width:100%}.dash__filter{flex:1 1 150px;width:auto;max-width:none}.dash__filter--branch{flex:1 1 170px;width:auto}.dash__refresh{flex:1 1 100%}.dash__kpis{gap:9px}.dash__kpi{padding:14px;min-height:152px}.dash__kpi-value{font-size:22px}.dash__status-layout{flex-direction:column}.dash__custom{flex-wrap:wrap}.dash__custom label{flex:1 1 120px}.dash__custom-hint{margin-left:0;flex-basis:100%}.dash__footer{flex-direction:column;gap:4px}}
 
+
+
+/* Dashboard M23 — operational priority panel. Figma asset icons and Admin-consistent table. */
+app-admin-dashboard-page .dash__kpi-icon:has(img){border:0;box-shadow:none;background:transparent!important}
+app-admin-dashboard-page .dash__kpi-icon img{display:block;width:34px;height:34px;max-width:34px;max-height:34px}
+app-admin-dashboard-page .dash__kpi:nth-child(2) .dash__kpi-icon{border:0;background:transparent}
+app-admin-dashboard-page .dash__panel--shortcuts{min-height:300px}
+app-admin-dashboard-page .dash__panel-header--actions{min-height:58px;padding:16px 17px 13px}
+app-admin-dashboard-page .dash__panel-header--actions h2{display:flex;align-items:center;gap:9px}
+app-admin-dashboard-page .dash__action-heading-icon{color:#0d47a1;font-size:19px;font-weight:800;line-height:1}
+app-admin-dashboard-page .dash__action-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:9px 12px 0;border-bottom:1px solid rgba(136,166,200,.22)}
+app-admin-dashboard-page .dash__action-tabs button{
+  display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;
+  padding:9px 5px 10px;border:0;border-bottom:2px solid transparent;border-radius:7px 7px 0 0;
+  background:rgba(231,238,248,.5);color:#566a83;
+  font:600 11px/1.35 Roboto,Arial,sans-serif;cursor:pointer;white-space:normal;
+}
+app-admin-dashboard-page .dash__action-tabs button:hover{background:rgba(223,234,250,.8);color:#174d98}
+app-admin-dashboard-page .dash__action-tabs button.dash__action-tab--active{
+  border-bottom-color:#0d47a1;background:rgba(219,233,253,.8);color:#0d47a1;
+}
+app-admin-dashboard-page .dash__action-tabs button:focus-visible{outline:2px solid #0d47a1;outline-offset:-3px}
+app-admin-dashboard-page .dash__action-tabs img{display:block;flex:0 0 24px;width:24px;height:24px}
+app-admin-dashboard-page .dash__action-content{min-width:0;padding:0 11px;overflow-x:auto;flex:1}
+app-admin-dashboard-page .dash__action-table{width:100%;table-layout:fixed;border-collapse:collapse;color:#29405e;font:500 10.5px/1.5 Roboto,Arial,sans-serif}
+app-admin-dashboard-page .dash__action-table th{
+  padding:10px 5px;background:rgba(230,237,247,.58);
+  color:#435a79;font-size:10px;text-align:left;font-weight:650;white-space:nowrap;
+}
+app-admin-dashboard-page .dash__action-table td{padding:11px 5px;border-bottom:1px solid rgba(190,206,229,.45);vertical-align:middle;overflow-wrap:anywhere}
+app-admin-dashboard-page .dash__action-table tr:last-child td{border-bottom:0}
+app-admin-dashboard-page .dash__action-table strong{color:#193656;font-weight:650}
+app-admin-dashboard-page .dash__action-table a{
+  display:inline-block;border:1px solid #b8d1ee;border-radius:6px;
+  padding:4px 7px;background:rgba(236,246,255,.85);color:#0d47a1;font-size:10px;font-weight:700;text-decoration:none;
+}
+app-admin-dashboard-page .dash__action-table a:hover{border-color:#0d47a1;background:#e0efff}
+app-admin-dashboard-page .dash__action-table th:last-child,
+app-admin-dashboard-page .dash__action-table td:last-child{text-align:center;width:53px}
+app-admin-dashboard-page .dash__action-table th:first-child{width:64px}
+app-admin-dashboard-page .dash__action-table th:nth-child(3){width:75px}
+app-admin-dashboard-page .dash__action-table th:nth-child(4){width:83px}
+app-admin-dashboard-page .dash__action-message{text-align:center!important;color:#7a8da6;padding:26px 7px!important;line-height:1.6}
+app-admin-dashboard-page .dash__action-all{
+  display:flex;justify-content:flex-end;align-items:center;gap:8px;
+  min-height:43px;padding:9px 16px;color:#0d47a1;font-size:11px;font-weight:650;text-decoration:none;
+}
+app-admin-dashboard-page .dash__action-all:hover{text-decoration:underline}
+app-admin-dashboard-page .dash__action-all span{font-size:17px}
+app-admin-dashboard-page .dash__panel-header p:empty,
+app-admin-dashboard-page .dash__bottom-empty p:empty{display:none}
+app-admin-dashboard-page .dash__panel-header:has(p:empty){align-items:center}
+@media(max-width:1320px){
+  app-admin-dashboard-page .dash__panel--shortcuts{grid-column:1 / -1}
+  app-admin-dashboard-page .dash__action-tabs button{font-size:12px}
+  app-admin-dashboard-page .dash__action-table{font-size:12px}
+}
+@media(max-width:530px){
+  app-admin-dashboard-page .dash__action-tabs{gap:3px;padding:7px 7px 0}
+  app-admin-dashboard-page .dash__action-tabs button{font-size:10px;gap:3px;padding-inline:3px}
+  app-admin-dashboard-page .dash__action-content{padding-inline:6px}
+}
