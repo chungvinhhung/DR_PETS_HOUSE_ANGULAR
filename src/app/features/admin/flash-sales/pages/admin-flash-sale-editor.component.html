@@ -139,6 +139,8 @@
                 [attr.aria-invalid]="quantityInvalid(bulkQuantity())" placeholder="VD: 20">
               @if (quantityInvalid(bulkQuantity())) {
                 <small class="flash-editor__input-error">Số lượng phải là số nguyên dương.</small>
+              } @else if (bulkQuantityBelowSold()) {
+                <small class="flash-editor__input-error">Số lượng mới không được nhỏ hơn số lượng đã bán của bất kỳ SKU nào.</small>
               }
             </label>
             <p class="flash-editor__bulk-hint">Áp dụng cho tất cả SKU đã chọn. Có thể điều chỉnh mức giảm và số lượng riêng cho từng dòng.</p>
@@ -187,11 +189,13 @@
                       } @else {
                         <input #quantity type="number" min="1" step="1" inputmode="numeric" aria-label="Số lượng Flash Sale"
                           [value]="product.quantityLimit" [disabled]="!editable()"
-                          [class.flash-editor__numeric-invalid]="quantityInvalid(product.quantityLimit)"
-                          [attr.aria-invalid]="quantityInvalid(product.quantityLimit)"
+                          [class.flash-editor__numeric-invalid]="rowQuantityInvalid(product)"
+                          [attr.aria-invalid]="rowQuantityInvalid(product)"
                           (input)="updateItem(i,'quantityLimit',quantity.value)">
                         @if (quantityInvalid(product.quantityLimit)) {
                           <small class="flash-editor__input-error">Số lượng phải là số nguyên dương.</small>
+                        } @else if (rowQuantityInvalid(product)) {
+                          <small class="flash-editor__input-error">Không thấp hơn {{product.soldQuantity}} sản phẩm đã bán.</small>
                         }
                       }
                     </td>
