@@ -21,12 +21,14 @@ import {
 import { AdminUsersService } from '../services/admin-users.service';
 import { ADMIN_TABLE_PAGE_SIZE, adminPageWindow, AdminPageItem } from '../../../../shared/utils/admin-table-pagination';
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
+import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 
 @Component({
   selector: 'app-admin-users-page',
   standalone: true,
-  imports: [ReactiveFormsModule, AdminDataStateComponent],
+  imports: [ReactiveFormsModule, AdminDataStateComponent, AdminCatalogShellComponent],
   template: `
+    <app-admin-catalog-shell activeItem="staff">
     <section class="users-page">
       <header class="page-heading">
         <div>
@@ -227,6 +229,7 @@ import { AdminDataStateComponent } from '../../../../shared/admin-data-state/adm
         }
       </section>
     </section>
+    </app-admin-catalog-shell>
   `,
   styles: [`
     :host {
@@ -234,8 +237,12 @@ import { AdminDataStateComponent } from '../../../../shared/admin-data-state/adm
     }
 
     .users-page {
+      box-sizing: border-box;
       display: grid;
       gap: 22px;
+      min-width: 0;
+      padding: 28px 30px 42px;
+      background: #f8fafd;
     }
 
     .page-heading,
