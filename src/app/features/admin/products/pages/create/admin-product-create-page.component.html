@@ -85,17 +85,23 @@
     [attr.aria-label]="'Tải lên hoặc thay ảnh cho biến thể ' + ($index + 1)"
     (change)="onVariantImageSelected($event, v)">
   <button type="button" class="image-picker variant-image-picker"
-    [class.variant-image-picker--filled]="!!v.imageUrl"
-    [attr.title]="v.imageUrl ? 'Chọn ảnh khác' : 'Chọn ảnh'"
-    [attr.aria-label]="v.imageUrl ? 'Thay ảnh biến thể ' + ($index + 1) : 'Chọn ảnh cho biến thể ' + ($index + 1)"
+    [class.variant-image-picker--filled]="!!(v.imageUrl || primaryImagePreviewUrl)"
+    [attr.title]="v.imageUrl ? 'Đổi ảnh riêng' : 'Thêm ảnh riêng (không bắt buộc; mặc định dùng ảnh chính sản phẩm)'"
+    [attr.aria-label]="v.imageUrl ? 'Thay ảnh riêng cho biến thể ' + ($index + 1) : 'Thêm ảnh riêng cho biến thể ' + ($index + 1) + ', không bắt buộc'"
     (click)="variantImageInput.click()">
-    @if (v.imageUrl) {
-      <img class="variant-image-picker__photo" [src]="v.imageUrl" [alt]="'Ảnh biến thể ' + ($index + 1)">
+    @if (v.imageUrl || primaryImagePreviewUrl; as preview) {
+      <img class="variant-image-picker__photo" [src]="preview" [alt]="v.imageUrl ? 'Ảnh riêng biến thể ' + ($index + 1) : 'Ảnh chính sản phẩm dùng cho biến thể ' + ($index + 1)">
     } @else {
       <img class="variant-image-picker__placeholder" src="/assets/admin-product/icon-image-picker.svg" alt="">
     }
-    <span class="variant-image-picker__overlay" aria-hidden="true">{{ v.imageUrl ? 'Đổi ảnh' : 'Chọn ảnh' }}</span>
+    <span class="variant-image-picker__overlay" aria-hidden="true">{{ v.imageUrl ? 'Đổi ảnh' : 'Thêm ảnh' }}</span>
   </button>
+  @if (v.imageFile) {
+    <button type="button" class="variant-image-clear" [disabled]="saving"
+      (click)="clearVariantImage(v)" [attr.aria-label]="'Bỏ ảnh riêng của biến thể ' + ($index + 1)">Bỏ ảnh riêng</button>
+  } @else if (primaryImagePreviewUrl) {
+    <small class="variant-image-fallback-label">Ảnh chính</small>
+  }
 </td><td><input aria-label="Biến thể" [(ngModel)]="v.label" [class.input-invalid]="variantLabelInvalid(v)" [attr.aria-invalid]="variantLabelInvalid(v)">@if (variantLabelInvalid(v)) {<small class="field-help-error">Nhập tên biến thể.</small>}</td><td><input aria-label="Mã SKU" value="Tự động tạo" readonly></td><td><span class="variant-currency-input" [class.variant-currency-input--invalid]="variantPriceInvalid(v)"><input aria-label="Giá bán (VNĐ)" type="number" (focus)="selectNumericInput($event)" min="1" step="1000" [(ngModel)]="v.price" [class.input-invalid]="variantPriceInvalid(v)" [attr.aria-invalid]="variantPriceInvalid(v)"><span class="variant-unit" aria-hidden="true">đ</span></span>@if (variantPriceInvalid(v)) {<small class="field-help-error">Giá bán phải là số nguyên lớn hơn 0.</small>}</td><td><span class="variant-currency-input"><input aria-label="Khuyến mại (%)" type="number" (focus)="selectNumericInput($event)" min="0" max="100" step="1" [(ngModel)]="v.discount" [class.input-invalid]="variantDiscountInvalid(v)" [attr.aria-invalid]="variantDiscountInvalid(v)"><span class="variant-unit" aria-hidden="true">%</span></span>@if (variantDiscountInvalid(v)) {<small class="field-help-error">Khuyến mại từ 0–100%.</small>}</td><td><span class="variant-price-output"><output>{{finalPrice(v).toLocaleString('vi-VN')}}</output><span aria-hidden="true">đ</span></span></td><td><button type="button" class="switch tiny" [class.on]="v.active" (click)="toggleVariantActive(v)" aria-label="Trạng thái biến thể"><span></span></button></td><td><button type="button" class="trash" (click)="removeVariant($index)" [disabled]="saving || variants.length <= minVariantCount" [attr.title]="variants.length <= minVariantCount ? 'Cần giữ tối thiểu 2 biến thể' : 'Xóa biến thể'" [attr.aria-label]="'Xóa biến thể ' + ($index + 1)"><img src="/assets/admin-product/icon-delete.svg" alt=""></button></td></tr>}</tbody></table></div></section>}
 
 </main>
