@@ -2,13 +2,37 @@
 <main class="dash" aria-label="Dashboard">
   <header class="dash__heading">
     <h1>Dashboard</h1>
-    <div class="dash__heading-actions">
-      <button type="button" class="dash__refresh" [disabled]="loading() || branchLoading() || !!branchError()"
-        (click)="refresh()" aria-label="Tải lại thống kê">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.3-5.7M20 4v6h-6"/></svg>
-        Làm mới
-      </button>
-    </div>
+    @if (authorized()) {
+      <div class="dash__heading-actions" aria-label="Bộ lọc Dashboard">
+        <label class="dash__filter dash__filter--period">
+          <span class="dash__sr-only">Khoảng thời gian</span>
+          <select [value]="period()" (change)="changePeriod($any($event.target).value)"
+            aria-label="Chọn khoảng thời gian" [title]="rangeLabel()">
+            <option value="today">Hôm nay</option>
+            <option value="7d">7 ngày qua</option>
+            <option value="30d">30 ngày qua</option>
+            <option value="custom">Tùy chọn ngày</option>
+          </select>
+        </label>
+        <label class="dash__filter dash__filter--branch">
+          <span class="dash__sr-only">Chi nhánh</span>
+          <select [value]="branchId()" (change)="changeBranch($any($event.target).value)"
+            [disabled]="branchLoading() || !!branchError()" aria-label="Lọc chi nhánh">
+            <option value="">{{ manager() ? 'Tất cả chi nhánh được giao' : 'Tất cả chi nhánh' }}</option>
+            @for (branch of accessibleBranches(); track branch.id) {
+              <option [value]="branch.id">{{branch.name}}</option>
+            }
+          </select>
+        </label>
+        <button type="button" class="dash__refresh"
+          [disabled]="loading() || branchLoading() || !!branchError() || !!filterError()"
+          (click)="refresh()" aria-label="Tải lại thống kê">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+            stroke-width="1.8" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.3-5.7M20 4v6h-6"/></svg>
+          Làm mới
+        </button>
+      </div>
+    }
   </header>
 
   @if (!authorized()) {
@@ -17,44 +41,22 @@
       <p>Dashboard M23 chỉ dành cho Admin và Manager có chi nhánh được phân công.</p>
     </section>
   } @else {
-    <section class="dash__filters" aria-label="Bộ lọc Dashboard">
-      <label class="dash__filter">
-        <span>Khoảng thời gian</span>
-        <select [value]="period()" (change)="changePeriod($any($event.target).value)" aria-label="Chọn khoảng thời gian">
-          <option value="today">Hôm nay</option>
-          <option value="7d">7 ngày qua</option>
-          <option value="30d">30 ngày qua</option>
-          <option value="custom">Tùy chọn ngày</option>
-        </select>
-      </label>
-      <label class="dash__filter">
-        <span>Chi nhánh</span>
-        <select [value]="branchId()" (change)="changeBranch($any($event.target).value)"
-          [disabled]="branchLoading() || !!branchError()" aria-label="Lọc chi nhánh">
-          <option value="">{{ manager() ? 'Tất cả chi nhánh được giao' : 'Tất cả chi nhánh' }}</option>
-          @for (branch of accessibleBranches(); track branch.id) {
-            <option [value]="branch.id">{{branch.name}}</option>
-          }
-        </select>
-      </label>
-      <div class="dash__range-summary">
-        <span>Giai đoạn thống kê</span>
-        <strong>{{ rangeLabel() }}</strong>
-      </div>
-      @if (period() === 'custom') {
-        <div class="dash__custom">
-          <label><span>Từ ngày</span><input type="date" [value]="from()" (change)="changeFrom($any($event.target).value)" [max]="to()" /></label>
-          <label><span>Đến ngày</span><input type="date" [value]="to()" (change)="changeTo($any($event.target).value)" [min]="from()" /></label>
-          <button type="button" (click)="applyCustom()">Áp dụng</button>
-        </div>
-      }
-      @if (filterError()) { <p class="dash__filter-error" role="alert">{{filterError()}}</p> }
-      @if (branchError()) {
-        <p class="dash__filter-error" role="alert">{{branchError()}}
-          <button type="button" (click)="loadBranches()">Thử lại</button>
-        </p>
-      }
-    </section>
+    @if (period() === 'custom') {
+      <section class="dash__custom" aria-label="Chọn khoảng thời gian tùy chỉnh">
+        <label><span>Từ ngày</span><input type="date" [value]="from()"
+          (change)="changeFrom($any($event.target).value)" [max]="to()" /></label>
+        <label><span>Đến ngày</span><input type="date" [value]="to()"
+          (change)="changeTo($any($event.target).value)" [min]="from()" /></label>
+        <button type="button" (click)="applyCustom()">Áp dụng</button>
+        <span class="dash__custom-hint">Giai đoạn: {{rangeLabel()}}</span>
+      </section>
+    }
+    @if (filterError()) { <p class="dash__filter-error" role="alert">{{filterError()}}</p> }
+    @if (branchError()) {
+      <p class="dash__filter-error" role="alert">{{branchError()}}
+        <button type="button" (click)="loadBranches()">Thử lại</button>
+      </p>
+    }
 
     <section class="dash__kpis" aria-label="Bốn chỉ số tổng quan">
       <article class="dash__kpi">
