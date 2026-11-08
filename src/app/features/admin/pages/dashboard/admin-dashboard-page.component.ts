@@ -1,147 +1,205 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { finalize, forkJoin } from 'rxjs';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 
-import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
-import {
-  AdminDashboardService,
-  DashboardLowStock,
-  DashboardRevenuePoint,
-  DashboardServiceStat,
-  DashboardSummary,
-} from './admin-dashboard.service';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { BranchApiRecord, BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
+import { AdminDashboardService, DashboardFilters, DashboardSummary } from './admin-dashboard.service';
+
+type Period = 'today' | '7d' | '30d' | 'custom';
+type Tone = 'amber' | 'blue' | 'indigo' | 'teal' | 'green' | 'red' | 'slate';
+interface StatusSlice {
+  key: string;
+  label: string;
+  count: number;
+  percent: number;
+  tone: Tone;
+  color: string;
+}
+const STATUS: Record<string, { label: string; tone: Tone; color: string }> = {
+  PENDING: { label: 'Chờ xác nhận', tone: 'amber', color: '#e5ad47' },
+  CONFIRMED: { label: 'Đã xác nhận', tone: 'blue', color: '#4f8edc' },
+  PROCESSING: { label: 'Đang xử lý', tone: 'indigo', color: '#8c7bd5' },
+  SHIPPED: { label: 'Đang giao', tone: 'teal', color: '#42a6a4' },
+  DELIVERED: { label: 'Đã giao', tone: 'green', color: '#40a775' },
+  COMPLETED: { label: 'Hoàn thành', tone: 'green', color: '#40a775' },
+  CANCELLED: { label: 'Đã hủy', tone: 'red', color: '#dd8585' },
+};
+const FALLBACK = { tone: 'slate' as const, color: '#8799ad' };
+
+function vietnamDate(date: Date): string {
+  const fields = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(date);
+  const part = (name: string): string => fields.find(field => field.type === name)?.value ?? '';
+  return [part('year'), part('month'), part('day')].join('-');
+}
+function shiftCalendar(date: string, days: number): string {
+  const [year, month, day] = date.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+}
 
 @Component({
   selector: 'app-admin-dashboard-page',
   standalone: true,
-  imports: [AdminDataStateComponent],
-  template: `
-    <main class="dashboard-page">
-      <header class="dashboard-heading">
-        <div>
-          <h1>Tổng quan hoạt động</h1>
-        </div>
-        <label class="dashboard-period">
-          <span>Khoảng thời gian</span>
-          <select [value]="preset()" (change)="changePreset($any($event.target).value)">
-            <option value="today">Hôm nay</option>
-            <option value="this_week">Tuần này</option>
-            <option value="this_month">Tháng này</option>
-            <option value="this_year">Năm nay</option>
-          </select>
-        </label>
-      </header>
-
-      @if (loading()) {
-        <app-admin-data-state kind="loading" title="Đang tải tổng quan hoạt động" />
-      } @else if (error()) {
-        <app-admin-data-state kind="error" title="Không thể tải tổng quan hoạt động" [message]="error()" (retry)="load()" />
-      } @else if (summary(); as data) {
-        <section class="dashboard-kpis" aria-label="Chỉ số tổng quan">
-          <article>
-            <span>Doanh thu</span>
-            <strong>{{ money(data.revenue.amount) }}</strong>
-            <small>Sản phẩm và dịch vụ đã ghi nhận</small>
-          </article>
-          <article>
-            <span>Đơn hàng</span>
-            <strong>{{ data.orders }}</strong>
-            <small>Tổng đơn trong kỳ</small>
-          </article>
-          <article>
-            <span>Lịch hẹn</span>
-            <strong>{{ data.appointments }}</strong>
-            <small>Tổng lịch hẹn trong kỳ</small>
-          </article>
-          <article>
-            <span>Khách hàng mới</span>
-            <strong>{{ data.newCustomers }}</strong>
-            <small>Tài khoản mới trong kỳ</small>
-          </article>
-          <article>
-            <span>Cảnh báo tồn kho</span>
-            <strong [class.dashboard-number--warning]="data.lowStockItems > 0">{{ data.lowStockItems }}</strong>
-            <small>Mặt hàng còn từ 5 sản phẩm trở xuống</small>
-          </article>
-        </section>
-
-        <div class="dashboard-grid">
-          <section class="dashboard-card dashboard-card--wide">
-            <header><div><h2>Doanh thu theo ngày</h2><p>Doanh thu đơn hàng đã giao hoặc hoàn tất.</p></div></header>
-            @if (revenue().length) {
-              <div class="dashboard-table-wrap">
-                <table>
-                  <thead><tr><th>Ngày</th><th class="right">Đơn hàng</th><th class="right">Doanh thu</th></tr></thead>
-                  <tbody>
-                    @for (row of revenue(); track row.date) {
-                      <tr><td>{{ day(row.date) }}</td><td class="right">{{ row.orders }}</td><td class="right">{{ money(row.revenue) }}</td></tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            } @else {
-              <app-admin-data-state kind="empty" title="Chưa có doanh thu" message="Chưa có giao dịch hoàn tất trong khoảng thời gian đã chọn." />
-            }
-          </section>
-
-          <section class="dashboard-card">
-            <header><div><h2>Dịch vụ được đặt nhiều</h2><p>Xếp hạng theo số lượt đặt lịch.</p></div></header>
-            @if (services().length) {
-              <ol class="service-ranking">
-                @for (item of services().slice(0,5); track item.serviceId; let rank=$index) {
-                  <li><span class="rank">{{rank+1}}</span><div><strong>{{item.name}}</strong><small>{{item.bookingsCount}} lượt đặt</small></div><b>{{money(item.estimatedRevenue)}}</b></li>
-                }
-              </ol>
-            } @else {
-              <app-admin-data-state kind="empty" title="Chưa có dữ liệu dịch vụ" message="Chưa có lượt đặt dịch vụ trong khoảng thời gian đã chọn." />
-            }
-          </section>
-
-          <section class="dashboard-card">
-            <header><div><h2>Cảnh báo tồn kho</h2><p>Các mặt hàng còn từ 5 sản phẩm trở xuống.</p></div></header>
-            @if (lowStock().length) {
-              <div class="stock-list">
-                @for (row of lowStock().slice(0,6); track row.stockId) {
-                  <div><div><strong>{{row.item?.name || 'Mặt hàng'}}</strong><small>{{row.item?.sku || '—'}} · {{row.branch?.name || 'Chưa xác định chi nhánh'}}</small></div><b>{{row.quantity}}</b></div>
-                }
-              </div>
-            } @else {
-              <app-admin-data-state kind="empty" title="Không có cảnh báo tồn kho" message="Các mặt hàng hiện đều trên ngưỡng cảnh báo." />
-            }
-          </section>
-        </div>
-      }
-    </main>
-  `,
+  imports: [RouterLink, AdminCatalogShellComponent],
+  templateUrl: './admin-dashboard-page.component.html',
   styleUrl: './admin-dashboard-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminDashboardPageComponent {
-  private readonly api=inject(AdminDashboardService);
-  readonly preset=signal('this_month');
-  readonly loading=signal(true);
-  readonly error=signal('');
-  readonly summary=signal<DashboardSummary|null>(null);
-  readonly revenue=signal<DashboardRevenuePoint[]>([]);
-  readonly lowStock=signal<DashboardLowStock[]>([]);
-  readonly services=signal<DashboardServiceStat[]>([]);
+  private readonly dashboard = inject(AdminDashboardService);
+  private readonly branchApi = inject(BranchManagementApiService);
+  private readonly session = inject(AuthSessionService);
+  private readonly destroyRef = inject(DestroyRef);
+  private version = 0;
 
-  constructor(){this.load();}
-
-  changePreset(value:string):void{this.preset.set(value);this.load();}
-
-  load():void{
-    this.loading.set(true);this.error.set('');
-    forkJoin({
-      summary:this.api.summary(this.preset()),
-      revenue:this.api.revenue(this.preset()),
-      lowStock:this.api.lowStock(),
-      services:this.api.serviceStats(this.preset()),
-    }).pipe(finalize(()=>this.loading.set(false))).subscribe({
-      next:data=>{this.summary.set(data.summary);this.revenue.set(data.revenue);this.lowStock.set(data.lowStock);this.services.set(data.services);},
-      error:()=>this.error.set('Đã có lỗi xảy ra khi tải số liệu tổng quan. Vui lòng thử lại.'),
+  readonly role = computed(() => this.session.user()?.systemRole ?? '');
+  readonly manager = computed(() => this.role() === 'MANAGER');
+  readonly period = signal<Period>('30d');
+  readonly branchId = signal('');
+  readonly branches = signal<BranchApiRecord[]>([]);
+  readonly branchLoading = signal(true);
+  readonly branchError = signal('');
+  readonly loading = signal(false);
+  readonly error = signal('');
+  readonly summary = signal<DashboardSummary | null>(null);
+  readonly checkedAt = signal('');
+  readonly today = vietnamDate(new Date());
+  readonly from = signal(shiftCalendar(this.today, -29));
+  readonly to = signal(this.today);
+  readonly filterError = signal('');
+  readonly accessibleBranches = computed(() => {
+    if (!this.manager()) return this.branches();
+    const assigned = new Set((this.session.user()?.branchScope ?? []).map(String));
+    return this.branches().filter(branch => assigned.has(String(branch.id)));
+  });
+  readonly authorized = computed(() => this.role() === 'ADMIN' ||
+    (this.manager() && (this.session.user()?.branchScope?.length ?? 0) > 0));
+  readonly rangeLabel = computed(() => this.formatDate(this.from()) + ' – ' + this.formatDate(this.to()));
+  readonly ordersReady = computed(() => {
+    const value = this.summary()?.orders;
+    return Number.isSafeInteger(value) && Number(value) >= 0;
+  });
+  readonly orderSlices = computed<StatusSlice[]>(() => {
+    const data = this.summary();
+    const breakdown = data?.breakdown?.orderCountsByStatus;
+    const total = data?.orders;
+    if (!this.ordersReady() || !breakdown || !Number.isSafeInteger(total)) return [];
+    const all = Object.entries(breakdown).filter(([name, count]) =>
+      !!name && Number.isSafeInteger(count) && count >= 0);
+    const sum = all.reduce((value, item) => value + item[1], 0);
+    if (sum !== total || !total) return [];
+    return all.filter(([, count]) => count > 0).map(([key, count]) => {
+      const meta = STATUS[key] ?? { label: key.replaceAll('_', ' '), ...FALLBACK };
+      return { key, label: meta.label, count, percent: count / total * 100,
+        color: meta.color, tone: meta.tone };
+    }).sort((a, b) => b.count - a.count);
+  });
+  readonly orderDonut = computed(() => {
+    const slices = this.orderSlices();
+    if (!slices.length) return '';
+    let position = 0;
+    const stops = slices.map(slice => {
+      const start = position;
+      position += slice.percent;
+      return slice.color + ' ' + start + '% ' + position + '%';
     });
+    return 'conic-gradient(' + stops.join(',') + ')';
+  });
+
+  constructor() {
+    if (this.authorized()) this.loadBranches();
+    else this.branchLoading.set(false);
   }
 
-  money(value:number):string{return new Intl.NumberFormat('vi-VN',{style:'currency',currency:'VND',maximumFractionDigits:0}).format(Number(value||0));}
-  day(value:string):string{const d=new Date(value);return Number.isNaN(d.getTime())?value:new Intl.DateTimeFormat('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}).format(d);}
+  formatInt(value: number): string {
+    return Math.round(value).toLocaleString('vi-VN');
+  }
+  formatDate(value: string): string {
+    const [year, month, day] = value.split('-');
+    return [day, month, year].join('/');
+  }
+  percentage(value: number): string {
+    return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format(value) + '%';
+  }
+
+  changePeriod(value: string): void {
+    if (value !== 'today' && value !== '7d' && value !== '30d' && value !== 'custom') return;
+    this.period.set(value);
+    if (value === 'custom') return;
+    const today = vietnamDate(new Date());
+    this.to.set(today);
+    this.from.set(shiftCalendar(today, value === 'today' ? 0 : value === '7d' ? -6 : -29));
+    this.filterError.set('');
+    this.refresh();
+  }
+  changeFrom(value: string): void { this.from.set(value); this.filterError.set(''); }
+  changeTo(value: string): void { this.to.set(value); this.filterError.set(''); }
+  applyCustom(): void {
+    if (!this.from() || !this.to() || this.from() > this.to()) {
+      this.filterError.set('Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.');
+      return;
+    }
+    this.filterError.set('');
+    this.refresh();
+  }
+  changeBranch(id: string): void {
+    if (id && !this.accessibleBranches().some(branch => String(branch.id) === id)) return;
+    this.branchId.set(id);
+    this.refresh();
+  }
+
+  loadBranches(): void {
+    if (!this.authorized()) return;
+    this.branchLoading.set(true);
+    this.branchError.set('');
+    this.branchApi.listBranches().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: branches => {
+        this.branches.set(branches);
+        this.branchLoading.set(false);
+        const visible = this.accessibleBranches();
+        if (this.manager() && !visible.length) {
+          this.branchError.set('Không tìm thấy chi nhánh được phân công. Vui lòng liên hệ quản trị viên.');
+          return;
+        }
+        if (this.manager() && visible.length === 1) this.branchId.set(visible[0].id);
+        if (this.branchId() && !visible.some(branch => branch.id === this.branchId())) this.branchId.set('');
+        this.refresh();
+      },
+      error: () => {
+        this.branchLoading.set(false);
+        this.branchError.set('Không thể tải chi nhánh. Vui lòng thử lại.');
+      },
+    });
+  }
+  refresh(): void {
+    if (!this.authorized() || this.branchLoading() || this.branchError() || this.filterError()) return;
+    const request = ++this.version;
+    this.loading.set(true);
+    this.error.set('');
+    this.summary.set(null); // never display a previous branch/date as the new result
+    const filters: DashboardFilters = { from: this.from(), to: this.to(), branchId: this.branchId() || null };
+    this.dashboard.summary(filters).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: data => {
+        if (request !== this.version) return;
+        if (!data || typeof data !== 'object') {
+          this.error.set('API thống kê trả dữ liệu không hợp lệ.');
+        } else {
+          this.summary.set(data);
+          this.checkedAt.set(new Intl.DateTimeFormat('vi-VN', {
+            hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh',
+          }).format(new Date()));
+        }
+        this.loading.set(false);
+      },
+      error: () => {
+        if (request !== this.version) return;
+        this.summary.set(null);
+        this.error.set('Không thể tải thống kê từ hệ thống.');
+        this.loading.set(false);
+      },
+    });
+  }
 }
