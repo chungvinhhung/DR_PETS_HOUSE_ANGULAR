@@ -166,6 +166,14 @@ export function normalizeBookingService(service: any) {
   const id = service.id || service._id || service.service_id || service.serviceId || "6ad08e4417bf41f5954234c6";
   const name = service.name || service.service_name || service.serviceName || "Dịch vụ Dr. Pet";
   const price = service.basePrice ?? service.base_price ?? service.price ?? 0;
+  const durationMinutes =
+    service.durationMinutes ??
+    service.duration_minutes ??
+    service.estimatedDuration ??
+    service.estimated_duration ??
+    service.duration ??
+    null;
+
   return {
     ...service,
     id: String(id),
@@ -173,6 +181,7 @@ export function normalizeBookingService(service: any) {
     serviceTypeId: inferServiceType(service),
     name,
     desc: service.description || "",
+    durationMinutes: durationMinutes !== null && durationMinutes !== "" ? Number(durationMinutes) : null,
     price: Number(price),
     isWeightSurchargeApplied: Boolean(service.isWeightSurchargeApplied ?? service.is_weight_surcharge_applied),
   };
