@@ -8389,3 +8389,30 @@ app-service-catalog-editor .service-editor__field input[type="number"]:out-of-ra
 app-service-catalog-editor .service-editor__table input[aria-invalid="true"],
 app-service-catalog-editor .service-editor__field input[aria-invalid="true"] {border-color:#c62828;background:#fff7f7;}
 
+
+
+/* Voucher detail: keep creation timestamp as secondary metadata, and balance the fields. */
+app-admin-voucher-editor .voucher-editor__info-heading{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px 20px;
+  flex-wrap:wrap;margin-bottom:24px;
+}
+app-admin-voucher-editor .voucher-editor__info-heading h2{margin:0;}
+app-admin-voucher-editor .voucher-editor__created-meta{
+  display:flex;align-items:center;gap:8px;padding:6px 10px;
+  background:#f7f9fc;border:1px solid #e5ebf4;border-radius:7px;
+  font-size:12px;line-height:1.5;white-space:nowrap;
+}
+app-admin-voucher-editor .voucher-editor__created-meta span{color:#75859a;}
+app-admin-voucher-editor .voucher-editor__created-meta strong{color:#344761;font-weight:550;}
+app-admin-voucher-editor .voucher-editor__summary--overview{
+  grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;
+}
+app-admin-voucher-editor .voucher-editor__summary--scope{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:22px;border-top:1px solid #e9edf5;
+  padding-top:21px;margin-top:24px;
+}
+@media(max-width:720px){
+  app-admin-voucher-editor .voucher-editor__summary--overview,
+  app-admin-voucher-editor .voucher-editor__summary--scope{grid-template-columns:1fr;}
+}
