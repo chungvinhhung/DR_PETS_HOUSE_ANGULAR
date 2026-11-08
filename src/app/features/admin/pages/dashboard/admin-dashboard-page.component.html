@@ -1,0 +1,219 @@
+<app-admin-catalog-shell activeItem="dashboard">
+<main class="dash" aria-label="Tổng quan hoạt động">
+  <header class="dash__heading">
+    <div class="dash__heading-main">
+      <div class="dash__heading-symbol"><img src="/assets/admin-product/icon-dashboard.svg" width="24" height="24" alt=""></div>
+      <div>
+        <h1>Tổng quan</h1>
+        <p>Hiệu quả hoạt động của Dr. Pet's House</p>
+      </div>
+    </div>
+    <div class="dash__heading-actions">
+      <span class="dash__tz">Dữ liệu theo giờ Việt Nam</span>
+      <button type="button" class="dash__refresh" [disabled]="loading() || branchLoading() || !!branchError()"
+        (click)="refresh()" aria-label="Tải lại thống kê">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.3-5.7M20 4v6h-6"/></svg>
+        Làm mới
+      </button>
+    </div>
+  </header>
+
+  @if (!authorized()) {
+    <section class="dash__notice" role="alert">
+      <strong>Bạn không có quyền xem Dashboard.</strong>
+      <p>Dashboard M23 chỉ dành cho Admin và Manager có chi nhánh được phân công.</p>
+    </section>
+  } @else {
+    <section class="dash__filters" aria-label="Bộ lọc Dashboard">
+      <label class="dash__filter">
+        <span>Khoảng thời gian</span>
+        <select [value]="period()" (change)="changePeriod($any($event.target).value)" aria-label="Chọn khoảng thời gian">
+          <option value="today">Hôm nay</option>
+          <option value="7d">7 ngày qua</option>
+          <option value="30d">30 ngày qua</option>
+          <option value="custom">Tùy chọn ngày</option>
+        </select>
+      </label>
+      <label class="dash__filter">
+        <span>Chi nhánh</span>
+        <select [value]="branchId()" (change)="changeBranch($any($event.target).value)"
+          [disabled]="branchLoading() || !!branchError()" aria-label="Lọc chi nhánh">
+          <option value="">{{ manager() ? 'Tất cả chi nhánh được giao' : 'Tất cả chi nhánh' }}</option>
+          @for (branch of accessibleBranches(); track branch.id) {
+            <option [value]="branch.id">{{branch.name}}</option>
+          }
+        </select>
+      </label>
+      <div class="dash__range-summary">
+        <span>Giai đoạn thống kê</span>
+        <strong>{{ rangeLabel() }}</strong>
+      </div>
+      @if (period() === 'custom') {
+        <div class="dash__custom">
+          <label><span>Từ ngày</span><input type="date" [value]="from()" (change)="changeFrom($any($event.target).value)" [max]="to()" /></label>
+          <label><span>Đến ngày</span><input type="date" [value]="to()" (change)="changeTo($any($event.target).value)" [min]="from()" /></label>
+          <button type="button" (click)="applyCustom()">Áp dụng</button>
+        </div>
+      }
+      @if (filterError()) { <p class="dash__filter-error" role="alert">{{filterError()}}</p> }
+      @if (branchError()) {
+        <p class="dash__filter-error" role="alert">{{branchError()}}
+          <button type="button" (click)="loadBranches()">Thử lại</button>
+        </p>
+      }
+    </section>
+
+    <section class="dash__kpis" aria-label="Bốn chỉ số tổng quan">
+      <article class="dash__kpi">
+        <div class="dash__kpi-title"><span class="dash__kpi-icon" data-kind="revenue">
+          <img src="/assets/admin-product/icon-sales.svg" alt="" width="21" height="21"></span>
+          <span>Doanh thu</span>
+        </div>
+        <strong class="dash__kpi-value" [class.dash__kpi-value--pending]="true">—</strong>
+        <p>Giao dịch đã hoàn thành</p>
+        <span class="dash__kpi-tag">Chờ BE chuẩn hóa</span>
+      </article>
+      <a class="dash__kpi dash__kpi--link" routerLink="/admin/orders" aria-label="Xem danh sách đơn hàng">
+        <div class="dash__kpi-title"><span class="dash__kpi-icon" data-kind="orders">
+          <img src="/assets/admin-product/icon-orders.svg" onerror="" alt="" width="21" height="21"></span>
+          <span>Đơn hàng</span>
+        </div>
+        <strong class="dash__kpi-value" [class.dash__kpi-value--pending]="loading() || !ordersReady()">
+          {{ loading() || error() || !ordersReady() ? '—' : formatInt(summary()!.orders) }}
+        </strong>
+        <p>Đơn được tạo trong kỳ</p>
+        <span class="dash__kpi-foot">Xem đơn hàng <span aria-hidden="true">›</span></span>
+      </a>
+      <article class="dash__kpi">
+        <div class="dash__kpi-title"><span class="dash__kpi-icon" data-kind="appointments">
+          <img src="/assets/admin-product/icon-services.svg" alt="" width="21" height="21"></span>
+          <span>Lịch hẹn</span>
+        </div>
+        <strong class="dash__kpi-value dash__kpi-value--pending">—</strong>
+        <p>Lịch được tạo trong kỳ</p>
+        <span class="dash__kpi-tag">Chờ BE chuẩn hóa</span>
+      </article>
+      <article class="dash__kpi">
+        <div class="dash__kpi-title"><span class="dash__kpi-icon" data-kind="customers">
+          <img src="/assets/admin-product/icon-users.svg" alt="" width="21" height="21"></span>
+          <span>Khách có giao dịch</span>
+        </div>
+        <strong class="dash__kpi-value dash__kpi-value--pending">—</strong>
+        <p>Khách hàng duy nhất trong kỳ</p>
+        <span class="dash__kpi-tag">Chờ BE chuẩn hóa</span>
+      </article>
+    </section>
+
+    @if (loading() || branchLoading()) {
+      <div class="dash__loading-note" role="status"><span class="dash__spinner"></span> Đang lấy dữ liệu thống kê từ hệ thống...</div>
+    } @else if (error()) {
+      <div class="dash__error" role="alert">
+        <span>{{error()}}</span><button type="button" (click)="refresh()">Thử lại</button>
+      </div>
+    }
+
+    <div class="dash__middle">
+      <section class="dash__panel dash__panel--revenue">
+        <header class="dash__panel-header">
+          <div><h2>Xu hướng doanh thu</h2><p>Doanh thu đơn hàng và dịch vụ theo thời gian</p></div>
+          <span class="dash__tag">Theo kỳ</span>
+        </header>
+        <div class="dash__legend"><span><i class="dash__dot dash__dot--order"></i> Đơn hàng</span><span><i class="dash__dot dash__dot--service"></i> Dịch vụ</span></div>
+        <div class="dash__chart-empty">
+          <div class="dash__empty-graphic" aria-hidden="true">
+            <svg viewBox="0 0 310 112" width="290" height="106" fill="none">
+              <path d="M0 24h310M0 55h310M0 86h310" stroke="#e7edf5" stroke-width="1" stroke-dasharray="4 6"/>
+              <path d="M0 101h310" stroke="#dbe5f1" stroke-width="1.5"/>
+              <path d="M20 81L67 81L114 81L161 81L208 81L255 81L296 81" stroke="#d5dfec" stroke-width="2" stroke-dasharray="5 7"/>
+            </svg>
+          </div>
+          <strong>Chưa thể hiển thị biểu đồ doanh thu</strong>
+          <p>BE cần trả doanh thu Order, Service và khoản hoàn tiền theo đúng kỳ ghi nhận.</p>
+          <span class="dash__await">Đang chờ API thống kê chuẩn M23</span>
+        </div>
+      </section>
+
+      <section class="dash__panel dash__panel--status">
+        <header class="dash__panel-header">
+          <div><h2>Trạng thái đơn hàng</h2><p>Tỷ trọng theo trạng thái hiện tại</p></div>
+          <a routerLink="/admin/orders" class="dash__panel-link">Xem tất cả</a>
+        </header>
+        @if (loading() || branchLoading()) {
+          <div class="dash__widget-placeholder"><span class="dash__spinner"></span> Đang tải dữ liệu...</div>
+        } @else if (error()) {
+          <div class="dash__widget-placeholder">Không thể tải dữ liệu. <button type="button" (click)="refresh()">Thử lại</button></div>
+        } @else if (ordersReady() && summary()!.orders === 0) {
+          <div class="dash__widget-placeholder">Chưa có đơn hàng trong khoảng thời gian này.</div>
+        } @else if (orderSlices().length) {
+          <div class="dash__status-layout">
+            <div class="dash__donut" [style.background]="orderDonut()" role="img"
+              [attr.aria-label]="'Tổng ' + formatInt(summary()!.orders) + ' đơn hàng theo trạng thái'">
+              <span><strong>{{formatInt(summary()!.orders)}}</strong><small>Đơn hàng</small></span>
+            </div>
+            <div class="dash__status-legend">
+              @for (item of orderSlices(); track item.key) {
+                <div class="dash__status-row">
+                  <span class="dash__status-name"><i [style.background]="item.color"></i>{{item.label}}</span>
+                  <strong>{{formatInt(item.count)}} <small>({{percentage(item.percent)}})</small></strong>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="dash__widget-placeholder">Chưa có dữ liệu trạng thái phù hợp từ BE.</div>
+        }
+      </section>
+
+      <section class="dash__panel dash__panel--appointment">
+        <header class="dash__panel-header">
+          <div><h2>Trạng thái lịch hẹn</h2><p>Tổng hợp theo ngày tạo lịch</p></div>
+          <a routerLink="/admin/appointments" class="dash__panel-link">Xem tất cả</a>
+        </header>
+        <div class="dash__widget-placeholder dash__widget-placeholder--tall">
+          <div class="dash__placeholder-mark"><img src="/assets/admin-product/icon-services.svg" alt="" width="26" height="26"></div>
+          <strong>Chờ dữ liệu lịch hẹn chuẩn</strong>
+          <small>BE cần thống kê theo ngày tạo và bao gồm đầy đủ trạng thái.</small>
+        </div>
+      </section>
+    </div>
+
+    <div class="dash__bottom">
+      <section class="dash__panel">
+        <header class="dash__panel-header">
+          <div><h2>Top 5 dịch vụ</h2><p>Dịch vụ hoàn thành nhiều nhất trong kỳ</p></div>
+          <a routerLink="/admin/services" class="dash__panel-link">Danh mục</a>
+        </header>
+        <div class="dash__table-head dash__table-head--services"><span>Dịch vụ</span><span>Số lượt</span></div>
+        <div class="dash__bottom-empty">
+          <strong>Đang chờ số lượt thực hiện</strong>
+          <p>API hiện có đếm lượt đặt, chưa lọc Service Segment hoàn thành.</p>
+        </div>
+      </section>
+      <section class="dash__panel">
+        <header class="dash__panel-header">
+          <div><h2>Tồn kho cần chú ý</h2><p>Ngưỡng tồn theo từng chi nhánh</p></div>
+          <a routerLink="/admin/inventory" class="dash__panel-link">Xem kho</a>
+        </header>
+        <div class="dash__table-head dash__table-head--stock"><span>Mặt hàng / Chi nhánh</span><span>Tồn / Ngưỡng</span></div>
+        <div class="dash__bottom-empty">
+          <strong>Chưa có ngưỡng cảnh báo theo chi nhánh</strong>
+          <p>BE đang dùng mức cố định 5; cần cung cấp tồn và ngưỡng của từng SKU/branch.</p>
+        </div>
+      </section>
+      <section class="dash__panel dash__panel--shortcuts">
+        <header class="dash__panel-header"><div><h2>Truy cập nhanh</h2><p>Đi đến các công việc vận hành</p></div></header>
+        <div class="dash__shortcuts">
+          <a routerLink="/admin/orders"><span class="dash__shortcut-icon">01</span><span><strong>Quản lý đơn hàng</strong><small>Kiểm tra và xử lý đơn</small></span><b aria-hidden="true">›</b></a>
+          <a routerLink="/admin/appointments"><span class="dash__shortcut-icon">02</span><span><strong>Quản lý lịch hẹn</strong><small>Lịch hẹn và phân công dịch vụ</small></span><b aria-hidden="true">›</b></a>
+          <a routerLink="/admin/inventory"><span class="dash__shortcut-icon">03</span><span><strong>Quản lý tồn kho</strong><small>Kiểm tra hàng hóa và vật tư</small></span><b aria-hidden="true">›</b></a>
+        </div>
+        <p class="dash__shortcuts-note">Thao tác xử lý được thực hiện tại từng module, không thực hiện trực tiếp trên Dashboard.</p>
+      </section>
+    </div>
+    <footer class="dash__footer">
+      <span>Dashboard M23 • Dữ liệu thực từ API, không sử dụng số mẫu</span>
+      @if (checkedAt()) { <span>Cập nhật lúc {{checkedAt()}} (GMT+7)</span> }
+    </footer>
+  }
+</main>
+</app-admin-catalog-shell>
