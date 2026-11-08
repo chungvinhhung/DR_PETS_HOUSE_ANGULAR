@@ -130,7 +130,7 @@
           <thead><tr><th>Ảnh</th><th>Biến thể</th><th>SKU</th><th>Giá bán (VNĐ)</th><th>Khuyến mại (%)</th><th>Giá sau khuyến mại (VNĐ)</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
           <tbody>@for (variant of variants; track $index) {
             <tr>
-              <td>
+              <td class="variant-image-cell">
                 <input #variantImageInput type="file" hidden accept=".jpg,.jpeg,.png,.webp"
                   [disabled]="saving() || product()?.status === 'ARCHIVED'"
                   (change)="selectVariantImage($event, variant.id!)">
@@ -140,8 +140,14 @@
                   (click)="variantImageInput.click()">
                   @if (variantImagePreview(variant); as preview) { <img [src]="preview" [alt]="'Ảnh biến thể ' + variant.label"> }
                   @else { <img src="/assets/admin-product/icon-image-picker.svg" alt=""> }
-                  <span class="variant-photo-button__overlay" aria-hidden="true">{{ variantImagePreview(variant) ? 'Đổi ảnh' : 'Chọn ảnh' }}</span>
+                  <span class="variant-photo-button__overlay" aria-hidden="true">{{ variantHasOwnImage(variant) ? 'Đổi ảnh' : 'Thêm ảnh' }}</span>
                 </button>
+                @if (variantHasOwnImage(variant) && product()?.status !== 'ARCHIVED') {
+                  <button type="button" class="variant-image-clear" [disabled]="saving()"
+                    (click)="clearVariantImage(variant)" [attr.aria-label]="'Bỏ ảnh riêng của biến thể ' + variant.label">Bỏ ảnh riêng</button>
+                } @else if (!variantHasOwnImage(variant) && imageSlots.length) {
+                  <small class="variant-image-fallback-label">Ảnh chính</small>
+                }
               </td>
               <td><input [(ngModel)]="variant.label" aria-label="Tên biến thể" [class.input-invalid]="variantLabelInvalid(variant)" [attr.aria-invalid]="variantLabelInvalid(variant)">@if (variantLabelInvalid(variant)) {<small class="field-help-error">Nhập tên biến thể.</small>}</td>
               <td><input [value]="variant.sku" [class.input-invalid]="variantSkuInvalid(variant)" readonly aria-label="SKU (không thể chỉnh sửa)" title="SKU đã tạo không được đổi">@if (variantSkuInvalid(variant)) {<small class="field-help-error">SKU không hợp lệ, liên hệ quản trị.</small>}</td>
