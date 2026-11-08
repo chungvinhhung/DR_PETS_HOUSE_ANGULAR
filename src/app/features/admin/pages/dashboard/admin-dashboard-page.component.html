@@ -78,8 +78,28 @@
         <strong class="dash__kpi-value" [class.dash__kpi-value--pending]="loading() || !ordersReady()">
           {{ loading() || error() || !ordersReady() ? '—' : formatInt(summary()!.orders) }}
         </strong>
-
-
+        @if (orderComparison(); as comparison) {
+          <div class="dash__kpi-bottom">
+            <span class="dash__kpi-trend"
+              [class.dash__kpi-trend--up]="comparison.direction === 'up'"
+              [class.dash__kpi-trend--down]="comparison.direction === 'down'"
+              [class.dash__kpi-trend--flat]="comparison.direction === 'flat'">
+              @if (comparison.direction !== 'flat') {
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+                  stroke="currentColor" stroke-width="2.3" stroke-linecap="round"
+                  stroke-linejoin="round" aria-hidden="true">
+                  <path [attr.d]="comparison.direction === 'up' ? 'M4 16L10 10L14 13L20 6M15 6H20V11' : 'M4 6L10 12L14 9L20 16M15 16H20V11'"/>
+                </svg>
+              }
+              {{comparison.label}}
+            </span>
+            <span class="dash__kpi-mini" role="img"
+              [attr.aria-label]="'So sánh đơn hàng: kỳ trước ' + formatInt(comparison.previous) + ', kỳ này ' + formatInt(comparison.current)">
+              <i [style.height.%]="comparison.previousBar" title="Kỳ trước"></i>
+              <i [style.height.%]="comparison.currentBar" title="Kỳ này"></i>
+            </span>
+          </div>
+        }
       </a>
       <article class="dash__kpi">
         <div class="dash__kpi-title"><span class="dash__kpi-icon" data-kind="appointments">
@@ -115,7 +135,9 @@
       <section class="dash__panel dash__panel--revenue">
         <header class="dash__panel-header">
           <div><h2>Biểu đồ doanh thu</h2></div>
-
+          <div class="dash__revenue-total" aria-label="Doanh thu chưa có dữ liệu đúng nghiệp vụ">
+            Doanh thu: <strong>—</strong>
+          </div>
         </header>
         <div class="dash__legend"><span><i class="dash__dot dash__dot--order"></i> Đơn hàng</span><span><i class="dash__dot dash__dot--service"></i> Dịch vụ</span></div>
         <div class="dash__chart-empty">
