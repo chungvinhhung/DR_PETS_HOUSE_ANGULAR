@@ -1,42 +1,79 @@
 :host{display:block;min-width:0}
 /* The page's scoped visual rules live in src/styles.scss to stay under Angular's 8kB component-style budget. */
 
-/* Leader P1: one percentage and quota for all selected SKUs, or per-SKU overrides. */
-:host .flash-editor__bulk-controls {
-  display:flex;flex-wrap:wrap;align-items:start;gap:12px 22px;
-  margin:-2px 0 18px;padding:16px 18px;
-  border:1px solid #dce5f0;border-radius:10px;background:#f8fbff;
+
+/* Compact detail overview: clear hierarchy, aligned schedule and campaign metrics. */
+:host .flash-editor__overview{display:flex;flex-direction:column;gap:22px;padding-top:2px;}
+:host .flash-editor__overview-primary{display:grid;grid-template-columns:minmax(230px,1fr) minmax(0,1.5fr);gap:18px 28px;align-items:start;}
+:host .flash-editor__overview-name,:host .flash-editor__overview-timeline>div{min-width:0;}
+:host .flash-editor__overview :is(.flash-editor__overview-name,.flash-editor__overview-timeline>div,.flash-editor__overview-description)>span{
+  display:block;color:#697d96;font-size:12px;margin-bottom:8px;
 }
-:host .flash-editor__bulk-controls label{
-  display:flex;flex-direction:column;gap:7px;min-width:190px;flex:0 1 230px;
-  color:#243957;font-size:13px;font-weight:600;
+:host .flash-editor__overview-name>strong{font-size:18px;font-weight:650;line-height:1.45;color:#18375a;overflow-wrap:anywhere;}
+:host .flash-editor__overview-timeline{display:grid;grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr);gap:12px;align-items:center;}
+:host .flash-editor__overview-timeline strong{display:block;color:#173557;font-size:14px;line-height:1.45;white-space:nowrap;}
+:host .flash-editor__overview-arrow{color:#8ba3c1;font-size:22px;text-align:center;padding-top:13px;}
+:host .flash-editor__overview-description{padding-top:17px;border-top:1px solid #e8edf5;}
+:host .flash-editor__overview-description p{margin:0;color:#30465f;font-size:13px;line-height:1.7;overflow-wrap:anywhere;}
+:host .flash-editor__overview-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}
+:host .flash-editor__overview-stats>div{display:flex;flex-direction:column;gap:7px;padding:16px 18px;background:#f5f9fe;border:1px solid #e0eaf5;border-radius:10px;}
+:host .flash-editor__overview-stats span{font-size:12px;color:#61758e;}
+:host .flash-editor__overview-stats strong{font-size:20px;font-weight:650;color:#164a8d;font-variant-numeric:tabular-nums;}
+
+/* Percentage is applied to explicitly selected SKU rows, never on input focus or typing. */
+:host .flash-editor__selection-toolbar{
+  display:flex;flex-wrap:wrap;align-items:end;gap:10px 16px;
+  margin-bottom:18px;padding:13px 16px;border:1px solid #e0e9f4;
+  border-radius:10px;background:#f8fbff;
 }
-:host .flash-editor__bulk-controls input{
-  width:100%;height:42px;box-sizing:border-box;padding:0 12px;
-  border:1px solid #cbd9e9;border-radius:8px;background:white;
-  color:#203047;font-size:14px;
+:host .flash-editor__selected-count{align-self:center;color:#49647f;font-size:12px;margin-right:auto;}
+:host .flash-editor__selected-count strong{color:#0d47a1;}
+:host .flash-editor__discount-control{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:#263e5d;}
+:host .flash-editor__discount-control input{
+  box-sizing:border-box;width:140px;height:40px;padding:0 10px;
+  border:1px solid #cddceb;border-radius:7px;background:white;color:#243a55;font-size:13px;
 }
-:host .flash-editor__bulk-hint{
-  margin:0;align-self:center;flex:1 1 240px;
-  color:#667c94;font-size:12px;line-height:1.5;
+:host .flash-editor__selection-toolbar .flash-editor__btn{height:40px;min-height:40px;}
+:host .flash-editor__selection-toolbar .flash-editor__input-error{flex-basis:100%;}
+
+/* Dedicated columns for percentage and calculated / manually entered sale price. */
+:host .flash-editor__table--applied{min-width:1000px;width:100%;table-layout:fixed;}
+:host .flash-editor__table--editing th:nth-child(1){width:5%;}
+:host .flash-editor__table--editing th:nth-child(2){width:23%;}
+:host .flash-editor__table--editing th:nth-child(3){width:11%;}
+:host .flash-editor__table--editing th:nth-child(4){width:11%;}
+:host .flash-editor__table--editing th:nth-child(5){width:13%;}
+:host .flash-editor__table--editing th:nth-child(6){width:15%;}
+:host .flash-editor__table--editing th:nth-child(7){width:15%;}
+:host .flash-editor__table--editing th:nth-child(8){width:7%;}
+:host .flash-editor__table--view th:nth-child(1){width:31%;}
+:host .flash-editor__table--view th:nth-child(2){width:14%;}
+:host .flash-editor__table--view th:nth-child(3){width:13%;}
+:host .flash-editor__table--view th:nth-child(4){width:12%;}
+:host .flash-editor__table--view th:nth-child(5){width:14%;}
+:host .flash-editor__table--view th:nth-child(6){width:16%;}
+:host .flash-editor__table--applied :is(th,td){padding:13px 11px;box-sizing:border-box;vertical-align:middle;}
+:host .flash-editor__table--applied .flash-editor__select-column{text-align:center;padding-inline:5px;}
+:host .flash-editor__table--applied input[type="checkbox"]{accent-color:#0d47a1;width:16px;height:16px;cursor:pointer;}
+:host .flash-editor__table--applied .flash-editor__stock-heading,
+:host .flash-editor__table--applied td.flash-editor__stock{text-align:center;}
+:host .flash-editor__table--applied input[type="number"]{width:100%;min-width:0;max-width:100%;box-sizing:border-box;}
+:host .flash-editor__price-view,:host .flash-editor__percent-view{font-variant-numeric:tabular-nums;color:#153f75;font-size:13px;}
+:host .flash-editor__quantity-sold{display:block;margin-top:5px;font-size:11px;color:#667b95;}
+:host .flash-editor__sales-count{display:flex;flex-direction:column;gap:5px;max-width:175px;}
+:host .flash-editor__sales-count strong{color:#244264;font-size:13px;font-variant-numeric:tabular-nums;}
+:host .flash-editor__sales-count small{color:#78889f;font-size:11px;}
+:host .flash-editor__sales-progress{display:block;overflow:hidden;height:6px;width:100%;border-radius:99px;background:#e3eaf3;}
+:host .flash-editor__sales-progress>span{display:block;height:100%;border-radius:inherit;background:#0d70b7;transition:width .15s;}
+:host .flash-editor__input-error{display:block!important;margin-top:5px;color:#c62828!important;font:500 11px/1.45 Roboto,Arial,sans-serif;}
+:host .flash-editor__numeric-invalid{border:1px solid #cb3434!important;background:#fff7f7!important;box-shadow:none!important;}
+:host .flash-editor__numeric-invalid:focus-visible{outline:2px solid #cb3434;outline-offset:1px;}
+@media(max-width:900px){
+  :host .flash-editor__overview-primary{grid-template-columns:1fr;}
+  :host .flash-editor__overview-stats{grid-template-columns:repeat(3,minmax(0,1fr));}
 }
-:host .flash-editor__table--applied th:nth-child(1){width:29%;}
-:host .flash-editor__table--applied th:nth-child(2){width:13%;}
-:host .flash-editor__table--applied th:nth-child(3){width:13%;}
-:host .flash-editor__table--applied th:nth-child(4){width:23%;}
-:host .flash-editor__table--applied th:nth-child(5){width:13%;}
-:host .flash-editor__table--applied th:nth-child(6){width:9%;}
-:host .flash-editor__table--applied input[type="number"]{min-width:0;max-width:145px;}
-:host .flash-editor__table--applied .flash-editor__computed-price{
-  display:block;margin-top:6px;color:#53677e;font-size:12px;line-height:1.4;
-}
-:host .flash-editor__input-error{display:block!important;margin-top:5px;color:#c62828!important;font:500 12px/1.4 Roboto,Arial,sans-serif;}
-:host :is(.flash-editor__bulk-controls,.flash-editor__table--applied) input.flash-editor__numeric-invalid{
-  border:1px solid #cb3434!important;background:#fff7f7!important;box-shadow:none!important;
-}
-:host :is(.flash-editor__bulk-controls,.flash-editor__table--applied) input.flash-editor__numeric-invalid:focus-visible{
-  outline:2px solid #cb3434;outline-offset:1px;
-}
-@media(max-width:750px){
-  :host .flash-editor__bulk-controls label{flex:1 1 100%;}
+@media(max-width:600px){
+  :host .flash-editor__overview-timeline{grid-template-columns:1fr;gap:5px;}
+  :host .flash-editor__overview-arrow{display:none;}
+  :host .flash-editor__overview-stats{grid-template-columns:1fr;}
 }
