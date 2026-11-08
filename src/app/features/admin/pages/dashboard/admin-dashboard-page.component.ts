@@ -64,8 +64,8 @@ function shiftCalendar(date: string, days: number): string {
 export class AdminDashboardPageComponent {
   private readonly dashboard = inject(AdminDashboardService);
   private readonly route = inject(ActivatedRoute);
-  /** Reversible sample preview; never enabled without an explicit query parameter. */
-  readonly demo = this.route.snapshot.queryParamMap.get('demo') === '1';
+  /** Reversible sample preview, kept in sync on same-route query parameter changes. */
+  readonly demo = signal(this.route.snapshot.queryParamMap.get('demo') === '1');
   private readonly ordersApi = inject(AdminOrderApiService);
   private readonly client = inject(ApiClientService);
   private actionsVersion = 0;
@@ -251,6 +251,28 @@ export class AdminDashboardPageComponent {
   });
 
   constructor() {
+    // Angular reuses the Dashboard component when only ?demo= changes.
+    // Reload the correct data source immediately without requiring a hard refresh.
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+      const enabled = params.get('demo') === '1';
+      if (enabled === this.demo()) return;
+      this.demo.set(enabled);
+      ++this.version; // discard responses from the previous mode
+      ++this.actionsVersion;
+      this.summary.set(null);
+      this.previousOrderCount.set(null);
+      this.demoData.set(null);
+      this.actionOrders.set([]);
+      this.actionAppointments.set([]);
+      this.hoveredRevenueIndex.set(null);
+      this.branchId.set('');
+      this.branchLoading.set(true);
+      this.branchError.set('');
+      this.error.set('');
+      this.actionError.set('');
+      if (this.authorized()) this.loadBranches();
+      else this.branchLoading.set(false);
+    });
     if (this.authorized()) this.loadBranches();
     else this.branchLoading.set(false);
   }
@@ -295,7 +317,7 @@ export class AdminDashboardPageComponent {
   }
   loadActions(): void {
     if (!this.authorized() || this.branchLoading() || this.branchError()) return;
-    if (this.demo) {
+    if (this.demo()) {
       ++this.actionsVersion;
       this.actionLoading.set(false);
       this.actionError.set('');
@@ -378,7 +400,7 @@ export class AdminDashboardPageComponent {
 
   loadBranches(): void {
     if (!this.authorized()) return;
-    if (this.demo) {
+    if (this.demo()) {
       const scoped = this.manager()
         ? (this.session.user()?.branchScope ?? []).map((id, i) => ({
             id: String(id), code: 'CN' + (i + 1), name: 'Chi nhánh được giao ' + (i + 1),
@@ -422,7 +444,7 @@ export class AdminDashboardPageComponent {
     this.previousOrderCount.set(null);
     this.hoveredRevenueIndex.set(null);
     const filters: DashboardFilters = { from: this.from(), to: this.to(), branchId: this.branchId() || null };
-    if (this.demo) {
+    if (this.demo()) {
       const data = createDemoDashboard(filters.from, filters.to, filters.branchId ?? '');
       this.demoData.set(data);
       this.summary.set(data.summary);
