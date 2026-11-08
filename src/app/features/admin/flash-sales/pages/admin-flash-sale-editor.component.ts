@@ -342,7 +342,8 @@ export class AdminFlashSaleEditorComponent {
   }
   percentageFor(originalPrice: number, salePrice: number): string {
     if (!Number.isFinite(originalPrice) || originalPrice <= 0 || !Number.isFinite(salePrice)) return '';
-    return String(Math.round((1 - salePrice / originalPrice) * 10000) / 100);
+    // Retain precision when the Admin types a sale price instead of a percentage.
+    return String(Number(((1 - salePrice / originalPrice) * 100).toFixed(10)));
   }
   discountInvalid(value: string): boolean {
     if (!value.trim()) return false;
@@ -435,6 +436,9 @@ export class AdminFlashSaleEditorComponent {
       const price=Number(row.salePrice),qty=Number(row.quantityLimit);
       if (!row.discountPercent.trim() || this.discountInvalid(row.discountPercent)) {
         this.validation.set('Mức giảm của mỗi SKU phải lớn hơn 0% và nhỏ hơn 100%.');return null;
+      }
+      if (!row.sku.trim() || !Number.isSafeInteger(row.originalPrice) || row.originalPrice <= 0) {
+        this.validation.set('SKU hoặc giá gốc của sản phẩm không hợp lệ. Vui lòng kiểm tra dữ liệu sản phẩm.');return null;
       }
       if (!Number.isSafeInteger(price)||price<1||price>=row.originalPrice) {
         this.validation.set('Giá Flash Sale phải là số nguyên dương và thấp hơn giá hiện tại của từng SKU.');return null;
