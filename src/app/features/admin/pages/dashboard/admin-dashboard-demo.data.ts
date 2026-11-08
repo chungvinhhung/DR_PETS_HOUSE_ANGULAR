@@ -18,7 +18,14 @@ export interface DemoActionRow {
   time: string;
 }
 export interface DemoServiceRow { name: string; count: number }
-export interface DemoStockRow { name: string; branch: string; quantity: number; threshold: number }
+export interface DemoStockRow {
+  name: string;
+  branch: string;
+  quantity: number;
+  threshold: number;
+  /** Product photo for temporary UI preview only; not an inventory record image. */
+  imageUrl: string;
+}
 export interface DemoDashboardData {
   summary: DashboardSummary;
   previous: { revenue: number; orders: number; appointments: number; customers: number };
@@ -115,11 +122,30 @@ export function createDemoDashboard(from: string, to: string, branchId: string):
       { name: 'Triệt sản', count: fixedCount(42, multiplier) },
       { name: 'Điều trị ngoại trú', count: fixedCount(37, multiplier) },
     ],
+    // Real retail product-package photos for the demo. Not Dr. Pet's House inventory photos.
+    // Sources: bpets.cl, petshopdanang.com, harrodshealth.com, ananinja.com, windfinpet.com.
+    // Replace with Product/Variant media from BE when real image URLs become available.
     stocks: [
-      { name: 'Thức ăn hạt cho mèo (1,5 kg)', branch: branchName, quantity: 3, threshold: 10 },
-      { name: 'Sữa dinh dưỡng cho chó (400 g)', branch: branchName, quantity: 5, threshold: 15 },
-      { name: 'Dầu tắm trị ve (250 ml)', branch: branchName, quantity: 0, threshold: 12 },
-      { name: 'Vòng cổ chống ve (size M)', branch: branchName, quantity: 8, threshold: 15 },
+      {
+        name: 'Royal Canin Kitten (1,5 kg)', branch: branchName, quantity: 3, threshold: 10,
+        imageUrl: 'https://www.bpets.cl/cdn/shop/files/Royal-Canin-Kitten-1.5kg.jpg?crop=center&height=900&v=1761861793&width=900',
+      },
+      {
+        name: 'Sữa bột Dr.Kyan Predogen (400 g)', branch: branchName, quantity: 5, threshold: 15,
+        imageUrl: 'https://cdn-images.kiotviet.vn/petshopdanang/12ab16a4c196427cbcccb49c98bf5d33.jpeg',
+      },
+      {
+        name: 'Sữa tắm trị ve TresPaws (200 ml)', branch: branchName, quantity: 0, threshold: 12,
+        imageUrl: 'https://www.harrodshealth.com/cdn/shop/products/ANTITICK-1_1.jpg?v=1708584213&width=600',
+      },
+      {
+        name: 'Vòng cổ chống ve Bioline (60 cm)', branch: branchName, quantity: 8, threshold: 15,
+        imageUrl: 'https://img.ananinja.com/media/ninja-catalog-42/sa_creations/supplier/6970117124484.png?q=90&w=480',
+      },
+      {
+        name: 'Royal Canin Mini Adult (2 kg)', branch: branchName, quantity: 6, threshold: 12,
+        imageUrl: 'https://bizweb.dktcdn.net/thumb/1024x1024/100/383/944/products/2.png?v=1587880959833',
+      },
     ],
     orders: [
       { id: 'demo-order-1', code: 'ORD-20261109-0031', customerName: 'Lê Văn C', amount: 430000, time: makeTime(-1, 1) },
