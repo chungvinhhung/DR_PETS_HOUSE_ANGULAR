@@ -8416,3 +8416,69 @@ app-admin-voucher-editor .voucher-editor__summary--scope{
   app-admin-voucher-editor .voucher-editor__summary--overview,
   app-admin-voucher-editor .voucher-editor__summary--scope{grid-template-columns:1fr;}
 }
+
+
+/* WEB2 UX: composite amount inputs have exactly one field border/focus ring.
+   Do not add a second border around the value, native spinner, or unit. */
+:is(app-admin-voucher-editor,app-admin-product-create-page,app-admin-product-edit-page,
+    app-service-catalog-editor)
+  :is(.voucher-editor__input-suffix,.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input){
+  display:flex;align-items:center;min-width:0;box-sizing:border-box;
+  height:44px;border:1px solid #dce5f0;border-radius:8px;
+  background:#fff;overflow:hidden;
+}
+app-admin-voucher-editor .voucher-editor__fields .voucher-editor__input-suffix{margin-top:8px;}
+:is(app-admin-voucher-editor,app-admin-product-create-page,app-admin-product-edit-page,
+    app-service-catalog-editor)
+  :is(.voucher-editor__input-suffix,.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input)
+  > input{
+  flex:1 1 auto;width:100%;min-width:0;height:100%;min-height:0;
+  margin:0!important;padding:8px 10px!important;box-sizing:border-box;
+  border:0!important;border-radius:0!important;
+  outline:0!important;outline-offset:0!important;box-shadow:none!important;
+  background:transparent!important;
+  appearance:textfield;-moz-appearance:textfield;
+}
+:is(app-admin-voucher-editor,app-admin-product-create-page,app-admin-product-edit-page,
+    app-service-catalog-editor)
+  :is(.voucher-editor__input-suffix,.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input)
+  > input::-webkit-inner-spin-button,
+:is(app-admin-voucher-editor,app-admin-product-create-page,app-admin-product-edit-page,
+    app-service-catalog-editor)
+  :is(.voucher-editor__input-suffix,.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input)
+  > input::-webkit-outer-spin-button{
+  -webkit-appearance:none;margin:0;
+}
+:is(app-admin-voucher-editor,app-admin-product-create-page,app-admin-product-edit-page,
+    app-service-catalog-editor)
+  :is(.voucher-editor__input-suffix,.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input)
+  > :is(span,em){
+  position:static;transform:none;flex:0 0 auto;display:flex;align-items:center;
+  justify-content:center;align-self:stretch;min-width:25px;margin:0;
+  padding:0 10px;border:0!important;outline:0!important;box-shadow:none!important;
+  color:#60748d;font-style:normal;white-space:nowrap;pointer-events:none;
+}
+:is(app-admin-voucher-editor,app-admin-product-create-page,app-admin-product-edit-page,
+    app-service-catalog-editor)
+  :is(.voucher-editor__input-suffix,.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input):focus-within{
+  border-color:#0d47a1;outline:0;box-shadow:0 0 0 2px rgba(13,71,161,.13);
+}
+:is(app-admin-voucher-editor,app-admin-product-create-page,app-admin-product-edit-page,
+    app-service-catalog-editor)
+  :is(.voucher-editor__input-suffix,.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input):has(> input:is(.input-invalid,[aria-invalid="true"],:out-of-range)),
+app-service-catalog-editor .service-editor__price-input--invalid{
+  border-color:#c62828!important;background:#fff7f7!important;
+}
+:is(app-admin-voucher-editor,app-admin-product-create-page,app-admin-product-edit-page,
+    app-service-catalog-editor)
+  :is(.voucher-editor__input-suffix,.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input):has(> input:is(.input-invalid,[aria-invalid="true"],:out-of-range)):focus-within,
+app-service-catalog-editor .service-editor__price-input--invalid:focus-within{
+  box-shadow:0 0 0 2px rgba(198,40,40,.16);
+}
+:is(app-admin-voucher-editor,app-admin-product-create-page,app-admin-product-edit-page,
+    app-service-catalog-editor)
+  :is(.voucher-editor__input-suffix,.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input):has(> input:disabled){
+  background:#f7f9fc;
+}
+app-admin-product-edit-page .unit-input.calculated,
+app-admin-product-create-page .currency-input.calculated-price{background:#e5f6fd;}
