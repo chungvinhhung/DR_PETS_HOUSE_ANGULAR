@@ -1,11 +1,15 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { HttpParams } from '@angular/common/http';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { BranchApiRecord, BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
 import { AdminDashboardService, DashboardFilters, DashboardSummary } from './admin-dashboard.service';
+import { AdminOrderApiService, OrderRecord } from '../../orders/services/admin-order-api.service';
+import { ApiClientService } from '../../../../core/services/api-client.service';
+import { AppointmentView, normalizeAppointmentPage } from '../appointments/admin-appointment-workflow.model';
 
 type Period = 'today' | '7d' | '30d' | 'custom';
 type Tone = 'amber' | 'blue' | 'indigo' | 'teal' | 'green' | 'red' | 'slate';
@@ -50,6 +54,9 @@ function shiftCalendar(date: string, days: number): string {
 })
 export class AdminDashboardPageComponent {
   private readonly dashboard = inject(AdminDashboardService);
+  private readonly ordersApi = inject(AdminOrderApiService);
+  private readonly client = inject(ApiClientService);
+  private actionsVersion = 0;
   private readonly branchApi = inject(BranchManagementApiService);
   private readonly session = inject(AuthSessionService);
   private readonly destroyRef = inject(DestroyRef);
@@ -65,6 +72,13 @@ export class AdminDashboardPageComponent {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly summary = signal<DashboardSummary | null>(null);
+  readonly actionTab = signal<'orders' | 'appointments'>('orders');
+  readonly actionLoading = signal(false);
+  readonly actionError = signal('');
+  readonly actionOrders = signal<OrderRecord[]>([]);
+  readonly actionAppointments = signal<AppointmentView[]>([]);
+  readonly actionCount = computed(() => this.actionTab() === 'orders'
+    ? this.actionOrders().length : this.actionAppointments().length);
   readonly checkedAt = signal('');
   readonly today = vietnamDate(new Date());
   readonly from = signal(shiftCalendar(this.today, -29));
@@ -125,6 +139,79 @@ export class AdminDashboardPageComponent {
     return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format(value) + '%';
   }
 
+  private allowedBranch(branchId: string | null | undefined): boolean {
+    if (this.branchId()) return String(branchId ?? '') === this.branchId();
+    if (!this.manager()) return true;
+    return (this.session.user()?.branchScope ?? []).map(String).includes(String(branchId ?? ''));
+  }
+
+  setActionTab(value: 'orders' | 'appointments'): void {
+    if (this.actionTab() === value) return;
+    this.actionTab.set(value);
+    this.loadActions();
+  }
+  money(value: number | undefined | null): string {
+    return typeof value === 'number' && Number.isFinite(value)
+      ? value.toLocaleString('vi-VN') + 'đ' : '—';
+  }
+  shortTime(value: string | null | undefined): string {
+    if (!value || !Number.isFinite(Date.parse(value))) return '—';
+    return new Intl.DateTimeFormat('vi-VN', {
+      timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit',
+      hour: '2-digit', minute: '2-digit',
+    }).format(new Date(value));
+  }
+  loadActions(): void {
+    if (!this.authorized() || this.branchLoading() || this.branchError()) return;
+    const version = ++this.actionsVersion;
+    this.actionLoading.set(true);
+    this.actionError.set('');
+    this.actionOrders.set([]);
+    this.actionAppointments.set([]);
+    if (this.actionTab() === 'orders') {
+      this.ordersApi.list().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: page => {
+          if (this.actionsVersion !== version) return;
+          this.actionOrders.set(page.items
+            .filter(item => this.allowedBranch(item.fulfillmentBranchId) &&
+              (item.status === 'PENDING' || item.status === 'CONFIRMED' || item.status === 'PROCESSING'))
+            .sort((a,b) => (b.createdAt || '').localeCompare(a.createdAt || '')).slice(0,3));
+          this.actionLoading.set(false);
+        },
+        error: () => {
+          if (this.actionsVersion !== version) return;
+          this.actionError.set('Không thể tải đơn hàng cần xử lý.');
+          this.actionLoading.set(false);
+        },
+      });
+    } else {
+      this.client.get<unknown>('/appointments', {
+        params: new HttpParams().set('limit', '100'),
+      }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: response => {
+          if (this.actionsVersion !== version) return;
+          try {
+            const page = normalizeAppointmentPage(response);
+            const now = Date.now();
+            this.actionAppointments.set(page.items.filter(item =>
+              this.allowedBranch(item.branchId) &&
+              item.status !== 'CANCELLED' && item.status !== 'COMPLETED' && item.status !== 'NO_SHOW' &&
+              !!item.appointmentAt && Date.parse(item.appointmentAt) >= now
+            ).sort((a,b) => (a.appointmentAt || '').localeCompare(b.appointmentAt || '')).slice(0,3));
+          } catch {
+            this.actionError.set('Dữ liệu lịch hẹn chưa đúng định dạng.');
+          }
+          this.actionLoading.set(false);
+        },
+        error: () => {
+          if (this.actionsVersion !== version) return;
+          this.actionError.set('Không thể tải lịch hẹn sắp tới.');
+          this.actionLoading.set(false);
+        },
+      });
+    }
+  }
+
   changePeriod(value: string): void {
     if (value !== 'today' && value !== '7d' && value !== '30d' && value !== 'custom') return;
     this.period.set(value);
@@ -181,6 +268,7 @@ export class AdminDashboardPageComponent {
     this.error.set('');
     this.summary.set(null); // never display a previous branch/date as the new result
     const filters: DashboardFilters = { from: this.from(), to: this.to(), branchId: this.branchId() || null };
+    this.loadActions();
     this.dashboard.summary(filters).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: data => {
         if (request !== this.version) return;
