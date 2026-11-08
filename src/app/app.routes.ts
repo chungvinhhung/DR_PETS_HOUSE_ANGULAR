@@ -482,6 +482,8 @@ export const routes: Routes = [
       },
       {
         path: 'dashboard',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'MANAGER'] },
         loadComponent: () =>
           import(
             './features/admin/pages/dashboard/admin-dashboard-page.component'
