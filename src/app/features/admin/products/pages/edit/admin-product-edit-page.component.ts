@@ -210,7 +210,11 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   }
 
   private fromSavedImages(images: ProductImage[]): EditableProductImage[] {
-    return images.map(image => ({
+    // BE may not return the primary photo first; the editor always displays it first.
+    return [...images].sort((a, b) =>
+      Number(!!b.isPrimary) - Number(!!a.isPrimary) ||
+      (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+    ).map(image => ({
       id: this.nextImageId++,
       savedImage: image,
       previewUrl: image.url,
