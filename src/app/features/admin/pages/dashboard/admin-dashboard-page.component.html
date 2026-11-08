@@ -67,32 +67,28 @@
           <span>Doanh thu</span>
         </div>
         <strong class="dash__kpi-value" [class.dash__kpi-value--pending]="true">—</strong>
-        <p>Giao dịch đã hoàn thành</p>
-        <span class="dash__kpi-tag">Chờ BE chuẩn hóa</span>
+
+
       </article>
       <a class="dash__kpi dash__kpi--link" routerLink="/admin/orders" aria-label="Xem danh sách đơn hàng">
         <div class="dash__kpi-title"><span class="dash__kpi-icon" data-kind="orders">
-          <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M5 8h14l-1.2 12H6.2L5 8ZM9 9V6a3 3 0 0 1 6 0v3"/>
-          </svg></span>
+          <img src="/assets/admin-dashboard/order-action.svg" width="34" height="34" alt=""></span>
           <span>Đơn hàng</span>
         </div>
         <strong class="dash__kpi-value" [class.dash__kpi-value--pending]="loading() || !ordersReady()">
           {{ loading() || error() || !ordersReady() ? '—' : formatInt(summary()!.orders) }}
         </strong>
-        <p>Đơn được tạo trong kỳ</p>
-        <span class="dash__kpi-foot">Xem đơn hàng <span aria-hidden="true">›</span></span>
+
+
       </a>
       <article class="dash__kpi">
         <div class="dash__kpi-title"><span class="dash__kpi-icon" data-kind="appointments">
-          <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 15h4"/>
-          </svg></span>
+          <img src="/assets/admin-dashboard/appointment-action.svg" width="34" height="34" alt=""></span>
           <span>Lịch hẹn</span>
         </div>
         <strong class="dash__kpi-value dash__kpi-value--pending">—</strong>
-        <p>Lịch được tạo trong kỳ</p>
-        <span class="dash__kpi-tag">Chờ BE chuẩn hóa</span>
+
+        <span class="dash__kpi-tag">Chưa có dữ liệu</span>
       </article>
       <article class="dash__kpi">
         <div class="dash__kpi-title"><span class="dash__kpi-icon" data-kind="customers">
@@ -102,8 +98,8 @@
           <span>Khách có giao dịch</span>
         </div>
         <strong class="dash__kpi-value dash__kpi-value--pending">—</strong>
-        <p>Khách hàng duy nhất trong kỳ</p>
-        <span class="dash__kpi-tag">Chờ BE chuẩn hóa</span>
+
+        <span class="dash__kpi-tag">Chưa có dữ liệu</span>
       </article>
     </section>
 
@@ -118,8 +114,8 @@
     <div class="dash__middle">
       <section class="dash__panel dash__panel--revenue">
         <header class="dash__panel-header">
-          <div><h2>Xu hướng doanh thu</h2><p>Doanh thu đơn hàng và dịch vụ theo thời gian</p></div>
-          <span class="dash__tag">Theo kỳ</span>
+          <div><h2>Xu hướng doanh thu</h2></div>
+
         </header>
         <div class="dash__legend"><span><i class="dash__dot dash__dot--order"></i> Đơn hàng</span><span><i class="dash__dot dash__dot--service"></i> Dịch vụ</span></div>
         <div class="dash__chart-empty">
@@ -130,15 +126,15 @@
               <path d="M20 81L67 81L114 81L161 81L208 81L255 81L296 81" stroke="#d5dfec" stroke-width="2" stroke-dasharray="5 7"/>
             </svg>
           </div>
-          <strong>Chưa thể hiển thị biểu đồ doanh thu</strong>
-          <p>BE cần trả doanh thu Order, Service và khoản hoàn tiền theo đúng kỳ ghi nhận.</p>
-          <span class="dash__await">Đang chờ API thống kê chuẩn M23</span>
+          <strong>Chưa có dữ liệu doanh thu</strong>
+
+
         </div>
       </section>
 
       <section class="dash__panel dash__panel--status">
         <header class="dash__panel-header">
-          <div><h2>Trạng thái đơn hàng</h2><p>Tỷ trọng theo trạng thái hiện tại</p></div>
+          <div><h2>Trạng thái đơn hàng</h2></div>
           <a routerLink="/admin/orders" class="dash__panel-link">Xem tất cả</a>
         </header>
         @if (loading() || branchLoading()) {
@@ -169,13 +165,13 @@
 
       <section class="dash__panel dash__panel--appointment">
         <header class="dash__panel-header">
-          <div><h2>Trạng thái lịch hẹn</h2><p>Tổng hợp theo ngày tạo lịch</p></div>
+          <div><h2>Trạng thái lịch hẹn</h2></div>
           <a routerLink="/admin/appointments" class="dash__panel-link">Xem tất cả</a>
         </header>
         <div class="dash__widget-placeholder dash__widget-placeholder--tall">
           <div class="dash__placeholder-mark"><img src="/assets/admin-product/icon-services.svg" alt="" width="26" height="26"></div>
-          <strong>Chờ dữ liệu lịch hẹn chuẩn</strong>
-          <small>BE cần thống kê theo ngày tạo và bao gồm đầy đủ trạng thái.</small>
+          <strong>Chưa có dữ liệu</strong>
+
         </div>
       </section>
     </div>
@@ -183,38 +179,99 @@
     <div class="dash__bottom">
       <section class="dash__panel">
         <header class="dash__panel-header">
-          <div><h2>Top 5 dịch vụ</h2><p>Dịch vụ hoàn thành nhiều nhất trong kỳ</p></div>
+          <div><h2>Top 5 dịch vụ</h2></div>
           <a routerLink="/admin/services" class="dash__panel-link">Danh mục</a>
         </header>
         <div class="dash__table-head dash__table-head--services"><span>Dịch vụ</span><span>Số lượt</span></div>
         <div class="dash__bottom-empty">
-          <strong>Đang chờ số lượt thực hiện</strong>
-          <p>API hiện có đếm lượt đặt, chưa lọc Service Segment hoàn thành.</p>
+          <strong>Chưa có dữ liệu</strong>
+
         </div>
       </section>
       <section class="dash__panel">
         <header class="dash__panel-header">
-          <div><h2>Tồn kho cần chú ý</h2><p>Ngưỡng tồn theo từng chi nhánh</p></div>
+          <div><h2>Tồn kho cần chú ý</h2></div>
           <a routerLink="/admin/inventory" class="dash__panel-link">Xem kho</a>
         </header>
         <div class="dash__table-head dash__table-head--stock"><span>Mặt hàng / Chi nhánh</span><span>Tồn / Ngưỡng</span></div>
         <div class="dash__bottom-empty">
-          <strong>Chưa có ngưỡng cảnh báo theo chi nhánh</strong>
-          <p>BE đang dùng mức cố định 5; cần cung cấp tồn và ngưỡng của từng SKU/branch.</p>
+          <strong>Chưa có dữ liệu</strong>
+
         </div>
       </section>
       <section class="dash__panel dash__panel--shortcuts">
-        <header class="dash__panel-header"><div><h2>Truy cập nhanh</h2><p>Đi đến các công việc vận hành</p></div></header>
-        <div class="dash__shortcuts">
-          <a routerLink="/admin/orders"><span class="dash__shortcut-icon">01</span><span><strong>Quản lý đơn hàng</strong><small>Kiểm tra và xử lý đơn</small></span><b aria-hidden="true">›</b></a>
-          <a routerLink="/admin/appointments"><span class="dash__shortcut-icon">02</span><span><strong>Quản lý lịch hẹn</strong><small>Lịch hẹn và phân công dịch vụ</small></span><b aria-hidden="true">›</b></a>
-          <a routerLink="/admin/inventory"><span class="dash__shortcut-icon">03</span><span><strong>Quản lý tồn kho</strong><small>Kiểm tra hàng hóa và vật tư</small></span><b aria-hidden="true">›</b></a>
+        <header class="dash__panel-header dash__panel-header--actions">
+          <h2><span class="dash__action-heading-icon" aria-hidden="true">ϟ</span> Cần xử lý ngay</h2>
+        </header>
+        <div class="dash__action-tabs" role="tablist" aria-label="Các công việc cần xử lý">
+          <button type="button" role="tab" [attr.aria-selected]="actionTab() === 'orders'"
+            [class.dash__action-tab--active]="actionTab() === 'orders'"
+            (click)="setActionTab('orders')">
+            <img src="/assets/admin-dashboard/order-action.svg" width="24" height="24" alt="">
+            Đơn hàng cần xử lý
+          </button>
+          <button type="button" role="tab" [attr.aria-selected]="actionTab() === 'appointments'"
+            [class.dash__action-tab--active]="actionTab() === 'appointments'"
+            (click)="setActionTab('appointments')">
+            <img src="/assets/admin-dashboard/appointment-action.svg" width="24" height="24" alt="">
+            Lịch hẹn sắp tới
+          </button>
         </div>
-        <p class="dash__shortcuts-note">Thao tác xử lý được thực hiện tại từng module, không thực hiện trực tiếp trên Dashboard.</p>
+        <div class="dash__action-content" role="tabpanel">
+          @if (actionTab() === 'orders') {
+            <table class="dash__action-table">
+              <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Giá trị</th><th>Thời gian</th><th>Thao tác</th></tr></thead>
+              <tbody>
+                @if (actionLoading()) {
+                  <tr><td colspan="5" class="dash__action-message">Đang tải đơn hàng...</td></tr>
+                } @else if (actionError()) {
+                  <tr><td colspan="5" class="dash__action-message">{{actionError()}}</td></tr>
+                } @else {
+                  @for (order of actionOrders(); track order.id) {
+                    <tr>
+                      <td><strong>{{order.code || '—'}}</strong></td>
+                      <td>{{order.contactSnapshot?.fullName || order.contactSnapshot?.name || '—'}}</td>
+                      <td>{{money(order.pricing.totalAmount)}}</td>
+                      <td>{{shortTime(order.createdAt)}}</td>
+                      <td><a [routerLink]="['/admin/orders',order.id]" [attr.aria-label]="'Xem đơn hàng '+order.code">Xử lý</a></td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="5" class="dash__action-message">Không có đơn hàng cần xử lý.</td></tr>
+                  }
+                }
+              </tbody>
+            </table>
+          } @else {
+            <table class="dash__action-table">
+              <thead><tr><th>Mã lịch</th><th>Khách hàng</th><th>Thời gian</th><th>Thao tác</th></tr></thead>
+              <tbody>
+                @if (actionLoading()) {
+                  <tr><td colspan="4" class="dash__action-message">Đang tải lịch hẹn...</td></tr>
+                } @else if (actionError()) {
+                  <tr><td colspan="4" class="dash__action-message">{{actionError()}}</td></tr>
+                } @else {
+                  @for (appointment of actionAppointments(); track appointment.id) {
+                    <tr>
+                      <td><strong>{{appointment.code || '—'}}</strong></td>
+                      <td>{{appointment.customerName || '—'}}</td>
+                      <td>{{shortTime(appointment.appointmentAt)}}</td>
+                      <td><a [routerLink]="['/admin/appointments',appointment.id]" [attr.aria-label]="'Xem lịch hẹn '+appointment.code">Xem</a></td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="4" class="dash__action-message">Không có lịch hẹn sắp tới trong dữ liệu đã tải.</td></tr>
+                  }
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+        <a class="dash__action-all" [routerLink]="actionTab() === 'orders' ? '/admin/orders' : '/admin/appointments'">
+          {{actionTab() === 'orders' ? 'Xem tất cả đơn hàng' : 'Xem tất cả lịch hẹn'}} <span aria-hidden="true">→</span>
+        </a>
       </section>
     </div>
     <footer class="dash__footer">
-      <span>Dashboard M23 • Dữ liệu thực từ API, không sử dụng số mẫu</span>
+
       @if (checkedAt()) { <span>Cập nhật lúc {{checkedAt()}} (GMT+7)</span> }
     </footer>
   }
