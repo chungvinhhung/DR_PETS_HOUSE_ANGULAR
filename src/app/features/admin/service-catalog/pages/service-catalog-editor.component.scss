@@ -978,3 +978,14 @@ app-service-catalog-editor {
 .service-editor__detail-branch-list {
   gap: 12px;
 }
+
+/* P1: all five pricing columns get an explicit share; never let the last one collapse. */
+:host .service-editor__table--prices { width:100%; table-layout:fixed; }
+:host .service-editor__table--prices th:nth-child(1) {width:11%;}
+:host .service-editor__table--prices th:nth-child(2) {width:17%;}
+:host .service-editor__table--prices th:nth-child(3) {width:23%;}
+:host .service-editor__table--prices th:nth-child(4) {width:23%;}
+:host .service-editor__table--prices th:nth-child(5) {width:26%; text-align:left;}
+:host .service-editor__table--prices td:nth-child(5) {text-align:left;}
+:host .service-editor__table--prices :is(th,td) {padding:12px 16px; box-sizing:border-box; vertical-align:middle;}
+:host .service-editor__table--prices .service-editor__amount-words-cell { overflow-wrap:break-word; }
