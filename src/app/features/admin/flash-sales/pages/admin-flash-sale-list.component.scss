@@ -16,10 +16,17 @@
 :host .flash-list__badge[data-state="PAUSED"] {background:#fff1d9;color:#976017;}
 :host .flash-list__badge[data-state="ENDED"] {background:#edf0f3;color:#596774;}
 
-/* P1: sold quota is a separate, aligned list column. */
-:host .flash-list__table :is(th,td):nth-child(3),
-:host .flash-list__table :is(th,td):nth-child(4),
-:host .flash-list__table :is(th,td):nth-child(5),
-:host .flash-list__table :is(th,td):nth-child(6){text-align:center;}
-:host .flash-list__sold{font-variant-numeric:tabular-nums;white-space:nowrap;color:#2f4969;font-weight:550;}
-:host .flash-list__table :is(th,td){padding-inline:12px;}
+/* Even columns while keeping long campaign names and dates readable. */
+:host .flash-list__table :is(th,td){box-sizing:border-box;padding-inline:13px;vertical-align:middle;}
+:host .flash-list__table :is(th,td):nth-child(n+3){text-align:center;}
+:host .flash-list__table :is(th,td):nth-child(2){text-align:left;}
+:host .flash-list__table td.flash-list__sold{padding-block:12px;}
+:host .flash-list__usage{width:min(100%,176px);margin:0 auto;text-align:left;}
+:host .flash-list__usage strong{display:block;color:#223f68;font-size:13px;line-height:1.4;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap;}
+:host .flash-list__usage-track{height:8px;width:100%;margin-top:9px;background:#e7edf7;border-radius:99px;overflow:hidden;}
+:host .flash-list__usage-track>span{display:block;height:100%;border-radius:inherit;background:#0d47a1;transition:width .2s ease;}
+:host .flash-list__usage-unavailable{color:#8b9aae;}
+@media(max-width:1000px){
+  :host .flash-list__table :is(th,td){padding-inline:9px;}
+  :host .flash-list__usage{max-width:140px;}
+}
