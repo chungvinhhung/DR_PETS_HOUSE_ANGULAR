@@ -30,3 +30,13 @@
   :host .flash-list__table :is(th,td){padding-inline:9px;}
   :host .flash-list__usage{max-width:140px;}
 }
+
+/* Align header/data without leaving a large blank gutter before "Sản phẩm". */
+:host .flash-list__table{width:100%;table-layout:fixed;}
+:host .flash-list__table :is(th,td){padding-inline:12px;vertical-align:middle;box-sizing:border-box;}
+:host .flash-list__table :is(th,td):nth-child(2){text-align:left;padding-left:10px;}
+:host .flash-list__table :is(th,td):nth-child(3){text-align:center;}
+:host .flash-list__table :is(th,td):nth-child(4){text-align:center;}
+:host .flash-list__table :is(th,td):nth-child(5){text-align:center;}
+:host .flash-list__table :is(th,td):nth-child(6){text-align:center;padding-inline:6px;white-space:nowrap;}
+:host .flash-list__table th:nth-child(6){min-width:90px;}
