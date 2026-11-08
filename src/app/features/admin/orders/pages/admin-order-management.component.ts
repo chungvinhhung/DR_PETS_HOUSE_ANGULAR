@@ -106,8 +106,9 @@ export class AdminOrderManagementComponent {
   readonly completedOrderCount = computed(() => this.allOrders().filter(item => item.status === 'COMPLETED').length);
   readonly totalReturnsCount = computed(() => this.returns().length);
   readonly requestedReturnCount = computed(() => this.returns().filter(item => item.status === 'REQUESTED').length);
+  // KPI must use the same exact status as the "Đang xử lý" table filter.
   readonly processingReturnCount = computed(() => this.returns().filter(item =>
-    item.status === 'PROCESSING' || item.status === 'RECEIVED' || item.status === 'APPROVED').length);
+    item.status === 'PROCESSING').length);
   readonly completedReturnCount = computed(() => this.returns().filter(item => item.status === 'COMPLETED').length);
   readonly selected = signal<OrderRecord | null>(null);
   readonly orderInventory = signal<InventoryTransactionDto[]>([]);
