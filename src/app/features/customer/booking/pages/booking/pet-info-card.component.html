@@ -1,6 +1,7 @@
 <app-booking-card [className]="'p-5 md:p-8'">
   <div class="mb-5 flex items-center justify-between gap-4">
-    <h2 class="text-xl font-black text-blue-900">THÔNG TIN THÚ CƯNG@if (showIndex()) {
+    <h2 class="text-xl font-black text-blue-900">
+      THÔNG TIN THÚ CƯNG@if (showIndex()) {
         {{ ` ${index() + 1}` }}
       }
     </h2>
@@ -8,6 +9,7 @@
       <button type="button" (click)="onRemove.emit(petInfo().id)" class="text-sm font-bold text-[#d32f2f]">Xóa</button>
     }
   </div>
+
   <div class="grid gap-5 md:grid-cols-6">
     <label
       app-booking-field
@@ -18,17 +20,62 @@
       [value]="petInfo().name"
       (onChange)="onChange.emit([petInfo().id, 'name', $any($event).target.value])"
     ></label>
-    <label
-      app-booking-field
-      [className]="'md:col-span-2'"
-      [label]="'Loài'"
-      [as]="'select'"
-      [options]="['Chó', 'Mèo', 'Khác']"
-      [required]="true"
-      [showError]="validationAttempted()"
-      [value]="petInfo().species"
-      (onChange)="onChange.emit([petInfo().id, 'species', $any($event).target.value])"
-    ></label>
+
+    @if (selectSpeciesValue() === 'Khác') {
+      <!-- Khi chọn Khác: dùng chính thẻ <label> giữ nguyên chiều cao, bo góc và viền của app-booking-field -->
+      <label
+        class="block md:col-span-2"
+        [attr.title]="validationAttempted() && !petInfo()?.species?.trim() ? 'Vui lòng điền thông tin' : undefined"
+        [attr.data-booking-error]="validationAttempted() && !petInfo()?.species?.trim() ? 'true' : undefined"
+        [attr.tabindex]="validationAttempted() && !petInfo()?.species?.trim() ? -1 : undefined"
+      >
+        <span class="mb-2 block text-sm font-medium text-slate-900">
+          Loài <span class="text-red-500">*</span>
+        </span>
+        <span
+          [class]="`flex h-[46px] w-full items-center overflow-hidden rounded-full border bg-white text-sm text-slate-800 transition focus-within:border-blue-900 focus-within:ring-2 focus-within:ring-blue-900/20 ${
+            validationAttempted() && !petInfo()?.species?.trim() ? 'border-red-500 ring-2 ring-red-500/20' : 'border-slate-300'
+          }`"
+        >
+          <select
+            [value]="selectSpeciesValue()"
+            (change)="handleSpeciesSelect($any($event).target.value)"
+            class="h-full w-[96px] shrink-0 border-0 bg-transparent pl-4 pr-1 text-sm text-slate-800 outline-none"
+          >
+            @for (item of speciesOptions; track item) {
+              <option [value]="item" [selected]="item === selectSpeciesValue()">
+                {{ item }}
+              </option>
+            }
+          </select>
+
+          <span class="h-6 w-px shrink-0 bg-slate-300"></span>
+
+          <input
+            type="text"
+            [value]="customSpeciesValue()"
+            (input)="handleCustomSpeciesInput($any($event).target.value)"
+            placeholder="VD: chim, rắn,..."
+            class="h-full min-w-0 flex-1 border-0 bg-transparent px-3 text-sm text-slate-800 outline-none focus:ring-0"
+          />
+        </span>
+      </label>
+    } @else {
+      <!-- Khi chọn Chó / Mèo: giữ nguyên 100% component app-booking-field gốc -->
+      <label
+        app-booking-field
+        [className]="'md:col-span-2'"
+        [label]="'Loài'"
+        [as]="'select'"
+        [options]="speciesOptions"
+        [required]="true"
+        [showError]="validationAttempted()"
+        [value]="selectSpeciesValue()"
+        (onChange)="handleSpeciesSelect($any($event).target.value)"
+      ></label>
+    }
+
+    <!-- 3 ô Giống, Tuổi, Cân nặng nằm NGOÀI khối @if/@else để luôn hiển thị -->
     <label
       app-booking-field
       [className]="'md:col-span-2'"
@@ -36,6 +83,7 @@
       [value]="petInfo().breed"
       (onChange)="onChange.emit([petInfo().id, 'breed', $any($event).target.value])"
     ></label>
+
     <label
       app-booking-field
       [className]="'md:col-span-2'"
@@ -44,6 +92,7 @@
       [value]="petInfo().age"
       (onChange)="onChange.emit([petInfo().id, 'age', $any($event).target.value])"
     ></label>
+
     <label
       app-booking-field
       [className]="'md:col-span-2'"
@@ -54,6 +103,7 @@
       [value]="petInfo().weight"
       (onChange)="onChange.emit([petInfo().id, 'weight', $any($event).target.value])"
     ></label>
+
     <div class="md:col-span-3">
       <p class="mb-3 text-sm font-medium text-slate-900">Giới tính</p>
       <div class="flex flex-wrap gap-5 text-sm">
@@ -75,6 +125,7 @@
           />Cái</label>
       </div>
     </div>
+
     <div class="md:col-span-3">
       <p class="mb-3 text-sm font-medium text-slate-900">Tình trạng sức khỏe <span class="text-red-500">*</span></p>
       <div
@@ -109,6 +160,7 @@
           />Có bệnh nền</label>
       </div>
     </div>
+
     <label class="md:col-span-6">
       <span class="mb-2 block text-sm font-medium text-slate-900">Thông tin thêm</span>
       <textarea

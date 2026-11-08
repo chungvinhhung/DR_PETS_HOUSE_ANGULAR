@@ -1,14 +1,14 @@
 <div app-canvas-layout>
   <app-nav-bar />
-  <main class="flex min-h-[1931px] flex-col items-center gap-3 bg-[#E5F6FD] pb-6">
-    <nav class="flex h-14 w-[1200px] items-center gap-10 pr-16 text-[16px]">
+  <main class="flex min-h-[1931px] flex-col items-center gap-3 bg-[#E5F6FD] px-4 sm:px-6 pb-6">
+    <nav class="flex h-14 w-full max-w-[1200px] items-center gap-6 overflow-x-auto whitespace-nowrap text-[16px] sm:gap-10 lg:pr-16">
       <button type="button" class="h-full border-b-2 border-[#0D47A1] pb-0.5 font-bold text-[#0D47A1]">Kiến thức thú cưng</button>
       <a appCustomerLink="/blog/cong-dong" class="font-medium text-[#4B5563]">Cộng đồng chia sẻ</a>
       <a appCustomerLink="/blog/so-cuu" class="font-medium text-[#4B5563]">Cẩm nang sơ cứu</a>
     </nav>
-    <section class="flex w-[1200px] items-end justify-between pb-5">
+    <section class="flex w-full max-w-[1200px] flex-wrap items-end justify-between gap-4 pb-5">
       <div>
-        <h1 class="flex items-center gap-1 text-[40px] font-bold leading-[48px] tracking-[-0.8px]">Kiến thức<span class="text-[#0D47A1]">thú cưng</span>
+        <h1 class="flex flex-wrap items-center gap-1 text-[28px] font-bold leading-[36px] tracking-[-0.8px] sm:text-[40px] sm:leading-[48px]">Kiến thức<span class="text-[#0D47A1]">thú cưng</span>
           <img [attr.src]="blogImages.titlePet" alt="" class="h-12 w-12 object-contain" />
         </h1>
         <p class="mt-2 text-[16px] leading-6 text-[#4B5563]">Kiến thức chăm sóc thú cưng từ chuyên gia!!</p>
@@ -16,10 +16,10 @@
     </section>
     <app-featured-post [post]="featuredPost()" />
     <section app-trending-section [posts]="trendingPosts()"></section>
-    <section id="latest-posts" class="mt-1 flex w-[1202px] scroll-mt-4 flex-col items-center gap-8 pt-4">
-      <div class="flex w-full items-center gap-2">
+    <section id="latest-posts" class="mt-1 flex w-full max-w-[1202px] scroll-mt-4 flex-col items-center gap-8 pt-4">
+      <div class="flex w-full flex-wrap items-center gap-2">
         <h2 class="shrink-0 text-[24px] font-bold leading-8 text-[#111827]">Bài viết</h2>
-        <div class="ml-2 h-1 flex-1 bg-[#FDD835]"></div>
+        <div class="ml-2 h-1 min-w-[60px] flex-1 bg-[#FDD835]"></div>
         <div class="flex flex-wrap gap-3">
           @for (item of categories(); track item.id) {
             <button
@@ -76,7 +76,7 @@
       @if (isLoading()) {
         <div class="flex h-48 w-full items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">Đang tải bài viết...</div>
       } @else if (posts().length) {
-        <div class="grid w-full grid-cols-4 gap-x-[16px] gap-y-8">
+        <div class="grid w-full grid-cols-1 justify-items-center gap-x-[16px] gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           @for (post of posts(); track post.id) {
             <article app-blog-card [post]="post"></article>
           }

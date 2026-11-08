@@ -1,0 +1,342 @@
+:host {
+  position: fixed;
+  top: 60px;
+  right: 16px;
+  bottom: 24px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  width: 508px;
+  max-width: calc(100vw - 32px);
+  background-color: #ffffff;
+  box-shadow: 0 24px 60px rgba(3, 22, 53, 0.14);
+
+  @media (min-width: 640px) {
+    right: 32px;
+  }
+
+  @media (min-width: 1024px) {
+    top: 92px;
+  }
+}
+
+.icon-sm {
+  width: 16px;
+  height: 16px;
+}
+
+.icon-md {
+  width: 20px;
+  height: 20px;
+}
+
+/* Header */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #c2c6d4;
+  padding: 20px 36px;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .close-btn {
+    border-radius: 4px;
+    padding: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .panel-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 24px;
+    color: #003f87;
+  }
+
+  .panel-code {
+    margin: 2px 0 0;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    color: #424752;
+  }
+
+  .status-badge {
+    border-radius: 9999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+  }
+}
+
+/* Nội dung cuộn */
+.panel-body {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 28px;
+}
+
+.section-card {
+  border-radius: 16px;
+  padding: 12px;
+  margin-top: 24px;
+}
+
+.section-heading {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+
+  &.brand {
+    color: #003f87;
+  }
+
+  &.success {
+    margin-bottom: 0;
+    color: #22c55e;
+  }
+}
+
+.person-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  color: #191c1e;
+}
+
+/* Chủ thú cưng */
+.owner-section {
+  margin-top: 16px;
+  background-color: #e5f6fd;
+  padding: 20px;
+
+  .owner-meta {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #424752;
+  }
+
+  .phone-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+/* Thú cưng */
+.pet-section {
+  .pet-row {
+    display: flex;
+    gap: 16px;
+  }
+
+  .pet-avatar {
+    width: 106px;
+    height: 105px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .pet-details {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .pet-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .pet-breed {
+    font-weight: 400;
+    color: #424752;
+  }
+
+  .health-badge {
+    border-radius: 4px;
+    background-color: #ffdad6;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 15px;
+    color: #ba1a1a;
+    flex-shrink: 0;
+  }
+
+  .pet-specs {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 12px;
+    line-height: 16px;
+    color: #424752;
+  }
+
+  .pet-note {
+    margin-top: 12px;
+    border-radius: 16px;
+    border-left: 4px solid #fdd835;
+    background-color: #fff9c4;
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    font-style: italic;
+    line-height: 16px;
+    color: #544600;
+  }
+
+  .pet-note-inner {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .note-icon {
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+}
+
+/* Thanh toán */
+.payment-section {
+  background-color: #ffffff;
+
+  .payment-header {
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .payment-status-badge {
+    border-radius: 9999px;
+    background-color: rgba(34, 197, 94, 0.1);
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 16px;
+    color: #22c55e;
+  }
+
+  .payment-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .payment-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 16px;
+    color: #424752;
+
+    &.highlight {
+      color: rgba(0, 0, 0, 0.87);
+    }
+
+    strong {
+      font-size: 14px;
+      font-weight: 600;
+      color: #424752;
+    }
+  }
+}
+
+/* Chi tiết dịch vụ */
+.service-section {
+  .service-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .service-desc {
+    margin: 2px 0 0;
+    font-size: 16px;
+    line-height: 24px;
+    color: #424752;
+  }
+
+  .service-time {
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .service-date {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    letter-spacing: 0.14px;
+    color: #003f87;
+  }
+
+  .service-hour {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+    color: #191c1e;
+  }
+}
+
+/* Footer */
+.panel-footer {
+  border-top: 1px solid #c2c6d4;
+  background-color: #ffffff;
+  padding: 20px 24px 24px;
+
+  .countdown-wrapper {
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .deadline-notice {
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    letter-spacing: 0.14px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+  }
+}

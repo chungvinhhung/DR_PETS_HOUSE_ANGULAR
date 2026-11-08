@@ -8,7 +8,8 @@ import { MedicalRecordCardComponent } from './medical-record-card.component';
 import { SelectValueDirective } from '../../../../../shared/customer/directives/select-value.directive';
 import { ReactStyleDirective } from '../../../../../shared/customer/directives/react-style.directive';
 import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
-import { petImages, PET_SPECIES_OPTIONS, getSpeciesInputValue, getAgeInputValue, ACCEPTED_MEDICAL_FILE_TYPES, MAX_MEDICAL_FILE_SIZE, createUploadedFile, getFileUrl, isImageFile, readStoredPets, upsertLocalPet } from './pet-form-page.helpers';
+import { petImages, PET_SPECIES_OPTIONS, getSpeciesInputValue, getAgeInputValue, ACCEPTED_MEDICAL_FILE_TYPES, MAX_MEDICAL_FILE_SIZE, createUploadedFile, getFileUrl, isImageFile } from './pet-form-page.helpers';
+import { toPetSlug } from '../my-pet/pet-list-page.helpers';
 
 const uploadIcon = '/assets/customer/icons/upload-icon.png';
 
@@ -40,13 +41,23 @@ export class PetFormPageComponent {
 
   // --- Giá trị tính toán (computed) ---
   readonly isEdit = computed<any>(() => Boolean(this.navService.params()['id'] && this.navService.params()['id'] !== "new"));
-  readonly pet = computed<any>(() => this.isEdit() ? this.allPets().find((p: any) => p.id === this.navService.params()['id']) : null);
+  readonly pet = computed<any>(() => {
+    if (!this.isEdit()) return null;
+    const petId = this.resolvedPetId() || String(this.navService.params()['id'] || "");
+    return this.allPets().find((p: any) =>
+      String(p.id) === petId || String(p.pet_id) === petId || String(p._id) === petId,
+    ) || null;
+  });
   readonly currentPetImage = computed<any>(() => this.avatarPreview() || (this.pet()?.name ? (petImages as any)[this.pet().name] : null));
-  readonly defaultHealthStatus = computed<any>(() => this.pet()?.healthStatus === 'Khỏe mạnh' ? 'Bình thường' : (this.pet()?.healthStatus || "Bình thường"));
+  readonly defaultHealthStatus = computed<any>(() => this.pet()?.healthStatus === 'Bình thường' || this.pet()?.healthStatus === 'Khỏe mạnh'|| this.pet()?.healthStatus === 'NORMAL' ? 'Bình thường' : (this.pet()?.healthStatus || "Bình thường"));
 
   // --- Trạng thái (signal = useState / useRef) ---
   readonly allPets = signal<any>([]);
+  /** Id thật của thú cưng (route chỉ chứa slug, vd. bong-d58) */
+  readonly resolvedPetId = signal<any>("");
+  readonly healthStatusInput = signal<any>("Bình thường");
   readonly selectedSpeciesId = signal<any>("");
+  readonly speciesOtherInput = signal<any>("");
   readonly breedInput = signal<any>("");
   readonly formError = signal<any>("");
   readonly saving = signal<any>(false);
@@ -65,6 +76,8 @@ export class PetFormPageComponent {
   readonly newMedicalNotes = signal<any>("");
   readonly newMedicalFile = signal<any>(null);
   readonly avatarPreview = signal<any>(null);
+  /** Id các bệnh án đã có trên server lúc mở form (để biết bản nào bị xóa khi lưu) */
+  readonly originalMedicalRecordIds = signal<string[]>([]);
 
   constructor() {
     // useEffect(..., [petId, isEdit])
@@ -74,46 +87,78 @@ export class PetFormPageComponent {
       const cleanup = untracked(() => {
         let active = true;
 
-        this.petApi.getMyPets()
-          .then((pets: any) => {
-            if (!active) return;
-            this.allPets.set(pets);
+        const petId = String(this.navService.params()['id'] || "");
+        const requests = this.isEdit()
+          ? this.petApi.getMyPets().then(async (pets: any[]) => {
+              const availablePets = pets;
+              const currentPetFromList = availablePets.find((pet: any) =>
+                String(pet.id) === petId ||
+                String(pet.pet_id) === petId ||
+                String(pet._id) === petId ||
+                toPetSlug(pet) === petId,
+              );
+              const resolvedPetId = String(
+                currentPetFromList?.id ||
+                currentPetFromList?.pet_id ||
+                currentPetFromList?._id ||
+                petId,
+              );
+              const results = await Promise.allSettled([
+                this.petApi.getPetDetails(resolvedPetId),
+                this.petApi.getMedicalRecordsByPet(resolvedPetId),
+              ]);
+              return { availablePets, currentPetFromList, resolvedPetId, results };
+            })
+          : Promise.resolve(null);
 
-            if (this.isEdit()) {
-              const currentPet = pets.find((p: any) => p.id === this.navService.params()['id']);
-              if (currentPet) {
-                this.selectedSpeciesId.set(getSpeciesInputValue(currentPet));
-                this.breedInput.set(currentPet.breed || currentPet.breedName || "");
-                if (currentPet.avatar) {
-                  this.avatarPreview.set(currentPet.avatar);
-                } else if (currentPet.name && (petImages as any)[currentPet.name]) {
-                  this.avatarPreview.set((petImages as any)[currentPet.name]);
-                }
+        requests.then((result: any) => {
+          if (!active) return;
 
-                if (currentPet.medicalRecords) {
-                  this.medicalRecords.set(currentPet.medicalRecords);
-                }
-              }
+          if (!this.isEdit()) return;
+
+          const pets = result?.availablePets || [];
+          const petResult: any = result?.results?.[0];
+          const recordsResult: any = result?.results?.[1];
+          this.allPets.set(pets);
+          this.resolvedPetId.set(result?.resolvedPetId || "");
+
+          const currentPet = petResult?.status === "fulfilled"
+            ? petResult.value
+            : result?.currentPetFromList;
+
+          if (currentPet) {
+            if (!this.resolvedPetId()) {
+              this.resolvedPetId.set(String(currentPet.id || currentPet.pet_id || currentPet._id || ""));
             }
-          })
-          .catch((error: any) => {
-            if (!active) return;
-            const storedPets = readStoredPets();
-            this.allPets.set(storedPets);
+            this.allPets.update((currentPets: any[]) => {
+              const existingIndex = currentPets.findIndex(
+                (pet: any) => String(pet.id) === String(currentPet.id) || String(pet.pet_id) === String(currentPet.pet_id),
+              );
+              if (existingIndex < 0) return [currentPet, ...currentPets];
+              return currentPets.map((pet: any, index: number) => index === existingIndex ? { ...pet, ...currentPet } : pet);
+            });
+            this.selectedSpeciesId.set(getSpeciesInputValue(currentPet));
+            this.speciesOtherInput.set(
+              getSpeciesInputValue(currentPet) === "other" &&
+              String(currentPet.species || currentPet.speciesName || currentPet.species_name || "").toLowerCase() !== "khác"
+                ? currentPet.species || currentPet.speciesName || currentPet.species_name || ""
+                : "",
+            );
+            this.breedInput.set(currentPet.breed || currentPet.breedName || "");
+            this.healthStatusInput.set(this.defaultHealthStatus());
+            this.avatarPreview.set(
+              currentPet.avatar ||
+              (currentPet.name && (petImages as any)[currentPet.name]) ||
+              null,
+            );
+            const apiRecords = recordsResult?.status === "fulfilled" ? recordsResult.value || [] : [];
+            this.medicalRecords.set(apiRecords);
+            this.originalMedicalRecordIds.set(apiRecords.map((record: any) => String(record.id)));
+            return;
+          }
 
-            if (this.isEdit()) {
-              const currentPet = storedPets.find((p: any) => p.id === this.navService.params()['id'] || String(p.pet_id) === String(this.navService.params()['id']));
-              if (currentPet) {
-                this.selectedSpeciesId.set(getSpeciesInputValue(currentPet));
-                this.breedInput.set(currentPet.breed || currentPet.breedName || "");
-                this.avatarPreview.set(currentPet.avatar || (currentPet.name && (petImages as any)[currentPet.name]) || null);
-                this.medicalRecords.set(currentPet.medicalRecords || []);
-                return;
-              }
-            }
-
-            this.formError.set(error?.message || "Không thể tải hồ sơ thú cưng");
-          });
+          this.formError.set("Không tìm thấy hồ sơ thú cưng");
+        });
 
         return () => {
           active = false;
@@ -159,7 +204,7 @@ export class PetFormPageComponent {
     try {
       this.saving.set(true);
       this.formError.set("");
-      await this.petApi.deletePet(this.navService.params()['id']);
+      await this.petApi.deletePet(this.resolvedPetId() || this.navService.params()['id']);
       this.showDeleteModal.set(false);
       this.navService.navigate("/thu-cung-cua-toi");
     } catch (error: any) {
@@ -176,12 +221,18 @@ export class PetFormPageComponent {
     const genderValue = formData.get("gender");
     const weightInput = formData.get("weight");
     const ageInput = formData.get("age");
-    const selectedSpecies = PET_SPECIES_OPTIONS.find((option: any) => option.value === formData.get("speciesId"));
-
+    const customSpecies = String(formData.get("customSpecies") || "").trim();
+    const speciesId = String(formData.get("speciesId") || this.selectedSpeciesId() || "");
+    const selectedSpecies = PET_SPECIES_OPTIONS.find((option: any) => option.value === speciesId);
+    
     const petData = {
       name: formData.get("name"),
-      speciesId: selectedSpecies?.value || formData.get("speciesId"),
-      species: selectedSpecies?.label || "",
+      speciesId,
+
+      species: speciesId === "other"
+        ? customSpecies
+        : selectedSpecies?.label || "",
+
       breed: formData.get("breed"),
       age: ageInput || null, 
       gender: genderValue,
@@ -197,36 +248,44 @@ export class PetFormPageComponent {
       this.formError.set("");
       let savedPet: any;
       if (this.isEdit()) {
-        savedPet = await this.petApi.updatePet(this.navService.params()['id'], petData);
+        savedPet = await this.petApi.updatePet(this.resolvedPetId() || this.navService.params()['id'], petData);
       } else {
         savedPet = await this.petApi.createPet(petData);
       }
 
-      const backendPetId = savedPet.id || this.navService.params()['id'];
-      const localRecordsToPersist = this.medicalRecords().filter((record: any) =>
-        record.file || typeof record.id === "number" || /^\d{12,}$/.test(String(record.id)),
-      );
-      const savedRecordResults = await Promise.allSettled(localRecordsToPersist.map((record: any) =>
-        this.petApi.createMedicalRecord({
-          petId: backendPetId,
-          condition: record.condition,
-          visitDate: record.visitDate || record.date?.split("/").reverse().join("-"),
-          notes: record.notes,
-          attachments: record.file ? [record.file] : [],
-        }),
-      ));
-      const persistedRecords = savedRecordResults
-        .filter((result: any) => result.status === "fulfilled")
-        .map((result: any) => result.value);
-      const finalRecords = persistedRecords.length
-        ? [...persistedRecords, ...this.medicalRecords().filter((record: any) => !localRecordsToPersist.includes(record))]
-        : this.medicalRecords();
+      const backendPetId = savedPet?.id || savedPet?.pet_id || this.resolvedPetId();
+      if (!backendPetId) throw new Error("Không xác định được mã thú cưng sau khi lưu");
 
-      upsertLocalPet(this.isEdit() ? this.navService.params()['id'] : savedPet.id, { ...petData, ...savedPet, medicalRecords: finalRecords });
+      const toPayload = (record: any) => ({
+        petId: backendPetId,
+        condition: record.condition,
+        doctor: record.doctor,
+        visitDate: record.visitDate || record.date?.split("/").reverse().join("-"),
+        notes: record.notes,
+        attachments: record.file ? [record.file] : [],
+      });
+      const currentIds = new Set(this.medicalRecords().map((record: any) => String(record.id)));
+      const deletedIds = this.originalMedicalRecordIds().filter((id: string) => !currentIds.has(id));
+
+      const recordResults = await Promise.allSettled([
+        ...this.medicalRecords()
+          .filter((record: any) => record.isNew)
+          .map((record: any) => this.petApi.createMedicalRecord(toPayload(record))),
+        ...this.medicalRecords()
+          .filter((record: any) => !record.isNew && record.isDirty)
+          .map((record: any) => this.petApi.updateMedicalRecord(record.id, toPayload(record))),
+        ...deletedIds.map((id: string) => this.petApi.deleteMedicalRecord(id)),
+      ]);
+
+      if (recordResults.some((result: any) => result.status === "rejected")) {
+        alert("Đã lưu hồ sơ nhưng có bệnh án chưa lưu được lên hệ thống. Vui lòng kiểm tra lại.");
+        this.navService.navigate(`/thu-cung-cua-toi/${toPetSlug({ ...savedPet, id: backendPetId, name: petData.name })}`);
+        return;
+      }
+
       this.navService.navigate("/thu-cung-cua-toi");
     } catch (error: any) {
-      upsertLocalPet(this.isEdit() ? this.navService.params()['id'] : null, petData);
-      this.navService.navigate("/thu-cung-cua-toi");
+      this.formError.set(error?.message || "Không thể lưu hồ sơ. Vui lòng thử lại.");
     } finally {
       this.saving.set(false);
     }
@@ -311,6 +370,9 @@ export class PetFormPageComponent {
             size: this.newMedicalFile()?.size || r.size || "PDF",
             fileUrl: this.newMedicalFile()?.fileUrl || r.fileUrl || `${this.newMedicalName().replace(/\s+/g, '-')}.pdf`,
             fileName: this.newMedicalFile()?.name || r.fileName || r.name,
+            file: this.newMedicalFile()?.file || r.file,
+            visitDate: this.newMedicalDate(),
+            isDirty: true,
           };
         }
         return r;
@@ -327,6 +389,9 @@ export class PetFormPageComponent {
         notes: this.newMedicalNotes() || "Không có ghi chú y tế.",
         fileUrl: this.newMedicalFile()?.fileUrl || `${this.newMedicalName().replace(/\s+/g, '-')}.pdf`,
         fileName: this.newMedicalFile()?.name || this.newMedicalName() + ".pdf",
+        file: this.newMedicalFile()?.file,
+        visitDate: this.newMedicalDate(),
+        isNew: true,
       };
       this.medicalRecords.set([newRecord, ...this.medicalRecords()]);
     }

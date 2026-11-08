@@ -1,16 +1,16 @@
 <!-- Main Container -->
-<div class="w-[1440px] pt-[21px] flex flex-col gap-[14px]">
+<div class="mx-auto w-full max-w-[1440px] pt-[21px] flex flex-col gap-[14px]">
   <!-- Back Button Row -->
-  <div class="flex items-center px-[66px] h-[31.68px] gap-[10px]">
+  <div class="flex items-center px-4 sm:px-8 xl:px-[66px] h-[31.68px] gap-[10px]">
     <img [attr.src]="backArrowIcon" alt="Back" class="w-[12px] h-[12px]" />
     <button class="text-[#00355F] text-[20px] font-medium leading-[1.6em] tracking-[0.0075em]">Quay lại</button>
   </div>
   <!-- Two Columns Layout -->
-  <div class="flex justify-between items-stretch px-[64px] pt-[10px] pb-[10px]">
+  <div class="flex flex-col gap-6 lg:flex-row justify-between items-stretch px-4 sm:px-8 xl:px-[64px] pt-[10px] pb-[10px]">
     <!-- Left Column: Appointment Details -->
-    <div class="w-[720px] bg-[#FFFFFF] border border-[#C2C7D1] rounded-[8px] p-[24px] flex flex-col gap-[24.5px]">
+    <div class="w-full min-w-0 lg:flex-1 xl:w-[720px] xl:flex-none bg-[#FFFFFF] border border-[#C2C7D1] rounded-[8px] p-[24px] flex flex-col gap-[24.5px]">
       <!-- Header: Title & Status -->
-      <div class="flex justify-between items-start w-full">
+      <div class="flex flex-wrap gap-3 justify-between items-start w-full">
         <div class="flex flex-col gap-[8px]">
           <h1 class="text-[24px] font-normal text-[#00355F] leading-[1.334em]">Chi tiết đặt lịch</h1>
           <p class="text-[14px] font-normal text-[#42474F] leading-[1.428em]">Mã số: BK-8712-2023</p>
@@ -30,14 +30,14 @@
       </div>
       <!-- Horizontal Grid for Pet, Person, Phone -->
       <div class="flex flex-row flex-wrap w-full">
-        <div class="flex flex-col w-[347px] gap-[8.5px] mb-[20px]">
+        <div class="flex flex-col w-full sm:w-1/2 sm:pr-4 gap-[8.5px] mb-[20px]">
           <div class="text-[12px] font-bold text-[#727780] leading-[1.333em] tracking-[0.0416em] uppercase">THÔNG TIN THÚ CƯNG</div>
           <div class="flex flex-row items-center gap-[12px]">
             <img [attr.src]="petIcon" alt="Pet" class="w-[21px] h-[22px]" />
             <span class="text-[16px] font-normal text-[#191C1E] leading-[1.5em] tracking-[0.0093em]">0123456789</span>
           </div>
         </div>
-        <div class="flex flex-col w-[347px] gap-[8.5px] mb-[20px]">
+        <div class="flex flex-col w-full sm:w-1/2 sm:pr-4 gap-[8.5px] mb-[20px]">
           <div class="text-[12px] font-bold text-[#727780] leading-[1.333em] tracking-[0.0416em] uppercase">SỐ ĐIỆN THOẠI LIÊN HỆ</div>
           <div class="flex flex-row items-center gap-[12px]">
             <img [attr.src]="phoneIcon" alt="Phone" class="w-[18px] h-[18px]" />
@@ -83,7 +83,7 @@
       </div>
     </div>
     <!-- Right Column: Payment Section -->
-    <div class="w-[480px] flex flex-col">
+    <div class="w-full lg:w-[400px] xl:w-[480px] shrink-0 flex flex-col">
       <div class="w-full bg-[#FFFFFF] border border-[#C2C7D1] rounded-[8px] px-[24px] py-[23.5px] flex flex-col gap-[24px]">
         <h2 class="text-[24px] font-normal text-[#00355F] leading-[1.334em]">Phương thức thanh toán</h2>
         <div class="flex flex-col w-full gap-[24px]">
@@ -150,13 +150,24 @@
             <span class="text-[20px] font-bold text-[#000000] leading-[1.2em]">Xác nhận đặt lịch</span>
           </button>
           <!-- Footer Text -->
-          <div class="flex flex-wrap justify-center text-center font-['Roboto'] text-[12px] leading-[15px] text-[#727780]">
-            <span>Bằng cách nhấn xác nhận, bạn đồng ý với </span>
-            <a href="/terms" class="text-[#00355f] underline hover:no-underline mx-1">Điều khoản dịch vụ</a>
-            <span>và </span>
-            <a href="/privacy" class="text-[#00355f] underline hover:no-underline">Chính sách bảo mật</a>
-            <span>của chúng tôi.</span>
-          </div>
+            <div class="flex flex-wrap justify-center text-center font-['Roboto'] text-[12px] leading-[15px] text-[#727780]">
+              <span>Bằng cách nhấn xác nhận, bạn đồng ý với </span>
+              <a
+                href="/policies/dieu-khoan-dich-vu"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-[#00355f] underline hover:no-underline mx-1"
+              >Điều khoản dịch vụ</a>
+              <span>và </span>
+              <a
+                href="/policies/bao-mat"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-[#00355f] underline hover:no-underline mx-1"
+              >Chính sách bảo mật</a>
+              <span>của chúng tôi.</span>
+            </div>
+
         </div>
       </div>
     </div>

@@ -12,7 +12,7 @@ import { CONTACT_FIELDS } from '../data/adoption-form-data';
   imports: [ContactFieldComponent],
   templateUrl: './contact-step.component.html',
   host: {
-    'class': 'grid w-full grid-cols-2 gap-4',
+    'class': 'grid w-full grid-cols-1 gap-4 sm:grid-cols-2',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

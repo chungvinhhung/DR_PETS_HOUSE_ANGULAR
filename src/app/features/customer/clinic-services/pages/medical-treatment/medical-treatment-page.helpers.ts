@@ -17,7 +17,8 @@ export function getMedicalServiceFallback(service: any = {}) {
     medicalServices.find((item: any) =>
       serviceName.includes(item.title.toLocaleLowerCase('vi')),
     ) ||
-    medicalServices.find((item: any) => /khám|điều trị/.test(serviceName) && item.title === 'Khám & Điều trị') ||
+    medicalServices.find((item: any) => /sau điều trị|thay băng|hậu phẫu/.test(serviceName) && item.title === 'Chăm sóc sau điều trị') ||
+    medicalServices.find((item: any) => /khám|điều trị/.test(serviceName) && item.title === 'Khám sức khỏe tổng quát') ||
     medicalServices.find((item: any) => /xét nghiệm/.test(serviceName) && item.title === 'Xét nghiệm') ||
     medicalServices.find((item: any) => /siêu âm|x-quang/.test(serviceName) && item.title === 'Siêu âm') ||
     medicalServices.find((item: any) => /tiêm|vaccine|phòng/.test(serviceName) && item.title === 'Tiêm phòng') ||
@@ -27,14 +28,21 @@ export function getMedicalServiceFallback(service: any = {}) {
   )
 }
 
-export function normalizeMedicalServiceCard(service: any) {
-  const fallback = getMedicalServiceFallback(service)
+export function mergeMedicalServiceCards(apiServices: any[] = []) {
+  return medicalServices.map((service: any) => {
+    const apiService = apiServices.find((item: any) => {
+      const serviceName = `${item.name || ''} ${item.desc || ''}`.toLocaleLowerCase('vi')
+      const matchesMedicalService = /khám|điều trị|xét nghiệm|siêu âm|x-quang|tiêm|vaccine|phòng|phẫu thuật|triệt sản|cấp cứu|sau điều trị|thay băng|hậu phẫu/.test(serviceName)
 
-  return {
-    title: service.name || fallback.title,
-    price: formatServicePrice(service.price),
-    description: service.desc || fallback.description,
-    image: fallback.image,
-  }
+      return matchesMedicalService && getMedicalServiceFallback(item) === service
+    })
+
+    return apiService
+      ? {
+          ...service,
+          price: formatServicePrice(apiService.price),
+          description: apiService.desc || service.description,
+        }
+      : service
+  })
 }
-

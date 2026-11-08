@@ -16,7 +16,7 @@ import { SEARCH_DEBOUNCE_MS, EMPTY_SUGGESTIONS } from './nav-search-bar.helpers'
   imports: [SearchSuggestionDropdownComponent],
   templateUrl: './nav-search-bar.component.html',
   host: {
-    '[class]': '`group relative h-[37px] w-[200px] shrink-0 ${className()}`',
+    '[class]': '`group relative h-[37px] w-[150px] shrink-0 xl:w-[200px] ${className()}`',
     '(submit)': 'handleSubmit($any($event))',
     '(focusout)': 'handle1($any($event))',
     '(keydown)': 'handle2($any($event))',

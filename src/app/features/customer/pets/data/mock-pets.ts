@@ -171,5 +171,20 @@ export const MOCK_PETS = [
         fileUrl: "#"
       }
     ]
+  },
+  {
+    id: "ted_id_321",
+    name: "Ted",
+    species: "Chó",
+    breed: "Golden",
+    age: "7 tuổi",
+    gender: "♂",
+    weight: "30 kg",
+    healthStatus: "Bình thường",
+    medicalNotes: "",
+    lastCheckup: "02/03/2026",
+    avatar: null,
+    isHidden: true,
+    medicalRecords: []
   }
 ];

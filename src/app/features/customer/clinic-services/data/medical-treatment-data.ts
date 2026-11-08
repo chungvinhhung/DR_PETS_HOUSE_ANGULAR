@@ -1,6 +1,3 @@
-/**
- * Chuyển từ React: src/data/medicalTreatmentData.js
- */
 const medicalAsset = (name: any) =>
   `/assets/customer/images/medical/${name}`
 
@@ -10,6 +7,7 @@ export const medicalAssets = {
   heroPaw: medicalAsset('hero-paw.png'),
   servicesTitleShape: medicalAsset('services-title-shape.png'),
   servicesDecor: medicalAsset('service-image-74.png'),
+  servicesPaw: medicalAsset('services-paw.png'),
   serviceCardMask: medicalAsset('service-card-mask.png'),
   ctaPrice: medicalAsset('cta-price.png'),
   ctaBook: medicalAsset('cta-book.png'),
@@ -36,45 +34,59 @@ export const medicalAssets = {
 
 export const medicalServices = [
   {
-    title: 'Khám & Điều trị',
-    price: 'Từ 30.000 đ',
+    title: 'Khám sức khỏe tổng quát',
+    price: 'Từ 150.000 đ',
     description:
       'Chẩn đoán và điều trị hệ hô hấp, hệ tiêu hóa, hệ tuần hoàn, lông da, mắt và tai.',
     image: medicalAsset('service-treatment.png'),
-  },
-  {
-    title: 'Xét nghiệm',
-    price: 'Từ 50.000 đ',
-    description: 'Xét nghiệm máu, virus, nước tiểu, da, kháng sinh,...',
-    image: medicalAsset('service-test.png'),
+    imagePosition: '48% center',
   },
   {
     title: 'Siêu âm',
-    price: 'Từ 100.000 đ',
+    price: 'Từ 250.000 đ',
     description:
       'Các phương pháp chẩn đoán hình ảnh hoặc làm xét nghiệm: Siêu âm, X-Quang.',
     image: medicalAsset('service-ultrasound.png'),
+    imagePosition: '72% center',
+  },
+  {
+    title: 'Xét nghiệm',
+    price: 'Từ 250.000 đ',
+    description: 'Xét nghiệm máu, virus, nước tiểu, da, kháng sinh,...',
+    image: medicalAsset('service-test.png'),
+    imagePosition: '50% 45%',
   },
   {
     title: 'Tiêm phòng',
-    price: 'Từ 100.000 đ',
+    price: 'Từ 200.000 đ',
     description:
-      'Thú cưng cần được tiêm phòng và tái chủng định kì theo hướng dẫn của bác sĩ.',
+      'Thú cưng cần được tiêm phòng và tái chủng định kì theo hướng dẫn của bác sĩ',
     image: medicalAsset('service-vaccine.png'),
+    imagePosition: '44% center',
   },
   {
     title: 'Phẫu thuật',
-    price: 'Từ 200.000 đ',
+    price: 'Từ 800.000 đ',
     description:
       'Theo yêu cầu hoặc điều trị: triệt sản, cắt đuôi và nối xương, sỏi niệu, mổ bướu...',
     image: medicalAsset('service-surgery.png'),
+    imagePosition: 'center',
+  },
+  {
+    title: 'Chăm sóc sau điều trị',
+    price: 'Từ 120.000 đ',
+    description:
+      'Dịch vụ thay băng, chăm sóc, tiêm thuốc, vệ sinh sau phẫu thuật, điều trị dài ngày.',
+    image: medicalAsset('service-aftercare.jpg'),
+    imagePosition: 'center',
   },
   {
     title: 'Cấp cứu 24/7',
-    price: 'Từ 150.000 đ',
+    price: 'Báo giá sau tiếp nhận',
     description:
-      'Dịch vụ cấp cứu 24/7, kể cả ngày lễ. Cả 2 hình thức: tại cửa hàng và tại nhà.',
+      'Dịch vụ cấp cứu 24/7, kể cả ngày lễ.\nCả 2 hình thức: tại cửa hàng và tại nhà.',
     image: medicalAsset('service-emergency.png'),
+    imagePosition: 'center',
   },
 ]
 

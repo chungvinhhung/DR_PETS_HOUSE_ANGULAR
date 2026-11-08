@@ -49,19 +49,35 @@ export class ServiceSelectionComponent {
   protected readonly formatMoney: any = formatMoney;
 
   // --- Giá trị tính toán (computed) ---
-  readonly visibleServices = computed<any>(() => {
+    readonly visibleServices = computed<any>(() => {
     const keyword = this.serviceSearch().trim().toLocaleLowerCase("vi");
-    return this.services().filter((service: any) => {
-      const matchesType = !this.selectedServiceType() || service.serviceTypeId === this.selectedServiceType();
+    const selectedType = String(this.selectedServiceType() || "").trim().toLowerCase();
+
+    return (this.services() || []).filter((service: any) => {
+      const rawType = String(
+        service.serviceTypeId ?? service.service_type_id ?? service.category ?? service.type ?? ""
+      ).trim().toLowerCase();
+
+      // Chuẩn hóa nhóm grooming/spa và clinic/medical
+      const normalizedServiceType =
+        rawType.includes("groom") || rawType.includes("spa")
+          ? "grooming"
+          : rawType.includes("clinic") || rawType.includes("med") || rawType.includes("khám")
+            ? "clinic"
+            : rawType;
+
+      const matchesType = !selectedType || normalizedServiceType === selectedType;
       const matchesSearch =
         !keyword ||
         [service.name, service.desc]
           .join(" ")
           .toLocaleLowerCase("vi")
           .includes(keyword);
+
       return matchesType && matchesSearch;
     });
   });
+
   readonly total = computed<any>(() => this.services()
       .filter((item: any) => this.selectedServices().includes(item.id))
       .reduce((sum: any, item: any) => sum + item.price * this.serviceQuantity(), 0));

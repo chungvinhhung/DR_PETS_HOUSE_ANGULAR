@@ -7,7 +7,7 @@ import { PetApiService } from '../../../../../core/customer/services/api/pet-api
 import { ReactStyleDirective } from '../../../../../shared/customer/directives/react-style.directive';
 import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
 import { INITIAL_PET_EVENTS } from '../../data/pet-events';
-import { petImages, getFallbackPet, syncFallbackMedicalRecords, calculateAge, formatAgeText, ACCEPTED_UPLOAD_FILE_TYPES, MAX_UPLOAD_FILE_SIZE, createUploadedFile, getFileUrl, isImageFile, getUploadFiles, getColorClass, convertTimeToInputFormat, formatTimeToSACH, toDateKey, isEventInDate } from './pet-detail-page.helpers';
+import { petImages, matchPetBySlugOrId, calculateAge, formatAgeText, ACCEPTED_UPLOAD_FILE_TYPES, MAX_UPLOAD_FILE_SIZE, createUploadedFile, getFileUrl, isImageFile, getUploadFiles, getColorClass, convertTimeToInputFormat, formatTimeToSACH, toDateKey, isEventInDate, toPetSlug } from './pet-detail-page.helpers';
 
 const lunaImg = '/assets/customer/images/pets/luna.jpg';
 const patternBg = '/assets/customer/images/pets/patterntaddnote.jpg';
@@ -38,9 +38,12 @@ export class PetDetailPageComponent {
   protected readonly isImageFile: any = isImageFile;
   protected readonly patternBg: any = patternBg;
   protected readonly getColorClass: any = getColorClass;
+  protected readonly toPetSlug = toPetSlug; 
 
   // --- Giá trị tính toán (computed) ---
   readonly currentPetId = computed<any>(() => this.navService.params().id || this.navService.params().petId);
+  readonly routeParamId = computed<any>(() => this.navService.params().id || this.navService.params().petId);
+  readonly resolvedPetId = signal<string>('');
   readonly MAX_FILES = computed<any>(() => 3);
   readonly currentPetImage = computed<any>(() => this.pet()?.avatar || (this.pet()?.name ? (petImages as any)[this.pet().name] : lunaImg));
   readonly displayAge = computed<any>(() => formatAgeText(this.pet()?.age) || (this.pet()?.birthDate ? calculateAge(this.pet().birthDate) : "3 tuổi"));
@@ -64,6 +67,9 @@ export class PetDetailPageComponent {
         calendarDays.push({ 
           date: i, 
           isCurrent: i === this.todayDay() && this.month() === this.todayMonth() && this.year() === this.todayYear(), 
+          isSelected: this.selectedDateObj()?.getDate() === i &&
+            this.selectedDateObj()?.getMonth() === this.month() &&
+            this.selectedDateObj()?.getFullYear() === this.year(),
           events: dayEvents.length > 0 ? dayEvents : null
         });
       }
@@ -72,15 +78,16 @@ export class PetDetailPageComponent {
   readonly defaultDateString = computed<any>(() => `${this.year()}-${String(this.month() + 1).padStart(2, '0')}-${String(this.selectedDay()).padStart(2, '0')}`);
 
   // --- Trạng thái (signal = useState / useRef) ---
-  readonly pet = signal<any>((() => getFallbackPet(this.currentPetId()))());
+  readonly pet = signal<any>({});
   readonly petLoadError = signal<any>("");
   readonly calendarDate = signal<any>((() => new Date())());
   readonly eventsList = signal<any>(INITIAL_PET_EVENTS);
-  readonly medicalHistoryList = signal<any>((() => getFallbackPet(this.currentPetId())?.medicalRecords || [])());
+  // Bệnh án chỉ lấy từ API theo đúng pet_id, không dùng dữ liệu local/mock
+  readonly medicalHistoryList = signal<any>([]);
   readonly showGeneralNoteModal = signal<any>(false);
   readonly showDayModal = signal<any>(false);
   readonly dayModalMode = signal<any>('view');
-  readonly selectedDateObj = signal<any>(null);
+  readonly selectedDateObj = signal<any>((() => new Date())());
   readonly dayEventsData = signal<any>([]);
   readonly activeEventDetail = signal<any>(null);
   readonly showHistoryModal = signal<any>(false);
@@ -102,51 +109,67 @@ export class PetDetailPageComponent {
   readonly selectedColor = signal<any>("");
   readonly existingFiles = signal<any>([]);
   readonly markedDeletions = signal<any>([]);
+  readonly isProfileHidden = signal<boolean>(false);
 
   constructor() {
     // useEffect(..., [currentPetId])
     effect((onCleanup: any) => {
-      this.currentPetId();
+      const slugOrId = this.routeParamId();
       const cleanup = untracked(() => {
         let active = true;
-        const fallbackPet = getFallbackPet(this.currentPetId());
-
-        this.pet.set(fallbackPet);
-        this.medicalHistoryList.set(fallbackPet?.medicalRecords || []);
+        this.pet.set({});
+        this.medicalHistoryList.set([]);
         this.petLoadError.set("");
+        this.resolvedPetId.set(String(slugOrId || ""));
 
-        Promise.allSettled([
-          this.petApi.getPetDetails(this.currentPetId()),
-          this.petApi.getMedicalRecordsByPet(this.currentPetId()),
-          this.petApi.getHealthDiariesByPet(this.currentPetId()),
-          this.petApi.getRemindersByPet(this.currentPetId()),
-        ]).then(([petResult, recordsResult, diariesResult, remindersResult]: any) => {
+        (async () => {
+          let realPetId = String(slugOrId || "");
+          const isDirectPetId =
+            /^pet[_-]/i.test(realPetId) ||
+            /^[0-9a-f]{24}$/i.test(realPetId) ||
+            /^\d+$/.test(realPetId);
+
+          if (realPetId && !isDirectPetId) {
+            try {
+              const myPets = await this.petApi.getMyPets();
+              const matched = matchPetBySlugOrId(myPets, realPetId);
+              if (matched) {
+                realPetId = String(matched.id || matched.pet_id || matched._id || realPetId);
+                if (active) this.pet.update((current: any) => ({ ...current, ...matched }));
+              }
+            } catch {
+              // Không tải được danh sách -> thử gọi trực tiếp bằng giá trị trên URL
+            }
+          }
+
+          if (!active || !realPetId) return;
+          this.resolvedPetId.set(realPetId);
+
+          const results = await Promise.allSettled([
+            this.petApi.getPetDetails(realPetId),
+            this.petApi.getMedicalRecordsByPet(realPetId),
+            this.petApi.getHealthDiariesByPet(realPetId),
+            this.petApi.getRemindersByPet(realPetId),
+          ]);
           if (!active) return;
 
+          const [petResult, recordsResult, diariesResult, remindersResult]: any = results;
           if (petResult.status === "fulfilled") {
             this.pet.update((current: any) => ({ ...current, ...petResult.value }));
           }
-
           if (recordsResult.status === "fulfilled") {
-            this.medicalHistoryList.set(recordsResult.value);
+            this.medicalHistoryList.set(recordsResult.value || []);
           }
-
           if (diariesResult.status === "fulfilled" || remindersResult.status === "fulfilled") {
             const diaryEvents = diariesResult.status === "fulfilled" ? diariesResult.value : [];
             const reminderEvents = remindersResult.status === "fulfilled" ? remindersResult.value : [];
             const apiEvents = [...diaryEvents, ...reminderEvents];
             if (apiEvents.length) this.eventsList.set(apiEvents);
           }
-
-          if (
-            petResult.status === "rejected" &&
-            recordsResult.status === "rejected" &&
-            diariesResult.status === "rejected" &&
-            remindersResult.status === "rejected"
-          ) {
-            this.petLoadError.set("Không thể tải hồ sơ mới nhất, đang hiển thị dữ liệu dự phòng.");
+          if (results.every((result: any) => result.status === "rejected")) {
+            this.petLoadError.set("Không thể tải hồ sơ thú cưng. Vui lòng thử lại.");
           }
-        });
+        })();
 
         return () => {
           active = false;
@@ -232,7 +255,7 @@ export class PetDetailPageComponent {
     };
     try {
       const savedEvent = await this.petApi.createHealthDiary({
-        petId: this.currentPetId(),
+        petId: this.resolvedPetId(),
         entryDate: this.noteDate(),
         entryTime: this.noteTime() || null,
         title: this.noteContent(),
@@ -258,6 +281,21 @@ export class PetDetailPageComponent {
 
     this.dayModalMode.set('view');
     this.showDayModal.set(true);
+  }
+
+  protected handleSelectDay(day: any) {
+    if (!day) return;
+    const selectedDate = new Date(this.year(), this.month(), day);
+    this.selectedDateObj.set(selectedDate);
+    this.dayEventsData.set(
+      this.eventsList().filter((event: any) => isEventInDate(event, day, this.month(), this.year())),
+    );
+    this.activeEventDetail.set(null);
+  }
+
+  protected handleOpenSelectedDay() {
+    const selectedDate = this.selectedDateObj() || this.calendarDate();
+    this.handleOpenDayModal(selectedDate.getDate());
   }
 
   protected handleStartCreateNoteInDay() {
@@ -300,7 +338,7 @@ export class PetDetailPageComponent {
       if (this.activeEventDetail()?.sourceType === "diary") {
         try {
           const savedEvent = await this.petApi.updateHealthDiary(this.editingNoteId(), {
-            petId: this.currentPetId(),
+            petId: this.resolvedPetId(),
             entryDate: targetDateKey,
             entryTime: this.noteTime() || null,
             title: this.noteContent(),
@@ -345,7 +383,7 @@ export class PetDetailPageComponent {
       };
       try {
         const savedEvent = await this.petApi.createHealthDiary({
-          petId: this.currentPetId(),
+          petId: this.resolvedPetId(),
           entryDate: targetDateKey,
           entryTime: this.noteTime() || null,
           title: this.noteContent(),
@@ -440,67 +478,31 @@ export class PetDetailPageComponent {
     const [y, m, d] = this.newMedicalDate().split("-");
     const formattedDate = `${d}/${m}/${y}`;
 
-    let newList: any;
-    if (this.medicalModalMode() === 'edit' && this.editingMedicalId()) {
-      newList = this.medicalHistoryList().map((r: any) => {
-        if (r.id === this.editingMedicalId()) {
-          return {
-            ...r,
-            date: formattedDate,
-            condition: this.newMedicalName(),
-            doctor: this.newMedicalDoctor(),
-            notes: this.newMedicalNotes(),
-            name: this.newMedicalFile()?.name || r.name || this.newMedicalName() + ".pdf",
-            size: this.newMedicalFile()?.size || r.size || "PDF",
-            fileUrl: this.newMedicalFile()?.fileUrl || r.fileUrl || `${this.newMedicalName().replace(/\s+/g, '-')}.pdf`,
-            fileName: this.newMedicalFile()?.name || r.fileName || r.name,
-          };
-        }
-        return r;
-      });
-    } else {
-      const newRecord = {
-        id: Date.now(),
-        date: formattedDate,
-        condition: this.newMedicalName(),
-        doctor: this.newMedicalDoctor() || "Chưa rõ",
-        notes: this.newMedicalNotes() || "Không có ghi chú y tế.",
-        name: this.newMedicalFile()?.name || this.newMedicalName() + ".pdf",
-        size: this.newMedicalFile()?.size || "PDF",
-        fileUrl: this.newMedicalFile()?.fileUrl || `${this.newMedicalName().replace(/\s+/g, '-')}.pdf`,
-        fileName: this.newMedicalFile()?.name || this.newMedicalName() + ".pdf",
-      };
-      newList = [newRecord, ...this.medicalHistoryList()];
-    }
+    const payload = {
+      petId: this.resolvedPetId(),
+      condition: this.newMedicalName(),
+      doctor: this.newMedicalDoctor(),
+      visitDate: this.newMedicalDate(),
+      notes: this.newMedicalNotes(),
+      attachments: this.newMedicalFile()?.file ? [this.newMedicalFile().file] : [],
+    };
 
     try {
       if (this.medicalModalMode() === 'edit' && this.editingMedicalId()) {
-        const savedRecord = await this.petApi.updateMedicalRecord(this.editingMedicalId(), {
-          condition: this.newMedicalName(),
-          visitDate: this.newMedicalDate(),
-          notes: this.newMedicalNotes(),
-          attachments: this.newMedicalFile()?.file ? [this.newMedicalFile().file] : [],
-        });
-        newList = this.medicalHistoryList().map((record: any) =>
-          record.id === this.editingMedicalId() ? { ...record, ...newList.find((item: any) => item.id === this.editingMedicalId()), ...savedRecord } : record,
+        const savedRecord = await this.petApi.updateMedicalRecord(this.editingMedicalId(), payload);
+        this.medicalHistoryList.update((list: any[]) =>
+          list.map((record: any) => record.id === this.editingMedicalId() ? { ...record, ...savedRecord } : record),
         );
       } else {
-        const savedRecord = await this.petApi.createMedicalRecord({
-          petId: this.currentPetId(),
-          condition: this.newMedicalName(),
-          visitDate: this.newMedicalDate(),
-          notes: this.newMedicalNotes(),
-          attachments: this.newMedicalFile()?.file ? [this.newMedicalFile().file] : [],
-        });
-        newList = [{ ...newList[0], ...savedRecord }, ...this.medicalHistoryList()];
+        const savedRecord = await this.petApi.createMedicalRecord(payload);
+        this.medicalHistoryList.update((list: any[]) => [savedRecord, ...list]);
       }
     } catch (error: any) {
-      // Giữ fallback local để người dùng vẫn thao tác được khi API chưa bật.
+      alert(error?.message || "Không thể lưu bệnh án. Vui lòng thử lại.");
+      return;
     }
 
-    this.medicalHistoryList.set(newList);
     this.showAddMedicalModal.set(false);
-    syncFallbackMedicalRecords(this.currentPetId(), newList);
 
     this.newMedicalName.set(""); this.newMedicalDoctor.set(""); this.newMedicalDate.set(""); this.newMedicalNotes.set("");
     this.newMedicalFile.set(null);
@@ -516,15 +518,15 @@ export class PetDetailPageComponent {
   }
 
   protected async handleConfirmDeleteMedicalRecord(targetId: any = this.recordToDelete()) {
-    const newList = this.medicalHistoryList().filter((r: any) => r.id !== targetId);
     try {
       await this.petApi.deleteMedicalRecord(targetId);
     } catch (error: any) {
-      // API lỗi thì vẫn xóa khỏi fallback local để UI không bị kẹt.
+      this.recordToDelete.set(null);
+      alert(error?.message || "Không thể xóa bệnh án. Vui lòng thử lại.");
+      return;
     }
-    this.medicalHistoryList.set(newList);
+    this.medicalHistoryList.update((list: any[]) => list.filter((r: any) => r.id !== targetId));
     this.recordToDelete.set(null);
-    syncFallbackMedicalRecords(this.currentPetId(), newList);
     this.decisionModalService.showSuccessModal({
       message: "Đã xóa bệnh án thành công.\nBạn có thể tiếp tục hoặc quay về trang chủ",
     });
@@ -628,4 +630,29 @@ export class PetDetailPageComponent {
     if (this.dayModalMode() === 'edit') this.dayModalMode.set('view');
     else this.showDayModal.set(false);
   }
+
+  protected handleToggleHideProfile() {
+    const nextState = !this.isProfileHidden();
+    this.isProfileHidden.set(nextState);
+
+    // Nếu muốn gọi xác nhận qua DecisionModalService:
+    /*
+    this.decisionModalService.confirmDelete({
+      message: nextState 
+        ? "Bạn có chắc chắn muốn ẩn hồ sơ thú cưng này?" 
+        : "Hiển thị lại hồ sơ thú cưng này?",
+      confirmLabel: nextState ? "Ẩn hồ sơ" : "Hiển thị",
+      onConfirm: () => this.isProfileHidden.set(nextState),
+    });
+    */
+  }
+
+    protected handleEditProfile() {
+    const petData = {
+      ...this.pet(),
+      id: this.resolvedPetId() || this.pet()?.id || this.pet()?.pet_id || this.currentPetId(),
+    };
+    this.navService.navigate(`/thu-cung-cua-toi/${toPetSlug(petData)}/chinh-sua`);
+  }
+
 }

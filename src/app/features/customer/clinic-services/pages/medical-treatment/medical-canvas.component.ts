@@ -11,7 +11,7 @@ import { GroomingFeedbackSectionComponent } from '../../components/grooming/groo
 import { MedicalFaqComponent } from './medical-faq.component';
 import { FooterComponent } from '../../../../../layouts/customer/components/footer/footer.component';
 import { medicalServices } from '../../data/medical-treatment-data';
-import { normalizeMedicalServiceCard } from './medical-treatment-page.helpers';
+import { mergeMedicalServiceCards } from './medical-treatment-page.helpers';
 
 /**
  * MedicalCanvas — chuyển từ React: src/pages/Services/MedicalTreatmentPage.jsx
@@ -46,10 +46,9 @@ export class MedicalCanvasComponent {
             if (!active || !apiServices.length) return
             const medicalApiServices = apiServices
               .filter((service: any) => service.serviceTypeId === 'clinic')
-              .map(normalizeMedicalServiceCard)
 
             if (medicalApiServices.length) {
-              this.services.set(medicalApiServices)
+              this.services.set(mergeMedicalServiceCards(medicalApiServices))
             }
           })
           .catch(() => {

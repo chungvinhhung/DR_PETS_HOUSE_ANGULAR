@@ -11,7 +11,7 @@ import { CustomerIconComponent } from '../../../../shared/customer/components/ic
   imports: [CustomerIconComponent],
   templateUrl: './rescue-pet-card.component.html',
   host: {
-    'class': 'relative flex h-[625px] w-[380px] flex-col overflow-hidden rounded-[2px] border border-[rgba(208,198,174,0.6)] bg-[#FAF9F6] shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)]',
+    'class': 'relative flex h-[625px] w-full max-w-[380px] flex-col overflow-hidden rounded-[2px] border border-[rgba(208,198,174,0.6)] bg-[#FAF9F6] shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)]',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

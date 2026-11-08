@@ -35,10 +35,30 @@ function formatShortDate(value: any) {
 }
 
 function inferServiceType(service: any) {
-  const categoryName = service?.category?.category_name || service?.category || "";
-  if (/groom|spa/i.test(categoryName) || categoryName.includes("Grooming")) return "grooming";
+  const rawType = String(
+    service?.serviceTypeId ||
+    service?.service_type_id ||
+    service?.serviceType ||
+    service?.service_type ||
+    service?.type ||
+    service?.category?.category_name ||
+    service?.category?.name ||
+    (typeof service?.category === "string" ? service.category : "") ||
+    service?.category_name ||
+    service?.categoryName ||
+    ""
+  ).trim();
+
+  const serviceName = String(service?.name || service?.service_name || service?.serviceName || "").trim();
+  const combined = `${rawType} ${serviceName}`;
+
+  if (/groom|spa|tắm|cắt tỉa|tỉa lông|làm đẹp|vệ sinh tai|cắt móng/i.test(combined)) {
+    return "grooming";
+  }
+
   return "clinic";
 }
+
 
 function normalizeAppointmentStatus(appointment: any) {
   const rawStatus = String(appointment.status || '').toLowerCase();
@@ -202,6 +222,14 @@ export function normalizeBookingService(service: any) {
   const id = service.id || service._id || service.service_id || service.serviceId || "6ad08e4417bf41f5954234c6";
   const name = service.name || service.service_name || service.serviceName || "Dịch vụ Dr. Pet";
   const price = service.basePrice ?? service.base_price ?? service.price ?? 0;
+  const durationMinutes =
+    service.durationMinutes ??
+    service.duration_minutes ??
+    service.estimatedDuration ??
+    service.estimated_duration ??
+    service.duration ??
+    null;
+
   return {
     ...service,
     id: String(id),
@@ -209,6 +237,7 @@ export function normalizeBookingService(service: any) {
     serviceTypeId: inferServiceType(service),
     name,
     desc: service.description || "",
+    durationMinutes: durationMinutes !== null && durationMinutes !== "" ? Number(durationMinutes) : null,
     price: Number(price),
     isWeightSurchargeApplied: Boolean(service.isWeightSurchargeApplied ?? service.is_weight_surcharge_applied),
   };
