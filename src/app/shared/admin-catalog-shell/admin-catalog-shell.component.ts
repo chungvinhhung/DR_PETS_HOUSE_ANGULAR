@@ -41,7 +41,7 @@ export class AdminCatalogShellComponent implements OnChanges {
   readonly notificationOpen = signal(false);
 
   @Input({ required: true }) activeItem!:
-    | 'categories' | 'products' | 'orders' | 'vouchers'
+    | 'dashboard' | 'categories' | 'products' | 'orders' | 'vouchers'
     | 'services' | 'appointments' | 'service-records'
     | 'branches' | 'staff' | 'inventory' | 'customers'
     | 'content-articles' | 'content-first-aid' | 'content-community' | 'content-rescue'
