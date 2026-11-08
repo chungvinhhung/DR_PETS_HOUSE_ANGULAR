@@ -116,7 +116,7 @@
             <span class="flash-editor__selected-count">Đã chọn <strong>{{selectedCount()}}/{{form().items.length}}</strong> SKU</span>
             <label class="flash-editor__discount-control">
               <span>Mức giảm chung (%)</span>
-              <input #bulkPercent type="number" min="0.01" max="99.99" step="0.01" inputmode="decimal"
+              <input #bulkPercent type="number" min="0.0000000001" max="99.9999999999" step="any" inputmode="decimal"
                 [value]="bulkDiscount()" [disabled]="!editable()" (input)="updateBulkDiscount(bulkPercent.value)"
                 [class.flash-editor__numeric-invalid]="discountInvalid(bulkDiscount())"
                 [attr.aria-invalid]="discountInvalid(bulkDiscount())" placeholder="VD: 20">
@@ -172,7 +172,7 @@
                       @if (mode==='view') {
                         <strong class="flash-editor__percent-view">{{product.discountPercent}}%</strong>
                       } @else {
-                        <input #percent type="number" min="0.01" max="99.99" step="0.01" inputmode="decimal"
+                        <input #percent type="number" min="0.0000000001" max="99.9999999999" step="any" inputmode="decimal"
                           [attr.aria-label]="'Giảm thêm phần trăm cho ' + product.sku"
                           [value]="product.discountPercent" [disabled]="!editable()"
                           [class.flash-editor__numeric-invalid]="discountInvalid(product.discountPercent)"
