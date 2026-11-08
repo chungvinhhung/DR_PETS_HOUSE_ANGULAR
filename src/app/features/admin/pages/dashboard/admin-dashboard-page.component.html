@@ -1,15 +1,8 @@
 <app-admin-catalog-shell activeItem="dashboard">
 <main class="dash" aria-label="Tổng quan hoạt động">
   <header class="dash__heading">
-    <div class="dash__heading-main">
-      <div class="dash__heading-symbol"><img src="/assets/admin-product/icon-dashboard.svg" width="24" height="24" alt=""></div>
-      <div>
-        <h1>Tổng quan</h1>
-        <p>Hiệu quả hoạt động của Dr. Pet's House</p>
-      </div>
-    </div>
+    <h1>Tổng quan</h1>
     <div class="dash__heading-actions">
-      <span class="dash__tz">Dữ liệu theo giờ Việt Nam</span>
       <button type="button" class="dash__refresh" [disabled]="loading() || branchLoading() || !!branchError()"
         (click)="refresh()" aria-label="Tải lại thống kê">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.3-5.7M20 4v6h-6"/></svg>
