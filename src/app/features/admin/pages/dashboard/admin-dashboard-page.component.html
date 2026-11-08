@@ -134,7 +134,7 @@
 
       <section class="dash__panel dash__panel--status">
         <header class="dash__panel-header">
-          <div><h2>Trạng thái đơn hàng</h2></div>
+          <div><h2><img class="dash__panel-title-icon" src="/assets/admin-dashboard/order-action.svg" width="24" height="24" alt=""> Trạng thái đơn hàng</h2></div>
           <a routerLink="/admin/orders" class="dash__panel-link">Xem tất cả</a>
         </header>
         @if (loading() || branchLoading()) {
@@ -165,11 +165,11 @@
 
       <section class="dash__panel dash__panel--appointment">
         <header class="dash__panel-header">
-          <div><h2>Trạng thái lịch hẹn</h2></div>
+          <div><h2><img class="dash__panel-title-icon" src="/assets/admin-dashboard/appointment-action.svg" width="24" height="24" alt=""> Trạng thái lịch hẹn</h2></div>
           <a routerLink="/admin/appointments" class="dash__panel-link">Xem tất cả</a>
         </header>
         <div class="dash__widget-placeholder dash__widget-placeholder--tall">
-          <div class="dash__placeholder-mark"><img src="/assets/admin-product/icon-services.svg" alt="" width="26" height="26"></div>
+          <div class="dash__placeholder-mark"><img src="/assets/admin-dashboard/appointment-action.svg" alt="" width="34" height="34"></div>
           <strong>Chưa có dữ liệu</strong>
 
         </div>
@@ -190,7 +190,7 @@
       </section>
       <section class="dash__panel">
         <header class="dash__panel-header">
-          <div><h2>Tồn kho cần chú ý</h2></div>
+          <div><h2><img class="dash__panel-title-icon" src="/assets/admin-dashboard/inventory-action.svg" width="24" height="24" alt=""> Tồn kho cần chú ý</h2></div>
           <a routerLink="/admin/inventory" class="dash__panel-link">Xem kho</a>
         </header>
         <div class="dash__table-head dash__table-head--stock"><span>Mặt hàng / Chi nhánh</span><span>Tồn / Ngưỡng</span></div>
@@ -201,7 +201,7 @@
       </section>
       <section class="dash__panel dash__panel--shortcuts">
         <header class="dash__panel-header dash__panel-header--actions">
-          <h2><span class="dash__action-heading-icon" aria-hidden="true">ϟ</span> Cần xử lý ngay</h2>
+          <h2><img class="dash__action-heading-icon" src="/assets/admin-dashboard/alert-action.svg" width="22" height="22" alt=""> Cần xử lý ngay</h2>
         </header>
         <div class="dash__action-tabs" role="tablist" aria-label="Các công việc cần xử lý">
           <button type="button" role="tab" [attr.aria-selected]="actionTab() === 'orders'"
