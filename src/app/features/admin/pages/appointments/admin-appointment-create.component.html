@@ -235,7 +235,7 @@
               (input)="updateVoucher($any($event.target).value)">
             <button type="button" class="btn btn--outline" (click)="checkVoucher()">Áp dụng</button>
           </div>
-          @if (voucherNotice()) {<p class="hint hint--notice" role="status">{{voucherNotice()}}</p>}
+          @if (voucherNotice() && !voucherNotice().includes('hợp lệ · giảm')) {<p class="hint hint--notice" role="status">{{voucherNotice()}}</p>}
           <label class="form-label" for="appointment-note">Ghi chú lịch hẹn</label>
           <textarea id="appointment-note" rows="2" placeholder="Thêm lưu ý cho nhân viên..."
             [value]="note()" (input)="note.set($any($event.target).value)"></textarea>
