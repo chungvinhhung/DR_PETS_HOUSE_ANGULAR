@@ -194,7 +194,11 @@
               <input type="number" min="1" max="1440" step="1"
                 [disabled]="!mayEdit"
                 [(ngModel)]="durationMinutes" (ngModelChange)="markDirty()"
+                [attr.aria-invalid]="durationMinutes !== null && durationMinutes < 0"
                 placeholder="Nhập thời lượng"/>
+              @if (durationMinutes !== null && durationMinutes < 0) {
+                <small class="service-editor__price-error">Thời lượng không được là số âm.</small>
+              }
             </label>
             <label class="service-editor__field">
               <span>Vai trò thực hiện <b>*</b></span>
@@ -264,13 +268,17 @@
                       @if (tier.mode === 'QUOTE') {
                         <span class="service-editor__amount-unset">Chưa xác định giá</span>
                       } @else {
-                        <span class="service-editor__price-input">
+                        <span class="service-editor__price-input" [class.service-editor__price-input--invalid]="invalidTierPrices.has(tier.key)">
                           <input type="text" inputmode="numeric" autocomplete="off" [disabled]="!mayEdit"
-                            [value]="formatMoney(tier.price)" (input)="setTierPrice(tier, $any($event.target).value)"
+                            [value]="priceInputText(tier)" (input)="setTierPrice(tier, $any($event.target).value)"
                             [attr.aria-label]="'Giá cơ sở mức ' + tier.key"
+                            [attr.aria-invalid]="invalidTierPrices.has(tier.key)"
                             placeholder="Nhập giá"/>
                           <span>đ</span>
                         </span>
+                        @if (invalidTierPrices.has(tier.key)) {
+                          <small class="service-editor__price-error">Giá cơ sở không được là số âm.</small>
+                        }
                       }
                     </td>
                     <td class="service-editor__amount-words-cell" aria-live="polite">
@@ -316,7 +324,11 @@
                   </td>
                   <td><input type="number" min="0.01" step="0.01" [disabled]="!mayEdit"
                     [(ngModel)]="line.quantity" (ngModelChange)="markMaterialDirty()"
-                    placeholder="Nhập số lượng" [attr.aria-label]="'Số lượng vật liệu dòng ' + ($index + 1)"/></td>
+                    [attr.aria-invalid]="line.quantity !== null && line.quantity < 0"
+                    placeholder="Nhập số lượng" [attr.aria-label]="'Số lượng vật liệu dòng ' + ($index + 1)"/>
+                    @if (line.quantity !== null && line.quantity < 0) {
+                      <small class="service-editor__price-error">Số lượng không được là số âm.</small>
+                    }</td>
                   <td>
                     <select [disabled]="!mayEdit" [(ngModel)]="line.unit" (ngModelChange)="markMaterialDirty()"
                       [attr.aria-label]="'Đơn vị vật liệu dòng ' + ($index + 1)">
