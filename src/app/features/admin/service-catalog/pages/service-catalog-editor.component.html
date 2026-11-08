@@ -412,7 +412,7 @@
         <img src="/assets/service-catalog/search.svg" width="18" height="18" alt="">
         <input #materialSearchInput type="search" [value]="materialPickerSearch()"
           (input)="setMaterialPickerSearch(materialSearchInput.value)"
-          placeholder="Tìm tên vật liệu, SKU hoặc phân loại..." aria-label="Tìm vật liệu theo tên, SKU hoặc phân loại">
+          placeholder="Tìm tên vật liệu, SKU hoặc loại sử dụng..." aria-label="Tìm vật liệu theo tên, SKU hoặc phân loại">
       </label>
       <div class="flash-editor__picker-scroll">
         @if (materialCatalogError()) {
@@ -428,7 +428,7 @@
               <th scope="col">Chọn</th>
               <th scope="col">Vật liệu</th>
               <th scope="col">SKU</th>
-              <th scope="col">Phân loại</th>
+              <th scope="col">Loại sử dụng</th>
               <th scope="col">Đơn vị</th>
             </tr></thead>
             <tbody>
@@ -446,7 +446,7 @@
                     </div>
                   </td>
                   <td class="service-editor__material-sku">{{item.sku}}</td>
-                  <td>{{item.variantLabel || 'Chưa có thông tin phân loại'}}</td>
+                  <td>{{usageTypeLabel(item.usageType)}}</td>
                   <td>{{item.unit || '—'}}</td>
                 </tr>
               } @empty {
