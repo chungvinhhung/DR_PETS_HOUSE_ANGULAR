@@ -171,7 +171,7 @@
                   (keydown.enter)="openProductRow(product, $event)">
                   <td>{{ (pageNumber() - 1) * pageSize + $index + 1 }}</td>
                   <td><div class="thumbnail">
-                    @if (product.images.length) { <img [src]="product.images[0].url" [alt]="product.name"> }
+                    @if (productMainImageUrl(product); as imageUrl) { <img [src]="imageUrl" [alt]="product.name"> }
                     @else { <span class="empty-photo" aria-label="Chưa có ảnh"></span> }
                   </div></td>
                   <td class="product-name"><strong>{{ product.name }}</strong></td>
