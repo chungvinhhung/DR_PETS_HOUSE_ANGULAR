@@ -8482,3 +8482,88 @@ app-service-catalog-editor .service-editor__price-input--invalid:focus-within{
 }
 app-admin-product-edit-page .unit-input.calculated,
 app-admin-product-create-page .currency-input.calculated-price{background:#e5f6fd;}
+
+
+/* WEB2 feedback — remove ALL internal dividers from compound input surfaces.
+   The outer shell alone owns focus/invalid states. */
+:is(app-admin-voucher-editor,app-admin-product-create-page,app-admin-product-edit-page,
+    app-service-catalog-editor)
+  :is(.voucher-editor__input-suffix,.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input)
+  > :is(input,span,em,button){
+  border:0!important;border-left:0!important;border-right:0!important;
+  border-radius:0!important;outline:0!important;box-shadow:none!important;
+}
+:is(app-admin-voucher-editor,app-admin-product-create-page,app-admin-product-edit-page,
+    app-service-catalog-editor)
+  :is(.voucher-editor__input-suffix,.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input)
+  > :is(input,span,em,button):is(:focus,:focus-visible){
+  border:0!important;outline:0!important;box-shadow:none!important;
+}
+:is(app-admin-voucher-editor,app-admin-product-create-page,app-admin-product-edit-page,
+    app-service-catalog-editor)
+  :is(.voucher-editor__input-suffix,.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input)
+  > :is(input,span,em,button)::before,
+:is(app-admin-voucher-editor,app-admin-product-create-page,app-admin-product-edit-page,
+    app-service-catalog-editor)
+  :is(.voucher-editor__input-suffix,.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input)
+  > :is(input,span,em,button)::after{
+  border:0!important;box-shadow:none!important;
+}
+:is(app-admin-voucher-editor,app-admin-product-create-page,app-admin-product-edit-page,
+    app-service-catalog-editor)
+  :is(.voucher-editor__input-suffix,.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input)
+  > :is(span,em){border-left:0!important;padding-left:6px;padding-right:12px;}
+/* Search with an icon is also one field, without an icon/text partition. */
+app-admin-order-create .create-order__search-field,
+app-admin-flash-sale-editor .flash-editor__picker-search,
+app-service-catalog-editor .flash-editor__picker-search{
+  border:1px solid #dce5f0;border-radius:8px;box-sizing:border-box;overflow:hidden;
+}
+app-admin-order-create .create-order__search-field :is(input,img,span),
+app-admin-flash-sale-editor .flash-editor__picker-search :is(input,img,span),
+app-service-catalog-editor .flash-editor__picker-search :is(input,img,span){
+  border:0!important;border-left:0!important;border-right:0!important;
+  outline:0!important;box-shadow:none!important;background:transparent;
+}
+app-admin-order-create .create-order__search-field input:is(:focus,:focus-visible),
+app-admin-flash-sale-editor .flash-editor__picker-search input:is(:focus,:focus-visible),
+app-service-catalog-editor .flash-editor__picker-search input:is(:focus,:focus-visible){
+  outline:0!important;border:0!important;box-shadow:none!important;
+}
+app-admin-order-create .create-order__search-field:focus-within,
+app-admin-flash-sale-editor .flash-editor__picker-search:focus-within,
+app-service-catalog-editor .flash-editor__picker-search:focus-within{
+  border-color:#0d47a1;box-shadow:0 0 0 2px rgba(13,71,161,.12);
+}
+/* Service material modal matches the product selector, with usage in place of price. */
+app-service-catalog-editor .service-editor__material-picker.flash-editor__dialog{
+  width:min(100%,940px);
+}
+app-service-catalog-editor .service-editor__material-picker-table{
+  width:100%;min-width:650px;table-layout:fixed;
+}
+app-service-catalog-editor .service-editor__material-picker-table th:nth-child(1){width:10%;}
+app-service-catalog-editor .service-editor__material-picker-table th:nth-child(2){width:43%;}
+app-service-catalog-editor .service-editor__material-picker-table th:nth-child(3){width:30%;}
+app-service-catalog-editor .service-editor__material-picker-table th:nth-child(4){width:17%;}
+app-service-catalog-editor .service-editor__material-picker-table :is(th,td){
+  padding:13px 15px;box-sizing:border-box;vertical-align:middle;overflow-wrap:break-word;
+}
+app-service-catalog-editor .service-editor__material-picker-table :is(th,td):nth-child(1){
+  text-align:center;
+}
+app-service-catalog-editor .service-editor__material-picker-table :is(th,td):nth-child(n+2){
+  text-align:left;
+}
+app-service-catalog-editor .service-editor__material-sku small{
+  display:block;margin-top:5px;color:#708198;font-size:12px;
+}
+app-service-catalog-editor .service-editor__material-usage{
+  color:#40566f;line-height:1.45;
+}
+/* Fifth price column: label and value share an identical centered axis. */
+app-service-catalog-editor .service-editor__table--prices th:nth-child(5),
+app-service-catalog-editor .service-editor__table--prices td:nth-child(5),
+app-service-catalog-editor .service-editor__table--prices td.service-editor__amount-words-cell{
+  text-align:center!important;
+}
