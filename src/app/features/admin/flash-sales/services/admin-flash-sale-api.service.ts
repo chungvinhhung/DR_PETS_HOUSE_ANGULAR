@@ -128,7 +128,8 @@ export class AdminFlashSaleApiService {
   private readonly root = '/flash-sales';
 
   list(filters: {search?: string; state?: FlashSaleDisplayState | 'ALL'; cursor?: string | null; limit?: number} = {}): Observable<FlashSalePage> {
-    let params = new HttpParams().set('limit', String(filters.limit ?? 10));
+    // The Admin UI only manages scheduled/published sales. Historical DRAFT records are retained by BE, not surfaced here.
+    let params = new HttpParams().set('limit', String(filters.limit ?? 10)).set('status', 'PUBLISHED');
     if (filters.search?.trim()) params = params.set('search', filters.search.trim());
     if (filters.state && filters.state !== 'ALL') params = params.set('derivedStatus', filters.state);
     if (filters.cursor) params = params.set('cursor', filters.cursor);
