@@ -103,6 +103,7 @@ export class AdminCatalogShellComponent implements OnChanges {
       case 'moderation-feedback':
       case 'moderation-reports':
         return 'feedback';
+      case 'dashboard':
       case 'customers':
       case 'account-profile':
         return null;
