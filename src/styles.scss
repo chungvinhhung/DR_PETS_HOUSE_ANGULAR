@@ -8567,3 +8567,107 @@ app-service-catalog-editor .service-editor__table--prices td:nth-child(5),
 app-service-catalog-editor .service-editor__table--prices td.service-editor__amount-words-cell{
   text-align:center!important;
 }
+
+
+/* QA 08/11 — one focus surface across Admin composite controls.
+   Keep keyboard focus visible ON THE OUTER FRAME; child input, icon, suffix
+   and stepper controls must not draw separate rectangular focus frames.
+   Deliberately scoped to named composite wrappers, not standalone fields. */
+:root app-admin-catalog-shell :is(
+  .web2-management-search,.branch-v2-page__search,.staff-search,
+  .order-admin__search,.voucher-list__search,.flash-list__search,
+  .service-catalog__search,.search-field,.create-order__search-field,
+  .search-control,.flash-editor__picker-search,.staff-reset-input,
+  .password-wrap,.voucher-editor__input-suffix,.currency-input,
+  .variant-currency-input,.unit-input,.service-editor__price-input,
+  .create-order__qty,.return-detail__stepper,.quantity-stepper,
+  .sku-input-wrap
+):has(input):focus-within{
+  outline:0!important;outline-offset:0!important;
+  border-color:#0d47a1!important;
+  box-shadow:0 0 0 2px rgba(13,71,161,.15)!important;
+}
+:root app-admin-catalog-shell :is(
+  .web2-management-search,.branch-v2-page__search,.staff-search,
+  .order-admin__search,.voucher-list__search,.flash-list__search,
+  .service-catalog__search,.search-field,.create-order__search-field,
+  .search-control,.flash-editor__picker-search,.staff-reset-input,
+  .password-wrap,.voucher-editor__input-suffix,.currency-input,
+  .variant-currency-input,.unit-input,.service-editor__price-input,
+  .create-order__qty,.return-detail__stepper,.quantity-stepper,
+  .sku-input-wrap
+) > input:not([type=checkbox]):not([type=radio]){
+  min-width:0;border:0!important;
+  border-left:0!important;border-right:0!important;border-radius:0!important;
+  outline:0!important;outline-offset:0!important;box-shadow:none!important;
+  background-color:transparent!important;
+}
+:root app-admin-catalog-shell :is(
+  .web2-management-search,.branch-v2-page__search,.staff-search,
+  .order-admin__search,.voucher-list__search,.flash-list__search,
+  .service-catalog__search,.search-field,.create-order__search-field,
+  .search-control,.flash-editor__picker-search,.staff-reset-input,
+  .password-wrap,.voucher-editor__input-suffix,.currency-input,
+  .variant-currency-input,.unit-input,.service-editor__price-input,
+  .create-order__qty,.return-detail__stepper,.quantity-stepper,
+  .sku-input-wrap
+) > input:not([type=checkbox]):not([type=radio]):is(:focus,:focus-visible){
+  border:0!important;border-color:transparent!important;
+  border-radius:0!important;outline:0!important;outline-offset:0!important;
+  box-shadow:none!important;background-color:transparent!important;
+}
+/* Prevent a nested input rule with high specificity in an Admin filterbar
+   from overriding the shared composite contract above. */
+:root app-admin-catalog-shell .web2-filterbar.web2-filterbar :is(
+  .web2-management-search,.branch-v2-page__search,.staff-search,
+  .order-admin__search,.voucher-list__search,.flash-list__search,
+  .service-catalog__search,.search-field
+) > input:not([type=checkbox]):not([type=radio]):is(:focus,:focus-visible){
+  border:0!important;border-color:transparent!important;outline:0!important;
+  outline-offset:0!important;box-shadow:none!important;
+}
+/* On quantity steppers and password reveal controls, even keyboard focus
+   on an inner button is reflected on the wrapper instead. */
+:root app-admin-catalog-shell :is(
+  .create-order__qty,.return-detail__stepper,.quantity-stepper,
+  .staff-reset-input,.password-wrap
+) > button:is(:focus,:focus-visible){
+  outline:0!important;border-color:transparent!important;box-shadow:none!important;
+}
+/* A standalone category/inventory search with icon used to draw its border
+   on the input itself. Assign the border to its actual outer shell. */
+app-admin-inventory-page .inventory-page .toolbar .search-field,
+app-admin-inventory-page .inventory-sku-combobox .sku-input-wrap{
+  box-sizing:border-box;border:1px solid #dce5f0;border-radius:8px;
+  background:#fff;
+}
+app-admin-inventory-page .inventory-page .toolbar .search-field{
+  height:40px;
+}
+app-admin-inventory-page .inventory-page .toolbar .search-field > input,
+app-admin-inventory-page .inventory-sku-combobox .sku-input-wrap > input{
+  display:block;width:100%;height:100%;min-height:0;margin:0;
+  border:0!important;border-radius:0!important;
+  outline:0!important;box-shadow:none!important;background:transparent!important;
+}
+app-admin-inventory-page .inventory-page .toolbar .search-field:focus-within,
+app-admin-inventory-page .inventory-sku-combobox .sku-input-wrap:focus-within{
+  border-color:#0d47a1!important;outline:0!important;
+  box-shadow:0 0 0 2px rgba(13,71,161,.15)!important;
+}
+/* Keep negative/invalid values red on the OUTER frame, never just on input. */
+:root app-admin-catalog-shell :is(
+  .voucher-editor__input-suffix,.currency-input,.variant-currency-input,
+  .unit-input,.service-editor__price-input,.create-order__qty,
+  .return-detail__stepper,.quantity-stepper
+):has(> input:is(.input-invalid,[aria-invalid="true"],:out-of-range)){
+  border-color:#c62828!important;
+}
+:root app-admin-catalog-shell :is(
+  .voucher-editor__input-suffix,.currency-input,.variant-currency-input,
+  .unit-input,.service-editor__price-input,.create-order__qty,
+  .return-detail__stepper,.quantity-stepper
+):has(> input:is(.input-invalid,[aria-invalid="true"],:out-of-range)):focus-within{
+  border-color:#c62828!important;outline:0!important;
+  box-shadow:0 0 0 2px rgba(198,40,40,.17)!important;
+}
