@@ -362,8 +362,25 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     }).pipe(timeout({ first: 30000 })));
   }
 
+  /** Use the main product image when this SKU has no variant-specific image. */
   variantImagePreview(variant: ProductVariantWrite): string | null {
-    return (variant.id ? this.variantImagePreviews.get(variant.id) : null) || variant.image || null;
+    return (variant.id ? this.variantImagePreviews.get(variant.id) : null)
+      || variant.image
+      || this.imageSlots[0]?.previewUrl
+      || null;
+  }
+
+  variantHasOwnImage(variant: ProductVariantWrite): boolean {
+    return !!(variant.id && this.variantImagePreviews.has(variant.id)) || !!variant.image;
+  }
+
+  clearVariantImage(variant: ProductVariantWrite): void {
+    if (!variant.id || this.saving() || this.product()?.status === 'ARCHIVED') return;
+    const preview = this.variantImagePreviews.get(variant.id);
+    if (preview) URL.revokeObjectURL(preview);
+    this.variantImagePreviews.delete(variant.id);
+    this.variantImageFiles.delete(variant.id);
+    variant.image = null;
   }
 
   selectVariantImage(event: Event, variantId: string): void {
@@ -371,7 +388,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     const file = input.files?.[0];
     input.value = '';
     if (!file || !this.checkImage(file)) {
-      this.imageError = file ? 'Chỉ nhận JPG, PNG tối đa 5MB.' : '';
+      this.imageError = file ? 'Chỉ nhận JPG, PNG hoặc WEBP tối đa 5MB.' : '';
       if (this.imageError) this.toast.show(this.imageError);
       return;
     }
