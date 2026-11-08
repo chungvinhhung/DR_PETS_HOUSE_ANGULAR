@@ -82,3 +82,24 @@ DASH-01 → DASH-20 theo đặc tả FE M23, đặc biệt:
 8. Tổng số order/appointment theo trạng thái khớp KPI; dữ liệu rỗng là 0 (không phải mock).
 
 **Yêu cầu:** BE xác nhận tên endpoint, request/response schema, mã trạng thái, timezone, permission và test E2E cho các gap P0 trước khi FE đánh dấu Dashboard M23 hoàn tất.
+
+
+## F. Bổ sung theo Figma — KPI tăng/giảm và biểu đồ doanh thu (09/11/2026)
+
+### DASH-BE-08 (P1) — So sánh kỳ trước cho bốn KPI
+- FE đã triển khai phần trăm tăng/giảm của **Đơn hàng** bằng hai lần gọi `GET /dashboard/summary` trên hai kỳ liên tiếp có cùng số ngày và cùng phạm vi chi nhánh.
+- BE cần bảo đảm `from`/`to` theo ngày lịch `Asia/Ho_Chi_Minh`, áp RBAC nhất quán cho cả hai kỳ.
+- Với **Doanh thu**, **Lịch hẹn**, **Khách có giao dịch**: chỉ bật so sánh khi các aggregate hiện tại và kỳ trước đã được BE sửa đúng định nghĩa M23 ở DASH-BE-01/02/03.
+- Quy tắc: `changePercent = (current - previous) / previous * 100` nếu `previous > 0`. Nếu kỳ trước bằng 0 và kỳ này dương thì hiển thị mức tăng tuyệt đối, không bịa tỷ lệ %.
+- Màu: tăng xanh lá, giảm đỏ, không đổi trung tính. Không hiển thị tăng/giảm nếu một trong hai kỳ lỗi hoặc thiếu dữ liệu.
+- Mini sparkline đúng nghĩa phải dựa trên các điểm dữ liệu thực theo thời gian. FE tạm dùng **hai cột so sánh kỳ trước/kỳ này** cho Order thay vì vẽ đường xu hướng giả.
+
+### DASH-BE-09 (P1) — Dữ liệu cho biểu đồ doanh thu và tooltip
+- Cần API aggregate trả chuỗi `points[]` theo khoảng lọc và branch: `periodStart`, `orderRevenue`, `serviceRevenue`, `refundAdjustment`, `totalRevenue`; thời gian và đơn vị VND rõ ràng.
+- Trả tổng kỳ `totalRevenue`, tổng kỳ trước `previousRevenue` và/hoặc tỷ lệ `changePercent` có định nghĩa thống nhất.
+- Hover tooltip phải hiển thị mốc thời gian, doanh thu Order, dịch vụ, điều chỉnh hoàn tiền và tổng thực tế; legend bật/tắt series.
+- Đảm bảo tổng các điểm (sau refund adjustment) khớp KPI doanh thu. Chỉ hiển thị chart/tổng/% khi API đúng DASH-BE-01, không dùng endpoint legacy `/dashboard/revenue-analytics` hiện đang ghi nhận theo Order.createdAt.
+- Gợi ý response (contract cần BE xác nhận): `{ totalRevenue, previousRevenue, currency: 'VND', points: [{ periodStart, orderRevenue, serviceRevenue, refundAdjustment, totalRevenue }] }`.
+- Cần thêm chuỗi dữ liệu theo thời gian cho từng KPI nếu muốn sparklines 4 ô đúng Figma; không sử dụng số liệu minh họa làm dữ liệu thật.
+
+**FE hiện tại:** Có phần UI so sánh thực cho KPI Order và vùng tổng doanh thu chờ dữ liệu. Chưa hiển thị % cho 3 KPI khác hoặc vẽ biểu đồ doanh thu vì BE chưa cung cấp dữ liệu đáp ứng nghiệp vụ.
