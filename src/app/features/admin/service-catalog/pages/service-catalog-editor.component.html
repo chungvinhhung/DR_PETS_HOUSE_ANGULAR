@@ -412,7 +412,7 @@
         <img src="/assets/service-catalog/search.svg" width="18" height="18" alt="">
         <input #materialSearchInput type="search" [value]="materialPickerSearch()"
           (input)="setMaterialPickerSearch(materialSearchInput.value)"
-          placeholder="Tìm tên vật liệu, SKU hoặc loại sử dụng..." aria-label="Tìm vật liệu theo tên, SKU hoặc loại sử dụng">
+          placeholder="Tìm tên sản phẩm hoặc SKU..." aria-label="Tìm sản phẩm theo tên, SKU, biến thể hoặc loại sử dụng">
       </label>
       <div class="flash-editor__picker-scroll">
         @if (materialCatalogError()) {
@@ -426,10 +426,9 @@
           <table class="flash-editor__table flash-editor__picker-table service-editor__material-picker-table">
             <thead><tr>
               <th scope="col">Chọn</th>
-              <th scope="col">Vật liệu</th>
-              <th scope="col">SKU</th>
+              <th scope="col">Sản phẩm</th>
+              <th scope="col">SKU / Biến thể</th>
               <th scope="col">Loại sử dụng</th>
-              <th scope="col">Đơn vị</th>
             </tr></thead>
             <tbody>
               @for (item of materialPickerMatches().slice(0,materialPickerVisible()); track item.materialId) {
@@ -445,13 +444,15 @@
                       <strong>{{item.name}}</strong>
                     </div>
                   </td>
-                  <td class="service-editor__material-sku">{{item.sku}}</td>
-                  <td>{{usageTypeLabel(item.usageType)}}</td>
-                  <td>{{item.unit || '—'}}</td>
+                  <td class="service-editor__material-sku">
+                    <span>{{item.sku}}</span>
+                    <small>{{item.variantLabel || 'Mặc định'}}</small>
+                  </td>
+                  <td class="service-editor__material-usage">{{usageTypeLabel(item.usageType)}}</td>
                 </tr>
               } @empty {
                 @if (!materialCatalogLoading() && !materialCatalogError()) {
-                  <tr><td colspan="5" class="flash-editor__no-products">Không tìm thấy vật liệu phù hợp.</td></tr>
+                  <tr><td colspan="4" class="flash-editor__no-products">Không tìm thấy sản phẩm phù hợp.</td></tr>
                 }
               }
             </tbody>
