@@ -31,7 +31,7 @@ import { DraftBranchSelection, ServiceBranchConfigFlowComponent } from '../compo
 
 type PriceMode = 'FIXED' | 'QUOTE';
 type Tier = { key: string; weight: string; mode: PriceMode; price: number | null };
-type MaterialOption = { materialId: string; sku: string; name: string; unit: string; image: string | null; categoryId: string; variantLabel: string; usageType: ProductUsageType | null; price: number };
+type MaterialOption = { materialId: string; sku: string; name: string; productName: string; unit: string; image: string | null; categoryId: string; variantLabel: string; usageType: ProductUsageType | null; price: number };
 type MaterialLine = { key: number; materialId: string; sku: string; query: string; quantity: number | null; unit: string };
 type BranchDetailRow = { id: string; name: string; summary: string };
 const TIER_WEIGHTS = [
@@ -243,6 +243,7 @@ export class ServiceCatalogEditorComponent {
           {
             image: variant.image || product.images.find(image => image.isPrimary)?.url || product.images[0]?.url || null,
             categoryId: product.categoryId,
+            productName: product.name,
             variantLabel: variant.label || '',
             usageType: product.usageType,
             price: variant.finalPrice ?? variant.price,
@@ -253,6 +254,7 @@ export class ServiceCatalogEditorComponent {
           return {
             materialId: item.id, sku: item.sku, name: item.name,
             unit: item.unit || '', image: product?.image ?? null,
+            productName: product?.productName || item.name,
             categoryId: product?.categoryId ?? '', variantLabel: product?.variantLabel ?? '',
             usageType: product?.usageType ?? null, price: product?.price ?? 0,
           };
@@ -509,6 +511,7 @@ export class ServiceCatalogEditorComponent {
     const term = this.materialPickerSearch().trim().toLocaleLowerCase('vi');
     return this.productOptions.filter(item =>
       !term || item.name.toLocaleLowerCase('vi').includes(term) ||
+      item.productName.toLocaleLowerCase('vi').includes(term) ||
       item.sku.toLocaleLowerCase('vi').includes(term) ||
       item.variantLabel.toLocaleLowerCase('vi').includes(term) ||
       this.usageTypeLabel(item.usageType).toLocaleLowerCase('vi').includes(term));
