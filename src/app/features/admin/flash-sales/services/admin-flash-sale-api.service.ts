@@ -38,6 +38,8 @@ export interface AdminFlashSale {
   /** AUTO becomes eligible at startAt, MANUAL stays paused until Admin enables it. */
   activationMode?: FlashSaleActivationMode;
   items: FlashSaleItem[];
+  /** Optimistic concurrency token returned by BE. */
+  version?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -45,6 +47,10 @@ export interface AdminFlashSale {
 export interface FlashSaleItemWrite {
   productId: string;
   variantId: string;
+  sku: string;
+  productName: string;
+  variantLabel: string;
+  originalPrice: number;
   salePrice: number;
   quantityLimit: number;
 }
@@ -57,6 +63,7 @@ export interface FlashSaleWriteBody {
   /** MANUAL must remain disabled at startAt until Admin explicitly turns it on. */
   activationMode: FlashSaleActivationMode;
   isPaused: boolean;
+  expectedVersion?: number;
 }
 export interface FlashSalePage {
   items: AdminFlashSale[];
@@ -102,7 +109,17 @@ function asSale(value: unknown): AdminFlashSale {
       typeof sale.endAt !== 'string' || !Array.isArray(sale.items)) {
     throw new Error('Hợp đồng dữ liệu Flash Sale chưa đồng bộ với Backend.');
   }
-  return {...sale, description: sale.description ?? ''} as AdminFlashSale;
+  // foundation-v6 returns variantLabel; keep the view's variantName stable.
+  const items = sale.items.map(raw => {
+    const item = raw as FlashSaleItem & {variantLabel?: string | null};
+    return {
+      ...item,
+      productName: item.productName || 'Sản phẩm chưa có tên',
+      variantName: item.variantLabel || item.variantName || 'Mặc định',
+      imageUrl: item.imageUrl || null,
+    };
+  });
+  return {...sale, description: sale.description ?? '', items} as AdminFlashSale;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -113,7 +130,7 @@ export class AdminFlashSaleApiService {
   list(filters: {search?: string; state?: FlashSaleDisplayState | 'ALL'; cursor?: string | null; limit?: number} = {}): Observable<FlashSalePage> {
     let params = new HttpParams().set('limit', String(filters.limit ?? 10));
     if (filters.search?.trim()) params = params.set('search', filters.search.trim());
-    if (filters.state && filters.state !== 'ALL') params = params.set('state', filters.state);
+    if (filters.state && filters.state !== 'ALL') params = params.set('derivedStatus', filters.state);
     if (filters.cursor) params = params.set('cursor', filters.cursor);
     return this.api.get<unknown>(this.root, {params}).pipe(map(response => {
       if (!response || typeof response !== 'object' ||
