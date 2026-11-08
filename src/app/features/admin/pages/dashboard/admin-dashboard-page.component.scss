@@ -1,1 +1,59 @@
 :host{display:block;min-width:0}
+
+/* Comparison uses only verified Order counts from two adjacent periods. */
+.dash__kpi-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 5px;
+}
+.dash__kpi-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.dash__kpi-trend svg { flex: 0 0 14px; }
+.dash__kpi-trend--up { color: #16844d; }
+.dash__kpi-trend--down { color: #cf4757; }
+.dash__kpi-trend--flat { color: #66788f; }
+.dash__kpi-mini {
+  display: flex;
+  flex: 0 0 32px;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 5px;
+  height: 26px;
+  padding-bottom: 1px;
+  border-bottom: 1px solid #dce7f3;
+}
+.dash__kpi-mini i {
+  display: block;
+  width: 9px;
+  min-height: 1px;
+  border-radius: 3px 3px 0 0;
+  background: #cbd8e8;
+}
+.dash__kpi-mini i:last-child { background: #397bd6; }
+.dash__revenue-total {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #71819a;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.dash__revenue-total strong {
+  color: #98a8bc;
+  font-size: 14px;
+  font-weight: 700;
+}
+@media (max-width: 530px) {
+  .dash__revenue-total { font-size: 11px; }
+}
