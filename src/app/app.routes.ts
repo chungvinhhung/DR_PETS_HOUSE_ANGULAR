@@ -465,42 +465,22 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'admin',
+    path: 'admin/dashboard',
     canActivate: [authGuard, roleGuard],
-    data: {
-      roles: BACKOFFICE_ROLES,
-    },
+    data: { roles: ['ADMIN', 'MANAGER'] },
     loadComponent: () =>
-      import('./layouts/admin-layout/admin-layout.component').then(
-        (component) => component.AdminLayoutComponent,
-      ),
-    children: [
-      {
-        path: '',
-        pathMatch: 'full',
-        redirectTo: 'dashboard',
-      },
-      {
-        path: 'dashboard',
-        canActivate: [roleGuard],
-        data: { roles: ['ADMIN', 'MANAGER'] },
-        loadComponent: () =>
-          import(
-            './features/admin/pages/dashboard/admin-dashboard-page.component'
-          ).then((component) => component.AdminDashboardPageComponent),
-      },
-      {
-        path: 'users',
-        canActivate: [roleGuard],
-        data: {
-          roles: ['ADMIN', 'MANAGER'],
-        },
-        loadComponent: () =>
-          import(
-            './features/admin/users/pages/admin-users-page.component'
-          ).then((component) => component.AdminUsersPageComponent),
-      },
-    ],
+      import('./features/admin/pages/dashboard/admin-dashboard-page.component')
+        .then(component => component.AdminDashboardPageComponent),
+  },
+  {
+    // Preserve the legacy internal-user management route without its obsolete demo shell.
+    // The page itself now uses the same catalog shell as current Admin modules.
+    path: 'admin/users',
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'MANAGER'] },
+    loadComponent: () =>
+      import('./features/admin/users/pages/admin-users-page.component')
+        .then(component => component.AdminUsersPageComponent),
   },
   {
     // Customer UI is isolated in its own lazy-loaded layout and routes.
