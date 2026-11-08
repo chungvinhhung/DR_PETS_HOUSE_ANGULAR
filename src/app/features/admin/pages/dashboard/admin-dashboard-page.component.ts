@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpParams } from '@angular/common/http';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
@@ -10,6 +10,7 @@ import { AdminDashboardService, DashboardFilters, DashboardSummary } from './adm
 import { AdminOrderApiService, OrderRecord } from '../../orders/services/admin-order-api.service';
 import { ApiClientService } from '../../../../core/services/api-client.service';
 import { AppointmentView, normalizeAppointmentPage } from '../appointments/admin-appointment-workflow.model';
+import { DEMO_BRANCHES, DemoActionRow, DemoDashboardData, createDemoDashboard } from './admin-dashboard-demo.data';
 
 type Period = 'today' | '7d' | '30d' | 'custom';
 type Tone = 'amber' | 'blue' | 'indigo' | 'teal' | 'green' | 'red' | 'slate';
@@ -62,6 +63,9 @@ function shiftCalendar(date: string, days: number): string {
 })
 export class AdminDashboardPageComponent {
   private readonly dashboard = inject(AdminDashboardService);
+  private readonly route = inject(ActivatedRoute);
+  /** Reversible sample preview; never enabled without an explicit query parameter. */
+  readonly demo = this.route.snapshot.queryParamMap.get('demo') === '1';
   private readonly ordersApi = inject(AdminOrderApiService);
   private readonly client = inject(ApiClientService);
   private actionsVersion = 0;
@@ -81,13 +85,26 @@ export class AdminDashboardPageComponent {
   readonly error = signal('');
   readonly summary = signal<DashboardSummary | null>(null);
   readonly previousOrderCount = signal<number | null>(null);
+  readonly demoData = signal<DemoDashboardData | null>(null);
+  readonly hoveredRevenueIndex = signal<number | null>(null);
   readonly actionTab = signal<'orders' | 'appointments'>('orders');
   readonly actionLoading = signal(false);
   readonly actionError = signal('');
   readonly actionOrders = signal<OrderRecord[]>([]);
   readonly actionAppointments = signal<AppointmentView[]>([]);
   readonly actionCount = computed(() => this.actionTab() === 'orders'
-    ? this.actionOrders().length : this.actionAppointments().length);
+    ? this.actionOrderRows().length : this.actionAppointmentRows().length);
+  readonly actionOrderRows = computed<DemoActionRow[]>(() =>
+    this.demoData()?.orders ?? this.actionOrders().map(item => ({
+      id: item.id, code: item.code,
+      customerName: item.contactSnapshot?.fullName || item.contactSnapshot?.name || '—',
+      amount: item.pricing.totalAmount, time: item.createdAt || '',
+    })));
+  readonly actionAppointmentRows = computed<DemoActionRow[]>(() =>
+    this.demoData()?.appointments ?? this.actionAppointments().map(item => ({
+      id: item.id, code: item.code, customerName: item.customerName || '—',
+      amount: item.totalAmount ?? 0, time: item.appointmentAt || '',
+    })));
   readonly checkedAt = signal('');
   readonly today = vietnamDate(new Date());
   readonly from = signal(shiftCalendar(this.today, -29));
@@ -139,6 +156,88 @@ export class AdminDashboardPageComponent {
         color: meta.color, tone: meta.tone };
     }).sort((a, b) => b.count - a.count);
   });
+  readonly appointmentSlices = computed<StatusSlice[]>(() => {
+    const demo = this.demoData();
+    if (!demo) return [];
+    const statuses: Record<string, { label: string; color: string; tone: Tone }> = {
+      COMPLETED: { label: 'Hoàn tất', color: '#20B77B', tone: 'green' },
+      CONFIRMED: { label: 'Đã xác nhận', color: '#347FE7', tone: 'blue' },
+      PENDING_PAYMENT: { label: 'Chờ thanh toán', color: '#F2AE35', tone: 'amber' },
+      CANCELLED: { label: 'Đã hủy', color: '#EF6976', tone: 'red' },
+    };
+    const total = demo.summary.appointments;
+    return Object.entries(demo.appointmentStatuses).filter(([, value]) => value > 0)
+      .map(([key, count]) => ({
+        key, label: statuses[key]?.label ?? key, count,
+        percent: total ? count / total * 100 : 0,
+        color: statuses[key]?.color ?? FALLBACK.color,
+        tone: statuses[key]?.tone ?? FALLBACK.tone,
+      })).sort((a, b) => b.count - a.count);
+  });
+  readonly appointmentDonut = computed(() => {
+    let current = 0;
+    const stops = this.appointmentSlices().map(item => {
+      const start = current; current += item.percent;
+      return item.color + ' ' + start + '% ' + current + '%';
+    });
+    return stops.length ? 'conic-gradient(' + stops.join(',') + ')' : '';
+  });
+
+  readonly demoChart = computed(() => {
+    const source = this.demoData()?.revenuePoints ?? [];
+    if (!source.length) return null;
+    const left = 44, right = 626, top = 12, bottom = 202;
+    const maxRaw = Math.max(1, ...source.map(p => Math.max(p.order, p.service)));
+    const step = Math.pow(10, Math.floor(Math.log10(maxRaw)));
+    const ceiling = Math.ceil(maxRaw / step / 4) * step * 4;
+    const points = source.map((p, index) => ({
+      ...p, index,
+      x: left + (source.length === 1 ? .5 : index / (source.length - 1)) * (right - left),
+      orderY: bottom - p.order / ceiling * (bottom - top),
+      serviceY: bottom - p.service / ceiling * (bottom - top),
+      label: this.formatDate(p.date),
+    }));
+    const line = (key: 'orderY' | 'serviceY') =>
+      points.map((p, i) => (i ? 'L ' : 'M ') + p.x.toFixed(1) + ' ' + p[key].toFixed(1)).join(' ');
+    const area = (key: 'orderY' | 'serviceY') =>
+      line(key) + ' L ' + points.at(-1)!.x.toFixed(1) + ' ' + bottom +
+      ' L ' + points[0].x.toFixed(1) + ' ' + bottom + ' Z';
+    const tickIndices = Array.from(new Set([0,1,2,3,4].map(i =>
+      Math.round(i * (points.length - 1) / 4))));
+    return { points, lineOrders: line('orderY'), lineServices: line('serviceY'),
+      areaOrders: area('orderY'), areaServices: area('serviceY'), ceiling,
+      ticks: [0,1,2,3,4].map(i => ({
+        y: bottom - i / 4 * (bottom - top), amount: ceiling * i / 4,
+      })), labels: tickIndices.map(i => points[i]),
+    };
+  });
+  readonly hoveredRevenuePoint = computed(() => {
+    const chart = this.demoChart();
+    const index = this.hoveredRevenueIndex();
+    return chart && index !== null ? chart.points[index] ?? null : null;
+  });
+  readonly demoSpark = computed(() => {
+    const points = this.demoData()?.revenuePoints ?? [];
+    const make = (kind: 'revenue' | 'orders' | 'appointments' | 'customers') => {
+      if (!points.length) return '';
+      const vals = points.map((p, i) => kind === 'revenue' ? p.order + p.service
+        : kind === 'orders' ? p.order
+        : kind === 'appointments' ? p.service * (0.83 + .19 * Math.sin(i * .58))
+        : p.order * (0.76 + .17 * Math.cos(i * .44)));
+      const min = Math.min(...vals), max = Math.max(...vals);
+      return vals.map((v, i) => (i ? 'L' : 'M') + (i / Math.max(1, vals.length - 1) * 100).toFixed(1)
+        + ' ' + (33 - (v - min) / (max - min || 1) * 27).toFixed(1)).join(' ');
+    };
+    return {revenue:make('revenue'),orders:make('orders'),
+      appointments:make('appointments'),customers:make('customers')};
+  });
+  demoDelta(current: number, previous: number): {label: string; direction: 'up'|'down'|'flat'} {
+    if (!previous) return {label: current ? '+' + this.formatInt(current) + ' so với kỳ trước' : 'Không đổi',direction:current?'up':'flat'};
+    const diff = current - previous;
+    return {label:(diff > 0 ? '+' : '') + this.percentage(diff / previous * 100) + ' so với kỳ trước',
+      direction:diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat'};
+  }
+
   readonly orderDonut = computed(() => {
     const slices = this.orderSlices();
     if (!slices.length) return '';
@@ -191,6 +290,12 @@ export class AdminDashboardPageComponent {
   }
   loadActions(): void {
     if (!this.authorized() || this.branchLoading() || this.branchError()) return;
+    if (this.demo) {
+      ++this.actionsVersion;
+      this.actionLoading.set(false);
+      this.actionError.set('');
+      return;
+    }
     const version = ++this.actionsVersion;
     this.actionLoading.set(true);
     this.actionError.set('');
@@ -268,6 +373,20 @@ export class AdminDashboardPageComponent {
 
   loadBranches(): void {
     if (!this.authorized()) return;
+    if (this.demo) {
+      const scoped = this.manager()
+        ? (this.session.user()?.branchScope ?? []).map((id, i) => ({
+            id: String(id), code: 'CN' + (i + 1), name: 'Chi nhánh được giao ' + (i + 1),
+            address: 'Chi nhánh minh hoạ', status: 'ACTIVE' as const,
+          }))
+        : DEMO_BRANCHES;
+      this.branches.set(scoped);
+      this.branchLoading.set(false);
+      this.branchError.set('');
+      if (this.manager() && scoped.length === 1) this.branchId.set(scoped[0].id);
+      this.refresh();
+      return;
+    }
     this.branchLoading.set(true);
     this.branchError.set('');
     this.branchApi.listBranches().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -296,7 +415,20 @@ export class AdminDashboardPageComponent {
     this.error.set('');
     this.summary.set(null); // never display a previous branch/date as the new result
     this.previousOrderCount.set(null);
+    this.hoveredRevenueIndex.set(null);
     const filters: DashboardFilters = { from: this.from(), to: this.to(), branchId: this.branchId() || null };
+    if (this.demo) {
+      const data = createDemoDashboard(filters.from, filters.to, filters.branchId ?? '');
+      this.demoData.set(data);
+      this.summary.set(data.summary);
+      this.previousOrderCount.set(data.previous.orders);
+      this.checkedAt.set('Dữ liệu minh hoạ');
+      this.loading.set(false);
+      this.error.set('');
+      this.loadActions();
+      return;
+    }
+    this.demoData.set(null);
     this.loadActions();
     this.dashboard.summary(filters).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: data => {
