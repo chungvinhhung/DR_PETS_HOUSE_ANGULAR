@@ -95,10 +95,13 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   variantLabelInvalid(v: ProductVariantWrite): boolean { return this.submitted && !v.label.trim(); }
   variantSkuInvalid(v: ProductVariantWrite): boolean { return this.submitted && !v.sku?.trim(); }
   variantPriceInvalid(v: ProductVariantWrite): boolean {
-    return this.submitted && (v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) <= 0);
+    return (v.price != null && Number(v.price) < 0) ||
+      (this.submitted && (v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) <= 0));
   }
   variantDiscountInvalid(v: ProductVariantWrite): boolean {
-    return this.submitted && (v.discountPercent == null || !Number.isFinite(Number(v.discountPercent)) || Number(v.discountPercent) < 0 || Number(v.discountPercent) > 100);
+    return (v.discountPercent != null && (Number(v.discountPercent) < 0 || Number(v.discountPercent) > 100)) ||
+      (this.submitted && (v.discountPercent == null || !Number.isFinite(Number(v.discountPercent)) ||
+        Number(v.discountPercent) < 0 || Number(v.discountPercent) > 100));
   }
   selectNumericInput(event: FocusEvent): void {
     (event.target as HTMLInputElement).select();
