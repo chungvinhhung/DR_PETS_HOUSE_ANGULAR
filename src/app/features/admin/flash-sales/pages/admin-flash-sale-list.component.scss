@@ -15,3 +15,11 @@
 :host .flash-list__badge[data-state="RUNNING"] {background:#e5f5eb;color:#197343;}
 :host .flash-list__badge[data-state="PAUSED"] {background:#fff1d9;color:#976017;}
 :host .flash-list__badge[data-state="ENDED"] {background:#edf0f3;color:#596774;}
+
+/* P1: sold quota is a separate, aligned list column. */
+:host .flash-list__table :is(th,td):nth-child(3),
+:host .flash-list__table :is(th,td):nth-child(4),
+:host .flash-list__table :is(th,td):nth-child(5),
+:host .flash-list__table :is(th,td):nth-child(6){text-align:center;}
+:host .flash-list__sold{font-variant-numeric:tabular-nums;white-space:nowrap;color:#2f4969;font-weight:550;}
+:host .flash-list__table :is(th,td){padding-inline:12px;}
