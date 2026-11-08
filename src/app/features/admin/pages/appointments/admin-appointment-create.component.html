@@ -247,27 +247,11 @@
               <strong>{{currentPreview() ? money(currentPreview()!.surchargeAmount) : money(0)}}</strong></div>
             <div><span>Giảm giá</span>
               <strong>{{currentPreview() ? money(currentPreview()!.discountAmount) : money(0)}}</strong></div>
-            @if (voucherCode().trim()) {
-              <div><span>Voucher</span><strong>{{ currentPreview() ? 'Đã xác thực' : 'Chưa xác thực' }}</strong></div>
-            }
           </div>
           <div class="payment-summary__total">
-            <span><strong>Tổng cộng</strong>
-              <small>{{currentPreview() ? 'Giá tham khảo + voucher đã xác thực' : 'Giá tham khảo từ danh mục; giá cuối cùng được xác nhận khi tạo lịch'}}</small>
-            </span>
+            <span><strong>Tổng cộng</strong></span>
             <strong>{{money(currentPreview()?.total ?? estimatedSubtotal())}}</strong>
           </div>
-          @if (paymentEstimate(); as amounts) {
-            <div class="payment-summary__rows" style="margin-top:10px">
-              <div>
-                <span>{{paymentMethod()==='PAY_AT_STORE' ? 'Cọc dự kiến 30% (ONLINE_MOCK)' : 'Thanh toán dự kiến 100% (ONLINE_MOCK)'}}</span>
-                <strong>{{money(amounts.dueNow)}}</strong>
-              </div>
-              @if (paymentMethod()==='PAY_AT_STORE') {
-                <div><span>Còn lại tại phòng khám 70%</span><strong>{{money(amounts.dueAtClinic)}}</strong></div>
-              }
-            </div>
-          }
           @if (pricingStatus()==='error' && pricingError()) {
             <p class="inline-error" role="alert">{{pricingError()}}</p>
           }
