@@ -8674,14 +8674,11 @@ app-admin-inventory-page .inventory-sku-combobox .sku-input-wrap:focus-within{
 
 /* Dashboard M23 styles: global to remain below Angular's 8 kB per-component CSS budget. */
 app-admin-dashboard-page{display:block;min-width:0;color:#223550;font:400 13px/1.5 Roboto,Arial,sans-serif}
-.dash{width:100%;min-width:0;box-sizing:border-box;padding:28px 30px 38px;background:#f8fafd}
-.dash__heading,.dash__heading-main,.dash__heading-actions{display:flex;align-items:center}
-.dash__heading{justify-content:space-between;gap:20px;margin-bottom:20px}
-.dash__heading-main{gap:12px;min-width:0}
-.dash__heading-symbol{display:grid;place-items:center;width:43px;height:43px;border-radius:12px;background:#eaf3ff}
-.dash__heading h1{margin:0;color:#172b48;font-size:23px;font-weight:700;line-height:1.25}
-.dash__heading p{margin:5px 0 0;color:#7b8ba1;font-size:12px}
-.dash__heading-actions{gap:12px}.dash__tz{font-size:11px;color:#8492a6}
+.dash{width:100%;min-width:0;box-sizing:border-box;padding:32px 32px 38px;background:#f8fafd}
+.dash__heading,.dash__heading-actions{display:flex;align-items:center}
+.dash__heading{justify-content:space-between;gap:20px;margin-bottom:24px}
+.dash__heading h1{margin:0;color:#181a2b;font-size:28px;font-weight:600;line-height:34px;letter-spacing:-.28px}
+.dash__heading-actions{gap:12px}
 .dash__refresh{display:flex;align-items:center;gap:7px;height:36px;padding:0 13px;border:1px solid #d9e3f0;border-radius:8px;background:#fff;color:#234b86;font-weight:600;cursor:pointer}
 .dash__refresh:hover:not(:disabled){background:#f1f6ff}.dash__refresh:disabled{opacity:.5;cursor:default}
 .dash__filters{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;padding:15px 18px;margin-bottom:17px;border:1px solid #dce5ef;border-radius:12px;background:#fff}
@@ -8774,5 +8771,5 @@ app-admin-dashboard-page{display:block;min-width:0;color:#223550;font:400 13px/1
 .dash__notice strong{color:#98373f}.dash__notice p{margin:8px 0 0;color:#866773}
 @media(max-width:1320px){.dash__middle{grid-template-columns:repeat(2,minmax(0,1fr))}.dash__panel--revenue{grid-column:1 / -1}.dash__status-layout{flex-direction:row}.dash__donut{width:140px;height:140px}.dash__bottom{grid-template-columns:repeat(2,minmax(0,1fr))}.dash__panel--shortcuts{grid-column:1/-1}}
 @media(max-width:840px){.dash{padding:22px 17px 28px}.dash__kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dash__middle,.dash__bottom{grid-template-columns:1fr}.dash__panel--revenue,.dash__panel--shortcuts{grid-column:auto}.dash__status-layout{flex-direction:row}.dash__range-summary{margin-left:0}}
-@media(max-width:530px){.dash__heading{align-items:start}.dash__heading-actions{flex-direction:column;align-items:end}.dash__tz{display:none}.dash__kpis{gap:9px}.dash__kpi{padding:14px;min-height:152px}.dash__kpi-value{font-size:22px}.dash__heading h1{font-size:21px}.dash__filter{min-width:100%;max-width:none}.dash__status-layout{flex-direction:column}.dash__custom{flex-wrap:wrap}.dash__custom label{flex:1 1 120px}.dash__footer{flex-direction:column;gap:4px}}
+@media(max-width:530px){.dash__heading{align-items:start}.dash__heading-actions{flex-direction:column;align-items:end}.dash__kpis{gap:9px}.dash__kpi{padding:14px;min-height:152px}.dash__kpi-value{font-size:22px}.dash__filter{min-width:100%;max-width:none}.dash__status-layout{flex-direction:column}.dash__custom{flex-wrap:wrap}.dash__custom label{flex:1 1 120px}.dash__footer{flex-direction:column;gap:4px}}
 
