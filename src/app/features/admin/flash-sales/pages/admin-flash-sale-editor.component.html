@@ -209,60 +209,6 @@
                           </span>
                         </div>
                       } @else {
-                        <input #quantity type="number" min="1" step="1" inputmode="numeric"
-                          [attr.aria-label]="'Số lượng Flash Sale cho ' + product.sku"
-                          [value]="product.quantityLimit" [disabled]="!editable()"
-                          [class.flash-editor__numeric-invalid]="rowQuantityInvalid(product)"
-                          [attr.aria-invalid]="rowQuantityInvalid(product)"
-                          (input)="updateItem(i,'quantityLimit',quantity.value)">
-                        <small class="flash-editor__quantity-sold">Đã bán: {{product.soldQuantity}}</small>
-                        @if (quantityInvalid(product.quantityLimit)) {
-                          <small class="flash-editor__input-error">Số lượng phải là số nguyên dương.</small>
-                        } @else if (rowQuantityInvalid(product)) {
-                          <small class="flash-editor__input-error">Không thấp hơn {{product.soldQuantity}} đã bán.</small>
-                        }
-                      }
-                    </td>
-                    @if (mode!=='view') {
-                      <td class="flash-editor__remove">
-                        <button type="button" aria-label="Xóa sản phẩm khỏi chương trình"
-                          [disabled]="!editable()" (click)="removeItem(i)">
-                          <img src="/assets/admin-product/icon-delete.svg" width="18" height="18" alt="">
-                        </button>
-                      </td>
-                    }
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        } @else {
-                        <input #quantity type="number" min="1" step="1" inputmode="numeric" aria-label="Số lượng Flash Sale"
-                          [value]="product.quantityLimit" [disabled]="!editable()"
-                          [class.flash-editor__numeric-invalid]="rowQuantityInvalid(product)"
-                          [attr.aria-invalid]="rowQuantityInvalid(product)"
-                          (input)="updateItem(i,'quantityLimit',quantity.value)">
-                        @if (quantityInvalid(product.quantityLimit)) {
-                          <small class="flash-editor__input-error">Số lượng phải là số nguyên dương.</small>
-                        } @else if (rowQuantityInvalid(product)) {
-                          <small class="flash-editor__input-error">Không thấp hơn {{product.soldQuantity}} sản phẩm đã bán.</small>
-                        }
-                      }
-                    </td>
-                    @if (mode!=='view') {
-                      <td class="flash-editor__remove">
-                        <button type="button" aria-label="Xóa sản phẩm khỏi chương trình"
-                          [disabled]="!editable()" (click)="removeItem(i)">
-                          <img src="/assets/admin-product/icon-delete.svg" width="18" height="18" alt="">
-                        </button>
-                      </td>
-                    }
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        } @else {
           <div class="flash-editor__no-products">Chưa có sản phẩm trong chương trình.</div>
         }
       </section>
