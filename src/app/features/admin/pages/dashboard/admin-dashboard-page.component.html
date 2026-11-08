@@ -3,7 +3,7 @@
   <header class="dash__heading">
     <h1>Dashboard</h1>
     @if (authorized()) {
-      @if (demo) {
+      @if (demo()) {
         <a routerLink="/admin/dashboard" class="dash__demo-chip" title="Thoát chế độ dữ liệu mẫu">
           <span class="dash__demo-dot"></span> Dữ liệu minh hoạ · Tắt demo
         </a>
@@ -382,13 +382,13 @@
             [class.dash__action-tab--active]="actionTab() === 'orders'"
             (click)="setActionTab('orders')">
             <img src="/assets/admin-dashboard/order-action.svg" width="24" height="24" alt="">
-            Đơn hàng cần xử lý @if (demo) { ({{actionOrderRows().length}}) }
+            Đơn hàng cần xử lý @if (demo()) { ({{actionOrderRows().length}}) }
           </button>
           <button type="button" role="tab" [attr.aria-selected]="actionTab() === 'appointments'"
             [class.dash__action-tab--active]="actionTab() === 'appointments'"
             (click)="setActionTab('appointments')">
             <img src="/assets/admin-dashboard/appointment-action.svg" width="24" height="24" alt="">
-            Lịch hẹn sắp tới @if (demo) { ({{actionAppointmentRows().length}}) }
+            Lịch hẹn sắp tới @if (demo()) { ({{actionAppointmentRows().length}}) }
           </button>
         </div>
         <div class="dash__action-content" role="tabpanel">
@@ -407,7 +407,7 @@
                       <td>{{order.customerName}}</td>
                       <td>{{money(order.amount)}}</td>
                       <td>{{shortTime(order.time)}}</td>
-                      <td class="dash__action-cell"><a class="dash__icon-link" [routerLink]="demo ? '/admin/orders' : ['/admin/orders',order.id]" [attr.aria-label]="'Xem chi tiết đơn hàng '+(order.code || '')" title="Xem chi tiết">
+                      <td class="dash__action-cell"><a class="dash__icon-link" [routerLink]="demo() ? '/admin/orders' : ['/admin/orders',order.id]" [attr.aria-label]="'Xem chi tiết đơn hàng '+(order.code || '')" title="Xem chi tiết">
                         <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="">
                       </a></td>
                     </tr>
@@ -431,7 +431,7 @@
                       <td><strong [title]="appointment.code || ''">{{appointment.code || '—'}}</strong></td>
                       <td>{{appointment.customerName || '—'}}</td>
                       <td>{{shortTime(appointment.time)}}</td>
-                      <td class="dash__action-cell"><a class="dash__icon-link" [routerLink]="demo ? '/admin/appointments' : ['/admin/appointments',appointment.id]" [attr.aria-label]="'Xem chi tiết lịch hẹn '+(appointment.code || '')" title="Xem chi tiết">
+                      <td class="dash__action-cell"><a class="dash__icon-link" [routerLink]="demo() ? '/admin/appointments' : ['/admin/appointments',appointment.id]" [attr.aria-label]="'Xem chi tiết lịch hẹn '+(appointment.code || '')" title="Xem chi tiết">
                         <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="">
                       </a></td>
                     </tr>
@@ -450,7 +450,7 @@
     </div>
     <footer class="dash__footer">
 
-      @if (checkedAt() && !demo) { <span>Cập nhật lúc {{checkedAt()}} (GMT+7)</span> }
+      @if (checkedAt() && !demo()) { <span>Cập nhật lúc {{checkedAt()}} (GMT+7)</span> }
     </footer>
   }
 </main>
