@@ -16,7 +16,6 @@
           <span class="sr-only">Trạng thái</span>
           <select #stateInput [value]="stateFilter()" (change)="changeState(stateInput.value)" aria-label="Lọc trạng thái Flash Sale">
             <option value="ALL">Tất cả trạng thái</option>
-            <option value="DRAFT">Bản nháp</option>
             <option value="UPCOMING">Sắp diễn ra</option>
             <option value="RUNNING">Đang diễn ra</option>
             <option value="PAUSED">Tạm ngừng</option>
@@ -33,22 +32,23 @@
     <section class="flash-list__panel" aria-label="Danh sách Flash Sale">
       <div class="flash-list__scroll">
         <table class="flash-list__table web2-product-table">
-          <colgroup><col style="width:29%"><col style="width:30%"><col style="width:10%">
-            <col style="width:19%"><col style="width:12%"></colgroup>
+          <colgroup><col style="width:25%"><col style="width:25%"><col style="width:10%">
+            <col style="width:16%"><col style="width:16%"><col style="width:8%"></colgroup>
           <thead><tr>
             <th scope="col">Tên chương trình</th>
             <th scope="col">Thời gian diễn ra</th>
             <th scope="col">Sản phẩm</th>
+            <th scope="col">Đã bán / Giới hạn</th>
             <th scope="col">Trạng thái</th>
             <th scope="col">Thao tác</th>
           </tr></thead>
           <tbody>
             @if (loading()) {
-              <tr><td colspan="5" class="flash-list__empty">
+              <tr><td colspan="6" class="flash-list__empty">
                 <app-admin-data-state kind="loading" title="Đang tải Flash Sale" />
               </td></tr>
             } @else if (error()) {
-              <tr><td colspan="5" class="flash-list__empty">
+              <tr><td colspan="6" class="flash-list__empty">
                 <app-admin-data-state kind="error" title="Không thể tải Flash Sale" [message]="error()" (retry)="refresh()" />
               </td></tr>
             } @else {
@@ -57,6 +57,7 @@
                   <td><a class="flash-list__name" [routerLink]="['/admin/flash-sales', sale.id]">{{ sale.name }}</a></td>
                   <td><span>{{ formatDate(sale.startAt) }}</span><small>đến {{ formatDate(sale.endAt) }}</small></td>
                   <td>{{ sale.items.length }}</td>
+                  <td class="flash-list__sold" [title]="'Số lượng đã bán trên tổng số lượng áp dụng'">{{ soldSummary(sale) }}</td>
                   <td><span class="flash-list__badge" [attr.data-state]="state(sale)">{{ stateLabels[state(sale)] }}</span></td>
                   <td class="flash-list__actions">
                     <a [routerLink]="['/admin/flash-sales', sale.id]" title="Xem chi tiết" [attr.aria-label]="'Xem Flash Sale ' + sale.name">
@@ -66,7 +67,7 @@
                   </td>
                 </tr>
               } @empty {
-                <tr><td colspan="5" class="flash-list__empty">
+                <tr><td colspan="6" class="flash-list__empty">
                   <app-admin-data-state kind="empty" title="Chưa có Flash Sale"
                     [message]="search() || stateFilter() !== 'ALL' ? 'Không tìm thấy chương trình phù hợp.' : 'Chưa có chương trình Flash Sale nào được tạo.'" />
                 </td></tr>
