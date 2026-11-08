@@ -299,6 +299,16 @@ export class AdminFlashSaleEditorComponent {
     if (!value.trim()) return false;
     return !Number.isSafeInteger(Number(value)) || Number(value) < 1;
   }
+  rowQuantityInvalid(item: DraftProduct): boolean {
+    return this.quantityInvalid(item.quantityLimit) ||
+      (item.quantityLimit.trim().length > 0 &&
+        Number(item.quantityLimit) < item.soldQuantity);
+  }
+  bulkQuantityBelowSold(): boolean {
+    const value = this.bulkQuantity();
+    return value.trim().length > 0 && !this.quantityInvalid(value) &&
+      this.form().items.some(item => Number(value) < item.soldQuantity);
+  }
   updateBulkDiscount(value: string): void {
     if (!this.editable()) return;
     this.bulkDiscount.set(value);
