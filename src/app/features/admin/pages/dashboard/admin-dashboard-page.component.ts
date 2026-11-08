@@ -265,6 +265,11 @@ export class AdminDashboardPageComponent {
   percentage(value: number): string {
     return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format(value) + '%';
   }
+  formatCompactMoney(value: number): string {
+    if (value >= 1000000) return (value / 1000000).toLocaleString('vi-VN', {maximumFractionDigits: 0}) + 'tr';
+    if (value >= 1000) return (value / 1000).toLocaleString('vi-VN', {maximumFractionDigits: 0}) + 'k';
+    return this.formatInt(value);
+  }
 
   private allowedBranch(branchId: string | null | undefined): boolean {
     if (this.branchId()) return String(branchId ?? '') === this.branchId();
