@@ -354,8 +354,8 @@ export class AdminFlashSaleEditorComponent {
 
   private payload(): FlashSaleWriteBody | null {
     const f=this.form(),from=utcFromVietnam(f.from),to=utcFromVietnam(f.to);
-    if (!f.name.trim() || f.name.trim().length>120) {
-      this.validation.set('Vui lòng nhập tên chương trình (tối đa 120 ký tự).');return null;
+    if (f.name.trim().length > 120) {
+      this.validation.set('Tên chương trình tối đa 120 ký tự.');return null;
     }
     if (!from || !to || Date.parse(to)<=Date.parse(from)) {
       this.validation.set('Vui lòng chọn thời gian kết thúc sau thời gian bắt đầu.');return null;
@@ -390,7 +390,8 @@ export class AdminFlashSaleEditorComponent {
       });
     }
     return {
-      name:f.name.trim(),description:f.description.trim(),
+      name:f.name.trim() || 'Flash Sale ' + f.from.slice(0,10).split('-').reverse().join('/'),
+      description:f.description.trim(),
       startAt:from,endAt:to,items,
       activationMode: existing?.status === 'PUBLISHED'
         ? this.modeFor(existing, this.operatingEnabled())
