@@ -305,7 +305,7 @@
         </div>
         <div class="create-order__summary">
           <dl class="create-order__breakdown">
-            <div><dt>Tạm tính</dt><dd>{{ quoteIsCurrent() ? price(quote()!.pricing.merchandiseSubtotal) : '—' }}</dd></div>
+            <div><dt>Tạm tính</dt><dd>{{ quoteIsCurrent() ? price(quote()!.pricing.merchandiseSubtotal) : lines().length ? price(subtotal()) : '—' }}</dd></div>
             <div><dt>Phí vận chuyển</dt><dd>{{ quoteIsCurrent() ? price(quote()!.pricing.shippingFee) : '—' }}</dd></div>
             <div><dt>Giảm giá (Voucher)</dt><dd>{{ quoteIsCurrent() ? price(quote()!.pricing.voucherDiscount) : '—' }}</dd></div>
           </dl>
