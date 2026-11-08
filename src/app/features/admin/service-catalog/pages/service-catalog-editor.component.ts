@@ -236,7 +236,7 @@ export class ServiceCatalogEditorComponent {
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({items, products}) => {
         const productBySku = new Map(products.flatMap(product => product.variants.map(variant => [
-          variant.sku,
+          variant.sku.trim().toLocaleUpperCase(),
           {
             image: variant.image || product.images.find(image => image.isPrimary)?.url || product.images[0]?.url || null,
             categoryId: product.categoryId,
@@ -245,7 +245,7 @@ export class ServiceCatalogEditorComponent {
           },
         ] as const)));
         this.productOptions = items.filter(item => item.status === 'ACTIVE').map(item => {
-          const product = productBySku.get(item.sku);
+          const product = productBySku.get(item.sku.trim().toLocaleUpperCase());
           return {
             materialId: item.id, sku: item.sku, name: item.name,
             unit: item.unit || '', image: product?.image ?? null,
@@ -482,7 +482,8 @@ export class ServiceCatalogEditorComponent {
     const term = this.materialPickerSearch().trim().toLocaleLowerCase('vi');
     return this.productOptions.filter(item =>
       !term || item.name.toLocaleLowerCase('vi').includes(term) ||
-      item.sku.toLocaleLowerCase('vi').includes(term));
+      item.sku.toLocaleLowerCase('vi').includes(term) ||
+      item.variantLabel.toLocaleLowerCase('vi').includes(term));
   }
   materialAlreadyAdded(id: string): boolean {
     return this.materials.some(line => line.materialId === id);
