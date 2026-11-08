@@ -8791,7 +8791,9 @@ app-admin-dashboard-page .dash__kpi:nth-child(2) .dash__kpi-icon{border:0;backgr
 app-admin-dashboard-page .dash__panel--shortcuts{min-height:300px}
 app-admin-dashboard-page .dash__panel-header--actions{min-height:58px;padding:16px 17px 13px}
 app-admin-dashboard-page .dash__panel-header--actions h2{display:flex;align-items:center;gap:9px}
-app-admin-dashboard-page .dash__action-heading-icon{color:#0d47a1;font-size:19px;font-weight:800;line-height:1}
+app-admin-dashboard-page .dash__action-heading-icon{display:block;width:22px;height:22px;flex:0 0 22px;object-fit:contain}
+app-admin-dashboard-page .dash__panel-header .dash__panel-title-icon{display:inline-block;width:24px;height:24px;vertical-align:middle;object-fit:contain;margin-right:6px}
+app-admin-dashboard-page .dash__panel-header h2:has(.dash__panel-title-icon){display:flex;align-items:center;gap:3px}
 app-admin-dashboard-page .dash__action-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:9px 12px 0;border-bottom:1px solid rgba(136,166,200,.22)}
 app-admin-dashboard-page .dash__action-tabs button{
   display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;
