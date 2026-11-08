@@ -1,2 +1,17 @@
 :host{display:block;min-width:0}
 /* The page's scoped visual rules live in src/styles.scss to stay under Angular's 8kB component-style budget. */
+
+/* P1 / Feedback: even five-column alignment and distinct lifecycle treatments. */
+:host .flash-list__table th:nth-child(3),
+:host .flash-list__table td:nth-child(3),
+:host .flash-list__table th:nth-child(4),
+:host .flash-list__table td:nth-child(4) { text-align:center; }
+:host .flash-list__table th:nth-child(5),
+:host .flash-list__table td:nth-child(5) { text-align:center; }
+:host .flash-list__table :is(th,td) { padding-inline:14px; box-sizing:border-box; }
+:host .flash-list__badge { min-width:112px; padding:6px 12px; font-size:12px; font-weight:500; }
+:host .flash-list__badge[data-state="DRAFT"] {background:#f2edfa;color:#76549b;}
+:host .flash-list__badge[data-state="UPCOMING"] {background:#e8f1ff;color:#1858a5;}
+:host .flash-list__badge[data-state="RUNNING"] {background:#e5f5eb;color:#197343;}
+:host .flash-list__badge[data-state="PAUSED"] {background:#fff1d9;color:#976017;}
+:host .flash-list__badge[data-state="ENDED"] {background:#edf0f3;color:#596774;}
