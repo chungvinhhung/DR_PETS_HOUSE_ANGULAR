@@ -193,6 +193,8 @@ export class ServiceCatalogEditorComponent {
     ...item, mode: 'QUOTE', price: null,
   }));
   materials: MaterialLine[] = [];
+  /** Retain invalid negative input so it can be corrected, rather than silently stripping '-'. */
+  readonly invalidTierPrices = new Map<string, string>();
   private nextMaterialKey = 1;
 
   readonly errors = signal<string[]>([]);
@@ -404,9 +406,20 @@ export class ServiceCatalogEditorComponent {
     return price === null || !Number.isFinite(price) ? '' : new Intl.NumberFormat('vi-VN').format(price);
   }
 
+  priceInputText(tier: Tier): string {
+    return this.invalidTierPrices.get(tier.key) ?? this.formatMoney(tier.price);
+  }
+
   setTierPrice(tier: Tier, input: string): void {
-    const digits = input.replace(/[^0-9]/g, '');
-    tier.price = digits ? Number(digits) : null;
+    const raw = input.trim();
+    if (raw.startsWith('-')) {
+      this.invalidTierPrices.set(tier.key, input);
+      tier.price = null;
+    } else {
+      this.invalidTierPrices.delete(tier.key);
+      const digits = input.replace(/[^0-9]/g, '');
+      tier.price = digits ? Number(digits) : null;
+    }
     this.markPricingDirty();
   }
 
@@ -447,7 +460,10 @@ export class ServiceCatalogEditorComponent {
 
   setTierMode(tier: Tier, mode: PriceMode): void {
     tier.mode = mode;
-    if (mode === 'QUOTE') tier.price = null;
+    if (mode === 'QUOTE') {
+      tier.price = null;
+      this.invalidTierPrices.delete(tier.key);
+    }
     this.markPricingDirty();
   }
 
@@ -558,6 +574,10 @@ export class ServiceCatalogEditorComponent {
 
   private validate(): string[] {
     const messages: string[] = [];
+    if (this.priceTiers.some(t => (this.weightPricing || t.key === 'XS') && t.mode === 'FIXED' &&
+      this.invalidTierPrices.has(t.key))) {
+      messages.push('Giá cơ sở không được là số âm.');
+    }
     if (this.pricingDirty && this.pricingDataWarning) {
       messages.push('Giá hiện tại chưa khớp với các mức giá. Vui lòng liên hệ quản trị viên trước khi thay đổi.');
     }
