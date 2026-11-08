@@ -32,10 +32,30 @@ function formatShortDate(value: any) {
 }
 
 function inferServiceType(service: any) {
-  const categoryName = service?.category?.category_name || "";
-  if (/groom|spa/i.test(categoryName) || categoryName.includes("Grooming")) return "grooming";
+  const rawType = String(
+    service?.serviceTypeId ||
+    service?.service_type_id ||
+    service?.serviceType ||
+    service?.service_type ||
+    service?.type ||
+    service?.category?.category_name ||
+    service?.category?.name ||
+    (typeof service?.category === "string" ? service.category : "") ||
+    service?.category_name ||
+    service?.categoryName ||
+    ""
+  ).trim();
+
+  const serviceName = String(service?.name || service?.service_name || service?.serviceName || "").trim();
+  const combined = `${rawType} ${serviceName}`;
+
+  if (/groom|spa|tắm|cắt tỉa|tỉa lông|làm đẹp|vệ sinh tai|cắt móng/i.test(combined)) {
+    return "grooming";
+  }
+
   return "clinic";
 }
+
 
 function normalizeAppointmentStatus(appointment: any) {
   if (appointment.status === "missed") return "no_show";
