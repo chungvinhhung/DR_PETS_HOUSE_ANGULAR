@@ -64,6 +64,10 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
   // Only show previews for photos that the user has actually uploaded.
   images: ProductImageDraft[] = [];
   primaryImageId: number | null = null;
+  /** Variant images are optional. Preview the selected product main image instead. */
+  get primaryImagePreviewUrl(): string | null {
+    return this.images.find(image => image.id === this.primaryImageId)?.previewUrl ?? this.images[0]?.previewUrl ?? null;
+  }
   private feedbackValue = '';
   get feedback(): string { return this.feedbackValue; }
   set feedback(message: string) {
@@ -110,6 +114,12 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
       imageFile: null,
       imageUrl: null,
     };
+  }
+
+  /** Removing a variant-specific image never deletes the product main image. */
+  clearVariantImage(variant: VariantDraft): void {
+    if (this.saving || !variant.imageFile) return;
+    this.releaseVariantImage(variant);
   }
 
   private releaseVariantImage(variant: VariantDraft): void {
