@@ -73,10 +73,10 @@
             }
           } @else {
             <div class="flash-editor__fields">
-              <label class="flash-editor__wide">Tên chương trình <span class="flash-editor__required">*</span>
+              <label class="flash-editor__wide">Tên chương trình (không bắt buộc)
                 <input #name type="text" maxlength="120" [value]="form().name"
                   (input)="update('name',name.value)" [disabled]="!editable()"
-                  placeholder="Nhập tên chương trình">
+                  placeholder="Để trống để hệ thống tự đặt tên theo ngày bắt đầu">
               </label>
               <label>Thời gian bắt đầu <span class="flash-editor__required">*</span>
                 <input #from type="datetime-local" [value]="form().from"
