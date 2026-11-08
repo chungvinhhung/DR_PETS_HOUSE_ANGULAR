@@ -432,6 +432,11 @@ export class AdminProductListPageComponent implements OnInit {
     return this.categories().find(item => item.id === id)?.name || '—';
   }
 
+  /** Use the designated primary photo even when BE returns images out of order. */
+  productMainImageUrl(product: AdminProduct): string | null {
+    return product.images?.find(image => image.isPrimary)?.url || product.images?.[0]?.url || null;
+  }
+
   productSku(product: AdminProduct): string {
     return product.variants.map(v => v.sku).join(', ') || '—';
   }
