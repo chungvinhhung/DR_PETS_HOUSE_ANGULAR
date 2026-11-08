@@ -98,6 +98,7 @@ export class AdminFlashSaleEditorComponent {
   readonly validation = signal('');
   /** Quick-apply controls; per-item overrides remain available. */
   readonly bulkDiscount = signal('');
+  readonly bulkQuantity = signal('');
   readonly selectedSkus = signal<string[]>([]);
   readonly selectedCount = computed(() => this.form().items.filter(item => this.selectedSkus().includes(item.sku)).length);
   readonly allRowsSelected = computed(() => this.form().items.length > 0 && this.selectedCount() === this.form().items.length);
@@ -381,6 +382,30 @@ export class AdminFlashSaleEditorComponent {
     this.resetCreateKeyWhenDraftChanges();
     this.validation.set('');this.dirty.set(true);
     this.toast.show('Đã áp dụng mức giảm cho ' + this.selectedCount() + ' SKU được chọn.','success');
+  }
+  /** Quantity is set from the action toolbar for the checked SKUs (not the view-only sold column). */
+  bulkQuantityError(): string {
+    const value = this.bulkQuantity();
+    if (!value.trim()) return '';
+    if (this.quantityInvalid(value)) return 'Số lượng phải là số nguyên dương.';
+    const selected = new Set(this.selectedSkus());
+    if (this.form().items.some(item => selected.has(item.sku) && Number(value) < item.soldQuantity)) {
+      return 'Giới hạn không được nhỏ hơn số lượng đã bán của SKU được chọn.';
+    }
+    return '';
+  }
+  applyBulkQuantity(): void {
+    const value = this.bulkQuantity();
+    if (!this.editable() || !this.selectedCount() || !value.trim() || this.bulkQuantityError()) return;
+    const selected = new Set(this.selectedSkus());
+    this.form.update(f => ({
+      ...f,
+      items: f.items.map(item => selected.has(item.sku) ? {...item,quantityLimit:value} : item),
+    }));
+    this.resetCreateKeyWhenDraftChanges();
+    this.validation.set('');
+    this.dirty.set(true);
+    this.toast.show('Đã áp dụng số lượng cho ' + this.selectedCount() + ' SKU được chọn.','success');
   }
   updateItem(index: number, key: 'discountPercent'|'salePrice'|'quantityLimit', value: string): void {
     if (!this.editable()) return;
