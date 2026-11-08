@@ -134,7 +134,7 @@
 
       <section class="dash__panel dash__panel--status">
         <header class="dash__panel-header">
-          <div><h2><img class="dash__panel-title-icon" src="/assets/admin-dashboard/order-action.svg" width="24" height="24" alt=""> Trạng thái đơn hàng</h2></div>
+          <div><h2>Trạng thái đơn hàng</h2></div>
           <a routerLink="/admin/orders" class="dash__panel-link">Xem tất cả</a>
         </header>
         @if (loading() || branchLoading()) {
@@ -165,7 +165,7 @@
 
       <section class="dash__panel dash__panel--appointment">
         <header class="dash__panel-header">
-          <div><h2><img class="dash__panel-title-icon" src="/assets/admin-dashboard/appointment-action.svg" width="24" height="24" alt=""> Trạng thái lịch hẹn</h2></div>
+          <div><h2>Trạng thái lịch hẹn</h2></div>
           <a routerLink="/admin/appointments" class="dash__panel-link">Xem tất cả</a>
         </header>
         <div class="dash__widget-placeholder dash__widget-placeholder--tall">
@@ -190,7 +190,7 @@
       </section>
       <section class="dash__panel">
         <header class="dash__panel-header">
-          <div><h2><img class="dash__panel-title-icon" src="/assets/admin-dashboard/inventory-action.svg" width="24" height="24" alt=""> Tồn kho cần chú ý</h2></div>
+          <div><h2>Tồn kho cần chú ý</h2></div>
           <a routerLink="/admin/inventory" class="dash__panel-link">Xem kho</a>
         </header>
         <div class="dash__table-head dash__table-head--stock"><span>Mặt hàng / Chi nhánh</span><span>Tồn / Ngưỡng</span></div>
@@ -201,7 +201,7 @@
       </section>
       <section class="dash__panel dash__panel--shortcuts">
         <header class="dash__panel-header dash__panel-header--actions">
-          <h2><img class="dash__action-heading-icon" src="/assets/admin-dashboard/alert-action.svg" width="22" height="22" alt=""> Cần xử lý ngay</h2>
+          <h2>Cần xử lý ngay</h2>
         </header>
         <div class="dash__action-tabs" role="tablist" aria-label="Các công việc cần xử lý">
           <button type="button" role="tab" [attr.aria-selected]="actionTab() === 'orders'"
@@ -229,11 +229,13 @@
                 } @else {
                   @for (order of actionOrders(); track order.id) {
                     <tr>
-                      <td><strong>{{order.code || '—'}}</strong></td>
+                      <td><strong [title]="order.code || ''">{{order.code || '—'}}</strong></td>
                       <td>{{order.contactSnapshot?.fullName || order.contactSnapshot?.name || '—'}}</td>
                       <td>{{money(order.pricing.totalAmount)}}</td>
                       <td>{{shortTime(order.createdAt)}}</td>
-                      <td><a [routerLink]="['/admin/orders',order.id]" [attr.aria-label]="'Xem đơn hàng '+order.code">Xử lý</a></td>
+                      <td class="dash__action-cell"><a class="dash__icon-link" [routerLink]="['/admin/orders',order.id]" [attr.aria-label]="'Xem chi tiết đơn hàng '+(order.code || '')" title="Xem chi tiết">
+                        <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="">
+                      </a></td>
                     </tr>
                   } @empty {
                     <tr><td colspan="5" class="dash__action-message">Không có đơn hàng cần xử lý.</td></tr>
@@ -252,10 +254,12 @@
                 } @else {
                   @for (appointment of actionAppointments(); track appointment.id) {
                     <tr>
-                      <td><strong>{{appointment.code || '—'}}</strong></td>
+                      <td><strong [title]="appointment.code || ''">{{appointment.code || '—'}}</strong></td>
                       <td>{{appointment.customerName || '—'}}</td>
                       <td>{{shortTime(appointment.appointmentAt)}}</td>
-                      <td><a [routerLink]="['/admin/appointments',appointment.id]" [attr.aria-label]="'Xem lịch hẹn '+appointment.code">Xem</a></td>
+                      <td class="dash__action-cell"><a class="dash__icon-link" [routerLink]="['/admin/appointments',appointment.id]" [attr.aria-label]="'Xem chi tiết lịch hẹn '+(appointment.code || '')" title="Xem chi tiết">
+                        <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="">
+                      </a></td>
                     </tr>
                   } @empty {
                     <tr><td colspan="4" class="dash__action-message">Không có lịch hẹn sắp tới trong dữ liệu đã tải.</td></tr>
