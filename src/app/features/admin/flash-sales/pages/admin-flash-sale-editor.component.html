@@ -125,8 +125,22 @@
             <button type="button" class="flash-editor__btn flash-editor__btn--primary"
               [disabled]="!editable() || !selectedCount() || !bulkDiscount().trim() || discountInvalid(bulkDiscount())"
               (click)="applyBulkDiscount()">Áp dụng mức giảm</button>
+            <label class="flash-editor__discount-control">
+              <span>Số lượng áp dụng</span>
+              <input #bulkQuota type="number" min="1" step="1" inputmode="numeric"
+                placeholder="VD: 20" [disabled]="!editable()"
+                [value]="bulkQuantity()" (input)="bulkQuantity.set(bulkQuota.value)"
+                [class.flash-editor__numeric-invalid]="!!bulkQuantityError()"
+                [attr.aria-invalid]="!!bulkQuantityError()">
+            </label>
+            <button type="button" class="flash-editor__btn flash-editor__btn--outline"
+              [disabled]="!editable() || !selectedCount() || !bulkQuantity().trim() || !!bulkQuantityError()"
+              (click)="applyBulkQuantity()">Áp dụng số lượng</button>
             @if (discountInvalid(bulkDiscount())) {
               <small class="flash-editor__input-error">Mức giảm phải lớn hơn 0% và nhỏ hơn 100%.</small>
+            }
+            @if (bulkQuantityError()) {
+              <small class="flash-editor__input-error">{{bulkQuantityError()}}</small>
             }
           </div>
         }
@@ -149,7 +163,7 @@
                 <th scope="col" class="flash-editor__stock-heading">Tổng tồn kho</th>
                 <th scope="col">Giảm thêm (%)</th>
                 <th scope="col">Giá sau giảm</th>
-                <th scope="col">Số lượng / Đã bán</th>
+                @if (mode==='view') { <th scope="col">Số lượng / Đã bán</th> }
                 @if (mode!=='view') { <th scope="col" class="flash-editor__actions-column">Thao tác</th> }
               </tr></thead>
               <tbody>
@@ -202,8 +216,8 @@
                         }
                       }
                     </td>
-                    <td>
-                      @if (mode==='view') {
+                    @if (mode==='view') {
+                      <td>
                         <div class="flash-editor__sales-count">
                           <strong>{{product.soldQuantity}} / {{product.quantityLimit}}</strong>
                           <small>Đã bán / Giới hạn</small>
@@ -211,21 +225,8 @@
                             <span [style.width.%]="soldPercent(product)"></span>
                           </span>
                         </div>
-                      } @else {
-                        <input #quantity type="number" min="1" step="1" inputmode="numeric"
-                          [attr.aria-label]="'Số lượng Flash Sale cho ' + product.sku"
-                          [value]="product.quantityLimit" [disabled]="!editable()"
-                          [class.flash-editor__numeric-invalid]="rowQuantityInvalid(product)"
-                          [attr.aria-invalid]="rowQuantityInvalid(product)"
-                          (input)="updateItem(i,'quantityLimit',quantity.value)">
-                        <small class="flash-editor__quantity-sold">Đã bán: {{product.soldQuantity}}</small>
-                        @if (quantityInvalid(product.quantityLimit)) {
-                          <small class="flash-editor__input-error">Số lượng phải là số nguyên dương.</small>
-                        } @else if (rowQuantityInvalid(product)) {
-                          <small class="flash-editor__input-error">Không thấp hơn {{product.soldQuantity}} đã bán.</small>
-                        }
-                      }
-                    </td>
+                      </td>
+                    }
                     @if (mode!=='view') {
                       <td class="flash-editor__remove">
                         <button type="button" aria-label="Xóa sản phẩm khỏi chương trình"
