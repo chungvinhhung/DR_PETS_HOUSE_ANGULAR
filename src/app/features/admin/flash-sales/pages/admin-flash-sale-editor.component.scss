@@ -38,16 +38,18 @@
 /* Dedicated columns for percentage and calculated / manually entered sale price. */
 :host .flash-editor__table--applied{min-width:1000px;width:100%;table-layout:fixed;}
 :host .flash-editor__table--editing th:nth-child(1){width:5%;}
-:host .flash-editor__table--editing th:nth-child(2){width:25%;}
-:host .flash-editor__table--editing th:nth-child(n+3):nth-child(-n+6){width:13%;}
-:host .flash-editor__table--editing th:nth-child(7){width:12%;}
-:host .flash-editor__table--editing th:nth-child(8){width:6%;}
+:host .flash-editor__table--editing th:nth-child(2){width:29%;}
+:host .flash-editor__table--editing th:nth-child(3){width:14%;}
+:host .flash-editor__table--editing th:nth-child(4){width:13%;}
+:host .flash-editor__table--editing th:nth-child(5){width:15%;}
+:host .flash-editor__table--editing th:nth-child(6){width:16%;}
+:host .flash-editor__table--editing th:nth-child(7){width:8%;}
 :host .flash-editor__table--view th:nth-child(1){width:30%;}
 :host .flash-editor__table--view th:nth-child(n+2):nth-child(-n+5){width:13.5%;}
 :host .flash-editor__table--view th:nth-child(6){width:16%;}
 /* Align every middle header with its numeric content without moving the product and sold columns. */
 :host .flash-editor__table--view :is(th,td):nth-child(n+2):nth-child(-n+5),
-:host .flash-editor__table--editing :is(th,td):nth-child(n+3):nth-child(-n+7){text-align:center;}
+:host .flash-editor__table--editing :is(th,td):nth-child(n+3):nth-child(-n+6){text-align:center;}
 :host .flash-editor__table--editing input[type=number]{text-align:center;}
 :host .flash-editor__table--applied :is(th,td){padding:13px 11px;box-sizing:border-box;vertical-align:middle;}
 :host .flash-editor__table--applied .flash-editor__select-column{text-align:center;padding-inline:5px;}
