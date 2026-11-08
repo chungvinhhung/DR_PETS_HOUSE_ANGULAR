@@ -22,13 +22,13 @@ interface StatusSlice {
   color: string;
 }
 const STATUS: Record<string, { label: string; tone: Tone; color: string }> = {
-  PENDING: { label: 'Chờ xác nhận', tone: 'amber', color: '#e5ad47' },
-  CONFIRMED: { label: 'Đã xác nhận', tone: 'blue', color: '#4f8edc' },
-  PROCESSING: { label: 'Đang xử lý', tone: 'indigo', color: '#8c7bd5' },
-  SHIPPED: { label: 'Đang giao', tone: 'teal', color: '#42a6a4' },
-  DELIVERED: { label: 'Đã giao', tone: 'green', color: '#40a775' },
-  COMPLETED: { label: 'Hoàn thành', tone: 'green', color: '#40a775' },
-  CANCELLED: { label: 'Đã hủy', tone: 'red', color: '#dd8585' },
+  PENDING: { label: 'Chờ xác nhận', tone: 'amber', color: '#F2AE35' },
+  CONFIRMED: { label: 'Đã xác nhận', tone: 'blue', color: '#347FE7' },
+  PROCESSING: { label: 'Đang xử lý', tone: 'indigo', color: '#8264DF' },
+  SHIPPED: { label: 'Đang giao', tone: 'teal', color: '#20A9AE' },
+  DELIVERED: { label: 'Đã giao', tone: 'green', color: '#20B77B' },
+  COMPLETED: { label: 'Hoàn thành', tone: 'green', color: '#20B77B' },
+  CANCELLED: { label: 'Đã hủy', tone: 'red', color: '#EF6976' },
 };
 const FALLBACK = { tone: 'slate' as const, color: '#8799ad' };
 
