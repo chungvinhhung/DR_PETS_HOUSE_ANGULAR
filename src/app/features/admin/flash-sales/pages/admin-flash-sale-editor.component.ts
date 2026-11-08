@@ -98,7 +98,9 @@ export class AdminFlashSaleEditorComponent {
   readonly validation = signal('');
   /** Quick-apply controls; per-item overrides remain available. */
   readonly bulkDiscount = signal('');
-  readonly bulkQuantity = signal('');
+  readonly selectedSkus = signal<string[]>([]);
+  readonly selectedCount = computed(() => this.form().items.filter(item => this.selectedSkus().includes(item.sku)).length);
+  readonly allRowsSelected = computed(() => this.form().items.length > 0 && this.selectedCount() === this.form().items.length);
   readonly dirty = signal(false);
   readonly canManage = computed(() => this.session.user()?.systemRole === 'ADMIN');
   readonly editable = computed(() => this.mode !== 'view' && this.canManage() && !this.saving() &&
@@ -238,15 +240,67 @@ export class AdminFlashSaleEditorComponent {
             totalStock:typeof x.totalStock === 'number' ? x.totalStock : null,
           })),
         });
-        const percentValues = this.form().items.map(item => item.discountPercent);
-        const quantityValues = this.form().items.map(item => item.quantityLimit);
-        this.bulkDiscount.set(percentValues.length && percentValues.every(x => x === percentValues[0]) ? percentValues[0] : '');
-        this.bulkQuantity.set(quantityValues.length && quantityValues.every(x => x === quantityValues[0]) ? quantityValues[0] : '');
+        this.bulkDiscount.set('');
+        this.selectedSkus.set([]);
         this.dirty.set(false);this.loading.set(false);
+        void this.enrichMissingNames();
       },
       error: err=>{this.loading.set(false);this.error.set(this.message(err,'Không tải được Flash Sale.'));},
     });
   }
+  /**
+   * Legacy seed campaigns sometimes omit productName. Resolve display labels from
+   * the authoritative catalog, without replacing saved Flash Sale prices.
+   */
+  private async enrichMissingNames(): Promise<void> {
+    const missing = [...new Set(this.form().items
+      .filter(item => (!item.productName || item.productName === 'Sản phẩm chưa có tên') && item.productId)
+      .map(item => item.productId))];
+    if (!missing.length) return;
+    const responses = await Promise.all(missing.map(async id => {
+      try { return {id, product: await firstValueFrom(this.productsApi.getProduct(id))}; }
+      catch { return {id, product: null}; }
+    }));
+    if (this.destroyRef.destroyed) return;
+    const products = new Map(responses.filter(result => result.product)
+      .map(result => [result.id, result.product!] as const));
+    this.form.update(form => ({...form,items:form.items.map(item => {
+      const product = products.get(item.productId);
+      if (!product) return item;
+      const variant = product.variants.find(v => v.id === item.variantId || v.sku === item.sku);
+      const imageUrl = item.imageUrl || variant?.image ||
+        product.images?.find(img => img.isPrimary)?.url || product.images?.[0]?.url || '';
+      return {
+        ...item,
+        productName: item.productName === 'Sản phẩm chưa có tên' ? product.name : item.productName,
+        variantName: item.variantName === 'Mặc định' ? (variant?.label || item.variantName) : item.variantName,
+        imageUrl,
+      };
+    })}));
+  }
+  totalSold(): number {
+    return this.form().items.reduce((sum, item) => sum + (Number.isFinite(item.soldQuantity) ? item.soldQuantity : 0), 0);
+  }
+  totalQuota(): number {
+    return this.form().items.reduce((sum, item) =>
+      sum + (Number.isFinite(Number(item.quantityLimit)) ? Number(item.quantityLimit) : 0), 0);
+  }
+  soldPercent(item: DraftProduct): number {
+    const quota = Number(item.quantityLimit);
+    return quota > 0 ? Math.max(0, Math.min(100, item.soldQuantity / quota * 100)) : 0;
+  }
+  isSelected(sku: string): boolean { return this.selectedSkus().includes(sku); }
+  toggleSelected(sku: string, checked: boolean): void {
+    if (!this.editable()) return;
+    this.selectedSkus.update(items => checked
+      ? (items.includes(sku) ? items : [...items,sku])
+      : items.filter(id => id !== sku));
+  }
+  toggleSelectAll(checked: boolean): void {
+    if (!this.editable()) return;
+    this.selectedSkus.set(checked ? this.form().items.map(item => item.sku) : []);
+  }
+
   changeStart(input: HTMLInputElement): void {
     if (!this.editable() || this.startTimeLocked()) return;
     const min = this.minimumStartAt();
@@ -304,47 +358,52 @@ export class AdminFlashSaleEditorComponent {
       (item.quantityLimit.trim().length > 0 &&
         Number(item.quantityLimit) < item.soldQuantity);
   }
-  bulkQuantityBelowSold(): boolean {
-    const value = this.bulkQuantity();
-    return value.trim().length > 0 && !this.quantityInvalid(value) &&
-      this.form().items.some(item => Number(value) < item.soldQuantity);
+  priceInvalid(item: DraftProduct): boolean {
+    if (!item.salePrice.trim()) return false;
+    const price = Number(item.salePrice);
+    return !Number.isSafeInteger(price) || price <= 0 || price >= item.originalPrice;
   }
   updateBulkDiscount(value: string): void {
     if (!this.editable()) return;
     this.bulkDiscount.set(value);
-    if (this.discountInvalid(value) || !value.trim()) return;
-    const percent = Number(value);
+  }
+  applyBulkDiscount(): void {
+    const value = this.bulkDiscount();
+    if (!this.editable() || this.discountInvalid(value) || !value.trim() || !this.selectedCount()) return;
+    const selected = new Set(this.selectedSkus());
+    const percentage = Number(value);
     this.form.update(f => ({
-      ...f, items:f.items.map(item => ({
-        ...item, discountPercent:value,
-        salePrice:String(this.discountedPrice(item.originalPrice, percent)),
-      })),
+      ...f,items:f.items.map(item => selected.has(item.sku)
+        ? {...item,discountPercent:value,salePrice:String(this.discountedPrice(item.originalPrice,percentage))}
+        : item),
     }));
-    this.resetCreateKeyWhenDraftChanges();this.dirty.set(true);this.validation.set('');
+    this.resetCreateKeyWhenDraftChanges();
+    this.validation.set('');this.dirty.set(true);
+    this.toast.show('Đã áp dụng mức giảm cho ' + this.selectedCount() + ' SKU được chọn.','success');
   }
-  updateBulkQuantity(value: string): void {
-    if (!this.editable()) return;
-    this.bulkQuantity.set(value);
-    if (this.quantityInvalid(value) || !value.trim()) return;
-    this.form.update(f => ({...f,items:f.items.map(item => ({...item,quantityLimit:value}))}));
-    this.resetCreateKeyWhenDraftChanges();this.dirty.set(true);this.validation.set('');
-  }
-  updateItem(index: number, key: 'discountPercent'|'quantityLimit', value: string): void {
+  updateItem(index: number, key: 'discountPercent'|'salePrice'|'quantityLimit', value: string): void {
     if (!this.editable()) return;
     this.form.update(f => ({...f,items:f.items.map((item,i) => {
       if (i !== index) return item;
       if (key === 'quantityLimit') return {...item,quantityLimit:value};
+      if (key === 'salePrice') {
+        const numeric = Number(value);
+        const valid = value.trim().length > 0 && Number.isSafeInteger(numeric) &&
+          numeric > 0 && numeric < item.originalPrice;
+        return {...item,salePrice:value,discountPercent:valid
+          ? this.percentageFor(item.originalPrice,numeric) : ''};
+      }
       const price = !value.trim() || this.discountInvalid(value)
         ? '' : String(this.discountedPrice(item.originalPrice,Number(value)));
       return {...item,discountPercent:value,salePrice:price};
     })}));
-    if (key === 'discountPercent') this.bulkDiscount.set('');
-    else this.bulkQuantity.set('');
     this.resetCreateKeyWhenDraftChanges();this.validation.set('');this.dirty.set(true);
   }
   removeItem(index: number): void {
     if (!this.editable()) return;
+    const sku = this.form().items[index]?.sku;
     this.form.update(f=>({...f,items:f.items.filter((_,i)=>i!==index)}));
+    if (sku) this.selectedSkus.update(rows => rows.filter(item => item !== sku));
     this.resetCreateKeyWhenDraftChanges();
     this.dirty.set(true);
   }
@@ -393,11 +452,10 @@ export class AdminFlashSaleEditorComponent {
       name:f.name.trim() || 'Flash Sale ' + f.from.slice(0,10).split('-').reverse().join('/'),
       description:f.description.trim(),
       startAt:from,endAt:to,items,
-      activationMode: existing?.status === 'PUBLISHED'
-        ? this.modeFor(existing, this.operatingEnabled())
-        : this.draftEnabled() ? 'AUTO' : 'MANUAL',
-      // A manual scheduled deal must remain paused even after startAt passes.
-      isPaused: existing?.status === 'PUBLISHED' ? existing.isPaused : !this.draftEnabled(),
+      // New campaigns are published immediately and run automatically within their date window.
+      // Preserve the operational state of existing published campaigns.
+      activationMode: existing?.status === 'PUBLISHED' ? (existing.activationMode || 'AUTO') : 'AUTO',
+      isPaused: existing?.status === 'PUBLISHED' ? existing.isPaused : false,
       ...(existing?.version !== undefined ? {expectedVersion: existing.version} : {}),
     };
   }
@@ -483,6 +541,20 @@ export class AdminFlashSaleEditorComponent {
       this.toast.show(this.message(err,'Không cập nhật được trạng thái chương trình.'),'error');
     }
     finally{this.saving.set(false);}
+  }
+  async togglePausedFromDetail(): Promise<void> {
+    const sale = this.original();
+    if (!sale || sale.status !== 'PUBLISHED' || !this.canManage() || this.saving() || this.currentState() === 'ENDED') return;
+    const paused = !sale.isPaused;
+    this.saving.set(true);
+    try {
+      const updated = await firstValueFrom(this.api.setPaused(sale.id,paused,sale.activationMode || 'AUTO'));
+      if (updated.isPaused !== paused) throw new Error('Backend chưa ghi nhận trạng thái chương trình.');
+      this.original.set(updated);
+      this.toast.show(paused ? 'Đã tạm ngừng chương trình.' : 'Đã tiếp tục chương trình.','success');
+    } catch (err) {
+      this.toast.show(this.message(err,'Không thể cập nhật trạng thái.'),'error');
+    } finally { this.saving.set(false); }
   }
   cancel(): void {void this.router.navigateByUrl(this.mode==='create'?'/admin/flash-sales':'/admin/flash-sales/'+this.id);}
 
@@ -594,16 +666,15 @@ export class AdminFlashSaleEditorComponent {
       ...f,items:[...f.items,...picked.map(opt=>({
         productId:opt.productId,variantId:opt.variantId,sku:opt.sku,
         productName:opt.productName,variantName:opt.variantName,imageUrl:opt.imageUrl,
-        originalPrice:opt.price,
-        discountPercent:this.bulkDiscount().trim() && !this.discountInvalid(this.bulkDiscount()) ? this.bulkDiscount() : '',
-        salePrice:this.bulkDiscount().trim() && !this.discountInvalid(this.bulkDiscount())
-          ? String(this.discountedPrice(opt.price,Number(this.bulkDiscount()))) : '',
-        quantityLimit:this.bulkQuantity().trim() && !this.quantityInvalid(this.bulkQuantity()) ? this.bulkQuantity() : '',
+        originalPrice:opt.price,discountPercent:'',salePrice:'',quantityLimit:'',
         soldQuantity:0,
         totalStock:opt.totalStock,
       }))],
     }));
-    if(picked.length){this.resetCreateKeyWhenDraftChanges();this.dirty.set(true);this.validation.set('');}
+    if(picked.length){
+      this.selectedSkus.update(current => [...new Set([...current,...picked.map(item => item.sku)])]);
+      this.resetCreateKeyWhenDraftChanges();this.dirty.set(true);this.validation.set('');
+    }
     this.closePicker();
   }
 }
