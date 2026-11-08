@@ -27,9 +27,17 @@
       <app-admin-data-state kind="error" title="Không thể tải thông tin voucher" [message]="error()" (retry)="retry()" />
     } @else if (mode === 'view') {
       @if (original(); as voucher) {
-        <section class="voucher-editor__panel">
-          <h2>Thông tin voucher</h2>
-          <div class="voucher-editor__summary">
+        <section class="voucher-editor__panel voucher-editor__info-panel">
+          <div class="voucher-editor__info-heading">
+            <h2>Thông tin voucher</h2>
+            @if (when(voucher.createdAt) !== '—') {
+              <div class="voucher-editor__created-meta">
+                <span>Ngày tạo</span>
+                <strong>{{ when(voucher.createdAt) }}</strong>
+              </div>
+            }
+          </div>
+          <div class="voucher-editor__summary voucher-editor__summary--overview">
             <div><span>Mã</span><strong>{{ voucher.code }}</strong></div>
             <div><span>Tên</span><strong>{{ voucher.name }}</strong></div>
             <div class="voucher-editor__activation-control voucher-editor__activation-control--view">
@@ -46,10 +54,10 @@
                 <span class="voucher-editor__activation-text">{{activationLabel()}}</span>
               </label>
             </div>
+          </div>
+          <div class="voucher-editor__summary voucher-editor__summary--scope">
             <div><span>Phạm vi áp dụng</span><strong>{{ scopeLabels[voucher.scope] }}</strong></div>
-                        <div><span>Hiệu lực</span><strong>{{ when(voucher.effectiveFrom) }} – {{ when(voucher.effectiveTo) }}</strong></div>
-
-            <div><span>Ngày tạo</span><strong>{{ when(voucher.createdAt) }}</strong></div>
+            <div><span>Hiệu lực</span><strong>{{ when(voucher.effectiveFrom) }} – {{ when(voucher.effectiveTo) }}</strong></div>
           </div>
         </section>
         <div class="voucher-editor__detail-grid">
