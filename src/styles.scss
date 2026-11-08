@@ -8325,3 +8325,45 @@ app-admin-product-edit-page .variant-image-fallback-label {
   white-space:nowrap;
   text-align:center;
 }
+
+
+/* P1 / composite numeric controls: one focus indicator around the outer control only. */
+:is(app-admin-product-create-page,app-admin-product-edit-page,app-service-catalog-editor,
+  app-admin-order-create,app-admin-voucher-editor,app-admin-flash-sale-editor)
+  :is(.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input,.create-order__qty)
+  input:is(:focus,:focus-visible){
+  outline:0!important;outline-offset:0!important;box-shadow:none!important;
+  border:0!important;border-radius:0!important;
+}
+:is(app-admin-product-create-page,app-admin-product-edit-page,app-service-catalog-editor,
+  app-admin-order-create,app-admin-voucher-editor,app-admin-flash-sale-editor)
+  :is(.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input,.create-order__qty):focus-within{
+  outline:0!important;border-color:#0d47a1;
+  box-shadow:0 0 0 2px rgba(13,71,161,.12);
+}
+:is(app-admin-product-create-page,app-admin-product-edit-page,app-service-catalog-editor,
+  app-admin-order-create,app-admin-voucher-editor,app-admin-flash-sale-editor)
+  :is(.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input,.create-order__qty):has(input.input-invalid),
+:is(app-admin-product-create-page,app-admin-product-edit-page,app-service-catalog-editor,
+  app-admin-order-create,app-admin-voucher-editor,app-admin-flash-sale-editor)
+  :is(.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input,.create-order__qty):has(input:out-of-range){
+  border-color:#c62828!important;
+}
+:is(app-admin-product-create-page,app-admin-product-edit-page,app-service-catalog-editor,
+  app-admin-order-create,app-admin-voucher-editor,app-admin-flash-sale-editor)
+  :is(.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input,.create-order__qty):has(input.input-invalid):focus-within,
+:is(app-admin-product-create-page,app-admin-product-edit-page,app-service-catalog-editor,
+  app-admin-order-create,app-admin-voucher-editor,app-admin-flash-sale-editor)
+  :is(.currency-input,.variant-currency-input,.unit-input,.service-editor__price-input,.create-order__qty):has(input:out-of-range):focus-within{
+  box-shadow:0 0 0 2px rgba(198,40,40,.14);
+}
+:is(app-admin-product-create-page,app-admin-product-edit-page,app-service-catalog-editor,
+  app-admin-order-create,app-admin-voucher-editor,app-admin-flash-sale-editor)
+  :is(.new-variant-grid,.service-editor__field) input[type="number"]:out-of-range{
+  border-color:#c62828!important;background:#fff7f7;
+}
+:is(app-admin-product-create-page,app-admin-product-edit-page)
+  .new-variant-grid label:has(input[type="number"]:out-of-range)::after{
+  content:"Giá trị phải nằm trong khoảng cho phép.";
+  color:#c62828;font:500 12px/1.4 Roboto,Arial,sans-serif;
+}
