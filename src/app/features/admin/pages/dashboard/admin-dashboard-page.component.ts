@@ -21,6 +21,14 @@ interface StatusSlice {
   tone: Tone;
   color: string;
 }
+interface OrderComparison {
+  previous: number;
+  current: number;
+  previousBar: number;
+  currentBar: number;
+  direction: 'up' | 'down' | 'flat';
+  label: string;
+}
 const STATUS: Record<string, { label: string; tone: Tone; color: string }> = {
   PENDING: { label: 'Chờ xác nhận', tone: 'amber', color: '#F2AE35' },
   CONFIRMED: { label: 'Đã xác nhận', tone: 'blue', color: '#347FE7' },
@@ -72,6 +80,7 @@ export class AdminDashboardPageComponent {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly summary = signal<DashboardSummary | null>(null);
+  readonly previousOrderCount = signal<number | null>(null);
   readonly actionTab = signal<'orders' | 'appointments'>('orders');
   readonly actionLoading = signal(false);
   readonly actionError = signal('');
@@ -95,6 +104,25 @@ export class AdminDashboardPageComponent {
   readonly ordersReady = computed(() => {
     const value = this.summary()?.orders;
     return Number.isSafeInteger(value) && Number(value) >= 0;
+  });
+  // Only Order counts currently satisfy M23. Do not compare legacy revenue,
+  // appointment or customer fields until BE supplies corrected aggregates.
+  readonly orderComparison = computed<OrderComparison | null>(() => {
+    const current = this.summary()?.orders;
+    const previous = this.previousOrderCount();
+    if (typeof current !== 'number' || !Number.isSafeInteger(current) || current < 0 ||
+        previous === null || !Number.isSafeInteger(previous) || previous < 0) return null;
+    const diff = current - previous;
+    const direction: OrderComparison['direction'] = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
+    const label = previous === 0 && current > 0
+      ? '+' + this.formatInt(current) + ' đơn so với kỳ trước'
+      : (diff > 0 ? '+' : '') + this.percentage(previous === 0 ? 0 : diff / previous * 100) + ' so với kỳ trước';
+    const max = Math.max(current, previous, 1);
+    return {
+      current, previous, direction, label,
+      previousBar: previous / max * 100,
+      currentBar: current / max * 100,
+    };
   });
   readonly orderSlices = computed<StatusSlice[]>(() => {
     const data = this.summary();
@@ -267,6 +295,7 @@ export class AdminDashboardPageComponent {
     this.loading.set(true);
     this.error.set('');
     this.summary.set(null); // never display a previous branch/date as the new result
+    this.previousOrderCount.set(null);
     const filters: DashboardFilters = { from: this.from(), to: this.to(), branchId: this.branchId() || null };
     this.loadActions();
     this.dashboard.summary(filters).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -279,6 +308,28 @@ export class AdminDashboardPageComponent {
           this.checkedAt.set(new Intl.DateTimeFormat('vi-VN', {
             hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh',
           }).format(new Date()));
+          // Compare the same number of calendar days, with the same branch scope.
+          // The previous request is independent: failure must not hide current KPIs.
+          if (Number.isSafeInteger(data.orders) && data.orders >= 0) {
+            const days = Math.round((
+              Date.parse(filters.to + 'T00:00:00Z') -
+              Date.parse(filters.from + 'T00:00:00Z')
+            ) / 86400000) + 1;
+            if (Number.isSafeInteger(days) && days > 0) {
+              const previousTo = shiftCalendar(filters.from, -1);
+              const previousFrom = shiftCalendar(previousTo, 1 - days);
+              this.dashboard.summary({ ...filters, from: previousFrom, to: previousTo })
+                .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+                  next: previous => {
+                    if (request !== this.version) return;
+                    if (Number.isSafeInteger(previous?.orders) && previous.orders >= 0) {
+                      this.previousOrderCount.set(previous.orders);
+                    }
+                  },
+                  error: () => { /* Comparison unavailable; never fabricate a percentage. */ },
+                });
+            }
+          }
         }
         this.loading.set(false);
       },
