@@ -95,3 +95,24 @@ th:nth-child(10),td:nth-child(10) { width: 85px; text-align: center; }
   font-size:13px;
 }
 .product-list-load-error .outline-btn { min-height:34px; padding:6px 12px; }
+
+/* P1: fit the complete 10-column product table into the Admin desktop viewport. */
+:host .product-panel .table-scroll {overflow-x:visible;}
+:host .product-panel table {width:100%;min-width:0!important;table-layout:fixed;}
+:host .product-panel :is(th,td) {box-sizing:border-box;padding-inline:7px;min-width:0;overflow-wrap:break-word;}
+:host .product-panel th {white-space:normal;line-height:1.3;}
+:host .product-panel :is(th,td):nth-child(1){width:4%;}
+:host .product-panel :is(th,td):nth-child(2){width:6%;}
+:host .product-panel :is(th,td):nth-child(3){width:17%;}
+:host .product-panel :is(th,td):nth-child(4){width:13%;}
+:host .product-panel :is(th,td):nth-child(5){width:12%;}
+:host .product-panel :is(th,td):nth-child(6){width:10%;}
+:host .product-panel :is(th,td):nth-child(7){width:9%;}
+:host .product-panel :is(th,td):nth-child(8){width:9%;}
+:host .product-panel :is(th,td):nth-child(9){width:12%;}
+:host .product-panel :is(th,td):nth-child(10){width:8%;}
+:host .product-panel td.sku :is(span,small) {white-space:normal;overflow-wrap:anywhere;text-overflow:clip;}
+:host .product-panel .product-name strong {white-space:normal;overflow-wrap:break-word;}
+:host .product-panel td.status-cell .status {white-space:normal;text-align:center;line-height:1.25;}
+:host .product-panel td.actions {white-space:nowrap;padding-inline:3px;}
+:host .product-panel td.actions :is(button,a){margin-inline:0;}
