@@ -44,13 +44,21 @@ export const extractShortIdFromSlug = (slugOrId: any) => {
 
 export const matchPetBySlugOrId = (pets: any[], slugOrId: any) => {
   if (!Array.isArray(pets) || !slugOrId) return null;
-  const target = String(slugOrId).trim();
+  const target = String(slugOrId).trim().toLowerCase();
   const shortId = extractShortIdFromSlug(target);
 
   return (
     pets.find((item: any) => {
-      const fullId = String(item?.id || item?.pet_id || item?._id || '');
-      return fullId === target || (shortId && fullId.endsWith(shortId));
+      const fullId = String(item?.id || item?.pet_id || item?._id || '').toLowerCase();
+      const name = String(item?.name || '').toLowerCase();
+      const slug = toPetSlug(item).toLowerCase();
+      return (
+        fullId === target ||
+        (shortId && fullId.endsWith(shortId)) ||
+        slug === target ||
+        name === target ||
+        (target && target.startsWith(name))
+      );
     }) || null
   );
 };

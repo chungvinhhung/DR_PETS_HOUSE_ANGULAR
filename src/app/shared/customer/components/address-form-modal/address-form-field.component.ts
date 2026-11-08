@@ -24,6 +24,8 @@ export class AddressFormFieldComponent {
   readonly autoComplete = input<any>(undefined);
   readonly onChange = output<any>();
   readonly type = input<any>(undefined);
+  readonly options = input<string[] | undefined>(undefined);
+  readonly listId = input<string | undefined>(undefined);
 
   // --- Giá trị tính toán (computed) ---
   readonly invalid = computed<any>(() => this.showError() && this.required() && !String(this.value() ?? "").trim());

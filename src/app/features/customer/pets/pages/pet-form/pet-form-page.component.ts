@@ -91,12 +91,19 @@ export class PetFormPageComponent {
         const requests = this.isEdit()
           ? this.petApi.getMyPets().then(async (pets: any[]) => {
               const availablePets = pets;
-              const currentPetFromList = availablePets.find((pet: any) =>
-                String(pet.id) === petId ||
-                String(pet.pet_id) === petId ||
-                String(pet._id) === petId ||
-                toPetSlug(pet) === petId,
-              );
+              const target = petId.toLowerCase().trim();
+              const currentPetFromList = availablePets.find((pet: any) => {
+                const id = String(pet.id || pet.pet_id || pet._id || '').toLowerCase();
+                const name = String(pet.name || '').toLowerCase();
+                const slug = toPetSlug(pet).toLowerCase();
+                return (
+                  id === target ||
+                  slug === target ||
+                  name === target ||
+                  (target && target.startsWith(name)) ||
+                  (id && target.endsWith(id.slice(-4)))
+                );
+              });
               const resolvedPetId = String(
                 currentPetFromList?.id ||
                 currentPetFromList?.pet_id ||

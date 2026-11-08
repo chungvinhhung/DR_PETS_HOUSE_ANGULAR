@@ -77,7 +77,10 @@
           />
         </div>
         @if (couponError()) {
-          <p class="coupon-error" role="alert">{{ couponError() }}</p>
+          <p class="coupon-error text-red-600 text-xs mt-1" role="alert">{{ couponError() }}</p>
+        }
+        @if (couponSuccess()) {
+          <p class="coupon-success text-green-700 text-xs mt-1 font-semibold" role="alert">{{ couponSuccess() }}</p>
         }
       </div>
       <button type="button" class="coupon-apply-btn" (click)="handleApplyCoupon()">
@@ -90,7 +93,7 @@
   <div class="price-summary-box">
     <div app-price-row [label]="'Tạm tính'" [value]="formatMoney(subtotal())"></div>
     <div app-price-row [label]="'Phụ thu'" [value]="formatMoney(surchargeTotal())"></div>
-    <div app-price-row [label]="'Giảm giá'" [value]="formatMoney(discountTotal())"></div>
+    <div app-price-row [label]="'Giảm giá'" [value]="'-' + formatMoney(effectiveDiscount())"></div>
 
     @if (pricingLoading()) {
       <p class="pricing-loading">Đang cập nhật phụ thu cân nặng...</p>
@@ -106,7 +109,7 @@
       <p class="total-label">Tổng cộng</p>
       <p class="total-vat">(Đã bao gồm thuế VAT)</p>
     </div>
-    <p class="total-amount">{{ formatMoney(total()) }}</p>
+    <p class="total-amount">{{ formatMoney(effectiveTotal()) }}</p>
   </div>
 
   <!-- Nút xác nhận -->

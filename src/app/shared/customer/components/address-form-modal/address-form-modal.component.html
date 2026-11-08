@@ -73,6 +73,8 @@
           [autoComplete]="'address-level1'"
           [showError]="validationAttempted()"
           [value]="form().city"
+          [options]="vietnamProvinces"
+          [listId]="'vietnam-provinces-list'"
           (onChange)="updateField('city', $any($event).target.value)"
           [className]="'sm:col-span-2'"
         ></label>

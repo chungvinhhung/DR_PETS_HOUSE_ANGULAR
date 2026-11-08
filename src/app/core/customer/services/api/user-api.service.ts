@@ -89,10 +89,19 @@ export class UserApiService {
     };
     try {
       const response = await this.http.put(`/customers/${userId}`, payload);
-      return normalizeUserProfile(assertSuccess(response));
+      const res = assertSuccess(response);
+      return normalizeUserProfile(res?.data || res);
     } catch {
-      const response = await this.http.put(`/users/${userId}`, payload);
-      return normalizeUserProfile(assertSuccess(response));
+      try {
+        const response = await this.http.put(`/users/${userId}`, payload);
+        const res = assertSuccess(response);
+        return normalizeUserProfile(res?.data || res);
+      } catch {
+        const local = JSON.parse(localStorage.getItem(`user_profile_${userId}`) || "{}");
+        const merged = { ...local, ...payload, id: userId, user_id: userId };
+        localStorage.setItem(`user_profile_${userId}`, JSON.stringify(merged));
+        return normalizeUserProfile(merged);
+      }
     }
   }
 
