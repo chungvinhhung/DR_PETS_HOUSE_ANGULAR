@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core
 import { AdminToastService } from '../services/admin-toast.service';
 import { RouterLink } from '@angular/router';
 import { AdminReturnNotificationService } from '../services/admin-return-notification.service';
+import { AdminPermissionService } from '../../features/admin/auth/services/admin-permission.service';
 import { AdminSidebarAccordionService, AdminSidebarGroup } from '../services/admin-sidebar-accordion.service';
 
 /**
@@ -19,11 +20,12 @@ import { AdminSidebarAccordionService, AdminSidebarGroup } from '../services/adm
 })
 export class AdminCatalogShellComponent {
   readonly toast = inject(AdminToastService);
+  readonly canViewUsers = inject(AdminPermissionService).canViewUsers;
   readonly returnNotifications = inject(AdminReturnNotificationService);
   readonly pendingReturnCount = this.returnNotifications.pendingCount;
   private readonly accordion = inject(AdminSidebarAccordionService);
 
-  @Input({ required: true }) activeItem!: 'categories' | 'products' | 'orders' | 'vouchers' | 'services' | 'branches' | 'staff' | 'inventory';
+  @Input({ required: true }) activeItem!: 'categories' | 'products' | 'orders' | 'vouchers' | 'services' | 'branches' | 'staff' | 'inventory' | 'users';
 
   // Animation is intentionally disabled on each newly mounted shell. Route
   // initialization should NEVER replay the previous group's close animation.
@@ -53,6 +55,7 @@ export class AdminCatalogShellComponent {
       case 'branches':
       case 'staff':
       case 'inventory':
+      case 'users':
         return 'operations';
     }
   }
