@@ -1,112 +1,131 @@
 <div class="admin-shell">
-  <a class="admin-shell__skip-link" href="#admin-content">Skip to content</a>
+  <a class="admin-shell__skip-link" href="#admin-content">Đến nội dung chính</a>
 
-  <aside class="admin-shell__sidebar">
-    <a class="admin-shell__brand" routerLink="/admin/dashboard" aria-label="Dr. Pet's House admin dashboard">
-      <span class="admin-shell__brand-mark" aria-hidden="true">DP</span>
-      <span>
-        <strong>Dr. Pet's House</strong>
-        <small>Admin workspace</small>
-      </span>
+  <header class="admin-shell__header">
+    <a class="admin-shell__brand" routerLink="/admin/dashboard" aria-label="Dr. Pet's House — Trang quản trị">
+      <img src="/assets/admin-product/logo-user.webp" alt="Dr. Pet's House" width="172" height="75" />
     </a>
 
-    <nav class="admin-shell__nav" aria-label="Admin navigation">
-      <a
-        class="admin-shell__nav-item"
-        routerLink="/admin/dashboard"
-        routerLinkActive="admin-shell__nav-item--active"
-        ariaCurrentWhenActive="page"
-      >
-        Dashboard
-      </a>
-      <a
-        class="admin-shell__nav-item"
-        routerLink="/admin/orders"
-        routerLinkActive="admin-shell__nav-item--active"
-        ariaCurrentWhenActive="page"
-      >
-        Orders
-      </a>
-      <a
-        class="admin-shell__nav-item"
-        routerLink="/admin/services"
-        routerLinkActive="admin-shell__nav-item--active"
-        ariaCurrentWhenActive="page"
-      >
-        Services
-      </a>
-      <a
-        class="admin-shell__nav-item"
-        routerLink="/admin/inventory"
-        routerLinkActive="admin-shell__nav-item--active"
-        ariaCurrentWhenActive="page"
-      >
-        Kho
-      </a>
-      <a
-        class="admin-shell__nav-item"
-        routerLink="/admin/appointments"
-        routerLinkActive="admin-shell__nav-item--active"
-        ariaCurrentWhenActive="page"
-      >
-        Appointments
-      </a>
-
-      @if (canViewUsers()) {
-        <a
-          class="admin-shell__nav-item"
-          routerLink="/admin/users"
-          routerLinkActive="admin-shell__nav-item--active"
-          ariaCurrentWhenActive="page"
-        >
-          Users & Roles
-        </a>
-      }
-
-      <a
-        class="admin-shell__nav-item"
-        routerLink="/admin/profile"
-        routerLinkActive="admin-shell__nav-item--active"
-        ariaCurrentWhenActive="page"
-      >
-        Account
-      </a>
-    </nav>
-
-    <div class="admin-shell__sidebar-footer">
-      <a routerLink="/">Customer site</a>
+    <div class="admin-shell__header-actions">
+      <a class="admin-shell__view-site" routerLink="/">Xem trang web</a>
+      <img class="admin-shell__notification" src="/assets/admin-product/icon-notification.svg" alt="Thông báo" width="41" height="41" />
+      <details class="admin-shell__profile-menu">
+        <summary class="admin-shell__profile" aria-label="Mở menu tài khoản">
+          <img src="/assets/admin-product/avatar-figma.png" width="36" height="36" alt="" />
+          <span class="admin-shell__profile-text">
+            <strong>{{ user()?.fullName || 'Quản trị viên' }}</strong>
+            <small>{{ user()?.systemRole || 'Tài khoản' }}</small>
+          </span>
+          <img class="admin-shell__chevron" src="/assets/admin-product/icon-chevron-down.svg" width="16" height="16" alt="" />
+        </summary>
+        <div class="admin-shell__profile-dropdown">
+          <a routerLink="/admin/profile">Thông tin tài khoản</a>
+          <button type="button" (click)="logout()" [disabled]="isLoggingOut()">
+            {{ isLoggingOut() ? 'Đang đăng xuất...' : 'Đăng xuất' }}
+          </button>
+        </div>
+      </details>
+      <button type="button" class="admin-shell__mobile-toggle"
+        [attr.aria-expanded]="mobileNavOpen()" aria-controls="admin-main-sidebar"
+        (click)="mobileNavOpen.set(!mobileNavOpen())">☰ Menu</button>
     </div>
-  </aside>
+  </header>
 
-  <section class="admin-shell__workspace">
-    <header class="admin-shell__header">
-      <div>
-        <p class="admin-shell__eyebrow">Administration</p>
-        <strong>Operations workspace</strong>
-      </div>
-
-      <div class="admin-shell__account">
-        <a
-          class="admin-shell__profile"
-          routerLink="/admin/profile"
-          aria-label="Open account profile"
-        >
-          <strong>{{ user()?.fullName || 'Admin' }}</strong>
-          <small>{{ user()?.systemRole || 'ADMIN' }}</small>
+  <div class="admin-shell__body">
+    <aside id="admin-main-sidebar" class="admin-shell__sidebar"
+      [class.admin-shell__sidebar--open]="mobileNavOpen()">
+      <nav class="admin-shell__nav" aria-label="Điều hướng quản trị">
+        <a class="admin-shell__nav-item" routerLink="/admin/dashboard"
+          routerLinkActive="admin-shell__nav-item--active" [routerLinkActiveOptions]="{ exact: true }">
+          <img src="/assets/admin-product/icon-dashboard.svg" width="20" height="20" alt="" />Dashboard
         </a>
-        <button
-          class="admin-shell__logout"
-          type="button"
-          (click)="logout()"
-          [disabled]="isLoggingOut()"
-        >
-          {{ isLoggingOut() ? 'Đang đăng xuất...' : 'Đăng xuất' }}
+
+        <button class="admin-shell__nav-item admin-shell__nav-group" type="button"
+          [class.admin-shell__nav-item--active]="isActiveGroup('sales')"
+          [attr.aria-expanded]="isExpanded('sales')" aria-controls="admin-sales-menu"
+          (click)="toggleGroup('sales')">
+          <img src="/assets/admin-product/icon-sales.svg" width="20" height="20" alt="" />
+          <span>Bán hàng</span><span class="admin-shell__nav-arrow">{{ isExpanded('sales') ? '⌄' : '›' }}</span>
         </button>
-      </div>
-    </header>
+        @if (isExpanded('sales')) {
+          <div class="admin-shell__submenu" id="admin-sales-menu">
+            <a routerLink="/admin/categories" routerLinkActive="admin-shell__submenu-item--active" class="admin-shell__submenu-item">Danh mục sản phẩm</a>
+            <a routerLink="/admin/products" routerLinkActive="admin-shell__submenu-item--active" class="admin-shell__submenu-item">Sản phẩm</a>
+            <a routerLink="/admin/orders" routerLinkActive="admin-shell__submenu-item--active" class="admin-shell__submenu-item">Đơn hàng</a>
+            <a routerLink="/admin/vouchers" routerLinkActive="admin-shell__submenu-item--active" class="admin-shell__submenu-item">Khuyến mãi</a>
+          </div>
+        }
+
+        <button class="admin-shell__nav-item admin-shell__nav-group" type="button"
+          [class.admin-shell__nav-item--active]="isActiveGroup('services')"
+          [attr.aria-expanded]="isExpanded('services')" aria-controls="admin-services-menu"
+          (click)="toggleGroup('services')">
+          <img src="/assets/admin-product/icon-services.svg" width="20" height="20" alt="" />
+          <span>Dịch vụ</span><span class="admin-shell__nav-arrow">{{ isExpanded('services') ? '⌄' : '›' }}</span>
+        </button>
+        @if (isExpanded('services')) {
+          <div class="admin-shell__submenu" id="admin-services-menu">
+            <a routerLink="/admin/services" routerLinkActive="admin-shell__submenu-item--active" class="admin-shell__submenu-item">Danh mục dịch vụ</a>
+            <a routerLink="/admin/appointments" routerLinkActive="admin-shell__submenu-item--active" class="admin-shell__submenu-item">Lịch hẹn</a>
+            <span class="admin-shell__submenu-item admin-shell__submenu-item--disabled" aria-disabled="true">Hồ sơ dịch vụ</span>
+          </div>
+        }
+
+        <button class="admin-shell__nav-item admin-shell__nav-group" type="button"
+          [class.admin-shell__nav-item--active]="isActiveGroup('operations')"
+          [attr.aria-expanded]="isExpanded('operations')" aria-controls="admin-operations-menu"
+          (click)="toggleGroup('operations')">
+          <img src="/assets/admin-product/icon-operations.svg" width="20" height="20" alt="" />
+          <span>Vận hành</span><span class="admin-shell__nav-arrow">{{ isExpanded('operations') ? '⌄' : '›' }}</span>
+        </button>
+        @if (isExpanded('operations')) {
+          <div class="admin-shell__submenu" id="admin-operations-menu">
+            <a routerLink="/admin/inventory" routerLinkActive="admin-shell__submenu-item--active" class="admin-shell__submenu-item">Kho</a>
+            <a routerLink="/admin/branches" routerLinkActive="admin-shell__submenu-item--active" class="admin-shell__submenu-item">Chi nhánh</a>
+            <a routerLink="/admin/staff" routerLinkActive="admin-shell__submenu-item--active" class="admin-shell__submenu-item">Nhân sự</a>
+            @if (canViewUsers()) {
+              <a routerLink="/admin/users" routerLinkActive="admin-shell__submenu-item--active" class="admin-shell__submenu-item">Tài khoản nội bộ</a>
+            }
+          </div>
+        }
+
+        <!-- Dedicated Customer module is implemented in Phase 2; do not link to internal RBAC. -->
+        <span class="admin-shell__nav-item admin-shell__nav-item--unavailable"
+          aria-disabled="true" title="Màn Quản lý khách hàng sẽ được triển khai ở Phase 2">
+          <img src="/assets/admin-product/icon-users.svg" width="20" height="20" alt="" />Quản lý khách hàng
+        </span>
+
+        <button class="admin-shell__nav-item admin-shell__nav-group" type="button"
+          [attr.aria-expanded]="isExpanded('content')" aria-controls="admin-content-menu"
+          (click)="toggleGroup('content')">
+          <img src="/assets/admin-product/icon-content.svg" width="20" height="20" alt="" />
+          <span>Nội dung &amp; Cộng đồng</span><span class="admin-shell__nav-arrow">{{ isExpanded('content') ? '⌄' : '›' }}</span>
+        </button>
+        @if (isExpanded('content')) {
+          <div class="admin-shell__submenu" id="admin-content-menu">
+            <span class="admin-shell__submenu-item admin-shell__submenu-item--disabled">Bài viết / Kiến thức</span>
+            <span class="admin-shell__submenu-item admin-shell__submenu-item--disabled">Cẩm nang sơ cứu</span>
+            <span class="admin-shell__submenu-item admin-shell__submenu-item--disabled">Bài đăng cộng đồng</span>
+          </div>
+        }
+
+        <button class="admin-shell__nav-item admin-shell__nav-group" type="button"
+          [attr.aria-expanded]="isExpanded('feedback')" aria-controls="admin-feedback-menu"
+          (click)="toggleGroup('feedback')">
+          <img src="/assets/admin-product/icon-reviews.svg" width="20" height="20" alt="" />
+          <span>Đánh giá &amp; Phản hồi</span><span class="admin-shell__nav-arrow">{{ isExpanded('feedback') ? '⌄' : '›' }}</span>
+        </button>
+        @if (isExpanded('feedback')) {
+          <div class="admin-shell__submenu" id="admin-feedback-menu">
+            <span class="admin-shell__submenu-item admin-shell__submenu-item--disabled">Đánh giá</span>
+            <span class="admin-shell__submenu-item admin-shell__submenu-item--disabled">Phản hồi khách hàng</span>
+          </div>
+        }
+      </nav>
+    </aside>
 
     <main id="admin-content" class="admin-shell__content">
       <router-outlet />
     </main>
-  </section>
+  </div>
 </div>
