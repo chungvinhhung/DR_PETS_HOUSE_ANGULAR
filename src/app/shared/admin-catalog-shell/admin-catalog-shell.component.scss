@@ -15,8 +15,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  height: 88px;
-  padding: 7px 32px;
+  height: 107px;
+  padding: 16px 40px;
   background: #fff;
   border-bottom: 1px solid #e2e8f0;
 }
@@ -109,14 +109,14 @@
   display: grid;
   grid-template-columns: 342px minmax(0, 1fr);
   align-items: start;
-  min-height: calc(100vh - 88px);
+  min-height: calc(100vh - 107px);
 }
 .catalog-sidebar {
   position: sticky;
-  top: 88px;
+  top: 107px;
   align-self: start;
-  height: calc(100vh - 88px);
-  height: calc(100dvh - 88px);
+  height: calc(100vh - 107px);
+  height: calc(100dvh - 107px);
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 24px 16px;
@@ -388,3 +388,12 @@
 .catalog-sidebar__group .catalog-sidebar__return-badge{margin-left:auto}
 .catalog-sidebar__group:has(.catalog-sidebar__return-badge) .catalog-sidebar__group-chevron{margin-left:0}
 
+
+/* Phase 1: main navigation states follow the WEB-2 Admin Sidebar component. */
+.catalog-sidebar__link--unavailable { cursor: default; }
+.catalog-sidebar__link--unavailable:hover { background: transparent; }
+.catalog-sidebar__link--active,
+.catalog-sidebar__link--active:hover { background: #0d47a1; color: #fff; font-weight: 600; }
+.catalog-sidebar__link--active > img { filter: brightness(0) invert(1); }
+.catalog-sidebar__link:focus-visible,
+.catalog-sidebar__sub:focus-visible { outline: 2px solid #0d47a1; outline-offset: 2px; }
