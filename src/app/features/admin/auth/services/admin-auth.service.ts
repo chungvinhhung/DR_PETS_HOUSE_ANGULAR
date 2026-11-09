@@ -7,6 +7,7 @@ import {
 } from '../../../../core/models/auth.model';
 import { ApiClientService } from '../../../../core/services/api-client.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { AppHttpError } from '../../../../core/models/app-http-error.model';
 
 @Injectable({
   providedIn: 'root',
@@ -20,6 +21,16 @@ export class AdminAuthService {
       .post<LoginResponse, LoginRequest>('/auth/login', request)
       .pipe(
         tap((response) => {
+          // Customer credentials are valid for the storefront, not for Admin.
+          // Reject before replacing the current session or navigating to an
+          // inaccessible dashboard (which otherwise creates a login/403 loop).
+          if (!['ADMIN', 'MANAGER', 'STAFF'].includes(response.user?.systemRole)) {
+            throw new AppHttpError(
+              403,
+              'forbidden',
+              'Tài khoản không có quyền truy cập khu vực quản trị.',
+            );
+          }
           // /auth/login authenticates by username, email or phone. If BE omits
           // username from its serializer, only a verified username login is a
           // trustworthy temporary source (never infer it from name or email).
