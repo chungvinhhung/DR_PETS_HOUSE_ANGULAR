@@ -18,7 +18,7 @@ export const roleGuard: CanActivateFn = (route, state) => {
   if (authSession.isAuthenticated()) {
     return authSession.hasAnyRole(configuredRoles)
       ? true
-      : forbiddenRedirect(router);
+      : unauthorizedRoleRedirect(router, authSession, state.url);
   }
 
   return authRestore.ensureSession().pipe(
@@ -33,7 +33,7 @@ export const roleGuard: CanActivateFn = (route, state) => {
 
       return authSession.hasAnyRole(configuredRoles)
         ? true
-        : forbiddenRedirect(router);
+        : unauthorizedRoleRedirect(router, authSession, state.url);
     }),
   );
 };
@@ -48,6 +48,26 @@ function isValidRoleConfiguration(
       (role) => typeof role === 'string' && role.trim().length > 0,
     )
   );
+}
+
+/**
+ * A signed-in Customer is not a Backoffice member. Offer the Admin login
+ * rather than showing the Backoffice 403 (and never grant Customer access).
+ * Actual Backoffice role/permission violations still use the 403 page.
+ */
+function unauthorizedRoleRedirect(
+  router: Router,
+  authSession: AuthSessionService,
+  returnUrl: string,
+): UrlTree {
+  const customerOnly = authSession.hasAnyRole(['CUSTOMER']) &&
+    !authSession.hasAnyRole(['ADMIN', 'MANAGER', 'STAFF']);
+
+  return customerOnly
+    ? router.createUrlTree(['/admin/login'], {
+        queryParams: { returnUrl },
+      })
+    : forbiddenRedirect(router);
 }
 
 function forbiddenRedirect(router: Router): UrlTree {
