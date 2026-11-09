@@ -77,7 +77,7 @@
         </div>
 
         <button type="button" class="catalog-sidebar__group"
-          [class.catalog-sidebar__group--active]="activeItem === 'branches' || activeItem === 'staff' || activeItem === 'inventory'"
+          [class.catalog-sidebar__group--active]="activeItem === 'branches' || activeItem === 'staff' || activeItem === 'inventory' || activeItem === 'users'"
           [attr.aria-expanded]="operationsExpanded" aria-controls="admin-operations-submenu"
           (click)="toggleOperations()">
           <img src="/assets/admin-product/icon-operations.svg" alt="" width="20" height="20">
@@ -99,11 +99,18 @@
           <a class="catalog-sidebar__sub" routerLink="/admin/staff"
             [class.catalog-sidebar__sub--active]="activeItem === 'staff'"
             [attr.aria-current]="activeItem === 'staff' ? 'page' : null">Nhân sự</a>
+          @if (canViewUsers()) {
+            <a class="catalog-sidebar__sub" routerLink="/admin/users"
+              [class.catalog-sidebar__sub--active]="activeItem === 'users'"
+              [attr.aria-current]="activeItem === 'users' ? 'page' : null">Tài khoản nội bộ</a>
+          }
         </div>
-        <a class="catalog-sidebar__link" routerLink="/admin/users">
+        <!-- Customer management is a separate module; it must not open internal RBAC accounts. -->
+        <span class="catalog-sidebar__link catalog-sidebar__link--unavailable"
+          aria-disabled="true" title="Quản lý khách hàng sẽ được triển khai ở Phase 2">
           <img src="/assets/admin-product/icon-users.svg" alt="" width="20" height="20">
-          Quản lý người dùng
-        </a>
+          Quản lý khách hàng
+        </span>
         <button type="button" class="catalog-sidebar__group"
           [attr.aria-expanded]="contentExpanded" aria-controls="admin-content-submenu"
           (click)="toggleContent()">
