@@ -1,0 +1,141 @@
+/* WEB-2 Admin design foundations.
+ * Figma: Navigation / Admin Sidebar, Navigation / Admin Navbar and common controls.
+ * Keep classes opt-in until each feature page is migrated in its own phase.
+ */
+:root {
+  --web2-color-primary: #0d47a1;
+  --web2-color-primary-hover: #0a3b87;
+  --web2-color-text: #202e45;
+  --web2-color-text-secondary: #64748b;
+  --web2-color-border: #dee5f0;
+  --web2-color-header-border: #e2e8f0;
+  --web2-color-sidebar: #e5f6fd;
+  --web2-color-sidebar-hover: #d4ebf9;
+  --web2-color-sidebar-child-selected: #cbe6f6;
+  --web2-color-surface: #fff;
+  --web2-color-table-head: #f2f5f8;
+  --web2-color-danger: #c62828;
+  --web2-color-danger-border: #e57373;
+  --web2-color-disabled: #edf2f7;
+  --web2-color-disabled-border: #d6e2f1;
+  --web2-color-disabled-text: #64748b;
+  --web2-font: Roboto, Arial, sans-serif;
+  --web2-radius-sm: 6px;
+  --web2-radius-md: 8px;
+  --web2-radius-lg: 12px;
+  --web2-sidebar-width: 342px;
+  --web2-navbar-height: 107px;
+}
+
+/* Reusable controls for later feature-screen migrations. */
+.web2-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--web2-color-border);
+  border-radius: var(--web2-radius-md);
+  background: var(--web2-color-surface);
+  color: var(--web2-color-text);
+  font: 500 14px/1.35 var(--web2-font);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.web2-button--primary {
+  border-color: var(--web2-color-primary);
+  background: var(--web2-color-primary);
+  color: #fff;
+}
+.web2-button--primary:hover:not(:disabled) {
+  background: var(--web2-color-primary-hover);
+}
+.web2-button--outline {
+  border-color: var(--web2-color-primary);
+  color: var(--web2-color-primary);
+}
+.web2-button--danger {
+  border-color: var(--web2-color-danger-border);
+  color: var(--web2-color-danger);
+  background: #fff;
+}
+.web2-button:disabled,
+.web2-button[aria-disabled="true"] {
+  border-color: var(--web2-color-disabled-border);
+  background: var(--web2-color-disabled);
+  color: var(--web2-color-disabled-text);
+  cursor: not-allowed;
+}
+.web2-button:focus-visible {
+  outline: 2px solid var(--web2-color-primary);
+  outline-offset: 2px;
+}
+
+.web2-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #edf2f7;
+  color: #64748b;
+  font: 500 12px/1.25 var(--web2-font);
+}
+.web2-badge--success { background: #e6f5e9; color: #26723b; }
+.web2-badge--warning { background: #fff3e1; color: #a45f00; }
+.web2-badge--error { background: #fde8e8; color: #bd2a2a; }
+
+.web2-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--web2-color-border);
+  border-radius: var(--web2-radius-lg);
+  background: #fff;
+}
+.web2-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--web2-color-text);
+  font: 400 14px/1.45 var(--web2-font);
+}
+.web2-table th {
+  padding: 12px 16px;
+  background: var(--web2-color-table-head);
+  font-weight: 500;
+  text-align: left;
+}
+.web2-table td {
+  padding: 14px 16px;
+  border-top: 1px solid #e8edf4;
+}
+.web2-table th:last-child,
+.web2-table td:last-child { text-align: center; }
+
+.web2-card {
+  border: 1px solid var(--web2-color-border);
+  border-radius: var(--web2-radius-lg);
+  background: var(--web2-color-surface);
+}
+.web2-modal {
+  width: min(100% - 32px, 600px);
+  border: 1px solid var(--web2-color-border);
+  border-radius: var(--web2-radius-lg);
+  background: #fff;
+  box-shadow: 0 16px 40px #202e4526;
+}
+.web2-drawer {
+  width: min(100vw, 480px);
+  min-height: 100%;
+  margin-left: auto;
+  background: #fff;
+  border-left: 1px solid var(--web2-color-border);
+  box-shadow: -12px 0 30px #202e4520;
+}
+.web2-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--web2-color-text-secondary);
+  font: 400 12px/1.4 var(--web2-font);
+}
