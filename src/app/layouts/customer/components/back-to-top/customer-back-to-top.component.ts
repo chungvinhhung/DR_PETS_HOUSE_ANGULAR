@@ -108,7 +108,7 @@ export class CustomerBackToTopComponent {
     this.active.set(true);
     this.clearActiveTimeout();
     const reduceMotion = win.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-    win.scrollTo({ top: 0, left: 0, behavior: reduceMotion ? 'instant' : 'smooth' });
+    win.scrollTo({ top: 0, left: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
     // Always return to idle, even if user interrupts the smooth scroll.
     this.activeTimeout = setTimeout(() => {
       this.active.set(false);
