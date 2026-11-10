@@ -23,11 +23,12 @@ import { auditTime, fromEvent } from 'rxjs';
       >
         <img
           class="customer-back-to-top__image"
-          [src]="active() ? '/assets/customer/back-to-top/backtotop-active.webp' : '/assets/customer/back-to-top/backtotop.webp'"
+          [src]="active() ? '/assets/customer/back-to-top/backtotop-active-hi.avif' : '/assets/customer/back-to-top/backtotop-hi.avif'"
+          (error)="onImageError($event)"
           alt=""
           aria-hidden="true"
-          width="320"
-          height="320"
+          width="256"
+          height="256"
           draggable="false"
         />
       </button>
@@ -100,6 +101,15 @@ export class CustomerBackToTopComponent {
       this.active.set(false);
       this.clearActiveTimeout();
     }
+  }
+
+  /** A valid WebP fallback prevents broken artwork if AVIF is blocked by the browser. */
+  onImageError(event: Event): void {
+    const image = event.target as HTMLImageElement | null;
+    if (!image || image.src.endsWith('.webp')) return;
+    image.src = this.active()
+      ? '/assets/customer/back-to-top/backtotop-active.webp'
+      : '/assets/customer/back-to-top/backtotop.webp';
   }
 
   scrollToTop(): void {
