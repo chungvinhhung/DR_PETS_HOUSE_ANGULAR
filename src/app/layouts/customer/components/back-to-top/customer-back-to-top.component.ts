@@ -5,7 +5,7 @@ import { auditTime, fromEvent } from 'rxjs';
 
 /**
  * Floating Customer-only back-to-top button.
- * Idle asset: backtotop.avif; scrolling-up asset: backtotop-active.avif.
+ * Idle asset: backtotop.webp; scrolling-up asset: backtotop-active.webp.
  * Intentionally mounted in CustomerLayout, not the Admin shell.
  */
 @Component({
@@ -23,7 +23,7 @@ import { auditTime, fromEvent } from 'rxjs';
       >
         <img
           class="customer-back-to-top__image"
-          [src]="active() ? '/assets/customer/back-to-top/backtotop-active.avif' : '/assets/customer/back-to-top/backtotop.avif'"
+          [src]="active() ? '/assets/customer/back-to-top/backtotop-active.webp' : '/assets/customer/back-to-top/backtotop.webp'"
           alt=""
           aria-hidden="true"
           width="320"
