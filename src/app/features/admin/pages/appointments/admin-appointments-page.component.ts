@@ -2,7 +2,7 @@ import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-p
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
@@ -22,6 +22,14 @@ import {
 <app-admin-catalog-shell activeItem="appointments">
 <main class="appointments">
   <header class="heading"><h1>Quản lý lịch hẹn</h1></header>
+  @if (dashboardFilter(); as filter) {
+    <div class="dashboard-scope">
+      <span>Đang xem lịch hẹn tạo trong kỳ {{filter.from}} – {{filter.to}}
+        @if (filter.status) { · {{filter.status}} }
+      </span>
+      <a routerLink="/admin/appointments">Xóa lọc Dashboard</a>
+    </div>
+  }
   <section class="appointments__kpis" aria-label="Thống kê lịch hẹn trong dữ liệu đã tải">
     <article class="appointments__kpi" data-kpi-tone="neutral">
       <span>Tổng lịch hẹn</span>
@@ -195,17 +203,22 @@ import {
  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
  @media(max-width:1120px){.filters{flex-wrap:wrap}.filter-actions{flex-wrap:wrap;justify-content:flex-start;width:100%}}
  @media(max-width:1050px){.scroll table :is(th,td):nth-child(5){padding-left:32px}}
+ .dashboard-scope{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 12px;padding:10px 14px;border:1px solid #d8e6f6;border-radius:9px;background:#f5f9ff;font-size:12px;color:#3d5978}
+ .dashboard-scope a{color:#0d47a1;font-weight:650;text-decoration:none}
+ .dashboard-scope a:hover{text-decoration:underline}
  @media(max-width:650px){.appointments{padding:16px}.filter-control{flex:1;min-width:130px}.list-footer{flex-wrap:wrap}
    .pagination{margin-left:auto}}
  `]
 })
 export class AdminAppointmentsPageComponent {
   private readonly api=inject(ApiClientService);
+  private readonly route=inject(ActivatedRoute);
   private readonly session=inject(AuthSessionService);
   private readonly destroyRef=inject(DestroyRef);
   private requestVersion=0;
   readonly search=signal('');
   readonly status=signal('');
+  readonly dashboardFilter=signal<{from:string;to:string;status?:string;branchId?:string}|null>(null);
   readonly dateRange=signal('all');
   readonly page=signal(1);
   readonly limit=7;
@@ -252,7 +265,22 @@ export class AdminAppointmentsPageComponent {
   readonly pageNumbers=computed(()=>adminPageWindowWithEdges(this.page(),this.pageCount()));
   readonly rows=computed(()=>this.filteredRows().slice((this.page()-1)*this.limit,this.page()*this.limit));
 
-  constructor(){this.load();}
+  constructor(){
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(query=>{
+      const from=query.get('from')||'';
+      const to=query.get('to')||'';
+      const status=query.get('status')||'';
+      const branchId=query.get('branchId')||'';
+      const value=/^\d{4}-\d{2}-\d{2}$/.test(from) && /^\d{4}-\d{2}-\d{2}$/.test(to) && from<=to
+        ? {from,to,...(status?{status}:{}),...(branchId?{branchId}:{})}
+        : null;
+      this.dashboardFilter.set(value);
+      this.status.set(value?.status||'');
+      this.dateRange.set('all');
+      this.page.set(1);
+      this.load();
+    });
+  }
   onSearch(value:string):void{this.search.set(value);this.page.set(1);}
   lookup():void{this.page.set(1);}
   changeStatus(value:string):void{this.status.set(value);this.page.set(1);}
@@ -264,7 +292,13 @@ export class AdminAppointmentsPageComponent {
   load():void{
     // BE foundation-v6 lists at most 100 records and ignores page/search.
     // Use local paging/search for fetched subset; disclose when cap is reached.
-    const params=new HttpParams().set('limit','100');
+    const filter=this.dashboardFilter();
+    let params=new HttpParams().set('limit','100');
+    if(filter){
+      params=params.set('from',filter.from).set('to',filter.to).set('dateField','createdAt');
+      if(filter.status)params=params.set('status',filter.status);
+      if(filter.branchId)params=params.set('branchId',filter.branchId);
+    }
     const version=++this.requestVersion;
     this.loading.set(true);this.error.set('');
     this.api.get<unknown>('/appointments',{params}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
