@@ -166,6 +166,14 @@
       <header class="order-admin__heading order-admin__heading--list">
         <h1>Quản lý đơn hàng</h1>
       </header>
+      @if (dashboardFilter(); as filter) {
+        <div class="order-admin__dashboard-scope" role="status">
+          <span>Đang xem đơn hàng từ Dashboard: {{filter.from}} – {{filter.to}}
+            @if (filter.status) { · {{statuses[filter.status]}} }
+          </span>
+          <a routerLink="/admin/orders">Xóa lọc Dashboard</a>
+        </div>
+      }
 
       <nav class="order-admin__tabs" aria-label="Loại nghiệp vụ bán hàng">
         <button type="button" [class.order-admin__tabs--active]="activeTab() === 'orders'"
