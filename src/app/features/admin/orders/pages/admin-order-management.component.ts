@@ -20,6 +20,7 @@ import {
 } from '../services/admin-order-api.service';
 
 type OrderFilter = OrderStatus | ReturnStatus | 'ALL';
+interface DashboardOrderFilter { from: string; to: string; status?: OrderStatus; branchId?: string }
 const localDate = (day: Date): string => [day.getFullYear(), String(day.getMonth() + 1).padStart(2, '0'), String(day.getDate()).padStart(2, '0')].join('-');
 const defaultReturnStart = (): string => { const day = new Date(); day.setDate(day.getDate() - 6); return localDate(day); };
 type ActionDialog = OrderWriteAction | 'cancel' | null;
@@ -64,6 +65,8 @@ export class AdminOrderManagementComponent {
   readonly milestones: OrderStatus[] = ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'COMPLETED'];
   readonly orderId = signal('');
   readonly isDetail = computed(() => Boolean(this.orderId()));
+  /** Set only by Dashboard clickthrough. Queries are filtered in Mongo before pagination. */
+  readonly dashboardFilter = signal<DashboardOrderFilter | null>(null);
   readonly allOrders = signal<OrderRecord[]>([]);
   readonly returns = signal<OrderReturnSummary[]>([]);
   readonly activeTab = signal<'orders' | 'returns'>('orders');
@@ -229,6 +232,27 @@ export class AdminOrderManagementComponent {
     this.returnNotifications.ensureLoaded();
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((query) => {
       if (!this.isDetail() && query.get('tab') === 'returns') this.setTab('returns');
+      const from = query.get('from') ?? '';
+      const to = query.get('to') ?? '';
+      const status = query.get('status') ?? '';
+      const branchId = query.get('branchId') ?? '';
+      const filters: DashboardOrderFilter | null =
+        /^\d{4}-\d{2}-\d{2}$/.test(from) && /^\d{4}-\d{2}-\d{2}$/.test(to) && from <= to
+          ? {from, to, ...(status in STATUS_LABELS ? {status:status as OrderStatus}: {}),
+            ...(branchId ? {branchId} : {})}
+          : null;
+      const previous = JSON.stringify(this.dashboardFilter());
+      this.dashboardFilter.set(filters);
+      if (filters) {
+        this.status.set(filters.status ?? 'ALL');
+        this.branchId.set(filters.branchId ?? 'ALL');
+        this.dateRange.set('0');
+        this.activeTab.set('orders');
+      } else if (previous !== 'null') {
+        this.status.set('ALL'); this.branchId.set('ALL');
+      }
+      // Angular reuses the list component when only query params change.
+      if (!this.isDetail() && previous !== JSON.stringify(filters) && this.allOrders().length) this.loadOrders();
     });
     this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       this.orderId.set(params.get('id') ?? '');
@@ -478,7 +502,9 @@ export class AdminOrderManagementComponent {
   private loadOrders(): void {
     const version = ++this.ordersRequestVersion;
     this.loading.set(true); this.error.set('');
-    this.orderNotifications.listForView().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    const filters = this.dashboardFilter();
+    const source = filters ? this.api.listDashboardFiltered(filters) : this.orderNotifications.listForView();
+    source.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (page) => {
         if (version !== this.ordersRequestVersion) return;
         this.allOrders.set(Array.isArray(page.items) ? page.items : []);
