@@ -121,6 +121,30 @@ export class AdminOrderApiService {
   list(): Observable<OrderListResponse> {
     return this.listAll<OrderRecord>('/orders','Đơn hàng');
   }
+
+  /** Dashboard M23 clickthrough: BE filters the full Order collection before pagination. */
+  listDashboardFiltered(filters: {
+    status?: string;
+    branchId?: string;
+    from: string;
+    to: string;
+  }): Observable<OrderListResponse> {
+    let base = new HttpParams().set('limit', '100')
+      .set('from', filters.from).set('to', filters.to);
+    if (filters.status) base = base.set('status', filters.status);
+    if (filters.branchId) base = base.set('branchId', filters.branchId);
+    const fetch = (cursor?: string) => this.api.get<unknown>('/orders', {
+      params: cursor ? base.set('cursor', cursor) : base,
+    }).pipe(map(result => this.requirePage<OrderRecord>(result, 'Đơn hàng')));
+    return fetch().pipe(
+      expand(page => page.nextCursor ? fetch(page.nextCursor) : EMPTY),
+      reduce((all, page) => ({
+        items: [...all.items, ...page.items],
+        totalCount: all.totalCount ?? page.totalCount,
+        nextCursor: page.nextCursor ?? null,
+      }), {items: [] as OrderRecord[], totalCount: undefined as number | undefined, nextCursor: null as string | null}),
+    );
+  }
   listReturns(): Observable<OrderReturnListResponse> {
     return this.listAll<OrderReturnSummary>('/order-returns','Trả hàng');
   }
