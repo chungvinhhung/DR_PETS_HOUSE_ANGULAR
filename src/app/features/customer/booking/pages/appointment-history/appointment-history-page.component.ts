@@ -10,7 +10,7 @@ import { ReviewModalComponent } from './review-modal.component';
 import { appointmentImages } from '../../../../../shared/customer/assets/appointment-images';
 import { APPOINTMENT_FILTERS, getAppointmentDisplayStatus } from '../../utils/appointment-display';
 import { MOCK_APPOINTMENTS } from '../../data/mock-appointments';
-import { getAppointmentDate } from './appointment-history-page.helpers';
+import { getAppointmentDate, formatMoney } from './appointment-history-page.helpers';
 
 /**
  * AppointmentHistoryPage — chuyển từ React: src/pages/Booking/AppointmentHistoryPage.jsx
@@ -133,30 +133,57 @@ export class AppointmentHistoryPageComponent {
     }
 
     if (actionKey === "cancel") {
+      let confirmMsg = `Bạn chắc chắn muốn hủy lịch hẹn #${appointment.code}?\nHành động này không thể hoàn tác`;
+      try {
+        const cancelPreview = await this.bookingApi.getCancelPreview(appointment.id);
+        if (cancelPreview?.policyMessage) {
+          confirmMsg = `Xác nhận hủy lịch hẹn #${appointment.code}?\n${cancelPreview.policyMessage}\nHành động này không thể hoàn tác.`;
+        } else if (appointment.freeChangeDaysLeft > 0) {
+          confirmMsg = `Bạn chắc chắn muốn hủy lịch hẹn #${appointment.code}?\nLịch hẹn còn hơn 24 giờ nên bạn sẽ được hoàn 100% tiền cọc (nếu đã thanh toán cọc).\nHành động này không thể hoàn tác.`;
+        }
+      } catch {
+        // Fallback to default message
+      }
+
       this.decisionModalService.confirmCancel({
-        message: `Bạn chắc chắn muốn hủy lịch hẹn #${appointment.code}?\nHành động này không thể hoàn tác`,
-        confirmLabel: "Hủy",
+        message: confirmMsg,
+        confirmLabel: "Hủy lịch",
         onConfirm: async () => {
           this.actionLoadingId.set(appointment.id);
           this.actionMessage.set(null);
 
           try {
-            await this.bookingApi.cancelAppointment(appointment.id);
+            const cancelResult = await this.bookingApi.cancelAppointment(appointment.id, 'Khách hàng yêu cầu hủy lịch trên giao diện');
+            const refundInfo = cancelResult?.cancel?.refundAmount || cancelResult?.refundAmount || 0;
+            const refundOutcome = cancelResult?.cancel?.prepaidOutcome || cancelResult?.prepaidOutcome;
+            const refundText = refundInfo > 0
+              ? `\nSố tiền hoàn cọc dự kiến: ${formatMoney(refundInfo)} (${refundOutcome === 'REFUND_PENDING' ? 'Đang xử lý hoàn tiền' : 'Đã hoàn tiền'}).`
+              : (appointment.depositAmount > 0 && appointment.freeChangeDaysLeft <= 0 ? '\nTiền cọc không được hoàn lại do hủy dưới 24 giờ.' : '');
+
             this.appointments.update((current: any) =>
               current.map((item: any) =>
                 item.id === appointment.id
                   ? {
                       ...item,
                       status: "cancelled",
+                      depositStatus: refundInfo > 0 ? 'REFUND_PENDING' : (item.depositAmount > 0 ? 'FORFEITED' : 'NOT_REQUIRED'),
+                      depositStatusLabel: refundInfo > 0 ? 'Chờ hoàn cọc' : (item.depositAmount > 0 ? 'Không hoàn cọc' : 'Không yêu cầu'),
+                      cancel: {
+                        ...(item.cancel || {}),
+                        reason: 'Khách hàng yêu cầu hủy lịch trên giao diện',
+                        refundAmount: refundInfo,
+                        prepaidOutcome: refundOutcome || (refundInfo > 0 ? 'REFUND_PENDING' : 'FORFEITED'),
+                        prepaidOutcomeLabel: refundInfo > 0 ? 'Đang chờ hoàn tiền' : 'Không hoàn tiền cọc',
+                      },
                       canCancel: false,
                       canReschedule: false,
                       canRebook: true,
                     }
                   : item,
               ));
-            this.actionMessage.set({ type: "success", text: "Đã hủy lịch hẹn thành công." });
+            this.actionMessage.set({ type: "success", text: `Đã hủy lịch hẹn thành công.${refundText}` });
             this.decisionModalService.showSuccessModal({
-              message: "Đã hủy lịch hẹn thành công.\nBạn có thể tiếp tục hoặc quay về trang chủ",
+              message: `Đã hủy lịch hẹn thành công.${refundText}\nBạn có thể tiếp tục hoặc quay về trang chủ.`,
             });
           } catch (error: any) {
             this.actionMessage.set({

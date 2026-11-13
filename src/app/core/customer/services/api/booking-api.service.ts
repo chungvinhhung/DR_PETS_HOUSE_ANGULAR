@@ -178,6 +178,19 @@ export function normalizeAppointmentHistoryItem(appointment: any = {}) {
   const paymentMethod = appointment.payment_method || appointment.paymentMethod || (appointment.payment_status === "waiting_store_payment" ? "store" : "online");
   const paymentStatus = appointment.payment_status || appointment.paymentStatus || (paymentMethod === "store" || paymentMethod === "pay_at_store" ? "waiting_store_payment" : "unpaid");
 
+  const pricing = appointment.pricing || {};
+  const finalAmount = Number(pricing.finalAmount || appointment.totalPrice || service.price || 0);
+  const depositAmount = Number(pricing.depositAmount || appointment.depositAmount || (appointment.deposit?.status && appointment.deposit?.status !== 'NOT_REQUIRED' ? Math.round(finalAmount * 0.30) : 0));
+  const balanceAmount = Number(pricing.balanceAmount || appointment.balanceAmount || Math.max(0, finalAmount - depositAmount));
+  const depositStatus = appointment.deposit?.status || (depositAmount > 0 ? (paymentStatus === 'paid' ? 'HELD' : 'PENDING') : 'NOT_REQUIRED');
+  const depositStatusLabel = depositStatus === 'HELD' ? 'Đã đặt cọc' : (depositStatus === 'REFUNDED' ? 'Đã hoàn cọc' : (depositStatus === 'REFUND_PENDING' ? 'Chờ hoàn cọc' : (depositStatus === 'FORFEITED' ? 'Không hoàn cọc' : (depositStatus === 'PENDING' ? 'Chưa đặt cọc' : 'Không yêu cầu'))));
+
+  const cancelInfo = appointment.cancel || {};
+  const refundAmount = Number(cancelInfo.refundAmount || 0);
+  const penaltyAmount = Number(cancelInfo.penaltyAmount || 0);
+  const prepaidOutcome = cancelInfo.prepaidOutcome || (status === 'cancelled' && depositStatus === 'HELD' ? 'REFUND_PENDING' : null);
+  const prepaidOutcomeLabel = prepaidOutcome === 'REFUNDED' ? 'Đã hoàn tiền' : (prepaidOutcome === 'REFUND_PENDING' ? 'Đang chờ hoàn tiền' : (prepaidOutcome === 'FORFEITED' ? 'Không hoàn tiền cọc' : ''));
+
   return {
     ...appointment,
     id: String(appointment.appointment_id || appointment.id || appointment._id || ""),
@@ -186,6 +199,20 @@ export function normalizeAppointmentHistoryItem(appointment: any = {}) {
     status,
     paymentMethod,
     paymentStatus,
+    depositAmount,
+    balanceAmount,
+    depositStatus,
+    depositStatusLabel,
+    cancel: {
+      ...cancelInfo,
+      refundAmount,
+      penaltyAmount,
+      prepaidOutcome,
+      prepaidOutcomeLabel,
+    },
+    cancellationPolicy: appointment.cancellationPolicy || {
+      depositRefundable: appointment.freeChangeDaysLeft > 0,
+    },
     canCancel: appointment.canCancel ?? ["pending", "confirmed", "pending_payment"].includes(status),
     canReschedule: appointment.canReschedule ?? ["pending", "confirmed"].includes(status),
     canReview: appointment.canReview ?? (status === "completed"),
@@ -768,7 +795,16 @@ export class BookingApiService {
     return Array.from(mergedMap.values());
   }
 
-  async cancelAppointment(appointmentId: any) {
+  async getCancelPreview(appointmentId: any) {
+    try {
+      const response = await this.http.get(`/appointments/${appointmentId}/cancel-preview`);
+      return assertSuccess(response);
+    } catch {
+      return null;
+    }
+  }
+
+  async cancelAppointment(appointmentId: any, reason: string = 'Khách hàng yêu cầu hủy lịch') {
     const localList = getLocalAppointments();
     const target = localList.find((x) => x.id === appointmentId || x.code === appointmentId);
     if (target) {
@@ -778,12 +814,14 @@ export class BookingApiService {
 
     try {
       const response = await this.http.post(`/appointments/${appointmentId}/cancel`, {
-        reason: 'Khách hàng yêu cầu hủy lịch'
+        reason,
       });
       return assertSuccess(response);
     } catch {
       try {
-        const response = await this.http.patch(`/appointments/${appointmentId}/cancel`);
+        const response = await this.http.patch(`/appointments/${appointmentId}/cancel`, {
+          reason,
+        });
         return assertSuccess(response);
       } catch {
         return { success: true, message: "Đã hủy lịch thành công" };

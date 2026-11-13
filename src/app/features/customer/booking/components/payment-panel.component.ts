@@ -48,6 +48,8 @@ export class PaymentPanelComponent {
   readonly selectedMethod = computed<any>(() => this.online() && this.paymentMode() !== "online" ? this.paymentMode() : "");
   readonly effectiveDiscount = computed<number>(() => Math.max(Number(this.discountTotal() || 0), this.localDiscount()));
   readonly effectiveTotal = computed<number>(() => Math.max(0, Number(this.total() || 0) - this.localDiscount()));
+  readonly depositAmount = computed<number>(() => this.online() ? Math.round(this.effectiveTotal() * 0.30) : 0);
+  readonly balanceAtClinic = computed<number>(() => this.online() ? Math.max(0, this.effectiveTotal() - this.depositAmount()) : this.effectiveTotal());
 
   protected async handleApplyCoupon() {
     const raw = String(this.couponCode() || "").trim().toUpperCase();
