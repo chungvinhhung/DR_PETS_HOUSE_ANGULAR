@@ -8,6 +8,7 @@ import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-she
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-pagination';
+import { canAdmin } from '../../../../core/guards/admin-role-policy';
 import { AdminContentService } from '../services/admin-content.service';
 import { FIRST_AID_CATEGORIES } from '../../../../shared/customer/data/first-aid-data';
 import { COMMUNITY_POST_TYPE_LABELS } from '../../../../shared/customer/data/community-post-types';
@@ -38,7 +39,12 @@ export class AdminContentListComponent{
  readonly title=({articles:'Bài viết kiến thức','first-aid':'Cẩm nang sơ cứu',community:'Bài đăng cộng đồng',rescue:'Cứu trợ & Nhận nuôi',adoptions:'Đơn đăng ký nhận nuôi'} as Record<ContentMode,string>)[this.mode];
  readonly activeItem=({articles:'content-articles','first-aid':'content-first-aid',community:'content-community',rescue:'content-rescue',adoptions:'content-rescue'} as const)[this.mode];
  readonly isAdmin=computed(()=>this.session.user()?.systemRole==='ADMIN');
- readonly canCreate=computed(()=>this.mode==='rescue' || ((this.mode==='articles'||this.mode==='first-aid'||this.mode==='community') && this.isAdmin()));
+ readonly canWriteContent=computed(()=>canAdmin(this.session.user(),'content.manage'));
+ readonly canManageRescue=computed(()=>canAdmin(this.session.user(),'rescue.manage'));
+ readonly canModerateCommunity=computed(()=>canAdmin(this.session.user(),'community.moderate'));
+ readonly canCreate=computed(()=>this.mode==='rescue' ? this.canManageRescue()
+   : (this.mode==='articles'||this.mode==='first-aid') ? this.canWriteContent()
+   : this.mode==='community' && this.isAdmin());
  readonly postCategories=computed(()=>this.mode==='first-aid'
   ? FIRST_AID_CATEGORIES.filter(c=>c.id!=='all').map(c=>c.label)
   : [...new Set(this.rows()
@@ -103,6 +109,7 @@ export class AdminContentListComponent{
  }
  onFilter():void{this.page.set(1);} goToPage(p:number):void{this.page.set(Math.max(1,Math.min(p,this.totalPages())));}
  openCreate():void{
+  if (!this.canCreate()) return;
   if(this.mode==='articles') {
    void this.router.navigate(['/admin/content/articles/new']);
    return;
@@ -116,6 +123,8 @@ export class AdminContentListComponent{
   }
  }
  openEdit(row:any):void{
+  if ((this.mode==='articles'||this.mode==='first-aid')&&!this.canWriteContent())return;
+  if(this.mode==='rescue'&&!this.canManageRescue())return;
   if(this.mode==='articles') {
    const id=String(row?._id||row?.id||row?.post_id||'');
    if(!id){this.notice.set('Bài viết chưa có mã để chỉnh sửa. Vui lòng tải lại danh sách.');return;}
@@ -142,6 +151,8 @@ export class AdminContentListComponent{
  }
  closeEditor():void{if(this.actionBusy())return;this.editorDialog.set(null);this.editing.set(null);this.editorError.set('');}
  saveEditor():void{
+  if (this.editorDialog()==='rescue'&&!this.canManageRescue())return;
+  if(this.editorDialog()==='post'&&!this.canWriteContent())return;
   if(this.actionBusy())return;
   const editing=this.editing();const id=String(editing?._id||editing?.id||'');
   if(this.editorDialog()==='post'){
@@ -176,6 +187,9 @@ export class AdminContentListComponent{
   }
  }
  deleteRow(row:any):void{
+  if ((this.mode==='articles'||this.mode==='first-aid')&&!this.canWriteContent())return;
+  if (this.mode==='rescue'&&!this.canManageRescue())return;
+  if (this.mode==='community'&&!this.canModerateCommunity())return;
   const id=String(row?._id||row?.id||'');if(!id||this.actionBusy())return;
   if(this.mode==='community') {
    if(!this.communityCanDelete(row) || !this.confirmCommunityDelete() ||
