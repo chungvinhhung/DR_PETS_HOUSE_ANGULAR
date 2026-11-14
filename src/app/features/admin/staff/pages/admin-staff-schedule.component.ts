@@ -9,6 +9,8 @@ import { AdminStaffApiService, staffTodayISO } from '../services/admin-staff-api
 import { JOB_LABELS, JobRole, StaffPreview, displayStaffName } from '../models/staff-preview.model';
 import { DayShiftDraft, ShiftOption, StaffShiftAssignmentDialogComponent, overlaps } from '../components/staff-shift-assignment-dialog.component';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { canAdmin } from '../../../../core/guards/admin-role-policy';
 
 const DAY = 86_400_000;
 const mondayOf = (iso: string): string => {
@@ -36,6 +38,8 @@ const readable = (iso: string): string => iso.slice(8, 10) + '/' + iso.slice(5, 
 })
 export class AdminStaffScheduleComponent {
   readonly staffApi = inject(AdminStaffApiService);
+  private readonly session = inject(AuthSessionService);
+  readonly canManageShifts = computed(() => canAdmin(this.session.user(), 'shifts.manage'));
   private readonly toast = inject(AdminToastService);
   readonly monday = signal(mondayOf(staffTodayISO()));
   constructor() {
@@ -60,7 +64,12 @@ export class AdminStaffScheduleComponent {
   readonly selectedOptions = computed(() => this.createdOptions());
   readonly role = signal('ALL');
   readonly roles = (Object.entries(JOB_LABELS) as [JobRole, string][]).filter(([role]) => role !== 'UNKNOWN');
-  readonly branches = computed(() => this.staffApi.branches());
+  readonly branches = computed(() => {
+    const values = this.staffApi.branches();
+    if (this.canManageShifts()) return values;
+    const scope = new Set((this.session.user()?.branchScope ?? []).map(String));
+    return values.filter(b => scope.has(String(b.id)));
+  });
   readonly activeBranch = computed(() => this.branches().find(x => x.id === this.branch()));
   readonly days = computed(() => Array.from({ length: 7 }, (_, index) => {
     const iso = dateFor(this.monday(), index);
@@ -72,6 +81,7 @@ export class AdminStaffScheduleComponent {
   }));
   readonly weekLabel = computed(() => formatStaffWeekRange(this.monday()));
   readonly filtered = computed(() => this.staffApi.staff().filter(staff =>
+    (this.canManageShifts() || !!staff.userId && String(staff.userId) === String(this.session.user()?.id)) &&
     (this.role() === 'ALL' || staff.jobRole === this.role()) &&
     !!this.branch() && !!staff.branchIds?.includes(this.branch())));
   // The weekly grid displays every matching staff member; Figma has no pagination.
@@ -103,6 +113,7 @@ export class AdminStaffScheduleComponent {
     this.openDay(employee, date);
   }
   openDay(employee: StaffPreview, date: string): void {
+    if (!this.canManageShifts()) return;
     if (!this.branch() || this.staffApi.shiftLoading() || !!this.staffApi.shiftError()) return;
     this.dialog.set({employee,date});
   }
@@ -119,6 +130,7 @@ export class AdminStaffScheduleComponent {
     return this.staffApi.shifts().filter(s=>s.staffId===dialog.employee.id && s.isoDate===dialog.date && s.branchId!==this.branch());
   }
   async checkAssignment(data:{draft:DayShiftDraft[];scope:'day'|'weekly';from:string;to:string}):Promise<void> {
+    if (!this.canManageShifts()) return;
     if (data.scope !== 'day') {
       this.toast.show('Phân ca lặp hằng tuần chưa được hệ thống hỗ trợ.', 'info');
       return;
@@ -152,13 +164,14 @@ export class AdminStaffScheduleComponent {
     this.staffApi.loadWeek(this.monday(),true);
     this.toast.show('Đã cập nhật ca làm việc trong ngày.', 'success');
   }
-  beginNewTemplate():void {this.showCreateTemplate.set(true);this.templateError.set('');}
+  beginNewTemplate():void {if (!this.canManageShifts()) return;this.showCreateTemplate.set(true);this.templateError.set('');}
   cancelNewTemplate():void {this.showCreateTemplate.set(false);this.templateError.set('');}
   /**
    * Save a real shift immediately for the selected employee and date.
    * There is no backend contract for reusable branch shift templates yet.
    */
   createShiftNow(): void {
+    if (!this.canManageShifts()) return;
     if (this.createSaving()) return;
     const current = this.dialog();
     const branchId = this.branch();
