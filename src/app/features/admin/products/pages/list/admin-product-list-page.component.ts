@@ -1,11 +1,13 @@
 import { adminPageWindowWithEdges } from '../../../../../shared/utils/admin-table-pagination';
-import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, OnInit, signal, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, OnInit, signal, effect, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, firstValueFrom, timeout } from 'rxjs';
 
 import { AdminCatalogShellComponent } from '../../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AuthSessionService } from '../../../../../core/services/auth-session.service';
+import { canAdmin } from '../../../../../core/guards/admin-role-policy';
 import { AdminDataStateComponent } from "../../../../../shared/admin-data-state/admin-data-state.component";
 import { AdminCategoryService } from '../../../categories/services/admin-category.service';
 import { AdminCategory } from '../../../categories/models/admin-category.model';
@@ -23,6 +25,8 @@ import { AdminToastService, adminErrorMessage } from '../../../../../shared/serv
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminProductListPageComponent implements OnInit {
+  private readonly session = inject(AuthSessionService);
+  readonly canManage = computed(() => canAdmin(this.session.user(), 'products.manage'));
   private readonly productsApi = inject(AdminProductService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
