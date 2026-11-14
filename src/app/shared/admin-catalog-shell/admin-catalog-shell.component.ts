@@ -65,8 +65,9 @@ export class AdminCatalogShellComponent implements OnChanges {
   get feedbackExpanded(): boolean { return this.accordion.expandedGroup() === 'feedback'; }
 
   ngOnInit(): void {
-    this.returnNotifications.ensureLoaded();
-    this.orderNotifications.ensureLoaded();
+    // Avoid unauthorized order/return requests for Care Staff, Vets and Nurses.
+    if (this.can('returns.view')) this.returnNotifications.ensureLoaded();
+    if (this.can('orders.view')) this.orderNotifications.ensureLoaded();
     this.notifications.ensureLoaded();
     this.syncSidebarToActiveItem();
   }
