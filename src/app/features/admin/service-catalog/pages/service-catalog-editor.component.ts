@@ -7,6 +7,7 @@ import {
   inject,
   signal,
   effect,
+  computed,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -17,6 +18,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { catchError, firstValueFrom, forkJoin, from, map, mergeMap, of, switchMap, toArray } from 'rxjs';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { canAdmin } from '../../../../core/guards/admin-role-policy';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
@@ -100,6 +102,7 @@ export class ServiceCatalogEditorComponent {
   source: CatalogService | null = null;
   readonly branchDetailRows = signal<readonly BranchDetailRow[]>([]);
   readonly stagedBranchConfigs = signal<readonly DraftBranchSelection[]>([]);
+  readonly canConfigureBranch = computed(() => canAdmin(this.authSession.user(), 'services.configureBranch'));
   readonly branchConfigFlowOpen = signal(false);
   readonly branchConfigTargetId = signal<string | null>(null);
   get displayedBranchRows(): readonly BranchDetailRow[] {
@@ -128,6 +131,9 @@ export class ServiceCatalogEditorComponent {
     };
   }
   openBranchConfiguration(branchId: string | null = null): void {
+    if (!this.canConfigureBranch()) return;
+    const scope = this.authSession.user()?.branchScope ?? [];
+    if (this.authSessionRole === 'MANAGER' && (!branchId || !scope.includes(branchId))) return;
     if (this.isNew && !this.active) {
       this.toast.show('Vui lòng bật trạng thái dịch vụ trước khi chọn chi nhánh.', 'info');
       return;
