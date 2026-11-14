@@ -9,6 +9,7 @@ import { AdminOrderNotificationService } from '../services/admin-order-notificat
 import { AdminSidebarAccordionService, AdminSidebarGroup } from '../services/admin-sidebar-accordion.service';
 import { AdminNotificationService, AdminNotification } from '../services/admin-notification.service';
 import { AuthSessionService } from '../../core/services/auth-session.service';
+import { AdminCapability, canAdmin } from '../../core/guards/admin-role-policy';
 
 /**
  * Shared Admin catalog chrome for category, product and operations screens.
@@ -37,7 +38,13 @@ export class AdminCatalogShellComponent implements OnChanges {
   private readonly adminAuth = inject(AdminAuthService);
   readonly profileMenuOpen = signal(false);
   readonly isLoggingOut = signal(false);
-  readonly canViewAccountProfile = computed(() => this.session.hasAnyRole(['ADMIN']));
+  readonly canViewAccountProfile = computed(() => this.can('profile.view'));
+  /** Sidebar visibility follows the same fixed matrix as route guards. */
+  can(capability: AdminCapability): boolean { return canAdmin(this.session.user(), capability); }
+  readonly landingRoute = computed(() => this.can('dashboard.view') ? '/admin/dashboard'
+    : this.can('orders.view') ? '/admin/orders'
+    : this.can('records.view') ? '/admin/service-records'
+    : '/admin/appointments');
   readonly notificationOpen = signal(false);
 
   @Input({ required: true }) activeItem!:
