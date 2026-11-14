@@ -54,7 +54,8 @@ const RECEPTIONIST_CAPABILITIES = new Set<AdminCapability>([
   'orders.view','orders.create','orders.process',
   'returns.view','returns.process',
   'appointments.create','appointments.process',
-  'customers.view',
+  // Customer/Pet data is exposed to Receptionists only inside permitted bookings.
+  // The global Customer directory is not a safe substitute for scoped lookups.
 ]);
 
 const ASSIGNED_CARE_CAPABILITIES = new Set<AdminCapability>([
