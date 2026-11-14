@@ -223,15 +223,25 @@ export class AdminStaffApiService {
       accounts: of([] as UserWire[]),
     }).subscribe({
       next: ({ profiles, branches, accounts }) => {
-        const role = this.session.user()?.systemRole;
+        const currentUser = this.session.user();
+        const role = currentUser?.systemRole;
         const scope = new Set(this.session.user()?.branchScope ?? []);
+        if (role === 'STAFF') {
+          // Use the server-scoped StaffProfile as the source of truth for a
+          // staff member's branches. Some /auth/me versions omit branchScope.
+          for (const profile of profiles) {
+            if (idOf(profile.userId) !== currentUser?.id) continue;
+            for (const value of profile.authorizedBranchIds ?? []) scope.add(idOf(value));
+            const home = idOf(profile.homeBranchId);
+            if (home) scope.add(home);
+          }
+        }
         const visibleBranches = role === 'ADMIN'
           ? branches
           : branches.filter((branch) => scope.has(branch.id));
         this.branches.set(visibleBranches);
         const byId = new Map(visibleBranches.map(b => [b.id, b.name]));
         const byAccount = new Map(accounts.map(a => [idOf(a.id ?? a._id), a]));
-        const currentUser = this.session.user();
         this.staff.set(profiles.map(p => this.staffFromWire(p, byId, byAccount))
           .filter((staff): staff is StaffPreview => staff !== null)
           .filter(staff => currentUser?.systemRole !== 'STAFF' || staff.userId === currentUser.id));
