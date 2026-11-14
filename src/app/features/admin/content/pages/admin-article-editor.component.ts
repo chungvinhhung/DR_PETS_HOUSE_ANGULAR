@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { canAdmin } from '../../../../core/guards/admin-role-policy';
 import { AdminContentService } from '../services/admin-content.service';
 import { BlogCardComponent } from '../../../../shared/customer/components/blog-card/blog-card.component';
 import { FeaturedPostComponent } from '../../../customer/blog/pages/blog/featured-post.component';
@@ -59,7 +60,7 @@ export class AdminArticleEditorComponent {
   private readonly session = inject(AuthSessionService);
   readonly editId = this.route.snapshot.paramMap.get('id') || '';
   readonly isEditing = Boolean(this.editId);
-  readonly canWrite = computed(() => this.session.user()?.systemRole === 'ADMIN');
+  readonly canWrite=computed(()=>canAdmin(this.session.user(),'content.manage'));
   readonly title = signal('');
   readonly category = signal('');
   readonly excerpt = signal('');
