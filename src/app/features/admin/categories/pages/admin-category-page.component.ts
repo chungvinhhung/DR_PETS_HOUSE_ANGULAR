@@ -6,10 +6,13 @@ import {
   inject,
   signal,
   effect,
+  computed,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { canAdmin } from '../../../../core/guards/admin-role-policy';
 import { AdminDataStateComponent } from "../../../../shared/admin-data-state/admin-data-state.component";
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, finalize, firstValueFrom, forkJoin, map, of, timeout } from 'rxjs';
@@ -33,6 +36,8 @@ import { AdminToastService, adminErrorMessage } from '../../../../shared/service
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class AdminCategoryPageComponent implements OnInit {
+  private readonly session = inject(AuthSessionService);
+  readonly canManage = computed(() => canAdmin(this.session.user(), 'categories.manage'));
   private readonly categoryService = inject(AdminCategoryService);
   private readonly productService = inject(AdminProductService);
   private readonly destroyRef = inject(DestroyRef);
@@ -287,6 +292,7 @@ export class AdminCategoryPageComponent implements OnInit {
   }
 
   openCreate(): void {
+    if (!this.canManage()) return;
     this.editing = null;
     this.formName = '';
     this.formSlug = '';
@@ -297,6 +303,7 @@ export class AdminCategoryPageComponent implements OnInit {
   }
 
   openEdit(item: AdminCategory): void {
+    if (!this.canManage()) return;
     this.editing = item;
     this.formName = item.name;
     // Generate from the current Vietnamese name; legacy slugs are updated only on Save.
@@ -336,6 +343,7 @@ export class AdminCategoryPageComponent implements OnInit {
 
 
   saveCategory(): void {
+    if (!this.canManage()) return;
     if (this.saving()) return;
     const name = this.formName.trim();
     if (name.length < 2 || name.length > 120) {
