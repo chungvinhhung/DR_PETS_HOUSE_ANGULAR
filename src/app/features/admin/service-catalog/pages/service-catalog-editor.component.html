@@ -126,13 +126,15 @@
                     <strong>{{ branch.name }}</strong>
                     <small>{{ branch.summary }}</small>
                   </div>
-                  <button type="button" class="service-editor__detail-config-link"
+                  @if (canConfigureBranch()) {
+                   <button type="button" class="service-editor__detail-config-link"
                     [disabled]="saving()" [attr.aria-label]="'Cấu hình dịch vụ tại ' + branch.name"
                     [title]="'Cấu hình dịch vụ tại ' + branch.name"
                     (click)="openBranchConfiguration(branch.id)">
                     <img src="/assets/service-catalog/icon-settings.svg"
                       width="20" height="20" alt="" aria-hidden="true"/>
                   </button>
+                 }
                 </div>
               }
             </div>
@@ -478,7 +480,7 @@
     </section>
   </div>
 }
-@if (branchConfigFlowOpen()) {
+@if (branchConfigFlowOpen() && canConfigureBranch()) {
   <app-service-branch-config-flow
     [service]="branchConfigService"
     [draftMode]="isNew"
