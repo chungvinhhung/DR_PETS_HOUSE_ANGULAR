@@ -67,7 +67,11 @@ export class AdminStaffScheduleComponent {
   readonly branches = computed(() => {
     const values = this.staffApi.branches();
     if (this.canManageShifts()) return values;
-    const scope = new Set((this.session.user()?.branchScope ?? []).map(String));
+    const user = this.session.user();
+    const ownProfile = this.staffApi.staff().find(staff => staff.userId === user?.id);
+    // STAFF receives only their own scoped profile from BE. Fail closed until
+    // this profile resolves, not on the optional /auth/me branchScope alone.
+    const scope = new Set((ownProfile?.branchIds ?? []).map(String));
     return values.filter(b => scope.has(String(b.id)));
   });
   readonly activeBranch = computed(() => this.branches().find(x => x.id === this.branch()));
