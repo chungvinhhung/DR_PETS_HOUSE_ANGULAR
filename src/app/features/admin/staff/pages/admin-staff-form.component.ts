@@ -208,6 +208,13 @@ export class AdminStaffFormComponent {
         }, { emitEvent: false });
         this.selectedBranches = new Set(staff.branches);
         this.updateRoleValidation();
+        // MANAGER is a User record (not a StaffProfile); ADMIN can edit its
+        // basic details and assigned branches via the dedicated /managers API.
+        if (staff.jobRole === 'MANAGER' && this.canCreateManager) {
+          this.form.controls.fullName.enable({ emitEvent: false });
+          this.form.controls.phone.enable({ emitEvent: false });
+          this.form.controls.email.enable({ emitEvent: false });
+        }
         this.form.markAsPristine();
         this.hydrated = true;
         this.cdr.markForCheck();
@@ -340,15 +347,50 @@ export class AdminStaffFormComponent {
       return;
     }
     if (this.isManager) {
-      // P0: BE /staff always creates systemRole=STAFF, and there is no verified
-      // POST /admin/users for MANAGER on the inspected BE dev branch.
-      // Blocking here prevents accidentally creating a STAFF with manager UI.
-      this.toast.show(
-        this.canCreateManager
-          ? 'Chưa thể lưu quản lý: BE cần API tạo tài khoản MANAGER với danh sách chi nhánh quản lý. Dữ liệu trên form vẫn được giữ nguyên.'
-          : 'Chỉ Quản trị viên hệ thống có quyền tạo hoặc phân công Quản lý.',
-        this.canCreateManager ? 'info' : 'error',
-      );
+      if (!this.canCreateManager) {
+        this.toast.show('Chỉ Admin được tạo, sửa hoặc phân công chi nhánh cho Quản lý.', 'error');
+        return;
+      }
+      if (this.isEdit && this.staff?.jobRole !== 'MANAGER') {
+        this.toast.show('Không thể đổi trực tiếp Staff thành Manager. Hãy tạo tài khoản Manager riêng.', 'error');
+        return;
+      }
+      const payload = {
+        fullName: this.form.controls.fullName.value.trim(),
+        phone: this.form.controls.phone.value.trim() || undefined,
+        email: this.form.controls.email.value.trim() || undefined,
+        assignedBranchIds: branchIds,
+      };
+      this.saving = true;
+      const request = this.isEdit
+        ? this.usersApi.updateManager(this.staffId, payload)
+        : this.usersApi.createManager(payload);
+      request.pipe(finalize(() => { this.saving = false; this.cdr.markForCheck(); })).subscribe({
+        next: (created) => {
+          this.allowNavigation = true;
+          this.form.markAsPristine();
+          this.staffApi.loadRoster(true);
+          const credentials = !this.isEdit && created && 'credentials' in created
+            ? created.credentials as { username: string; password: string } | undefined
+            : undefined;
+          this.toast.show(credentials
+            ? `Đã tạo quản lý. Tài khoản: ${credentials.username} · Mật khẩu tạm: ${credentials.password}`
+            : this.isEdit ? 'Đã cập nhật quản lý và phạm vi chi nhánh.' : 'Đã tạo quản lý thành công.', 'success');
+          if (!this.isEdit) {
+            void this.router.navigateByUrl('/admin/staff');
+          }
+        },
+        error: err => this.toast.show(
+          adminErrorMessage(err, this.isEdit
+            ? 'Không thể cập nhật tài khoản Manager.'
+            : 'Không thể tạo tài khoản Manager. Vui lòng kiểm tra chi nhánh và thông tin tài khoản.'),
+          'error',
+        ),
+      });
+      return;
+    }
+    if (this.isEdit && this.staff?.jobRole === 'MANAGER') {
+      this.toast.show('Không thể đổi trực tiếp Manager thành Staff. Hãy quản lý qua tài khoản Manager.', 'error');
       return;
     }
     const role = this.form.controls.jobRole.value === 'CARE_STAFF'
