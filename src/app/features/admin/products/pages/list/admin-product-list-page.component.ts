@@ -487,6 +487,7 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
   requestArchive(product: AdminProduct): void {
+    if (!this.canManage()) return;
     if (product.status === 'ARCHIVED' || this.updatingId()) return;
     this.archiveError.set('');
     this.archiveTarget.set(product);
@@ -497,6 +498,7 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
   confirmArchive(): void {
+    if (!this.canManage()) return;
     const product = this.archiveTarget();
     if (!product || this.updatingId()) return;
     const key = this.archiveKeys.get(product.id) ?? crypto.randomUUID();
@@ -523,6 +525,7 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
   toggleArchiveMenu(event: MouseEvent, product: AdminProduct): void {
+    if (!this.canManage()) return;
     event.stopPropagation();
     if (!this.archiveView || product.status !== 'ARCHIVED' || this.updatingId()) return;
     if (this.archiveMenuProduct()?.id === product.id) { this.closeArchiveMenu(); return; }
@@ -559,6 +562,7 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
   chooseArchiveAction(action: 'restore' | 'edit' | 'delete'): void {
+    if (!this.canManage()) return;
     const product = this.archiveMenuProduct();
     this.closeArchiveMenu();
     if (!product || !this.archiveView || product.status !== 'ARCHIVED' || this.updatingId()) return;
@@ -570,6 +574,7 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
   requestDelete(product: AdminProduct): void {
+    if (!this.canManage()) return;
     if (product.status !== 'ARCHIVED' || this.updatingId()) return;
     this.deleteError.set('');
     this.deleteTarget.set(product);
@@ -582,6 +587,7 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
   confirmDelete(): void {
+    if (!this.canManage()) return;
     const product = this.deleteTarget();
     if (!product || product.status !== 'ARCHIVED' || this.updatingId()) return;
     const key = this.deleteKeys.get(product.id) ?? crypto.randomUUID();
@@ -617,6 +623,7 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
   requestRestore(product: AdminProduct): void {
+    if (!this.canManage()) return;
     if (product.status !== 'ARCHIVED' || this.updatingId()) return;
     this.restoreError.set('');
     this.restoreTarget.set(product);
@@ -627,6 +634,7 @@ export class AdminProductListPageComponent implements OnInit {
   }
 
   confirmRestore(): void {
+    if (!this.canManage()) return;
     const product = this.restoreTarget();
     if (!product || product.status !== 'ARCHIVED' || this.updatingId()) return;
     this.restoreError.set('');
