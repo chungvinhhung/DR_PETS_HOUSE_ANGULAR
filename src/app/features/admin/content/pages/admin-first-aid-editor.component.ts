@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { canAdmin } from '../../../../core/guards/admin-role-policy';
 import { AdminContentService } from '../services/admin-content.service';
 import { FIRST_AID_CATEGORIES } from '../../../../shared/customer/data/first-aid-data';
 import { CustomerIconComponent } from '../../../../shared/customer/components/icon/customer-icon.component';
@@ -63,7 +64,7 @@ export class AdminFirstAidEditorComponent {
   private readonly session=inject(AuthSessionService);
   readonly editId=this.route.snapshot.paramMap.get('id') || '';
   readonly isEditing=!!this.editId;
-  readonly canWrite=computed(()=>this.session.user()?.systemRole==='ADMIN');
+  readonly canWrite=computed(()=>canAdmin(this.session.user(),'content.manage'));
   readonly categories=FIRST_AID_CATEGORIES.filter(item=>item.id!=='all');
 
   readonly title=signal('');
