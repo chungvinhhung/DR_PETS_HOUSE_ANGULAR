@@ -6,6 +6,7 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { AdminStaffApiService } from '../../staff/services/admin-staff-api.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { adminErrorMessage } from '../../../../shared/services/admin-toast.service';
@@ -214,6 +215,7 @@ export class AdminAppointmentsPageComponent {
   private readonly api=inject(ApiClientService);
   private readonly route=inject(ActivatedRoute);
   private readonly session=inject(AuthSessionService);
+  private readonly staffApi=inject(AdminStaffApiService);
   private readonly destroyRef=inject(DestroyRef);
   private requestVersion=0;
   readonly search=signal('');
@@ -238,7 +240,16 @@ export class AdminAppointmentsPageComponent {
       const scope=user.branchScope ?? [];
       return this.fetchedRows().filter(row=>scope.includes(row.branchId));
     }
-    return this.fetchedRows();
+    if (user.systemRole==='STAFF') {
+      // M15: Vet, Nurse and Groomer may only see assigned appointments.
+      // assignedStaffId stores StaffProfile ID, not User ID.
+      const ownProfile=this.staffApi.staff().find(staff=>staff.userId===user.id);
+      if(!ownProfile) return []; // Fail closed until BE supplies own staff profile.
+      return this.fetchedRows().filter(row =>
+        row.reviewerStaffId===ownProfile.id ||
+        row.serviceSegments.some(segment=>segment.assignedStaffId===ownProfile.id));
+    }
+    return [];
   });
   readonly kpis=computed(()=>{
     const appointments=this.scopedRows();
@@ -266,6 +277,8 @@ export class AdminAppointmentsPageComponent {
   readonly rows=computed(()=>this.filteredRows().slice((this.page()-1)*this.limit,this.page()*this.limit));
 
   constructor(){
+    if (this.session.user()?.systemRole==='STAFF' &&
+        this.session.user()?.staffSubRole!=='RECEPTIONIST') this.staffApi.loadRoster();
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(query=>{
       const from=query.get('from')||'';
       const to=query.get('to')||'';
