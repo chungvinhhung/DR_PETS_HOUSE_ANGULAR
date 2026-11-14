@@ -122,8 +122,8 @@
             <h2>{{ isEdit ? 'Tài khoản đăng nhập' : 'Tạo tài khoản đăng nhập' }}</h2>
             @if (isManager) {
               <div class="manager-api-note" role="status">
-                <strong>Chờ kết nối Backend</strong>
-                <span>Chức năng tạo tài khoản Quản lý nhiều chi nhánh đang chờ API BE. Bấm Tạo quản lý sẽ kiểm tra thông tin, nhưng chưa ghi tài khoản vào hệ thống.</span>
+                <strong>Phạm vi quản lý chi nhánh</strong>
+                <span>Chỉ Admin được tạo và phân công Manager. Mỗi Manager chỉ quản lý các chi nhánh được gán; tài khoản mới sẽ được cấp thông tin đăng nhập một lần sau khi tạo.</span>
               </div>
             }
             @if (isEdit) {
