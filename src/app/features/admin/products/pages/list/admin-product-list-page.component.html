@@ -127,9 +127,11 @@
               }
             </div>
           </div>
+          @if (canManage()) {
           <a class="primary-btn web2-add-button product-add-button" routerLink="/admin/products/new">
             <img class="web2-add-icon product-filter-add-icon" src="/assets/admin-product/icon-add.svg" alt="" aria-hidden="true"><span>Thêm sản phẩm</span>
           </a>
+          }
         </div>
         @if(openPanel){
           <button type="button" class="product-filter-dismiss" tabindex="-1"
@@ -188,6 +190,7 @@
                     <span class="status" [class.active]="product.status === 'ACTIVE'" [class.archived]="product.status === 'ARCHIVED'">{{ product.status === 'ACTIVE' ? 'Đang hoạt động' : product.status === 'ARCHIVED' ? 'Đã lưu trữ' : 'Tạm ngưng' }}</span>
                   </td>
                   <td class="actions" [class.product-archive-action-cell]="product.status === 'ARCHIVED'">
+                    @if (canManage()) {
                     @if (product.status === 'ARCHIVED') {
                       <button type="button" class="product-archive-more-button"
                         aria-haspopup="menu"
@@ -210,6 +213,8 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="1"/><path d="M3 4h18v4H3zM12 11v6m-3-3 3 3 3-3"/></svg>
                       </button>
                     }
+                  
+                    } @else { <span aria-label="Chỉ xem">—</span> }
                   </td>
                 </tr>
               }
