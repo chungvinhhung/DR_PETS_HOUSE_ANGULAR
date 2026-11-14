@@ -1,6 +1,6 @@
 <div class="catalog-shell">
   <header class="catalog-header">
-    <a class="catalog-header__brand" routerLink="/admin/dashboard" aria-label="Dr. Pet's House — Admin Dashboard">
+    <a class="catalog-header__brand" [routerLink]="landingRoute()" aria-label="Dr. Pet's House — Quản trị">
       <img src="/assets/admin-product/logo-user.webp" alt="Dr. Pet's House" width="146" height="64">
     </a>
 
@@ -79,13 +79,16 @@
   <div class="catalog-layout">
     <aside class="catalog-sidebar">
       <nav aria-label="Điều hướng quản trị" [class.catalog-sidebar__nav--animated]="sidebarAnimationEnabled">
-        <a class="catalog-sidebar__link" routerLink="/admin/dashboard"
+        @if (can('dashboard.view')) {
+          <a class="catalog-sidebar__link" routerLink="/admin/dashboard"
           [class.catalog-sidebar__link--active]="activeItem === 'dashboard'"
           [attr.aria-current]="activeItem === 'dashboard' ? 'page' : null">
           <img src="/assets/admin-product/icon-dashboard.svg" alt="" width="20" height="20">
           Dashboard
         </a>
+        }
 
+        @if (can('products.view') || can('orders.view') || can('vouchers.view')) {
         <button type="button" class="catalog-sidebar__group"
           [class.catalog-sidebar__group--active]="activeItem === 'categories' || activeItem === 'products' || activeItem === 'orders' || activeItem === 'vouchers'"
           [attr.aria-expanded]="salesExpanded" aria-controls="admin-sales-submenu"
@@ -100,24 +103,34 @@
 
         <div id="admin-sales-submenu" class="catalog-sidebar__children"
           [hidden]="!salesExpanded" aria-label="Các mục thuộc Bán hàng">
+          @if (can('categories.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/categories"
             [class.catalog-sidebar__sub--active]="activeItem === 'categories'"
             [attr.aria-current]="activeItem === 'categories' ? 'page' : null">
             Danh mục sản phẩm
           </a>
+        }
+          @if (can('products.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/products"
             [class.catalog-sidebar__sub--active]="activeItem === 'products'"
             [attr.aria-current]="activeItem === 'products' ? 'page' : null">
             Sản phẩm
           </a>
+        }
+          @if (can('orders.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/orders"
             [class.catalog-sidebar__sub--active]="activeItem === 'orders'"
             [attr.aria-current]="activeItem === 'orders' ? 'page' : null"><span>Đơn hàng</span> @if (pendingSalesCount() > 0) { <span class="catalog-sidebar__return-badge web2-notification-badge" [attr.aria-label]="pendingOrderCount() + ' đơn chờ xác nhận và ' + pendingReturnCount() + ' yêu cầu trả hàng chờ tiếp nhận'">{{ pendingSalesCount() }}</span> }</a>
+        }
+          @if (can('vouchers.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/vouchers"
             [class.catalog-sidebar__sub--active]="activeItem === 'vouchers'"
             [attr.aria-current]="activeItem === 'vouchers' ? 'page' : null">Khuyến mãi</a>
+        }
         </div>
+        }
 
+        @if (can('services.view') || can('appointments.view') || can('records.view')) {
         <button type="button" class="catalog-sidebar__group"
           [class.catalog-sidebar__group--active]="activeItem === 'services' || activeItem === 'appointments' || activeItem === 'service-records'"
           [attr.aria-expanded]="servicesExpanded" aria-controls="admin-services-submenu"
@@ -130,15 +143,23 @@
         </button>
         <div id="admin-services-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
           [hidden]="!servicesExpanded" aria-label="Các mục thuộc Dịch vụ">
+          @if (can('services.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/services"
             [class.catalog-sidebar__sub--active]="activeItem === 'services'"
             [attr.aria-current]="activeItem === 'services' ? 'page' : null">
             Danh mục dịch vụ
           </a>
+        }
+          @if (can('appointments.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/appointments" [class.catalog-sidebar__sub--active]="activeItem === 'appointments'" [attr.aria-current]="activeItem === 'appointments' ? 'page' : null">Lịch hẹn</a>
+        }
+          @if (can('records.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/service-records" [class.catalog-sidebar__sub--active]="activeItem === 'service-records'" [attr.aria-current]="activeItem === 'service-records' ? 'page' : null">Hồ sơ dịch vụ</a>
+        }
         </div>
+        }
 
+        @if (can('inventory.view') || can('branches.view') || can('staff.view') || can('shifts.view')) {
         <button type="button" class="catalog-sidebar__group"
           [class.catalog-sidebar__group--active]="activeItem === 'branches' || activeItem === 'staff' || activeItem === 'inventory'"
           [attr.aria-expanded]="operationsExpanded" aria-controls="admin-operations-submenu"
@@ -151,25 +172,38 @@
         </button>
         <div id="admin-operations-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
           [hidden]="!operationsExpanded" aria-label="Các mục thuộc Vận hành">
+          @if (can('inventory.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/inventory"
             [class.catalog-sidebar__sub--active]="activeItem === 'inventory'"
             [attr.aria-current]="activeItem === 'inventory' ? 'page' : null">Kho</a>
+        }
+          @if (can('branches.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/branches"
             [class.catalog-sidebar__sub--active]="activeItem === 'branches'"
             [attr.aria-current]="activeItem === 'branches' ? 'page' : null">
             Chi nhánh
           </a>
+        }
+          @if (can('staff.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/staff"
             [class.catalog-sidebar__sub--active]="activeItem === 'staff'"
             [attr.aria-current]="activeItem === 'staff' ? 'page' : null">Nhân sự</a>
+        }
+          @if (can('shifts.view') && !can('staff.view')) {
+          <a class="catalog-sidebar__sub" routerLink="/admin/staff/schedule">Lịch làm việc của tôi</a>
+        }
         </div>
-        <a class="catalog-sidebar__link" routerLink="/admin/customers"
+        }
+        @if (can('customers.view')) {
+          <a class="catalog-sidebar__link" routerLink="/admin/customers"
           (click)="closeSidebarGroups()"
           [class.catalog-sidebar__link--active]="activeItem === 'customers'"
           [attr.aria-current]="activeItem === 'customers' ? 'page' : null">
           <img src="/assets/admin-product/icon-users.svg" alt="" width="20" height="20">
           Quản lý khách hàng
         </a>
+        }
+        @if (can('content.view') || can('community.view') || can('rescue.view')) {
         <button type="button" class="catalog-sidebar__group"
           [class.catalog-sidebar__group--active]="activeItem === 'content-articles' || activeItem === 'content-first-aid' || activeItem === 'content-community' || activeItem === 'content-rescue'"
           [attr.aria-expanded]="contentExpanded" aria-controls="admin-content-submenu"
@@ -182,16 +216,26 @@
         </button>
         <div id="admin-content-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
           [hidden]="!contentExpanded" aria-label="Các mục thuộc Nội dung và Cộng đồng">
+          @if (can('content.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/content/articles"
             [class.catalog-sidebar__sub--active]="activeItem === 'content-articles'">Bài viết kiến thức</a>
+        }
+          @if (can('content.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/content/first-aid"
             [class.catalog-sidebar__sub--active]="activeItem === 'content-first-aid'">Cẩm nang sơ cứu</a>
+        }
+          @if (can('community.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/content/community"
             [class.catalog-sidebar__sub--active]="activeItem === 'content-community'">Bài đăng cộng đồng</a>
+        }
+          @if (can('rescue.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/content/rescue"
             [class.catalog-sidebar__sub--active]="activeItem === 'content-rescue'">Cứu trợ &amp; Nhận nuôi</a>
+        }
         </div>
+        }
 
+        @if (can('moderation.view')) {
         <button type="button" class="catalog-sidebar__group"
           [class.catalog-sidebar__group--active]="activeItem === 'moderation-reviews' || activeItem === 'moderation-feedback' || activeItem === 'moderation-reports'"
           [attr.aria-expanded]="feedbackExpanded" aria-controls="admin-feedback-submenu"
@@ -204,13 +248,20 @@
         </button>
         <div id="admin-feedback-submenu" class="catalog-sidebar__children catalog-sidebar__children--services"
           [hidden]="!feedbackExpanded" aria-label="Các mục thuộc Đánh giá và Phản hồi">
+          @if (can('moderation.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/moderation/reviews"
             [class.catalog-sidebar__sub--active]="activeItem === 'moderation-reviews'">Đánh giá</a>
+        }
+          @if (can('moderation.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/moderation/feedback"
             [class.catalog-sidebar__sub--active]="activeItem === 'moderation-feedback'">Phản hồi khách hàng</a>
+        }
+          @if (can('moderation.view')) {
           <a class="catalog-sidebar__sub" routerLink="/admin/moderation/reports"
             [class.catalog-sidebar__sub--active]="activeItem === 'moderation-reports'">Báo cáo vi phạm</a>
+        }
         </div>
+        }
       </nav>
       @if (canViewAccountProfile()) {
         <div class="catalog-sidebar__footer">
