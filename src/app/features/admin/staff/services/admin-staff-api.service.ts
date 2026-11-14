@@ -205,12 +205,13 @@ export class AdminStaffApiService {
     this.error.set('');
     this.loading.set(true);
     this.loaded.set(false);
-    // Staff endpoint enforces server-side assigned-branch scope for managers.
-    // Non-manager STAFF does not have access to the organization-wide roster.
-    if (!this.session.hasAnyRole(['ADMIN', 'MANAGER'])) {
+    // BE listStaff explicitly scopes STAFF to actor.userId, MANAGER to assigned
+    // branches, and ADMIN to all. Never fetch another staff user's profile
+    // under a STAFF session; also filter to the current actor defensively.
+    if (!this.session.hasAnyRole(['ADMIN', 'MANAGER', 'STAFF'])) {
       this.staff.set([]);
       this.loading.set(false);
-      this.error.set('Tài khoản không có quyền xem danh sách nhân sự.');
+      this.error.set('Tài khoản không có quyền xem lịch làm việc.');
       return;
     }
     forkJoin({
@@ -230,8 +231,10 @@ export class AdminStaffApiService {
         this.branches.set(visibleBranches);
         const byId = new Map(visibleBranches.map(b => [b.id, b.name]));
         const byAccount = new Map(accounts.map(a => [idOf(a.id ?? a._id), a]));
+        const currentUser = this.session.user();
         this.staff.set(profiles.map(p => this.staffFromWire(p, byId, byAccount))
-          .filter((s): s is StaffPreview => s !== null));
+          .filter((staff): staff is StaffPreview => staff !== null)
+          .filter(staff => currentUser?.systemRole !== 'STAFF' || staff.userId === currentUser.id));
         this.loaded.set(true);
         this.loading.set(false);
       },
