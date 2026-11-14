@@ -370,7 +370,8 @@ export class AdminStaffFormComponent {
           this.allowNavigation = true;
           this.form.markAsPristine();
           this.staffApi.loadRoster(true);
-          const credentials = !this.isEdit && created && 'credentials' in created
+          const credentials = !this.isEdit &&
+            typeof created === 'object' && created !== null && 'credentials' in created
             ? created.credentials as { username: string; password: string } | undefined
             : undefined;
           this.toast.show(credentials
