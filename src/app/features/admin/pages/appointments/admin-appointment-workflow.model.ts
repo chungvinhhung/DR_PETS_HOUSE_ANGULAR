@@ -34,6 +34,9 @@ export interface AppointmentView {
   branchId: string;
   status: AppointmentStatus;
   rawStatus: string;
+  /** Appointment-level check-in returned by BE; not a per-pet check-in. */
+  checkInStatus?: string | null;
+  checkedInAt?: string | null;
   paymentMethod: string;
   paymentStatus: string;
   totalAmount: number | null;
@@ -172,6 +175,9 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
     branchName:firstString(item['branchName'], branch['name'], branch['branch_name']),
     branchId:firstString(item['branchId'], item['branch_id'], branch['id'], branch['_id']),
     status:appointmentStatus(rawStatus),rawStatus,
+    checkInStatus:typeof item['checkInStatus']==='string'
+      ? item['checkInStatus'].toUpperCase() : null,
+    checkedInAt:isDate(firstString(item['checkedInAt'])) ? firstString(item['checkedInAt']) : null,
     paymentMethod:firstString(item['paymentMethod'], item['payment_method'], payment['method']),
     paymentStatus:derivedPaymentStatus,
     totalAmount:finalAmount,
