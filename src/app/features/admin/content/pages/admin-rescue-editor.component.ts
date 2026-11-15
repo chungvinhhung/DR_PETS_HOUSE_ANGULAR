@@ -87,6 +87,7 @@ export class AdminRescueEditorComponent {
       this.branchesError.set(adminErrorMessage(err,'Không thể tải chi nhánh được phân công. Vui lòng thử lại.'));
     }finally{this.branchesLoading.set(false);}
   }
+  get currentManagerBranch():string{return this.legacyFields.branchId??'';}
   selectManagerBranch(id:string):void {
     if(!this.isManager() || !this.managerBranches().some(branch=>branch.id===id))return;
     this.legacyFields.branchId=id;this.dirty.set(true);this.error.set('');
