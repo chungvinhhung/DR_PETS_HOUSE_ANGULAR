@@ -93,7 +93,8 @@ export class AdminAppointmentDetailComponent {
       && this.canManageAppointment() && this.canAccessAppointmentBranch(item.branchId);
   });
   readonly canStartService = computed(() =>
-    this.startableSegment() !== null && this.item()?.checkInStatus === 'ARRIVED');
+    this.startableSegment() !== null && this.item()?.checkInStatus === 'ARRIVED' &&
+    (this.item()?.status === 'CONFIRMED' || this.item()?.status === 'IN_PROGRESS'));
   readonly cancellationWindow = computed(() => {
     const a = this.item();
     return a ? appointmentWindow(a,'cancel',this.nowMs(),this.isManagerOrAdmin()) : null;
@@ -142,7 +143,9 @@ export class AdminAppointmentDetailComponent {
     const reached=(step:string)=>a?this.progressReached(a.status,step):false;
     return [
       {key:'confirmed',label:'Đã xác nhận',done:reached('CONFIRMED'),time:this.historyTime('CONFIRMED')},
-      {key:'arrived',label:'Đã đến',done:false,time:'Chưa có dữ liệu check-in'},
+      {key:'arrived',label:'Đã đến',done:a?.checkInStatus==='ARRIVED',
+        time:a?.checkInStatus==='ARRIVED' ? (a.checkedInAt?this.displayShortTime(a.checkedInAt):'Đã check-in')
+          : 'Chưa check-in'},
       {key:'serving',label:'Đang phục vụ',done:reached('IN_PROGRESS'),time:reached('IN_PROGRESS')?this.segmentStartTime():'Chưa bắt đầu'},
       {key:'completed',label:'Hoàn thành',done:reached('COMPLETED'),time:reached('COMPLETED')?this.historyTime('COMPLETED'):'Chưa bắt đầu'},
     ];
