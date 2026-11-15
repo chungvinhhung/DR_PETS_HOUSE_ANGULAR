@@ -18,7 +18,7 @@ import {
 } from './admin-appointment-workflow.model';
 import { ServiceRecord, normalizeServiceRecordsPage, serviceRecordStatusLabel } from './admin-service-record.model';
 
-type DialogAction = 'cancel' | 'reschedule' | 'status' | 'no-show' | null;
+type DialogAction = 'cancel' | 'reschedule' | 'status' | 'check-in' | 'no-show' | null;
 
 @Component({
   selector: 'app-admin-appointment-detail',
@@ -85,10 +85,15 @@ export class AdminAppointmentDetailComponent {
       segment.requiredStaffRole === user.staffSubRole &&
       segment.executionStatus.toUpperCase() === 'NOT_STARTED') ?? null;
   });
-  readonly canStartService = computed(() => this.startableSegment() !== null);
-  // BE requires a verified pet-specific check-in before /start; the normalized
-  // appointment model does not yet expose it. Never guess it from CONFIRMED.
-  readonly checkInSupported = computed(() => false);
+  readonly checkInSupported = computed(() => this.item()?.checkInStatus != null);
+  readonly canCheckIn = computed(() => {
+    const item = this.item();
+    return !!item && this.checkInSupported() && item.checkInStatus !== 'ARRIVED'
+      && item.status === 'CONFIRMED'
+      && this.canManageAppointment() && this.canAccessAppointmentBranch(item.branchId);
+  });
+  readonly canStartService = computed(() =>
+    this.startableSegment() !== null && this.item()?.checkInStatus === 'ARRIVED');
   readonly cancellationWindow = computed(() => {
     const a = this.item();
     return a ? appointmentWindow(a,'cancel',this.nowMs(),this.isManagerOrAdmin()) : null;
@@ -170,7 +175,7 @@ export class AdminAppointmentDetailComponent {
         key:'appointment-'+a.id,
         pet:a.petNames[0]||'—',species:a.petSpecies||'—',service:a.serviceNames[0]||'—',
         staff:this.linkedRecords()[0]?.primaryStaff||'—',health:a.petHealth||'—',note:a.petNote||'—',
-        checkIn:'Chưa có dữ liệu',execution:a.status==='COMPLETED'?'Hoàn thành':a.status==='IN_PROGRESS'?'Đang thực hiện':'Chưa bắt đầu',
+        checkIn:this.checkInLabel(),execution:a.status==='COMPLETED'?'Hoàn thành':a.status==='IN_PROGRESS'?'Đang thực hiện':'Chưa bắt đầu',
         recordId:this.linkedRecords()[0]?.id||'',
       }];
     }
@@ -187,7 +192,7 @@ export class AdminAppointmentDetailComponent {
         staff:record?.primaryStaff||segment.assignedStaffId||'—',
         health:a.petHealth||'—',
         note:a.petNote||'—',
-        checkIn:'Chưa có dữ liệu',
+        checkIn:this.checkInLabel(),
         execution,
         recordId:record?.id||'',
       };
@@ -195,6 +200,10 @@ export class AdminAppointmentDetailComponent {
   }
   paymentMethodLabel(value:string):string{
     const key=value.toUpperCase();return key.includes('STORE')?'Tại phòng khám':key.includes('ONLINE')?'Trực tuyến':value||'—';
+  }
+  checkInLabel():string {
+    const state = this.item()?.checkInStatus;
+    return state === 'ARRIVED' ? 'Đã đến' : state ? 'Chưa check-in' : 'Chưa có dữ liệu';
   }
   paymentStatusLabel(value:string):string{
     const key=value.toUpperCase();
@@ -417,7 +426,8 @@ export class AdminAppointmentDetailComponent {
   }
 
   startAction(action: Exclude<DialogAction,null>): void {
-    const allowed = action === 'status' ? this.canStartService() : this.canManageAppointment();
+    const allowed = action === 'status' ? this.canStartService()
+      : action === 'check-in' ? this.canCheckIn() : this.canManageAppointment();
     if (!allowed)return;
     this.nowMs.set(Date.now());
     this.dialog.set(action);
@@ -481,7 +491,8 @@ export class AdminAppointmentDetailComponent {
       this.showActionMessage('Bạn không có quyền thao tác trên lịch hẹn của chi nhánh này.');
       return;
     }
-    const allowed = action === 'status' ? this.canStartService() : this.canManageAppointment();
+    const allowed = action === 'status' ? this.canStartService()
+      : action === 'check-in' ? this.canCheckIn() : this.canManageAppointment();
     if (!allowed) {this.showActionMessage('Bạn không có quyền thực hiện thao tác này.');return;}
 
     if (action==='reschedule') {
@@ -495,7 +506,7 @@ export class AdminAppointmentDetailComponent {
 
     const win=this.selectedWindow();
     if(win && !win.canRequest) {this.showActionMessage(this.showPolicyMessage());return;}
-    if (action!=='status' && !this.reason().trim()) {this.showActionMessage('Vui lòng nhập lý do xử lý.');return;}
+    if (action!=='status' && action!=='check-in' && !this.reason().trim()) {this.showActionMessage('Vui lòng nhập lý do xử lý.');return;}
 
     const fingerprint=[
       action,appointment.id,String(appointment.version),
@@ -518,6 +529,10 @@ export class AdminAppointmentDetailComponent {
       request=this.api.post<unknown,typeof body>(
         '/appointments/'+encodeURIComponent(appointment.id)+(override?'/reschedule-override':'/reschedule'),
         body,{headers});
+    }else if(action==='check-in'){
+      request=this.api.post<unknown,{note:string}>(
+        '/appointments/'+encodeURIComponent(appointment.id)+'/check-in',
+        {note:'Khách đã đến chi nhánh'});
     }else if(action==='no-show'){
       if(!appointment.noShowWarning){
         this.showActionMessage('Lịch hẹn chưa đủ điều kiện đánh dấu Không đến.');return;
@@ -551,7 +566,8 @@ export class AdminAppointmentDetailComponent {
       next:()=>{
         this.toast.show(action==='cancel'?'Đã hủy lịch hẹn.':
           action==='reschedule'?'Đã đổi lịch hẹn.':
-          action==='no-show'?'Đã đánh dấu khách không đến.':'Đã bắt đầu phục vụ.','success');
+          action==='no-show'?'Đã đánh dấu khách không đến.':
+          action==='check-in'?'Đã check-in lịch hẹn.':'Đã bắt đầu phục vụ.','success');
         this.closeDialog();
         this.refresh();
       },
@@ -559,7 +575,8 @@ export class AdminAppointmentDetailComponent {
         const message=adminErrorMessage(err,
           action==='cancel'?'Không thể hủy lịch hẹn.':
           action==='reschedule'?'Không thể đổi lịch hẹn.':
-          action==='no-show'?'Không thể đánh dấu khách không đến.':'Không thể bắt đầu phục vụ.');
+          action==='no-show'?'Không thể đánh dấu khách không đến.':
+          action==='check-in'?'Không thể check-in lịch hẹn.':'Không thể bắt đầu phục vụ.');
         this.actionError.set(message);
         this.toast.show(message,'error');
       }
