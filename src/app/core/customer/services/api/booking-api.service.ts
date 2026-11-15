@@ -853,6 +853,42 @@ export class BookingApiService {
     }
   }
 
+  async rescheduleAppointment(appointmentId: any, newSlotStart: string) {
+    const localList = getLocalAppointments();
+    const target = localList.find((x) => x.id === appointmentId || x.code === appointmentId);
+    if (target) {
+      target.scheduledStart = newSlotStart;
+      target.slotStart = newSlotStart;
+      saveLocalAppointment(target);
+    }
+
+    const idempotencyKey = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `idemp-resched-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+
+    try {
+      const response = await this.http.post(
+        `/appointments/${appointmentId}/reschedule`,
+        { newSlotStart },
+        {
+          headers: {
+            'Idempotency-Key': idempotencyKey,
+          },
+        }
+      );
+      return assertSuccess(response);
+    } catch {
+      try {
+        const response = await this.http.patch(`/appointments/${appointmentId}/reschedule`, {
+          newSlotStart,
+        });
+        return assertSuccess(response);
+      } catch (err: any) {
+        throw new Error(err?.error?.message || err?.message || 'Không thể đổi lịch hẹn lúc này.');
+      }
+    }
+  }
+
   async cancelAppointment(appointmentId: any, reason: string = 'Khách hàng yêu cầu hủy lịch') {
     const localList = getLocalAppointments();
     const target = localList.find((x) => x.id === appointmentId || x.code === appointmentId);

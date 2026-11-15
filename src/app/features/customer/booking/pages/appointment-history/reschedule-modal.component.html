@@ -1,0 +1,112 @@
+<div class="relative w-full max-w-[540px] max-h-[90vh] overflow-y-auto rounded-[32px] bg-white p-6 sm:p-8 shadow-2xl">
+  <!-- Header -->
+  <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+    <div>
+      <h2 class="text-xl font-bold text-[#06105a]">Đổi lịch hẹn</h2>
+      <p class="text-xs text-slate-500 mt-0.5">Mã lịch hẹn: <span class="font-semibold text-blue-900">#{{ appointment()?.code }}</span></p>
+    </div>
+    <button
+      type="button"
+      (click)="onClose.emit()"
+      class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition"
+      aria-label="Đóng"
+    >
+      <app-customer-icon name="x" className="h-4 w-4" />
+    </button>
+  </div>
+
+  <!-- Current info summary -->
+  <div class="mt-4 rounded-2xl bg-blue-50/60 p-4 border border-blue-100 text-sm">
+    <div class="flex justify-between py-1">
+      <span class="text-slate-500">Chi nhánh:</span>
+      <span class="font-medium text-slate-800">{{ appointment()?.branch?.name || appointment()?.branchName || 'Dr. Pet Clinic' }}</span>
+    </div>
+    <div class="flex justify-between py-1">
+      <span class="text-slate-500">Dịch vụ:</span>
+      <span class="font-medium text-slate-800">{{ appointment()?.service?.name }}</span>
+    </div>
+    <div class="flex justify-between py-1">
+      <span class="text-slate-500">Lịch hiện tại:</span>
+      <span class="font-medium text-[#C62828]">{{ appointment()?.service?.dateText || appointment()?.service?.date }} ({{ appointment()?.service?.timeRange || appointment()?.service?.time }})</span>
+    </div>
+  </div>
+
+  <!-- Date Selection -->
+  <div class="mt-5">
+    <label class="block text-sm font-semibold text-slate-800 mb-2">
+      Chọn ngày khám mới <span class="text-xs font-normal text-slate-500">(Tối thiểu trước 24 giờ)</span>
+    </label>
+    <input
+      type="date"
+      [min]="minDate()"
+      [value]="selectedDate()"
+      (change)="onDateChange($event)"
+      class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none focus:border-blue-900 focus:bg-white focus:ring-2 focus:ring-blue-100 transition"
+    />
+  </div>
+
+  <!-- Slot Selection -->
+  <div class="mt-5">
+    <div class="flex items-center justify-between mb-2">
+      <label class="text-sm font-semibold text-slate-800">Chọn khung giờ mới</label>
+      @if (isLoadingSlots()) {
+        <span class="text-xs text-blue-800 animate-pulse">Đang tải khung giờ...</span>
+      }
+    </div>
+
+    @if (isLoadingSlots()) {
+      <div class="py-8 text-center text-sm text-slate-400">Đang kiểm tra khung giờ trống...</div>
+    } @else if (slots().length > 0) {
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[220px] overflow-y-auto pr-1">
+        @for (slot of slots(); track slot.value || slot.time || $index) {
+          @let isSelected = selectedSlot()?.value === slot.value || selectedSlot()?.time === slot.time;
+          <button
+            type="button"
+            (click)="selectSlot(slot)"
+            [class]="`flex flex-col items-center justify-center rounded-2xl p-2.5 text-xs font-semibold border transition ${
+              isSelected
+                ? 'bg-[#005AB4] text-white border-[#005AB4] shadow-md scale-[1.02]'
+                : 'bg-white text-slate-700 border-slate-200 hover:border-blue-400 hover:bg-blue-50/30'
+            }`"
+          >
+            <span class="text-sm font-bold">{{ slot.time || slot.value }}</span>
+            <span [class]="`text-[10px] mt-0.5 ${isSelected ? 'text-blue-100' : 'text-slate-400'}`">
+              Còn {{ slot.remaining ?? (slot.maxAppointments - (slot.bookedCount || 0)) }}/{{ slot.maxAppointments || 3 }}
+            </span>
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="rounded-2xl bg-amber-50 p-4 border border-amber-200 text-center text-sm text-amber-800">
+        Không có khung giờ trống nào cho ngày {{ selectedDate() }}. Quý khách vui lòng chọn ngày khác.
+      </div>
+    }
+  </div>
+
+  <!-- Error message -->
+  @if (errorMessage()) {
+    <div class="mt-4 rounded-xl bg-red-50 p-3 border border-red-200 text-xs text-red-700">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Footer actions -->
+  <div class="mt-6 flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+    <button
+      type="button"
+      (click)="onClose.emit()"
+      class="rounded-full border border-slate-300 px-6 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition"
+      [disabled]="isSubmitting()"
+    >
+      Hủy
+    </button>
+    <button
+      type="button"
+      (click)="submitReschedule()"
+      [disabled]="!selectedSlot() || isSubmitting()"
+      class="rounded-full bg-[#FDD835] px-7 py-2.5 text-sm font-bold text-[#06105a] shadow hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition"
+    >
+      {{ isSubmitting() ? 'Đang xử lý...' : 'Xác nhận đổi lịch' }}
+    </button>
+  </div>
+</div>
