@@ -21,8 +21,15 @@
                 <button type="button" class="btn btn--outline" (click)="startAction('no-show')">Không đến</button>
               }
             }
-            @if (canStartService() && checkInSupported()) {
+            @if (canCheckIn()) {
+              <button type="button" class="btn btn--primary" (click)="startAction('check-in')">Đón tiếp / Check-in</button>
+            }
+            @if (canStartService()) {
               <button type="button" class="btn btn--primary" (click)="startAction('status')">Bắt đầu dịch vụ</button>
+            }
+          } @else if (appointment.status==='IN_PROGRESS') {
+            @if (canStartService()) {
+              <button type="button" class="btn btn--primary" (click)="startAction('status')">Bắt đầu dịch vụ tiếp theo</button>
             }
           } @else if (appointment.status==='COMPLETED') {
             <a class="btn btn--primary" routerLink="/admin/appointments">Quay lại danh sách</a>
@@ -91,7 +98,7 @@
           </table>
         </div>
         @if (!checkInSupported()) {
-          <p class="technical-note">BE hiện chưa trả trạng thái check-in theo từng thú cưng/dịch vụ. FE không tự suy luận “Đã đến” từ trạng thái thực hiện.</p>
+          <p class="technical-note">Lịch hẹn này chưa có trường checkInStatus từ BE. FE không tự suy luận “Đã đến” từ trạng thái thực hiện.</p>
         }
       </section>
 
@@ -132,7 +139,7 @@
     <div class="overlay">
       <section class="modal" role="dialog" aria-modal="true" aria-labelledby="appointment-action-heading">
         <div class="modal-heading">
-          <h2 id="appointment-action-heading">{{action==='reschedule'?'Đổi lịch':action==='cancel'?'Hủy lịch':action==='no-show'?'Đánh dấu không đến':'Bắt đầu phục vụ'}}</h2>
+          <h2 id="appointment-action-heading">{{action==='reschedule'?'Đổi lịch':action==='cancel'?'Hủy lịch':action==='no-show'?'Đánh dấu không đến':action==='check-in'?'Đón tiếp / Check-in':'Bắt đầu phục vụ'}}</h2>
           <button class="close" type="button" aria-label="Đóng" (click)="closeDialog()">
             <img src="/assets/admin-inventory/close-outlined.svg" alt="" aria-hidden="true">
           </button>
@@ -167,14 +174,19 @@
           }
         }
         @if (action==='status') {
-          <p class="hint hint--info">Chỉ có thể bắt đầu dịch vụ sau khi có trạng thái check-in hợp lệ của thú cưng tương ứng.</p>
+          <p class="hint hint--info">Chỉ nhân viên chuyên môn được phân công, đúng vai trò và sau khi lịch hẹn đã check-in mới có thể bắt đầu dịch vụ.</p>
+        }
+        @if (action==='check-in') {
+          <p class="hint hint--info">Xác nhận khách hàng đã đến chi nhánh. Thao tác này cập nhật trạng thái check-in của lịch hẹn trên Backend.</p>
         }
         @if (action==='no-show') {
           <p class="hint hint--warning">Lịch đã đủ điều kiện đánh dấu Không đến. Thao tác này sẽ giải phóng khung giờ và áp dụng chính sách hoàn/khấu trừ hiện hành.</p>
         }
-        <label class="modal-label"><span class="modal-field-label">Lý do / ghi chú xử lý @if(action!=='status'){<b>*</b>}</span>
-          <textarea rows="4" [value]="reason()" (input)="reason.set($any($event.target).value)" placeholder="Nhập ghi chú xử lý..."></textarea>
-        </label>
+        @if (action!=='check-in') {
+          <label class="modal-label"><span class="modal-field-label">Lý do / ghi chú xử lý @if(action!=='status'){<b>*</b>}</span>
+            <textarea rows="4" [value]="reason()" (input)="reason.set($any($event.target).value)" placeholder="Nhập ghi chú xử lý..."></textarea>
+          </label>
+        }
         @if (actionError()) {<p class="hint hint--warning" role="alert">{{actionError()}}</p>}
         <div class="modal-actions">
           <button class="btn btn--outline" type="button" (click)="closeDialog()" [disabled]="actionBusy()">Đóng</button>
