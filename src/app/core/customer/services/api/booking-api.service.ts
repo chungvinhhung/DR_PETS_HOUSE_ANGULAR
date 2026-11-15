@@ -12,6 +12,8 @@ import { CustomerAuthService } from '../customer-auth.service';
 
 function formatTime(value: any) {
   if (!value) return "";
+  const directMatch = String(value).trim().match(/^(\d{2}:\d{2})/);
+  if (directMatch) return directMatch[1];
   const date = new Date(value);
   if (!Number.isNaN(date.getTime())) {
     return `${String(date.getUTCHours()).padStart(2, "0")}:${String(date.getUTCMinutes()).padStart(2, "0")}`;
@@ -239,7 +241,16 @@ export function normalizeAppointmentHistoryItem(appointment: any = {}) {
       date: formatShortDate(rawDate) || appointment.service?.date || "",
       dateText: dateText || appointment.service?.dateText || "",
       time: startTime || appointment.service?.time || "",
-      timeRange: endTime ? `${startTime} - ${formatTime(endTime)}` : (appointment.service?.timeRange || startTime),
+      timeRange: (() => {
+        const duration = Number(appointment.scheduledDurationMinutes || appointment.durationMinutes || service?.durationMinutes || 30) || 30;
+        let resolvedEndTime = endTime ? formatTime(endTime) : "";
+        if (!resolvedEndTime || resolvedEndTime === startTime) {
+          const [h, m] = (startTime || "08:00").split(":").map(Number);
+          const totalM = (h || 0) * 60 + (m || 0) + duration;
+          resolvedEndTime = `${String(Math.floor(totalM / 60)).padStart(2, "0")}:${String(totalM % 60).padStart(2, "0")}`;
+        }
+        return `${startTime} - ${resolvedEndTime}`;
+      })(),
     },
     services,
   };
@@ -659,6 +670,27 @@ export class BookingApiService {
     const nowIso = new Date().toISOString();
     const dateFormatted = dateStr ? String(dateStr).split("T")[0] : nowIso.split("T")[0];
 
+    const totalDurationMins = (bookingData.services || []).reduce(
+      (sum: number, s: any) => sum + (Number(s.durationMinutes || s.duration) || 30),
+      0
+    ) || 30;
+
+    let computedEndTimeStr = "";
+    let slotEndIso = bookingData.slotEnd;
+    if (slotEndIso) {
+      computedEndTimeStr = formatTime(slotEndIso);
+    } else {
+      const [sh, sm] = (timeStr || "08:00").split(":").map(Number);
+      const totalMinutes = (sh || 0) * 60 + (sm || 0) + totalDurationMins;
+      computedEndTimeStr = `${String(Math.floor(totalMinutes / 60)).padStart(2, "0")}:${String(totalMinutes % 60).padStart(2, "0")}`;
+      try {
+        slotEndIso = new Date(new Date(slotStart).getTime() + totalDurationMins * 60000).toISOString();
+      } catch {
+        slotEndIso = slotStart;
+      }
+    }
+    const properTimeRange = `${timeStr} - ${computedEndTimeStr}`;
+
     const localApt = {
       id: `apt-${Date.now()}`,
       code: `BK ${Math.floor(1000 + Math.random() * 9000)} ${new Date().getFullYear()}`,
@@ -666,9 +698,11 @@ export class BookingApiService {
       paymentMethod: paymentMethod === "ONLINE_MOCK" ? "online" : "store",
       paymentStatus: paymentMethod === "ONLINE_MOCK" ? "unpaid" : "waiting_store_payment",
       scheduledStart: slotStart,
-      scheduledEnd: bookingData.slotEnd || slotStart,
+      scheduledEnd: slotEndIso,
+      scheduledDurationMinutes: totalDurationMins,
       appointment_date: dateFormatted,
       start_time: timeStr,
+      end_time: computedEndTimeStr,
       created_at: nowIso,
       owner: {
         name: String(bookingData.customer_name_snapshot || bookingData.customerName || "Khách hàng").trim(),
@@ -697,7 +731,7 @@ export class BookingApiService {
         date: formatShortDate(dateFormatted),
         dateText: formatDateText(dateFormatted),
         time: timeStr,
-        timeRange: `${timeStr} - ${timeStr}`,
+        timeRange: properTimeRange,
         price: totalPrice,
       },
       services: bookingData.services || [{

@@ -239,8 +239,14 @@ export class BookingPageComponent {
           .then((slots: any) => {
             if (!active) return;
             this.timeSlots.set(slots);
-            this.selectedSlot.update((current: any) =>
-              current && slots.some((slot: any) => slot.value === current && slot.available) ? current : null);
+            this.selectedSlot.update((current: any) => {
+              if (!current) return null;
+              const currentStart = String(current).split(" - ")[0].trim();
+              const matchedSlot = slots.find((s: any) =>
+                s.available && (s.value === current || s.value?.startsWith(currentStart) || s.time === currentStart)
+              );
+              return matchedSlot ? matchedSlot.value : current;
+            });
           })
           .catch((error: any) => {
             console.warn("Appointment slots API unavailable.", error);
@@ -262,9 +268,28 @@ export class BookingPageComponent {
   }
 
   protected async handleConfirm({ quantities }: any = {}) {
-    const selectedSlotRecord = this.timeSlots().find((slot: any) => slot.value === this.selectedSlot());
+    let selectedSlotRecord = this.timeSlots().find((slot: any) => {
+      if (!this.selectedSlot()) return false;
+      if (slot.value === this.selectedSlot() || slot.id === this.selectedSlot()) return true;
+      const currentStart = String(this.selectedSlot()).split(" - ")[0].trim();
+      return slot.value?.startsWith(currentStart) || slot.time === currentStart;
+    });
+
+    if (!selectedSlotRecord && this.selectedSlot()) {
+      const currentVal = String(this.selectedSlot());
+      const [startPart, endPart] = currentVal.includes(" - ") ? currentVal.split(" - ") : [currentVal, currentVal];
+      const dateKey = getDateKey(this.selectedDate());
+      selectedSlotRecord = {
+        id: `slot-${this.ownerInfo().branch}-${dateKey}-${startPart.trim()}`,
+        value: currentVal,
+        start: `${dateKey}T${startPart.trim()}:00.000Z`,
+        end: `${dateKey}T${(endPart || startPart).trim()}:00.000Z`,
+        available: true,
+      };
+    }
+
     if (!selectedSlotRecord) {
-      this.bookingError.set("Vui lòng chọn lại khung giờ.");
+      this.bookingError.set("Vui lòng chọn khung giờ khám.");
       return;
     }
 
