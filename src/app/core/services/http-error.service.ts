@@ -4,6 +4,7 @@ import { Injectable, signal } from '@angular/core';
 import {
   AppHttpError,
   AppHttpErrorKind,
+  backendProblemMessage,
 } from '../models/app-http-error.model';
 
 @Injectable({
@@ -45,6 +46,10 @@ export class HttpErrorService {
   }
 
   private messageForError(error: HttpErrorResponse): string {
+    // Precise BE problem codes take precedence over generic HTTP 403/409.
+    const problemMessage = backendProblemMessage(error.error);
+    if (problemMessage) return problemMessage;
+
     const backendMessage = this.extractBackendMessage(error.error);
 
     if (backendMessage) {
