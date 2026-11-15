@@ -216,13 +216,15 @@ export class BookingPageComponent {
       if (typeof cleanup === 'function') onCleanup(cleanup);
     });
 
-    // useEffect(..., [ownerInfo.branch, selectedDate, selectedServiceType])
+    // useEffect(..., [ownerInfo.branch, selectedDate, selectedServiceType, selectedServices])
     effect((onCleanup: any) => {
       this.ownerInfo().branch;
       this.selectedDate();
       this.selectedServiceType();
+      this.selectedServices();
       const cleanup = untracked(() => {
-        if (!this.selectedDate() || !this.ownerInfo().branch) {
+        const hasServices = (this.selectedServices() || []).length > 0;
+        if (!this.selectedDate() || !this.ownerInfo().branch || !hasServices) {
           this.timeSlots.set([]);
           this.selectedSlot.set(null);
           return;

@@ -26,7 +26,9 @@
     } @empty {
       <div class="flex flex-col items-center justify-center py-10 text-center">
         <p class="text-sm font-medium text-slate-500">
-          @if (!selectedDate()) {
+          @if (!hasSelectedService()) {
+            Vui lòng chọn dịch vụ trước để xem khung giờ trống
+          } @else if (!selectedDate()) {
             Vui lòng chọn ngày để xem khung giờ
           } @else if (isBeforeToday(selectedDate())) {
             Không thể chọn ngày trong quá khứ
