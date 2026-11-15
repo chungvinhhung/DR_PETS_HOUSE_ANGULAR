@@ -112,7 +112,7 @@
     <p class="total-amount">{{ formatMoney(effectiveTotal()) }}</p>
   </div>
 
-  @if (online() && depositAmount() > 0) {
+  @if (!online() && depositAmount() > 0) {
     <div class="price-summary-box">
       <div app-price-row [label]="'Tiền đặt cọc cần thanh toán (30%)'" [value]="formatMoney(depositAmount())"></div>
       <div app-price-row [label]="'Số tiền còn lại tại phòng khám'" [value]="formatMoney(balanceAtClinic())"></div>

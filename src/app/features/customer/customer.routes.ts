@@ -92,6 +92,12 @@ export const CUSTOMER_ROUTES: Routes = [
   { path: 'dich-vu/grooming-spa', loadComponent: groomingSpa },
   { path: 'dich-vu/kham-dieu-tri', loadComponent: medicalTreatment },
   { path: 'checkout', loadComponent: checkout },
+  // Trang yêu cầu trả hàng hoàn tiền: toàn chiều rộng (không dùng sidebar tài khoản)
+  {
+    path: 'don-hang-cua-toi/:orderId/yeu-cau-hoan-tien',
+    canActivate: [customerAuthGuard],
+    loadComponent: () => import('./orders/pages/refund-request-page.component').then((m) => m.RefundRequestPageComponent),
+  },
 
   // Nhóm trang tài khoản: có sidebar riêng, bắt buộc đăng nhập
   {

@@ -632,6 +632,8 @@ export class BookingApiService {
       headers: {
         'Idempotency-Key': idempotencyKey,
       },
+      // Guest đặt lịch giống khách có tài khoản: lỗi 401 không được bật popup đăng nhập
+      suppressAuthPrompt: !isCustomer,
     };
 
     const branchName = bookingData.branchName || "Chi nhánh Dr. Pet";

@@ -64,5 +64,5 @@
   <app-footer />
 </main>
 @if (success()) {
-  <div app-booking-success-modal></div>
+  <div app-booking-success-modal [isGuest]="!authService.isAuthenticated()"></div>
 }

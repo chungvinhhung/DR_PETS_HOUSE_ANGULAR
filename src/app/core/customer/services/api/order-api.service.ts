@@ -220,6 +220,34 @@ export class OrderApiService {
     return assertSuccess(response);
   }
 
+  /**
+   * Gửi yêu cầu trả hàng hoàn tiền (multipart: thông tin yêu cầu + ảnh/video minh chứng).
+   * BE tạo bản ghi Return (xem admin: /order-returns) với trạng thái REQUESTED.
+   */
+  async createReturnRequest(orderId: any, { items, reason, description, returnMethod, pickupAddress, files }: any) {
+    const formData = new FormData();
+    formData.append("items", JSON.stringify(
+      (items || []).map((item: any) => ({ orderItemId: item.orderItemId, quantity: item.quantity })),
+    ));
+    formData.append("reason", reason || "");
+    formData.append("description", description || "");
+    formData.append("returnMethod", returnMethod || "pickup");
+    if (pickupAddress) formData.append("pickupAddress", JSON.stringify(pickupAddress));
+    (files || []).forEach((file: File) => formData.append("evidence", file));
+
+    try {
+      const response = await this.http.post(`/orders/${orderId}/returns`, formData);
+      return assertSuccess(response);
+    } catch (err: any) {
+      if (err?.status === 404) {
+        formData.append("orderId", String(orderId));
+        const response = await this.http.post("/order-returns", formData);
+        return assertSuccess(response);
+      }
+      throw err;
+    }
+  }
+
   async canReviewOrderProduct(productId: any) {
     const response = await this.http.get(`/reviews/can-review/product/${productId}`);
     const payload = assertSuccess(response);

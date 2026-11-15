@@ -17,6 +17,10 @@
 } @else {
   <span>
     <strong class="block text-xl text-slate-900">Chọn Hồ sơ thú cưng</strong>
-    <span class="mt-3 block text-base text-slate-600">Bạn đã tạo Hồ sơ thú cưng trước đó</span>
+    @if (authService.isAuthenticated()) {
+      <span class="mt-3 block text-base text-slate-600">Bạn đã tạo Hồ sơ thú cưng trước đó</span>
+    } @else {
+      <span class="mt-3 block text-base text-slate-600">Vui lòng đăng nhập để chọn hồ sơ thú cưng đã tạo</span>
+    }
   </span>
 }

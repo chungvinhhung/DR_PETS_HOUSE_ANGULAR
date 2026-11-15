@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 import { ReactStyleDirective } from '../../../../shared/customer/directives/react-style.directive';
 import { CustomerLinkDirective } from '../../../../shared/customer/directives/customer-link.directive';
@@ -18,6 +18,9 @@ import { successPanelBackground, successCheckGroup } from './booking-success-mod
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BookingSuccessModalComponent {
+  // --- Input / Output (props của React) ---
+  /** Guest không có trang "Lịch sử đặt lịch" (trang đó yêu cầu đăng nhập). */
+  readonly isGuest = input<boolean>(false);
   // --- Dữ liệu & hàm dùng trong template ---
   protected readonly successPanelBackground: any = successPanelBackground;
   protected readonly successCheckGroup: any = successCheckGroup;

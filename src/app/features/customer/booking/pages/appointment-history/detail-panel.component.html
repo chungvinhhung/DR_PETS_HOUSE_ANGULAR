@@ -94,14 +94,18 @@
         <span>Phương thức</span>
         <strong>{{ paymentMethodLabels[appointment().paymentMethod] || 'Thanh toán tại quầy' }}</strong>
       </div>
-      @if (appointment().depositAmount > 0) {
+      <div class="payment-row highlight">
+        <span>Tổng giá trị dịch vụ</span>
+        <strong>{{ formatMoney(appointment().pricing?.finalAmount || appointment().service.price) }}</strong>
+      </div>
+      @if (isClinic() && appointment().depositAmount > 0) {
         <div class="payment-row">
           <span>Tiền cọc (30%)</span>
           <strong>{{ formatMoney(appointment().depositAmount) }} ({{ appointment().depositStatusLabel || 'Đã ghi nhận' }})</strong>
         </div>
-        @if (appointment().status !== 'cancelled' && appointment().balanceAmount > 0) {
+        @if (appointment().depositStatus === 'HELD' && appointment().balanceAmount > 0) {
           <div class="payment-row">
-            <span>Còn lại tại phòng khám</span>
+            <span>Còn lại thanh toán tại quầy</span>
             <strong>{{ formatMoney(appointment().balanceAmount) }}</strong>
           </div>
         }
@@ -112,10 +116,6 @@
           <strong>{{ formatMoney(appointment().cancel?.refundAmount || 0) }} @if (appointment().cancel?.prepaidOutcomeLabel) { ({{ appointment().cancel.prepaidOutcomeLabel }}) }</strong>
         </div>
       }
-      <div class="payment-row highlight">
-        <span>Tổng giá trị dịch vụ</span>
-        <strong>{{ formatMoney(appointment().pricing?.finalAmount || appointment().service.price) }}</strong>
-      </div>
     </div>
   </section>
 

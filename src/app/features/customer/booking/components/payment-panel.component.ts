@@ -48,8 +48,9 @@ export class PaymentPanelComponent {
   readonly selectedMethod = computed<any>(() => this.online() && this.paymentMode() !== "online" ? this.paymentMode() : "");
   readonly effectiveDiscount = computed<number>(() => Math.max(Number(this.discountTotal() || 0), this.localDiscount()));
   readonly effectiveTotal = computed<number>(() => Math.max(0, Number(this.total() || 0) - this.localDiscount()));
-  readonly depositAmount = computed<number>(() => this.online() ? Math.round(this.effectiveTotal() * 0.30) : 0);
-  readonly balanceAtClinic = computed<number>(() => this.online() ? Math.max(0, this.effectiveTotal() - this.depositAmount()) : this.effectiveTotal());
+  // Chỉ thanh toán tại phòng khám mới yêu cầu đặt cọc 30%; trực tuyến thanh toán toàn bộ
+  readonly depositAmount = computed<number>(() => this.online() ? 0 : Math.round(this.effectiveTotal() * 0.30));
+  readonly balanceAtClinic = computed<number>(() => Math.max(0, this.effectiveTotal() - this.depositAmount()));
 
   protected async handleApplyCoupon() {
     const raw = String(this.couponCode() || "").trim().toUpperCase();

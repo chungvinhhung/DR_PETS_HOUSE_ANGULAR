@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 
 import { CustomerNavigationService } from '../../../../../core/customer/services/customer-navigation.service';
@@ -27,6 +27,10 @@ const uploadIcon = '/assets/customer/icons/upload-icon.png';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PetFormPageComponent {
+  readonly embedded = input(false);
+  readonly onSaved = output<any>();
+  readonly onCancel = output<void>();
+
   // --- Service dùng chung ---
   protected readonly navService = inject(CustomerNavigationService);
   protected readonly decisionModalService = inject(DecisionModalService);
@@ -194,6 +198,21 @@ export class PetFormPageComponent {
   protected handleLeaveForm(event: any) {
     event?.preventDefault();
 
+    if (this.embedded()) {
+      if (!this.formTouched()) {
+        this.onCancel.emit();
+        return;
+      }
+
+      this.decisionModalService.confirmCancel({
+        message: "Bạn chắc chắn muốn quay lại?\nCác thông tin vừa nhập sẽ không được lưu",
+        cancelLabel: "Ở lại",
+        confirmLabel: "Hủy",
+        onConfirm: () => this.onCancel.emit(),
+      });
+      return;
+    }
+
     if (!this.formTouched()) {
       this.goBackToPetList();
       return;
@@ -284,9 +303,19 @@ export class PetFormPageComponent {
         ...deletedIds.map((id: string) => this.petApi.deleteMedicalRecord(id)),
       ]);
 
+      const savedPetForParent = { ...savedPet, id: backendPetId, name: petData.name };
       if (recordResults.some((result: any) => result.status === "rejected")) {
         alert("Đã lưu hồ sơ nhưng có bệnh án chưa lưu được lên hệ thống. Vui lòng kiểm tra lại.");
+        if (this.embedded()) {
+          this.onSaved.emit(savedPetForParent);
+          return;
+        }
         this.navService.navigate(`/thu-cung-cua-toi/${toPetSlug({ ...savedPet, id: backendPetId, name: petData.name })}`);
+        return;
+      }
+
+      if (this.embedded()) {
+        this.onSaved.emit(savedPetForParent);
         return;
       }
 

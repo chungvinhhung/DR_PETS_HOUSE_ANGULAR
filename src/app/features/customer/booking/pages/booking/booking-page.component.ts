@@ -373,6 +373,8 @@ export class BookingPageComponent {
         window.requestAnimationFrame(() => {
           window.scrollTo({ top: 200, behavior: "smooth" });
         });
+      } else if (error?.status === 401 && !this.authService.isAuthenticated()) {
+        this.bookingError.set("Hệ thống tạm thời chưa nhận đặt lịch không cần tài khoản. Quý khách vui lòng thử lại sau hoặc liên hệ phòng khám.");
       } else {
         this.bookingError.set(errorList ? `${rawErrorMsg} (${errorList})` : rawErrorMsg);
       }
@@ -395,8 +397,8 @@ export class BookingPageComponent {
     });
   }
 
-  protected handle1() {
-    this.authService.requireAuth(() => this.step.set(2));
+    protected handle1() {
+    this.step.set(2);
   }
 
   /** (tự sinh) function không dùng trực tiếp được trong template */
