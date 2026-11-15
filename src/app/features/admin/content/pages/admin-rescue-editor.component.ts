@@ -9,6 +9,8 @@ import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/ad
 import { AdminContentService } from '../services/admin-content.service';
 import { AdminProductService } from '../../products/services/admin-product.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { BranchApiRecord, BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
+import { adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { RESCUE_PARTNERS } from '../../../customer/rescue/data/rescue-data';
 
 type RescueSpecies='DOG'|'CAT'|'OTHER';
@@ -34,6 +36,11 @@ export class AdminRescueEditorComponent {
   private readonly api=inject(AdminContentService);
   private readonly uploader=inject(AdminProductService);
   private readonly auth=inject(AuthSessionService);
+  private readonly branchApi=inject(BranchManagementApiService);
+  readonly isManager=computed(()=>this.auth.user()?.systemRole==='MANAGER');
+  readonly managerBranches=signal<BranchApiRecord[]>([]);
+  readonly branchesLoading=signal(false);
+  readonly branchesError=signal('');
   readonly id=this.route.snapshot.paramMap.get('id')||'';
   readonly isEditing=Boolean(this.id);
   readonly canWrite=computed(()=>['ADMIN','MANAGER'].includes(this.auth.user()?.systemRole||''));
@@ -61,7 +68,29 @@ export class AdminRescueEditorComponent {
   };
   private savedId='';
   private leaving=false;
-  ngOnInit():void {if(this.isEditing)void this.load();}
+  ngOnInit():void {
+    if(this.isManager())void this.loadManagerBranches();
+    if(this.isEditing)void this.load();
+  }
+  private async loadManagerBranches():Promise<void> {
+    this.branchesLoading.set(true);this.branchesError.set('');
+    try {
+      const assigned=new Set((this.auth.user()?.branchScope??[]).map(String));
+      const all=await firstValueFrom(this.branchApi.listBranches().pipe(timeout({first:30000})));
+      const visible=all.filter(branch=>assigned.has(String(branch.id)) && branch.status==='ACTIVE');
+      this.managerBranches.set(visible);
+      if(!this.isEditing && visible.length===1 && !this.legacyFields.branchId){
+        this.legacyFields.branchId=visible[0].id;
+      }
+      if(!visible.length)this.branchesError.set('Không có chi nhánh đang hoạt động được phân công cho Manager.');
+    }catch(err:unknown){
+      this.branchesError.set(adminErrorMessage(err,'Không thể tải chi nhánh được phân công. Vui lòng thử lại.'));
+    }finally{this.branchesLoading.set(false);}
+  }
+  selectManagerBranch(id:string):void {
+    if(!this.isManager() || !this.managerBranches().some(branch=>branch.id===id))return;
+    this.legacyFields.branchId=id;this.dirty.set(true);this.error.set('');
+  }
   private async load():Promise<void>{
     this.loading.set(true);this.loadError.set('');
     try{
@@ -147,6 +176,10 @@ export class AdminRescueEditorComponent {
     if(!d.image){
       this.error.set('Vui lòng tải ảnh thú cưng lên máy chủ trước khi lưu.');return null;
     }
+    if(this.isManager() && (this.branchesLoading() || this.branchesError() ||
+      !this.managerBranches().some(branch=>branch.id===this.legacyFields.branchId))){
+      this.error.set('Vui lòng chọn chi nhánh đang hoạt động trong phạm vi được phân công trước khi lưu.');return null;
+    }
     return {
       petName:d.petName.trim(),species:d.species,
       breed:this.legacyFields.breed,ageDescription:this.legacyFields.ageDescription,
@@ -184,7 +217,7 @@ export class AdminRescueEditorComponent {
       await this.router.navigate(['/admin/content/rescue'],{
         queryParams:{notice:this.isEditing?'Đã cập nhật hồ sơ cứu trợ.':'Đã tạo hồ sơ cứu trợ.'},
       });
-    }catch(err:any){this.error.set(err?.error?.message||err?.message||'Không thể lưu hồ sơ. Vui lòng thử lại.');}
+    }catch(err:unknown){this.error.set(adminErrorMessage(err,'Không thể lưu hồ sơ. Vui lòng thử lại.'));}
     finally{this.saving.set(false);}
   }
   cancel():void{
