@@ -340,14 +340,14 @@ export function normalizeSlot(slot: any) {
   const end = formatTime(endRaw);
   const statusStr = String(slot.status || "").toLowerCase();
   const isFullOrBlocked = statusStr === "full" || statusStr === "blocked";
-  const rawRemaining = typeof slot.remaining === "number" ? slot.remaining : (slot.available === false ? 0 : undefined);
-  const remaining = isFullOrBlocked ? 0 : Number(rawRemaining ?? (slot.available ? 1 : 0));
-  const bookedCount = Number(slot.booked_count || slot.bookedCount || 0);
-  const maxAppointments = Number(slot.max_booking || slot.maxAppointments || (remaining + bookedCount) || 1);
+  const totalCount = Number(slot.totalCount ?? slot.maxAppointments ?? slot.max_booking ?? 1);
+  const bookedCount = Number(slot.occupiedCount ?? slot.bookedCount ?? slot.booked_count ?? 0);
+  const rawRemaining = typeof slot.remaining === "number" ? slot.remaining : (slot.available === false ? 0 : Math.max(0, totalCount - bookedCount));
+  const remaining = isFullOrBlocked ? 0 : Math.max(0, Number(rawRemaining));
   const isAvailable = !isFullOrBlocked && (statusStr === "available" || remaining > 0 || slot.available === true);
 
-  const id = String(slot.id || slot.slot_id || slot.start || Math.random());
-  const value = start && end ? `${start} - ${end}` : (start || String(slot.value || "09:00 - 10:00"));
+  const value = slot.value || (start && end ? `${start} - ${end}` : (start || String(slot.value || "09:00 - 10:00")));
+  const id = String(slot.id || slot.slot_id || `${startRaw}-${value}`);
 
   return {
     ...slot,
@@ -356,9 +356,9 @@ export function normalizeSlot(slot: any) {
     end: endRaw,
     value,
     bookedCount,
-    maxAppointments,
-    remaining: isFullOrBlocked ? 0 : (remaining > 0 ? remaining : Math.max(0, maxAppointments - bookedCount)),
-    available: isAvailable,
+    maxAppointments: totalCount,
+    remaining,
+    available: isAvailable && remaining > 0,
   };
 }
 
@@ -380,6 +380,11 @@ function groupSlotsByTime(slots: any) {
       return;
     }
 
+    // If identical slot id, don't aggregate duplicate
+    if (current.id && slot.id && current.id === slot.id) {
+      return;
+    }
+
     const currentRemaining = current.remaining || 0;
     const shouldUseSlotForBooking = slot.available && (!current.available || slotRemaining > currentRemaining);
 
@@ -394,10 +399,10 @@ function groupSlotsByTime(slots: any) {
             status: slot.status,
           }
         : {}),
-      bookedCount: (current.bookedCount || 0) + (slot.bookedCount || 0),
-      maxAppointments: (current.maxAppointments || 1) + (slot.maxAppointments || 1),
-      available: Boolean((current.available || slot.available) && (currentRemaining + slotRemaining > 0)),
-      remaining: currentRemaining + slotRemaining,
+      bookedCount: Math.max(current.bookedCount || 0, slot.bookedCount || 0),
+      maxAppointments: Math.max(current.maxAppointments || 1, slot.maxAppointments || 1),
+      available: (current.available || slot.available) && (currentRemaining > 0 || slotRemaining > 0),
+      remaining: Math.max(currentRemaining, slotRemaining),
     });
   });
 
@@ -489,15 +494,22 @@ export class BookingApiService {
       return aptDateFormatted === dateFormatted && matchesBranch && apt.status !== "cancelled";
     });
 
-    const adjustWithLocal = (grouped: any[]) => {
+    // Only uncommitted/offline appointments need local deduction; real backend records are already counted by MongoDB
+    const uncommittedLocalAppointments = localAppointments.filter((apt: any) => {
+      const idStr = String(apt.id || apt._id || '');
+      return !/^[0-9a-fA-F]{24}$/.test(idStr);
+    });
+
+    const adjustWithLocal = (grouped: any[], isFromBackend = false) => {
       const blockedList = getBlockedSlots();
       return grouped.map((slot: any) => {
         const timeVal = slot.value?.split(" - ")[0] || slot.value;
         const key1 = `${dateFormatted}_${timeVal}`;
         const key2 = `${dateFormatted}_${slot.value}`;
-        const isBlocked = blockedList.includes(key1) || blockedList.includes(key2);
+        // If from backend and backend explicitly confirms remaining > 0, trust backend over stale local conflict cache
+        const isBlocked = !isFromBackend && (blockedList.includes(key1) || blockedList.includes(key2));
 
-        const bookedLocal = localAppointments.filter((apt: any) => {
+        const bookedLocal = uncommittedLocalAppointments.filter((apt: any) => {
           const aptTime = apt.service?.time || apt.start_time;
           return aptTime && (aptTime === timeVal || slot.value?.includes(aptTime));
         }).length;
@@ -510,6 +522,7 @@ export class BookingApiService {
 
         return {
           ...slot,
+          maxAppointments,
           bookedCount,
           remaining,
           available,
@@ -522,7 +535,7 @@ export class BookingApiService {
       const slots = assertSuccess(response);
       const slotsList = Array.isArray(slots) ? slots : Array.isArray(slots?.slots) ? slots.slots : [];
       if (slotsList.length > 0) {
-        return adjustWithLocal(groupSlotsByTime(slotsList.map(normalizeSlot)));
+        return adjustWithLocal(groupSlotsByTime(slotsList.map(normalizeSlot)), true);
       }
     } catch {
       // Fallback to availability
@@ -533,7 +546,7 @@ export class BookingApiService {
       const slots = assertSuccess(response);
       const slotsList = Array.isArray(slots) ? slots : Array.isArray(slots?.slots) ? slots.slots : [];
       if (slotsList.length > 0) {
-        return adjustWithLocal(groupSlotsByTime(slotsList.map(normalizeSlot)));
+        return adjustWithLocal(groupSlotsByTime(slotsList.map(normalizeSlot)), true);
       }
     } catch {
       // Fallback to operational slots
