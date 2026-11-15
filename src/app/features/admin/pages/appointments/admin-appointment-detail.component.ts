@@ -12,6 +12,7 @@ import { AdminDataStateComponent } from '../../../../shared/admin-data-state/adm
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { CatalogBranch, CatalogService } from '../../service-catalog/models/service-catalog.model';
 import { ServiceCatalogApiService } from '../../service-catalog/services/service-catalog-api.service';
+import { AdminStaffApiService } from '../../staff/services/admin-staff-api.service';
 import {
   AppointmentView, appointmentWindow, normalizeAppointmentDetail, statusLabel,
 } from './admin-appointment-workflow.model';
@@ -31,6 +32,7 @@ export class AdminAppointmentDetailComponent {
   private readonly api = inject(ApiClientService);
   private readonly toast = inject(AdminToastService);
   private readonly session = inject(AuthSessionService);
+  private readonly staffDirectory = inject(AdminStaffApiService);
   private readonly catalog = inject(ServiceCatalogApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -67,7 +69,25 @@ export class AdminAppointmentDetailComponent {
   readonly isExecutionStaff = computed(() => this.session.user()?.systemRole === 'STAFF' &&
     ['CARE_STAFF_GROOMER','VETERINARIAN','NURSE'].includes(this.session.user()?.staffSubRole ?? ''));
   readonly canManageAppointment = computed(() => this.isManagerOrAdmin() || this.isReceptionist());
-  readonly canStartService = computed(() => this.isManagerOrAdmin() || this.isExecutionStaff());
+  /**
+   * BE RBAC B3: /appointments/:id/start is exclusive to the assigned clinical
+   * StaffProfile, with the matching requiredStaffRole. Admin, Manager and
+   * Receptionist must never be allowed through the UI entry point.
+   */
+  readonly startableSegment = computed(() => {
+    const user = this.session.user();
+    const appointment = this.item();
+    if (!appointment || !user || !this.isExecutionStaff()) return null;
+    const ownProfile = this.staffDirectory.staff().find(staff => staff.userId === user.id);
+    if (!ownProfile) return null; // Fail closed while own StaffProfile is unavailable.
+    return appointment.serviceSegments.find(segment =>
+      segment.assignedStaffId === ownProfile.id &&
+      segment.requiredStaffRole === user.staffSubRole &&
+      segment.executionStatus.toUpperCase() === 'NOT_STARTED') ?? null;
+  });
+  readonly canStartService = computed(() => this.startableSegment() !== null);
+  // BE requires a verified pet-specific check-in before /start; the normalized
+  // appointment model does not yet expose it. Never guess it from CONFIRMED.
   readonly checkInSupported = computed(() => false);
   readonly cancellationWindow = computed(() => {
     const a = this.item();
@@ -195,6 +215,7 @@ export class AdminAppointmentDetailComponent {
   }
 
   constructor() {
+    if (this.isExecutionStaff()) this.staffDirectory.loadRoster();
     this.loadRescheduleBranches();
     this.refresh();
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
@@ -511,10 +532,10 @@ export class AdminAppointmentDetailComponent {
         this.showActionMessage('Chưa thể bắt đầu dịch vụ vì hệ thống chưa có dữ liệu check-in theo từng thú cưng.');
         return;
       }
-      const segment=appointment.serviceSegments.find(row=>
-        row.executionStatus.toUpperCase()==='NOT_STARTED');
-      if(!segment){
-        this.showActionMessage('Không còn dịch vụ nào có thể bắt đầu.');return;
+      const segment = this.startableSegment();
+      if (!segment) {
+        this.showActionMessage('Chỉ nhân viên chuyên môn được phân công đúng vai trò mới được bắt đầu dịch vụ.');
+        return;
       }
       request=this.api.post<unknown,{serviceId:string}>(
         '/appointments/'+encodeURIComponent(appointment.id)+'/start',
