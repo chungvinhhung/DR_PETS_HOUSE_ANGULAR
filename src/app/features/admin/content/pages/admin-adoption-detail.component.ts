@@ -6,6 +6,8 @@ import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-she
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminContentService } from '../services/admin-content.service';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 
 @Component({
  selector:'app-admin-adoption-detail',
@@ -18,6 +20,7 @@ import { AdminContentService } from '../services/admin-content.service';
 export class AdminAdoptionDetailComponent{
  private readonly route=inject(ActivatedRoute);
  private readonly api=inject(AdminContentService);
+ private readonly session=inject(AuthSessionService);
  readonly data=signal<any|null>(null);
  readonly loading=signal(true);
  readonly error=signal('');
@@ -42,7 +45,7 @@ export class AdminAdoptionDetailComponent{
  }
 
  startReview(status:'APPROVED'|'REJECTED'):void {
-  if(!this.isPending(this.data())||this.busy())return;
+  if(!this.canReview(this.data())||this.busy())return;
   this.reviewChoice.set(status);this.reviewNote.set('');
   this.actionError.set('');this.notice.set('');
  }
@@ -53,7 +56,7 @@ export class AdminAdoptionDetailComponent{
  review():void {
   const d=this.data();const id=String(d?._id||d?.id||this.id);
   const status=this.reviewChoice();
-  if(!id||!status||this.busy()||!this.isPending(d))return;
+  if(!id||!status||this.busy()||!this.canReview(d))return;
   if(status==='REJECTED' && this.reviewNote().trim().length<3){
     this.actionError.set('Vui lòng nhập lý do từ chối tối thiểu 3 ký tự.');return;
   }
@@ -68,8 +71,8 @@ export class AdminAdoptionDetailComponent{
     this.reviewChoice.set(null);this.reviewNote.set('');
     this.notice.set(status==='APPROVED'?'Đã duyệt đơn nhận nuôi.':'Đã từ chối đơn nhận nuôi.');
    },
-   error:(err:any)=>this.actionError.set(err?.error?.message||
-     (status==='APPROVED'?'Không thể duyệt đơn. Vui lòng thử lại.':'Không thể từ chối đơn. Vui lòng thử lại.')),
+   error:(err:unknown)=>this.actionError.set(adminErrorMessage(err,
+     status==='APPROVED'?'Không thể duyệt đơn. Vui lòng thử lại.':'Không thể từ chối đơn. Vui lòng thử lại.')),
   });
  }
 
@@ -82,4 +85,13 @@ export class AdminAdoptionDetailComponent{
   return Number.isNaN(parsed.getTime())?'—':parsed.toLocaleDateString('vi-VN');
  }
  isPending(d:any):boolean{return String(d?.status||'').toUpperCase()==='PENDING';}
+ canReview(d:any):boolean {
+  if(!this.isPending(d))return false;
+  const user=this.session.user();
+  if(user?.systemRole==='ADMIN')return true;
+  if(user?.systemRole!=='MANAGER')return false;
+  const branch=d?.rescuePetId?.branchId;
+  const branchId=String(branch?._id||branch?.id||(typeof branch==='string'?branch:'')||'');
+  return !!branchId && (user.branchScope??[]).includes(branchId);
+ }
 }
