@@ -79,9 +79,10 @@ export class AdminAppointmentDetailComponent {
     const appointment = this.item();
     if (!appointment || !user || !this.isExecutionStaff()) return null;
     const ownProfile = this.staffDirectory.staff().find(staff => staff.userId === user.id);
-    if (!ownProfile) return null; // Fail closed while own StaffProfile is unavailable.
+    // BE accepts either the user ID or its StaffProfile ID as an assignment.
+    const ownIds = [user.id, ownProfile?.id].filter((id): id is string => !!id);
     return appointment.serviceSegments.find(segment =>
-      segment.assignedStaffId === ownProfile.id &&
+      !!segment.assignedStaffId && ownIds.includes(segment.assignedStaffId) &&
       segment.requiredStaffRole === user.staffSubRole &&
       segment.executionStatus.toUpperCase() === 'NOT_STARTED') ?? null;
   });
