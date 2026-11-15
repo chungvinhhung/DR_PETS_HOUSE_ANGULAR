@@ -71,6 +71,20 @@
               <h2 id="rescue-partner-heading">Đơn vị cứu trợ phụ trách</h2>
             </div>
             <div class="article-studio__fields">
+              @if (isManager()) {
+                <label class="article-studio__field article-studio__field--wide">
+                  <span>Chi nhánh quản lý hồ sơ <b>*</b></span>
+                  <select [ngModel]="currentManagerBranch" (ngModelChange)="selectManagerBranch($event)"
+                    [disabled]="saving() || branchesLoading() || !!branchesError()">
+                    <option value="">Chọn chi nhánh được phân công</option>
+                    @for (branch of managerBranches(); track branch.id) {
+                      <option [value]="branch.id">{{branch.name}}</option>
+                    }
+                  </select>
+                  @if (branchesLoading()) { <small>Đang tải chi nhánh được phân công...</small> }
+                  @if (branchesError()) { <small role="alert">{{branchesError()}}</small> }
+                </label>
+              }
               <label class="article-studio__field article-studio__field--wide">
                 <span>Đối tác trong mạng lưới cứu trợ <b>*</b></span>
                 <select [disabled]="saving() || !canWrite()" [ngModel]="draft().supportPartnerId"
