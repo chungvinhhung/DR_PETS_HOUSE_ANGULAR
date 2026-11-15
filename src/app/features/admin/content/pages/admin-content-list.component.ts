@@ -7,6 +7,7 @@ import { finalize, Observable } from 'rxjs';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
+import { adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-pagination';
 import { canAdmin } from '../../../../core/guards/admin-role-policy';
 import { AdminContentService } from '../services/admin-content.service';
@@ -202,7 +203,7 @@ export class AdminContentListComponent{
   const req=this.mode==='rescue'?this.api.deleteRescuePet(id):(this.mode==='community'?this.api.deleteCommunity(id):this.api.deletePost(id));
   req.pipe(finalize(()=>this.actionBusy.set(false))).subscribe({
    next:()=>{this.rows.update(rows=>rows.filter(r=>String(r?._id||r?.id)!==id));if(this.mode==='community'){this.communityDialog.set(null);this.rejecting.set(false);this.confirmCommunityDelete.set(false);this.communityError.set('');}this.notice.set('Đã xóa nội dung.');},
-   error:()=>{if(this.mode==='community'&&this.communityDialog())this.communityError.set('Không thể xóa bài đăng. Vui lòng thử lại.');else this.notice.set('Không thể xóa nội dung. Vui lòng thử lại.');},
+   error:(err:unknown)=>{const message=adminErrorMessage(err,'Không thể xóa nội dung. Vui lòng thử lại.');if(this.mode==='community'&&this.communityDialog())this.communityError.set(message);else this.notice.set(message);},
   });
  }
  openCommunity(r:any):void{
@@ -229,7 +230,7 @@ export class AdminContentListComponent{
  communityCanDelete(row:any):boolean {
    // Pending posts must be rejected (reason retained), not permanently deleted.
    const status=String(row?.status ?? '').toUpperCase();
-   return this.isAdmin() && (status==='REJECTED' || status==='HIDDEN' || status==='APPROVED');
+   return this.canModerateCommunity() && (status==='REJECTED' || status==='HIDDEN' || status==='APPROVED');
  }
  startCommunityDeletion():void {
    if(!this.communityCanDelete(this.communityDialog()))return;
@@ -264,7 +265,7 @@ export class AdminContentListComponent{
     this.communityDialog.set(null);this.rejectionReason.set('');this.rejecting.set(false);this.confirmCommunityDelete.set(false);
     this.notice.set(status==='APPROVED'?'Đã duyệt bài đăng.':status==='HIDDEN'?'Đã ẩn bài đăng.':'Đã từ chối bài đăng.');
    },
-   error:(err:any)=>this.communityError.set(err?.error?.message||'Không thể cập nhật trạng thái bài đăng. Vui lòng thử lại.'),
+   error:(err:unknown)=>this.communityError.set(adminErrorMessage(err,'Không thể cập nhật trạng thái bài đăng. Vui lòng thử lại.')),
   });
  }
  name(r:any):string{return r.title||r.name||r.petName||r.pet_name||r.content||r.message||'—';}
