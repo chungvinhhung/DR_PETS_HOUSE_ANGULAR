@@ -5,6 +5,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import {
@@ -26,7 +27,7 @@ import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-she
 @Component({
   selector: 'app-admin-users-page',
   standalone: true,
-  imports: [ReactiveFormsModule, AdminDataStateComponent, AdminCatalogShellComponent],
+  imports: [ReactiveFormsModule, RouterLink, AdminDataStateComponent, AdminCatalogShellComponent],
   template: `
     <app-admin-catalog-shell activeItem="staff">
     <section class="users-page">
@@ -81,10 +82,10 @@ import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-she
             <label>
               <span>Vai trò hệ thống</span>
               <select formControlName="systemRole">
-                <option value="MANAGER">MANAGER</option>
                 <option value="STAFF">STAFF</option>
                 <option value="ADMIN">ADMIN</option>
               </select>
+              <small>Manager được tạo bằng form riêng với phạm vi chi nhánh quản lý. <a routerLink="/admin/staff/new">Thêm quản lý</a></small>
             </label>
 
             @if (createForm.controls.systemRole.value === 'STAFF') {
@@ -155,11 +156,12 @@ import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-she
                           [disabled]="saving()"
                         >
                           <option value="ADMIN">ADMIN</option>
-                          <option value="MANAGER">MANAGER</option>
+                          <option value="MANAGER" [disabled]="user.systemRole === 'STAFF'">MANAGER</option>
                           <option value="STAFF">STAFF</option>
                         </select>
 
                         @if (user.systemRole === 'STAFF') {
+                          <small class="role-guidance">Không chuyển trực tiếp Staff thành Manager. <a routerLink="/admin/staff/new">Tạo Manager riêng</a></small>
                           <select
                             class="compact-select compact-select--sub"
                             [value]="user.staffSubRole || 'RECEPTIONIST'"
@@ -614,6 +616,10 @@ export class AdminUsersPageComponent {
     }
 
     const value = this.createForm.getRawValue();
+    if (value.systemRole === 'MANAGER') {
+      this.errorMessage.set('Manager cần được tạo bằng form Nhân sự → Thêm quản lý, kèm chi nhánh quản lý.');
+      return;
+    }
     this.saving.set(true);
 
     this.usersService
@@ -657,6 +663,11 @@ export class AdminUsersPageComponent {
       return;
     }
 
+    if (user.systemRole === 'STAFF' && role === 'MANAGER') {
+      this.errorMessage.set('Không thể chuyển trực tiếp Staff thành Manager. Vui lòng tạo tài khoản Manager riêng tại Nhân sự → Thêm quản lý.');
+      this.loadUsers();
+      return;
+    }
     const systemRole = role as SystemRole;
     const staffSubRole =
       systemRole === 'STAFF'
