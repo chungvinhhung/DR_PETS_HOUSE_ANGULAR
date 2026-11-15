@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, afterNextRender, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, afterNextRender, computed, inject, signal, viewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import { CustomerAuthService } from '../../../../../core/customer/services/customer-auth.service';
 import { ContentApiService } from '../../../../../core/customer/services/api/content-api.service';
@@ -31,6 +32,7 @@ export class CommunityPageComponent {
   protected readonly authService = inject(CustomerAuthService);
   protected readonly contentApi = inject(ContentApiService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
 
   // --- Dữ liệu & hàm dùng trong template ---
   protected readonly blogImages: any = blogImages;
@@ -44,6 +46,8 @@ export class CommunityPageComponent {
 
   // --- Trạng thái (signal = useState / useRef) ---
   readonly posts = signal<any>((() => COMMUNITY_POSTS.map(normalizeCommunityPost))());
+  readonly posting = signal(false);
+  readonly composer = viewChild(ComposerComponent);
   readonly selectedId = signal<any>(null);
   readonly commentsByPost = signal<any>({ [this.featured().id]: INITIAL_COMMUNITY_COMMENTS });
   readonly postState = signal<any>({});
@@ -62,14 +66,23 @@ export class CommunityPageComponent {
         this.loadError.set("");
         this.apiEmptyMessage.set("");
 
-        this.contentApi.getCommunityPosts({ limit: 100 })
+        this.contentApi.getCommunityPostsPage({ page: 1, limit: 100 })
           .then((payload: any) => {
             if (!active) return;
-            if (!payload.items || !payload.items.length) {
-              this.apiEmptyMessage.set("API cộng đồng chưa có dữ liệu, đang hiển thị dữ liệu mẫu từ giao diện.");
+            const items = payload.posts || payload.items || [];
+            if (!items.length) {
+              this.apiEmptyMessage.set("Chưa có bài đăng cộng đồng đã được duyệt, đang hiển thị bài viết nổi bật.");
               return;
             }
-            this.posts.set(payload.items);
+            this.posts.set(items);
+            const requestedId = this.route.snapshot.queryParamMap.get('postId');
+            if (requestedId) {
+              if (items.some((post: any) => post.id === requestedId)) {
+                void this.openPost(requestedId);
+              } else {
+                this.apiEmptyMessage.set('Không tìm thấy bài đăng trong danh sách công khai đang tải.');
+              }
+            }
           })
           .catch((error: any) => {
             if (!active) return;
@@ -189,6 +202,7 @@ export class CommunityPageComponent {
       ...payload,
     };
     this.posts.update((items: any) => [optimisticPost, ...items]);
+    this.posting.set(true);
 
     try {
       const created = await this.contentApi.createCommunityPost({
@@ -196,6 +210,7 @@ export class CommunityPageComponent {
         content,
         imageUrls,
       });
+      this.composer()?.reset?.();
       this.shareNotice.set("Đăng bài chia sẻ thành công! Cảm ơn bạn đã đóng góp cho cộng đồng.");
       window.setTimeout(() => this.shareNotice.set(""), 3000);
       if (created?.id) {
@@ -206,6 +221,8 @@ export class CommunityPageComponent {
     } catch (error: any) {
       this.shareNotice.set(error?.message || "Đã đăng bài viết.");
       window.setTimeout(() => this.shareNotice.set(""), 3000);
+    } finally {
+      this.posting.set(false);
     }
   }
 

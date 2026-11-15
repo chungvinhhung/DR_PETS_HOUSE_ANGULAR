@@ -32,8 +32,12 @@ const STATUS_STYLES = {
   },
 };
 
-const ONLINE_PAYMENT_METHODS = new Set<any>(["momo", "zalopay", "vnpay", "bank", "atm", "card", "online", "online_mock"]);
-const CLINIC_PAYMENT_METHODS = new Set<any>(["cash", "pay_at_clinic", "store", "pay_at_store", "direct", "offline"]);
+const ONLINE_PAYMENT_METHODS = new Set<any>([
+  "momo", "zalopay", "vnpay", "bank", "atm", "card", "online", "online_mock"
+]);
+const CLINIC_PAYMENT_METHODS = new Set<any>([
+  "cash", "pay_at_clinic", "store", "pay_at_store", "direct", "offline"
+]);
 
 export const APPOINTMENT_FILTERS = [
   { value: "all", label: "Tất cả" },
@@ -72,9 +76,15 @@ export function isClinicPayment(appointment: any) {
   );
 }
 
-export function getAppointmentDisplayStatus(appointment: any) {
+/**
+ * Returns user-facing status.
+ * In 'customer' view (default), pay-at-clinic pending appointments are mapped to 'confirmed'
+ * to prevent confusing 15-minute countdowns and unpaid warnings for in-store payments.
+ * In 'admin' view, the raw status is preserved for receptionists collecting balance at the desk.
+ */
+export function getAppointmentDisplayStatus(appointment: any, context: 'customer' | 'admin' = 'customer') {
   let status = String(appointment?.status || 'confirmed').toLowerCase();
-  if (isClinicPayment(appointment) && (status === "pending_payment" || status === "pending" || status === "pending_confirmation")) {
+  if (context === 'customer' && isClinicPayment(appointment) && (status === "pending_payment" || status === "pending" || status === "pending_confirmation")) {
     status = "confirmed";
   }
 
@@ -116,7 +126,8 @@ export function getAppointmentActions(appointment: any) {
 
 export function getAppointmentTimelineSteps(appointment: any) {
   const { value: status } = getAppointmentDisplayStatus(appointment);
-  const hasPaymentStep = !isClinicPayment(appointment);
+  const isClinic = isClinicPayment(appointment);
+  const hasPaymentStep = !isClinic;
   const paid = appointment.paymentStatus === "paid";
   const terminal = status === "cancelled" || status === "no_show";
 

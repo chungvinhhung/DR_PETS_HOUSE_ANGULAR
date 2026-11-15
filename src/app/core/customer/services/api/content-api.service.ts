@@ -9,6 +9,7 @@ import { Injectable, inject } from '@angular/core';
 
 import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 import { blogImages } from '../../../../shared/customer/assets/blog-images';
+import { FIRST_AID_CATEGORIES } from '../../../../shared/customer/data/first-aid-data';
 
 function formatDate(value: any) {
   const date = new Date(value);
@@ -98,6 +99,18 @@ export function normalizePost(post: any = {}) {
   const categoryLabel = typeof category === 'string' ? category : (category.category_name || category.name || category.label || "Kiến thức");
   const categoryId = typeof category === 'string' ? ((blogCategoryAliases as any)[slugify(category)] || slugify(category)) : getBlogCategoryId(category);
   const contentText = post.content || post.excerpt || "";
+  const rawBlocks = post.contentBlocks || post.content_blocks;
+  const contentBlocks = Array.isArray(rawBlocks)
+    ? rawBlocks.filter((block: any) =>
+        ['paragraph','heading','quote','list','image','video'].includes(block?.type) &&
+        typeof block?.text === 'string' && block.text.trim())
+      .map((block: any) => ({
+        type: block.type,
+        text: block.text,
+        alt: typeof block.alt === 'string' ? block.alt : '',
+        html: typeof block.html === 'string' ? block.html : ''
+      }))
+    : [];
   const paragraphs = (String(contentText)
     .split(/\n{2,}|\r?\n/)
     .map((item: any) => item.trim())
@@ -113,6 +126,8 @@ export function normalizePost(post: any = {}) {
     title: post.title || "Bài viết",
     excerpt: post.excerpt || paragraphs[0] || "Thông tin hữu ích giúp bạn chăm sóc thú cưng mỗi ngày.",
     content: contentText,
+    contentBlocks,
+    layoutType: post.layoutType || post.layout_type || 'standard',
     paragraphs,
     image: post.thumbnailUrl || post.thumbnail_url || post.thumbnail || blogImages.postPlaceholder,
     author: post.authorId?.fullName || post.author?.full_name || post.authorNameSnapshot || post.author || "Dr. Pet's House",
@@ -211,6 +226,10 @@ export function normalizeFirstAidGuide(guide: any = {}, index: any = 0) {
     title: step.title || `Bước ${step.step_number || step.stepNumber || sIdx + 1}`,
     description: step.step_content || step.instruction || step.description || "",
   }));
+  const rawBadges = guide.stepBadges || guide.step_badges;
+  const stepBadges = Array.isArray(rawBadges)
+    ? rawBadges.filter((b: any) => typeof b === 'string' && b.trim())
+    : ['Thực hiện chậm', 'Quan sát kỹ'];
 
   const categoryLabel = typeof category === 'string' ? category : (category.category_name || category.name || category.label || "Sơ cứu");
 
@@ -233,10 +252,14 @@ export function normalizeFirstAidGuide(guide: any = {}, index: any = 0) {
           { title: "Quan sát dấu hiệu", description: "Ghi nhận triệu chứng, thời điểm xảy ra và các yếu tố liên quan." },
           { title: "Liên hệ bác sĩ", description: "Gọi phòng khám hoặc đưa thú cưng đi cấp cứu khi tình trạng nặng." },
         ],
+    stepBadges,
     video: {
-      title: guide.video_url ? "Xem video hướng dẫn chi tiết" : "Hướng dẫn xử lý an toàn",
-      description: guide.video_url || "Thực hiện các bước sơ cứu nhẹ nhàng, tránh tự dùng thuốc khi chưa có chỉ định.",
-      highlights: ["Giữ đường thở thông thoáng", "Theo dõi phản ứng của thú cưng"],
+      title: guide.video_title || (guide.video_url ? "Xem video hướng dẫn chi tiết" : "Hướng dẫn xử lý an toàn"),
+      description: guide.video_description || guide.video_url || "Thực hiện các bước sơ cứu nhẹ nhàng, tránh tự dùng thuốc khi chưa có chỉ định.",
+      descriptionHtml: guide.video_description_html || guide.videoDescriptionHtml || "",
+      highlights: Array.isArray(guide.video_highlights) && guide.video_highlights.length
+        ? guide.video_highlights
+        : ["Giữ đường thở thông thoáng", "Theo dõi phản ứng của thú cưng"],
       url: guide.video_url || "",
     },
     emergencyPhone: guide.emergency_phone || guide.emergencyPhone || "1900-PET-HELP",
@@ -299,25 +322,40 @@ export class ContentApiService {
     };
   }
 
+  async getCommunityPostsPage(params: any = {}) {
+    const response = await this.http.get('/community/posts', { params });
+    const payload = assertSuccess(response);
+    const rawPosts = Array.isArray(payload)
+      ? payload : (Array.isArray(payload?.items) ? payload.items :
+        (Array.isArray(payload?.posts) ? payload.posts : []));
+    const posts = rawPosts.map(normalizeCommunityPostFromApi);
+    return {
+      posts,
+      items: posts,
+      totalRows: Number(payload?.totalRows ?? payload?.total ?? posts.length),
+      total: Number(payload?.total ?? payload?.totalRows ?? posts.length),
+      totalPages: Number(payload?.totalPages || 1),
+      page: Number(payload?.page || 1),
+    };
+  }
+
   async getCommunityPosts(params: any = {}) {
     try {
-      const response = await this.http.get("/community/posts", { params });
-      const payload = assertSuccess(response);
-      const items = Array.isArray(payload)
-        ? payload
-        : (Array.isArray(payload?.items) ? payload.items : (Array.isArray(payload?.posts) ? payload.posts : []));
+      const res = await this.getCommunityPostsPage(params);
       return {
-        items: items.map(normalizeCommunityPostFromApi),
-        total: Number(payload?.total || items.length),
-        page: Number(payload?.page || 1),
-        totalPages: Number(payload?.totalPages || 1),
+        items: res.posts,
+        posts: res.posts,
+        total: res.total,
+        totalRows: res.totalRows,
+        page: res.page,
+        totalPages: res.totalPages,
       };
     } catch {
-      return { items: [], total: 0, page: 1, totalPages: 1 };
+      return { items: [], posts: [], total: 0, totalRows: 0, page: 1, totalPages: 1 };
     }
   }
 
-  async createCommunityPost(data: { title?: string; content: string; imageUrls?: string[] }) {
+  async createCommunityPost(data: { title?: string; content: string; imageUrls?: string[]; type?: string }) {
     const response = await this.http.post("/community/posts", data);
     const resData = assertSuccess(response);
     return normalizeCommunityPostFromApi(resData);
@@ -444,7 +482,27 @@ export class ContentApiService {
     }
   }
 
-  async replyPostComment(postId: any, commentId: any, content: any, authorInfo: any = {}, replyTo: any = "") {
+  async replyPostComment(first: any, second: any, third?: any, fourth: any = {}, fifth: any = "") {
+    let postId = "";
+    let commentId = "";
+    let content = "";
+    let authorInfo: any = {};
+    let replyTo: any = "";
+
+    if (typeof third === 'string') {
+      // Signature: replyPostComment(postId, commentId, content, authorInfo, replyTo)
+      postId = first;
+      commentId = second;
+      content = third;
+      authorInfo = fourth || {};
+      replyTo = fifth || "";
+    } else {
+      // Signature: replyPostComment(commentId, content, authorInfo?)
+      commentId = first;
+      content = second;
+      authorInfo = third || {};
+    }
+
     const author = authorInfo.fullName || authorInfo.name || "Bạn";
     const avatar = authorInfo.avatarUrl || authorInfo.avatar || "";
     const userId = authorInfo.userId || "";
@@ -457,36 +515,39 @@ export class ContentApiService {
     }
 
     try {
-      const key = `dr_pets_comments_${postId}`;
-      const existing = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
-      const list = existing ? JSON.parse(existing) : [];
-      const parent = list.find((c: any) => c.id === commentId);
-      const newReply = {
-        id: result?.id || `reply-${Date.now()}`,
-        content,
-        author: result?.author || author,
-        avatar: result?.avatar || avatar,
-        userId: result?.userId || userId,
-        replyTo: replyTo || parent?.author || "",
-        isOwn: true,
-        time: "Vừa xong",
-        createdAt: new Date().toISOString(),
-      };
-      if (parent) {
-        if (!Array.isArray(parent.replies)) {
-          parent.replies = [];
+      if (postId) {
+        const key = `dr_pets_comments_${postId}`;
+        const existing = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
+        const list = existing ? JSON.parse(existing) : [];
+        const parent = list.find((c: any) => c.id === commentId);
+        const newReply = {
+          id: result?.id || `reply-${Date.now()}`,
+          content,
+          author: result?.author || author,
+          avatar: result?.avatar || avatar,
+          userId: result?.userId || userId,
+          replyTo: replyTo || parent?.author || "",
+          isOwn: true,
+          time: "Vừa xong",
+          createdAt: new Date().toISOString(),
+        };
+        if (parent) {
+          if (!Array.isArray(parent.replies)) {
+            parent.replies = [];
+          }
+          parent.replies.push(newReply);
+        } else {
+          list.push({
+            ...newReply,
+            replies: [],
+          });
         }
-        parent.replies.push(newReply);
-      } else {
-        list.push({
-          ...newReply,
-          replies: [],
-        });
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem(key, JSON.stringify(list));
+        }
+        return result || { success: true, data: newReply };
       }
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(key, JSON.stringify(list));
-      }
-      return result || { success: true, data: newReply };
+      return result || { success: true };
     } catch {
       return { success: true };
     }
