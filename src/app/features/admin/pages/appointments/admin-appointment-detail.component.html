@@ -33,7 +33,7 @@
             }
           } @else if (appointment.status==='COMPLETED') {
             <a class="btn btn--primary" routerLink="/admin/appointments">Quay lại danh sách</a>
-          } @else if (appointment.status!=='IN_PROGRESS' && canManageAppointment()) {
+          } @else if (canManageAppointment()) {
             <button type="button" class="btn btn--danger"
               [disabled]="appointment.status==='CANCELLED'||appointment.status==='NO_SHOW'"
               (click)="startAction('cancel')">Hủy lịch</button>
