@@ -485,8 +485,8 @@
           }
         </div>
         <a class="dash__action-all" [routerLink]="actionTab() === 'orders' ? '/admin/orders' : '/admin/appointments'">
-          {{actionTab() === 'orders' ? 'Xem tất cả đơn hàng' : 'Xem tất cả lịch hẹn'}}
-          <span aria-hidden="true">→</span>
+          <span class="dash__action-all-label">{{actionTab() === 'orders' ? 'Xem tất cả đơn hàng' : 'Xem tất cả lịch hẹn'}}</span>
+          <span class="dash__action-all-arrow" aria-hidden="true">→</span>
         </a>
       </section>
     </div>

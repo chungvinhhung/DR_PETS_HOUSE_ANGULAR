@@ -211,3 +211,9 @@
 @media(prefers-reduced-motion:reduce){
   .dash__live-chart,.dash__live-spark{transition:none}
 }
+
+/* Keep the hover underline on label text only, not the arrow. */
+:host .dash__action-all:hover { text-decoration: none; }
+:host .dash__action-all .dash__action-all-label { font-size: inherit; text-decoration: none; }
+:host .dash__action-all:hover .dash__action-all-label { text-decoration: underline; text-underline-offset: 2px; }
+:host .dash__action-all .dash__action-all-arrow { text-decoration: none; }
