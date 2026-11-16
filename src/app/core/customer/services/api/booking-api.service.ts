@@ -748,47 +748,26 @@ export class BookingApiService {
       canRebook: false,
     };
 
+    // Never treat an API failure as a successful booking.
+    let response: any;
     try {
-      const response = await this.http.post("/appointments", payload, options);
-      const resData = assertSuccess(response);
-      if (resData) {
-        if (resData.id || resData._id) localApt.id = String(resData.id || resData._id);
-        if (resData.code) localApt.code = resData.code;
-        if (resData.status) localApt.status = normalizeAppointmentStatus(resData);
-      }
-      saveLocalAppointment(localApt);
-      return resData || localApt;
-    } catch (err: any) {
-      if (err?.status === 404) {
-        try {
-          const response = await this.http.post("/appointments/book", payload, options);
-          const resData = assertSuccess(response);
-          if (resData) {
-            if (resData.id || resData._id) localApt.id = String(resData.id || resData._id);
-            if (resData.code) localApt.code = resData.code;
-            if (resData.status) localApt.status = normalizeAppointmentStatus(resData);
-          }
-          saveLocalAppointment(localApt);
-          return resData || localApt;
-        } catch {
-          saveLocalAppointment(localApt);
-          return localApt;
-        }
-      }
-      if (
-        err?.status === 422 &&
-        (String(err?.message || "").includes("STAFF_UNAVAILABLE") ||
-          String(err?.data?.detail || "").includes("available staff") ||
-          String(err?.data?.code || "") === "STAFF_UNAVAILABLE")
-      ) {
-        saveLocalAppointment(localApt);
-        return {
-          ...localApt,
-          message: "Đặt lịch hẹn thành công (Đang chờ phòng khám chỉ định nhân viên)",
-        };
-      }
-      throw err;
+      response = await this.http.post("/appointments", payload, options);
+    } catch (error: any) {
+      if (error?.status !== 404) throw error;
+      response = await this.http.post("/appointments/book", payload, options);
     }
+    const resData = assertSuccess(response);
+    const realId = resData?._id || resData?.id || resData?.appointmentId ||
+      resData?.appointment?._id || resData?.appointment?.id;
+    if (!realId) {
+      throw new Error('Máy chủ chưa xác nhận mã lịch hẹn. Vui lòng kiểm tra trước khi đặt lại.');
+    }
+    // Local cache can be used for immediate UI hints only after BE confirms success.
+    localApt.id = String(realId);
+    if (resData.code) localApt.code = resData.code;
+    if (resData.status) localApt.status = normalizeAppointmentStatus(resData);
+    saveLocalAppointment(localApt);
+    return resData?.appointment || resData;
   }
 
   async previewAppointmentPricing(payload: any) {
@@ -807,41 +786,18 @@ export class BookingApiService {
   }
 
   async getAppointmentHistory() {
-    let backendItems: any[] = [];
+    let response: any;
     try {
-      let response: any;
-      try {
-        response = await this.http.get("/appointments");
-      } catch {
-        response = await this.http.get("/appointments/my-history");
-      }
-      const data = assertSuccess(response);
-      backendItems = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
-    } catch (e) {
-      console.warn("Backend get appointments failed, using local appointments", e);
+      response = await this.http.get("/appointments");
+    } catch (error: any) {
+      if (error?.status !== 404) throw error;
+      response = await this.http.get("/appointments/my-history");
     }
-
-    const localList = getLocalAppointments();
-
-    const normalizedBackend = backendItems.map(normalizeAppointmentHistoryItem);
-    const normalizedLocal = localList.map(normalizeAppointmentHistoryItem);
-
-    const mergedMap = new Map<string, any>();
-    // Add local first (so newly booked are prioritized)
-    for (const item of normalizedLocal) {
-      const key = item.code || item.id;
-      if (key) mergedMap.set(key, item);
-    }
-    // Then merge backend items
-    for (const item of normalizedBackend) {
-      const key = item.code || item.id;
-      if (key) {
-        const existing = mergedMap.get(key);
-        mergedMap.set(key, existing ? { ...existing, ...item } : item);
-      }
-    }
-
-    return Array.from(mergedMap.values());
+    const data = assertSuccess(response);
+    const items = Array.isArray(data?.items)
+      ? data.items : Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+    // Only records confirmed by the backend can be displayed as appointment history.
+    return items.map(normalizeAppointmentHistoryItem);
   }
 
   async getCancelPreview(appointmentId: any) {

@@ -4,12 +4,8 @@
 >
   <img [attr.src]="successCheckGroup" alt="" class="h-[69px] w-[69px]" />
   <div>
-    <h2 class="text-3xl font-bold text-[#3d3d3d] md:text-5xl">Đặt lịch thành công</h2>
-    @if (isGuest()) {
-      <p class="mx-auto mt-3 max-w-lg text-base text-[#949494]">Lịch hẹn của bạn đã được xác nhận. Thông tin lịch hẹn sẽ được gửi qua số điện thoại/email bạn đã cung cấp.</p>
-    } @else {
-      <p class="mx-auto mt-3 max-w-lg text-base text-[#949494]">Lịch hẹn của bạn đã được xác nhận. Xem chi tiết và theo dõi lịch hẹn tại ‘Lịch sử đặt lịch’.</p>
-    }
+    <h2 class="text-3xl font-bold text-[#3d3d3d] md:text-5xl">{{ confirmed() ? 'Đặt lịch thành công' : 'Đã tạo lịch hẹn' }}</h2>
+    <p class="mx-auto mt-3 max-w-lg text-base text-[#949494]">{{ message() }}</p>
   </div>
   <div class="flex flex-col justify-center gap-3 md:flex-row md:flex-wrap md:gap-5">
     <a

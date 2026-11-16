@@ -80,6 +80,7 @@ export class BookingPageComponent {
     agreed: false,
   });
   readonly paymentMode = signal<any>("store");
+  readonly createdAppointment = signal<{ status: string; holdExpiresAt: string | null } | null>(null);
   readonly success = signal<any>(false);
 
   /** Hàm set kiểu React cho signal "selectedServiceType" (dùng khi truyền cho component con / callback) */
@@ -338,7 +339,7 @@ export class BookingPageComponent {
         petData.species_id = findSpeciesId(this.speciesOptions(), firstPetInfo?.species || "Chó") || "DOG";
       }
 
-      await this.bookingApi.bookAppointment({
+      const created = await this.bookingApi.bookAppointment({
         branchId: this.ownerInfo().branch,
         branchName,
         branchAddress,
@@ -367,6 +368,10 @@ export class BookingPageComponent {
         payment_method: this.paymentMode() === "store" ? "store" : "online",
         paymentMethod: this.paymentMode() === "store" ? "PAY_AT_STORE" : "ONLINE_MOCK",
         totalPrice,
+      });
+      this.createdAppointment.set({
+        status: String(created?.status || created?.appointment?.status || 'PENDING_CONFIRMATION'),
+        holdExpiresAt: created?.holdExpiresAt || created?.appointment?.holdExpiresAt || null,
       });
       this.success.set(true);
     } catch (error: any) {
