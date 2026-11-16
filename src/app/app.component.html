@@ -1,6 +1,10 @@
 <router-outlet (activate)="onRouteActivated()" />
 @if (!routeActivated()) {
   <main class="app-route-loading" role="status" aria-live="polite">
-    Bạn ơi chờ một chút nhé! Dữ liệu sẽ tải xong ngay...
+    <div class="app-route-loading__content">
+      <span class="app-route-loading__spinner" aria-hidden="true"></span>
+      <p class="app-route-loading__title">Đang chuẩn bị trang cho bạn</p>
+      <p class="app-route-loading__description">Vui lòng chờ trong giây lát.</p>
+    </div>
   </main>
 }

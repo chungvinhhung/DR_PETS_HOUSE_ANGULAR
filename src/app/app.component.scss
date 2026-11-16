@@ -7,7 +7,52 @@
   min-height: 65vh;
   display: grid;
   place-items: center;
-  color: #35597d;
-  font-size: 15px;
+  padding: 32px 20px;
   background: #f8fafc;
+  text-align: center;
+}
+
+.app-route-loading__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  max-width: 420px;
+}
+
+.app-route-loading__spinner {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 5px;
+  border: 3px solid rgba(13, 71, 161, 0.14);
+  border-top-color: #0d47a1;
+  border-radius: 50%;
+  animation: app-route-loading-spin 0.8s linear infinite;
+}
+
+.app-route-loading__title {
+  margin: 0;
+  color: #0d47a1;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.app-route-loading__description {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@keyframes app-route-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-route-loading__spinner {
+    animation: none;
+  }
 }
