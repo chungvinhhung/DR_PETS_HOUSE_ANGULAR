@@ -1,0 +1,83 @@
+.about-section__stack {
+  @apply mx-auto flex max-w-page flex-col items-center gap-10 px-6 lg:flex-row lg:items-center lg:gap-[42px] lg:px-[120px];
+}
+
+.about-section__box {
+  @apply relative w-full max-w-[584px] shrink-0;
+}
+
+.about-section__doi-ngu-dr-pet {
+  @apply h-auto w-full object-contain;
+}
+
+.about-section__right-content {
+  @apply flex max-w-[523px] flex-col gap-4;
+}
+
+.about-section__stack-2 {
+  @apply flex flex-col items-center gap-2;
+}
+
+.about-section__box-2 {
+  @apply h-px w-full max-w-[223px] border-t border-dashed border-amber-400;
+}
+
+.about-section__text {
+  @apply flex items-center gap-2 text-base font-bold text-amber-400;
+}
+
+.about-section__box-3 {
+  @apply h-px w-full max-w-[223px] border-t border-dashed border-amber-600;
+}
+
+.about-section__row {
+  @apply relative flex items-center justify-center;
+}
+
+.about-section__cham-soc-thu-title {
+  @apply relative z-10 font-bold text-center font-display text-4xl leading-tight text-[#02000f] md:text-[56px] md:leading-[68px];
+}
+
+.about-section__dr-pet-s-house-text {
+  @apply text-justify text-lg leading-[31.5px] text-[#6c6d71];
+}
+
+.about-section__let-left-el {
+  @apply grid gap-4 sm:grid-cols-2;
+}
+
+.about-section__box-4 {
+  @apply contents;
+}
+
+.about-section__row-2 {
+  @apply flex items-start gap-3;
+}
+
+.about-section__left {
+  @apply text-base leading-7 text-[#4e4e4e];
+}
+
+.about-section__row-3 {
+  @apply mt-4 flex flex-wrap items-center gap-4;
+}
+
+.about-section__row-4 {
+  @apply flex items-center gap-3;
+}
+
+.about-section__row-5 {
+  @apply flex h-12 w-12 items-center justify-center rounded-full border border-secondary;
+}
+
+.about-section__phone {
+  @apply h-6 w-6;
+}
+
+.about-section__lien-he-text {
+  @apply text-2xl font-medium text-[#02000f];
+}
+
+.about-section__text-2 {
+  @apply text-lg text-[#02000f];
+}

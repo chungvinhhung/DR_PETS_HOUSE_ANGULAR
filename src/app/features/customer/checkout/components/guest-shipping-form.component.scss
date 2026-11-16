@@ -1,0 +1,19 @@
+.guest-shipping-form__row {
+  @apply flex items-center gap-2;
+}
+
+.guest-shipping-form__dia-chi-nhan-title {
+  @apply text-xl font-black text-blue-900;
+}
+
+.guest-shipping-form__grid {
+  @apply grid gap-5 md:grid-cols-2;
+}
+
+.guest-shipping-form__stack {
+  @apply flex flex-col gap-2;
+}
+
+.guest-shipping-form__stack-2 {
+  @apply flex flex-col gap-2 md:col-span-2;
+}

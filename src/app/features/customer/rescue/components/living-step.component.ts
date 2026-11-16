@@ -11,6 +11,7 @@ import { LIVING_CONDITION_QUESTIONS } from '../data/adoption-form-data';
   standalone: true,
   imports: [RadioQuestionComponent],
   templateUrl: './living-step.component.html',
+  styleUrl: './living-step.component.scss',
   host: {
     'class': 'flex w-full flex-col gap-6',
   },

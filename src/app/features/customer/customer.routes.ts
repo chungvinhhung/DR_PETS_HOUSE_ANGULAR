@@ -32,6 +32,7 @@ const groomingSpa = () => import('./clinic-services/pages/grooming-spa/grooming-
 const medicalTreatment = () =>
   import('./clinic-services/pages/medical-treatment/medical-treatment-page.component').then((m) => m.MedicalTreatmentPageComponent);
 const checkout = () => import('./checkout/pages/checkout-page.component').then((m) => m.CheckoutPageComponent);
+const guestLookup = () => import('./guest-lookup/pages/guest-lookup-page.component').then((m) => m.GuestLookupPageComponent);
 const notFound = () => import('./not-found/pages/not-found-page.component').then((m) => m.NotFoundPageComponent);
 
 export const CUSTOMER_ROUTES: Routes = [
@@ -92,6 +93,9 @@ export const CUSTOMER_ROUTES: Routes = [
   { path: 'dich-vu/grooming-spa', loadComponent: groomingSpa },
   { path: 'dich-vu/kham-dieu-tri', loadComponent: medicalTreatment },
   { path: 'checkout', loadComponent: checkout },
+  // Tra cứu đơn hàng / lịch hẹn cho khách chưa có tài khoản (SĐT/email + OTP) — không cần đăng nhập
+  { path: 'tra-cuu-don-hang', loadComponent: guestLookup, title: "Tra cứu đơn hàng / lịch hẹn - Dr. Pet's House" },
+  { path: 'guest-lookup', redirectTo: 'tra-cuu-don-hang', pathMatch: 'full' },
   // Trang yêu cầu trả hàng hoàn tiền: toàn chiều rộng (không dùng sidebar tài khoản)
   {
     path: 'don-hang-cua-toi/:orderId/yeu-cau-hoan-tien',

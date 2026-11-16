@@ -1,0 +1,19 @@
+.product-search-and-sort__label {
+  @apply flex h-[56px] min-w-0 flex-1 items-center justify-between rounded-[42px] border border-[rgba(25,118,210,0.5)] bg-white/80 py-2 pl-5 pr-2 backdrop-blur-[11px];
+}
+
+.product-search-and-sort__ban-dang-tim-kiem {
+  @apply min-w-0 flex-1 bg-transparent text-[16px] text-[#5F5F5F] outline-none placeholder:text-[#5F5F5F];
+}
+
+.product-search-and-sort__search-icon {
+  @apply h-7 w-7;
+}
+
+.product-search-and-sort__label-2 {
+  @apply flex h-[56px] w-[150px] shrink-0 sm:w-[187px] cursor-pointer items-center gap-[14px] rounded-[42px] border border-[rgba(25,118,210,0.5)] bg-white px-[17px];
+}
+
+.product-search-and-sort__sap-xep-gia {
+  @apply w-full cursor-pointer appearance-none bg-transparent text-center text-[16px] font-medium tracking-[0.5px] text-[rgba(0,0,0,0.87)] outline-none;
+}

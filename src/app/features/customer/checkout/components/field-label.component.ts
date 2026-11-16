@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './field-label.component.html',
+  styleUrl: './field-label.component.scss',
   host: {
     'class': 'text-sm font-medium text-slate-900',
   },

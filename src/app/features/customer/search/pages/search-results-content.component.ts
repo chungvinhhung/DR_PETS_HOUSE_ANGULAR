@@ -12,6 +12,7 @@ import { ArticlesSectionComponent } from './articles-section.component';
   standalone: true,
   imports: [ServicesSectionComponent, ProductsSectionComponent, ArticlesSectionComponent],
   templateUrl: './search-results-content.component.html',
+  styleUrl: './search-results-content.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -1,0 +1,127 @@
+.pet-list-page__stack {
+  @apply mb-6 flex flex-col gap-1;
+}
+
+.pet-list-page__danh-sach-ho-title {
+  @apply text-[28px] font-bold leading-9 text-[#031635];
+}
+
+.pet-list-page__quan-ly-va-text {
+  @apply text-[15px] leading-6 text-[#667085];
+}
+
+.pet-list-page__let-active-el {
+  @apply mb-4 flex w-full items-center gap-2 overflow-x-auto pb-1 pt-1;
+}
+
+.pet-list-page__row {
+  @apply mb-6 flex items-center gap-[10px];
+}
+
+.pet-list-page__link {
+  @apply shrink-0;
+}
+
+.pet-list-page__button {
+  @apply flex h-[52px] items-center gap-2 rounded-[42px] bg-[#fff176] px-5 text-[14px] font-bold text-[#031635] shadow-elevation transition hover:bg-[#fdd835];
+}
+
+.pet-list-page__text {
+  @apply text-xl leading-none;
+}
+
+.pet-list-page__search-query {
+  @apply mb-6 text-[16px] leading-[27px] text-[#414141];
+}
+
+.pet-list-page__load-error {
+  @apply mb-4 text-center text-sm text-[#0D47A1];
+}
+
+.pet-list-page__dang-tai-ho-el {
+  @apply py-12 text-center text-slate-500;
+}
+
+.pet-list-page__let-displaystatus-el {
+  @apply grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+}
+
+.pet-list-page__pet-link {
+  @apply bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow font-sans cursor-pointer;
+}
+
+.pet-list-page__phan-hinh-anh-badge {
+  @apply relative w-full h-52 bg-slate-100 overflow-hidden;
+}
+
+.pet-list-page__name {
+  @apply w-full h-full object-cover;
+}
+
+.pet-list-page__row-2 {
+  @apply w-full h-full flex items-center justify-center text-5xl text-slate-300;
+}
+
+.pet-list-page__badge-trang-thai-goc {
+  @apply absolute top-3 right-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-semibold;
+}
+
+.pet-list-page__text-2 {
+  @apply h-2 w-2 rounded-full;
+}
+
+.pet-list-page__phan-noi-dung-the {
+  @apply p-5 flex flex-col flex-1;
+}
+
+.pet-list-page__hang-ten-thu-cung {
+  @apply flex items-start justify-between gap-2;
+}
+
+.pet-list-page__name-2 {
+  @apply text-[20px] leading-snug font-bold text-slate-900 tracking-tight;
+}
+
+.pet-list-page__breed {
+  @apply text-[14px] text-slate-500 font-normal mt-0.5;
+}
+
+.pet-list-page__icon-gioi-tinh-duc {
+  @apply text-slate-600 pt-0.5 flex-shrink-0;
+}
+
+.pet-list-page__icon-giong-cai {
+  @apply w-5 h-5;
+}
+
+.pet-list-page__duong-ke-ngang-ngan {
+  @apply my-4 border-slate-100;
+}
+
+.pet-list-page__thong-tin-kham-gan {
+  @apply mb-5;
+}
+
+.pet-list-page__kham-gan-nhat-text {
+  @apply text-[13px] text-slate-400 font-normal;
+}
+
+.pet-list-page__display-checkup {
+  @apply text-[15px] font-medium text-slate-800 mt-0.5;
+}
+
+.pet-list-page__nut-xem-chi-tiet {
+  @apply w-full;
+}
+
+.pet-list-page__xem-chi-tiet-button {
+  @apply w-full bg-[#0a0f3a] hover:bg-[#070b29] rounded-md py-2 font-medium text-xs text-white transition;
+}
+
+.pet-list-page__box {
+  @apply text-center py-12;
+}
+
+.pet-list-page__khong-tim-thay-text {
+  @apply text-slate-500;
+}

@@ -10,6 +10,7 @@ import { ReactStyleDirective } from '../../../../shared/customer/directives/reac
   standalone: true,
   imports: [ReactStyleDirective],
   templateUrl: './notification-visual.component.html',
+  styleUrl: './notification-visual.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

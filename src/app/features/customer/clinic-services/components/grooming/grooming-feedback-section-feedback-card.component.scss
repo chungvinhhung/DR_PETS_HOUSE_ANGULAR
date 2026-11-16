@@ -1,0 +1,23 @@
+.grooming-feedback-section-feedback-card__text {
+  @apply mt-2 shrink-0 overflow-hidden text-[16px] leading-7 text-[#333] line-clamp-4;
+}
+
+.grooming-feedback-section-feedback-card__row {
+  @apply mt-3 flex shrink-0 items-center gap-4;
+}
+
+.grooming-feedback-section-feedback-card__avatar {
+  @apply h-11 w-11 shrink-0 rounded-full object-cover;
+}
+
+.grooming-feedback-section-feedback-card__box {
+  @apply min-w-0 flex-1;
+}
+
+.grooming-feedback-section-feedback-card__name {
+  @apply truncate text-[24px] font-medium leading-6 text-[#02000F];
+}
+
+.grooming-feedback-section-feedback-card__company {
+  @apply truncate text-[16px] leading-7 text-[#6C6D71];
+}

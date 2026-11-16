@@ -1,0 +1,35 @@
+.success-panel__dr-pet-s-house {
+  @apply absolute left-[13px] top-[3px] h-[56px] w-[101px] object-contain md:left-6 md:top-5 md:h-[78px] md:w-auto;
+}
+
+.success-panel__box {
+  @apply border-[1.903px] border-dashed border-secondary p-[6.344px] md:border-[3px] md:p-2;
+}
+
+.success-panel__success-dog {
+  @apply h-[222.689px] w-[197.311px] rounded-[7.613px] bg-[#E5F6FD] object-cover md:h-[300px] md:w-[270px];
+}
+
+.success-panel__stack {
+  @apply flex w-full max-w-[425px] flex-col items-center px-5 pt-3 text-center md:px-0;
+}
+
+.success-panel__text {
+  @apply flex size-[74px] items-center justify-center rounded-full bg-[#2e7d32] text-white;
+}
+
+.success-panel__dang-ky-thanh-title {
+  @apply mt-5 text-[20px] font-bold leading-10 md:text-3xl;
+}
+
+.success-panel__chao-mung-ban-text {
+  @apply mt-3 text-[16px] leading-[29.25px] md:text-lg;
+}
+
+.success-panel__can-ho-tro-text {
+  @apply mt-6 w-full border-t border-[rgba(206,198,178,0.3)] pt-4 text-sm;
+}
+
+.success-panel__lien-he-doi-link {
+  @apply font-semibold text-blue-900;
+}

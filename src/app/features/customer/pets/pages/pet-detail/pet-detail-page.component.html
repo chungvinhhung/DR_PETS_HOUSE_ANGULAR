@@ -1,7 +1,7 @@
-<div class="mx-auto max-w-[1300px] w-full pt-3 pb-4 flex-1 flex flex-col">
-  <div class="flex items-center gap-3 mb-5 flex-shrink-0">
-    <a appCustomerLink="/thu-cung-cua-toi" class="text-slate-500 hover:text-slate-900 transition">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div class="pet-detail-page__stack">
+  <div class="pet-detail-page__row">
+    <a appCustomerLink="/thu-cung-cua-toi" class="pet-detail-page__link">
+      <svg class="pet-detail-page__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           stroke-linecap="round"
           stroke-linejoin="round"
@@ -10,14 +10,14 @@
         />
       </svg>
     </a>
-    <h1 class="text-2xl font-bold text-slate-900">Hồ sơ chi tiết</h1>
+    <h1 class="pet-detail-page__ho-so-chi-title">Hồ sơ chi tiết</h1>
   </div>
   @if (petLoadError()) {
-    <div class="mb-4 rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">{{ petLoadError() }}</div>
+    <div class="pet-detail-page__pet-load-error">{{ petLoadError() }}</div>
   }
-  <div class="grid gap-5 lg:grid-cols-[380px_1fr] items-start flex-1">
-    <div class="flex flex-col h-full space-y-3">
-      <div class="relative rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col items-center text-center flex-shrink-0">
+  <div class="pet-detail-page__grid">
+    <div class="pet-detail-page__stack-2 space-y-3">
+      <div class="pet-detail-page__stack-3">
   
           <!-- Nút Ẩn hồ sơ (Góc trên bên trái) -->
           <button
@@ -25,7 +25,7 @@
             (click)="handleToggleHideProfile()"
             class="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-200/80 hover:bg-slate-300/80 text-slate-500 text-xs font-medium transition-colors cursor-pointer"
           >
-            <svg xmlns="http://w3.org" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://w3.org" class="pet-detail-page__icon-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
               <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
               <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
@@ -37,9 +37,9 @@
           <!-- Nút Sửa hồ sơ -->
           <a
             [appCustomerLink]="`/thu-cung-cua-toi/${toPetSlug(pet())}/chinh-sua`"
-            class="absolute top-4 right-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#FEF08A] hover:bg-[#FDE047] text-slate-900 text-xs font-semibold transition-colors cursor-pointer shadow-xs"
+            class="pet-detail-page__nut-sua-ho-so shadow-xs"
           >
-            <svg xmlns="http://w3.org" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://w3.org" class="pet-detail-page__icon-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
               <path d="m15 5 4 4" />
             </svg>
@@ -47,32 +47,32 @@
           </a>
 
           <!-- Ảnh đại diện -->
-          <div class="w-28 h-28 rounded-full overflow-hidden mt-6 mb-3 shadow-sm bg-slate-50 border-4 border-white ring-1 ring-slate-100 flex-shrink-0">
+          <div class="pet-detail-page__anh-dai-dien">
             @if (currentPetImage()) {
-              <img [attr.src]="currentPetImage()" [attr.alt]="pet().name" class="w-full h-full object-cover" />
+              <img [attr.src]="currentPetImage()" [attr.alt]="pet().name" class="pet-detail-page__name" />
             } @else {
-              <div class="w-full h-full flex items-center justify-center text-4xl">🐾</div>
+              <div class="pet-detail-page__row-2">🐾</div>
             }
           </div>
 
           <!-- Tên thú cưng -->
-          <h1 class="text-2xl font-bold text-slate-900">{{ pet().name }}</h1>
+          <h1 class="pet-detail-page__ho-so-chi-title">{{ pet().name }}</h1>
 
           <!-- Giống loài -->
-          <p class="text-sm text-slate-500 mt-0.5">{{ pet().breed || 'Chưa phân loại' }}</p>
+          <p class="pet-detail-page__giong-loai">{{ pet().breed || 'Chưa phân loại' }}</p>
 
           <!-- 3 Badge thông tin: Giới tính, Tuổi, Cân nặng -->
-          <div class="flex flex-wrap items-center justify-center gap-2 mt-4 flex-shrink-0">
+          <div class="pet-detail-page__row-3">
             <!-- Giới tính -->
-            <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FEF08A] text-slate-800 text-xs font-medium">
+            <div class="pet-detail-page__gioi-tinh">
               @if (pet().gender === '♀' || pet().gender === 'Cái') {
-                <svg class="w-3.5 h-3.5 text-slate-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <svg class="pet-detail-page__icon-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <circle cx="12" cy="9" r="6" />
                   <path d="M12 15v7M9 19h6" />
                 </svg>
                 <span>Giống cái</span>
               } @else {
-                <svg class="w-3.5 h-3.5 text-slate-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <svg class="pet-detail-page__icon-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <circle cx="10" cy="14" r="6" />
                   <path d="M14.24 9.76L21 3M15 3h6v6" />
                 </svg>
@@ -81,8 +81,8 @@
             </div>
 
             <!-- Tuổi -->
-            <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E0E7FF] text-slate-800 text-xs font-medium">
-              <svg class="w-3.5 h-3.5 text-indigo-900" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <div class="pet-detail-page__tuoi">
+              <svg class="pet-detail-page__icon-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                 <path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8" />
                 <path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1" />
                 <path d="M2 21h20" />
@@ -92,8 +92,8 @@
             </div>
 
             <!-- Cân nặng -->
-            <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E0E7FF] text-slate-800 text-xs font-medium">
-              <svg class="w-3.5 h-3.5 text-indigo-900" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <div class="pet-detail-page__tuoi">
+              <svg class="pet-detail-page__icon-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                 <circle cx="12" cy="5" r="3" />
                 <path d="M6.5 8a2 2 0 0 0-1.905 1.46L2.1 18.5A2 2 0 0 0 4 21h16a2 2 0 0 0 1.925-2.54L19.4 9.5A2 2 0 0 0 17.48 8Z" />
               </svg>
@@ -102,12 +102,12 @@
           </div>
         </div>
 
-      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col flex-shrink-0">
-        <div class="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-100">
-          <div class="p-3">
-            <div class="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center mb-1">
+      <div class="pet-detail-page__stack-4">
+        <div class="pet-detail-page__grid-2 divide-x divide-slate-100 border-slate-100">
+          <div class="pet-detail-page__box">
+            <div class="pet-detail-page__row-4">
               <svg
-                class="w-3.5 h-3.5 text-slate-400"
+                class="pet-detail-page__icon-5"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
@@ -120,8 +120,8 @@
                 />
               </svg>
             </div>
-            <p class="text-[10px] text-slate-500 font-medium mb-0.5 uppercase tracking-wide">Sức khỏe chung</p>
-            <p class="text-xs font-bold text-slate-900">
+            <p class="pet-detail-page__suc-khoe-chung-text">Sức khỏe chung</p>
+            <p class="pet-detail-page__health-status">
               @if (pet().healthStatus === 'Bình thường' || pet().healthStatus === 'Khỏe mạnh'|| pet().healthStatus === 'NORMAL') {
                 Bình thường
               } @else {
@@ -129,10 +129,10 @@
               }
             </p>
           </div>
-          <div class="p-3">
-            <div class="w-6 h-6 rounded-full bg-yellow-50 flex items-center justify-center mb-1">
+          <div class="pet-detail-page__box">
+            <div class="pet-detail-page__row-5">
               <svg
-                class="w-3.5 h-3.5 text-yellow-500"
+                class="pet-detail-page__icon-6"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
@@ -145,13 +145,13 @@
                 />
               </svg>
             </div>
-            <p class="text-[10px] text-slate-500 font-medium mb-0.5 uppercase tracking-wide">Tiêm phòng tiếp</p>
-            <p class="text-xs font-bold text-slate-900">15/07/2026</p>
+            <p class="pet-detail-page__suc-khoe-chung-text">Tiêm phòng tiếp</p>
+            <p class="pet-detail-page__health-status">15/07/2026</p>
           </div>
         </div>
-        <div class="p-3 bg-slate-50/50 border-t border-slate-100">
-          <div class="flex items-center gap-1 mb-1">
-            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="pet-detail-page__box-2">
+          <div class="pet-detail-page__row-6">
+            <svg class="pet-detail-page__icon-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -159,15 +159,15 @@
                 d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Lưu ý y tế</p>
+            <p class="pet-detail-page__luu-y-y-text">Lưu ý y tế</p>
           </div>
-          <p class="text-[11px] text-slate-700 leading-relaxed">{{ pet().medicalNotes || 'Chưa có lưu ý y tế nào.' }}</p>
+          <p class="pet-detail-page__medical-notes">{{ pet().medicalNotes || 'Chưa có lưu ý y tế nào.' }}</p>
         </div>
       </div>
-      <div class="rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col overflow-hidden flex-1">
-        <div class="p-4 pb-2 flex items-center justify-between border-b border-slate-100 bg-white flex-shrink-0">
-          <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="pet-detail-page__stack-5">
+        <div class="pet-detail-page__row-7">
+          <h2 class="pet-detail-page__title">
+            <svg class="pet-detail-page__icon-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -175,34 +175,34 @@
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>Lịch sử bệnh án</h2>
-          <div class="flex items-center gap-2">
+          <div class="pet-detail-page__row-8">
             <button
               (click)="showHistoryModal.set(true)"
-              class="text-[10px] font-bold text-slate-500 border border-slate-200 px-2 py-1 rounded-md hover:bg-slate-50 transition flex-shrink-0"
+              class="pet-detail-page__xem-tat-ca-button"
             >Xem tất cả</button>
             <button
               (click)="handleOpenCreateMedical()"
-              class="bg-[#fcd34d] hover:bg-[#fbbf24] text-slate-900 w-6 h-6 flex items-center justify-center rounded-md font-bold transition flex-shrink-0 shadow-sm"
+              class="pet-detail-page__button"
               title="Thêm bệnh án mới"
             >+</button>
           </div>
         </div>
-        <div class="p-4 pt-3">
-          <div class="relative border-l-2 border-slate-100 ml-2 space-y-6">
+        <div class="pet-detail-page__box-3">
+          <div class="pet-detail-page__box-4 space-y-6">
             @for (item of medicalHistoryList().slice(0, 3); track item.id; let index = $index) {
-              <div class="relative pl-5">
+              <div class="pet-detail-page__box-5">
                 <div [class]="`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-4 border-white shadow-sm flex-shrink-0 ${index === 0 ? 'bg-slate-500' : 'bg-slate-300'}`"></div>
-                <p class="text-[10px] font-bold text-slate-500 mb-0.5 tracking-wide">{{ item.date }}</p>
-                <p class="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1.5">{{ item.condition }}<span class="text-slate-300 font-normal">|</span>
+                <p class="pet-detail-page__date">{{ item.date }}</p>
+                <p class="pet-detail-page__condition">{{ item.condition }}<span class="pet-detail-page__text">|</span>
                   <button
                     type="button"
                     (click)="handleDownloadFile(item.fileUrl, item.fileName || item.name || item.condition)"
                     class="text-slate-400 font-normal text-[10px] hover:text-blue-600 transition"
                   >Tải file chi tiết</button>
                 </p>
-                <p class="text-[10px] text-slate-600 flex items-center gap-1.5 mb-2 font-medium">
+                <p class="pet-detail-page__text-2">
                   <svg
-                    class="w-3.5 h-3.5 text-slate-400"
+                    class="pet-detail-page__icon-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -214,17 +214,17 @@
                       d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                     />
                   </svg>BS. {{ item.doctor }}</p>
-                <div class="bg-[#fef9c3] rounded-lg p-2.5 text-xs text-slate-800 leading-relaxed shadow-sm border border-yellow-100">{{ item.notes }}</div>
+                <div class="pet-detail-page__notes">{{ item.notes }}</div>
               </div>
             }
           </div>
         </div>
       </div>
     </div>
-    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex flex-col h-full">
-      <div class="flex items-center justify-between mb-3 flex-shrink-0">
-        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-1.5 relative">Tháng {{ month() + 1 }}, {{ year() }}<div class="relative w-6 h-6 text-slate-800 hover:text-blue-600 transition flex items-center justify-center cursor-pointer">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="pet-detail-page__stack-6">
+      <div class="pet-detail-page__row-9">
+        <h2 class="pet-detail-page__month">Tháng {{ month() + 1 }}, {{ year() }}<div class="pet-detail-page__row-10">
+            <svg class="pet-detail-page__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -240,36 +240,36 @@
             />
           </div>
         </h2>
-        <div class="flex items-center gap-1.5">
+        <div class="pet-detail-page__row-11">
           <button
             (click)="handlePrevMonth()"
-            class="p-0.5 hover:bg-slate-100 rounded border border-transparent transition"
+            class="pet-detail-page__button-2"
           >
-            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="pet-detail-page__icon-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <button
             (click)="handleGoToToday()"
-            class="px-2.5 py-1 bg-[#e0e7ff] text-[#4338ca] text-[10px] font-bold rounded-full flex-shrink-0 hover:bg-blue-100 transition"
+            class="pet-detail-page__hom-nay-button"
           >Hôm nay</button>
           <button
             (click)="handleNextMonth()"
-            class="p-0.5 hover:bg-slate-100 rounded border border-transparent transition"
+            class="pet-detail-page__button-2"
           >
-            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="pet-detail-page__icon-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
       </div>
-      <div class="flex-1 border border-slate-100 rounded-xl overflow-hidden bg-slate-50/30 flex flex-col">
-        <div class="grid grid-cols-7 border-b border-slate-100 bg-white flex-shrink-0">
+      <div class="pet-detail-page__stack-7">
+        <div class="pet-detail-page__grid-3">
           @for (day of ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']; track day) {
-            <div class="text-center py-2 text-[10px] font-bold text-slate-400 border-r border-slate-100 last:border-r-0">{{ day }}</div>
+            <div class="pet-detail-page__day">{{ day }}</div>
           }
         </div>
-        <div class="grid grid-cols-7 bg-white flex-1">
+        <div class="pet-detail-page__grid-4">
           @for (item of calendarDays(); track $index; let index = $index) {
             <div
               (click)="handleSelectDay(item.date)"
@@ -281,7 +281,7 @@
               @if (item.date) {
                 <p [class]="`text-[11px] font-medium pl-0.5 ${item.isSelected ? 'text-blue-700 font-bold' : 'text-slate-500'} flex-shrink-0`">{{ item.date }}</p>
               }
-              <div class="space-y-0.5 overflow-hidden flex-1 pointer-events-none">
+              <div class="pet-detail-page__box-6 space-y-0.5">
                 @if (item.events) {
                   @for (ev of item.events; track $index; let i = $index) {
                     <ng-container *ngTemplateOutlet="renderEventBadgeTpl; context: { event: ev, index: i }" />
@@ -292,13 +292,13 @@
           }
         </div>
       </div>
-      <div class="mt-4 flex justify-end gap-3 flex-shrink-0">
+      <div class="pet-detail-page__row-12">
         <button
           type="button"
           (click)="handleOpenSelectedDay()"
           class="flex items-center gap-1.5 bg-[#bfdbfe] hover:bg-[#93c5fd] text-[#1e3a8a] px-4 py-2 rounded-lg font-bold text-xs transition shadow-sm"
         >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="pet-detail-page__icon-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -308,9 +308,9 @@
             </svg>Xem ghi chú</button>
         <button
           (click)="handleOpenGeneralNoteModal()"
-          class="flex items-center gap-1.5 bg-[#fcd34d] hover:bg-[#fbbf24] text-slate-900 px-4 py-2 rounded-lg font-bold text-xs transition shadow-sm flex-shrink-0"
+          class="pet-detail-page__button-3"
         >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+          <svg class="pet-detail-page__icon-2" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
           </svg>Thêm ghi chú lịch</button>
       </div>
@@ -319,20 +319,20 @@
 </div>
 <!-- ================= MODAL THÊM GHI CHÚ VÀO LỊCH CHUNG ================= -->
 @if (showGeneralNoteModal()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-[#0F172A]/40 backdrop-blur-sm px-4 animate-fade-in">
-    <div class="bg-white rounded-3xl shadow-xl w-full max-w-[480px] p-7 relative">
+  <div class="pet-detail-page__animate-fade-in animate-fade-in">
+    <div class="pet-detail-page__box-7">
       <button
         (click)="showGeneralNoteModal.set(false)"
-        class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition"
+        class="pet-detail-page__button-4"
       >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="pet-detail-page__icon-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
-      <h2 class="text-xl font-bold text-slate-900 mb-6">Thêm ghi chú lịch</h2>
+      <h2 class="pet-detail-page__them-ghi-chu-title">Thêm ghi chú lịch</h2>
       <form (submit)="handleSaveGeneralNote($any($event))" class="space-y-4">
         <div>
-          <label class="block text-[11px] font-bold text-slate-600 mb-1.5">Thời gian</label>
+          <label class="pet-detail-page__thoi-gian-label">Thời gian</label>
           <input
             type="date"
             [value]="noteDate() ?? ''"
@@ -341,8 +341,8 @@
           />
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-slate-600 mb-2">Chọn biểu tượng</label>
-          <div class="flex gap-2.5">
+          <label class="pet-detail-page__chon-bieu-tuong-label">Chọn biểu tượng</label>
+          <div class="pet-detail-page__row-13">
             @for (iconId of ['paw', 'medical', 'scissors', 'food', 'vaccine', 'shower']; track iconId) {
               <button
                 type="button"
@@ -358,10 +358,10 @@
             }
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-5">
+        <div class="pet-detail-page__grid-5">
           <div>
-            <label class="block text-[11px] font-bold text-slate-600 mb-2">Màu sắc</label>
-            <div class="flex gap-4 pt-1 px-1">
+            <label class="pet-detail-page__chon-bieu-tuong-label">Màu sắc</label>
+            <div class="pet-detail-page__key-blue-class-el">
               @for (color of [{ key: 'blue', class: 'bg-[#60a5fa]' }, { key: 'green', class: 'bg-[#4ade80]' }, { key: 'yellow', class: 'bg-[#fcd34d]' }, { key: 'red', class: 'bg-[#f87171]' }]; track color.key) {
                 <div
                   (click)="selectedColor.set(color.key)"
@@ -373,8 +373,8 @@
             </div>
           </div>
           <div>
-            <label class="block text-[11px] font-bold text-slate-600 mb-1.5">Giờ khám (Tuỳ chọn)</label>
-            <div class="relative">
+            <label class="pet-detail-page__thoi-gian-label">Giờ khám (Tuỳ chọn)</label>
+            <div class="pet-detail-page__box-8">
               <input
                 type="time"
                 [value]="noteTime() ?? ''"
@@ -385,21 +385,21 @@
           </div>
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-slate-600 mb-1.5">Nội dung ghi chú</label>
+          <label class="pet-detail-page__thoi-gian-label">Nội dung ghi chú</label>
           <textarea
             [value]="noteContent() ?? ''"
             (input)="noteContent.set($any($event).target.value)"
             placeholder="Nhập chi tiết về chăm sóc..."
             rows="3"
-            class="w-full bg-[#f8fafc] border border-transparent rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-slate-200 outline-none resize-none placeholder-slate-400 text-slate-700"
+            class="pet-detail-page__nhap-chi-tiet-ve"
           ></textarea>
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-slate-600 mb-1.5 flex items-center justify-between">Tệp đính kèm <span class="font-normal text-slate-400">({{ calculateCurrentActiveFilesCount() }}/{{ MAX_FILES() }} file)</span>
+          <label class="pet-detail-page__tep-dinh-kem-label">Tệp đính kèm <span class="pet-detail-page__calculate-current-active-files">({{ calculateCurrentActiveFilesCount() }}/{{ MAX_FILES() }} file)</span>
           </label>
           <ng-container *ngTemplateOutlet="renderNoteFileUploadAreaTpl; context: {  }" />
         </div>
-        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-6 relative z-20">
+        <div class="pet-detail-page__row-14">
           <button
             type="button"
             (click)="showGeneralNoteModal.set(false)"
@@ -409,7 +409,7 @@
             type="submit"
             class="bg-[#fcd34d] hover:bg-[#fbbf24] text-slate-900 px-6 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-sm"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="pet-detail-page__icon-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -424,11 +424,11 @@
 }
 <!-- ================= MODAL XEM CHI TIẾT NGÀY & FORM CHỈNH SỬA GHI CHÚ LỊCH ================= -->
 @if (showDayModal() && selectedDateObj()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-[#0F172A]/40 backdrop-blur-sm px-4 animate-fade-in">
-    <div class="bg-white rounded-3xl shadow-xl w-full max-w-[700px] flex flex-col sm:flex-row max-h-[calc(100vh-32px)] overflow-y-auto sm:overflow-hidden min-h-[450px]">
-      <div class="w-full sm:w-[280px] sm:shrink-0 p-6 relative flex flex-col border-b sm:border-b-0 sm:border-r border-slate-100 overflow-hidden bg-[#E5F6FD]/30">
+  <div class="pet-detail-page__animate-fade-in animate-fade-in">
+    <div class="pet-detail-page__stack-8">
+      <div class="pet-detail-page__stack-9">
         <div
-          class="absolute inset-0 pointer-events-none"
+          class="pet-detail-page__layer"
           [appStyle]="{ 
                 backgroundImage: `url(${patternBg})`,
                 backgroundSize: 'cover',
@@ -436,15 +436,15 @@
                 opacity: 0.03 
               }"
         ></div>
-        <div class="flex items-center justify-between mb-6 relative z-10">
-          <h3 class="text-sm font-bold text-slate-800">Ghi chú ngày {{ compute1() }}/{{ compute2() }}</h3>
+        <div class="pet-detail-page__row-15">
+          <h3 class="pet-detail-page__compute1">Ghi chú ngày {{ compute1() }}/{{ compute2() }}</h3>
           <button
             (click)="handleStartCreateNoteInDay()"
-            class="w-6 h-6 rounded-full bg-[#fcd34d] text-slate-900 flex items-center justify-center font-bold text-lg hover:scale-105 transition shadow-sm"
+            class="pet-detail-page__button-5"
             title="Thêm ghi chú vào ngày này"
           >+</button>
         </div>
-        <div class="flex-1 overflow-y-auto space-y-3 relative z-10" [appStyle]="{ scrollbarWidth: 'none' }">
+        <div class="pet-detail-page__box-9 space-y-3" [appStyle]="{ scrollbarWidth: 'none' }">
           @if (dayEventsData().length > 0) {
             @for (ev of dayEventsData(); track $index; let idx = $index) {
               <div
@@ -455,14 +455,14 @@
                         : 'bg-white/60 border-transparent hover:bg-white/80'
                     }`"
               >
-                <div class="flex items-center gap-3">
+                <div class="pet-detail-page__row-16">
                   <div [class]="`w-8 h-8 rounded-lg flex items-center justify-center text-white ${getColorClass(ev.type)}`">
                     <ng-container *ngTemplateOutlet="renderIconSvgTpl; context: { id: ev.icon || 'paw', className: 'w-4 h-4' }" />
                   </div>
                   <div>
-                    <p class="text-sm font-bold text-slate-800">{{ ev.title }}</p>
-                    <p class="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1">
-                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <p class="pet-detail-page__compute1">{{ ev.title }}</p>
+                    <p class="pet-detail-page__text-3">
+                      <svg class="pet-detail-page__icon-11" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                           stroke-linecap="round"
                           stroke-linejoin="round"
@@ -472,44 +472,44 @@
                       </svg>{{ ev.time || '--:--' }}</p>
                   </div>
                 </div>
-                <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="pet-detail-page__icon-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
               </div>
             }
           } @else {
-            <div class="h-full flex flex-col items-center justify-center text-center opacity-80 pb-10">
-              <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-3 text-slate-300">
+            <div class="pet-detail-page__stack-10">
+              <div class="pet-detail-page__row-17">
                 <ng-container *ngTemplateOutlet="renderIconSvgTpl; context: { id: 'paw', className: 'w-6 h-6' }" />
               </div>
-              <p class="text-xs font-bold text-slate-700">Chưa có ghi chú nào!</p>
-              <p class="text-[10px] text-slate-500 mt-1">Bấm dấu + màu vàng để thêm mới</p>
+              <p class="pet-detail-page__chua-co-ghi-text">Chưa có ghi chú nào!</p>
+              <p class="pet-detail-page__bam-dau-text">Bấm dấu + màu vàng để thêm mới</p>
             </div>
           }
         </div>
       </div>
-      <div class="flex-1 bg-white p-6 flex flex-col relative">
+      <div class="pet-detail-page__stack-11">
         <button
           (click)="showDayModal.set(false)"
-          class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition z-50"
+          class="pet-detail-page__button-6"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="pet-detail-page__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
         <!-- CHẾ ĐỘ XEM CHI TIẾT -->
         @if (dayModalMode() === 'view') {
           @if (activeEventDetail()) {
-            <h2 class="text-sm font-bold text-slate-800 mb-6 pr-8">Chi tiết ghi chú: {{ activeEventDetail().title }}</h2>
-            <div class="flex-1 overflow-y-auto pr-2" [appStyle]="{ scrollbarWidth: 'thin' }">
-              <div class="flex items-start gap-3 mb-6">
-                <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 border border-slate-100">
+            <h2 class="pet-detail-page__title-2">Chi tiết ghi chú: {{ activeEventDetail().title }}</h2>
+            <div class="pet-detail-page__box-10" [appStyle]="{ scrollbarWidth: 'thin' }">
+              <div class="pet-detail-page__row-18">
+                <div class="pet-detail-page__row-19">
                   <ng-container *ngTemplateOutlet="renderIconSvgTpl; context: { id: activeEventDetail().icon || 'paw', className: 'w-5 h-5' }" />
                 </div>
                 <div>
-                  <p class="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Thời gian</p>
-                  <p class="text-sm font-bold text-slate-800 flex items-center gap-1">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <p class="pet-detail-page__thoi-gian-text">Thời gian</p>
+                  <p class="pet-detail-page__text-4">
+                    <svg class="pet-detail-page__icon-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
@@ -520,16 +520,16 @@
                 </div>
               </div>
               @if (activeEventDetail().files && activeEventDetail().files.length > 0) {
-                <div class="mb-5">
-                  <p class="text-[11px] font-bold text-slate-600 mb-2">Tệp đính kèm</p>
+                <div class="pet-detail-page__box-11">
+                  <p class="pet-detail-page__tep-dinh-kem-text">Tệp đính kèm</p>
                   <div class="space-y-2">
                     @for (file of activeEventDetail().files; track $index; let i = $index) {
-                      <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-[#f8fafc]">
-                        <div class="flex min-w-0 items-center gap-3">
+                      <div class="pet-detail-page__row-20">
+                        <div class="pet-detail-page__row-21">
                           <ng-container *ngTemplateOutlet="renderAttachmentPreviewTpl; context: { file: file, className: 'h-12 w-12' }" />
-                          <div class="min-w-0">
-                            <p class="truncate text-xs font-bold text-slate-800" [attr.title]="file.name">{{ file.name }}</p>
-                            <p class="text-[10px] text-slate-500">{{ file.size }}</p>
+                          <div class="pet-detail-page__box-12">
+                            <p class="pet-detail-page__name-2" [attr.title]="file.name">{{ file.name }}</p>
+                            <p class="pet-detail-page__size">{{ file.size }}</p>
                           </div>
                         </div>
                         <button
@@ -539,7 +539,7 @@
                           [attr.title]="isImageFile(file) ? 'Xem trước ảnh' : 'Tải xuống tệp'"
                         >
                           @if (isImageFile(file)) {
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="pet-detail-page__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
@@ -549,7 +549,7 @@
                               <circle cx="12" cy="12" r="3" />
                             </svg>
                           } @else {
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="pet-detail-page__icon-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
@@ -566,17 +566,17 @@
               }
               @if (activeEventDetail().invoice) {
                 <div>
-                  <p class="text-[11px] font-bold text-slate-600 mb-2">Hóa đơn (Dr.Pet's House)</p>
-                  <div class="flex items-center justify-between p-3 rounded-xl border border-red-100 bg-red-50/50">
-                    <div class="flex items-center gap-3">
-                      <div class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center text-red-500">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <p class="pet-detail-page__tep-dinh-kem-text">Hóa đơn (Dr.Pet's House)</p>
+                  <div class="pet-detail-page__row-22">
+                    <div class="pet-detail-page__row-16">
+                      <div class="pet-detail-page__row-23">
+                        <svg class="pet-detail-page__icon-10" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm5 0h-2V8h2v8z" />
                         </svg>
                       </div>
                       <div>
-                        <p class="text-xs font-bold text-slate-800">{{ activeEventDetail().invoice.name }}</p>
-                        <p class="text-[10px] text-slate-500">{{ activeEventDetail().invoice.size }}</p>
+                        <p class="pet-detail-page__name-3">{{ activeEventDetail().invoice.name }}</p>
+                        <p class="pet-detail-page__size">{{ activeEventDetail().invoice.size }}</p>
                       </div>
                     </div>
                     <button
@@ -585,7 +585,7 @@
                       class="text-slate-400 hover:text-slate-700 transition p-1"
                       title="Tải hóa đơn"
                     >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="pet-detail-page__icon-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                           stroke-linecap="round"
                           stroke-linejoin="round"
@@ -598,15 +598,15 @@
                 </div>
               }
               @if ((!activeEventDetail().files || activeEventDetail().files.length === 0) && !activeEventDetail().invoice) {
-                <p class="text-sm text-slate-500 italic border-l-2 border-slate-200 pl-3">Không có thông tin đính kèm.</p>
+                <p class="pet-detail-page__khong-co-thong-text">Không có thông tin đính kèm.</p>
               }
             </div>
-            <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-end gap-4 relative z-20">
+            <div class="pet-detail-page__row-24">
               <button
                 (click)="handleDeleteNoteTrigger(activeEventDetail().id)"
-                class="text-xs font-bold text-red-500 hover:text-red-700 flex items-center gap-1.5 transition"
+                class="pet-detail-page__button-7"
               >
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="pet-detail-page__icon-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -616,9 +616,9 @@
                 </svg>Xóa ghi chú</button>
               <button
                 (click)="handleStartEditingNote()"
-                class="bg-[#fcd34d] hover:bg-[#fbbf24] text-slate-900 px-5 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-sm"
+                class="pet-detail-page__button-8"
               >
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="pet-detail-page__icon-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -628,11 +628,11 @@
                 </svg>Chỉnh sửa</button>
             </div>
           } @else {
-            <div class="flex-1 flex flex-col items-center justify-center text-slate-400">
-              <svg class="w-16 h-16 mb-4 text-slate-200" fill="currentColor" viewBox="0 0 24 24">
+            <div class="pet-detail-page__stack-12">
+              <svg class="pet-detail-page__icon-13" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19.0803 15.7199C18.4903 12.1899 15.1003 9.31995 11.5203 9.31995C7.63028 9.31995 4.21028 12.4699 3.88028 16.3499C3.75028 17.8499 4.23028 19.2699 5.22028 20.3399C6.20028 21.4099 7.58028 21.9999 9.08028 21.9999H13.7603C15.4503 21.9999 16.9303 21.3399 17.9403 20.1499C18.9503 18.9599 19.3503 17.3799 19.0803 15.7199Z" />
               </svg>
-              <p class="text-sm font-medium">Bé chưa có lịch trình nào vào ngày này.</p>
+              <p class="pet-detail-page__be-chua-co-text">Bé chưa có lịch trình nào vào ngày này.</p>
             </div>
           }
         }
@@ -640,19 +640,19 @@
         @if (dayModalMode() === 'edit' || dayModalMode() === 'create') {
           <form
             (submit)="handleSaveDayNote($any($event))"
-            class="flex-1 flex flex-col h-full overflow-hidden"
+            class="pet-detail-page__form"
           >
-            <h2 class="text-sm font-bold text-slate-800 mb-6 pr-8">
+            <h2 class="pet-detail-page__title-2">
               @if (dayModalMode() === 'edit') {
                 {{ `Chỉnh sửa ghi chú: ${activeEventDetail()?.title || ''}` }}
               } @else {
                 Thêm ghi chú mới
               }
             </h2>
-            <div class="flex-1 overflow-y-auto pr-2 space-y-5" [appStyle]="{ scrollbarWidth: 'thin' }">
+            <div class="pet-detail-page__box-10 space-y-5" [appStyle]="{ scrollbarWidth: 'thin' }">
               <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-2">Chọn biểu tượng</label>
-                <div class="flex gap-2.5">
+                <label class="pet-detail-page__chon-bieu-tuong-label">Chọn biểu tượng</label>
+                <div class="pet-detail-page__row-13">
                   @for (iconId of ['paw', 'medical', 'scissors', 'food', 'vaccine', 'shower']; track iconId) {
                     <button
                       type="button"
@@ -668,10 +668,10 @@
                   }
                 </div>
               </div>
-              <div class="grid grid-cols-2 gap-5">
+              <div class="pet-detail-page__grid-5">
                 <div>
-                  <label class="block text-[11px] font-bold text-slate-600 mb-2">Màu sắc</label>
-                  <div class="flex gap-4 pt-1 px-1 pb-1">
+                  <label class="pet-detail-page__chon-bieu-tuong-label">Màu sắc</label>
+                  <div class="pet-detail-page__key-blue-class-el-2">
                     @for (color of [
                           { key: 'blue', class: 'bg-[#60a5fa]' },
                           { key: 'green', class: 'bg-[#4ade80]' },
@@ -688,8 +688,8 @@
                   </div>
                 </div>
                 <div>
-                  <label class="block text-[11px] font-bold text-slate-600 mb-1.5">Giờ khám (Tuỳ chọn)</label>
-                  <div class="relative">
+                  <label class="pet-detail-page__thoi-gian-label">Giờ khám (Tuỳ chọn)</label>
+                  <div class="pet-detail-page__box-8">
                     <input
                       type="time"
                       [value]="noteTime() ?? ''"
@@ -700,22 +700,22 @@
                 </div>
               </div>
               <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1.5">Nội dung ghi chú</label>
+                <label class="pet-detail-page__thoi-gian-label">Nội dung ghi chú</label>
                 <textarea
                   [value]="noteContent() ?? ''"
                   (input)="noteContent.set($any($event).target.value)"
                   placeholder="Nhập chi tiết về chăm sóc..."
                   rows="3"
-                  class="w-full bg-[#f8fafc] border border-transparent rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-slate-200 outline-none resize-none placeholder-slate-400 text-slate-700"
+                  class="pet-detail-page__nhap-chi-tiet-ve"
                 ></textarea>
               </div>
               <div>
-                <label class="block text-[11px] font-bold text-slate-600 mb-1.5 flex items-center justify-between">Tệp đính kèm <span class="font-normal text-slate-400">({{ calculateCurrentActiveFilesCount() }}/{{ MAX_FILES() }} file)</span>
+                <label class="pet-detail-page__tep-dinh-kem-label">Tệp đính kèm <span class="pet-detail-page__calculate-current-active-files">({{ calculateCurrentActiveFilesCount() }}/{{ MAX_FILES() }} file)</span>
                 </label>
                 <ng-container *ngTemplateOutlet="renderNoteFileUploadAreaTpl; context: {  }" />
               </div>
             </div>
-            <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-end gap-4 relative z-20">
+            <div class="pet-detail-page__row-24">
               <button
                 type="button"
                 (click)="handle4()"
@@ -725,7 +725,7 @@
                 type="submit"
                 class="bg-[#fcd34d] hover:bg-[#fbbf24] text-slate-900 px-6 py-2.5 rounded-xl font-bold text-xs transition flex items-center gap-2 shadow-sm"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="pet-detail-page__icon-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -748,25 +748,25 @@
 }
 <!-- ================= MODAL THÊM/SỬA BỆNH ÁN TỪ NÚT (+) ================= -->
 @if (showAddMedicalModal()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-[#0F172A]/40 backdrop-blur-sm px-4 animate-fade-in">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
-      <div class="flex items-center justify-between mb-6">
-        <h3 class="text-lg font-bold text-slate-900">
+  <div class="pet-detail-page__animate-fade-in animate-fade-in">
+    <div class="pet-detail-page__box-13">
+      <div class="pet-detail-page__row-25">
+        <h3 class="pet-detail-page__chinh-sua-benh-title">
           @if (medicalModalMode() === 'edit') {
             Chỉnh sửa bệnh án
           } @else {
             Thêm bệnh án mới
           }
         </h3>
-        <button (click)="showAddMedicalModal.set(false)" class="text-slate-400 hover:text-slate-600">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button (click)="showAddMedicalModal.set(false)" class="pet-detail-page__button-9">
+          <svg class="pet-detail-page__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
       <form (submit)="handleSaveMedicalRecord($any($event))" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Tên bệnh án <span class="text-red-500">*</span></label>
+          <label class="pet-detail-page__ten-benh-an-label">Tên bệnh án <span class="pet-detail-page__text-5">*</span></label>
           <input
             type="text"
             [value]="newMedicalName() ?? ''"
@@ -776,12 +776,12 @@
             required
           />
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="pet-detail-page__grid-6">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Bác sĩ điều trị</label>
-            <div class="relative">
+            <label class="pet-detail-page__ten-benh-an-label">Bác sĩ điều trị</label>
+            <div class="pet-detail-page__box-8">
               <svg
-                class="absolute left-3 top-2.5 w-4 h-4 text-slate-400"
+                class="pet-detail-page__icon-14"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -803,8 +803,8 @@
             </div>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Ngày khám <span class="text-red-500">*</span></label>
-            <div class="relative">
+            <label class="pet-detail-page__ten-benh-an-label">Ngày khám <span class="pet-detail-page__text-5">*</span></label>
+            <div class="pet-detail-page__box-8">
               <input
                 type="date"
                 [value]="newMedicalDate() ?? ''"
@@ -816,32 +816,32 @@
           </div>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Ghi chú (Triệu chứng / Chẩn đoán ban đầu)</label>
+          <label class="pet-detail-page__ten-benh-an-label">Ghi chú (Triệu chứng / Chẩn đoán ban đầu)</label>
           <textarea
             rows="3"
             [value]="newMedicalNotes() ?? ''"
             (input)="newMedicalNotes.set($any($event).target.value)"
             placeholder="Nhập chi tiết các triệu chứng quan sát được hoặc kết luận sơ bộ của bác sĩ..."
-            class="w-full bg-[#F1F5F9] border border-transparent focus:border-blue-500 rounded-lg px-4 py-3 text-sm outline-none transition placeholder-slate-400 resize-none"
+            class="pet-detail-page__nhap-chi-tiet-cac"
           ></textarea>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between">Tài liệu đính kèm (Kết quả xét nghiệm, X-quang,...)<span class="text-[10px] font-normal text-slate-400">(@if (newMedicalFile()) {
+          <label class="pet-detail-page__tai-lieu-dinh-label">Tài liệu đính kèm (Kết quả xét nghiệm, X-quang,...)<span class="pet-detail-page__text-6">(@if (newMedicalFile()) {
                 {{ 1 }}
               } @else {
                 {{ 0 }}
               }/1 file)</span>
           </label>
           @if (newMedicalFile()) {
-            <div class="flex items-center justify-between gap-4 rounded-xl border border-blue-100 bg-[#F0F7FF] p-3">
-              <div class="flex min-w-0 items-center gap-3">
+            <div class="pet-detail-page__row-26">
+              <div class="pet-detail-page__row-21">
                 <ng-container *ngTemplateOutlet="renderAttachmentPreviewTpl; context: { file: newMedicalFile(), className: 'h-14 w-14' }" />
-                <div class="min-w-0">
-                  <p class="truncate text-xs font-bold text-slate-800" [attr.title]="newMedicalFile().name">{{ newMedicalFile().name }}</p>
-                  <p class="text-[10px] text-slate-500">{{ newMedicalFile().size }}</p>
+                <div class="pet-detail-page__box-12">
+                  <p class="pet-detail-page__name-2" [attr.title]="newMedicalFile().name">{{ newMedicalFile().name }}</p>
+                  <p class="pet-detail-page__size">{{ newMedicalFile().size }}</p>
                 </div>
               </div>
-              <div class="flex flex-shrink-0 items-center gap-1">
+              <div class="pet-detail-page__row-27">
                 <button
                   type="button"
                   (click)="isImageFile(newMedicalFile()) ? handlePreviewFile(newMedicalFile().fileUrl) : handleDownloadFile(newMedicalFile().fileUrl, newMedicalFile().name)"
@@ -849,7 +849,7 @@
                   [attr.title]="isImageFile(newMedicalFile()) ? 'Xem trước ảnh' : 'Tải xuống tệp'"
                 >
                   @if (isImageFile(newMedicalFile())) {
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="pet-detail-page__icon-15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
@@ -859,7 +859,7 @@
                       <circle cx="12" cy="12" r="3" />
                     </svg>
                   } @else {
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="pet-detail-page__icon-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
@@ -875,7 +875,7 @@
                   class="p-1.5 text-slate-400 transition hover:text-red-500"
                   title="Xóa tệp"
                 >
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="pet-detail-page__icon-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
@@ -887,12 +887,12 @@
               </div>
             </div>
           } @else {
-            <div class="border-2 border-dashed border-blue-200 bg-[#F0F7FF] rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50 transition group relative">
-              <div class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mb-2 transition-transform group-hover:scale-110">
-                <img [attr.src]="uploadIcon" alt="Upload" class="w-5 h-5 object-contain opacity-70" />
+            <div class="pet-detail-page__stack-13 group bg-[#F0F7FF] flex hover:bg-blue-50">
+              <div class="pet-detail-page__row-28 group-hover:scale-110">
+                <img [attr.src]="uploadIcon" alt="Upload" class="pet-detail-page__upload" />
               </div>
-              <p class="text-sm font-medium text-slate-700">Kéo thả file hoặc <span class="text-blue-500">chọn tệp</span></p>
-              <p class="text-xs text-slate-500 mt-1">Hỗ trợ PDF, JPG, PNG (Tối đa 10MB)</p>
+              <p class="pet-detail-page__keo-tha-file-text">Kéo thả file hoặc <span class="pet-detail-page__chon-tep-text">chọn tệp</span></p>
+              <p class="pet-detail-page__ho-tro-pdf-text">Hỗ trợ PDF, JPG, PNG (Tối đa 10MB)</p>
               <input
                 type="file"
                 accept=".pdf,image/jpeg,image/png"
@@ -902,7 +902,7 @@
             </div>
           }
         </div>
-        <div class="flex justify-end gap-4 mt-8 pt-4">
+        <div class="pet-detail-page__row-29">
           <button
             type="button"
             (click)="showAddMedicalModal.set(false)"
@@ -912,7 +912,7 @@
             type="submit"
             class="bg-[#fcd34d] hover:bg-[#fbbf24] text-slate-900 px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition shadow-sm"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="pet-detail-page__icon-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -927,41 +927,41 @@
 }
 <!-- ================= MODAL XEM TẤT CẢ LỊCH SỬ BỆNH ÁN ================= -->
 @if (showHistoryModal()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-[#0F172A]/40 backdrop-blur-sm px-4 animate-fade-in">
-    <div class="bg-white rounded-3xl shadow-xl w-full max-w-[600px] flex flex-col overflow-hidden max-h-[85vh]">
-      <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-[#E5F6FD]/30 relative">
+  <div class="pet-detail-page__animate-fade-in animate-fade-in">
+    <div class="pet-detail-page__stack-14">
+      <div class="pet-detail-page__row-30">
         <div
-          class="absolute inset-0 pointer-events-none"
+          class="pet-detail-page__layer"
           [appStyle]="{ backgroundImage: `url(${patternBg})`, backgroundSize: 'cover', opacity: 0.03 }"
         ></div>
-        <h2 class="text-lg font-bold text-slate-900 relative z-10">Lịch sử bệnh án - {{ pet().name }}</h2>
+        <h2 class="pet-detail-page__name-4">Lịch sử bệnh án - {{ pet().name }}</h2>
         <button
           (click)="showHistoryModal.set(false)"
-          class="text-slate-400 hover:text-slate-600 transition relative z-10 bg-white rounded-full p-1"
+          class="pet-detail-page__button-10"
         >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="pet-detail-page__icon-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
-      <div class="p-6 overflow-y-auto flex-1 bg-slate-50" [appStyle]="{ scrollbarWidth: 'thin' }">
+      <div class="pet-detail-page__box-14" [appStyle]="{ scrollbarWidth: 'thin' }">
         @if (medicalHistoryList().length > 0) {
-          <div class="relative border-l-2 border-slate-200 ml-2 space-y-8">
+          <div class="pet-detail-page__box-15 space-y-8">
             @for (item of medicalHistoryList(); track item.id; let index = $index) {
-              <div class="relative pl-6">
-                <div class="absolute -left-[10px] top-1 w-4 h-4 rounded-full border-4 border-white shadow-sm flex-shrink-0 bg-blue-500"></div>
-                <p class="text-[10px] font-bold text-slate-500 mb-1 tracking-wide">{{ item.date }}</p>
-                <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
-                  <div class="flex justify-between items-start mb-2">
-                    <p class="text-sm font-bold text-slate-900">{{ item.condition }}</p>
-                    <div class="flex items-center gap-1.5">
+              <div class="pet-detail-page__box-16">
+                <div class="pet-detail-page__layer-2"></div>
+                <p class="pet-detail-page__date-2">{{ item.date }}</p>
+                <div class="pet-detail-page__box-17">
+                  <div class="pet-detail-page__row-31">
+                    <p class="pet-detail-page__condition-2">{{ item.condition }}</p>
+                    <div class="pet-detail-page__row-11">
                       <button
                         type="button"
                         (click)="handleOpenEditMedical(item)"
                         class="p-1.5 text-slate-400 hover:text-yellow-600 transition bg-slate-50 border border-slate-100 rounded-md"
                         title="Chỉnh sửa bệnh án"
                       >
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="pet-detail-page__icon-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
@@ -976,7 +976,7 @@
                         class="p-1.5 text-slate-400 hover:text-blue-600 transition bg-slate-50 border border-slate-100 rounded-md"
                         title="Tải file đính kèm"
                       >
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="pet-detail-page__icon-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
@@ -991,7 +991,7 @@
                         class="text-slate-400 hover:text-red-600 transition p-1.5 bg-slate-50 border border-slate-100 rounded-md"
                         title="Xóa bệnh án"
                       >
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="pet-detail-page__icon-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
@@ -1002,9 +1002,9 @@
                       </button>
                     </div>
                   </div>
-                  <p class="text-[11px] text-slate-600 flex items-center gap-1.5 mb-3 font-medium">
+                  <p class="pet-detail-page__text-7">
                     <svg
-                      class="w-3.5 h-3.5 text-slate-400"
+                      class="pet-detail-page__icon-5"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -1016,13 +1016,13 @@
                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                       />
                     </svg>BS. {{ item.doctor }}</p>
-                  <div class="bg-[#fef9c3] rounded-lg p-3 text-xs text-slate-800 leading-relaxed border border-yellow-100">{{ item.notes }}</div>
+                  <div class="pet-detail-page__notes-2">{{ item.notes }}</div>
                 </div>
               </div>
             }
           </div>
         } @else {
-          <div class="text-center py-10"><p class="text-sm text-slate-500">Chưa có lịch sử bệnh án nào.</p></div>
+          <div class="pet-detail-page__box-18"><p class="pet-detail-page__chua-co-lich-text">Chưa có lịch sử bệnh án nào.</p></div>
         }
       </div>
     </div>
@@ -1140,7 +1140,7 @@
     };
   <div [class]="`text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 border mt-1 truncate ${$any(styles)[event.type] || styles.blue}`">
     <ng-container *ngTemplateOutlet="renderIconSvgTpl; context: { id: event.icon || 'paw', className: 'w-3 h-3 flex-shrink-0' }" />
-    <span class="truncate">{{ event.title }}</span>
+    <span class="pet-detail-page__title-3">{{ event.title }}</span>
   </div>
 </ng-template>
 
@@ -1154,7 +1154,7 @@
     />
   } @else {
     <div [class]="`${className} flex-shrink-0 rounded-xl border border-slate-100 bg-white text-slate-500 shadow-sm flex items-center justify-center`">
-      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="pet-detail-page__icon-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           stroke-linecap="round"
           stroke-linejoin="round"
@@ -1169,12 +1169,12 @@
 <ng-template #renderNoteFileUploadAreaTpl >
   <div class="space-y-2">
     @if (calculateCurrentActiveFilesCount() < MAX_FILES()) {
-      <div class="w-full relative cursor-pointer border-2 border-[#e2e8f0] border-dashed rounded-xl bg-[#f8fafc] hover:border-blue-400 hover:bg-blue-50 transition p-4 flex flex-col items-center justify-center text-center group">
-        <div class="w-8 h-8 bg-slate-100 group-hover:bg-white rounded-full flex items-center justify-center mb-2 shadow-sm transition group-hover:scale-110">
-          <img [attr.src]="uploadIcon" alt="Upload" class="w-4 h-4 object-contain opacity-70" />
+      <div class="pet-detail-page__stack-15 group bg-[#f8fafc] hover:bg-blue-50 flex">
+        <div class="pet-detail-page__row-32 group-hover:bg-white group-hover:scale-110 bg-slate-100">
+          <img [attr.src]="uploadIcon" alt="Upload" class="pet-detail-page__upload-2" />
         </div>
-        <p class="text-xs font-bold text-slate-800">Nhấn để tải lên hoặc kéo thả</p>
-        <p class="text-[10px] text-slate-500 mt-1">PDF, JPG hoặc PNG (Tối đa 10MB)</p>
+        <p class="pet-detail-page__name-3">Nhấn để tải lên hoặc kéo thả</p>
+        <p class="pet-detail-page__bam-dau-text">PDF, JPG hoặc PNG (Tối đa 10MB)</p>
         <input
           type="file"
           multiple
@@ -1189,17 +1189,17 @@
       <div [class]="`flex items-center justify-between p-3 rounded-xl border transition-all ${
               isMarkedDeleted ? 'border-red-100 bg-red-50/50 opacity-60' : 'border-slate-100 bg-[#f8fafc]'
             }`">
-        <div class="flex items-center gap-3 pr-2 flex-1 min-w-0">
+        <div class="pet-detail-page__row-33">
           <ng-container *ngTemplateOutlet="renderAttachmentPreviewTpl; context: { file: file, className: 'h-12 w-12' }" />
-          <div class="flex-1 truncate">
+          <div class="pet-detail-page__box-19">
             <p
               [class]="`text-xs font-bold truncate ${isMarkedDeleted ? 'text-red-700 line-through' : 'text-slate-800'}`"
               [attr.title]="file.name"
             >{{ file.name }}</p>
-            <p class="text-[10px] text-slate-500">{{ file.size }}</p>
+            <p class="pet-detail-page__size">{{ file.size }}</p>
           </div>
         </div>
-        <div class="flex items-center gap-2 relative z-20 flex-shrink-0">
+        <div class="pet-detail-page__row-34">
           @if (isMarkedDeleted) {
             <button
               type="button"
@@ -1214,7 +1214,7 @@
               [attr.title]="isImageFile(file) ? 'Xem trước ảnh' : 'Tải xuống tệp'"
             >
               @if (isImageFile(file)) {
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="pet-detail-page__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -1224,7 +1224,7 @@
                   <circle cx="12" cy="12" r="3" />
                 </svg>
               } @else {
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="pet-detail-page__icon-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -1240,7 +1240,7 @@
               class="text-slate-400 hover:text-red-500 transition p-1"
               title="Xóa tệp khỏi ghi chú"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="pet-detail-page__icon-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"

@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, input, output, si
   standalone: true,
   imports: [],
   templateUrl: './order-pages-payment-countdown.component.html',
+  styleUrl: './order-pages-payment-countdown.component.scss',
   host: {
     '[class]': '`text-[12px] font-medium ${remainingSeconds() ? \'text-[#C62828]\' : \'text-[#667085]\'}`',
   },

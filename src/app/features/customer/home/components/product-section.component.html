@@ -1,12 +1,12 @@
 <section
   id="mua-sắm"
-  class="w-full py-12 md:py-[50px]"
+  class="product-section__mua-sam"
   [appStyle]="{
         background:
           'radial-gradient(50% 50% at 50% 50%, var(--primary-main, #E3F2FD) 25.48%, var(--background-default, #FFF) 100%)'
       }"
 >
-  <div class="relative font-bold mx-auto flex max-w-page flex-col items-center gap-10 px-6 md:px-20">
+  <div class="product-section__stack">
     <svg
       class="absolute top-[50px] h-[15px] w-[179px]"
       viewBox="0 0 182 16"
@@ -22,33 +22,33 @@
       />
     </svg>
     <div app-section-title>Pet shop</div>
-    <div class="grid w-full max-w-[992px] grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
+    <div class="product-section__let-label-el">
       @for (__item1 of PRODUCT_CATEGORIES; track $index) {
         @let label = __item1.label;
         @let image = __item1.image;
         @let slug = __item1.slug;
         <a
           [appCustomerLink]="`/san-pham?category=${slug}`"
-          class="card-category flex flex-col items-center gap-3 border-0 bg-transparent p-0 text-center"
+          class="product-section__card-category card-category"
         >
-          <img [attr.src]="image" [attr.alt]="label" class="h-[110px] w-[106px] object-contain" />
-          <p class="text-lg font-bold text-black">{{ label }}</p>
+          <img [attr.src]="image" [attr.alt]="label" class="product-section__label" />
+          <p class="product-section__label-2">{{ label }}</p>
         </a>
       }
     </div>
     @if (isLoadingProducts()) {
-      <div class="flex min-h-[392px] w-full max-w-[1200px] items-center justify-center text-base font-medium text-[#01579B]">Đang tải sản phẩm...</div>
+      <div class="product-section__dang-tai-san-el">Đang tải sản phẩm...</div>
     } @else if (loadError()) {
-      <div class="flex min-h-[392px] w-full max-w-[1200px] items-center justify-center text-center text-base font-medium text-red-600">{{ loadError() }}</div>
+      <div class="product-section__load-error">{{ loadError() }}</div>
     } @else if (products().length) {
-      <div class="grid w-full max-w-[1200px] grid-cols-2 justify-items-center gap-x-5 gap-y-6 sm:grid-cols-3 lg:grid-cols-6">
+      <div class="product-section__grid">
         @for (product of products(); track product.id) {
           <app-product-card [product]="product" [variant]="product.discountPercent ? 'tag' : 'default'" />
         }
       </div>
     } @else {
-      <div class="flex min-h-[392px] w-full max-w-[1200px] items-center justify-center text-base font-medium text-[#01579B]">Chưa có sản phẩm để hiển thị.</div>
+      <div class="product-section__dang-tai-san-el">Chưa có sản phẩm để hiển thị.</div>
     }
-    <app-yellow-button [to]="'/san-pham'" [className]="'h-[42px] min-w-[154px]'">XEM THÊM<span class="text-xl leading-none">›</span></app-yellow-button>
+    <app-yellow-button [to]="'/san-pham'" [className]="'h-[42px] min-w-[154px]'">XEM THÊM<span class="product-section__text">›</span></app-yellow-button>
   </div>
 </section>

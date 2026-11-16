@@ -21,6 +21,7 @@ const uploadIcon = '/assets/customer/icons/upload-icon.png';
   standalone: true,
   imports: [NgTemplateOutlet, ReactStyleDirective, CustomerLinkDirective],
   templateUrl: './pet-detail-page.component.html',
+  styleUrl: './pet-detail-page.component.scss',
   host: {
     'class': 'bg-transparent flex flex-col min-h-full font-sans',
   },

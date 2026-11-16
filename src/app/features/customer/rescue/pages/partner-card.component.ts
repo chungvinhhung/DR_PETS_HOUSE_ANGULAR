@@ -10,6 +10,7 @@ import { CustomerIconComponent } from '../../../../shared/customer/components/ic
   standalone: true,
   imports: [CustomerIconComponent],
   templateUrl: './partner-card.component.html',
+  styleUrl: './partner-card.component.scss',
   host: {
     'class': 'flex h-[406px] w-full max-w-[357.333px] flex-col rounded-[32px] border border-[#D9E3F6] bg-white p-px shadow-[0_10px_30px_rgba(59,130,246,0.15)]',
   },

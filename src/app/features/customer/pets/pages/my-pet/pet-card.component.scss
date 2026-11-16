@@ -1,0 +1,47 @@
+.pet-card__box {
+  @apply relative aspect-[216/192] w-full overflow-hidden bg-[#ececf3];
+}
+
+.pet-card__name {
+  @apply h-full w-full object-cover;
+}
+
+.pet-card__text {
+  @apply absolute right-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium leading-4;
+}
+
+.pet-card__text-2 {
+  @apply h-1.5 w-1.5 rounded-full;
+}
+
+.pet-card__stack {
+  @apply flex flex-1 flex-col px-4 pb-4 pt-4;
+}
+
+.pet-card__row {
+  @apply flex items-start justify-between gap-2;
+}
+
+.pet-card__box-2 {
+  @apply min-w-0;
+}
+
+.pet-card__name-2 {
+  @apply truncate text-[20px] font-bold leading-7 text-[#18181b];
+}
+
+.pet-card__breed {
+  @apply mt-0.5 truncate text-[14px] leading-5 text-[#52525b];
+}
+
+.pet-card__box-3 {
+  @apply mt-5 border-t border-[#e4e4e7] pt-2.5;
+}
+
+.pet-card__kham-gan-nhat-text {
+  @apply text-[12px] leading-4 tracking-[0.2px] text-[#71717a];
+}
+
+.pet-card__pet-id-link {
+  @apply mt-4 flex h-8 w-full items-center justify-center rounded-md bg-[#06105a] text-[13px] font-medium text-white transition hover:bg-[#0d1a7a];
+}

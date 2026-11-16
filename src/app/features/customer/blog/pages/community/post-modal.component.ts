@@ -18,6 +18,7 @@ import { blogImages } from '../../../../../shared/customer/assets/blog-images';
   standalone: true,
   imports: [AuthorComponent, TypeBadgeComponent, ActionsComponent, CustomerIconComponent],
   templateUrl: './post-modal.component.html',
+  styleUrl: './post-modal.component.scss',
   host: {
     'class': 'fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 sm:p-6',
     '(mousedown)': 'onClose.emit($event)',

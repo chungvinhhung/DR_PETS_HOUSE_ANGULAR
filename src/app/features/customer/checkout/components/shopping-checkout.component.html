@@ -6,9 +6,9 @@
     (onSelect)="handle1($any($event))"
   />
 }
-<div class="mx-auto flex w-full max-w-[1280px] flex-col items-center px-6 py-6">
-  <div class="grid gap-8 lg:grid-cols-[minmax(0,2fr)_390px]">
-    <div class="flex w-full flex-col gap-7">
+<div class="shopping-checkout__stack">
+  <div class="shopping-checkout__grid">
+    <div class="shopping-checkout__stack-2">
       @if (isGuest()) {
         <section app-guest-login-banner></section>
       }
@@ -30,10 +30,10 @@
         (onNoteChange)="note.set($event)"
       ></section>
     </div>
-    <aside class="w-full">
-      <div class="flex flex-col gap-5 rounded-2xl bg-white p-8 shadow-[0_4px_13px_rgba(144,202,249,0.85)]">
-        <h2 class="text-xl font-black text-blue-900">PHƯƠNG THỨC THANH TOÁN</h2>
-        <div class="flex flex-col gap-5">
+    <aside class="shopping-checkout__aside">
+      <div class="shopping-checkout__stack-3">
+        <h2 class="shopping-checkout__phuong-thuc-thanh-title">PHƯƠNG THỨC THANH TOÁN</h2>
+        <div class="shopping-checkout__stack-4">
           <div app-payment-mode-toggle></div>
           @if (cartService.paymentMode() === 'online') {
             <div app-online-payment-methods></div>
@@ -46,13 +46,13 @@
         </div>
       </div>
     </aside>
-    <div class="flex w-full flex-col gap-5">
+    <div class="shopping-checkout__stack-5">
       <button
         type="button"
         (click)="onBack.emit($event)"
         class="flex items-center gap-3 self-start rounded bg-secondary-light px-6 py-3 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation transition hover:bg-secondary"
       >
-        <img [attr.src]="checkoutImages.backArrow" alt="" class="size-3" />Quay lại</button>
+        <img [attr.src]="checkoutImages.backArrow" alt="" class="shopping-checkout__back-arrow" />Quay lại</button>
     </div>
   </div>
 </div>

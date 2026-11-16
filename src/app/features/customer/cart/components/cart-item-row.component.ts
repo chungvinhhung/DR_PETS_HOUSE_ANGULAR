@@ -16,6 +16,7 @@ import { formatPrice, normalizeVariantOption } from './my-cart-panel.helpers';
   standalone: true,
   imports: [SelectValueDirective],
   templateUrl: './cart-item-row.component.html',
+  styleUrl: './cart-item-row.component.scss',
   host: {
     '[class]': '`relative flex min-h-[118px] w-full shrink-0 items-center gap-[10px] border-b border-solid border-[#e0e0e0] px-[6px] py-[10px] transition-all duration-200 lg:my-[10px] lg:min-h-[132px] lg:w-full lg:px-[10px] lg:py-[14px] ${ deleting() ? \'translate-x-full opacity-0\' : \'translate-x-0 opacity-100\' }`',
     '[attr.role]': 'item().productId ? \'link\' : undefined',

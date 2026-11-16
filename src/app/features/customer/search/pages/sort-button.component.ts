@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
   standalone: true,
   imports: [],
   templateUrl: './sort-button.component.html',
+  styleUrl: './sort-button.component.scss',
   host: {
     'type': 'button',
     '(click)': 'onClick.emit($event)',

@@ -18,6 +18,7 @@ import { QUICK_LINKS, SERVICE_LINKS, SUPPORT_LINKS, LEGAL_LINKS, isBlueBackgroun
   standalone: true,
   imports: [AccountFooterComponent, MobileFooterComponent, TabletFooterComponent, FooterColumnComponent, FooterLinkComponent, ServicePricingModalComponent, CustomerLinkDirective],
   templateUrl: './footer.component.html',
+  styleUrl: './footer.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

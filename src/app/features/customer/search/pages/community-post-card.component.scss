@@ -1,0 +1,55 @@
+.community-post-card__image {
+  @apply -mx-6 -mt-6 mb-6 h-64 w-[calc(100%+48px)] rounded-t-[24px] object-cover;
+}
+
+.community-post-card__row {
+  @apply flex items-start justify-between;
+}
+
+.community-post-card__row-2 {
+  @apply flex items-center gap-3;
+}
+
+.community-post-card__initials {
+  @apply flex size-10 items-center justify-center rounded-full bg-[#D7E2FF] text-[16px] font-semibold text-[#3E5E95];
+}
+
+.community-post-card__author {
+  @apply text-[16px] font-semibold leading-6 text-[#1A1C1C];
+}
+
+.community-post-card__time {
+  @apply text-[12px] leading-4 text-[#414753];
+}
+
+.community-post-card__type {
+  @apply rounded-full bg-[#F3E8EE] px-3 py-1 text-[12px] font-semibold leading-4 text-[#672950];
+}
+
+.community-post-card__text-black-87 {
+  @apply mt-3 pt-1 text-[16px] font-bold leading-6;
+}
+
+.community-post-card__content {
+  @apply mt-3 text-[16px] leading-6 text-[#1A1C1C];
+}
+
+.community-post-card__row-3 {
+  @apply mt-3 flex gap-2 pb-3 pt-1;
+}
+
+.community-post-card__tag {
+  @apply rounded-lg bg-[rgba(214,227,255,0.5)] px-2 py-0.5 text-[10px] font-semibold uppercase leading-[15px] text-[#005AB4];
+}
+
+.community-post-card__row-4 {
+  @apply mt-3 flex items-center justify-between border-t border-[#F3F3F3] px-6 pt-[17px] text-[14px] leading-5 text-[#414753];
+}
+
+.community-post-card__row-5 {
+  @apply flex gap-6;
+}
+
+.community-post-card__text {
+  @apply flex items-center gap-2;
+}

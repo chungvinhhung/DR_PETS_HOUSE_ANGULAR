@@ -1,35 +1,36 @@
 <div app-canvas-layout>
   <app-nav-bar />
-  <main class="flex min-h-[2100px] flex-col items-center gap-3 bg-[#E5F6FD] px-4 sm:px-6 pb-10">
-    <nav class="flex h-14 w-full max-w-[1200px] items-center gap-6 overflow-x-auto whitespace-nowrap text-[16px] sm:gap-10">
-      <a appCustomerLink="/blog/kien-thuc" class="font-medium text-[#4B5563]">Kiến thức thú cưng</a>
-      <span class="flex h-full items-center border-b-2 border-[#0D47A1] font-bold text-[#0D47A1]">Cộng đồng chia sẻ</span>
-      <a appCustomerLink="/blog/so-cuu" class="font-medium text-[#4B5563]">Cẩm nang sơ cứu</a>
+  <main class="community-page__main">
+    <nav class="community-page__nav">
+      <a appCustomerLink="/blog/kien-thuc" class="community-page__kien-thuc-thu-link">Kiến thức thú cưng</a>
+      <span class="community-page__cong-dong-chia-text">Cộng đồng chia sẻ</span>
+      <a appCustomerLink="/blog/so-cuu" class="community-page__kien-thuc-thu-link">Cẩm nang sơ cứu</a>
     </nav>
-    <section class="flex flex-col items-center pb-5 pt-2 text-center">
-      <h1 class="flex flex-wrap items-center justify-center gap-1 text-[28px] font-bold tracking-[-0.8px] sm:text-[40px]">Kết nối <span class="text-[#0D47A1]">chia sẻ</span>
-        <img [attr.src]="blogImages.communityTitle" alt="" class="h-12 w-12" />
+    <section class="community-page__section">
+      <h1 class="community-page__ket-noi-title">Kết nối <span class="community-page__chia-se-text">chia sẻ</span>
+        <img [attr.src]="blogImages.communityTitle" alt="" class="community-page__community-title" />
       </h1>
-      <p class="mt-2 text-[16px] leading-6 text-[#414753]">Nơi chia sẻ khoảnh khắc, kinh nghiệm và lan tỏa yêu thương<br />cùng cộng đồng yêu thú cưng!!</p>
+      <p class="community-page__noi-chia-se-text">Nơi chia sẻ khoảnh khắc, kinh nghiệm và lan tỏa yêu thương<br />cùng cộng đồng yêu thú cưng!!</p>
     </section>
     <section
       app-composer
       (onPost)="addPost($any($event))"
       [canPost]="authService.isAuthenticated()"
+      [submitting]="posting()"
       (onRequireAuth)="requireAuth($any($event))"
     ></section>
     @if (loadError()) {
-      <p class="w-full max-w-[1208px] text-[14px] text-[#D32F2F]">{{ loadError() }}</p>
+      <p class="community-page__load-error">{{ loadError() }}</p>
     }
     @if (apiEmptyMessage() && !loadError()) {
-      <p class="w-full max-w-[1208px] text-[14px] text-[#0D47A1]">{{ apiEmptyMessage() }}</p>
+      <p class="community-page__api-empty-message">{{ apiEmptyMessage() }}</p>
     }
     @if (isLoading()) {
-      <p class="w-full max-w-[1208px] text-[16px] text-[#0D47A1]">Đang tải bài viết cộng đồng...</p>
+      <p class="community-page__dang-tai-bai-text">Đang tải bài viết cộng đồng...</p>
     }
-    <section class="mt-7 grid w-full max-w-[1208px] grid-cols-1 items-start gap-4 md:grid-cols-2">
+    <section class="community-page__section-2">
       @for (column of columns(); track $index; let columnIndex = $index) {
-        <div class="flex min-w-0 flex-col gap-4">
+        <div class="community-page__stack">
           @for (post of column; track post.id) {
             <article
               app-community-card
@@ -42,10 +43,10 @@
             ></article>
           }
           @if (columnIndex === 1) {
-            <div class="rounded-[24px] bg-[#0D47A1] p-8 text-center text-white">
-              <h3 class="font-semibold">Gia đình Dr.Pet</h3>
-              <p class="mt-2 text-[14px]">Tham gia cộng đồng Zalo để cập nhật tin tức và ưu đãi sớm nhất.</p>
-              <button class="mt-5 rounded-full bg-white px-8 py-2 text-[12px] font-bold text-[#0D47A1]">THAM GIA NGAY</button>
+            <div class="community-page__box">
+              <h3 class="community-page__gia-dinh-dr-pet-title">Gia đình Dr.Pet</h3>
+              <p class="community-page__tham-gia-cong-text">Tham gia cộng đồng Zalo để cập nhật tin tức và ưu đãi sớm nhất.</p>
+              <button class="community-page__tham-gia-ngay-button">THAM GIA NGAY</button>
             </div>
           }
         </div>
@@ -55,7 +56,7 @@
   <app-footer [variant]="'white'" />
 </div>
 @if (shareNotice()) {
-  <div class="fixed bottom-6 left-1/2 z-[110] -translate-x-1/2 rounded-full bg-[#1A1C1C] px-5 py-3 text-sm text-white shadow-xl">{{ shareNotice() }}</div>
+  <div class="community-page__share-notice">{{ shareNotice() }}</div>
 }
 @if (selectedPost()) {
   <div

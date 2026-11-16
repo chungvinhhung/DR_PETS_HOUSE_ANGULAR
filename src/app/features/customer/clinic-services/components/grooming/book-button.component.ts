@@ -10,6 +10,7 @@ import { CustomerLinkDirective } from '../../../../../shared/customer/directives
   standalone: true,
   imports: [CustomerLinkDirective],
   templateUrl: './book-button.component.html',
+  styleUrl: './book-button.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

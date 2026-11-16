@@ -4,8 +4,8 @@
   [data-booking-error]="invalid() ? 'true' : undefined"
   [tabIndex]="invalid() ? -1 : undefined"
 >
-  <h3 class="mb-5 flex items-center gap-2 text-xl font-bold text-blue-900"><span>◷</span> Khung giờ trống</h3>
-  <div class="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+  <h3 class="time-slots__title"><span>◷</span> Khung giờ trống</h3>
+  <div class="time-slots__let-active-el space-y-3">
     @for (slot of visibleSlots(); track slot.value || $index) {
       @let active = selectedSlot() === slot.value;
       <button
@@ -18,15 +18,17 @@
               }`"
       >
         <span>{{ slot.value }}</span>
-        <span class="text-[10px] uppercase opacity-80">Còn {{ slot.remaining ?? (slot.maxAppointments - slot.bookedCount) }}/{{ slot.maxAppointments }}</span>
+        <span class="time-slots__booked-count">Còn {{ slot.remaining ?? (slot.maxAppointments - slot.bookedCount) }}/{{ slot.maxAppointments }}</span>
         @if (active) {
           <span>✓</span>
         }
       </button>
     } @empty {
-      <div class="flex flex-col items-center justify-center py-10 text-center">
-        <p class="text-sm font-medium text-slate-500">
-          @if (!selectedDate()) {
+      <div class="time-slots__stack">
+        <p class="time-slots__vui-long-chon-text">
+           @if (!hasSelectedService()) {
+            Vui lòng chọn dịch vụ trước để xem khung giờ trống
+          } @else if (!selectedDate()) {
             Vui lòng chọn ngày để xem khung giờ
           } @else if (isBeforeToday(selectedDate())) {
             Không thể chọn ngày trong quá khứ

@@ -1,0 +1,15 @@
+.booking-page__main {
+  @apply bg-[#e5f6fd];
+}
+
+.booking-page__box {
+  @apply mx-auto w-full max-w-[360px] px-5 pb-6 pt-0 md:max-w-[768px] md:px-10 md:pb-8 lg:max-w-page lg:px-6 lg:pt-6;
+}
+
+.booking-page__booking-error {
+  @apply mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700;
+}
+
+.booking-page__dang-gui-yeu-text {
+  @apply mt-4 rounded-lg bg-blue-50 px-4 py-3 text-sm font-medium text-blue-900;
+}

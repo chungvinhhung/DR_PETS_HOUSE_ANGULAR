@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './hero-slide-layer.component.html',
+  styleUrl: './hero-slide-layer.component.scss',
   host: {
     '[class]': '`absolute inset-0 size-full transition-opacity duration-[700ms] ease-in-out ${ isActive() ? \'opacity-100\' : \'pointer-events-none opacity-0\' }`',
     '[attr.aria-hidden]': '!isActive()',

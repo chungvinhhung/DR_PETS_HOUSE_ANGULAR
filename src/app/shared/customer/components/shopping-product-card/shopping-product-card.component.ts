@@ -13,6 +13,7 @@ import { ProductCardComponent } from '../product-card/product-card.component';
   standalone: true,
   imports: [ProductCardComponent],
   templateUrl: './shopping-product-card.component.html',
+  styleUrl: './shopping-product-card.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

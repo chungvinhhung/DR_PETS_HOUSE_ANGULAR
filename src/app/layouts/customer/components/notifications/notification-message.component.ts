@@ -10,6 +10,7 @@ import { messageToneClass } from './notification-popup.helpers';
   standalone: true,
   imports: [],
   templateUrl: './notification-message.component.html',
+  styleUrl: './notification-message.component.scss',
   host: {
     'class': 'notification-item__message',
   },

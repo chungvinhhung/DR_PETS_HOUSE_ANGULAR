@@ -12,8 +12,9 @@ import { POST_TYPES } from './community-page.helpers';
   standalone: true,
   imports: [CustomerIconComponent],
   templateUrl: './composer.component.html',
+  styleUrl: './composer.component.scss',
   host: {
-    'class': 'relative w-full max-w-[1210px] overflow-visible rounded-[32px] border-2 border-dashed border-[rgba(0,90,180,0.2)] bg-[#FFF9C4] p-5 sm:p-8 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1)]',
+    'class': 'relative w-full max-w-page overflow-visible rounded-[32px] border-2 border-dashed border-[rgba(0,90,180,0.2)] bg-[#FFF9C4] p-5 sm:p-8 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1)]',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -21,6 +22,7 @@ export class ComposerComponent {
   // --- Input / Output (props của React) ---
   readonly onPost = output<any>();
   readonly canPost = input<any>(undefined);
+  readonly submitting = input<boolean>(false);
   readonly onRequireAuth = output<any>();
 
   // --- Dữ liệu & hàm dùng trong template ---
@@ -48,15 +50,28 @@ export class ComposerComponent {
     }
     const file = event.target.files?.[0];
     if (!file) return;
+    this.clearMedia();
     this.media.set({ kind, name: file.name, url: URL.createObjectURL(file) });
   }
 
   protected submit() {
-    if (!this.requirePostAuth()) return;
+     if (!this.requirePostAuth() || this.submitting()) return;
     if (!this.value().trim() && !this.media()) return;
+    // The parent confirms an API response before clearing the draft.
     this.onPost.emit({ content: this.value().trim(), type: this.type(), [this.media()?.kind]: this.media()?.url });
-    this.value.set("");
+    }
+
+  clearMedia(): void {
+    const previous = this.media();
+    if (previous?.url && typeof URL !== 'undefined') URL.revokeObjectURL(previous.url);
     this.media.set(null);
+    if (this.imageInput()?.nativeElement) this.imageInput()!.nativeElement.value = '';
+    if (this.videoInput()?.nativeElement) this.videoInput()!.nativeElement.value = '';
+  }
+
+  reset(): void {
+    this.value.set("");
+    this.clearMedia();
     this.type.set("");
     this.showTypes.set(false);
   }
@@ -74,5 +89,8 @@ export class ComposerComponent {
     return Object.keys(POST_TYPES);
   }
 
-  protected handle4(item: any) { this.type.set(item); this.showTypes.set(false); }
+  protected handle4(item: any) {
+    this.type.set(item);
+    this.showTypes.set(false);
+  }
 }

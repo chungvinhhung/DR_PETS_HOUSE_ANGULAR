@@ -11,6 +11,7 @@ import { CustomerIconComponent } from '../../../../../shared/customer/components
   standalone: true,
   imports: [CategoryIconComponent, CustomerIconComponent],
   templateUrl: './article.component.html',
+  styleUrl: './article.component.scss',
   host: {
     'class': 'w-full rounded-[12px] bg-white px-5 pb-8 pt-6 sm:px-8',
   },

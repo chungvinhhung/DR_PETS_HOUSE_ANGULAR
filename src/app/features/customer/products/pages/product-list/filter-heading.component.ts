@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './filter-heading.component.html',
+  styleUrl: './filter-heading.component.scss',
   host: {
     'class': 'flex items-center gap-[17px]',
   },

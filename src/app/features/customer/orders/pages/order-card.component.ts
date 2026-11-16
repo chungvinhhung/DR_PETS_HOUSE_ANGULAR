@@ -14,6 +14,7 @@ import { formatCurrency, formatOrderDate, getOrderTotal, ORDER_STATUS } from '..
   standalone: true,
   imports: [ProductSummaryComponent, OrderPagesPaymentCountdownComponent, OrderActionsComponent],
   templateUrl: './order-card.component.html',
+  styleUrl: './order-card.component.scss',
   host: {
     'class': 'rounded-[16px] border border-[#C2C6D4] bg-white px-[21px] py-[11px] transition hover:border-[#1976D2] hover:shadow-md',
   },

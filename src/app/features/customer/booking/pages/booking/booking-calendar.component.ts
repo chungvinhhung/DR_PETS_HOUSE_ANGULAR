@@ -11,6 +11,7 @@ import { getDateKey, isBeforeToday } from './booking-page.helpers';
   standalone: true,
   imports: [BookingCardComponent],
   templateUrl: './booking-calendar.component.html',
+  styleUrl: './booking-calendar.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

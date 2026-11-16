@@ -1,14 +1,14 @@
-<a [appCustomerLink]="href()" class="relative h-[178px] shrink-0 p-2">
-  <img [attr.src]="post().image" alt="" class="h-full w-full rounded-[16px] object-cover" />
+<a [appCustomerLink]="href()" class="blog-card__media">
+  <img [attr.src]="post().image" alt="" class="blog-card__image" />
   <span app-category-badge [category]="post().category" [label]="post().categoryLabel"></span>
 </a>
-<div class="flex min-h-0 flex-1 flex-col px-6 pb-4 pt-3">
-  <a [appCustomerLink]="href()"><h3 class="line-clamp-2 text-[20px] font-normal leading-[25px] text-[#111827]">{{ post().title }}</h3></a>
-  <p class="mt-2 line-clamp-2 text-[14px] leading-5 text-[#6B7280]">{{ post().excerpt }}</p>
-  <div class="mt-auto flex items-center justify-between border-t border-[#F9FAFB] pt-4 text-[12px]">
-    <span class="flex items-center gap-1 text-[#9CA3AF]">
+<div class="blog-card__body">
+  <a [appCustomerLink]="href()"><h3 class="blog-card__title">{{ post().title }}</h3></a>
+  <p class="blog-card__excerpt">{{ post().excerpt }}</p>
+  <div class="blog-card__footer">
+    <span class="blog-card__date">
       <app-customer-icon name="calendar-days" className="h-3 w-3" />{{ post().publishedAt }}</span>
-    <a [appCustomerLink]="href()" class="flex items-center gap-1 font-semibold text-[#0D47A1]">Đọc tiếp <app-customer-icon
+    <a [appCustomerLink]="href()" class="blog-card__read-more">Đọc tiếp <app-customer-icon
         name="arrow-right"
         className="h-3 w-3 transition-transform group-hover:translate-x-1"
       />

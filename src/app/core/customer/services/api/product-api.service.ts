@@ -82,7 +82,16 @@ function normalizeVariant(variant: any) {
     originalPrice = toNumber(originalPrice);
   }
 
-  const stock = toNumber(getFirstValue(variant.availableStock, variant.stockQuantity, variant.stock_quantity, variant.stock, 0));
+  const stock = toNumber(
+  getFirstValue(
+    variant.availableStock,
+    variant.stockQuantity,
+    variant.stock_quantity,
+    variant.stock,
+    variant.quantity,
+    variant.inventory,
+    0
+  ));
   const image = normalizeImageUrl(getFirstValue(variant.image, variant.imageUrl, variant.image_url));
 
   const discountPercent = getFirstValue(

@@ -1,0 +1,75 @@
+.user-profile-page__header {
+  @apply mb-4;
+}
+
+.user-profile-page__thong-tin-nguoi-title {
+  @apply text-[28px] font-bold leading-10;
+}
+
+.user-profile-page__dang-dong-bo-text {
+  @apply mt-1 text-base;
+}
+
+.user-profile-page__form {
+  @apply grid overflow-hidden rounded-xl border border-[#c1c6d5]/50 bg-white lg:grid-cols-[286px_1fr];
+}
+
+.user-profile-page__section {
+  @apply flex flex-col items-center gap-5 p-6;
+}
+
+.user-profile-page__box {
+  @apply relative;
+}
+
+.user-profile-page__box-2 {
+  @apply size-32 overflow-hidden rounded-full border-4 border-[#e3f2fd] bg-[#65787c];
+}
+
+.user-profile-page__anh-dai-dien {
+  @apply size-full object-cover;
+}
+
+.user-profile-page__full-name {
+  @apply text-center text-2xl font-bold;
+}
+
+.user-profile-page__section-2 {
+  @apply flex flex-col gap-6 p-6;
+}
+
+.user-profile-page__grid {
+  @apply grid gap-6 md:grid-cols-2;
+}
+
+.user-profile-page__grid-2 {
+  @apply grid gap-6;
+}
+
+.user-profile-page__grid-3 {
+  @apply grid gap-4 sm:grid-cols-2;
+}
+
+.user-profile-page__row {
+  @apply flex justify-center;
+}
+
+.user-profile-page__section-3 {
+  @apply mt-4 rounded-xl border border-[#c1c6d5]/50 bg-white p-6;
+}
+
+.user-profile-page__row-2 {
+  @apply mb-6 flex flex-wrap items-center justify-between gap-4;
+}
+
+.user-profile-page__title {
+  @apply flex items-center gap-2 text-xl font-bold text-[#0d47a1];
+}
+
+.user-profile-page__grid-4 {
+  @apply grid gap-4;
+}
+
+.user-profile-page__message {
+  @apply fixed bottom-6 right-6 z-50 rounded-lg bg-[#06105a] px-4 py-3 text-sm text-white shadow-lg;
+}

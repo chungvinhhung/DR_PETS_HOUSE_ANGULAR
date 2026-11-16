@@ -12,6 +12,7 @@ import { EMPTY_ADDRESS, VIETNAM_PROVINCES } from './address-form-modal.helpers';
   standalone: true,
   imports: [AddressFormFieldComponent, CustomerIconComponent],
   templateUrl: './address-form-modal.component.html',
+  styleUrl: './address-form-modal.component.scss',
   host: {
     'class': 'fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(6,16,90,0.2)] p-4 backdrop-blur-[2px]',
     '(mousedown)': 'handle1($any($event))',

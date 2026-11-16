@@ -13,6 +13,7 @@ import { ADOPTION_SUCCESS } from '../data/adoption-form-data';
   standalone: true,
   imports: [ModalButtonComponent, CustomerIconComponent],
   templateUrl: './success-view.component.html',
+  styleUrl: './success-view.component.scss',
   host: {
     'class': 'relative w-[884px] max-w-[calc(100vw-48px)] overflow-hidden rounded-[8px] border border-[#D9E3F6] bg-white p-px shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)] sm:rounded-[32px]',
   },

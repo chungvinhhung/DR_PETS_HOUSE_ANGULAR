@@ -15,6 +15,7 @@ import { paymentCalendarIcon, paymentPersonIcon, paymentPetIcon, paymentPhoneIco
   standalone: true,
   imports: [CardComponent, DetailComponent],
   templateUrl: './appointment-details.component.html',
+  styleUrl: './appointment-details.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

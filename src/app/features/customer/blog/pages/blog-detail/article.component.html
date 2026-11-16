@@ -1,32 +1,32 @@
-<h1 class="text-[24px] font-bold leading-[32px] text-[#0D47A1] sm:text-[32px] sm:leading-[40px]">{{ post().title }}</h1>
-<div class="mt-4 flex min-h-[54px] flex-wrap items-center gap-x-6 gap-y-2 py-2 border-y border-[#C1C6D5] text-[14px] font-semibold tracking-[0.14px] text-[#414753]">
-  <span class="flex items-center gap-2"><app-customer-icon name="user-round" className="h-4 w-4 text-[#0D47A1]" /> {{ post().author }}</span>
-  <span class="flex items-center gap-2">
+<h1 class="article__title">{{ post().title }}</h1>
+<div class="article__row">
+  <span class="article__text"><app-customer-icon name="user-round" className="h-4 w-4 text-[#0D47A1]" /> {{ post().author }}</span>
+  <span class="article__text">
     <app-customer-icon name="calendar-days" className="h-5 w-[18px] text-[#0D47A1]" /> {{ post().publishedAt }}</span>
 </div>
-<div class="relative mt-4 h-[240px] overflow-hidden rounded-[12px] sm:h-[340px] lg:h-[450px]">
-  <img [attr.src]="post().image" [attr.alt]="post().title" class="h-full w-full object-cover" />
-  <div class="absolute left-6 top-6 flex items-center gap-2 rounded-full bg-white/90 px-5 py-2 text-[12px] font-bold uppercase tracking-[0.6px] text-[#0D47A1] shadow-lg backdrop-blur-[4px]">
+<div class="article__box">
+  <img [attr.src]="post().image" [attr.alt]="post().title" class="article__title-2" />
+  <div class="article__layer">
     <app-category-icon [category]="post().category" [className]="'h-4 w-4'" />{{ post().categoryLabel }}</div>
 </div>
-<div class="mt-6 text-[16px] leading-[26px] text-[#414753]">
-  <p class="italic">{{ post().intro }}</p>
-  <p class="mt-6">{{ post().description }}</p>
-  <div class="mt-6 rounded-r-[8px] border-l-4 border-[#1976D2] bg-[#F3F4F6] px-6 py-6">
-    <h2 class="text-[20px] font-semibold leading-7 text-[#005AB4]">{{ post().highlightTitle }}</h2>
-    <p class="mt-2">{{ post().highlightText }}</p>
+<div class="article__box-2">
+  <p class="article__intro">{{ post().intro }}</p>
+  <p class="article__description">{{ post().description }}</p>
+  <div class="article__box-3">
+    <h2 class="article__highlight-title">{{ post().highlightTitle }}</h2>
+    <p class="article__highlight-text">{{ post().highlightText }}</p>
   </div>
-  <h2 class="mt-6 text-[24px] font-semibold leading-8 text-[#005AB4]">Lịch tiêm phòng chi tiết</h2>
-  <ol class="mt-5 flex flex-col gap-4">
+  <h2 class="article__lich-tiem-phong-title">Lịch tiêm phòng chi tiết</h2>
+  <ol class="article__list">
     @for (item of post().schedule; track item; let index = $index) {
-      <li class="flex items-start gap-4">
-        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E3F2FD] font-semibold text-[#005AB4]">{{ index + 1 }}</span>
-        <span class="pt-1">{{ item }}</span>
+      <li class="article__item">
+        <span class="article__text-2">{{ index + 1 }}</span>
+        <span class="article__text-3">{{ item }}</span>
       </li>
     }
   </ol>
 </div>
-<div class="mt-8 flex flex-wrap gap-2 border-t border-[#C1C6D5] pt-8">
+<div class="article__row-2">
   @for (tag of post().tags; track tag) {
     <button
       type="button"

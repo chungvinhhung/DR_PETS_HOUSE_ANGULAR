@@ -1,0 +1,27 @@
+.review-card__box {
+  @apply h-[118px] text-justify text-[#333];
+}
+
+.review-card__line {
+  @apply mb-0;
+}
+
+.review-card__row {
+  @apply flex items-center gap-4;
+}
+
+.review-card__feedback-avatar {
+  @apply size-[44px] rounded-full object-cover;
+}
+
+.review-card__stack {
+  @apply flex w-[149.936px] flex-col gap-[2px];
+}
+
+.review-card__author {
+  @apply text-[#02000F];
+}
+
+.review-card__company {
+  @apply text-[#6C6D71];
+}

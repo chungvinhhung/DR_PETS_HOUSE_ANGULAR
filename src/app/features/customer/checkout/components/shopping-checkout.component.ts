@@ -23,6 +23,7 @@ import { DEFAULT_USER_ADDRESSES } from '../../../../core/customer/constants/user
   standalone: true,
   imports: [AddressChangeModalComponent, GuestLoginBannerComponent, GuestShippingFormComponent, AuthenticatedAddressCardComponent, OrderDetailsCardComponent, PaymentModeToggleComponent, OnlinePaymentMethodsComponent, CouponAndSummaryComponent],
   templateUrl: './shopping-checkout.component.html',
+  styleUrl: './shopping-checkout.component.scss',
   host: {
     'class': 'pointer-events-auto fixed inset-0 z-[70] overflow-y-auto bg-[#e5f6fd]',
     'role': 'dialog',

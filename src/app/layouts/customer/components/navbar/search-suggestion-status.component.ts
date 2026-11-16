@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './search-suggestion-status.component.html',
+  styleUrl: './search-suggestion-status.component.scss',
   host: {
     'class': 'flex min-h-[64px] w-full items-center justify-center rounded-[8px] border-b border-[#E0E0E0] px-4 text-center font-[\'Roboto\'] text-[14px] leading-6 text-black/60',
   },

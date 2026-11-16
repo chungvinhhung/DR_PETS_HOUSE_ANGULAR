@@ -1,17 +1,18 @@
-<div class="flex h-14 justify-between gap-2">
+<div class="otp-form__row">
   @for (digit of otp(); track $index; let index = $index) {
     <input
+      #otpInput
       [value]="digit ?? ''"
       (input)="updateOtp(index, $any($event).target.value)"
       (keydown)="handle2($any($event), digit, index)"
       inputmode="numeric"
       [attr.aria-label]="`Số OTP thứ ${index + 1}`"
-      class="h-14 min-w-0 max-w-14 flex-1 rounded-xl border border-[#C6DCE3] bg-[#FAFEFF] text-center text-xl font-bold outline-none transition focus:border-[#0D47A1] focus:ring-1 focus:ring-[#0D47A1]"
+      class="otp-form__th"
     />
   }
 </div>
 @if (submitError()) {
-  <p class="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{{ submitError() }}</p>
+  <p class="otp-form__submit-error">{{ submitError() }}</p>
 }
 <button app-primary-button [disabled]="!complete() || submitting()">
   @if (submitting()) {
@@ -20,7 +21,7 @@
     XÁC NHẬN
   }
 </button>
-<p class="text-center text-sm text-[#4f5359]">Không nhận được mã? <button type="button" class="text-blue-900">Gửi lại mã</button></p>
+<p class="otp-form__khong-nhan-duoc-text">Không nhận được mã? <button type="button" class="text-blue-900 disabled:cursor-not-allowed disabled:text-[#7e8085]" [disabled]="resendDisabled()" (click)="handleResend()">{{ resendLabel() }}</button></p>
 <button
   type="button"
   (click)="changeScreen()(previousScreen())"

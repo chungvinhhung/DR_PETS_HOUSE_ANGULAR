@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
   standalone: true,
   imports: [],
   templateUrl: './address-form-field.component.html',
+  styleUrl: './address-form-field.component.scss',
   host: {
     '[class]': '`flex min-w-0 flex-col gap-[10px] ${className()}`',
   },

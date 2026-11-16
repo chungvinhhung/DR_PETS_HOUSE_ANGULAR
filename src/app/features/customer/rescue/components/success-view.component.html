@@ -1,16 +1,16 @@
-<div class="flex min-h-[461px] flex-col items-center justify-center bg-[radial-gradient(circle_at_0_0,#D9E3F6_0_1%,transparent_1.2%)] px-8 py-14 text-center sm:px-16">
-  <img src="/src/assets/images/checkout/success-icon.svg" alt="" class="size-[69px] shrink-0" />
-  <div class="mt-8 flex flex-col items-center gap-2">
-    <h2 class="text-[32px] font-bold leading-[1.167] text-[#3D3D3D] sm:text-[48px]">{{ ADOPTION_SUCCESS.title }}</h2>
-    <p class="max-w-[635px] whitespace-pre-line text-[16px] leading-6 tracking-[0.15px] text-[rgba(0,0,0,0.87)]">{{ ADOPTION_SUCCESS.description }}</p>
+<div class="success-view__stack">
+  <img src="/src/assets/images/checkout/success-icon.svg" alt="" class="success-view__image" />
+  <div class="success-view__stack-2">
+    <h2 class="success-view__title">{{ ADOPTION_SUCCESS.title }}</h2>
+    <p class="success-view__description">{{ ADOPTION_SUCCESS.description }}</p>
   </div>
-  <div class="mt-8 flex flex-wrap justify-center gap-5">
+  <div class="success-view__row">
     <app-modal-button (onClick)="handle1()" [className]="'font-bold'">Trở về trang chủ</app-modal-button>
     <app-modal-button [variant]="'outline'" (onClick)="onClose.emit($event)" [className]="'shadow-none'">Xem tiếp các bé khác</app-modal-button>
   </div>
-  <div class="mt-8 flex w-full max-w-[635px] items-center justify-center border-t border-[#D9E3F6] pt-[17px]">
+  <div class="success-view__row-2">
     <app-customer-icon name="phone" className="mr-2 h-[10.5px] w-[10.5px] text-[#0D47A1]" [strokeWidth]="2" />
-    <span class="text-[16px] leading-6 text-[rgba(0,0,0,0.87)]">Nếu có thắc mắc, liên hệ hotline:</span>
-    <strong class="pl-1 text-[16px] leading-6 text-[#0D47A1]">{{ ADOPTION_SUCCESS.hotline }}</strong>
+    <span class="success-view__neu-co-thac-text">Nếu có thắc mắc, liên hệ hotline:</span>
+    <strong class="success-view__hotline">{{ ADOPTION_SUCCESS.hotline }}</strong>
   </div>
 </div>

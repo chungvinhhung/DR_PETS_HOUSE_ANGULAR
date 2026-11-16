@@ -1,12 +1,12 @@
 @if (!(!cartService.isCartOpen())) {
-  <div class="pointer-events-none fixed inset-0 z-[95] lg:z-[60]" role="presentation">
+  <div class="cart-drawer__overlay" role="presentation">
     <button
       type="button"
       class="pointer-events-auto absolute inset-0 top-[88px] hidden bg-transparent lg:block"
       (click)="cartService.closeCart()"
       aria-label="Đóng giỏ hàng"
     ></button>
-    <div class="pointer-events-none absolute inset-0 lg:inset-x-0 lg:top-[88px] lg:mx-auto lg:max-w-page">
+    <div class="cart-drawer__layer">
       <aside app-my-cart-panel (onClose)="cartService.closeCart()"></aside>
     </div>
   </div>

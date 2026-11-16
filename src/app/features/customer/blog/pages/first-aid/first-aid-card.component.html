@@ -10,19 +10,19 @@
         <img
           [attr.src]="post().image"
           alt=""
-          class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          class="first-aid-card__image group-hover:scale-[1.03]"
         />
         @if (post().urgent) {
-          <span class="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-[#FFDAD6] px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.3px] text-[#C62828]">
+          <span class="first-aid-card__text">
             <app-customer-icon name="siren" className="h-4 w-4" /> Cấp cứu khẩn cấp</span>
         }
       </div>
     }
     <div [class]="`flex flex-1 flex-col justify-center ${isUrgent() ? 'p-6 sm:p-10' : 'p-6 sm:p-8'}`">
-      <p class="text-[12px] font-semibold uppercase tracking-[0.3px] text-[#0D47A1]">{{ post().categoryLabel }}</p>
+      <p class="first-aid-card__category-label">{{ post().categoryLabel }}</p>
       <h2 [class]="`mt-3 font-semibold leading-tight text-[rgba(0,0,0,0.87)] ${isUrgent() ? 'text-[26px]' : 'text-[20px]'}`">{{ post().title }}</h2>
-      <p class="mt-4 text-[14px] leading-5 text-[#414753]">{{ post().description }}</p>
-      <span class="mt-6 flex items-center gap-2 text-[13px] font-semibold text-[#005AB4]">Đọc ngay <app-customer-icon
+      <p class="first-aid-card__description">{{ post().description }}</p>
+      <span class="first-aid-card__doc-ngay-text">Đọc ngay <app-customer-icon
           name="arrow-right"
           className="h-4 w-4 transition-transform group-hover:translate-x-1"
         />

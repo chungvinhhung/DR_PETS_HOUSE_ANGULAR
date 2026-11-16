@@ -1,21 +1,21 @@
-<div class="flex flex-col gap-2">
-  <h2 class="text-xl font-black text-blue-900">CHI TIẾT ĐƠN HÀNG</h2>
-  <p class="text-sm font-medium text-slate-600">Mã đơn hàng: {{ ORDER_CODE }}</p>
+<div class="order-details-card__stack">
+  <h2 class="order-details-card__chi-tiet-don-title">CHI TIẾT ĐƠN HÀNG</h2>
+  <p class="order-details-card__order-code">Mã đơn hàng: {{ ORDER_CODE }}</p>
 </div>
-<div class="flex flex-col gap-4">
-  <p class="text-xl font-black text-blue-900">SẢN PHẨM ĐÃ CHỌN</p>
-  <div class="flex flex-col gap-3">
+<div class="order-details-card__stack-2">
+  <p class="order-details-card__chi-tiet-don-title">SẢN PHẨM ĐÃ CHỌN</p>
+  <div class="order-details-card__stack-3">
     @if (items().length > 0) {
       @for (item of items(); track item.id) {
         <div app-checkout-order-item [item]="item"></div>
       }
     } @else {
-      <p class="py-6 text-sm text-slate-500">Không có sản phẩm nào được chọn.</p>
+      <p class="order-details-card__khong-co-san-text">Không có sản phẩm nào được chọn.</p>
     }
   </div>
 </div>
-<div class="flex flex-col gap-3">
-  <p class="text-sm font-bold text-slate-900">GHI CHÚ ĐƠN HÀNG</p>
+<div class="order-details-card__stack-3">
+  <p class="order-details-card__ghi-chu-don-text">GHI CHÚ ĐƠN HÀNG</p>
   <input
     type="text"
     [value]="note() ?? ''"

@@ -16,6 +16,7 @@ import { petImages, getHealthStatusColor, getPetStatusLabel, getLatestCheckupDat
   standalone: true,
   imports: [MyPetSearchAndSortComponent, SpeciesIconComponent, GenderIconComponent, ReactStyleDirective, CustomerLinkDirective],
   templateUrl: './pet-list-page.component.html',
+  styleUrl: './pet-list-page.component.scss',
   host: {
     'class': 'font-sans',
   },

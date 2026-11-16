@@ -5,7 +5,7 @@
 } @else if (activeType() === 'article') {
   <section app-articles-section [results]="results()"></section>
 } @else {
-  <div class="flex w-full flex-col gap-8">
+  <div class="search-results-content__stack">
     <section app-services-section [results]="results()" [allMode]="true"></section>
     <section app-products-section [results]="results()" [allMode]="true"></section>
     <section app-articles-section [results]="results()" [allMode]="true"></section>

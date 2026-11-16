@@ -27,6 +27,7 @@ const PASSWORD_LEVELS = [
   standalone: true,
   imports: [FieldComponent, PrimaryButtonComponent, DividerComponent, GoogleButtonComponent],
   templateUrl: './register-form.component.html',
+  styleUrl: './register-form.component.scss',
   host: {
     'novalidate': '',
     'class': 'flex flex-col gap-4',

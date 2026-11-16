@@ -1,0 +1,197 @@
+<div app-canvas-layout>
+  <app-nav-bar />
+  <main class="guest-lookup">
+    @switch (step()) {
+      @case ('contact') {
+        <section class="guest-lookup__card" aria-labelledby="guest-lookup-title">
+          <span class="guest-lookup__badge"><app-customer-icon name="search" className="size-6" /></span>
+          <h1 id="guest-lookup-title" class="guest-lookup__title">Tra cứu đơn hàng / lịch hẹn</h1>
+          <p class="guest-lookup__lead">
+            Nhập số điện thoại hoặc email bạn đã dùng khi mua hàng hoặc đặt lịch. Chúng tôi sẽ gửi mã OTP để xác minh —
+            <strong>không cần tài khoản</strong>.
+          </p>
+
+          @if (notice()) {
+            <p class="guest-lookup__notice" role="status">
+              <app-customer-icon name="alert-triangle" className="size-4 shrink-0" />
+              {{ notice() }}
+            </p>
+          }
+
+          <form class="guest-lookup__form" (submit)="submitContact($event)" novalidate>
+            <label
+              app-field
+              label="Số điện thoại hoặc email"
+              name="contact"
+              icon="phone"
+              variant="soft"
+              placeholder="VD: 0901234567 hoặc ten@email.com"
+              [required]="true"
+              [value]="contactValue()"
+              [error]="contactError()"
+              (onChange)="handleContactInput($event)"
+            ></label>
+            <button app-primary-button [disabled]="requesting()">
+              @if (requesting()) {
+                ĐANG GỬI MÃ...
+              } @else {
+                GỬI MÃ OTP
+              }
+            </button>
+          </form>
+
+          <ul class="guest-lookup__hints">
+            <li><app-customer-icon name="lock-keyhole" className="size-4 shrink-0" /> Chỉ hiển thị giao dịch gắn với thông tin liên hệ bạn xác minh.</li>
+            <li><app-customer-icon name="clock" className="size-4 shrink-0" /> Phiên tra cứu có thời hạn ngắn, hết hạn sẽ cần xác minh lại.</li>
+          </ul>
+        </section>
+      }
+
+      @case ('otp') {
+        <section class="guest-lookup__card" aria-labelledby="guest-otp-title">
+          <span class="guest-lookup__badge"><app-customer-icon name="shield-alert" className="size-6" /></span>
+          <h1 id="guest-otp-title" class="guest-lookup__title">Xác minh OTP</h1>
+          <p class="guest-lookup__lead">
+            Mã gồm 6 chữ số đã được gửi tới <strong class="text-[#06105a]">{{ maskedContact() }}</strong>.
+          </p>
+
+          @if (otpExpired()) {
+            <p class="guest-lookup__notice" role="status">
+              <app-customer-icon name="clock" className="size-4 shrink-0" />
+              Mã OTP đã hết hạn. Vui lòng gửi lại mã mới.
+            </p>
+          } @else {
+            <p class="guest-lookup__timer">
+              Mã hết hạn sau <strong>{{ otpSecondsLeft() }}s</strong>
+            </p>
+          }
+
+          @if (otpInfo()) {
+            <p class="guest-lookup__info" role="status">{{ otpInfo() }}</p>
+          }
+          @if (debugOtp()) {
+            <p class="guest-lookup__debug">Môi trường thử nghiệm — mã OTP: <strong>{{ debugOtp() }}</strong></p>
+          }
+
+          <form
+            app-otp-form
+            class="mt-2"
+            [hasOnSubmitOtp]="true"
+            (onSubmitOtp)="verifyOtp($event)"
+            [submitting]="verifying()"
+            [submitError]="otpError()"
+            [changeScreen]="goBackFromOtp"
+            [previousScreen]="'contact'"
+            [hasOnResendOtp]="true"
+            (onResendOtp)="resendOtp()"
+            [resendDisabled]="requesting() || resendSecondsLeft() > 0"
+            [resendLabel]="resendLabel()"
+          ></form>
+        </section>
+      }
+
+      @case ('list') {
+        <section class="guest-lookup__panel" aria-labelledby="guest-list-title">
+          <header class="guest-lookup__panel-header">
+            <div>
+              <h1 id="guest-list-title" class="guest-lookup__title text-left">Giao dịch của bạn</h1>
+              <p class="guest-lookup__subtle">Đã xác minh: <strong>{{ maskedContact() }}</strong></p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="guest-lookup__ghost-btn" (click)="loadTransactions()" [disabled]="listLoading()">
+                Làm mới
+              </button>
+              <button type="button" class="guest-lookup__ghost-btn" (click)="restart()">Tra cứu lại</button>
+            </div>
+          </header>
+
+          @if (transactions()) {
+            <div class="guest-lookup__tabs" role="tablist">
+              @for (tab of filterTabs(); track tab.value) {
+                <button
+                  type="button"
+                  role="tab"
+                  [attr.aria-selected]="filter() === tab.value"
+                  [class]="filter() === tab.value ? 'guest-lookup__tab guest-lookup__tab--active' : 'guest-lookup__tab'"
+                  (click)="filter.set(tab.value)"
+                >
+                  {{ tab.label }} <span class="guest-lookup__tab-count">{{ tab.count }}</span>
+                </button>
+              }
+            </div>
+          }
+
+          @if (listLoading() && !transactions()) {
+            <div class="guest-lookup__state"><app-customer-loading size="large" /><p>Đang tải giao dịch...</p></div>
+          } @else if (listError()) {
+            <div class="guest-lookup__state">
+              <app-customer-icon name="alert-triangle" className="size-10 text-[#ba1a1a]" />
+              <p>{{ listError() }}</p>
+              <button type="button" class="btn-yellow px-6 py-2" (click)="loadTransactions()">Thử lại</button>
+            </div>
+          } @else if (transactions() && visibleTransactions().length === 0) {
+            <div class="guest-lookup__state">
+              <app-customer-icon name="search" className="size-10 text-[#7e8085]" />
+              <p>Không tìm thấy giao dịch phù hợp với thông tin đã xác minh.</p>
+              <button type="button" class="btn-yellow px-6 py-2" (click)="restart()">Tra cứu lại</button>
+            </div>
+          } @else {
+            <ul class="guest-lookup__list">
+              @for (item of visibleTransactions(); track item.kind + item.id) {
+                <li class="guest-lookup__item">
+                  <span class="guest-lookup__item-icon">
+                    <app-customer-icon [name]="item.kind === 'order' ? 'ant-shopping' : 'calendar-days'" className="size-5" />
+                  </span>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="guest-lookup__item-type">{{ item.kind === 'order' ? 'Đơn hàng' : 'Lịch hẹn' }}</span>
+                      <span class="guest-lookup__item-code">#{{ item.data.code || item.id }}</span>
+                      <span [class]="'guest-lookup__status ' + statusTone(item.data.status)">
+                        {{ labelOf(item.kind === 'order' ? ORDER_STATUS_LABELS : APPOINTMENT_STATUS_LABELS, item.data.status) }}
+                      </span>
+                    </div>
+                    @if (item.kind === 'order') {
+                      <p class="guest-lookup__item-title">{{ orderTitle(item) }}</p>
+                      <p class="guest-lookup__subtle">
+                        Đặt lúc {{ formatDateTime(item.data.createdAt) || '—' }}
+                        @if (item.data.pricing?.totalAmount != null) {
+                          · Tổng {{ formatVnd(item.data.pricing!.totalAmount) }}
+                        }
+                      </p>
+                    } @else {
+                      <p class="guest-lookup__item-title">{{ appointmentTitle(item) }}</p>
+                      <p class="guest-lookup__subtle">Lịch hẹn {{ formatDateTime(item.data.scheduledStart) || '—' }}</p>
+                    }
+                  </div>
+                  <button type="button" class="guest-lookup__detail-btn" (click)="openDetail(item)">
+                    Xem chi tiết <app-customer-icon name="chevron-right" className="size-4" />
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      }
+
+      @case ('detail') {
+        <section class="guest-lookup__panel">
+          <button type="button" class="guest-lookup__back" (click)="backToList()">
+            <app-customer-icon name="arrow-left" className="size-4" /> Quay lại danh sách
+          </button>
+          @if (selected(); as item) {
+            @if (item.kind === 'order') {
+              <article app-guest-order-detail [order]="item.data"></article>
+            } @else {
+              <article
+                app-guest-appointment-detail
+                [appointment]="item.data"
+                [branchName]="branchNames()[item.data.branchId || ''] || ''"
+              ></article>
+            }
+          }
+        </section>
+      }
+    }
+  </main>
+  <app-footer [variant]="'white'" />
+</div>

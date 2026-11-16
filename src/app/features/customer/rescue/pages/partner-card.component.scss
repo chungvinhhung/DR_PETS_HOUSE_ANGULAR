@@ -1,0 +1,51 @@
+.partner-card__stack {
+  @apply flex h-full flex-col p-[25px];
+}
+
+.partner-card__row {
+  @apply flex gap-6 pb-4;
+}
+
+.partner-card__name {
+  @apply h-20 w-20 shrink-0 rounded-[32px] object-cover;
+}
+
+.partner-card__stack-2 {
+  @apply flex min-w-0 flex-col gap-2;
+}
+
+.partner-card__name-2 {
+  @apply w-[188px] text-[24px] font-normal leading-7 text-[#0058BE] hover:underline;
+}
+
+.partner-card__row-2 {
+  @apply flex items-center gap-2 text-[14px] leading-5 tracking-[0.28px] text-[#4F606A];
+}
+
+.partner-card__region {
+  @apply whitespace-nowrap;
+}
+
+.partner-card__stack-3 {
+  @apply flex min-w-0 flex-col gap-2 text-[16px] leading-6 text-[#4F606A];
+}
+
+.partner-card__address {
+  @apply min-h-[48px] whitespace-normal break-words italic;
+}
+
+.partner-card__box {
+  @apply h-24;
+}
+
+.partner-card__row-3 {
+  @apply mt-auto flex justify-center gap-4 py-6;
+}
+
+.partner-card__button {
+  @apply flex h-[52px] w-[146px] items-center justify-center gap-2 rounded-full bg-[#FCD34D] text-[14px] leading-5 tracking-[0.28px] text-[#715B00];
+}
+
+.partner-card__link {
+  @apply flex h-[52px] w-[145.67px] items-center justify-center gap-2 rounded-full bg-[#0058BE] pr-[0.36px] text-[14px] leading-5 tracking-[0.28px] text-white;
+}

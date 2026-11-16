@@ -1,0 +1,47 @@
+.first-aid-detail-page__main {
+  @apply flex flex-col items-center bg-[#E5F6FD] px-4 sm:px-6 lg:px-20 pb-8 pt-6;
+}
+
+.first-aid-detail-page__box {
+  @apply w-full max-w-page;
+}
+
+.first-aid-detail-page__section {
+  @apply mt-6 flex flex-col gap-6 lg:flex-row lg:gap-0;
+}
+
+.first-aid-detail-page__box-2 {
+  @apply relative min-h-[364px] w-full overflow-hidden rounded-[32px] lg:w-[71.75%] lg:shrink-0;
+}
+
+.first-aid-detail-page__image {
+  @apply absolute inset-0 h-full w-full object-cover;
+}
+
+.first-aid-detail-page__layer {
+  @apply absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-white/50;
+}
+
+.first-aid-detail-page__stack {
+  @apply relative flex h-full max-w-[760px] flex-col justify-center p-6;
+}
+
+.first-aid-detail-page__text {
+  @apply flex w-fit items-center gap-2 rounded-full bg-[#FFDAD6] px-4 py-2 text-[14px] font-semibold text-[#C62828];
+}
+
+.first-aid-detail-page__hero-title {
+  @apply mt-4 text-[30px] font-bold leading-[38px] tracking-[-0.96px] text-[#FDD835] sm:text-[40px] sm:leading-[50px] lg:text-[48px] lg:leading-[60px];
+}
+
+.first-aid-detail-page__description {
+  @apply mt-3 max-w-[672px] text-[18px] leading-7 text-white;
+}
+
+.first-aid-detail-page__box-3 {
+  @apply relative z-10 lg:-ml-[34px] lg:flex-1;
+}
+
+.first-aid-detail-page__dang-tai-huong-el {
+  @apply mt-4 rounded-[16px] bg-white px-6 py-3 text-[#0D47A1];
+}

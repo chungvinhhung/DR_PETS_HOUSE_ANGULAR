@@ -1,0 +1,91 @@
+@let a = appointment();
+<header class="guest-detail__header">
+  <div>
+    <p class="guest-detail__eyebrow">Lịch hẹn{{ a.serviceType ? ' · ' + labelOf(SERVICE_TYPE_LABELS, a.serviceType) : '' }}</p>
+    <h1 class="guest-detail__code">#{{ a.code || a._id }}</h1>
+    @if (a.createdAt) {
+      <p class="guest-detail__muted">Đặt lúc {{ formatDateTime(a.createdAt) }}</p>
+    }
+  </div>
+  <span [class]="'guest-detail__status ' + statusTone(a.status)">{{ labelOf(APPOINTMENT_STATUS_LABELS, a.status) }}</span>
+</header>
+
+<div class="guest-detail__grid">
+  <section class="guest-detail__section">
+    <h2 class="guest-detail__section-title">Thời gian & địa điểm</h2>
+    @if (a.scheduledStart) {
+      <div class="guest-detail__row"><span>Bắt đầu</span><span>{{ formatDateTime(a.scheduledStart) }}</span></div>
+    }
+    @if (a.scheduledEnd) {
+      <div class="guest-detail__row"><span>Kết thúc dự kiến</span><span>{{ formatDateTime(a.scheduledEnd) }}</span></div>
+    }
+    @if (a.scheduledDurationMinutes) {
+      <div class="guest-detail__row"><span>Thời lượng</span><span>{{ a.scheduledDurationMinutes }} phút</span></div>
+    }
+    @if (branchName()) {
+      <div class="guest-detail__row"><span>Chi nhánh</span><span>{{ branchName() }}</span></div>
+    }
+  </section>
+
+  @if (a.petSnapshot?.name) {
+    <section class="guest-detail__section">
+      <h2 class="guest-detail__section-title">Thú cưng</h2>
+      <div class="guest-detail__row"><span>Tên</span><span>{{ a.petSnapshot!.name }}</span></div>
+      @if (a.petSnapshot!.breed) {
+        <div class="guest-detail__row"><span>Giống</span><span>{{ a.petSnapshot!.breed }}</span></div>
+      }
+    </section>
+  }
+</div>
+
+<section class="guest-detail__section">
+  <h2 class="guest-detail__section-title">Dịch vụ</h2>
+  @for (service of a.services ?? []; track $index) {
+    <div class="guest-detail__line">
+      <div class="min-w-0 flex-1">
+        <p class="font-medium text-[#060b16]">{{ service.serviceName || 'Dịch vụ' }}</p>
+        <p class="guest-detail__muted">
+          {{ service.variantLabel ? service.variantLabel + ' · ' : '' }}{{ service.durationMinutes ? service.durationMinutes + ' phút' : '' }}
+          @if (service.scheduledStart) { · {{ formatDateTime(service.scheduledStart) }} }
+        </p>
+      </div>
+      @if (service.unitPrice != null) {
+        <span class="font-semibold text-[#06105a]">{{ formatVnd(service.unitPrice) }}</span>
+      }
+    </div>
+  } @empty {
+    <p class="guest-detail__muted">Không có thông tin dịch vụ.</p>
+  }
+</section>
+
+<section class="guest-detail__section">
+  <h2 class="guest-detail__section-title">Thanh toán</h2>
+  @if (a.paymentMethod) {
+    <div class="guest-detail__row"><span>Phương thức</span><span>{{ labelOf(PAYMENT_METHOD_LABELS, a.paymentMethod) }}</span></div>
+  }
+  @if (a.deposit?.status) {
+    <div class="guest-detail__row"><span>Đặt cọc</span><span>{{ labelOf(DEPOSIT_STATUS_LABELS, a.deposit!.status) }}</span></div>
+  }
+  @if (a.pricing?.subtotal != null) {
+    <div class="guest-detail__row"><span>Tạm tính</span><span>{{ formatVnd(a.pricing!.subtotal) }}</span></div>
+  }
+  @if (a.pricing?.voucherDiscount) {
+    <div class="guest-detail__row"><span>Giảm giá</span><span>-{{ formatVnd(a.pricing!.voucherDiscount) }}</span></div>
+  }
+  @if (a.pricing?.depositAmount) {
+    <div class="guest-detail__row"><span>Tiền cọc</span><span>{{ formatVnd(a.pricing!.depositAmount) }}</span></div>
+  }
+  @if (a.pricing?.paidAmount) {
+    <div class="guest-detail__row"><span>Đã thanh toán</span><span>{{ formatVnd(a.pricing!.paidAmount) }}</span></div>
+  }
+  @if (a.pricing?.finalAmount != null) {
+    <div class="guest-detail__total"><span>Tổng cộng</span><span>{{ formatVnd(a.pricing!.finalAmount) }}</span></div>
+  }
+</section>
+
+@if (a.status === 'CANCELLED' && a.cancel?.reason) {
+  <p class="guest-detail__muted">Lý do hủy: {{ a.cancel!.reason }}</p>
+}
+@if (a.note) {
+  <p class="guest-detail__muted">Ghi chú: {{ a.note }}</p>
+}

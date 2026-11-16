@@ -1,8 +1,8 @@
-<div class="mb-6 flex flex-col gap-1">
-  <h1 class="text-[28px] font-bold leading-9 text-[#031635]">Danh sách hồ sơ thú cưng</h1>
-  <p class="text-[15px] leading-6 text-[#667085]">Quản lý và xem thông tin chi tiết của tất cả thú cưng trong hệ thống.</p>
+<div class="pet-list-page__stack">
+  <h1 class="pet-list-page__danh-sach-ho-title">Danh sách hồ sơ thú cưng</h1>
+  <p class="pet-list-page__quan-ly-va-text">Quản lý và xem thông tin chi tiết của tất cả thú cưng trong hệ thống.</p>
 </div>
-<div class="mb-4 flex w-full items-center gap-2 overflow-x-auto pb-1 pt-1">
+<div class="pet-list-page__let-active-el">
   @for (status of PET_STATUS_FILTERS; track $index) {
     @let active = filterStatus() === status;
     <button
@@ -16,7 +16,7 @@
     >{{ status }} ({{ counts()[status] || 0 }})</button>
   }
 </div>
-<div class="mb-6 flex items-center gap-[10px]">
+<div class="pet-list-page__row">
   <form
     app-my-pet-search-and-sort
     [searchInput]="searchInput()"
@@ -26,21 +26,21 @@
     [sortBy]="sortBy()"
     (onSortChange)="sortBy.set($event)"
 ></form>
-  <a appCustomerLink="/thu-cung-cua-toi/them-moi" class="shrink-0">
-    <button class="flex h-[52px] items-center gap-2 rounded-[42px] bg-[#fff176] px-5 text-[14px] font-bold text-[#031635] shadow-elevation transition hover:bg-[#fdd835]">
-      <span class="text-xl leading-none">+</span> Tạo mới</button>
+  <a appCustomerLink="/thu-cung-cua-toi/them-moi" class="pet-list-page__link">
+    <button class="pet-list-page__button">
+      <span class="pet-list-page__text">+</span> Tạo mới</button>
   </a>
 </div>
 @if (searchQuery()) {
-  <p class="mb-6 text-[16px] leading-[27px] text-[#414141]">Kết quả tìm kiếm cho "{{ searchQuery() }}"</p>
+  <p class="pet-list-page__search-query">Kết quả tìm kiếm cho "{{ searchQuery() }}"</p>
 }
 @if (loadError() && !isLoading()) {
-  <p class="mb-4 text-center text-sm text-[#0D47A1]">{{ loadError() }}</p>
+  <p class="pet-list-page__load-error">{{ loadError() }}</p>
 }
 @if (isLoading()) {
-  <div class="py-12 text-center text-slate-500">Đang tải hồ sơ thú cưng...</div>
+  <div class="pet-list-page__dang-tai-ho-el">Đang tải hồ sơ thú cưng...</div>
 } @else {
-  <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+  <div class="pet-list-page__let-displaystatus-el">
     @for (pet of filteredPets(); track getPetId(pet) || $index) {
       @let displayStatus = pet.healthStatus || 'Bình thường';
       @let statusColor = getHealthStatusColor(displayStatus);
@@ -50,26 +50,26 @@
 
       <div>
            <a [appCustomerLink]="`/thu-cung-cua-toi/${toPetSlug(pet)}`"
-            class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow font-sans cursor-pointer"
+            class="pet-list-page__pet-link"
           >
         <!-- Phần hình ảnh & Badge trạng thái góc trên bên phải -->
-        <div class="relative w-full h-52 bg-slate-100 overflow-hidden">
+        <div class="pet-list-page__phan-hinh-anh-badge">
           @if (currentPetImage) {
-            <img [attr.src]="currentPetImage" [attr.alt]="pet.name" class="w-full h-full object-cover" />
+            <img [attr.src]="currentPetImage" [attr.alt]="pet.name" class="pet-list-page__name" />
           } @else {
-            <div class="w-full h-full flex items-center justify-center text-5xl text-slate-300">
+            <div class="pet-list-page__row-2">
               🐾
             </div>
           }
 
           <!-- Badge trạng thái góc phải trên -->
           <div
-            class="absolute top-3 right-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full backdrop-blur-xs shadow-xs text-[13px] font-semibold"
+            class="pet-list-page__badge-trang-thai-goc backdrop-blur-xs shadow-xs"
             [style.background-color]="statusColor.bg"
             [style.color]="statusColor.text"
           >
             <span
-              class="h-2 w-2 rounded-full"
+              class="pet-list-page__text-2"
               [style.background-color]="statusColor.dot"
             ></span>
             <span>{{ displayStatus }}</span>
@@ -77,30 +77,30 @@
         </div>
 
         <!-- Phần nội dung thẻ -->
-        <div class="p-5 flex flex-col flex-1">
+        <div class="pet-list-page__phan-noi-dung-the">
           
           <!-- Hàng Tên thú cưng + Icon giới tính (♂ / ♀) bên phải -->
-          <div class="flex items-start justify-between gap-2">
+          <div class="pet-list-page__hang-ten-thu-cung">
             <div>
-              <h3 class="text-[20px] leading-snug font-bold text-slate-900 tracking-tight">
+              <h3 class="pet-list-page__name-2">
                 {{ pet.name }}
               </h3>
-              <p class="text-[14px] text-slate-500 font-normal mt-0.5">{{ pet.breed || 'Chưa phân loại' }}</p>
-              <p class="text-[14px] text-slate-500 font-normal mt-0.5">{{ displayAge }}</p>
+              <p class="pet-list-page__breed">{{ pet.breed || 'Chưa phân loại' }}</p>
+              <p class="pet-list-page__breed">{{ displayAge }}</p>
             </div>
 
             <!-- Icon giới tính đực / cái bên phải -->
-            <div class="text-slate-600 pt-0.5 flex-shrink-0" [title]="pet.gender">
+            <div class="pet-list-page__icon-gioi-tinh-duc" [title]="pet.gender">
               @if (pet.gender === '♀' || pet.gender === 'Cái' || pet.gender === 'FEMALE'|| pet.gender === 'female') {
                 <!-- Icon Giống cái ♀ -->
-                <svg xmlns="http://w3.org" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://w3.org" class="pet-list-page__icon-giong-cai" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="9" r="5.5" />
                   <path d="M12 14.5v6.5" />
                   <path d="M9 18h6" />
                 </svg>
               } @else {
                 <!-- Icon Giống đực ♂ -->
-                <svg xmlns="http://w3.org" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://w3.org" class="pet-list-page__icon-giong-cai" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="10" cy="14" r="5.5" />
                   <path d="M14 10l6-6" />
                   <path d="M15 4h5v5" />
@@ -110,19 +110,19 @@
           </div>
 
           <!-- Đường kẻ ngang ngăn cách -->
-          <hr class="my-4 border-slate-100" />
+          <hr class="pet-list-page__duong-ke-ngang-ngan" />
 
           <!-- Thông tin khám gần nhất -->
-          <div class="mb-5">
-            <p class="text-[13px] text-slate-400 font-normal">Khám gần nhất</p>
-            <p class="text-[15px] font-medium text-slate-800 mt-0.5">
+          <div class="pet-list-page__thong-tin-kham-gan">
+            <p class="pet-list-page__kham-gan-nhat-text">Khám gần nhất</p>
+            <p class="pet-list-page__display-checkup">
               {{ displayCheckup || 'Chưa khám' }}
             </p>
           </div>
 
           <!-- Nút Xem chi tiết duy nhất màu xanh navy đậm -->
-          <a [appCustomerLink]="`/thu-cung-cua-toi/${toPetSlug(pet)}`" class="w-full">
-                  <button class="w-full bg-[#0a0f3a] hover:bg-[#070b29] rounded-md py-2 font-medium text-xs text-white transition">Xem chi tiết</button>
+          <a [appCustomerLink]="`/thu-cung-cua-toi/${toPetSlug(pet)}`" class="pet-list-page__nut-xem-chi-tiet">
+                  <button class="pet-list-page__xem-chi-tiet-button">Xem chi tiết</button>
                 </a>
         </div>
       </a>
@@ -132,5 +132,5 @@
   </div>
 }
 @if (!isLoading() && filteredPets().length === 0) {
-  <div class="text-center py-12"><p class="text-slate-500">Không tìm thấy thú cưng nào</p></div>
+  <div class="pet-list-page__box"><p class="pet-list-page__khong-tim-thay-text">Không tìm thấy thú cưng nào</p></div>
 }

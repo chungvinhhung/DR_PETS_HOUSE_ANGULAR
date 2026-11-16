@@ -11,6 +11,7 @@ import { productImages } from '../../../../shared/customer/assets/product-images
   standalone: true,
   imports: [StarRatingComponent],
   templateUrl: './write-review-form.component.html',
+  styleUrl: './write-review-form.component.scss',
   host: {
     '(submit)': 'handleSubmit($any($event))',
     'class': 'flex w-full flex-col gap-5 rounded-[14px] border border-solid border-[#d3d3d3] bg-white py-[34px] pl-4 pr-4 sm:flex-row sm:pr-[31px]',

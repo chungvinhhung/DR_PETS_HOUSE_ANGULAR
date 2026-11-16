@@ -1,8 +1,8 @@
-<div class="flex w-full flex-col gap-3 border-t border-solid border-slate-200 pt-5">
-  <p class="whitespace-nowrap text-sm font-bold text-slate-900">Thẻ quà tặng / Mã giảm giá</p>
-  <div class="flex flex-row items-start gap-3">
-    <div class="flex min-w-0 flex-1 flex-col">
-      <div class="flex h-10 w-full items-center rounded-2xl border border-slate-300 bg-white px-4 focus-within:border-blue-900">
+<div class="coupon-and-summary__stack">
+  <p class="coupon-and-summary__the-qua-tang-text">Thẻ quà tặng / Mã giảm giá</p>
+  <div class="coupon-and-summary__row">
+    <div class="coupon-and-summary__stack-2">
+      <div class="coupon-and-summary__row-2">
         <input
           type="text"
           [value]="couponCode() ?? ''"
@@ -12,10 +12,10 @@
         />
       </div>
       @if (couponError()) {
-        <p class="w-full px-4 pt-1 text-xs font-medium text-red-600" role="alert">{{ couponError() }}</p>
+        <p class="coupon-and-summary__coupon-error" role="alert">{{ couponError() }}</p>
       }
       @if (couponSuccess()) {
-        <p class="w-full px-4 pt-1 text-xs font-medium text-green-700">{{ couponSuccess() }}</p>
+        <p class="coupon-and-summary__coupon-success">{{ couponSuccess() }}</p>
       }
     </div>
     <button
@@ -32,7 +32,7 @@
     </button>
   </div>
 </div>
-<div class="my-2 flex w-full flex-col gap-3 rounded-2xl bg-[#f2f4f6] p-5 text-sm">
+<div class="coupon-and-summary__label-tam-tinh-el">
   @for (row of [
           { label: 'Tạm tính', value: formatMoney(subtotal()) },
           {
@@ -41,18 +41,18 @@
           },
           { label: 'Giảm giá', value: `-${formatMoney(discountAmount())}` }
         ]; track row.label) {
-    <div class="flex items-center justify-between font-medium text-slate-700">
+    <div class="coupon-and-summary__row-3">
       <span>{{ row.label }}</span>
-      <span class="font-bold text-slate-900">{{ row.value }}</span>
+      <span class="coupon-and-summary__row-4">{{ row.value }}</span>
     </div>
   }
 </div>
-<div class="flex items-start justify-between rounded-2xl bg-[#d5e4f3] p-5">
-  <div class="text-blue-900">
-    <p class="text-xl font-black leading-7">Tổng cộng</p>
-    <p class="text-xs font-medium text-slate-500">(Đã bao gồm thuế VAT)</p>
+<div class="coupon-and-summary__row-5">
+  <div class="coupon-and-summary__box">
+    <p class="coupon-and-summary__tong-cong-text">Tổng cộng</p>
+    <p class="coupon-and-summary__da-bao-gom-text">(Đã bao gồm thuế VAT)</p>
   </div>
-  <span class="text-2xl font-black leading-7 text-blue-900">{{ formatMoney(total()) }}</span>
+  <span class="coupon-and-summary__total">{{ formatMoney(total()) }}</span>
 </div>
 <button
   type="button"
@@ -69,22 +69,22 @@
   }
 </button>
 @if (submitError()) {
-  <p class="text-center text-sm font-medium text-red-600">{{ submitError() }}</p>
+  <p class="coupon-and-summary__submit-error">{{ submitError() }}</p>
 }
-<p class="text-center text-xs leading-[15px] text-slate-500">
+<p class="coupon-and-summary__bang-cach-nhan-text">
   Bằng cách nhấn xác nhận, bạn đồng ý với
   <a
     href="/policies/dieu-khoan-dich-vu"
     target="_blank"
     rel="noopener noreferrer"
-    class="text-blue-900 underline hover:no-underline"
+    class="coupon-and-summary__dieu-khoan-dich-link"
   >Điều khoản dịch vụ</a>
   và
   <a
     href="/policies/bao-mat"
     target="_blank"
     rel="noopener noreferrer"
-    class="text-blue-900 underline hover:no-underline"
+    class="coupon-and-summary__dieu-khoan-dich-link"
   >Chính sách bảo mật</a>
   của chúng tôi.
 </p>

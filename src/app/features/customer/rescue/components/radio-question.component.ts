@@ -12,6 +12,7 @@ import { FieldErrorComponent } from './field-error.component';
   standalone: true,
   imports: [RequiredMarkComponent, RadioPillComponent, FieldErrorComponent],
   templateUrl: './radio-question.component.html',
+  styleUrl: './radio-question.component.scss',
   host: {
     'class': 'flex w-full flex-col gap-4',
   },

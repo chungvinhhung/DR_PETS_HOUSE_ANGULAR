@@ -5,6 +5,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   standalone: true,
   imports: [],
   templateUrl: './gender-icon.component.html',
+  styleUrl: './gender-icon.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

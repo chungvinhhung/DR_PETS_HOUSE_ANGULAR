@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
   standalone: true,
   imports: [],
   templateUrl: './coupon-input.component.html',
+  styleUrl: './coupon-input.component.scss',
   host: {
     'class': 'flex flex-row items-start gap-[26px]',
   },

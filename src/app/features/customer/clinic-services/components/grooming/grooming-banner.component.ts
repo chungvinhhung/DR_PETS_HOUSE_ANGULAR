@@ -12,6 +12,7 @@ import { medicalAssets } from '../../data/medical-treatment-data';
   standalone: true,
   imports: [ReactStyleDirective, CustomerLinkDirective],
   templateUrl: './grooming-banner.component.html',
+  styleUrl: './grooming-banner.component.scss',
   host: {
     'class': 'relative flex h-[239px] w-full flex-col items-center justify-center overflow-hidden pb-[25px]',
   },

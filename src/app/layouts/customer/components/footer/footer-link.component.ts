@@ -11,6 +11,7 @@ import { CustomerLinkDirective } from '../../../../shared/customer/directives/cu
   standalone: true,
   imports: [NgTemplateOutlet, CustomerLinkDirective],
   templateUrl: './footer-link.component.html',
+  styleUrl: './footer-link.component.scss',
   host: {
   },
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -17,6 +17,7 @@ import { SEARCH_DEBOUNCE_MS, EMPTY_SUGGESTIONS } from './mobile-nav-bar.helpers'
   standalone: true,
   imports: [SearchAssetIconComponent, CustomerIconComponent],
   templateUrl: './mobile-search-panel.component.html',
+  styleUrl: './mobile-search-panel.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

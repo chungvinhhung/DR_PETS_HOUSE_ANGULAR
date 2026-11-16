@@ -5,22 +5,22 @@
 <img
   [attr.src]="authImages.logo"
   alt="Dr. Pet's House"
-  class="absolute left-[13px] top-[3px] z-10 h-[56px] w-[101px] object-contain md:left-5 md:top-5 md:h-[78px] md:w-auto"
+  class="recovery-panel__dr-pet-s-house"
 />
-<div class="relative z-10 flex h-[244px] w-[232px] shrink-0 items-center justify-center md:w-1/2 md:pr-7 md:pt-10">
+<div class="recovery-panel__row">
   <img
     [attr.src]="authImages.searchDog"
     alt=""
-    class="h-[206px] w-[232px] rounded-full bg-white object-cover shadow-lg md:h-[350px] md:w-[380px]"
+    class="recovery-panel__search-dog"
   />
 </div>
-<section class="relative z-10 mx-auto w-full max-w-[420px] pb-[15px]">
-  <h1 class="mb-[-8px] text-[20px] font-extrabold leading-9 tracking-[-0.75px] text-[#060b16] md:mb-0 md:text-[30px]">{{ content()[0] }}</h1>
-  <p class="mb-[23.5px] text-[12px] leading-[26px] text-[#4f5359] md:mb-6 md:mt-2 md:text-[16px]">{{ content()[1] }}</p>
+<section class="recovery-panel__section">
+  <h1 class="recovery-panel__content">{{ content()[0] }}</h1>
+  <p class="recovery-panel__content-2">{{ content()[1] }}</p>
   @if (screen() === 'forgot') {
     <form
       novalidate
-      class="flex flex-col gap-[23.5px]"
+      class="recovery-panel__form"
       (submit)="submitValidatedForm($any($event), forgotErrors(), setForgotValidationAttemptedFn, handleForgotSubmitFn)"
     >
       <label
@@ -34,7 +34,7 @@
         [error]="forgotValidationAttempted() ? forgotErrors().account : ''"
       ></label>
       @if (submitError()) {
-        <p class="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{{ submitError() }}</p>
+        <p class="recovery-panel__submit-error">{{ submitError() }}</p>
       }
       <button app-primary-button [disabled]="submitting()">
         @if (submitting()) {
@@ -66,10 +66,10 @@
   @if (screen() === 'reset') {
     <form
       novalidate
-      class="flex flex-col gap-[23.5px]"
+      class="recovery-panel__form"
       (submit)="submitValidatedForm($any($event), resetErrors(), setResetValidationAttemptedFn, handleResetSubmitFn)"
     >
-      <div class="flex flex-col gap-4">
+      <div class="recovery-panel__stack">
         <label
           app-field
           [label]="'Mật khẩu mới'"
@@ -96,7 +96,7 @@
         ></label>
       </div>
       @if (submitError()) {
-        <p class="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{{ submitError() }}</p>
+        <p class="recovery-panel__submit-error">{{ submitError() }}</p>
       }
       <button app-primary-button [disabled]="submitting()">
         @if (submitting()) {

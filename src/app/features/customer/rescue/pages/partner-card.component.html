@@ -1,39 +1,39 @@
-<div class="flex h-full flex-col p-[25px]">
-  <div class="flex gap-6 pb-4">
+<div class="partner-card__stack">
+  <div class="partner-card__row">
     <img
       [attr.src]="partner().image"
       [attr.alt]="partner().name"
-      class="h-20 w-20 shrink-0 rounded-[32px] object-cover"
+      class="partner-card__name"
     />
-    <div class="flex min-w-0 flex-col gap-2">
+    <div class="partner-card__stack-2">
       <a
         [attr.href]="partner().href"
         target="_blank"
         rel="noreferrer"
-        class="w-[188px] text-[24px] font-normal leading-7 text-[#0058BE] hover:underline"
+        class="partner-card__name-2"
       >{{ partner().name }}</a>
-      <div class="flex items-center gap-2 text-[14px] leading-5 tracking-[0.28px] text-[#4F606A]">
+      <div class="partner-card__row-2">
         <app-customer-icon name="map-pin" className="h-[15px] w-3 shrink-0" />
-        <span class="whitespace-nowrap">{{ partner().region }}</span>
+        <span class="partner-card__region">{{ partner().region }}</span>
       </div>
     </div>
   </div>
-  <div class="flex min-w-0 flex-col gap-2 text-[16px] leading-6 text-[#4F606A]">
-    <p class="min-h-[48px] whitespace-normal break-words italic">{{ partner().address }}</p>
-    <div class="h-24">
+  <div class="partner-card__stack-3">
+    <p class="partner-card__address">{{ partner().address }}</p>
+    <div class="partner-card__box">
       @for (line of description(); track line) {
         <p>{{ line }}</p>
       }
     </div>
   </div>
-  <div class="mt-auto flex justify-center gap-4 py-6">
-    <button class="flex h-[52px] w-[146px] items-center justify-center gap-2 rounded-full bg-[#FCD34D] text-[14px] leading-5 tracking-[0.28px] text-[#715B00]">
+  <div class="partner-card__row-3">
+    <button class="partner-card__button">
       <app-customer-icon name="phone" className="h-[13.5px] w-[13.5px]" />Gọi ngay</button>
     <a
       [attr.href]="partner().href"
       target="_blank"
       rel="noreferrer"
-      class="flex h-[52px] w-[145.67px] items-center justify-center gap-2 rounded-full bg-[#0058BE] pr-[0.36px] text-[14px] leading-5 tracking-[0.28px] text-white"
+      class="partner-card__link"
     >
       <app-customer-icon name="link" className="h-[13.5px] w-[13.5px]" />Ghé thăm</a>
   </div>

@@ -21,6 +21,7 @@ import { PAGE_SIZE } from './first-aid-page.helpers';
   standalone: true,
   imports: [CanvasLayoutComponent, NavBarComponent, FirstAidTabsComponent, FirstAidCardComponent, SupportCardsComponent, FooterComponent],
   templateUrl: './first-aid-page.component.html',
+  styleUrl: './first-aid-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white',
   },

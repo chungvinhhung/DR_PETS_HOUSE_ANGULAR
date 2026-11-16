@@ -1,0 +1,27 @@
+.filter-sidebar__row {
+  @apply flex h-[33px] items-center gap-[10px];
+}
+
+.filter-sidebar__bo-loc-tim-title {
+  @apply whitespace-nowrap text-[24px] font-bold leading-[32px] text-black;
+}
+
+.filter-sidebar__box {
+  @apply mt-[24px] overflow-hidden rounded-[40px] border border-[rgba(25,118,210,0.5)] bg-white px-[30px] py-[40px];
+}
+
+.filter-sidebar__stack {
+  @apply mt-[24px] flex flex-col gap-[16px];
+}
+
+.filter-sidebar__label {
+  @apply flex cursor-pointer items-center gap-[20px] text-[#414141];
+}
+
+.filter-sidebar__label-2 {
+  @apply whitespace-nowrap text-[15px] leading-[27px];
+}
+
+.filter-sidebar__row-2 {
+  @apply mt-[24px] flex justify-center;
+}

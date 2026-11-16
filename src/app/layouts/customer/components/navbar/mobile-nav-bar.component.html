@@ -1,10 +1,10 @@
-<header class="fixed inset-x-0 top-0 z-[70] h-12 border-b border-[#ECEFF1] bg-white pr-[10px] md:h-16 md:min-w-[744px] md:border md:px-[15px] md:py-[10px] lg:hidden">
-  <div class="flex h-full w-full items-center justify-between">
-    <a appCustomerLink="/" class="flex h-12 min-w-[100px] items-center md:h-[44px] md:min-w-[145px]">
+<header class="mobile-nav-bar__header">
+  <div class="mobile-nav-bar__row">
+    <a appCustomerLink="/" class="mobile-nav-bar__link">
       <img
         [attr.src]="homeImages.logo"
         alt="Dr. Pet's House"
-        class="h-9 w-[82px] object-contain md:h-[52px] md:w-[120px]"
+        class="mobile-nav-bar__dr-pet-s-house"
       />
     </a>
     <button app-tablet-search-trigger (onOpen)="activePanel.set('search')"></button>
@@ -34,16 +34,16 @@
         <img
           [attr.src]="isAuthenticated() ? navbarImages.cartYellow : cartIcon"
           alt=""
-          class="size-[18px] md:size-[30px]"
+          class="mobile-nav-bar__cart-icon"
         />
       </button>
       @if (isAuthenticated()) {
         <a
           appCustomerLink="/thong-tin-nguoi-dung"
-          class="flex size-[18px] items-center justify-center overflow-hidden rounded-full border border-black/80 md:h-[31px] md:w-[30px]"
+          class="mobile-nav-bar__tai-khoan"
           aria-label="Tài khoản"
         >
-          <img [attr.src]="avatar()" alt="" class="size-full object-cover" />
+          <img [attr.src]="avatar()" alt="" class="mobile-nav-bar__avatar" />
         </a>
       } @else {
         <button
@@ -51,7 +51,7 @@
           (click)="authService.openAuth('login')"
           class="flex h-[22px] w-[76px] items-center justify-center rounded bg-[#FDD835] px-[22px] py-2 shadow-elevation md:h-[30px] md:w-[102px]"
         >
-          <span class="whitespace-nowrap font-['Roboto'] text-[9px] font-bold leading-[14.94px] tracking-[0.4px] text-black/87 md:text-[12px] md:leading-[19.92px]">ĐĂNG NHẬP</span>
+          <span class="mobile-nav-bar__text-black-87 text-black/87">ĐĂNG NHẬP</span>
         </button>
       }
       <button
@@ -60,7 +60,7 @@
         class="flex h-[22px] w-[21px] items-center justify-center md:h-[40px] md:w-[40px]"
         aria-label="Mở menu"
       >
-        <span class="flex h-[17px] w-5 items-center justify-center md:h-[30px] md:w-[25px]"><app-figma-menu-icon /></span>
+        <span class="mobile-nav-bar__text"><app-figma-menu-icon /></span>
       </button>
     </div>
   </div>

@@ -18,6 +18,7 @@ import { EMAIL_PATTERN, VALIDATION_SCHEMAS, getFormErrors, submitValidatedForm }
   standalone: true,
   imports: [AuthBackgroundBlobComponent, FieldComponent, PrimaryButtonComponent, OtpFormComponent, CustomerIconComponent],
   templateUrl: './recovery-panel.component.html',
+  styleUrl: './recovery-panel.component.scss',
   host: {
     'class': 'relative flex w-full flex-col items-center overflow-hidden rounded-xl bg-[#90CAF9] px-5 pb-[15px] pt-14 shadow-2xl md:min-h-[637px] md:flex-row md:p-12',
   },

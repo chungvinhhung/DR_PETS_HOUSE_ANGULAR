@@ -1,26 +1,26 @@
 @if (active()) {
-  <img [attr.src]="serviceSelectedCheck" alt="" class="absolute right-4 top-4 h-5 w-5" />
+  <img [attr.src]="serviceSelectedCheck" alt="" class="pet-summary-card__service-selected-check" />
 }
 @if (selectedPet()) {
   <img
     [attr.src]="selectedPet().name === 'Max' ? informationSelectedPetPhoto : selectedPet().avatar || petImages[selectedPet().name] || buddyImg"
     [attr.alt]="selectedPet().name"
-    class="h-[60px] w-[60px] shrink-0 rounded-full object-cover md:h-20 md:w-20"
+    class="pet-summary-card__name"
   />
-  <span class="min-w-0 flex-1">
-    <strong class="block text-lg text-slate-900">{{ selectedPet().name }}</strong>
-    <span class="text-sm text-slate-600">{{ selectedPet().breed }} <br /> {{ selectedPet().age }}</span>
+  <span class="pet-summary-card__text">
+    <strong class="pet-summary-card__name-2">{{ selectedPet().name }}</strong>
+    <span class="pet-summary-card__breed">{{ selectedPet().breed }} <br /> {{ selectedPet().age }}</span>
   </span>
   @if (extraCount() > 0) {
-    <span class="shrink-0 text-right text-sm font-normal leading-6 tracking-[0.15px] text-[#d32f2f] md:text-base">+{{ extraCount() }} hồ sơ khác</span>
+    <span class="pet-summary-card__extra-count">+{{ extraCount() }} hồ sơ khác</span>
   }
 } @else {
   <span>
-    <strong class="block text-xl text-slate-900">Chọn Hồ sơ thú cưng</strong>
+    <strong class="pet-summary-card__chon-ho-so-strong">Chọn Hồ sơ thú cưng</strong>
     @if (authService.isAuthenticated()) {
-      <span class="mt-3 block text-base text-slate-600">Bạn đã tạo Hồ sơ thú cưng trước đó</span>
+      <span class="pet-summary-card__ban-da-tao-text">Bạn đã tạo Hồ sơ thú cưng trước đó</span>
     } @else {
-      <span class="mt-3 block text-base text-slate-600">Vui lòng đăng nhập để chọn hồ sơ thú cưng đã tạo</span>
+      <span class="pet-summary-card__ban-da-tao-text">Vui lòng đăng nhập để chọn hồ sơ thú cưng đã tạo</span>
     }
   </span>
 }

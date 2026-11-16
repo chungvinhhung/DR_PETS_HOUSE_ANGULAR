@@ -1,0 +1,7 @@
+.product-grid__khong-tim-thay-el {
+  @apply flex h-[532px] items-center justify-center text-[18px] text-[#414141];
+}
+
+.product-grid__grid {
+  @apply grid w-full grid-cols-2 justify-items-center gap-x-[10.75px] gap-y-10 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 xl:gap-y-[64px];
+}

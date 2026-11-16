@@ -1,9 +1,9 @@
-<div class="flex items-center justify-between">
-  <h2 class="flex items-center gap-2 text-[24px] font-bold leading-8 text-[#111827]">
-    <span class="flex h-7 w-9 items-center justify-center rounded-full bg-[#FDD835]">
+<div class="trending-section__row">
+  <h2 class="trending-section__title">
+    <span class="trending-section__text">
       <app-customer-icon name="trending-up" className="h-5 w-5 text-[#0D47A1]" />
     </span>Đang là xu hướng</h2>
-  <div class="flex gap-2">
+  <div class="trending-section__row-2">
     @for (direction of [-1, 1]; track direction) {
       <button
         type="button"
@@ -20,17 +20,17 @@
     }
   </div>
 </div>
-<div #scrollRef class="mt-6 flex gap-6 overflow-x-hidden pb-6">
+<div #scrollRef class="trending-section__row-3">
   @for (post of posts(); track post.id) {
     <a
       [appCustomerLink]="`/blog/${post.id}`"
-      class="group flex h-[130px] w-[280px] shrink-0 gap-4 sm:w-[320px] rounded-[16px] border border-[#E3F2FD] bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+      class="trending-section__id-link group flex bg-white hover:-translate-y-0.5"
     >
-      <img [attr.src]="post.image" alt="" class="h-24 w-24 rounded-[12px] object-cover" />
-      <div class="flex min-w-0 flex-col justify-center">
-        <p class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.5px] text-[#0D47A1]">
+      <img [attr.src]="post.image" alt="" class="trending-section__image" />
+      <div class="trending-section__stack">
+        <p class="trending-section__text-2">
           <app-category-icon [category]="post.category" [className]="'h-3 w-3'" />{{ post.categoryLabel }}</p>
-        <h3 class="mt-1 line-clamp-3 text-[14px] leading-[19px] text-[rgba(0,0,0,0.87)] transition-colors group-hover:text-[#0D47A1]">{{ post.title }}</h3>
+        <h3 class="trending-section__title-2 group-hover:text-[#0D47A1] text-[rgba(0,0,0,0.87)]">{{ post.title }}</h3>
       </div>
     </a>
   }

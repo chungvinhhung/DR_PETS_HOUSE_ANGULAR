@@ -1,0 +1,15 @@
+.results-header__text-black-87 {
+  @apply w-full text-[32px] font-semibold leading-10;
+}
+
+.results-header__query {
+  @apply text-[#0D47A1];
+}
+
+.results-header__summary {
+  @apply text-[16px] leading-6 text-black/60;
+}
+
+.results-header__row {
+  @apply flex flex-wrap items-center gap-3 pt-4;
+}

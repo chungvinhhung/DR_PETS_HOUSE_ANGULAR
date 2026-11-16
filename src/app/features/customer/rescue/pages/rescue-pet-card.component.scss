@@ -1,0 +1,59 @@
+.rescue-pet-card__box {
+  @apply h-2 w-full bg-gradient-to-r from-[#0D47A1] via-[#FDD835] to-[#79CCF2];
+}
+
+.rescue-pet-card__box-2 {
+  @apply px-4 pb-2 pt-4;
+}
+
+.rescue-pet-card__box-3 {
+  @apply h-[217px] overflow-hidden rounded-[2px] border-2 border-white bg-[#D9E3F6] p-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)];
+}
+
+.rescue-pet-card__name {
+  @apply h-full w-full object-cover;
+}
+
+.rescue-pet-card__layer {
+  @apply absolute left-4 top-4 flex h-[39px] items-center gap-2 rounded-full border-2 border-white bg-[#0058BE] px-[18px] text-[12px] uppercase tracking-[0.6px] text-white;
+}
+
+.rescue-pet-card__ribbon {
+  @apply absolute right-[-42px] top-[18px] rotate-45 border-b border-[#0D47A1] bg-[#FCD34D] px-10 pb-[5px] pt-1 text-[11px] uppercase tracking-[1.1px] text-[rgba(0,0,0,0.87)];
+}
+
+.rescue-pet-card__stack {
+  @apply flex flex-1 flex-col px-5 pb-5 pt-2;
+}
+
+.rescue-pet-card__description {
+  @apply py-2 text-[16px] leading-6 text-[rgba(0,0,0,0.87)];
+}
+
+.rescue-pet-card__box-4 {
+  @apply border-y border-dashed border-[rgba(208,198,174,0.5)] pb-[9px] pt-[11px];
+}
+
+.rescue-pet-card__tinh-trang-title {
+  @apply text-[24px] font-bold leading-8 text-[#121C2A];
+}
+
+.rescue-pet-card__status {
+  @apply mt-1 text-[14px] leading-5 tracking-[0.28px] text-[rgba(0,0,0,0.87)];
+}
+
+.rescue-pet-card__box-5 {
+  @apply pt-[10px];
+}
+
+.rescue-pet-card__need {
+  @apply mt-1 min-h-[40px] text-[14px] leading-5 tracking-[0.28px] text-[rgba(0,0,0,0.87)];
+}
+
+.rescue-pet-card__stack-2 {
+  @apply mt-auto flex flex-col gap-2;
+}
+
+.rescue-pet-card__lien-he-de-button {
+  @apply h-[38px] rounded-[2px] border border-white bg-[#0D47A1] text-[14px] leading-5 tracking-[0.28px] text-white shadow-[0_1px_1px_rgba(0,0,0,0.05)];
+}

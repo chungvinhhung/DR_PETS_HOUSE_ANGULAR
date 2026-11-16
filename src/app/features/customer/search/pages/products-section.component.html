@@ -3,7 +3,7 @@
 @if (!allMode()) {
   <div app-search-results-section-heading>Có thể bạn cũng cần</div>
   <div app-products-grid [products]="results().suggestedProducts"></div>
-  <div class="flex justify-center">
-    <a appCustomerLink="/products" class="btn-yellow-main h-[42px] px-[22px] text-[15px] font-medium">Xem tất cả sản phẩm</a>
+  <div class="products-section__row">
+    <a appCustomerLink="/products" class="products-section__btn-yellow-main btn-yellow-main">Xem tất cả sản phẩm</a>
   </div>
 }

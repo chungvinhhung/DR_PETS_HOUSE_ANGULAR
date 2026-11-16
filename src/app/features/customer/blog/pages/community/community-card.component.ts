@@ -12,6 +12,7 @@ import { ActionsComponent } from './actions.component';
   standalone: true,
   imports: [AuthorComponent, TypeBadgeComponent, ActionsComponent],
   templateUrl: './community-card.component.html',
+  styleUrl: './community-card.component.scss',
   host: {
     'role': 'button',
     'tabindex': '0',

@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './search-results-section-heading.component.html',
+  styleUrl: './search-results-section-heading.component.scss',
   host: {
     'class': 'flex w-full items-center gap-4',
   },

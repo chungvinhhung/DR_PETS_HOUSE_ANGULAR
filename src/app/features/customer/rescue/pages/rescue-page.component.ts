@@ -24,6 +24,7 @@ import { RESCUE_PAGE_SIZE } from './rescue-page.helpers';
   standalone: true,
   imports: [CanvasLayoutComponent, NavBarComponent, SectionLabelComponent, RescuePetCardComponent, AdoptionRequestCardComponent, PartnerCardComponent, FooterComponent, AdoptionApplicationModalComponent, CustomerIconComponent],
   templateUrl: './rescue-page.component.html',
+  styleUrl: './rescue-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white',
   },

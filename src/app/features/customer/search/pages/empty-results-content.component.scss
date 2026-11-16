@@ -1,0 +1,19 @@
+.empty-results-content__stack {
+  @apply flex w-full flex-col items-center gap-3;
+}
+
+.empty-results-content__text-black-87 {
+  @apply pt-3 text-center text-[36px] font-semibold leading-8;
+}
+
+.empty-results-content__description {
+  @apply w-[576px] max-w-full pt-3 text-center text-[18px] leading-6 text-black/60;
+}
+
+.empty-results-content__row {
+  @apply flex items-center justify-center gap-4 pb-9 pt-5;
+}
+
+.empty-results-content__home-label {
+  @apply rounded-full bg-[#FDD835] px-8 py-3 text-[14px] font-semibold leading-5 tracking-[0.28px] shadow-[0_1px_1px_rgba(0,0,0,0.05)] transition-colors hover:bg-[#083572];
+}

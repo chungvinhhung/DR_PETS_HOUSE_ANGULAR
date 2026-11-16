@@ -10,6 +10,7 @@ import { CustomerIconComponent } from '../../../../../shared/customer/components
   standalone: true,
   imports: [CustomerIconComponent],
   templateUrl: './actions.component.html',
+  styleUrl: './actions.component.scss',
   host: {
     'class': 'flex items-center justify-between border-t border-[#F3F3F3] pt-4 text-[#414753]',
   },

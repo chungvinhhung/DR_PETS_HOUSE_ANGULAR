@@ -7,10 +7,12 @@ import { SearchAndSortComponent } from './search-and-sort.component';
 import { AppointmentCardComponent } from './appointment-card.component';
 import { DetailPanelComponent } from './detail-panel.component';
 import { ReviewModalComponent } from './review-modal.component';
+
 import { appointmentImages } from '../../../../../shared/customer/assets/appointment-images';
 import { APPOINTMENT_FILTERS, getAppointmentDisplayStatus } from '../../utils/appointment-display';
 import { MOCK_APPOINTMENTS } from '../../data/mock-appointments';
 import { getAppointmentDate, formatMoney } from './appointment-history-page.helpers';
+import { RescheduleModalComponent } from './reschedule-modal.component';
 
 /**
  * AppointmentHistoryPage — chuyển từ React: src/pages/Booking/AppointmentHistoryPage.jsx
@@ -18,7 +20,7 @@ import { getAppointmentDate, formatMoney } from './appointment-history-page.help
 @Component({
   selector: 'div[app-appointment-history-page]',
   standalone: true,
-  imports: [SearchAndSortComponent, AppointmentCardComponent, DetailPanelComponent, ReviewModalComponent],
+  imports: [SearchAndSortComponent, AppointmentCardComponent, DetailPanelComponent, ReviewModalComponent, RescheduleModalComponent],
   templateUrl: './appointment-history-page.component.html',
   host: {
     'class': 'relative mx-auto flex w-full max-w-[939px] flex-col gap-8 pb-10',
@@ -77,6 +79,7 @@ export class AppointmentHistoryPageComponent {
   });
   readonly selectedAppointment = computed<any>(() => this.appointments().find((item: any) => item.id === this.selectedId()));
   readonly reviewAppointment = computed<any>(() => this.appointments().find((item: any) => item.id === this.reviewAppointmentId()));
+  readonly rescheduleAppointment = computed<any>(() => this.appointments().find((item: any) => item.id === this.rescheduleAppointmentId()));
 
   // --- Trạng thái (signal = useState / useRef) ---
   readonly appointments = signal<any>([]);
@@ -86,6 +89,7 @@ export class AppointmentHistoryPageComponent {
   readonly sortOrder = signal<any>("newest");
   readonly selectedId = signal<any>(null);
   readonly reviewAppointmentId = signal<any>(null);
+  readonly rescheduleAppointmentId = signal<any>(null);
   readonly isLoading = signal<any>(true);
   readonly loadError = signal<any>("");
   readonly actionLoadingId = signal<any>(null);
@@ -244,7 +248,7 @@ export class AppointmentHistoryPageComponent {
     }
 
     if (actionKey === "reschedule") {
-      this.actionMessage.set({ type: "error", text: "Backend chưa có endpoint đổi lịch, tạm thời hãy đặt lịch mới nếu cần đổi giờ." });
+      this.rescheduleAppointmentId.set(appointment.id);
       return;
     }
 
@@ -306,6 +310,24 @@ export class AppointmentHistoryPageComponent {
     } finally {
       this.actionLoadingId.set(null);
     }
+  }
+
+  protected handleRescheduleSuccess(event: any) {
+    this.rescheduleAppointmentId.set(null);
+    const dateText = event.date;
+    const timeText = event.slotValue;
+    this.actionMessage.set({
+      type: "success",
+      text: `Đã đổi lịch hẹn sang ngày ${dateText} lúc ${timeText} thành công.`,
+    });
+    this.decisionModalService.showSuccessModal({
+      message: `Đã đổi lịch hẹn sang ngày ${dateText} lúc ${timeText} thành công.\nCảm ơn bạn đã cập nhật thời gian đến phòng khám!`,
+    });
+    this.bookingApi.getAppointmentHistory().then((items: any) => {
+      if (Array.isArray(items) && items.length > 0) {
+        this.appointments.set(items);
+      }
+    });
   }
 
   protected handle1() {

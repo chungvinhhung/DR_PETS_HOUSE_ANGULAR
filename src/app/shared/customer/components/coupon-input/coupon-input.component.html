@@ -1,21 +1,21 @@
-<div class="flex flex-col flex-1 min-w-0">
-  <div class="w-full h-[37px] border border-[rgba(0,0,0,0.23)] rounded-[4px] px-[14px] flex items-center bg-[#FFFFFF]">
+<div class="coupon-input__field">
+  <div class="coupon-input__box">
     <input
       type="text"
       [value]="value() ?? ''"
       (input)="onChange.emit($any($event).target.value.toUpperCase())"
       placeholder="Nhập mã giảm giá"
-      class="w-full bg-transparent outline-none font-['Roboto'] text-[14px] font-normal text-[#4F4B4B] leading-[2.66em] tracking-[0.0714em] uppercase placeholder:text-[#999]"
+      class="coupon-input__control"
     />
   </div>
   @if (error()) {
-    <p class="mt-1 text-xs text-red-500">{{ error() }}</p>
+    <p class="coupon-input__error">{{ error() }}</p>
   }
 </div>
 <button
   type="button"
   (click)="onApply.emit($event)"
-  class="h-[37px] w-[104px] flex items-center justify-center bg-[#FDD835] rounded-[4px] shadow-[0px_3px_0.5px_rgba(0,0,0,0.2),0px_2px_1px_rgba(0,0,0,0.14),0px_1px_2.5px_rgba(0,0,0,0.12)] hover:bg-[#ffe454] active:scale-[0.98] transition-all duration-micro"
+  class="coupon-input__apply"
 >
-  <span class="whitespace-nowrap font-['Roboto'] text-[16px] font-normal leading-[1.5] tracking-[0.15px] text-black">Áp dụng</span>
+  <span class="coupon-input__apply-label">Áp dụng</span>
 </button>

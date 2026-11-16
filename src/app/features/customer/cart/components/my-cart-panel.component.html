@@ -1,8 +1,8 @@
 <!-- Header -->
-<div class="flex h-12 w-full shrink-0 items-center justify-between bg-white pr-[10px] lg:h-auto lg:w-[503px] lg:bg-transparent lg:pr-0">
-  <p class="whitespace-nowrap tracking-[0.15px] text-[#353535]">
-    <span class="font-['Roboto'] text-[16px] font-bold leading-[1.5]">Giỏ hàng</span>
-    <span class="font-['Roboto'] text-[16px] font-bold leading-[1.5] text-[#f45757]">({{ itemCount() }})</span>
+<div class="my-cart-panel__header">
+  <p class="my-cart-panel__text">
+    <span class="my-cart-panel__gio-hang-text">Giỏ hàng</span>
+    <span class="my-cart-panel__item-count">({{ itemCount() }})</span>
   </p>
   <button
     type="button"
@@ -10,20 +10,20 @@
     class="btn-icon-subtle relative size-[30px] shrink-0 p-1 transition-transform duration-micro hover:scale-110 active:scale-95"
     aria-label="Đóng giỏ hàng"
   >
-    <img [attr.src]="cartImages.iconClose" alt="" class="size-full" />
+    <img [attr.src]="cartImages.iconClose" alt="" class="my-cart-panel__icon-close" />
   </button>
 </div>
 <!-- Item list -->
-<div class="flex min-h-0 w-full max-w-[340px] flex-1 flex-col items-start overflow-x-clip overflow-y-auto lg:max-w-none">
+<div class="my-cart-panel__item-list">
   @if (hasItems()) {
     @for (item of cartService.cartItems(); track item.id) {
       <div app-cart-item-row [item]="item"></div>
     }
   } @else {
-    <div class="flex w-full flex-col items-center justify-center gap-3 py-16">
+    <div class="my-cart-panel__stack">
       <!-- Empty cart SVG -->
       <svg
-        class="text-[#ccc]"
+        class="my-cart-panel__empty-cart-svg"
         width="64"
         height="64"
         viewBox="0 0 24 24"
@@ -35,16 +35,16 @@
           fill="currentColor"
         />
       </svg>
-      <p class="font-['Roboto'] text-[16px] font-medium leading-[1.5] text-[#999]">Giỏ hàng trống</p>
-      <p class="font-['Roboto'] text-[13px] leading-[1.5] text-[#bbb] text-center">Thêm sản phẩm để bắt đầu mua sắm</p>
+      <p class="my-cart-panel__gio-hang-trong-text">Giỏ hàng trống</p>
+      <p class="my-cart-panel__them-san-pham-text">Thêm sản phẩm để bắt đầu mua sắm</p>
     </div>
   }
 </div>
 <!-- Footer -->
-<div class="flex h-[60px] w-full shrink-0 items-center justify-center gap-6 rounded bg-[#f5f5f5] p-6">
-  <div class="flex h-5 min-w-0 flex-1 items-center gap-5 font-['Roboto'] text-[16px] font-bold leading-[1.5] tracking-[0.15px]">
-    <p class="shrink-0 whitespace-nowrap text-[rgba(0,0,0,0.87)]">Tạm tính:</p>
-    <p class="min-w-0 flex-1 text-[#f45757]">{{ formatPrice(subtotal()) }}</p>
+<div class="my-cart-panel__footer">
+  <div class="my-cart-panel__row">
+    <p class="my-cart-panel__tam-tinh-text">Tạm tính:</p>
+    <p class="my-cart-panel__subtotal">{{ formatPrice(subtotal()) }}</p>
   </div>
   <button
     type="button"
@@ -56,6 +56,6 @@
             : 'opacity-50 cursor-not-allowed'
         }`"
   >
-    <span class="whitespace-nowrap font-['Roboto'] text-[13px] font-medium uppercase leading-[22px] tracking-[0.46px] text-black">Đặt hàng</span>
+    <span class="my-cart-panel__dat-hang-text">Đặt hàng</span>
   </button>
 </div>

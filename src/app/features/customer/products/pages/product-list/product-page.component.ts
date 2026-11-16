@@ -21,6 +21,7 @@ import { PAGE_SIZE, MULTI_CATEGORY_FETCH_LIMIT, buildCategoryOptions, toBackendS
   standalone: true,
   imports: [NavBarComponent, BreadcrumbComponent, FilterSidebarComponent, ProductSearchAndSortComponent, ProductGridComponent, LoadMoreComponent, FooterComponent],
   templateUrl: './product-page.component.html',
+  styleUrl: './product-page.component.scss',
   host: {
     'class': 'min-h-screen bg-[#f5f5f5]',
   },

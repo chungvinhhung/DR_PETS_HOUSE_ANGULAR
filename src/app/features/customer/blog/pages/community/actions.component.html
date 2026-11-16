@@ -1,4 +1,4 @@
-<div class="flex gap-6">
+<div class="actions__row">
   <button
     type="button"
     (click)="action(onLikeFn)($event)"
@@ -8,6 +8,6 @@
   <button type="button" (click)="action(onCommentFn)($event)" class="flex items-center gap-2">
     <app-customer-icon name="message-square" className="h-5 w-5" /> {{ post().comments }}</button>
 </div>
-<div class="flex gap-4">
+<div class="actions__row-2">
   <button type="button" (click)="action(onShareFn)($event)" aria-label="Chia sẻ"><app-customer-icon name="share-2" className="h-5 w-5" /></button>
 </div>

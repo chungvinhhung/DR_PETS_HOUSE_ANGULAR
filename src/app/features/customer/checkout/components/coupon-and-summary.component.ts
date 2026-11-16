@@ -12,6 +12,7 @@ import { formatMoney } from './shopping-checkout.helpers';
   standalone: true,
   imports: [],
   templateUrl: './coupon-and-summary.component.html',
+  styleUrl: './coupon-and-summary.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

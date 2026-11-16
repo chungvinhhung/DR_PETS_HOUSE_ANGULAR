@@ -16,6 +16,7 @@ import { productImages } from '../../../../../shared/customer/assets/product-ima
 import { normalizeArray } from '../../../../../core/customer/services/api/product-api.service';
 import { FEATURED_PRODUCTS } from '../../../../../shared/customer/data/shop-data';
 import { REVIEW_PAGE_SIZE, EMPTY_REVIEWS_DATA, buildFallbackProduct, findFallbackProduct, formatPrice, formatReviewTime, normalizeReviewsData } from './product-details-page.helpers';
+import { YellowButtonComponent } from '../../../../../shared/customer/components/yellow-button/yellow-button.component';
 
 /**
  * ProductDetailsPage — chuyển từ React: src/pages/Product/ProductDetailsPage.jsx
@@ -23,8 +24,9 @@ import { REVIEW_PAGE_SIZE, EMPTY_REVIEWS_DATA, buildFallbackProduct, findFallbac
 @Component({
   selector: 'app-product-details-page',
   standalone: true,
-  imports: [CanvasLayoutComponent, NavBarComponent, BreadcrumbComponent, ProductRatingComponent, WriteReviewFormComponent, ShoppingProductCardComponent, FooterComponent, ReactStyleDirective, CustomerLinkDirective],
+  imports: [CanvasLayoutComponent, NavBarComponent, BreadcrumbComponent, ProductRatingComponent, WriteReviewFormComponent, ShoppingProductCardComponent, FooterComponent, ReactStyleDirective, CustomerLinkDirective, YellowButtonComponent],
   templateUrl: './product-details-page.component.html',
+  styleUrl: './product-details-page.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -146,9 +148,15 @@ export class ProductDetailsPageComponent implements OnInit {
   });
 
   readonly isOutOfStock = computed<boolean>(() => {
-    if (this.product()?.outOfStock) return true;
+  const variant = this.selectedVariant();
+  // Nếu có biến thể đang chọn, chỉ xét tồn kho của chính biến thể đó
+  if (variant) {
     return this.currentStock() <= 0;
-  });
+  }
+  if (this.product()?.outOfStock) return true;
+  return this.currentStock() <= 0;
+});
+
 
   constructor() {
     // useEffect(..., [productId])
@@ -259,22 +267,26 @@ export class ProductDetailsPageComponent implements OnInit {
   }
 
   protected selectVariant(i: number, variant: any) {
-    this.selectedTypeIdx.set(i);
-    this.dropdownValue.set(variant?.sizes?.[0] ?? "");
-    if (variant?.image) {
-      this.variantImage.set(variant.image);
-      const matchIdx = this.thumbnails().findIndex((img: string) => img === variant.image);
-      if (matchIdx !== -1) {
-        this.selectedImageIdx.set(matchIdx);
-      }
-    } else {
-      this.variantImage.set(null);
+  this.selectedTypeIdx.set(i);
+  this.dropdownValue.set(variant?.sizes?.[0] ?? "");
+  if (variant?.image) {
+    this.variantImage.set(variant.image);
+    const matchIdx = this.thumbnails().findIndex((img: string) => img === variant.image);
+    if (matchIdx !== -1) {
+      this.selectedImageIdx.set(matchIdx);
     }
-    const stock = variant?.availableStock ?? variant?.stockQuantity ?? 0;
-    if (stock > 0 && this.quantity() > stock) {
-      this.quantity.set(stock);
-    }
+  } else {
+    this.variantImage.set(null);
   }
+  
+  const stock = Number(variant?.availableStock ?? variant?.stockQuantity ?? 0);
+  if (stock <= 0) {
+    this.quantity.set(1);
+  } else if (this.quantity() > stock) {
+    this.quantity.set(stock);
+  }
+}
+
 
   protected selectThumbnail(i: number) {
     this.variantImage.set(null);

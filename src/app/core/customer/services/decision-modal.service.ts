@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 
-export type DecisionModalType = 'delete' | 'cancel' | 'success';
+/** notice: icon cảnh báo như delete/cancel nhưng nút vàng như success (thông báo, không phải thao tác nguy hiểm). */
+export type DecisionModalType = 'delete' | 'cancel' | 'success' | 'notice';
 
 export interface DecisionModalOptions {
   type?: DecisionModalType;
@@ -38,6 +39,13 @@ const DEFAULT_COPY: Record<DecisionModalType, Partial<DecisionModalState>> = {
     cancelLabel: 'Quay về Trang chủ',
     confirmLabel: 'Tiếp tục',
     variant: 'success',
+  },
+  notice: {
+    title: 'THÔNG BÁO',
+    message: '',
+    cancelLabel: 'Quay về Trang chủ',
+    confirmLabel: 'Đóng',
+    variant: 'notice',
   },
 };
 
@@ -86,6 +94,10 @@ export class DecisionModalService {
 
   readonly showSuccessModal = (options: DecisionModalOptions = {}): void => {
     this.openDecisionModal({ type: 'success', ...options });
+  }
+
+  readonly showNotice = (options: DecisionModalOptions = {}): void => {
+    this.openDecisionModal({ type: 'notice', ...options });
   }
 
   readonly close = (): void => {

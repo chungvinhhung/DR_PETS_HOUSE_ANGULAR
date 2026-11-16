@@ -16,6 +16,7 @@ import { VALIDATION_SCHEMAS, getFormErrors, submitValidatedForm } from './auth-m
   standalone: true,
   imports: [FieldComponent, PrimaryButtonComponent, DividerComponent, GoogleButtonComponent],
   templateUrl: './login-form.component.html',
+  styleUrl: './login-form.component.scss',
   host: {
     'novalidate': '',
     'class': 'flex flex-col gap-5',

@@ -14,6 +14,7 @@ import { groomingTitleStyles } from '../../utils/grooming-title-styles';
   standalone: true,
   imports: [ReviewCardComponent, ReactStyleDirective],
   templateUrl: './grooming-feedback.component.html',
+  styleUrl: './grooming-feedback.component.scss',
   host: {
     'class': 'relative flex h-[683px] w-full items-center justify-center overflow-hidden px-[120px]',
   },

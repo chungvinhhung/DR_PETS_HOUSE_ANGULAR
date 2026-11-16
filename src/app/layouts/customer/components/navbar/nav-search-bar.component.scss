@@ -1,0 +1,7 @@
+.nav-search-bar__layer {
+  @apply absolute inset-0 rounded border transition-colors duration-micro;
+}
+
+.nav-search-bar__search-icon {
+  @apply h-4 w-4;
+}

@@ -17,6 +17,7 @@ import {
   standalone: true,
   imports: [GenderIconComponent, CustomerLinkDirective],
   templateUrl: './pet-card.component.html',
+  styleUrl: './pet-card.component.scss',
   host: {
     '[class]': "`flex flex-col overflow-hidden rounded-lg border border-[#e4e4e7] bg-[#f8f7fe] shadow-[0_1px_3px_rgba(16,24,40,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(16,24,40,0.1)] ${hidden() ? 'opacity-60 hover:opacity-90' : ''}`",
   },

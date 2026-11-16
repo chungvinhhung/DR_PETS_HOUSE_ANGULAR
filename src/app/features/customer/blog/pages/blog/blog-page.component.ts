@@ -32,6 +32,7 @@ function slugify(value: any = "") {
   standalone: true,
   imports: [CanvasLayoutComponent, NavBarComponent, FeaturedPostComponent, TrendingSectionComponent, CategoryIconComponent, BlogCardComponent, FooterComponent, CustomerLinkDirective],
   templateUrl: './blog-page.component.html',
+  styleUrl: './blog-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white',
   },

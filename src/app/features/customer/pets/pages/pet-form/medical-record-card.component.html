@@ -1,22 +1,22 @@
-<div class="flex items-center gap-3">
-  <div class="w-8 h-8 flex items-center justify-center bg-red-100 text-red-500 rounded">
-    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+<div class="medical-record-card__row">
+  <div class="medical-record-card__row-2">
+    <svg class="medical-record-card__icon" fill="currentColor" viewBox="0 0 24 24">
       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm5 0h-2V8h2v8z" />
     </svg>
   </div>
   <div>
-    <p class="text-xs font-semibold text-slate-800">{{ fileName() }}</p>
-    <p class="text-[10px] text-slate-500 mt-0.5">{{ size() }}</p>
+    <p class="medical-record-card__file-name">{{ fileName() }}</p>
+    <p class="medical-record-card__size">{{ size() }}</p>
   </div>
 </div>
-<div class="flex items-center gap-2 text-slate-500">
+<div class="medical-record-card__row-3">
   <button
     type="button"
     (click)="onEdit.emit($event)"
     class="p-1.5 hover:text-yellow-600 bg-white shadow-sm border border-slate-100 rounded-md transition"
     title="Chỉnh sửa tệp"
   >
-    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg class="medical-record-card__icon-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -31,7 +31,7 @@
     class="p-1.5 hover:text-blue-600 bg-white shadow-sm border border-slate-100 rounded-md transition"
     title="Tải xuống tệp"
   >
-    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg class="medical-record-card__icon-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -46,7 +46,7 @@
     class="p-1.5 hover:text-red-600 bg-white shadow-sm border border-slate-100 rounded-md transition"
     title="Xóa tệp"
   >
-    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg class="medical-record-card__icon-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path
         stroke-linecap="round"
         stroke-linejoin="round"

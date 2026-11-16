@@ -10,6 +10,7 @@ import { CustomerIconComponent } from '../../../../shared/customer/components/ic
   standalone: true,
   imports: [CustomerIconComponent],
   templateUrl: './field.component.html',
+  styleUrl: './field.component.scss',
   host: {
     '[class]': '`block text-sm ${isSoft() ? \'font-medium text-[#060B16]\' : \'font-semibold text-[rgba(0,0,0,0.87)]\'}`',
   },

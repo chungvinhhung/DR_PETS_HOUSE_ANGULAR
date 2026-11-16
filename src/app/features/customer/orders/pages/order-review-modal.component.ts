@@ -11,6 +11,7 @@ import { productImages } from '../../../../shared/customer/assets/product-images
   standalone: true,
   imports: [WriteReviewFormComponent],
   templateUrl: './order-review-modal.component.html',
+  styleUrl: './order-review-modal.component.scss',
   host: {
     'class': 'fixed inset-0 z-[120] flex items-center justify-center bg-black/30 px-6 py-10 backdrop-blur-[2px]',
   },

@@ -1,6 +1,6 @@
 <div app-canvas-layout>
   <app-nav-bar />
-  <main class="policy-page flex flex-col items-center px-4 pb-12 pt-[43px] sm:px-6">
+  <main class="policy-page__main policy-page">
     <nav
       app-breadcrumb
       [items]="[
@@ -9,10 +9,10 @@
             { label: policy().title }
           ]"
       [variant]="'blog'"
-      [className]="'w-full max-w-[1200px]'"
+      [className]="'w-full max-w-page'"
     ></nav>
-    <div class="mt-6 flex w-full max-w-[1200px] flex-col items-start gap-12">
-      <div class="flex w-full flex-col items-start gap-8 lg:flex-row lg:gap-12">
+    <div class="policy-page__stack">
+      <div class="policy-page__stack-2">
         <article app-policy-article [policy]="policy()"></article>
         <aside app-policy-related-sidebar [activeSlug]="navService.params()['slug']"></aside>
       </div>

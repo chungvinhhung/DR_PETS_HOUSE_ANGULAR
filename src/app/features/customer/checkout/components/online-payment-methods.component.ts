@@ -11,6 +11,7 @@ import { ONLINE_PAYMENT_METHODS } from '../assets/checkout-assets';
   standalone: true,
   imports: [],
   templateUrl: './online-payment-methods.component.html',
+  styleUrl: './online-payment-methods.component.scss',
   host: {
     'class': 'space-y-3 rounded-2xl bg-[#f2f4f6] p-4',
   },

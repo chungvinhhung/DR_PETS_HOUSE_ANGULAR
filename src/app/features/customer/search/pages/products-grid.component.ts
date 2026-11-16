@@ -10,6 +10,7 @@ import { ShoppingProductCardComponent } from '../../../../shared/customer/compon
   standalone: true,
   imports: [ShoppingProductCardComponent],
   templateUrl: './products-grid.component.html',
+  styleUrl: './products-grid.component.scss',
   host: {
     'class': 'grid w-full grid-cols-2 justify-items-center gap-x-[10.75px] gap-y-8 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5',
   },

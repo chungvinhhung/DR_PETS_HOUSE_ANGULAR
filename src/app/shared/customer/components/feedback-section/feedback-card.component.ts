@@ -12,6 +12,7 @@ import { FEEDBACK_QUOTE_HEIGHT, FEEDBACK_AUTHOR_HEIGHT } from './feedback-sectio
   standalone: true,
   imports: [ProductRatingComponent, ReactStyleDirective],
   templateUrl: './feedback-card.component.html',
+  styleUrl: './feedback-card.component.scss',
   host: {
     'class': 'flex h-[280px] min-h-[280px] w-full min-w-0 flex-col rounded-3xl bg-white p-10 transition-[transform,box-shadow] duration-component ease-premium hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]',
   },

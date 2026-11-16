@@ -1,0 +1,19 @@
+.grooming-banner__layer {
+  @apply absolute inset-x-0 bottom-[95px] top-0 overflow-hidden;
+}
+
+.grooming-banner__layer-2 {
+  @apply absolute bottom-[-13px] left-1/2 top-[3px] flex w-[910px] -translate-x-1/2 gap-[54px];
+}
+
+.grooming-banner__box {
+  @apply relative h-[154px] w-[428px];
+}
+
+.grooming-banner__focus-ring-brand {
+  @apply absolute inset-x-0 bottom-[17px] top-[74px] flex items-center justify-center rounded-[4px] bg-[#FDD835] px-[22px] py-2 shadow-[0px_3px_1px_-2px_rgba(0,0,0,0.2),0px_2px_2px_0px_rgba(0,0,0,0.14),0px_1px_5px_0px_rgba(0,0,0,0.12)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#FBC02D] hover:shadow-[0_5px_12px_rgba(0,0,0,0.18)] active:translate-y-0 active:scale-[0.99];
+}
+
+.grooming-banner__thuong-cho-be-text {
+  @apply absolute left-[10.97%] right-[10.97%] top-[157px] text-center text-black;
+}

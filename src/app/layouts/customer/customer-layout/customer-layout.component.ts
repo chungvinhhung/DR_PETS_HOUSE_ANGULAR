@@ -37,6 +37,7 @@ const CUSTOMER_STYLESHEET_ID = 'customer-stylesheet';
     DecisionModalComponent,
   ],
   templateUrl: './customer-layout.component.html',
+  styleUrl: './customer-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerLayoutComponent implements OnInit {

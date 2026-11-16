@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './category-badge.component.html',
+  styleUrl: './category-badge.component.scss',
   host: {
     'class': 'absolute left-3 top-3 flex items-center gap-1 rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.5px] text-[#0D47A1] shadow-sm backdrop-blur-[4px]',
   },

@@ -11,6 +11,7 @@ import { CheckoutComponent } from './checkout.component';
   standalone: true,
   imports: [CheckoutComponent],
   templateUrl: './checkout-overlay.component.html',
+  styleUrl: './checkout-overlay.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

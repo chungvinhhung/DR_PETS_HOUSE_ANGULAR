@@ -10,6 +10,7 @@ import { FIELD_ERROR_MESSAGE } from './adoption-application-modal.helpers';
   standalone: true,
   imports: [],
   templateUrl: './field-error.component.html',
+  styleUrl: './field-error.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

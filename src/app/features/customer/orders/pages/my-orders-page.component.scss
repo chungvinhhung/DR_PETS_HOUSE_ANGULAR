@@ -1,0 +1,35 @@
+.my-orders-page__stack {
+  @apply flex flex-col gap-1;
+}
+
+.my-orders-page__don-hang-cua-title {
+  @apply text-[28px] font-bold leading-9 text-[#031635];
+}
+
+.my-orders-page__quan-ly-don-text {
+  @apply text-[15px] leading-6 text-[#667085];
+}
+
+.my-orders-page__let-value-el {
+  @apply flex gap-2 overflow-x-auto pb-2 pt-2;
+}
+
+.my-orders-page__search-query {
+  @apply text-[16px] leading-[27px] text-[#414141];
+}
+
+.my-orders-page__stack-2 {
+  @apply flex flex-col gap-4;
+}
+
+.my-orders-page__dang-tai-don-text {
+  @apply py-16 text-center text-[#0D47A1];
+}
+
+.my-orders-page__khong-tim-thay-text {
+  @apply py-16 text-center text-[#667085];
+}
+
+.my-orders-page__load-error {
+  @apply -mt-2 text-center text-sm text-[#0D47A1];
+}

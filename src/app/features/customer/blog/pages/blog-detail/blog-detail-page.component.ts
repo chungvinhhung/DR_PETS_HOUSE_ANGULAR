@@ -23,6 +23,7 @@ import { FEATURED_PRODUCTS } from '../../../../../shared/customer/data/shop-data
   standalone: true,
   imports: [CanvasLayoutComponent, NavBarComponent, BreadcrumbComponent, ArticleComponent, BlogSidebarComponent, SectionHeadingComponent, ShoppingProductCardComponent, RelatedBlogSectionComponent, FooterComponent],
   templateUrl: './blog-detail-page.component.html',
+  styleUrl: './blog-detail-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white',
   },

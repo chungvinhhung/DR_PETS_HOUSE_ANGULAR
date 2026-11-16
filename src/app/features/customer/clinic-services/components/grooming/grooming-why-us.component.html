@@ -1,5 +1,5 @@
 <section
-  class="relative h-[897px] w-[1440px] overflow-hidden bg-white"
+  class="grooming-why-us__section"
   [appStyle]="{
         backgroundImage: `url(${groomingImages.whyusBgFull}), linear-gradient(90deg, #fff 0%, #fff 100%)`,
         backgroundSize: '1440px 774px, auto',
@@ -19,9 +19,9 @@
     class="pointer-events-none absolute left-[1245px] top-[94px] h-[96px] w-[103px] -rotate-[19.75deg]"
     aria-hidden="true"
   />
-  <h2 class="absolute left-[160px] top-[72px] w-[1106px]" [appStyle]="groomingTitleStyles.dark56Center">Hãy để chúng tôi giúp bé cưng của bạn</h2>
+  <h2 class="grooming-why-us__hay-de-chung-title" [appStyle]="groomingTitleStyles.dark56Center">Hãy để chúng tôi giúp bé cưng của bạn</h2>
   <p
-    class="absolute left-[174px] top-[147px] w-[1077px] text-center text-[#0F172A]"
+    class="grooming-why-us__be-cung-cua-text"
     [appStyle]="{
           fontFamily: 'Roboto, sans-serif',
           fontWeight: 400,
@@ -29,11 +29,11 @@
           lineHeight: 1.334
         }"
   >Bé cưng của bạn hạnh phúc, chúng tôi tự hào. Hãy để chúng tôi đồng hành cùng bạn!</p>
-  <div class="absolute left-[160px] top-[237px] size-[316px] overflow-hidden rounded-[44px] bg-white">
-    <img [attr.src]="groomingImages.whyusMain" alt="" class="size-full object-cover" />
+  <div class="grooming-why-us__layer">
+    <img [attr.src]="groomingImages.whyusMain" alt="" class="grooming-why-us__whyus-main" />
   </div>
-  <div class="absolute left-[299px] top-[469px] h-[315px] w-[318px] overflow-hidden rounded-[46px] bg-white">
-    <img [attr.src]="groomingImages.whyusSecondary" alt="" class="size-full rounded-[50px] object-cover" />
+  <div class="grooming-why-us__layer-2">
+    <img [attr.src]="groomingImages.whyusSecondary" alt="" class="grooming-why-us__whyus-secondary" />
   </div>
   @for (prop of GROOMING_VALUE_PROPS; track prop.num) {
     <app-value-prop-card [prop]="prop" />

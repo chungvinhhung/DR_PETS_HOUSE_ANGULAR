@@ -13,6 +13,7 @@ import { FooterComponent } from '../../../../layouts/customer/components/footer/
   standalone: true,
   imports: [NavBarComponent, ScaledCanvasLayoutComponent, ShopCanvasComponent, FooterComponent],
   templateUrl: './shop-page.component.html',
+  styleUrl: './shop-page.component.scss',
   host: {
     'class': 'min-h-screen bg-[#f5f5f5]',
   },

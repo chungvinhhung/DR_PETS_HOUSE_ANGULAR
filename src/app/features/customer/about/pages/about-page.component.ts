@@ -19,6 +19,7 @@ const heroLogo = '/assets/customer/images/home/hero-logo.png';
   standalone: true,
   imports: [NavBarComponent, ScaledCanvasLayoutComponent, FeedbackSectionComponent, FooterComponent, CustomerIconComponent, CustomerLinkDirective],
   templateUrl: './about-page.component.html',
+  styleUrl: './about-page.component.scss',
   host: {
     'class': 'overflow-hidden bg-white font-sans text-[#0f172a]',
   },

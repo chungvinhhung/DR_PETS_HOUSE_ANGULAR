@@ -13,6 +13,7 @@ import { searchSuggestionImages } from '../../../../shared/customer/assets/searc
   standalone: true,
   imports: [SearchSuggestionStatusComponent, TextSuggestionItemComponent, ProductSuggestionCardComponent],
   templateUrl: './search-suggestion-dropdown.component.html',
+  styleUrl: './search-suggestion-dropdown.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './step-section.component.html',
+  styleUrl: './step-section.component.scss',
   host: {
     'class': 'pt-10',
   },
@@ -16,5 +17,5 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 export class StepSectionComponent {
   // --- Input / Output (props của React) ---
   readonly steps = input<any>(undefined);
-
+  readonly badges = input<string[]>([]);
 }

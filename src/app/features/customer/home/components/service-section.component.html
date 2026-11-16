@@ -17,9 +17,9 @@
   class="pointer-events-none absolute right-4 top-2 hidden h-[140px] w-auto lg:block xl:right-[calc((100vw-1440px)/2+80px)]"
   aria-hidden="true"
 />
-<div class="relative mx-auto flex max-w-page flex-col items-center gap-14 px-6 md:px-20">
-  <div class="flex flex-col items-center gap-6">
-    <div class="relative">
+<div class="service-section__stack">
+  <div class="service-section__stack-2">
+    <div class="service-section__box">
       <!-- Vector vàng -->
       <svg
         class="absolute left-1/2 top-[50px] z-0 h-[15px] w-[179px] -translate-x-1/2"
@@ -40,12 +40,12 @@
         [subtitle]="'Dr.Pet\'s House mang đến hệ sinh thái chăm sóc thú cưng hiện đại với đầy đủ dịch vụ từ khám chữa bệnh, chăm sóc làm đẹp đến mua sắm sản phẩm chất lượng. Chúng tôi luôn hướng đến sự tiện lợi, an toàn và trải nghiệm tốt nhất cho cả thú cưng và chủ nuôi.'"
         [className]="'relative z-10'"
       >
-        <span class="font-bold block">Dịch vụ</span>
-        <span class="font-bold block">chúng tôi cung cấp</span>
+        <span class="service-section__dich-vu-text">Dịch vụ</span>
+        <span class="service-section__dich-vu-text">chúng tôi cung cấp</span>
       </div>
     </div>
   </div>
-  <div class="grid w-full gap-8 md:grid-cols-2 xl:grid-cols-3">
+  <div class="service-section__grid">
     @for (service of HOME_SERVICES; track service.title) {
       <article
         app-service-section-service-card

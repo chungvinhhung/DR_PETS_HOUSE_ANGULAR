@@ -13,6 +13,7 @@ import { NAV_LINKS } from '../../constants/navbar-menu-links';
   standalone: true,
   imports: [CustomerIconComponent, CustomerLinkDirective],
   templateUrl: './mobile-menu-panel.component.html',
+  styleUrl: './mobile-menu-panel.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

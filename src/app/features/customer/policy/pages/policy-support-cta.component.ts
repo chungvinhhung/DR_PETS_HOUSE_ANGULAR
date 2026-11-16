@@ -11,6 +11,7 @@ import { policyImages } from '../../../../shared/customer/assets/policy-images';
   standalone: true,
   imports: [CustomerLinkDirective],
   templateUrl: './policy-support-cta.component.html',
+  styleUrl: './policy-support-cta.component.scss',
   host: {
     'class': 'flex w-full flex-col items-start gap-6 rounded-[8px] bg-white p-6 sm:flex-row sm:items-start sm:justify-between lg:h-[158px] lg:w-[813px] lg:justify-start lg:gap-0 lg:p-0',
     'data-node-id': '3102:11381',

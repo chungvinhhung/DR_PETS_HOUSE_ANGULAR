@@ -1,7 +1,7 @@
-<div class="flex w-full flex-col items-center gap-3">
-  <h2 class="pt-3 text-center text-[36px] font-semibold leading-8 text-black/87">{{ emptyState().title }}</h2>
-  <p class="w-[576px] max-w-full pt-3 text-center text-[18px] leading-6 text-black/60">{{ emptyState().description }}</p>
-  <div class="flex items-center justify-center gap-4 pb-9 pt-5">
+<div class="empty-results-content__stack">
+  <h2 class="empty-results-content__text-black-87 text-black/87">{{ emptyState().title }}</h2>
+  <p class="empty-results-content__description">{{ emptyState().description }}</p>
+  <div class="empty-results-content__row">
     <button
       type="button"
       (click)="onRetry.emit($event)"
@@ -9,7 +9,7 @@
     >{{ emptyState().retryLabel }}</button>
     <a
       [appCustomerLink]="emptyState().homeHref"
-      class="rounded-full bg-[#FDD835] px-8 py-3 text-[14px] font-semibold leading-5 tracking-[0.28px] shadow-[0_1px_1px_rgba(0,0,0,0.05)] transition-colors hover:bg-[#083572]"
+      class="empty-results-content__home-label"
     >{{ emptyState().homeLabel }}</a>
   </div>
 </div>

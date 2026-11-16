@@ -10,6 +10,7 @@ import { navbarImages } from '../../../../shared/customer/assets/navbar-images';
   standalone: true,
   imports: [],
   templateUrl: './search-asset-icon.component.html',
+  styleUrl: './search-asset-icon.component.scss',
   host: {
     '[attr.src]': 'navbarImages.searchIcon',
     'alt': '',

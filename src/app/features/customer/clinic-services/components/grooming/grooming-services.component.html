@@ -1,11 +1,11 @@
 <section
   id="danh-sach-dich-vu"
-  class="flex w-full flex-col items-center gap-6 border-[rgba(0,0,0,0.1)] pt-[28px]"
+  class="grooming-services__danh-sach-dich-vu"
   [appStyle]="{ height: 1651 }"
 >
-  <div class="relative h-[162px] w-[1440px] shrink-0">
+  <div class="grooming-services__box">
     <h2
-      class="absolute left-1/2 top-[89.5px] w-[1440px] -translate-x-1/2 -translate-y-1/2"
+      class="grooming-services__dich-vu-title"
       [appStyle]="groomingTitleStyles.primary64"
     >Dịch vụ<br />chúng tôi cung cấp</h2>
     <img
@@ -15,7 +15,7 @@
       aria-hidden="true"
     />
   </div>
-  <div class="relative h-[1572px] w-full shrink-0">
+  <div class="grooming-services__box-2">
     <img
       [attr.src]="groomingImages.servicesDecor"
       alt=""
@@ -24,7 +24,7 @@
     />
     @for (service of GROOMING_SERVICES; track $index) {
       @let pos = compute1(service);
-      <div class="absolute" [appStyle]="{ left: pos.x, top: pos.y }"><div app-service-card [service]="service"></div></div>
+      <div class="grooming-services__layer" [appStyle]="{ left: pos.x, top: pos.y }"><div app-service-card [service]="service"></div></div>
     }
   </div>
 </section>

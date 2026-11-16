@@ -1,7 +1,7 @@
-<img [attr.src]="shopImages.feedbackBg" alt="" class="absolute inset-0 h-full w-full object-cover" />
-<div class="relative z-10 px-[120px] pt-10">
-  <h2 class="text-center text-[#02000F]" [appStyle]="styles1()">Phản hồi của khách hàng</h2>
-  <div class="relative mt-[58px] h-[280px] overflow-hidden">
+<img [attr.src]="shopImages.feedbackBg" alt="" class="feedback-section__feedback-bg" />
+<div class="feedback-section__box">
+  <h2 class="feedback-section__phan-hoi-cua-title" [appStyle]="styles1()">Phản hồi của khách hàng</h2>
+  <div class="feedback-section__box-2">
     <div
       [class]="`grid h-full grid-cols-3 items-stretch gap-[10px] ${slideOffset()}`"
       role="tabpanel"
@@ -14,7 +14,7 @@
     </div>
   </div>
   <div
-    class="mt-[58px] flex items-center justify-center gap-[21px]"
+    class="feedback-section__chon-trang-phan-hoi"
     role="tablist"
     aria-label="Chọn trang phản hồi"
   >
@@ -24,9 +24,9 @@
       class="btn-icon-subtle flex shrink-0 items-center justify-center rounded-lg p-1 opacity-80 transition-opacity hover:opacity-100 disabled:opacity-30"
       aria-label="Trang phản hồi trước"
     >
-      <img [attr.src]="shopImages.feedbackCarouselLeft" alt="" class="h-[10px] w-[271px] object-contain" />
+      <img [attr.src]="shopImages.feedbackCarouselLeft" alt="" class="feedback-section__feedback-carousel-left" />
     </button>
-    <div class="flex items-center gap-[21px]">
+    <div class="feedback-section__row">
       @for (_ of range2(); track $index; let idx = $index) {
         <button
           app-feedback-dot
@@ -43,37 +43,37 @@
       class="btn-icon-subtle flex shrink-0 items-center justify-center rounded-lg p-1 opacity-80 transition-opacity hover:opacity-100 disabled:opacity-30"
       aria-label="Trang phản hồi tiếp"
     >
-      <img [attr.src]="shopImages.feedbackCarouselRight" alt="" class="h-[10px] w-[271px] object-contain" />
+      <img [attr.src]="shopImages.feedbackCarouselRight" alt="" class="feedback-section__feedback-carousel-left" />
     </button>
   </div>
 </div>
 <img
   [attr.src]="shopImages.feedbackPawSmall"
   alt=""
-  class="pointer-events-none absolute left-[278px] top-[103px] h-[60px] w-[60px]"
+  class="feedback-section__feedback-paw-small"
 />
 <img
   [attr.src]="shopImages.feedbackPawSmall"
   alt=""
-  class="pointer-events-none absolute left-[1085px] top-[90px] h-[60px] w-[60px]"
+  class="feedback-section__feedback-paw-small-2"
 />
 <img
   [attr.src]="shopImages.feedbackPawBlue"
   alt=""
-  class="pointer-events-none absolute left-[1145px] top-[102px] h-[48px] w-[49px]"
+  class="feedback-section__feedback-paw-blue"
 />
 <img
   [attr.src]="shopImages.feedbackPawBlue"
   alt=""
-  class="pointer-events-none absolute left-[158.39px] top-[512.17px] h-[48px] w-[49px]"
+  class="feedback-section__feedback-paw-blue-2"
 />
 <img
   [attr.src]="shopImages.feedbackPawBlueSmall"
   alt=""
-  class="pointer-events-none absolute left-[158.39px] top-[526.17px] h-[34px] w-[34px]"
+  class="feedback-section__feedback-paw-blue-small"
 />
 <img
   [attr.src]="shopImages.feedbackPawDark"
   alt=""
-  class="pointer-events-none absolute bottom-0 right-[12px] h-[87px] w-[87px]"
+  class="feedback-section__feedback-paw-dark"
 />

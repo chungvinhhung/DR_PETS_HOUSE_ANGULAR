@@ -12,6 +12,7 @@ import { PET_SORT_OPTIONS } from './pet-list-page.helpers';
   standalone: true,
   imports: [SelectValueDirective],
   templateUrl: './my-pet-search-and-sort.component.html',
+  styleUrl: './my-pet-search-and-sort.component.scss',
   host: {
     'class': 'flex w-full gap-[10px]',
     '(submit)': 'handle1($any($event))',

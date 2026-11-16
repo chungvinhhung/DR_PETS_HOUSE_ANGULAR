@@ -1,0 +1,19 @@
+.booking-calendar__row {
+  @apply mb-6 flex items-center justify-between;
+}
+
+.booking-calendar__get-month {
+  @apply text-[20px] font-bold text-slate-900;
+}
+
+.booking-calendar__row-2 {
+  @apply flex gap-3 text-lg text-slate-500;
+}
+
+.booking-calendar__grid {
+  @apply grid grid-cols-7 gap-2 text-center text-sm md:gap-4;
+}
+
+.booking-calendar__day {
+  @apply font-bold text-slate-300;
+}

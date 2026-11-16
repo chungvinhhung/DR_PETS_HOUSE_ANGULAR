@@ -18,6 +18,7 @@ import { serviceListIcon, serviceSelectedCheck, formatMoney, isBeforeToday, isSl
   standalone: true,
   imports: [BranchSelectionCardComponent, BookingCardComponent, AssetIconComponent, BookingCalendarComponent, TimeSlotsComponent, FlowButtonsComponent],
   templateUrl: './service-selection.component.html',
+  styleUrl: './service-selection.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

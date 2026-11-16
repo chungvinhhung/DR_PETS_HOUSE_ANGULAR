@@ -1,32 +1,32 @@
 <app-nav-bar />
-<main class="bg-[#E5F6FD]">
-  <section class="relative mx-auto flex min-h-[621px] max-w-page justify-center overflow-hidden px-6 pt-[96px] text-center">
-    <div class="relative flex w-full max-w-[670px] flex-col items-center">
-      <div class="relative h-[240px] w-[670px] max-w-none shrink-0 origin-top max-md:-mb-[120px] max-md:scale-50">
+<main class="not-found-page__main">
+  <section class="not-found-page__section">
+    <div class="not-found-page__stack">
+      <div class="not-found-page__box">
         <div
-          class="absolute left-[102px] top-0 flex h-[240px] w-[444px] items-start justify-center font-['Baloo_Tamma'] text-[270px] font-normal leading-[0.95] text-[#0D47A1]"
+          class="not-found-page__layer"
           aria-label="404"
         >
-          <span class="w-[164px] text-center">4</span>
-          <span class="w-[164px] text-center">0</span>
-          <span class="w-[164px] text-center">4</span>
+          <span class="not-found-page__text">4</span>
+          <span class="not-found-page__text">0</span>
+          <span class="not-found-page__text">4</span>
         </div>
         <img
           [attr.src]="sleepingPetImage"
           alt=""
-          class="absolute left-[455px] top-[66px] size-[215px] object-contain"
+          class="not-found-page__sleeping-pet-image"
         />
       </div>
       <img
         [attr.src]="tennisBallImage"
         alt=""
-        class="absolute left-[65%] top-[210px] size-12 -translate-x-1/2 object-contain"
+        class="not-found-page__tennis-ball-image"
       />
-      <h1 class="mt-6 max-w-[649px] text-center text-[52px] font-bold leading-[48px] tracking-[-1.2px] text-black/85">{{ NOT_FOUND_COPY.title }}</h1>
-      <p class="mt-[27px] whitespace-pre-line text-center text-[20px] font-normal leading-[29.25px] text-black/60">{{ NOT_FOUND_COPY.description }}</p>
+      <h1 class="not-found-page__title">{{ NOT_FOUND_COPY.title }}</h1>
+      <p class="not-found-page__description">{{ NOT_FOUND_COPY.description }}</p>
       <a
         [appCustomerLink]="NOT_FOUND_COPY.homePath"
-        class="mt-[43px] inline-flex h-[42px] min-w-[155px] items-center justify-center rounded bg-[#FDD835] px-[22px] text-[15px] font-bold uppercase leading-[26px] tracking-[0.46px] text-black/90 shadow-elevation transition-[background-color,box-shadow,transform] duration-200 hover:bg-[#FBC02D] hover:shadow-[0px_2px_8px_rgba(253,216,53,0.45)] focus-ring-brand active:scale-[0.98]"
+        class="not-found-page__focus-ring-brand focus-ring-brand"
       >{{ NOT_FOUND_COPY.actionLabel }}</a>
     </div>
   </section>

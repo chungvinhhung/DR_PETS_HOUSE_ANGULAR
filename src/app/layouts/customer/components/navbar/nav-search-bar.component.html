@@ -1,4 +1,4 @@
-<div class="absolute inset-0 rounded border border-secondary transition-colors duration-micro group-focus-within:border-[#1976D2]"></div>
+<div class="nav-search-bar__layer group-focus-within:border-[#1976D2] border-secondary"></div>
 <img
   [attr.src]="navbarImages.dogSearch"
   alt=""
@@ -30,7 +30,7 @@
   class="focus-ring-brand absolute right-1 top-1/2 flex h-[25px] w-[25px] -translate-y-1/2 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[#fff176]"
   aria-label="Tìm kiếm"
 >
-  <img [attr.src]="navbarImages.searchIcon" alt="" class="h-4 w-4" />
+  <img [attr.src]="navbarImages.searchIcon" alt="" class="nav-search-bar__search-icon" />
 </button>
 @if (shouldShowSuggestions()) {
   <app-search-suggestion-dropdown

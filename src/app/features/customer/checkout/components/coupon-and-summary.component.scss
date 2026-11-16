@@ -1,0 +1,71 @@
+.coupon-and-summary__stack {
+  @apply flex w-full flex-col gap-3 border-t border-solid border-slate-200 pt-5;
+}
+
+.coupon-and-summary__the-qua-tang-text {
+  @apply whitespace-nowrap text-sm font-bold text-slate-900;
+}
+
+.coupon-and-summary__row {
+  @apply flex flex-row items-start gap-3;
+}
+
+.coupon-and-summary__stack-2 {
+  @apply flex min-w-0 flex-1 flex-col;
+}
+
+.coupon-and-summary__row-2 {
+  @apply flex h-10 w-full items-center rounded-2xl border border-slate-300 bg-white px-4 focus-within:border-blue-900;
+}
+
+.coupon-and-summary__coupon-error {
+  @apply w-full px-4 pt-1 text-xs font-medium text-red-600;
+}
+
+.coupon-and-summary__coupon-success {
+  @apply w-full px-4 pt-1 text-xs font-medium text-green-700;
+}
+
+.coupon-and-summary__label-tam-tinh-el {
+  @apply my-2 flex w-full flex-col gap-3 rounded-2xl bg-[#f2f4f6] p-5 text-sm;
+}
+
+.coupon-and-summary__row-3 {
+  @apply flex items-center justify-between font-medium text-slate-700;
+}
+
+.coupon-and-summary__row-4 {
+  @apply font-bold text-slate-900;
+}
+
+.coupon-and-summary__row-5 {
+  @apply flex items-start justify-between rounded-2xl bg-[#d5e4f3] p-5;
+}
+
+.coupon-and-summary__box {
+  @apply text-blue-900;
+}
+
+.coupon-and-summary__tong-cong-text {
+  @apply text-xl font-black leading-7;
+}
+
+.coupon-and-summary__da-bao-gom-text {
+  @apply text-xs font-medium text-slate-500;
+}
+
+.coupon-and-summary__total {
+  @apply text-2xl font-black leading-7 text-blue-900;
+}
+
+.coupon-and-summary__submit-error {
+  @apply text-center text-sm font-medium text-red-600;
+}
+
+.coupon-and-summary__bang-cach-nhan-text {
+  @apply text-center text-xs leading-[15px] text-slate-500;
+}
+
+.coupon-and-summary__dieu-khoan-dich-link {
+  @apply text-blue-900 underline hover:no-underline;
+}

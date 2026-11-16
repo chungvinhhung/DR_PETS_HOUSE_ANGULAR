@@ -20,6 +20,7 @@ import { TYPE_IDS, SORT_OPTIONS, EMPTY_SEARCH_RESPONSE, buildFacets, buildSearch
   standalone: true,
   imports: [NavBarComponent, SearchSidebarComponent, ResultsHeaderComponent, SearchResultsContentComponent, EmptyResultsContentComponent, FooterComponent, ReactStyleDirective],
   templateUrl: './search-results-page.component.html',
+  styleUrl: './search-results-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white font-[\'Roboto\']',
   },

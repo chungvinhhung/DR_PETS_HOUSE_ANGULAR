@@ -1,0 +1,27 @@
+.search-results-first-aid-card__image {
+  @apply mb-2 h-40 w-full rounded-[12px] object-cover;
+}
+
+.search-results-first-aid-card__box {
+  @apply h-12;
+}
+
+.search-results-first-aid-card__stack {
+  @apply mt-auto flex flex-col gap-4;
+}
+
+.search-results-first-aid-card__category-label {
+  @apply text-[14px] font-semibold uppercase leading-5 tracking-[0.28px] text-[#0D47A1];
+}
+
+.search-results-first-aid-card__text-black-87 {
+  @apply text-[24px] font-semibold leading-8;
+}
+
+.search-results-first-aid-card__text-black-87-2 {
+  @apply text-[16px] leading-6;
+}
+
+.search-results-first-aid-card__id-link {
+  @apply font-['Roboto'] text-[16px] font-bold leading-6 text-[#0D47A1];
+}

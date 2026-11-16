@@ -13,6 +13,7 @@ import { reactSetter } from '../../../../shared/customer/utils/react-setter';
   standalone: true,
   imports: [BookingPaymentStepComponent, BookingSuccessModalComponent, ShoppingCheckoutComponent],
   templateUrl: './checkout.component.html',
+  styleUrl: './checkout.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

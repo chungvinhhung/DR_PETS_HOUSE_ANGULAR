@@ -12,6 +12,7 @@ import { FIRST_AID_POSTS } from '../../../../../shared/customer/data/first-aid-d
   standalone: true,
   imports: [CustomerIconComponent, CustomerLinkDirective],
   templateUrl: './related-section.component.html',
+  styleUrl: './related-section.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -10,6 +10,7 @@ import { SEARCH_DEMAND_TYPES } from '../../../../shared/customer/data/search-res
   standalone: true,
   imports: [],
   templateUrl: './demand-tabs.component.html',
+  styleUrl: './demand-tabs.component.scss',
   host: {
     'class': 'flex w-full items-start justify-center gap-1 rounded-full bg-[rgba(25,118,210,0.08)] p-1',
   },

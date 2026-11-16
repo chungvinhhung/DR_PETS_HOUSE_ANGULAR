@@ -1,0 +1,115 @@
+<div class="reschedule-modal">
+  <!-- Header -->
+  <div class="reschedule-modal__header">
+    <div>
+      <h2 class="reschedule-modal__title">Đổi lịch hẹn</h2>
+      <p class="reschedule-modal__code-wrapper">
+        Mã lịch hẹn: <span class="reschedule-modal__code">#{{ appointment()?.code }}</span>
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="onClose.emit()"
+      class="reschedule-modal__close-btn"
+      aria-label="Đóng"
+    >
+      <app-customer-icon name="x" className="icon-close" />
+    </button>
+  </div>
+
+  <!-- Current info summary -->
+  <div class="reschedule-summary">
+    <div class="reschedule-summary__row">
+      <span class="reschedule-summary__label">Chi nhánh:</span>
+      <span class="reschedule-summary__value">
+        {{ appointment()?.branch?.name || appointment()?.branchName || 'Dr. Pet Clinic' }}
+      </span>
+    </div>
+    <div class="reschedule-summary__row">
+      <span class="reschedule-summary__label">Dịch vụ:</span>
+      <span class="reschedule-summary__value">{{ appointment()?.service?.name }}</span>
+    </div>
+    <div class="reschedule-summary__row">
+      <span class="reschedule-summary__label">Lịch hiện tại:</span>
+      <span class="reschedule-summary__value reschedule-summary__value--highlight">
+        {{ appointment()?.service?.dateText || appointment()?.service?.date }} ({{ appointment()?.service?.timeRange || appointment()?.service?.time }})
+      </span>
+    </div>
+  </div>
+
+  <!-- Date Selection -->
+  <div class="reschedule-field">
+    <label class="reschedule-field__label">
+      Chọn ngày khám mới <span class="reschedule-field__hint">(Tối thiểu trước 24 giờ)</span>
+    </label>
+    <input
+      type="date"
+      [min]="minDate()"
+      [value]="selectedDate()"
+      (change)="onDateChange($event)"
+      class="reschedule-field__input"
+    />
+  </div>
+
+  <!-- Slot Selection -->
+  <div class="reschedule-field">
+    <div class="reschedule-field__header">
+      <label class="reschedule-field__label reschedule-field__label--no-margin">Chọn khung giờ mới</label>
+      @if (isLoadingSlots()) {
+        <span class="reschedule-slots__loading-badge">Đang tải khung giờ...</span>
+      }
+    </div>
+
+    @if (isLoadingSlots()) {
+      <div class="reschedule-slots__loading-box">Đang kiểm tra khung giờ trống...</div>
+    } @else if (slots().length > 0) {
+      <div class="reschedule-slots__grid">
+        @for (slot of slots(); track slot.value || slot.time || $index) {
+          @let isSelected = selectedSlot()?.value === slot.value || selectedSlot()?.time === slot.time;
+          <button
+            type="button"
+            (click)="selectSlot(slot)"
+            class="slot-card"
+            [class.is-selected]="isSelected"
+          >
+            <span class="slot-card__time">{{ slot.time || slot.value }}</span>
+            <span class="slot-card__status">
+              Còn {{ slot.remaining ?? (slot.maxAppointments - (slot.bookedCount || 0)) }}/{{ slot.maxAppointments || 3 }}
+            </span>
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="reschedule-slots__empty">
+        Không có khung giờ trống nào cho ngày {{ selectedDate() }}. Quý khách vui lòng chọn ngày khác.
+      </div>
+    }
+  </div>
+
+  <!-- Error message -->
+  @if (errorMessage()) {
+    <div class="reschedule-modal__error">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Footer actions -->
+  <div class="reschedule-modal__footer">
+    <button
+      type="button"
+      (click)="onClose.emit()"
+      class="btn-cancel"
+      [disabled]="isSubmitting()"
+    >
+      Hủy
+    </button>
+    <button
+      type="button"
+      (click)="submitReschedule()"
+      [disabled]="!selectedSlot() || isSubmitting()"
+      class="btn-confirm"
+    >
+      {{ isSubmitting() ? 'Đang xử lý...' : 'Xác nhận đổi lịch' }}
+    </button>
+  </div>
+</div>

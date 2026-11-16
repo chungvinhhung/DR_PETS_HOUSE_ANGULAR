@@ -26,14 +26,14 @@
         <div class="decision-modal__actions">
           <button
             type="button"
-            [class]="isSuccess() ? 'decision-modal__button decision-modal__button--yellow-outline' : 'decision-modal__button decision-modal__button--outline'"
+            [class]="hasYellowActions() ? 'decision-modal__button decision-modal__button--yellow-outline' : 'decision-modal__button decision-modal__button--outline'"
             (click)="decisionModal.cancel()"
           >
             {{ state().cancelLabel }}
           </button>
           <button
             type="button"
-            [class]="isSuccess() ? 'decision-modal__button decision-modal__button--yellow' : 'decision-modal__button decision-modal__button--danger'"
+            [class]="hasYellowActions() ? 'decision-modal__button decision-modal__button--yellow' : 'decision-modal__button decision-modal__button--danger'"
             (click)="decisionModal.confirm()"
           >
             {{ state().confirmLabel }}

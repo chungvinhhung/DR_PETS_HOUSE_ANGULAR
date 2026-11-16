@@ -1,0 +1,55 @@
+.mobile-footer__stack {
+  @apply flex w-full flex-col gap-[5px];
+}
+
+.mobile-footer__stack-2 {
+  @apply flex h-[165px] w-full flex-col items-center justify-end pb-1;
+}
+
+.mobile-footer__stack-3 {
+  @apply flex w-full flex-col gap-[10px];
+}
+
+.mobile-footer__stack-4 {
+  @apply flex h-[104px] w-full flex-col items-center justify-center;
+}
+
+.mobile-footer__stack-5 {
+  @apply flex w-full flex-col items-center justify-center gap-[7px];
+}
+
+.mobile-footer__dr-pet-s-house {
+  @apply h-[38px] w-[88px] object-contain;
+}
+
+.mobile-footer__trung-tam-cham-text {
+  @apply whitespace-nowrap font-['Baloo_Tamma','Baloo_2',cursive] text-[16px] leading-[17.6px] text-[#0D47A1];
+}
+
+.mobile-footer__cung-cap-dich-text {
+  @apply w-full text-center font-['Roboto'] text-[12px] font-normal leading-[16.8px] text-[#475569];
+}
+
+.mobile-footer__row {
+  @apply flex w-full items-center justify-between;
+}
+
+.mobile-footer__link {
+  @apply flex h-[22px] w-[108px] shrink-0 items-center justify-center rounded bg-[#FFF176] px-[6px] shadow-elevation;
+}
+
+.mobile-footer__phone {
+  @apply size-4 shrink-0;
+}
+
+.mobile-footer__text {
+  @apply w-[79px] whitespace-nowrap font-['Roboto'] text-[12px] font-bold uppercase leading-[31.92px] tracking-[1px] text-black;
+}
+
+.mobile-footer__layer {
+  @apply absolute inset-x-0 bottom-0 flex h-6 items-center justify-center bg-[#B3E5FC];
+}
+
+.mobile-footer__text-2 {
+  @apply whitespace-nowrap text-center font-['Roboto'] text-[10px] italic leading-[14px] text-black/60;
+}

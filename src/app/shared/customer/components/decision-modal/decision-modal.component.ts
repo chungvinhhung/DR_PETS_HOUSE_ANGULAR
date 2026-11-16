@@ -15,6 +15,7 @@ import { WarningMarkComponent } from './warning-mark.component';
   standalone: true,
   imports: [WarningMarkComponent],
   templateUrl: './decision-modal.component.html',
+  styleUrl: './decision-modal.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -23,4 +24,6 @@ export class DecisionModalComponent {
 
   protected readonly state = this.decisionModal.state;
   protected readonly isSuccess = computed(() => this.state().type === 'success');
+  /** success & notice dùng cặp nút vàng; delete & cancel dùng nút đỏ. */
+  protected readonly hasYellowActions = computed(() => this.isSuccess() || this.state().type === 'notice');
 }

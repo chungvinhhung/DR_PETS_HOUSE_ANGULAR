@@ -13,6 +13,7 @@ import { mapNotificationToUI } from './notification-bell.helpers';
   standalone: true,
   imports: [NotificationPopupComponent],
   templateUrl: './notification-bell.component.html',
+  styleUrl: './notification-bell.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

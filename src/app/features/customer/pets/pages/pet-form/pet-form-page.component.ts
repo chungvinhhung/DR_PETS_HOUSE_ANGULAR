@@ -21,6 +21,7 @@ const uploadIcon = '/assets/customer/icons/upload-icon.png';
   standalone: true,
   imports: [NgTemplateOutlet, MedicalRecordCardComponent, SelectValueDirective, ReactStyleDirective, CustomerLinkDirective],
   templateUrl: './pet-form-page.component.html',
+  styleUrl: './pet-form-page.component.scss',
   host: {
     'class': 'max-w-4xl mx-auto pb-10 pt-6 px-4 font-sans',
   },

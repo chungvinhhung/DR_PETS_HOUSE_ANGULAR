@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, input, output, signal, viewChildren } from '@angular/core';
 
 import { PrimaryButtonComponent } from './primary-button.component';
 import { CustomerIconComponent } from '../../../../shared/customer/components/icon/customer-icon.component';
@@ -11,6 +11,7 @@ import { CustomerIconComponent } from '../../../../shared/customer/components/ic
   standalone: true,
   imports: [PrimaryButtonComponent, CustomerIconComponent],
   templateUrl: './otp-form.component.html',
+  styleUrl: './otp-form.component.scss',
   host: {
     'class': 'flex flex-col gap-[23.5px]',
     '(submit)': 'handle1($any($event))',
@@ -27,13 +28,25 @@ export class OtpFormComponent {
   readonly submitting = input<any>(false);
   /** true khi component cha có truyền (onSubmitOtp) — thay cho kiểm tra "if (onSubmitOtp)" của React */
   readonly hasOnSubmitOtp = input<boolean>(false);
+  /** Nút "Gửi lại mã": chỉ hoạt động khi component cha truyền (onResendOtp) + [hasOnResendOtp]="true". */
+  readonly onResendOtp = output<void>();
+  readonly hasOnResendOtp = input<boolean>(false);
+  readonly resendDisabled = input<boolean>(false);
+  readonly resendLabel = input<string>("Gửi lại mã");
 
   // --- Giá trị tính toán (computed) ---
   readonly complete = computed<any>(() => this.otp().join("").length === 6);
 
   // --- Trạng thái (signal = useState / useRef) ---
   readonly otp = signal<any>(Array(6).fill(""));
-  readonly refs: { current: any } = { current: [] };
+  private readonly inputs = viewChildren<ElementRef<HTMLInputElement>>('otpInput');
+  get refs(): { current: any } {
+    return { current: this.inputs().map((ref) => ref.nativeElement) };
+  }
+
+  protected handleResend() {
+    if (this.hasOnResendOtp() && !this.resendDisabled()) this.onResendOtp.emit();
+  }
 
   protected updateOtp(index: any, value: any) {
     const digit = value.replace(/\D/g, "").slice(-1);
