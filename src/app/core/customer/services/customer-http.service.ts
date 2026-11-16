@@ -21,6 +21,8 @@ export interface CustomerRequestOptions {
   params?: Record<string, unknown>;
   headers?: Record<string, string>;
   skipIdempotency?: boolean;
+  /** Khách vãng lai: 401 chỉ trả lỗi, không phát sự kiện mở popup đăng nhập. */
+  suppressAuthPrompt?: boolean;
 }
 
 /**
@@ -65,23 +67,23 @@ export class CustomerHttpService {
   private readonly api = inject(ApiClientService);
 
   get<T = any>(path: string, options: CustomerRequestOptions = {}): Promise<T> {
-    return this.run(this.api.get<T>(path, this.toOptions('GET', options)));
+    return this.run(this.api.get<T>(path, this.toOptions('GET', options)), options);
   }
 
   post<T = any>(path: string, body: unknown = {}, options: CustomerRequestOptions = {}): Promise<T> {
-    return this.run(this.api.post<T>(path, body, this.toOptions('POST', options)));
+    return this.run(this.api.post<T>(path, body, this.toOptions('POST', options)), options);
   }
 
   put<T = any>(path: string, body: unknown = {}, options: CustomerRequestOptions = {}): Promise<T> {
-    return this.run(this.api.put<T>(path, body, this.toOptions('PUT', options)));
+    return this.run(this.api.put<T>(path, body, this.toOptions('PUT', options)), options);
   }
 
   patch<T = any>(path: string, body: unknown = {}, options: CustomerRequestOptions = {}): Promise<T> {
-    return this.run(this.api.patch<T>(path, body, this.toOptions('PATCH', options)));
+    return this.run(this.api.patch<T>(path, body, this.toOptions('PATCH', options)), options);
   }
 
   delete<T = any>(path: string, options: CustomerRequestOptions = {}): Promise<T> {
-    return this.run(this.api.delete<T>(path, this.toOptions('DELETE', options)));
+    return this.run(this.api.delete<T>(path, this.toOptions('DELETE', options)), options);
   }
 
   private generateIdempotencyKey(): string {
@@ -117,19 +119,19 @@ export class CustomerHttpService {
     };
   }
 
-  private async run<T>(request: Observable<T>): Promise<T> {
+  private async run<T>(request: Observable<T>, options: CustomerRequestOptions = {}): Promise<T> {
     try {
       return await firstValueFrom(request);
     } catch (error) {
-      throw this.toCustomerError(error);
+      throw this.toCustomerError(error, options.suppressAuthPrompt);
     }
   }
 
-  private toCustomerError(error: unknown): CustomerHttpError {
+  private toCustomerError(error: unknown, suppressAuthPrompt = false): CustomerHttpError {
     if (error instanceof AppHttpError) {
       const data = error.details as any;
       const authExpired = error.status === 401 || data?.EC === -999;
-      if (authExpired) {
+      if (authExpired && !suppressAuthPrompt) {
         // CustomerAuthService lắng nghe sự kiện này để đăng xuất + mở form đăng nhập (giống bản React).
         window.dispatchEvent(new CustomEvent('petclinic:auth-expired'));
       }

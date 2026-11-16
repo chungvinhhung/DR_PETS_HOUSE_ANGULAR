@@ -30,5 +30,13 @@ export class ProductSummaryComponent {
   readonly safeProduct = computed<any>(() => this.product() || EMPTY_ORDER_PRODUCT);
   readonly productType = computed<any>(() => getOrderProductType(this.safeProduct()));
   readonly productSize = computed<any>(() => getOrderProductSize(this.safeProduct()));
+  readonly productImage = computed<any>(() => {
+    const p = this.safeProduct();
+    const raw = p?.image || p?.photoUrl || p?.photo_url || p?.imageUrl || p?.image_url || p?.product?.product_images?.[0]?.image_url;
+    return raw || productImages.detailImage;
+  });
 
+  onImageError(event: Event) {
+    (event.target as HTMLImageElement).src = this.productImages.detailImage;
+  }
 }

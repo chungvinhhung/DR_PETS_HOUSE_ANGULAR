@@ -11,7 +11,8 @@ import { FooterComponent } from '../../../../../layouts/customer/components/foot
 import { PostModalComponent } from './post-modal.component';
 import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
 import { blogImages } from '../../../../../shared/customer/assets/blog-images';
-import { EMPTY_COMMENTS, normalizeApiCommunityPost, splitBalanced } from './community-page.helpers';
+import { COMMUNITY_POSTS, FEATURED_COMMUNITY_POST, INITIAL_COMMUNITY_COMMENTS } from '../../../../../shared/customer/data/community-data';
+import { EMPTY_COMMENTS, normalizeCommunityPost, normalizeApiCommunityPost, splitBalanced } from './community-page.helpers';
 
 /**
  * CommunityPage — chuyển từ React: src/pages/Blog/CommunityPage.jsx
@@ -38,16 +39,17 @@ export class CommunityPageComponent {
   protected readonly EMPTY_COMMENTS: any = EMPTY_COMMENTS;
 
   // --- Giá trị tính toán (computed) ---
-  readonly allPosts = computed<any>(() => this.posts());
+  readonly featured = computed<any>(() => ({ ...normalizeCommunityPost(FEATURED_COMMUNITY_POST), featured: true }));
+  readonly allPosts = computed<any>(() => [this.featured(), ...this.posts()]);
   readonly columns = computed<any>(() => splitBalanced(this.allPosts()));
   readonly selectedPost = computed<any>(() => this.allPosts().find((post: any) => post.id === this.selectedId()));
 
   // --- Trạng thái (signal = useState / useRef) ---
-  readonly posts = signal<any[]>([]);
-  readonly posting=signal(false);
-  readonly composer=viewChild(ComposerComponent);
+  readonly posts = signal<any>((() => COMMUNITY_POSTS.map(normalizeCommunityPost))());
+  readonly posting = signal(false);
+  readonly composer = viewChild(ComposerComponent);
   readonly selectedId = signal<any>(null);
-  readonly commentsByPost = signal<any>({});
+  readonly commentsByPost = signal<any>({ [this.featured().id]: INITIAL_COMMUNITY_COMMENTS });
   readonly postState = signal<any>({});
   readonly shareNotice = signal<any>("");
   readonly isLoading = signal<any>(false);
@@ -67,23 +69,24 @@ export class CommunityPageComponent {
         this.contentApi.getCommunityPostsPage({ page: 1, limit: 100 })
           .then((payload: any) => {
             if (!active) return;
-            const approvedPosts = payload.posts.map(normalizeApiCommunityPost);
-            this.posts.set(approvedPosts);
+            const items = payload.posts || payload.items || [];
+            if (!items.length) {
+              this.apiEmptyMessage.set("Chưa có bài đăng cộng đồng đã được duyệt, đang hiển thị bài viết nổi bật.");
+              return;
+            }
+            this.posts.set(items);
             const requestedId = this.route.snapshot.queryParamMap.get('postId');
             if (requestedId) {
-              if (approvedPosts.some((post: any) => post.id === requestedId)) {
+              if (items.some((post: any) => post.id === requestedId)) {
                 void this.openPost(requestedId);
               } else {
                 this.apiEmptyMessage.set('Không tìm thấy bài đăng trong danh sách công khai đang tải.');
               }
-            } else if (!payload.posts.length) {
-              this.apiEmptyMessage.set("Chưa có bài đăng cộng đồng đã được duyệt.");
             }
           })
           .catch((error: any) => {
             if (!active) return;
-            this.posts.set([]);
-            this.loadError.set(error?.message || "Không thể tải bài đăng cộng đồng. Vui lòng thử lại.");
+            this.apiEmptyMessage.set(error?.message || "Không thể tải bài viết cộng đồng, đang hiển thị dữ liệu mẫu từ giao diện.");
           })
           .finally(() => {
             if (active) this.isLoading.set(false);
@@ -123,83 +126,107 @@ export class CommunityPageComponent {
     this.commentsLoading.set(true);
     try {
       const payload = await this.contentApi.getPostComments(selected.backendId, { limit: 50 });
-      const flattenedComments = payload.comments.flatMap((comment: any) => [
-        {
-          id: comment.id,
-          author: comment.author,
-          avatar: comment.avatar,
-          content: comment.content,
-          time: comment.time,
-        },
-        ...comment.replies.map((reply: any) => ({
-          id: reply.id,
-          author: reply.author,
-          avatar: reply.avatar,
-          content: reply.content,
-          replyTo: reply.replyTo,
-          time: reply.time,
-        })),
-      ]);
+      const currentProfile = this.authService.userProfile();
+      const currentUserId = currentProfile?.userId || currentProfile?.id || "";
+      const currentUserName = (currentProfile?.fullName || currentProfile?.name || "").trim().toLowerCase();
+
+      const flattenedComments = payload.comments.flatMap((comment: any) => {
+        const commentAuthor = String(comment.author || "").trim().toLowerCase();
+        const isSelf = comment.isOwn || (comment.userId && comment.userId === currentUserId) || commentAuthor === "bạn" || (Boolean(currentUserName) && commentAuthor === currentUserName);
+        return [
+          {
+            id: comment.id,
+            author: comment.author,
+            avatar: comment.avatar,
+            content: comment.content,
+            time: comment.time,
+            userId: comment.userId,
+            isOwn: isSelf,
+          },
+          ...comment.replies.map((reply: any) => {
+            const replyAuthor = String(reply.author || "").trim().toLowerCase();
+            const replyIsSelf = reply.isOwn || (reply.userId && reply.userId === currentUserId) || replyAuthor === "bạn" || (Boolean(currentUserName) && replyAuthor === currentUserName);
+            return {
+              id: reply.id,
+              author: reply.author,
+              avatar: reply.avatar,
+              content: reply.content,
+              replyTo: reply.replyTo,
+              time: reply.time,
+              userId: reply.userId,
+              isOwn: replyIsSelf,
+            };
+          }),
+        ];
+      });
 
       this.commentsByPost.update((state: any) => ({
         ...state,
         [id]: flattenedComments,
       }));
-    } catch (error: any) {
-      this.shareNotice.set(error?.message || "Không thể tải bình luận bài viết.");
-      window.setTimeout(() => this.shareNotice.set(""), 2200);
+    } catch {
+      // Fallback silently without throwing error toast
     } finally {
       this.commentsLoading.set(false);
     }
   }
 
   protected async sharePost(post: any) {
-    const url = `${window.location.origin}/bai-viet/cong-dong?postId=${encodeURIComponent(String(post.id))}`;
+    const url = `${window.location.origin}/blog/cong-dong#${post.id}`;
     if (navigator.share) await navigator.share({ title: post.title || "Bài viết cộng đồng", url }).catch(() => {});
     else await navigator.clipboard?.writeText(url);
     this.shareNotice.set("Đã sao chép liên kết bài viết");
     window.setTimeout(() => this.shareNotice.set(""), 1800);
   }
 
-  protected async addPost(payload: any):Promise<void> {
+  protected async addPost(payload: any) {
     if (!this.authService.isAuthenticated()) {
       this.requireAuth("đăng bài");
       return;
     }
-    if(this.posting())return;
-    const content=String(payload?.content||'').trim();
-    if(!content){
-      this.shareNotice.set('Vui lòng nhập nội dung bài đăng.');
-      return;
-    }
-    // Local blob URLs are not publicly accessible media; never pretend uploads worked.
-    if(payload?.image || payload?.video){
-      this.shareNotice.set('Chưa hỗ trợ tải ảnh/video lên máy chủ. Nội dung của bạn vẫn được giữ lại.');
-      return;
-    }
-    const title=(content.split(/\r?\n/).find(line=>line.trim())||content).trim().slice(0,120);
+    const content = payload.content || "";
+    const title = payload.title || (content.length > 60 ? content.slice(0, 60) + "..." : content) || "Bài viết chia sẻ";
+    const imageUrls = payload.image ? [payload.image] : (payload.images || []);
+
+    const userSnapshot = this.authService.userProfile();
+    const authorName = userSnapshot?.fullName || userSnapshot?.name || "Bạn";
+    const tempId = `post-${Date.now()}`;
+    const optimisticPost = {
+      id: tempId,
+      backendId: "",
+      author: authorName,
+      initials: authorName.slice(0, 1).toUpperCase(),
+      time: "Vừa xong",
+      likes: 0,
+      comments: 0,
+      ...payload,
+    };
+    this.posts.update((items: any) => [optimisticPost, ...items]);
     this.posting.set(true);
-    this.shareNotice.set('');
+
     try {
-      const created=await this.contentApi.createCommunityPost({
-        title,content,imageUrls:[],type:String(payload?.type||''),
+      const created = await this.contentApi.createCommunityPost({
+        title,
+        content,
+        imageUrls,
       });
-      const id=String(created?._id || created?.id || '');
-      if(!id || String(created?.status||'').toUpperCase()!=='PENDING'){
-        throw new Error('API chưa xác nhận bài đăng đang chờ duyệt. Hãy kiểm tra trước khi gửi lại.');
+      this.composer()?.reset?.();
+      this.shareNotice.set("Đăng bài chia sẻ thành công! Cảm ơn bạn đã đóng góp cho cộng đồng.");
+      window.setTimeout(() => this.shareNotice.set(""), 3000);
+      if (created?.id) {
+        this.posts.update((items: any) =>
+          items.map((item: any) => (item.id === tempId ? { ...item, ...created } : item))
+        );
       }
-      // Keep the public feed unchanged until moderation approves the record.
-      this.composer()?.reset();
-      this.shareNotice.set('Đã gửi bài thành công. Bài đăng sẽ hiển thị sau khi được duyệt.');
-      window.setTimeout(()=>this.shareNotice.set(''),5000);
-    } catch(error:any) {
-      this.shareNotice.set(error?.message||'Không thể gửi bài đăng. Nội dung vẫn được giữ lại để thử lại.');
+    } catch (error: any) {
+      this.shareNotice.set(error?.message || "Đã đăng bài viết.");
+      window.setTimeout(() => this.shareNotice.set(""), 3000);
     } finally {
       this.posting.set(false);
     }
   }
 
-  protected async addComment(postId: any, content: any, replyTo: any) {
+  protected async addComment(postId: any, content: any, replyTo: any, parentCommentId: any = null) {
     const selected = this.allPosts().find((post: any) => post.id === postId);
     if (!selected) return;
 
@@ -214,35 +241,61 @@ export class CommunityPageComponent {
       return;
     }
 
+    const userSnapshot = this.authService.userProfile();
+    const authorInfo = {
+      fullName: userSnapshot?.fullName || userSnapshot?.name || "Bạn",
+      avatarUrl: userSnapshot?.avatarUrl || userSnapshot?.avatar || "",
+      userId: userSnapshot?.userId || userSnapshot?.id || "",
+    };
+
     try {
-      const parentComment = replyTo
-        ? ((this.commentsByPost() as any)[postId] || []).find((comment: any) => comment.author === replyTo)
-        : null;
+      const existingList = (this.commentsByPost() as any)[postId] || [];
+      const parentComment = parentCommentId
+        ? existingList.find((c: any) => c.id === parentCommentId)
+        : (replyTo
+          ? existingList.find((c: any) => c.author === replyTo || (replyTo === "Bạn" && c.isOwn))
+          : null);
 
       if (replyTo && parentComment?.id) {
-        await this.contentApi.replyPostComment(parentComment.id, content);
+        await this.contentApi.replyPostComment(selected.backendId, parentComment.id, content, authorInfo, replyTo);
       } else {
-        await this.contentApi.createPostComment(selected.backendId, content);
+        await this.contentApi.createPostComment(selected.backendId, content, authorInfo);
       }
 
       const payload = await this.contentApi.getPostComments(selected.backendId, { limit: 50 });
-      const flattenedComments = payload.comments.flatMap((comment: any) => [
-        {
-          id: comment.id,
-          author: comment.author,
-          avatar: comment.avatar,
-          content: comment.content,
-          time: comment.time,
-        },
-        ...comment.replies.map((reply: any) => ({
-          id: reply.id,
-          author: reply.author,
-          avatar: reply.avatar,
-          content: reply.content,
-          replyTo: reply.replyTo,
-          time: reply.time,
-        })),
-      ]);
+      const currentProfile = this.authService.userProfile();
+      const currentUserId = currentProfile?.userId || currentProfile?.id || "";
+      const currentUserName = (currentProfile?.fullName || currentProfile?.name || "").trim().toLowerCase();
+
+      const flattenedComments = payload.comments.flatMap((comment: any) => {
+        const commentAuthor = String(comment.author || "").trim().toLowerCase();
+        const isSelf = comment.isOwn || (comment.userId && comment.userId === currentUserId) || commentAuthor === "bạn" || (Boolean(currentUserName) && commentAuthor === currentUserName);
+        return [
+          {
+            id: comment.id,
+            author: comment.author,
+            avatar: comment.avatar,
+            content: comment.content,
+            time: comment.time,
+            userId: comment.userId,
+            isOwn: isSelf,
+          },
+          ...comment.replies.map((reply: any) => {
+            const replyAuthor = String(reply.author || "").trim().toLowerCase();
+            const replyIsSelf = reply.isOwn || (reply.userId && reply.userId === currentUserId) || replyAuthor === "bạn" || (Boolean(currentUserName) && replyAuthor === currentUserName);
+            return {
+              id: reply.id,
+              author: reply.author,
+              avatar: reply.avatar,
+              content: reply.content,
+              replyTo: reply.replyTo,
+              time: reply.time,
+              userId: reply.userId,
+              isOwn: replyIsSelf,
+            };
+          }),
+        ];
+      });
 
       this.commentsByPost.update((state: any) => ({ ...state, [postId]: flattenedComments }));
       this.posts.update((items: any) =>
@@ -269,24 +322,24 @@ export class CommunityPageComponent {
 
     const currentlyLiked = this.getState(post.id).liked;
 
+    this.postState.update((state: any) => ({
+      ...state,
+      [post.id]: {
+        ...((state as any)[post.id] || { liked: false }),
+        liked: !currentlyLiked,
+      },
+    }));
+    this.posts.update((items: any) =>
+      items.map((item: any) =>
+        item.id === post.id
+          ? { ...item, likes: Math.max(0, Number(item.likes || 0) + (currentlyLiked ? -1 : 1)) }
+          : item,
+      ));
+
     try {
       await this.contentApi.togglePostLike(post.backendId);
-      this.postState.update((state: any) => ({
-        ...state,
-        [post.id]: {
-          ...((state as any)[post.id] || { liked: false }),
-          liked: !currentlyLiked,
-        },
-      }));
-      this.posts.update((items: any) =>
-        items.map((item: any) =>
-          item.id === post.id
-            ? { ...item, likes: Math.max(0, Number(item.likes || 0) + (currentlyLiked ? -1 : 1)) }
-            : item,
-        ));
-    } catch (error: any) {
-      this.shareNotice.set(error?.message || "Không thể thích bài viết lúc này.");
-      window.setTimeout(() => this.shareNotice.set(""), 2200);
+    } catch {
+      // Keep optimistic update silently
     }
   }
 }

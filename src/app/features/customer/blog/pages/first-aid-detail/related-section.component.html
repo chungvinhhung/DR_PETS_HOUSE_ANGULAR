@@ -1,14 +1,14 @@
 @if (!(!posts().length)) {
   <section class="pt-10">
-    <div class="flex items-center gap-4">
-      <h2 class="shrink-0 text-[20px] font-semibold uppercase leading-8 text-[#0D47A1]">Các kiến thức sơ cứu quan trọng khác</h2>
+    <div class="flex flex-wrap items-center gap-4">
+      <h2 class=" text-[20px] font-semibold uppercase leading-8 text-[#0D47A1]">Các kiến thức sơ cứu quan trọng khác</h2>
       <div class="h-1 flex-1 rounded-full bg-[#FDD835]"></div>
     </div>
-    <div class="relative mt-10 grid grid-cols-3 gap-6">
+    <div class="relative mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       @for (post of visiblePosts(); track post.id) {
         <a
           [appCustomerLink]="`/blog/so-cuu/${post.id}`"
-          class="group flex min-h-[390px] flex-col rounded-[32px] bg-white p-10 shadow-sm transition-transform hover:-translate-y-1"
+          class="group flex min-h-[390px] flex-col rounded-[32px] bg-white p-6 shadow-sm sm:p-10 transition-transform hover:-translate-y-1"
         >
           @if (post.image) {
             <img [attr.src]="post.image" alt="" class="mb-4 h-40 w-full rounded-[16px] object-cover" />
@@ -26,7 +26,7 @@
       <button
         type="button"
         (click)="move(-1)"
-        class="absolute -left-12 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-[#FDD835]"
+        class="absolute -left-2 top-1/2 z-10 flex h-10 w-10 lg:-left-12 lg:h-12 lg:w-12 -translate-y-1/2 items-center justify-center rounded-full bg-[#FDD835]"
         aria-label="Bài trước"
       >
         <app-customer-icon name="chevron-left" />
@@ -34,7 +34,7 @@
       <button
         type="button"
         (click)="move(1)"
-        class="absolute -right-12 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-[#FDD835]"
+        class="absolute -right-2 top-1/2 z-10 flex h-10 w-10 lg:-right-12 lg:h-12 lg:w-12 -translate-y-1/2 items-center justify-center rounded-full bg-[#FDD835]"
         aria-label="Bài tiếp theo"
       >
         <app-customer-icon name="chevron-right" />

@@ -13,7 +13,7 @@ import { CustomerLinkDirective } from '../../directives/customer-link.directive'
   imports: [CategoryBadgeComponent, CustomerIconComponent, CustomerLinkDirective],
   templateUrl: './blog-card.component.html',
   host: {
-    'class': 'group flex h-[343px] w-[288px] flex-col overflow-hidden rounded-[24px] border border-[#fff7ed] bg-white p-px shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(13,71,161,0.12)]',
+    'class': 'group flex h-[343px] w-full max-w-[288px] flex-col overflow-hidden rounded-[24px] border border-[#fff7ed] bg-white p-px shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(13,71,161,0.12)]',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

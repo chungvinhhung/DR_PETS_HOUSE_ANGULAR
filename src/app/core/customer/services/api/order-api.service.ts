@@ -54,19 +54,21 @@ function parseVariantMeta(value: any = "") {
 function normalizeOrderProduct(item: any = {}) {
   const itemName = item.name || item.nameSnapshot || item.item_name_snapshot || item.product?.product_name || "Sản phẩm";
   const [name, snapshotVariantName] = itemName.split(" - ");
-  const variantName = item.variant?.variant_name || item.variant_name || item.variantSnapshot || snapshotVariantName || "";
-  const parsedVariant = parseVariantMeta(variantName);
+  const rawVariant = item.variant_label || item.variantLabel || item.variant?.variant_name || item.variant_name || item.variantSnapshot || snapshotVariantName || item.type || "";
+  const fullVariant = rawVariant ? String(rawVariant).trim() : "";
 
   return {
     id: String(item.orderItemId || item.order_item_id || item.productId || item.product_id || item.id || itemName),
     productId: item.productId || item.product_id || item.id,
     variantId: item.variantId ?? item.variant_id ?? item.variant?.variant_id ?? null,
-    name,
+    name: name.trim(),
     price: Number(item.unitPrice ?? item.unit_price ?? item.price ?? item.product?.price ?? 0),
     quantity: Number(item.quantity || 1),
-    variant: item.variant_label || item.variantLabel || parsedVariant.variant,
-    size: item.size || item.size_label || item.sizeLabel || parsedVariant.size,
-    image: item.product?.product_images?.[0]?.image_url || item.image || item.photoUrl || '/assets/customer/images/product/detail-image.png',
+    variant: fullVariant,
+    variant_name: fullVariant,
+    type: fullVariant,
+    size: item.size || "",
+    image: item.product?.product_images?.[0]?.image_url || item.image || item.photoUrl || item.photo_url || item.imageUrl || item.image_url || '/assets/customer/images/product/detail-image.png',
   };
 }
 
@@ -74,9 +76,14 @@ export function normalizeOrder(order: any = {}) {
   const rawItems = Array.isArray(order.items) ? order.items : (Array.isArray(order.order_items) ? order.order_items : []);
   const products = rawItems.map(normalizeOrderProduct);
   const createdAt = order.created_at || order.createdAt || order.orderedAt || new Date().toISOString();
-  const totalAmount = Number(order.total_amount ?? order.pricing?.totalAmount ?? order.totalAmount ?? 0);
-  const shippingFee = Number(order.shipping_fee ?? order.pricing?.shippingFee ?? order.shippingFee ?? 0);
+  let shippingFee = Number(order.shipping_fee ?? order.pricing?.shippingFee ?? order.shippingFee ?? 0);
   const discount = Number(order.discount_amount ?? order.pricing?.voucherDiscount ?? order.discount ?? 0) + Number(order.points_discount_amount || 0);
+  const subtotal = products.reduce((acc: number, p: any) => acc + (Number(p.price || 0) * Number(p.quantity || 1)), 0);
+  const hasDelivery = Boolean(order.shippingAddress || order.shipping_address || (order.recipient?.address && order.recipient.address !== "Tại cửa hàng"));
+  if (hasDelivery && subtotal > 0 && subtotal < 500000 && shippingFee === 0) {
+    shippingFee = 30000;
+  }
+  const totalAmount = Number(order.total_amount ?? order.pricing?.totalAmount ?? order.totalAmount ?? Math.max(0, subtotal + shippingFee - discount));
 
   return {
     ...order,
@@ -211,6 +218,34 @@ export class OrderApiService {
       payment_method: payload.paymentMethod || payload.payment_method || "online",
     });
     return assertSuccess(response);
+  }
+
+  /**
+   * Gửi yêu cầu trả hàng hoàn tiền (multipart: thông tin yêu cầu + ảnh/video minh chứng).
+   * BE tạo bản ghi Return (xem admin: /order-returns) với trạng thái REQUESTED.
+   */
+  async createReturnRequest(orderId: any, { items, reason, description, returnMethod, pickupAddress, files }: any) {
+    const formData = new FormData();
+    formData.append("items", JSON.stringify(
+      (items || []).map((item: any) => ({ orderItemId: item.orderItemId, quantity: item.quantity })),
+    ));
+    formData.append("reason", reason || "");
+    formData.append("description", description || "");
+    formData.append("returnMethod", returnMethod || "pickup");
+    if (pickupAddress) formData.append("pickupAddress", JSON.stringify(pickupAddress));
+    (files || []).forEach((file: File) => formData.append("evidence", file));
+
+    try {
+      const response = await this.http.post(`/orders/${orderId}/returns`, formData);
+      return assertSuccess(response);
+    } catch (err: any) {
+      if (err?.status === 404) {
+        formData.append("orderId", String(orderId));
+        const response = await this.http.post("/order-returns", formData);
+        return assertSuccess(response);
+      }
+      throw err;
+    }
   }
 
   async canReviewOrderProduct(productId: any) {

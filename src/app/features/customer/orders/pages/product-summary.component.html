@@ -1,6 +1,7 @@
 <img
-  [attr.src]="safeProduct().image || productImages.detailImage"
+  [attr.src]="productImage()"
   [attr.alt]="safeProduct().name"
+  (error)="onImageError($event)"
   class="h-20 w-20 shrink-0 object-cover"
 />
 <div class="flex min-w-0 flex-1 flex-col gap-[8px]">
@@ -8,7 +9,6 @@
   <strong class="text-[14px] text-[#353535]">{{ formatCurrency(safeProduct().price) }}</strong>
   <div class="flex min-w-0 flex-nowrap items-center gap-x-4 text-[12px] text-[#353535]">
     <span class="min-w-0 truncate">Loại: {{ productType() }}</span>
-    <span class="min-w-0 truncate">Kích cỡ: {{ productSize() }}</span>
     <span class="shrink-0">Số lượng: {{ safeProduct().quantity }}</span>
   </div>
 </div>

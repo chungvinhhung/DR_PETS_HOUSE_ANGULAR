@@ -104,13 +104,20 @@ export const aggregatePricingPreviews = (previews: any) => {
     });
   });
 
+  const subtotal = previews.reduce((sum: any, item: any) => sum + Number(item?.subtotal || item?.price || 0), 0);
+  const surcharge_amount = previews.reduce((sum: any, item: any) => sum + Number(item?.surcharge_amount || item?.surcharge || 0), 0);
+  const discount_amount = previews.reduce((sum: any, item: any) => sum + Number(item?.discount_amount || item?.voucherDiscount || 0), 0);
+  let total = previews.reduce((sum: any, item: any) => sum + Number(item?.total || item?.finalAmount || 0), 0);
+  if (!total && subtotal) {
+    total = Math.max(0, subtotal + surcharge_amount - discount_amount);
+  }
+
   return {
-    subtotal: previews.reduce((sum: any, item: any) => sum + Number(item?.subtotal || 0), 0),
-    surcharge_amount: previews.reduce((sum: any, item: any) => sum + Number(item?.surcharge_amount || 0), 0),
-    discount_amount: previews.reduce((sum: any, item: any) => sum + Number(item?.discount_amount || 0), 0),
-    total: previews.reduce((sum: any, item: any) => sum + Number(item?.total || 0), 0),
+    subtotal,
+    surcharge_amount,
+    discount_amount,
+    total,
     services: (Array.from(serviceMap.values()) as any),
-    voucher_error: previews.find((item: any) => item?.voucher_error)?.voucher_error || "",
+    voucher_error: previews.find((item: any) => item?.voucher_error)?.voucher_error || '',
   };
 };
-

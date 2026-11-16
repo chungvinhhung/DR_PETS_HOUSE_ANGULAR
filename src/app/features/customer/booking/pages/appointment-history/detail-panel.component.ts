@@ -4,7 +4,7 @@ import { TimelineComponent } from './timeline.component';
 import { PaymentCountdownComponent } from './payment-countdown.component';
 import { ActionButtonComponent } from './action-button.component';
 import { appointmentImages } from '../../../../../shared/customer/assets/appointment-images';
-import { getAppointmentActions, getAppointmentDisplayStatus } from '../../utils/appointment-display';
+import { getAppointmentActions, getAppointmentDisplayStatus, isClinicPayment } from '../../utils/appointment-display';
 import { createPaymentCountdown } from '../../../../../shared/customer/utils/payment-countdown';
 import { formatMoney, paymentMethodLabels } from './appointment-history-page.helpers';
 
@@ -19,8 +19,9 @@ import { formatMoney, paymentMethodLabels } from './appointment-history-page.hel
   standalone: true,
   imports: [TimelineComponent, PaymentCountdownComponent, ActionButtonComponent],
   templateUrl: './detail-panel.component.html',
+  styleUrl: './detail-panel.component.scss',
   host: {
-    'class': 'panel-slide-in fixed bottom-6 right-8 top-[92px] z-30 flex w-[508px] flex-col bg-white shadow-[0_24px_60px_rgba(3,22,53,0.14)]',
+    'class': 'panel-slide-in',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -37,12 +38,13 @@ export class DetailPanelComponent {
   protected readonly formatMoney: any = formatMoney;
 
   // --- Giá trị tính toán (computed) ---
+  readonly isClinic = computed<boolean>(() => isClinicPayment(this.appointment()));
   readonly status = computed<any>(() => getAppointmentDisplayStatus(this.appointment()));
   readonly actions = computed<any>(() => getAppointmentActions(this.appointment()));
-  readonly paymentExpired = computed<any>(() => this.status().value === "pending_payment" && this.remainingSeconds() === 0);
+  readonly paymentExpired = computed<any>(() => !this.isClinic() && this.status().value === "pending_payment" && this.remainingSeconds() === 0);
   readonly showDeadline = computed<any>(() => (this.appointment().canCancel || this.appointment().canReschedule) &&
     this.appointment().freeChangeDaysLeft > 0 &&
     this.status().value === "confirmed");
-  readonly remainingSeconds = createPaymentCountdown(() => this.appointment().paymentExpiresAt);
+  readonly remainingSeconds = createPaymentCountdown(() => this.isClinic() ? null : this.appointment().paymentExpiresAt);
 
 }

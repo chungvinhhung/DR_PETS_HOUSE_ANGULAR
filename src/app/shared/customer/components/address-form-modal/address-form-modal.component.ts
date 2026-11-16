@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, input, output, si
 
 import { AddressFormFieldComponent } from './address-form-field.component';
 import { CustomerIconComponent } from '../icon/customer-icon.component';
-import { EMPTY_ADDRESS } from './address-form-modal.helpers';
+import { EMPTY_ADDRESS, VIETNAM_PROVINCES } from './address-form-modal.helpers';
 
 /**
  * AddressFormModal — chuyển từ React: src/components/address/AddressFormModal.jsx
@@ -20,6 +20,7 @@ import { EMPTY_ADDRESS } from './address-form-modal.helpers';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddressFormModalComponent implements OnInit {
+  protected readonly vietnamProvinces = VIETNAM_PROVINCES;
   // --- Input / Output (props của React) ---
   readonly address = input<any>(undefined);
   readonly defaultValues = input<any>(undefined);

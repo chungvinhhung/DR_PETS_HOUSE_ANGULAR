@@ -37,7 +37,7 @@
           { label: 'Tạm tính', value: formatMoney(subtotal()) },
           {
             label: isGuest() ? 'Phí dịch vụ' : 'Phí vận chuyển',
-            value: '0đ'
+            value: formatMoney(shippingFee())
           },
           { label: 'Giảm giá', value: `-${formatMoney(discountAmount())}` }
         ]; track row.label) {
@@ -71,4 +71,20 @@
 @if (submitError()) {
   <p class="text-center text-sm font-medium text-red-600">{{ submitError() }}</p>
 }
-<p class="text-center text-xs leading-[15px] text-slate-500">Bằng cách nhấn xác nhận, bạn đồng ý với  <a href="/terms" class="text-blue-900 underline hover:no-underline">Điều khoản dịch vụ</a> và  <a href="/privacy" class="text-blue-900 underline hover:no-underline">Chính sách bảo mật</a> của chúng tôi.</p>
+<p class="text-center text-xs leading-[15px] text-slate-500">
+  Bằng cách nhấn xác nhận, bạn đồng ý với
+  <a
+    href="/policies/dieu-khoan-dich-vu"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="text-blue-900 underline hover:no-underline"
+  >Điều khoản dịch vụ</a>
+  và
+  <a
+    href="/policies/bao-mat"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="text-blue-900 underline hover:no-underline"
+  >Chính sách bảo mật</a>
+  của chúng tôi.
+</p>

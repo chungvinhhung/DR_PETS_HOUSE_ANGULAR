@@ -57,7 +57,11 @@ export class BookingPaymentStepComponent implements OnInit {
   readonly subtotal = computed<any>(() => Number(this.pricingPreview()?.subtotal ?? this.fallbackSubtotal()));
   readonly surchargeTotal = computed<any>(() => Number(this.pricingPreview()?.surcharge_amount ?? this.fallbackSurchargeTotal()));
   readonly discountTotal = computed<any>(() => Number(this.pricingPreview()?.discount_amount ?? 0));
-  readonly total = computed<any>(() => Number(this.pricingPreview()?.total ?? (this.fallbackSubtotal() + this.fallbackSurchargeTotal())));
+  readonly total = computed<any>(() => {
+    const rawTotal = Number(this.pricingPreview()?.total || this.pricingPreview()?.finalAmount || 0);
+    if (rawTotal > 0) return rawTotal;
+    return Math.max(0, this.subtotal() + this.surchargeTotal() - this.discountTotal());
+  });
 
   // --- Trạng thái (signal = useState / useRef) ---
   readonly quantities = signal<any>(undefined);

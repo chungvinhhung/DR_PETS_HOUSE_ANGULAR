@@ -87,7 +87,7 @@ export class ShopHeroSectionComponent {
   }
 
   protected handle1() {
-    this.navService.navigate(`/products?keyword=${encodeURIComponent("Thức ăn hữu cơ")}`);
+    this.navService.navigate('/products');
   }
 
   /** (tự sinh) Array.from(...) -> mảng để lặp bằng @for */

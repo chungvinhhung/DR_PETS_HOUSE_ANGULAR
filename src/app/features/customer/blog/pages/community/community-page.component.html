@@ -1,13 +1,13 @@
 <div app-canvas-layout>
   <app-nav-bar />
-  <main class="flex min-h-[2100px] flex-col items-center gap-3 bg-[#E5F6FD] pb-10">
-    <nav class="flex h-14 w-[1200px] items-center gap-10 text-[16px]">
+  <main class="flex min-h-[2100px] flex-col items-center gap-3 bg-[#E5F6FD] px-4 sm:px-6 pb-10">
+    <nav class="flex h-14 w-full max-w-[1200px] items-center gap-6 overflow-x-auto whitespace-nowrap text-[16px] sm:gap-10">
       <a appCustomerLink="/blog/kien-thuc" class="font-medium text-[#4B5563]">Kiến thức thú cưng</a>
       <span class="flex h-full items-center border-b-2 border-[#0D47A1] font-bold text-[#0D47A1]">Cộng đồng chia sẻ</span>
       <a appCustomerLink="/blog/so-cuu" class="font-medium text-[#4B5563]">Cẩm nang sơ cứu</a>
     </nav>
     <section class="flex flex-col items-center pb-5 pt-2 text-center">
-      <h1 class="flex items-center gap-1 text-[40px] font-bold tracking-[-0.8px]">Kết nối <span class="text-[#0D47A1]">chia sẻ</span>
+      <h1 class="flex flex-wrap items-center justify-center gap-1 text-[28px] font-bold tracking-[-0.8px] sm:text-[40px]">Kết nối <span class="text-[#0D47A1]">chia sẻ</span>
         <img [attr.src]="blogImages.communityTitle" alt="" class="h-12 w-12" />
       </h1>
       <p class="mt-2 text-[16px] leading-6 text-[#414753]">Nơi chia sẻ khoảnh khắc, kinh nghiệm và lan tỏa yêu thương<br />cùng cộng đồng yêu thú cưng!!</p>
@@ -20,17 +20,17 @@
       (onRequireAuth)="requireAuth($any($event))"
     ></section>
     @if (loadError()) {
-      <p class="w-[1208px] text-[14px] text-[#D32F2F]">{{ loadError() }}</p>
+      <p class="w-full max-w-[1208px] text-[14px] text-[#D32F2F]">{{ loadError() }}</p>
     }
     @if (apiEmptyMessage() && !loadError()) {
-      <p class="w-[1208px] text-[14px] text-[#0D47A1]">{{ apiEmptyMessage() }}</p>
+      <p class="w-full max-w-[1208px] text-[14px] text-[#0D47A1]">{{ apiEmptyMessage() }}</p>
     }
     @if (isLoading()) {
-      <p class="w-[1208px] text-[16px] text-[#0D47A1]">Đang tải bài viết cộng đồng...</p>
+      <p class="w-full max-w-[1208px] text-[16px] text-[#0D47A1]">Đang tải bài viết cộng đồng...</p>
     }
-    <section class="mt-7 grid w-[1208px] grid-cols-2 items-start gap-4">
+    <section class="mt-7 grid w-full max-w-[1208px] grid-cols-1 items-start gap-4 md:grid-cols-2">
       @for (column of columns(); track $index; let columnIndex = $index) {
-        <div class="flex flex-col gap-4">
+        <div class="flex min-w-0 flex-col gap-4">
           @for (post of column; track post.id) {
             <article
               app-community-card
@@ -65,7 +65,7 @@
     [comments]="commentsLoading() ? EMPTY_COMMENTS : (commentsByPost()[selectedPost().id] || EMPTY_COMMENTS)"
     [state]="getState(selectedPost().id)"
     (onClose)="selectedId.set(null)"
-    (onAddComment)="addComment(selectedPost().id, $any($event)[0], $any($event)[1])"
+    (onAddComment)="addComment(selectedPost().id, $any($event)[0], $any($event)[1], $any($event)[2])"
     (onLike)="handleLikePost(selectedPost())"
     (onShare)="sharePost(selectedPost())"
     [canInteract]="authService.isAuthenticated()"

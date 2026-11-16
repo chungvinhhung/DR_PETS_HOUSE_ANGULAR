@@ -1,58 +1,71 @@
-<div class="flex items-center justify-between border-b border-[#c2c6d4] px-9 py-5">
-  <div class="flex items-center gap-4">
+<div class="panel-header">
+  <div class="header-left">
     <button
       type="button"
       (click)="onClose.emit($event)"
-      class="focus-ring-brand rounded p-1"
+      class="focus-ring-brand close-btn"
       aria-label="Đóng chi tiết lịch hẹn"
     >
-      <img [attr.src]="appointmentImages.backArrow" alt="" class="h-4 w-4" />
+      <img [attr.src]="appointmentImages.backArrow" alt="" class="icon-sm" />
     </button>
     <div>
-      <h2 class="text-xl font-bold leading-6 text-[#003f87]">Chi tiết lịch hẹn</h2>
-      <p class="text-xs font-semibold leading-4 text-[#424752]">Mã lịch #{{ appointment().code }}</p>
+      <h2 class="panel-title">Chi tiết lịch hẹn</h2>
+      <p class="panel-code">Mã lịch #{{ appointment().code }}</p>
     </div>
   </div>
-  <span [class]="`rounded-full px-3 py-1 text-xs font-semibold leading-4 ${status().badge}`">{{ status().label }}</span>
+  <span [class]="`status-badge ${status().badge}`">{{ status().label }}</span>
 </div>
-<div class="min-h-0 flex-1 overflow-y-auto px-7 py-18">
+
+<div class="panel-body">
   <div app-timeline [appointment]="appointment()"></div>
-  <section class="mt-4 rounded-2xl bg-[#e5f6fd] p-5">
-    <div class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.7px] text-[#003f87]">
-      <img [attr.src]="appointmentImages.personIcon" alt="" class="h-5 w-5" />Thông tin chủ thú cưng</div>
-    <h3 class="text-xl font-semibold leading-7 text-[#191c1e]">{{ appointment().owner.name }}</h3>
-    <div class="mt-2 flex flex-wrap gap-3 text-sm font-medium text-[#424752]">
-      <span class="inline-flex items-center gap-1">
-        <img [attr.src]="appointmentImages.phoneIcon" alt="" class="h-4 w-4" />{{ appointment().owner.phone }}</span>
+
+  <!-- Thông tin chủ thú cưng -->
+  <section class="section-card owner-section">
+    <div class="section-heading brand">
+      <img [attr.src]="appointmentImages.personIcon" alt="" class="icon-md" />
+      <span>Thông tin chủ thú cưng</span>
+    </div>
+    <h3 class="person-name">{{ appointment().owner.name }}</h3>
+    <div class="owner-meta">
+      <span class="phone-info">
+        <img [attr.src]="appointmentImages.phoneIcon" alt="" class="icon-sm" />
+        <span>{{ appointment().owner.phone }}</span>
+      </span>
       <span>{{ appointment().owner.address }}</span>
     </div>
   </section>
-  <section class="mt-100 rounded-2xl p-3">
-    <div class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.7px] text-[#003f87]">
-      <img [attr.src]="appointmentImages.petIcon" alt="" class="h-5 w-5" />Thông tin thú cưng</div>
-    <div class="flex gap-4">
+
+  <!-- Thông tin thú cưng -->
+  <section class="section-card pet-section">
+    <div class="section-heading brand">
+      <img [attr.src]="appointmentImages.petIcon" alt="" class="icon-md" />
+      <span>Thông tin thú cưng</span>
+    </div>
+    <div class="pet-row">
       <img
         [attr.src]="appointment().pet.image || appointmentImages.pets.lulu"
         [attr.alt]="appointment().pet.name"
-        class="h-[105px] w-[106px] rounded-lg object-cover"
+        class="pet-avatar"
       />
-      <div class="min-w-0 flex-1">
-        <div class="flex items-start justify-between gap-3">
-          <h3 class="text-xl font-semibold leading-7 text-[#191c1e]">{{ appointment().pet.name }}              <span class="font-normal text-[#424752]">({{ appointment().pet.breed }})</span>
+      <div class="pet-details">
+        <div class="pet-title-row">
+          <h3 class="person-name">
+            {{ appointment().pet.name }}
+            <span class="pet-breed">({{ appointment().pet.breed }})</span>
           </h3>
           @if (appointment().pet.healthBadge) {
-            <span class="rounded bg-[#ffdad6] px-2 py-0.5 text-[10px] font-bold uppercase leading-[15px] text-[#ba1a1a]">{{ appointment().pet.healthBadge }}</span>
+            <span class="health-badge">{{ appointment().pet.healthBadge }}</span>
           }
         </div>
-        <div class="mt-2 flex flex-wrap gap-4 text-xs leading-4 text-[#424752]">
+        <div class="pet-specs">
           <span>Cân nặng: {{ appointment().pet.weight }}</span>
           <span>Tuổi: {{ appointment().pet.age }}</span>
           <span>Giống: {{ appointment().pet.gender }}</span>
         </div>
         @if (appointment().pet.note) {
-          <div class="mt-3 rounded-2xl border-l-4 border-[#fdd835] bg-[#fff9c4] px-4 py-3 text-xs font-medium italic leading-4 text-[#544600]">
-            <span class="inline-flex items-start gap-2">
-              <img [attr.src]="appointmentImages.infoIcon" alt="" class="mt-0.5 h-4 w-4" />
+          <div class="pet-note">
+            <span class="pet-note-inner">
+              <img [attr.src]="appointmentImages.infoIcon" alt="" class="icon-sm note-icon" />
               <span>Note: {{ appointment().pet.note }}</span>
             </span>
           </div>
@@ -60,11 +73,15 @@
       </div>
     </div>
   </section>
-  <section class="mt-100 rounded-2xl bg-white p-3">
-    <div class="mb-4 flex items-center justify-between">
-      <div class="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.7px] text-[#22c55e]">
-        <img [attr.src]="appointmentImages.paymentIcon" alt="" class="h-5 w-5" />Thanh toán</div>
-      <span class="rounded-full bg-[rgba(34,197,94,0.1)] px-3 py-1 text-xs font-bold leading-4 text-[#22c55e]">
+
+  <!-- Thanh toán -->
+  <section class="section-card payment-section">
+    <div class="payment-header">
+      <div class="section-heading success">
+        <img [attr.src]="appointmentImages.paymentIcon" alt="" class="icon-md" />
+        <span>Thanh toán</span>
+      </div>
+      <span class="payment-status-badge">
         @if (appointment().paymentStatus === 'paid') {
           Đã thanh toán
         } @else {
@@ -72,41 +89,67 @@
         }
       </span>
     </div>
-    <div class="space-y-3">
-      <div class="flex items-center justify-between text-base text-[#424752]">
+    <div class="payment-rows">
+      <div class="payment-row">
         <span>Phương thức</span>
-        <strong class="text-sm font-semibold">{{ paymentMethodLabels[appointment().paymentMethod] }}</strong>
+        <strong>{{ paymentMethodLabels[appointment().paymentMethod] || 'Thanh toán tại quầy' }}</strong>
       </div>
-      <div class="flex items-center justify-between text-base text-[rgba(0,0,0,0.87)]">
-        <span>Số tiền cần thanh toán</span>
-        <strong class="text-sm font-semibold text-[#424752]">{{ formatMoney(appointment().service.price) }}</strong>
+      <div class="payment-row highlight">
+        <span>Tổng giá trị dịch vụ</span>
+        <strong>{{ formatMoney(appointment().pricing?.finalAmount || appointment().service.price) }}</strong>
       </div>
+      @if (isClinic() && appointment().depositAmount > 0) {
+        <div class="payment-row">
+          <span>Tiền cọc (30%)</span>
+          <strong>{{ formatMoney(appointment().depositAmount) }} ({{ appointment().depositStatusLabel || 'Đã ghi nhận' }})</strong>
+        </div>
+        @if (appointment().depositStatus === 'HELD' && appointment().balanceAmount > 0) {
+          <div class="payment-row">
+            <span>Còn lại thanh toán tại quầy</span>
+            <strong>{{ formatMoney(appointment().balanceAmount) }}</strong>
+          </div>
+        }
+      }
+      @if (appointment().status === 'cancelled' && (appointment().cancel?.refundAmount > 0 || appointment().cancel?.prepaidOutcomeLabel)) {
+        <div class="payment-row highlight">
+          <span>Tiền hoàn cọc</span>
+          <strong>{{ formatMoney(appointment().cancel?.refundAmount || 0) }} @if (appointment().cancel?.prepaidOutcomeLabel) { ({{ appointment().cancel.prepaidOutcomeLabel }}) }</strong>
+        </div>
+      }
     </div>
   </section>
-  <section class="mt-100 rounded-2xl p-3">
-    <div class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.7px] text-[#003f87]">
-      <img [attr.src]="appointmentImages.serviceIcon" alt="" class="h-5 w-5" />Chi tiết dịch vụ</div>
-    <div class="flex items-center justify-between gap-4">
+
+  <!-- Chi tiết dịch vụ -->
+  <section class="section-card service-section">
+    <div class="section-heading brand">
+      <img [attr.src]="appointmentImages.serviceIcon" alt="" class="icon-md" />
+      <span>Chi tiết dịch vụ</span>
+    </div>
+    <div class="service-row">
       <div>
-        <h3 class="text-xl font-semibold leading-7 text-[#191c1e]">{{ appointment().service.name }}</h3>
-        <p class="text-base leading-6 text-[#424752]">{{ appointment().service.description }}</p>
+        <h3 class="person-name">{{ appointment().service.name }}</h3>
+        <p class="service-desc">{{ appointment().service.description }}</p>
       </div>
-      <div class="shrink-0 text-right">
-        <p class="text-sm font-semibold leading-5 tracking-[0.14px] text-[#003f87]">{{ appointment().service.dateText }}</p>
-        <p class="text-xl font-semibold leading-7 text-[#191c1e]">{{ appointment().service.timeRange }}</p>
+      <div class="service-time">
+        <p class="service-date">{{ appointment().service.dateText }}</p>
+        <p class="service-hour">{{ appointment().service.timeRange }}</p>
       </div>
     </div>
   </section>
 </div>
-<footer class="border-t border-[#c2c6d4] bg-white px-6 pb-6 pt-5">
-  @if (status().value === 'pending_payment') {
-    <div class="mb-4 text-center"><span app-payment-countdown [remainingSeconds]="remainingSeconds()"></span></div>
+<footer class="panel-footer">
+  @if (status().value === 'pending_payment' && !isClinic()) {
+    <div class="countdown-wrapper">
+      <span app-payment-countdown [remainingSeconds]="remainingSeconds()"></span>
+    </div>
   }
   @if (showDeadline()) {
-    <div class="mb-4 flex items-center justify-center gap-2 text-center text-sm font-semibold leading-5 tracking-[0.14px] text-[rgba(0,0,0,0.87)]">
-      <img [attr.src]="appointmentImages.infoIcon" alt="" class="h-4 w-4" />Còn {{ appointment().freeChangeDaysLeft }} ngày để hủy hoặc đổi lịch miễn phí.</div>
+    <div class="deadline-notice">
+      <img [attr.src]="appointmentImages.infoIcon" alt="" class="icon-sm" />
+      <span>Còn {{ appointment().freeChangeDaysLeft }} ngày để hủy hoặc đổi lịch miễn phí.</span>
+    </div>
   }
-  <div class="flex justify-center gap-4">
+  <div class="action-buttons">
     @for (action of actions(); track action.key) {
       <button
         app-action-button

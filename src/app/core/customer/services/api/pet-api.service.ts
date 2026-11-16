@@ -31,47 +31,69 @@ function formatTimeText(value: any) {
 
 export function normalizePet(pet: any = {}) {
   const healthStatusCode = pet.health_status ?? pet.healthStatusCode ?? pet.healthStatus ?? "unknown";
-  const healthStatusMap: any = {
+  const healthStatusMap = {
+    normal: "Bình thường",
     healthy: "Bình thường",
+    "Khỏe mạnh": "Bình thường",
+    "bình thường": "Bình thường",
     treating: "Đang điều trị",
+    treatment: "Đang điều trị",
+    "đang điều trị": "Đang điều trị",
     need_recheck: "Cần tái khám",
-    NORMAL: "Bình thường",
-    HEALTHY: "Bình thường",
-    TREATING: "Đang điều trị",
-    NEED_RECHECK: "Cần tái khám",
+    recheck: "Cần tái khám",
+    "cần tái khám": "Cần tái khám",
     unknown: "",
   };
 
-  const id = String(pet.id || pet._id || pet.pet_id || "");
-  const genderMap: any = {
-    MALE: "Đực",
-    FEMALE: "Cái",
-    male: "Đực",
-    female: "Cái",
-  };
-  const gender = genderMap[pet.gender] || pet.gender || "";
+  const rawGender = String(pet.gender ?? "").trim().toLowerCase();
+  const normalizedGender = ["♀", "cái", "cai", "female", "f"].includes(rawGender)
+    ? "female"
+    : ["♂", "đực", "duc", "male", "m"].includes(rawGender)
+      ? "male"
+      : pet.gender ?? "";
+  
+  const rawWeight = pet.weightKg ?? pet.weight_kg ?? pet.weight;
+  const weightMatch = rawWeight !== undefined && rawWeight !== null ? String(rawWeight).match(/\d+(\.\d+)?/) : null;
+  const numericWeight = weightMatch ? Number(weightMatch[0]) : null;
+  
 
-  const age = pet.age ? String(pet.age) : (pet.ageYears ? `${pet.ageYears} tuổi` : "");
-  const weightVal = pet.weightKg ?? pet.weight_kg ?? pet.weight;
-  const weight = weightVal ? (typeof weightVal === 'number' ? `${weightVal} kg` : String(weightVal)) : "";
+  const SPECIES_MAP: Record<string, string> = {
+  dog: 'Chó', cho: 'Chó', 'chó': 'Chó',
+  cat: 'Mèo', meo: 'Mèo', 'mèo': 'Mèo',
+  rabbit: 'Thỏ', tho: 'Thỏ', 'thỏ': 'Thỏ',
+  bird: 'Chim', chim: 'Chim',
+  hamster: 'Hamster',
+  };
+
+  const rawSpecies = String(pet.species?.species_name ?? pet.species_name ?? pet.species ?? '').trim();
+  const lowerSpecies = rawSpecies.toLowerCase();
+  const normalizedSpecies = SPECIES_MAP[lowerSpecies]
+     || (rawSpecies ? rawSpecies.charAt(0).toUpperCase() + rawSpecies.slice(1) : '');
+
 
   return {
-    ...pet,
-    id,
-    pet_id: id,
+    id: String(pet.pet_id ?? pet.petId ?? pet.id ?? pet._id ?? ""),
+    pet_id: pet.pet_id ?? pet.petId ?? pet.id ?? pet._id,
     speciesId: pet.species_id ?? pet.speciesId ?? pet.species?.species_id ?? "",
     breedId: pet.breed_id ?? pet.breedId ?? pet.breed?.breed_id ?? "",
     name: pet.pet_name ?? pet.name ?? "",
-    species: pet.species?.species_name ?? pet.species_name ?? pet.species ?? "",
+    species: normalizedSpecies,
     breed: pet.breed?.breed_name ?? pet.breed_name ?? pet.breed ?? "",
-    age,
-    gender,
-    weight,
-    weightKg: typeof weightVal === 'number' ? weightVal : parseFloat(weightVal) || null,
+    age: pet.age ?? pet.ageYears ?? pet.age_years ?? "",
+    gender: normalizedGender,
+    weight: pet.weight_kg ? `${pet.weight_kg} kg` : pet.weight ?? "",
+    weightKg: numericWeight,
     birthDate: pet.birth_date ?? pet.birthDate ?? "",
     healthStatusCode,
-    healthStatus: healthStatusMap[healthStatusCode] || pet.healthStatus || "Bình thường",
-    medicalNotes: pet.medical_note ?? pet.medicalNotes ?? pet.medicalNotes ?? "",
+    healthStatus: (healthStatusMap as any)[healthStatusCode] || pet.healthStatus || healthStatusCode,
+    medicalNotes: pet.medical_note ?? pet.medicalNotes ?? "",
+    isHidden: Boolean(
+      pet.is_hidden ??
+        pet.isHidden ??
+        (pet.is_active === false ||
+          pet.isActive === false ||
+          ["HIDDEN", "INACTIVE", "ARCHIVED"].includes(String(pet.status ?? "").toUpperCase())),
+    ),
     lastCheckup: pet.latest_exam_date ?? pet.lastCheckup ?? null,
     avatar: getPrimaryImage(pet),
     medicalRecords: Array.isArray(pet.medicalRecords)
@@ -228,14 +250,10 @@ export class PetApiService {
 
   private resolveCustomerId(): string {
     try {
-      const keys = ['userProfile', 'drPetUserProfile', 'drPetProfile', 'user'];
-      for (const k of keys) {
-        const profileStr = localStorage.getItem(k);
-        if (profileStr) {
-          const p = JSON.parse(profileStr);
-          const cid = p.customerId || p.userId || p.id || p._id;
-          if (cid) return String(cid);
-        }
+      const profileStr = localStorage.getItem('drPetUserProfile');
+      if (profileStr) {
+        const p = JSON.parse(profileStr);
+        if (p.customerId || p.userId) return String(p.customerId || p.userId);
       }
     } catch {}
     return '';
@@ -247,18 +265,11 @@ export class PetApiService {
       try {
         const response = await this.http.get(`/customers/${cid}/pets`);
         const pets = assertSuccess(response);
-        const list = Array.isArray(pets) ? pets : (pets?.items || []);
-        if (list.length > 0) return list.map(normalizePet);
+        return (Array.isArray(pets) ? pets : []).map(normalizePet);
       } catch (err: any) {
         if (err?.status !== 404) console.warn('Customer pets API error:', err);
       }
     }
-    try {
-      const response = await this.http.get("/pets");
-      const pets = assertSuccess(response);
-      const list = Array.isArray(pets) ? pets : (pets?.items || []);
-      if (list.length > 0) return list.map(normalizePet);
-    } catch {}
     const response = await this.http.get("/my-pets").catch(() => []);
     const data = assertSuccess(response);
     const petsArray = Array.isArray(data) ? data : (data && Array.isArray(data.pets) ? data.pets : []);
@@ -309,11 +320,9 @@ export class PetApiService {
       try {
         const response = await this.http.post(`/customers/${cid}/pets`, payload);
         return normalizePet(assertSuccess(response));
-      } catch (e) {
-        console.warn('Customer pets post failed, falling back to /pets', e);
-      }
+      } catch {}
     }
-    const response = await this.http.post("/pets", payload);
+    const response = await this.http.post("/pets", toPetPayload(pet));
     return normalizePet(assertSuccess(response));
   }
 

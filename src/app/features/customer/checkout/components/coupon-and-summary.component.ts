@@ -32,7 +32,12 @@ export class CouponAndSummaryComponent {
     (total: any, item: any) => total + getNumericPrice(item.price) * item.qty,
     0,
   ));
-  readonly total = computed<any>(() => Math.max(0, Number(this.subtotal()) - Number(this.discountAmount())));
+  readonly shippingFee = computed<any>(() => {
+    const sub = Number(this.subtotal() || 0);
+    if (sub <= 0) return 0;
+    return sub >= 500000 ? 0 : 30000;
+  });
+  readonly total = computed<any>(() => Math.max(0, Number(this.subtotal()) + Number(this.shippingFee()) - Number(this.discountAmount())));
 
   // --- Trạng thái (signal = useState / useRef) ---
   readonly couponCode = signal<any>("");

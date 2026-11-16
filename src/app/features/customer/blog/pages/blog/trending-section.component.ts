@@ -14,7 +14,7 @@ import { TRENDING_BLOG_POSTS } from '../../../../../shared/customer/data/blog-da
   imports: [CategoryIconComponent, CustomerIconComponent, CustomerLinkDirective],
   templateUrl: './trending-section.component.html',
   host: {
-    'class': 'w-[1200px] pt-4',
+    'class': 'w-full max-w-[1200px] pt-4',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

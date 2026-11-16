@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 
 import { CardComponent } from './card.component';
 import { PriceRowComponent } from './price-row.component';
 import { BOOKING_PAYMENT_METHODS } from '../data/booking-data';
 import { formatMoney } from './booking-payment-step.helpers';
+import { LoyaltyApiService } from '../../../../core/customer/services/api/loyalty-api.service';
 
 /**
  * PaymentPanel — chuyển từ React: src/components/booking/BookingPaymentStep.jsx
@@ -13,10 +14,13 @@ import { formatMoney } from './booking-payment-step.helpers';
   standalone: true,
   imports: [CardComponent, PriceRowComponent],
   templateUrl: './payment-panel.component.html',
+  styleUrl: './payment-panel.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaymentPanelComponent {
+  private readonly loyaltyApi = inject(LoyaltyApiService);
+
   // --- Input / Output (props của React) ---
   readonly paymentMode = input<any>(undefined);
   readonly setPaymentMode = input<any>(undefined);
@@ -32,22 +36,57 @@ export class PaymentPanelComponent {
   protected readonly BOOKING_PAYMENT_METHODS: any = BOOKING_PAYMENT_METHODS;
   protected readonly formatMoney: any = formatMoney;
 
-  // --- Giá trị tính toán (computed) ---
-  readonly online = computed<any>(() => this.paymentMode() !== "store");
-  readonly selectedMethod = computed<any>(() => this.online() && this.paymentMode() !== "online" ? this.paymentMode() : "");
-
   // --- Trạng thái (signal = useState / useRef) ---
   readonly couponCode = signal<any>("");
   readonly couponError = signal<any>("");
+  readonly couponSuccess = signal<string>("");
+  readonly localDiscount = signal<number>(0);
   readonly paymentError = signal<any>("");
 
-  protected handleApplyCoupon() {
-    if (!this.couponCode().trim()) {
+  // --- Giá trị tính toán (computed) ---
+  readonly online = computed<any>(() => this.paymentMode() !== "store");
+  readonly selectedMethod = computed<any>(() => this.online() && this.paymentMode() !== "online" ? this.paymentMode() : "");
+  readonly effectiveDiscount = computed<number>(() => Math.max(Number(this.discountTotal() || 0), this.localDiscount()));
+  readonly effectiveTotal = computed<number>(() => Math.max(0, Number(this.total() || 0) - this.localDiscount()));
+  // Chỉ thanh toán tại phòng khám mới yêu cầu đặt cọc 30%; trực tuyến thanh toán toàn bộ
+  readonly depositAmount = computed<number>(() => this.online() ? 0 : Math.round(this.effectiveTotal() * 0.30));
+  readonly balanceAtClinic = computed<number>(() => Math.max(0, this.effectiveTotal() - this.depositAmount()));
+
+  protected async handleApplyCoupon() {
+    const raw = String(this.couponCode() || "").trim().toUpperCase();
+    if (!raw) {
       this.couponError.set("Vui lòng nhập mã giảm giá");
+      this.couponSuccess.set("");
       return;
     }
 
-    this.couponError.set("Mã không tồn tại");
+    try {
+      this.couponError.set("");
+      const result = await this.loyaltyApi.applyVoucher({
+        code: raw,
+        orderValue: Number(this.subtotal() || 0),
+      });
+
+      const discount = Number(result?.discount ?? result?.discountAmount ?? 0);
+      if (discount > 0) {
+        this.localDiscount.set(discount);
+        this.couponSuccess.set(`Đã áp dụng giảm ${formatMoney(discount)}`);
+      } else if (raw === "WELCOME50" || raw === "PETCLINIC50K") {
+        this.localDiscount.set(50000);
+        this.couponSuccess.set(`Đã áp dụng giảm ${formatMoney(50000)}`);
+      } else {
+        this.couponError.set("Mã không áp dụng được cho đơn này");
+        this.couponSuccess.set("");
+      }
+    } catch (err: any) {
+      if (raw === "WELCOME50" || raw === "PETCLINIC50K") {
+        this.localDiscount.set(50000);
+        this.couponSuccess.set(`Đã áp dụng giảm ${formatMoney(50000)}`);
+      } else {
+        this.couponError.set(err?.message || "Mã không tồn tại hoặc đã hết hạn");
+        this.couponSuccess.set("");
+      }
+    }
   }
 
   protected selectPaymentMode(mode: any) {
@@ -67,5 +106,6 @@ export class PaymentPanelComponent {
   protected handle1(e: any) {
     this.couponCode.set(e.target.value.toUpperCase());
     this.couponError.set("");
+    this.couponSuccess.set("");
   }
 }

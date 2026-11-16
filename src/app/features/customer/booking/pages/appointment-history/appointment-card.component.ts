@@ -4,7 +4,7 @@ import { SmallIconComponent } from './small-icon.component';
 import { PaymentCountdownComponent } from './payment-countdown.component';
 import { ActionButtonComponent } from './action-button.component';
 import { appointmentImages } from '../../../../../shared/customer/assets/appointment-images';
-import { getAppointmentActions, getAppointmentDisplayStatus } from '../../utils/appointment-display';
+import { getAppointmentActions, getAppointmentDisplayStatus, isClinicPayment } from '../../utils/appointment-display';
 import { createPaymentCountdown } from '../../../../../shared/customer/utils/payment-countdown';
 import { formatMoney } from './appointment-history-page.helpers';
 
@@ -38,9 +38,10 @@ export class AppointmentCardComponent {
   protected readonly formatMoney: any = formatMoney;
 
   // --- Giá trị tính toán (computed) ---
+  readonly isClinic = computed<boolean>(() => isClinicPayment(this.appointment()));
   readonly status = computed<any>(() => getAppointmentDisplayStatus(this.appointment()));
   readonly actions = computed<any>(() => getAppointmentActions(this.appointment()));
-  readonly paymentExpired = computed<any>(() => this.status().value === "pending_payment" && this.remainingSeconds() === 0);
-  readonly remainingSeconds = createPaymentCountdown(() => this.appointment().paymentExpiresAt);
+  readonly paymentExpired = computed<any>(() => !this.isClinic() && this.status().value === "pending_payment" && this.remainingSeconds() === 0);
+  readonly remainingSeconds = createPaymentCountdown(() => this.isClinic() ? null : this.appointment().paymentExpiresAt);
 
 }

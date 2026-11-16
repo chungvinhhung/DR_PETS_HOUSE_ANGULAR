@@ -17,5 +17,4 @@ export class StepSectionComponent {
   // --- Input / Output (props của React) ---
   readonly steps = input<any>(undefined);
   readonly badges = input<string[]>([]);
-
 }

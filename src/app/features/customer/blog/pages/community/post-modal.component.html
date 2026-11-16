@@ -1,14 +1,14 @@
 <div
-  class="flex h-[795px] max-h-[calc(100vh-48px)] w-[1024px] max-w-[calc(100vw-32px)] overflow-hidden rounded-[16px] border border-[#C1C6D5] bg-white shadow-2xl"
+  class="flex h-[795px] max-h-[calc(100vh-48px)] w-[1024px] max-w-[calc(100vw-32px)] flex-col overflow-y-auto md:flex-row md:overflow-hidden rounded-[16px] border border-[#C1C6D5] bg-white shadow-2xl"
   (mousedown)="$any($event).stopPropagation()"
 >
-  <div class="flex min-h-0 w-[623px] flex-col border-r border-[#C1C6D5]">
+  <div class="flex min-h-0 w-full shrink-0 flex-col border-b border-[#C1C6D5] md:w-[60.8%] md:shrink md:border-b-0 md:border-r">
     <div class="border-b border-[#C1C6D5] px-6 py-4">Bài viết của {{ post().author }}</div>
     @if (post().image) {
-      <img [attr.src]="post().image" alt="" class="h-[360px] w-full object-cover" />
+      <img [attr.src]="post().image" alt="" class="h-[220px] w-full object-cover sm:h-[360px]" />
     }
     @if (post().video) {
-      <video [attr.src]="post().video" controls class="h-[360px] w-full bg-black object-contain"></video>
+      <video [attr.src]="post().video" controls class="h-[220px] w-full bg-black object-contain sm:h-[360px]"></video>
     }
     <div class="min-h-0 flex-1 overflow-y-auto p-6">
       <div class="flex items-start justify-between">
@@ -31,7 +31,7 @@
       </div>
     </div>
   </div>
-  <div class="flex min-h-0 w-[400px] flex-col">
+  <div class="flex min-h-[420px] w-full flex-col md:min-h-0 md:w-[39.2%]">
     <div class="flex items-center justify-between border-b border-[#C1C6D5] px-6 py-4">
       <span>Bình luận ({{ comments().length }})</span>
       <button type="button" (click)="onClose.emit($event)"><app-customer-icon name="x" className="h-5 w-5" /></button>
@@ -39,11 +39,19 @@
     <div class="min-h-0 flex-1 overflow-y-auto p-6">
       @if (comments().length) {
         @for (comment of comments(); track comment.id) {
+          @let authorName = getCommentAuthorName(comment);
+          @let avatarUrl = getCommentAvatar(comment);
           <div class="mb-4 flex gap-3">
-            <span class="h-8 w-8 shrink-0 rounded-full bg-[#EEE]"></span>
+            @if (avatarUrl) {
+              <img [attr.src]="avatarUrl" [attr.alt]="authorName" class="h-8 w-8 shrink-0 rounded-full object-cover" />
+            } @else {
+              <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0D47A1] text-xs font-bold text-white uppercase">
+                {{ (authorName || 'U').charAt(0) }}
+              </div>
+            }
             <div class="flex-1">
               <div class="rounded-bl-[16px] rounded-br-[16px] rounded-tr-[16px] bg-[#F3F3F3] p-3">
-                <p class="text-[16px] text-[#1A1C1C]">{{ comment.author }}</p>
+                <p class="text-[14px] font-bold text-[#1A1C1C]">{{ authorName }}</p>
                 @if (comment.replyTo) {
                   <p class="text-xs text-[#005AB4]">Trả lời {{ comment.replyTo }}</p>
                 }
@@ -69,16 +77,24 @@
       }
     </div>
     <div class="flex gap-3 border-t border-[#C1C6D5] p-3">
-      <img
-        [attr.src]="blogImages.communityAuthor"
-        alt=""
-        class="h-10 w-10 rounded-full border-2 border-[#005AB4]"
-      />
+      @if (currentUserAvatar()) {
+        <img
+          [attr.src]="currentUserAvatar()"
+          alt=""
+          class="h-10 w-10 rounded-full border-2 border-[#005AB4] object-cover"
+        />
+      } @else {
+        <img
+          [attr.src]="blogImages.communityAuthor"
+          alt=""
+          class="h-10 w-10 rounded-full border-2 border-[#005AB4]"
+        />
+      }
       <div class="flex-1 rounded-[16px] bg-[#EEE] p-3">
         @if (replyTo()) {
           <div class="mb-2 flex justify-between text-[12px] text-[#414753]">
             <span>Đang trả lời <b>{{ replyTo() }}</b></span>
-            <button (click)="replyTo.set(null)"><app-customer-icon name="x" className="h-3 w-3" /></button>
+            <button (click)="replyTo.set(null); replyingComment.set(null)"><app-customer-icon name="x" className="h-3 w-3" /></button>
           </div>
         }
         <textarea

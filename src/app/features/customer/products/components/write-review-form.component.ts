@@ -13,7 +13,7 @@ import { productImages } from '../../../../shared/customer/assets/product-images
   templateUrl: './write-review-form.component.html',
   host: {
     '(submit)': 'handleSubmit($any($event))',
-    'class': 'flex w-full gap-5 rounded-[14px] border border-solid border-[#d3d3d3] bg-white py-[34px] pl-4 pr-[31px]',
+    'class': 'flex w-full flex-col gap-5 rounded-[14px] border border-solid border-[#d3d3d3] bg-white py-[34px] pl-4 pr-4 sm:flex-row sm:pr-[31px]',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

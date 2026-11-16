@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 import { ReactStyleDirective } from '../../../../shared/customer/directives/react-style.directive';
 import { CustomerLinkDirective } from '../../../../shared/customer/directives/customer-link.directive';
@@ -18,13 +18,11 @@ import { successPanelBackground, successCheckGroup } from './booking-success-mod
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BookingSuccessModalComponent {
-  readonly status = input<string>('CONFIRMED');
-  readonly holdExpiresAt = input<string | null>(null);
-
+  // --- Input / Output (props của React) ---
+  /** Guest không có trang "Lịch sử đặt lịch" (trang đó yêu cầu đăng nhập). */
+  readonly isGuest = input<boolean>(false);
+  // --- Dữ liệu & hàm dùng trong template ---
   protected readonly successPanelBackground: any = successPanelBackground;
   protected readonly successCheckGroup: any = successCheckGroup;
-  readonly confirmed = computed(() => String(this.status() || '').toUpperCase() === 'CONFIRMED');
-  readonly message = computed(() => this.confirmed()
-    ? 'Lịch hẹn của bạn đã được xác nhận. Xem chi tiết và theo dõi lịch hẹn tại “Lịch sử đặt lịch”.'
-    : 'Lịch hẹn đã được tạo và đang chờ hoàn tất thanh toán. Vui lòng theo dõi thời gian giữ chỗ trong “Lịch sử đặt lịch”.');
+
 }

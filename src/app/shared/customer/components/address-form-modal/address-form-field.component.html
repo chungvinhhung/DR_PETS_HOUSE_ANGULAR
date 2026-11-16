@@ -5,6 +5,7 @@
 <input
   [attr.autofocus]="autoFocus()"
   [attr.autocomplete]="autoComplete()"
+  [attr.list]="listId()"
   (input)="onChange.emit($event)"
   [attr.type]="type()"
   [value]="value() ?? ''"
@@ -16,6 +17,13 @@
           : 'border-[#e0e0e0] hover:border-[#90caf9] focus:border-[#0d47a1] focus:ring-1 focus:ring-[#0d47a1]'
       }`"
 />
+@if (options() && listId()) {
+  <datalist [id]="listId()!">
+    @for (opt of options()!; track opt) {
+      <option [value]="opt"></option>
+    }
+  </datalist>
+}
 @if (invalid()) {
   <span class="-mt-2 text-xs text-[#c62828]">Vui lòng điền thông tin</span>
 }

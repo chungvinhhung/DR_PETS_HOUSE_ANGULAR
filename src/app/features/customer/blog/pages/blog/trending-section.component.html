@@ -24,7 +24,7 @@
   @for (post of posts(); track post.id) {
     <a
       [appCustomerLink]="`/blog/${post.id}`"
-      class="group flex h-[130px] w-[320px] shrink-0 gap-4 rounded-[16px] border border-[#E3F2FD] bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+      class="group flex h-[130px] w-[280px] shrink-0 gap-4 sm:w-[320px] rounded-[16px] border border-[#E3F2FD] bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
     >
       <img [attr.src]="post.image" alt="" class="h-24 w-24 rounded-[12px] object-cover" />
       <div class="flex min-w-0 flex-col justify-center">

@@ -44,7 +44,13 @@ export class CartItemRowComponent {
   readonly variantOptions = computed<any>(() => (Array.isArray(this.item().variants) && this.item().variants.length ? this.item().variants : this.loadedVariants()).map(normalizeVariantOption));
   readonly selectedVariant = computed<any>(() => this.variantOptions().find((variant: any) => String(variant.id) === String(this.item().variantId)) ||
     this.variantOptions().find((variant: any) => variant.name === this.item().type) ||
+    this.variantOptions().find((variant: any) => variant.name === this.item().variant_name) ||
     this.variantOptions()[0]);
+  readonly variantDisplayName = computed<any>(() => {
+    const raw = this.item().type || this.item().variant_name || this.selectedVariant()?.name || this.item().variant?.variant_name;
+    if (raw && raw !== 'Mặc định') return raw;
+    return this.selectedVariant()?.name || this.item().type || 'Mặc định';
+  });
   readonly sizeOptions = computed<any>(() => this.selectedVariant()?.sizes?.length ? this.selectedVariant().sizes : this.item().size ? [this.item().size] : []);
 
   // --- Trạng thái (signal = useState / useRef) ---

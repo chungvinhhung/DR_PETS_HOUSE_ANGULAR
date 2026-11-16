@@ -68,11 +68,22 @@
           <div class="min-w-0">
             <h3 class="text-sm font-bold text-slate-900 md:text-base">{{ service.name }}</h3>
             <p class="text-xs font-medium leading-4 text-slate-700 md:text-sm">{{ service.desc }}</p>
+            
+            @if (service.durationMinutes) {
+              <p class="mt-1 text-xs font-medium leading-4 text-slate-700 md:text-sm">
+                Thời lượng dự kiến: <span class="ml-1">{{ service.durationMinutes }} phút</span>
+              </p>
+            }
+            
+            
             <p class="text-sm font-bold text-blue-900 md:text-base">{{ formatMoney(service.price) }}@if (serviceQuantity() > 1) {
                 {{ ` x ${serviceQuantity()}` }}
               }
             </p>
           </div>
+
+
+          
           <button
             type="button"
             (click)="toggleService(service.id)"
@@ -111,9 +122,10 @@
       [selectedSlot]="selectedSlot()"
       (onSelect)="setSelectedSlot()?.($event)"
       [timeSlots]="timeSlots()"
+      [hasSelectedService]="(selectedServices()?.length || 0) > 0"
       [invalid]="validationAttempted() && !slotBookable()"
     />
-    @if (slotsLoading()) {
+    @if (slotsLoading() && (selectedServices()?.length || 0) > 0) {
       <p class="mt-2 text-sm font-medium text-blue-900">Đang tải khung giờ...</p>
     }
   </aside>
