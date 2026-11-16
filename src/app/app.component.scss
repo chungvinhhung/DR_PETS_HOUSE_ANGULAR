@@ -4,55 +4,76 @@
 }
 
 .app-route-loading {
-  min-height: 65vh;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
-  padding: 32px 20px;
+  padding: 24px;
   background: #f8fafc;
   text-align: center;
 }
 
 .app-route-loading__content {
   display: flex;
+  width: 100%;
+  max-width: 540px;
   flex-direction: column;
   align-items: center;
-  gap: 9px;
-  max-width: 420px;
+  justify-content: center;
+  gap: 10px;
 }
 
-.app-route-loading__spinner {
-  width: 36px;
-  height: 36px;
-  margin-bottom: 5px;
-  border: 3px solid rgba(13, 71, 161, 0.14);
-  border-top-color: #0d47a1;
-  border-radius: 50%;
-  animation: app-route-loading-spin 0.8s linear infinite;
+.app-route-loading__picture {
+  display: block;
+  width: min(400px, 80vw);
+  max-height: 55dvh;
+  margin-bottom: 6px;
+}
+
+.app-route-loading__mascot {
+  display: block;
+  width: 100%;
+  max-height: 55dvh;
+  height: auto;
+  object-fit: contain;
 }
 
 .app-route-loading__title {
   margin: 0;
   color: #0d47a1;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.5;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.45;
 }
 
 .app-route-loading__description {
   margin: 0;
   color: #64748b;
-  font-size: 13px;
-  line-height: 1.5;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
 }
 
-@keyframes app-route-loading-spin {
-  to {
-    transform: rotate(360deg);
+@media (max-width: 767px) {
+  .app-route-loading__picture {
+    width: min(300px, 82vw);
+  }
+
+  .app-route-loading__title {
+    font-size: 18px;
+  }
+
+  .app-route-loading__description {
+    font-size: 13px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app-route-loading__spinner {
-    animation: none;
+  .app-route-loading__picture source {
+    display: none;
   }
 }
