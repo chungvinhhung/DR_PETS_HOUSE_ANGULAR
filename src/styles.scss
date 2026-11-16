@@ -8950,3 +8950,58 @@ app-admin-dashboard-page {
 }
 @keyframes dashSpin { to { transform: rotate(360deg); } }
 
+
+/* WEB2 compound-input consistency (16 Nov 2026)
+   The enclosing control owns the border, focus ring and error status.
+   Child text inputs/selects inside these explicitly identified composite
+   controls must NOT render a second blue rectangle, including autofill. */
+:is(
+  .web2-composite-field,
+  .staff-reset-input,
+  .password-wrap,
+  .service-catalog__search,
+  .create-order__search-field--product,
+  .flash-editor__picker-search,
+  .voucher-editor__input-suffix,
+  .currency-input,
+  .variant-currency-input,
+  .unit-input,
+  .service-editor__price-input
+) > :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  background: transparent;
+}
+:is(
+  .web2-composite-field,
+  .staff-reset-input,
+  .password-wrap,
+  .service-catalog__search,
+  .create-order__search-field--product,
+  .flash-editor__picker-search,
+  .voucher-editor__input-suffix,
+  .currency-input,
+  .variant-currency-input,
+  .unit-input,
+  .service-editor__price-input
+) > :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea):is(:focus, :focus-visible) {
+  border: 0 !important;
+  outline: 0 !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+/* On invalid Admin login fields, the OUTER frame remains red even when focused. */
+app-admin-login-page .admin-login .field.field--invalid:focus-within {
+  border-color: #e46b6b;
+  box-shadow: 0 0 0 0.32cqw rgba(228, 107, 107, .12);
+}
+/* Keep keyboard focus visible on the containing form/search surface. */
+app-admin-login-page .admin-login .web2-composite-field:focus-within {
+  outline: 0;
+}
+form[app-nav-search-bar].web2-composite-field:focus-within > div:first-child {
+  border-color: #1976d2;
+}
