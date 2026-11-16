@@ -28,7 +28,7 @@
 
 .app-route-loading__picture {
   display: block;
-  width: min(400px, 80vw);
+  width: min(260px, 74vw);
   max-height: 55dvh;
   margin-bottom: 6px;
 }
@@ -39,6 +39,7 @@
   max-height: 55dvh;
   height: auto;
   object-fit: contain;
+  image-rendering: auto;
 }
 
 .app-route-loading__title {
@@ -60,7 +61,7 @@
 
 @media (max-width: 767px) {
   .app-route-loading__picture {
-    width: min(300px, 82vw);
+    width: min(210px, 68vw);
   }
 
   .app-route-loading__title {
