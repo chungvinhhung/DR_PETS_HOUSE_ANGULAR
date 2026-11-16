@@ -16,7 +16,6 @@
       app-composer
       (onPost)="addPost($any($event))"
       [canPost]="authService.isAuthenticated()"
-      [submitting]="posting()"
       (onRequireAuth)="requireAuth($any($event))"
     ></section>
     @if (loadError()) {

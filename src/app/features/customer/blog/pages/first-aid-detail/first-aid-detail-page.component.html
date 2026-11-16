@@ -32,9 +32,7 @@
       @if (loadError()) {
         <div class="mt-4 rounded-[16px] bg-white px-6 py-3 text-[#0D47A1]">{{ loadError() }}</div>
       }
-      @if (detail().steps?.length) {
-        <section app-step-section [steps]="detail().steps" [badges]="detail().stepBadges || []"></section>
-      }
+      <section app-step-section [steps]="detail().steps"></section>
       <section app-video-section [video]="detail().video"></section>
       <app-related-section [currentId]="detail().id" [posts]="relatedPosts()" />
     </div>

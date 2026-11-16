@@ -12,8 +12,6 @@ import { CustomerAuthService } from '../customer-auth.service';
 
 function formatTime(value: any) {
   if (!value) return "";
-  const directMatch = String(value).trim().match(/^(\d{2}:\d{2})/);
-  if (directMatch) return directMatch[1];
   const date = new Date(value);
   if (!Number.isNaN(date.getTime())) {
     return `${String(date.getUTCHours()).padStart(2, "0")}:${String(date.getUTCMinutes()).padStart(2, "0")}`;
@@ -241,16 +239,7 @@ export function normalizeAppointmentHistoryItem(appointment: any = {}) {
       date: formatShortDate(rawDate) || appointment.service?.date || "",
       dateText: dateText || appointment.service?.dateText || "",
       time: startTime || appointment.service?.time || "",
-      timeRange: (() => {
-        const duration = Number(appointment.scheduledDurationMinutes || appointment.durationMinutes || service?.durationMinutes || 30) || 30;
-        let resolvedEndTime = endTime ? formatTime(endTime) : "";
-        if (!resolvedEndTime || resolvedEndTime === startTime) {
-          const [h, m] = (startTime || "08:00").split(":").map(Number);
-          const totalM = (h || 0) * 60 + (m || 0) + duration;
-          resolvedEndTime = `${String(Math.floor(totalM / 60)).padStart(2, "0")}:${String(totalM % 60).padStart(2, "0")}`;
-        }
-        return `${startTime} - ${resolvedEndTime}`;
-      })(),
+      timeRange: endTime ? `${startTime} - ${formatTime(endTime)}` : (appointment.service?.timeRange || startTime),
     },
     services,
   };
@@ -351,14 +340,14 @@ export function normalizeSlot(slot: any) {
   const end = formatTime(endRaw);
   const statusStr = String(slot.status || "").toLowerCase();
   const isFullOrBlocked = statusStr === "full" || statusStr === "blocked";
-  const totalCount = Number(slot.totalCount ?? slot.maxAppointments ?? slot.max_booking ?? 1);
-  const bookedCount = Number(slot.occupiedCount ?? slot.bookedCount ?? slot.booked_count ?? 0);
-  const rawRemaining = typeof slot.remaining === "number" ? slot.remaining : (slot.available === false ? 0 : Math.max(0, totalCount - bookedCount));
-  const remaining = isFullOrBlocked ? 0 : Math.max(0, Number(rawRemaining));
+  const rawRemaining = typeof slot.remaining === "number" ? slot.remaining : (slot.available === false ? 0 : undefined);
+  const remaining = isFullOrBlocked ? 0 : Number(rawRemaining ?? (slot.available ? 1 : 0));
+  const bookedCount = Number(slot.booked_count || slot.bookedCount || 0);
+  const maxAppointments = Number(slot.max_booking || slot.maxAppointments || (remaining + bookedCount) || 1);
   const isAvailable = !isFullOrBlocked && (statusStr === "available" || remaining > 0 || slot.available === true);
 
-  const value = slot.value || (start && end ? `${start} - ${end}` : (start || String(slot.value || "09:00 - 10:00")));
-  const id = String(slot.id || slot.slot_id || `${startRaw}-${value}`);
+  const id = String(slot.id || slot.slot_id || slot.start || Math.random());
+  const value = start && end ? `${start} - ${end}` : (start || String(slot.value || "09:00 - 10:00"));
 
   return {
     ...slot,
@@ -367,9 +356,9 @@ export function normalizeSlot(slot: any) {
     end: endRaw,
     value,
     bookedCount,
-    maxAppointments: totalCount,
-    remaining,
-    available: isAvailable && remaining > 0,
+    maxAppointments,
+    remaining: isFullOrBlocked ? 0 : (remaining > 0 ? remaining : Math.max(0, maxAppointments - bookedCount)),
+    available: isAvailable,
   };
 }
 
@@ -391,11 +380,6 @@ function groupSlotsByTime(slots: any) {
       return;
     }
 
-    // If identical slot id, don't aggregate duplicate
-    if (current.id && slot.id && current.id === slot.id) {
-      return;
-    }
-
     const currentRemaining = current.remaining || 0;
     const shouldUseSlotForBooking = slot.available && (!current.available || slotRemaining > currentRemaining);
 
@@ -410,10 +394,10 @@ function groupSlotsByTime(slots: any) {
             status: slot.status,
           }
         : {}),
-      bookedCount: Math.max(current.bookedCount || 0, slot.bookedCount || 0),
-      maxAppointments: Math.max(current.maxAppointments || 1, slot.maxAppointments || 1),
-      available: (current.available || slot.available) && (currentRemaining > 0 || slotRemaining > 0),
-      remaining: Math.max(currentRemaining, slotRemaining),
+      bookedCount: (current.bookedCount || 0) + (slot.bookedCount || 0),
+      maxAppointments: (current.maxAppointments || 1) + (slot.maxAppointments || 1),
+      available: Boolean((current.available || slot.available) && (currentRemaining + slotRemaining > 0)),
+      remaining: currentRemaining + slotRemaining,
     });
   });
 
@@ -505,22 +489,15 @@ export class BookingApiService {
       return aptDateFormatted === dateFormatted && matchesBranch && apt.status !== "cancelled";
     });
 
-    // Only uncommitted/offline appointments need local deduction; real backend records are already counted by MongoDB
-    const uncommittedLocalAppointments = localAppointments.filter((apt: any) => {
-      const idStr = String(apt.id || apt._id || '');
-      return !/^[0-9a-fA-F]{24}$/.test(idStr);
-    });
-
-    const adjustWithLocal = (grouped: any[], isFromBackend = false) => {
+    const adjustWithLocal = (grouped: any[]) => {
       const blockedList = getBlockedSlots();
       return grouped.map((slot: any) => {
         const timeVal = slot.value?.split(" - ")[0] || slot.value;
         const key1 = `${dateFormatted}_${timeVal}`;
         const key2 = `${dateFormatted}_${slot.value}`;
-        // If from backend and backend explicitly confirms remaining > 0, trust backend over stale local conflict cache
-        const isBlocked = !isFromBackend && (blockedList.includes(key1) || blockedList.includes(key2));
+        const isBlocked = blockedList.includes(key1) || blockedList.includes(key2);
 
-        const bookedLocal = uncommittedLocalAppointments.filter((apt: any) => {
+        const bookedLocal = localAppointments.filter((apt: any) => {
           const aptTime = apt.service?.time || apt.start_time;
           return aptTime && (aptTime === timeVal || slot.value?.includes(aptTime));
         }).length;
@@ -533,7 +510,6 @@ export class BookingApiService {
 
         return {
           ...slot,
-          maxAppointments,
           bookedCount,
           remaining,
           available,
@@ -546,7 +522,7 @@ export class BookingApiService {
       const slots = assertSuccess(response);
       const slotsList = Array.isArray(slots) ? slots : Array.isArray(slots?.slots) ? slots.slots : [];
       if (slotsList.length > 0) {
-        return adjustWithLocal(groupSlotsByTime(slotsList.map(normalizeSlot)), true);
+        return adjustWithLocal(groupSlotsByTime(slotsList.map(normalizeSlot)));
       }
     } catch {
       // Fallback to availability
@@ -557,7 +533,7 @@ export class BookingApiService {
       const slots = assertSuccess(response);
       const slotsList = Array.isArray(slots) ? slots : Array.isArray(slots?.slots) ? slots.slots : [];
       if (slotsList.length > 0) {
-        return adjustWithLocal(groupSlotsByTime(slotsList.map(normalizeSlot)), true);
+        return adjustWithLocal(groupSlotsByTime(slotsList.map(normalizeSlot)));
       }
     } catch {
       // Fallback to operational slots
@@ -670,27 +646,6 @@ export class BookingApiService {
     const nowIso = new Date().toISOString();
     const dateFormatted = dateStr ? String(dateStr).split("T")[0] : nowIso.split("T")[0];
 
-    const totalDurationMins = (bookingData.services || []).reduce(
-      (sum: number, s: any) => sum + (Number(s.durationMinutes || s.duration) || 30),
-      0
-    ) || 30;
-
-    let computedEndTimeStr = "";
-    let slotEndIso = bookingData.slotEnd;
-    if (slotEndIso) {
-      computedEndTimeStr = formatTime(slotEndIso);
-    } else {
-      const [sh, sm] = (timeStr || "08:00").split(":").map(Number);
-      const totalMinutes = (sh || 0) * 60 + (sm || 0) + totalDurationMins;
-      computedEndTimeStr = `${String(Math.floor(totalMinutes / 60)).padStart(2, "0")}:${String(totalMinutes % 60).padStart(2, "0")}`;
-      try {
-        slotEndIso = new Date(new Date(slotStart).getTime() + totalDurationMins * 60000).toISOString();
-      } catch {
-        slotEndIso = slotStart;
-      }
-    }
-    const properTimeRange = `${timeStr} - ${computedEndTimeStr}`;
-
     const localApt = {
       id: `apt-${Date.now()}`,
       code: `BK ${Math.floor(1000 + Math.random() * 9000)} ${new Date().getFullYear()}`,
@@ -698,11 +653,9 @@ export class BookingApiService {
       paymentMethod: paymentMethod === "ONLINE_MOCK" ? "online" : "store",
       paymentStatus: paymentMethod === "ONLINE_MOCK" ? "unpaid" : "waiting_store_payment",
       scheduledStart: slotStart,
-      scheduledEnd: slotEndIso,
-      scheduledDurationMinutes: totalDurationMins,
+      scheduledEnd: bookingData.slotEnd || slotStart,
       appointment_date: dateFormatted,
       start_time: timeStr,
-      end_time: computedEndTimeStr,
       created_at: nowIso,
       owner: {
         name: String(bookingData.customer_name_snapshot || bookingData.customerName || "Khách hàng").trim(),
@@ -731,7 +684,7 @@ export class BookingApiService {
         date: formatShortDate(dateFormatted),
         dateText: formatDateText(dateFormatted),
         time: timeStr,
-        timeRange: properTimeRange,
+        timeRange: `${timeStr} - ${timeStr}`,
         price: totalPrice,
       },
       services: bookingData.services || [{
@@ -850,42 +803,6 @@ export class BookingApiService {
       return assertSuccess(response);
     } catch {
       return null;
-    }
-  }
-
-  async rescheduleAppointment(appointmentId: any, newSlotStart: string) {
-    const localList = getLocalAppointments();
-    const target = localList.find((x) => x.id === appointmentId || x.code === appointmentId);
-    if (target) {
-      target.scheduledStart = newSlotStart;
-      target.slotStart = newSlotStart;
-      saveLocalAppointment(target);
-    }
-
-    const idempotencyKey = typeof crypto !== 'undefined' && crypto.randomUUID
-      ? crypto.randomUUID()
-      : `idemp-resched-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
-
-    try {
-      const response = await this.http.post(
-        `/appointments/${appointmentId}/reschedule`,
-        { newSlotStart },
-        {
-          headers: {
-            'Idempotency-Key': idempotencyKey,
-          },
-        }
-      );
-      return assertSuccess(response);
-    } catch {
-      try {
-        const response = await this.http.patch(`/appointments/${appointmentId}/reschedule`, {
-          newSlotStart,
-        });
-        return assertSuccess(response);
-      } catch (err: any) {
-        throw new Error(err?.error?.message || err?.message || 'Không thể đổi lịch hẹn lúc này.');
-      }
     }
   }
 

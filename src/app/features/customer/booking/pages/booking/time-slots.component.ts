@@ -20,7 +20,6 @@ export class TimeSlotsComponent {
   readonly selectedSlot = input<any>(undefined);
   readonly onSelect = output<any>();
   readonly timeSlots = input<any>(undefined);
-  readonly hasSelectedService = input<boolean>(true);
   readonly invalid = input<any>(false);
 
   // --- Dữ liệu & hàm dùng trong template ---
@@ -28,7 +27,6 @@ export class TimeSlotsComponent {
   protected readonly isSlotInPast: any = isSlotInPast;
 
   readonly visibleSlots = computed<any>(() => {
-    if (!this.hasSelectedService()) return [];
     const slots = this.timeSlots() || [];
     const date = this.selectedDate();
     return slots.filter((slot: any) => {

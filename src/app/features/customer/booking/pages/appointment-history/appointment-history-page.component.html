@@ -85,11 +85,3 @@
     (onSubmit)="handleReviewSubmit($any($event))"
   ></div>
 }
-@if (rescheduleAppointment()) {
-  <div
-    app-reschedule-modal
-    [appointment]="rescheduleAppointment()"
-    (onClose)="rescheduleAppointmentId.set(null)"
-    (onSuccess)="handleRescheduleSuccess($event)"
-  ></div>
-}

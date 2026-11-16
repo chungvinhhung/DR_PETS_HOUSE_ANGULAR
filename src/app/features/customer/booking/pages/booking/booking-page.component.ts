@@ -216,15 +216,13 @@ export class BookingPageComponent {
       if (typeof cleanup === 'function') onCleanup(cleanup);
     });
 
-    // useEffect(..., [ownerInfo.branch, selectedDate, selectedServiceType, selectedServices])
+    // useEffect(..., [ownerInfo.branch, selectedDate, selectedServiceType])
     effect((onCleanup: any) => {
       this.ownerInfo().branch;
       this.selectedDate();
       this.selectedServiceType();
-      this.selectedServices();
       const cleanup = untracked(() => {
-        const hasServices = (this.selectedServices() || []).length > 0;
-        if (!this.selectedDate() || !this.ownerInfo().branch || !hasServices) {
+        if (!this.selectedDate() || !this.ownerInfo().branch) {
           this.timeSlots.set([]);
           this.selectedSlot.set(null);
           return;
@@ -241,14 +239,8 @@ export class BookingPageComponent {
           .then((slots: any) => {
             if (!active) return;
             this.timeSlots.set(slots);
-            this.selectedSlot.update((current: any) => {
-              if (!current) return null;
-              const currentStart = String(current).split(" - ")[0].trim();
-              const matchedSlot = slots.find((s: any) =>
-                s.available && (s.value === current || s.value?.startsWith(currentStart) || s.time === currentStart)
-              );
-              return matchedSlot ? matchedSlot.value : current;
-            });
+            this.selectedSlot.update((current: any) =>
+              current && slots.some((slot: any) => slot.value === current && slot.available) ? current : null);
           })
           .catch((error: any) => {
             console.warn("Appointment slots API unavailable.", error);
@@ -270,28 +262,9 @@ export class BookingPageComponent {
   }
 
   protected async handleConfirm({ quantities }: any = {}) {
-    let selectedSlotRecord = this.timeSlots().find((slot: any) => {
-      if (!this.selectedSlot()) return false;
-      if (slot.value === this.selectedSlot() || slot.id === this.selectedSlot()) return true;
-      const currentStart = String(this.selectedSlot()).split(" - ")[0].trim();
-      return slot.value?.startsWith(currentStart) || slot.time === currentStart;
-    });
-
-    if (!selectedSlotRecord && this.selectedSlot()) {
-      const currentVal = String(this.selectedSlot());
-      const [startPart, endPart] = currentVal.includes(" - ") ? currentVal.split(" - ") : [currentVal, currentVal];
-      const dateKey = getDateKey(this.selectedDate());
-      selectedSlotRecord = {
-        id: `slot-${this.ownerInfo().branch}-${dateKey}-${startPart.trim()}`,
-        value: currentVal,
-        start: `${dateKey}T${startPart.trim()}:00.000Z`,
-        end: `${dateKey}T${(endPart || startPart).trim()}:00.000Z`,
-        available: true,
-      };
-    }
-
+    const selectedSlotRecord = this.timeSlots().find((slot: any) => slot.value === this.selectedSlot());
     if (!selectedSlotRecord) {
-      this.bookingError.set("Vui lòng chọn khung giờ khám.");
+      this.bookingError.set("Vui lòng chọn lại khung giờ.");
       return;
     }
 

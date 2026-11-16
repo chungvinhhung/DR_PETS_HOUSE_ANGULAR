@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
+
 import { CustomerIconComponent } from '../../../../../shared/customer/components/icon/customer-icon.component';
 
 /**
@@ -15,21 +16,11 @@ import { CustomerIconComponent } from '../../../../../shared/customer/components
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VideoSectionComponent {
-  readonly video = input<any>(null);
-  readonly playing = signal<boolean>(false);
+  // --- Input / Output (props của React) ---
+  readonly video = input<any>(undefined);
 
-  readonly validUrl = computed(() => {
-    const value = String(this.video()?.url || '');
-    try {
-      return ['http:', 'https:'].includes(new URL(value).protocol);
-    } catch {
-      return false;
-    }
-  });
-
-  readonly directMedia = computed(() =>
-    /\.(mp4|webm|ogg)(?:\?|$)/i.test(String(this.video()?.url || ''))
-  );
+  // --- Trạng thái (signal = useState / useRef) ---
+  readonly playing = signal<any>(false);
 
   protected handle1() {
     this.playing.update((value: any) => !value);
