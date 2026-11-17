@@ -349,6 +349,32 @@ Prevent resizing textareas horizontally by default.
 }
 
 /*
+Keep long values accessible while editing instead of clipping them inside
+the fixed-height customer form controls.
+*/
+
+:where(.customer-root) input:is(
+  [type='text'],
+  [type='email'],
+  [type='password'],
+  [type='tel'],
+  [type='url'],
+  [type='search'],
+  :not([type])
+) {
+  min-width: 0;
+  overflow-x: auto;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+:where(.customer-root) textarea {
+  overflow: auto;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+/*
 1. Reset the default placeholder opacity in Firefox. (https://github.com/tailwindlabs/tailwindcss/issues/3300)
 2. Set the default placeholder color to the user's configured gray 400 color.
 */

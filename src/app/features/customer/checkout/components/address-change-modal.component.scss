@@ -3,7 +3,7 @@
 }
 
 .address-change-modal__stack {
-  @apply flex max-h-[calc(100vh-48px)] w-[737px] max-w-[calc(100vw-32px)] flex-col items-center gap-[10px] overflow-y-auto bg-white p-[24px];
+  @apply flex max-h-[calc(100vh-48px)] w-[737px] max-w-[calc(100vw-32px)] flex-col items-center gap-[10px] overflow-y-auto rounded-[16px] bg-white p-[24px];
 }
 
 .address-change-modal__section {

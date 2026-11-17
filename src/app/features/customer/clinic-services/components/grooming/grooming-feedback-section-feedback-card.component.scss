@@ -1,3 +1,7 @@
+:host {
+  font-family: Roboto, system-ui, sans-serif;
+}
+
 .grooming-feedback-section-feedback-card__text {
   @apply mt-2 shrink-0 overflow-hidden text-[16px] leading-7 text-[#333] line-clamp-4;
 }
@@ -20,4 +24,21 @@
 
 .grooming-feedback-section-feedback-card__company {
   @apply truncate text-[16px] leading-7 text-[#6C6D71];
+}
+
+.grooming-feedback-section-feedback-card__meta {
+  @apply mt-2 flex items-center gap-5 text-[16px] leading-7 text-[#6C6D71];
+}
+
+.grooming-feedback-section-feedback-card__like {
+  @apply inline-flex items-center gap-2;
+}
+
+.grooming-feedback-section-feedback-card__like svg {
+  @apply h-5 w-5 fill-none stroke-current;
+  stroke-width: 1.8;
+}
+
+.grooming-feedback-section-feedback-card__time {
+  @apply whitespace-nowrap;
 }
