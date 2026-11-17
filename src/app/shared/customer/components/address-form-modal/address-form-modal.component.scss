@@ -1,32 +1,42 @@
 .address-modal {
-  @apply max-h-[calc(100vh-32px)] w-full max-w-[737px] overflow-y-auto bg-white p-6 shadow-[0_20px_60px_rgba(6,16,90,0.18)];
+  @apply max-h-[calc(100vh-32px)] w-full max-w-[737px] overflow-y-auto rounded-2xl bg-white p-6 shadow-[0_20px_60px_rgba(6,16,90,0.18)];
 }
+
 
 .address-modal__panel {
   @apply rounded-lg bg-white p-[10px];
 }
 
+
 .address-modal__header {
   @apply mb-[10px] flex h-[37px] items-center gap-2;
 }
 
+
 .address-modal__title {
   @apply flex-1 text-[20px] font-bold leading-8 tracking-[0.15px] text-[#00355f];
 }
+
 
 // Giữ kèm class toàn cục .btn-icon-subtle (hover/active/focus) trong HTML.
 .address-modal__close {
   @apply flex size-[30px] items-center justify-center text-[#727780];
 }
 
+
 .address-modal__form {
   @apply flex flex-col items-center gap-[10px];
 }
+
 
 .address-modal__fields {
   @apply grid w-full gap-x-[46px] gap-y-[10px] sm:grid-cols-2;
 }
 
+
 .address-modal__submit {
   @apply h-[33px] rounded-[4px] bg-[#fff176] px-[22px] text-[15px] font-medium uppercase leading-[26px] tracking-[0.46px] shadow-elevation hover:bg-[#fdd835];
 }
+
+
+

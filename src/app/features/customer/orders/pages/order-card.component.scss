@@ -7,7 +7,11 @@
 }
 
 .order-card__row {
-  @apply flex justify-between text-[14px];
+  @apply flex flex-col items-start gap-1 text-[14px];
+}
+
+.order-card__ordered-at {
+  @apply flex flex-col items-start;
 }
 
 .order-card__products {

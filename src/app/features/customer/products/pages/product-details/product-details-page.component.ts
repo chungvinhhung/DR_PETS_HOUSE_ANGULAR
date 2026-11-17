@@ -56,7 +56,6 @@ export class ProductDetailsPageComponent implements OnInit {
   readonly isLoading = signal<any>(true);
   readonly loadError = signal<any>("");
   readonly selectedImageIdx = signal<any>(0);
-  readonly variantImage = signal<string | null>(null);
   readonly thumbHovered = signal<any>(null);
   readonly selectedTypeIdx = signal<any>(0);
   readonly dropdownOpen = signal<any>(false);
@@ -73,6 +72,7 @@ export class ProductDetailsPageComponent implements OnInit {
   readonly notifyError = signal<string>('');
 
   readonly descriptionRef = viewChild<ElementRef<any>>('descriptionRef');
+  readonly thumbnailsRef = viewChild<ElementRef<HTMLElement>>('thumbnailsRef');
   readonly dropdownRef = viewChild<ElementRef<any>>('dropdownRef');
   readonly tabSectionRef = viewChild<ElementRef<any>>('tabSectionRef');
   readonly similarSectionRef = viewChild<ElementRef<any>>('similarSectionRef');
@@ -83,8 +83,22 @@ export class ProductDetailsPageComponent implements OnInit {
     const params = this.navService.params();
     return extractProductId(params['productSlug'] ?? params['productId']);
   });
-  readonly thumbnails = computed<any>(() => this.product()?.images?.length ? this.product().images : [productImages.detailImage]);
-  readonly selectedImage = computed<any>(() => this.variantImage() || (this.thumbnails() as any)[this.selectedImageIdx()] || this.thumbnails()[0]);
+  /** Ảnh cột trái: mỗi biến thể 1 ảnh đại diện (xếp đầu), sau đó là ảnh mô tả chung (cuộn xuống để xem). */
+  readonly galleryItems = computed<{ src: string; variantIdx: number | null; label?: string }[]>(() => {
+    const product = this.product();
+    const variantItems = this.hasMultipleVariants()
+      ? (product?.variants ?? [])
+          .map((variant: any, i: number) => ({ src: variant?.image || product?.image, variantIdx: i, label: variant?.label || variant?.name }))
+          .filter((item: any) => item.label && item.src)
+      : [];
+    const variantSrcs = new Set(variantItems.map((item: any) => item.src));
+    const generalItems = (product?.images ?? [])
+      .filter((src: string) => src && !variantSrcs.has(src))
+      .map((src: string) => ({ src, variantIdx: null }));
+    const items = [...variantItems, ...generalItems];
+    return items.length ? items : [{ src: productImages.detailImage, variantIdx: null }];
+  });
+  readonly selectedImage = computed<any>(() => (this.galleryItems()[this.selectedImageIdx()] ?? this.galleryItems()[0]).src);
   readonly totalReviewPages = computed<any>(() => this.reviewsData().totalPages || 1);
   readonly reviewItems = computed<any>(() => Array.isArray(this.reviewsData().items) ? this.reviewsData().items : []);
   readonly SIM_CARD_WIDTH = computed<any>(() => 170);
@@ -181,7 +195,6 @@ export class ProductDetailsPageComponent implements OnInit {
         this.isLoading.set(true);
         this.loadError.set("");
         this.selectedTypeIdx.set(0);
-        this.variantImage.set(null);
         this.notifySubscribed.set(false);
         this.notifyEmail.set('');
         this.notifyError.set('');
@@ -302,16 +315,12 @@ export class ProductDetailsPageComponent implements OnInit {
   protected selectVariant(i: number, variant: any) {
   this.selectedTypeIdx.set(i);
   this.dropdownValue.set(variant?.sizes?.[0] ?? "");
-  if (variant?.image) {
-    this.variantImage.set(variant.image);
-    const matchIdx = this.thumbnails().findIndex((img: string) => img === variant.image);
-    if (matchIdx !== -1) {
-      this.selectedImageIdx.set(matchIdx);
-    }
-  } else {
-    this.variantImage.set(null);
+  const thumbIdx = this.galleryItems().findIndex((item) => item.variantIdx === i);
+  if (thumbIdx !== -1) {
+    this.selectedImageIdx.set(thumbIdx);
+    this.scrollThumbnailIntoView(thumbIdx);
   }
-  
+
   const stock = Number(variant?.availableStock ?? variant?.stockQuantity ?? 0);
   if (stock <= 0) {
     this.quantity.set(1);
@@ -321,9 +330,27 @@ export class ProductDetailsPageComponent implements OnInit {
 }
 
 
+  /** Bấm ảnh đại diện biến thể -> chọn luôn biến thể đó bên phải; ảnh chung chỉ đổi ảnh lớn. */
   protected selectThumbnail(i: number) {
-    this.variantImage.set(null);
     this.selectedImageIdx.set(i);
+    const variantIdx = this.galleryItems()[i]?.variantIdx;
+    if (variantIdx !== null && variantIdx !== undefined && variantIdx !== this.selectedTypeIdx()) {
+      this.selectVariant(variantIdx, this.product()?.variants?.[variantIdx]);
+    }
+  }
+
+  /** Cuộn riêng cột ảnh nhỏ (không cuộn cả trang) để ảnh thứ i lọt vào khung 3 ô. */
+  private scrollThumbnailIntoView(i: number) {
+    const container = this.thumbnailsRef()?.nativeElement;
+    const thumb = container?.children[i] as HTMLElement | undefined;
+    if (!container || !thumb) return;
+    const top = thumb.offsetTop;
+    const bottom = top + thumb.offsetHeight;
+    if (top < container.scrollTop) {
+      container.scrollTo({ top, behavior: 'smooth' });
+    } else if (bottom > container.scrollTop + container.clientHeight) {
+      container.scrollTo({ top: bottom - container.clientHeight, behavior: 'smooth' });
+    }
   }
 
   protected async handleLike(reviewId: any) {

@@ -192,9 +192,21 @@ export class PetFormPageComponent {
     }
   }
 
-  protected goBackToPetList() {
-    this.navService.navigate("/thu-cung-cua-toi");
+    protected goBackToPetList() {
+    if (this.isEdit()) {
+      const currentPet = this.pet();
+      const targetSlug = currentPet
+        ? toPetSlug(currentPet)
+        : String(this.navService.params()['id'] || '');
+
+      if (targetSlug) {
+        this.navService.navigate(`/thu-cung-cua-toi/${targetSlug}`);
+        return;
+      }
+    }
+    this.navService.navigate('/thu-cung-cua-toi');
   }
+
 
   protected handleLeaveForm(event: any) {
     event?.preventDefault();
@@ -319,8 +331,12 @@ export class PetFormPageComponent {
         this.onSaved.emit(savedPetForParent);
         return;
       }
+        if (this.isEdit()) {
+            this.navService.navigate(`/thu-cung-cua-toi/${toPetSlug(savedPetForParent)}`);
+            return;
+          }
 
-      this.navService.navigate("/thu-cung-cua-toi");
+      this.navService.navigate('/thu-cung-cua-toi');
     } catch (error: any) {
       this.formError.set(error?.message || "Không thể lưu hồ sơ. Vui lòng thử lại.");
     } finally {

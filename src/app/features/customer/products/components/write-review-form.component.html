@@ -1,21 +1,52 @@
-<img
-  [attr.src]="productImages.reviewAvatar"
-  alt=""
-  class="size-[52px] shrink-0 rounded-full object-cover"
-  aria-hidden="true"
-/>
+<!-- Avatar tròn bên trái -->
+<div class="h-12 w-12 shrink-0 rounded-full bg-[#e4e4e7]"></div>
+
+<!-- Nội dung form bên phải -->
 <div class="write-review-form__stack">
   <div class="write-review-form__row">
-    <div class="write-review-form__stack-2">
-      <label for="reviewer-name" class="write-review-form__ten-cua-ban-label">Tên của bạn:</label>
-      <input
-        id="reviewer-name"
-        type="text"
-        [value]="name() ?? ''"
-        (input)="name.set($any($event).target.value)"
-        class="h-14 w-full rounded-[16px] border border-solid border-[rgba(0,0,0,0.15)] bg-white px-5 font-['Roboto'] text-[16px] leading-[1.705] text-[#3d3d3d] outline-none backdrop-blur-[11px] focus:border-[#0d47a1]"
-      />
+    <!-- Khối Tên của bạn + Nhắc nhở + Nút ẩn danh -->
+    <div class="flex w-full flex-col gap-[10px]">
+      <label class="write-review-form__ten-cua-ban-label">
+        Tên của bạn:
+      </label>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Ô nhập tên -->
+        <input
+          type="text"
+          class="h-[44px] w-full max-w-[360px] rounded-[12px] border border-solid px-4 font-['Roboto'] text-[15px] outline-none transition"
+          [class]="isAnonymous()
+            ? 'border-[#e4e4e7] bg-[#f4f4f5] text-[#71717a] cursor-not-allowed'
+            : 'border-[#d3d3d3] bg-white text-[#3d3d3d] focus:border-[#0d47a1]'"
+          placeholder="Nhập tên của bạn"
+          [value]="isAnonymous() ? 'Khách hàng ẩn danh' : name()"
+          [disabled]="isAnonymous()"
+          (input)="handleNameInput($event)"
+        />
+
+        <!-- Nhắc nhở đổi tên & Nút đánh giá ẩn danh ở bên cạnh -->
+        <div class="flex flex-wrap items-center gap-2.5 text-[13px]">
+          @if (!isAnonymous()) {
+            <span class="text-[#667085]">
+              Bạn có thể đổi tên hiển thị hoặc
+            </span>
+          }
+
+          <button
+            type="button"
+            class="inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 font-medium transition"
+            [class]="isAnonymous()
+              ? 'border-[#0d47a1] bg-[#e5f6fd] text-[#0d47a1]'
+              : 'border-[#d0d5dd] bg-white text-[#344054] hover:bg-[#f8fafc]'"
+            (click)="toggleAnonymous()"
+          >
+            <span>{{ isAnonymous() ? '✓ Đang đánh giá ẩn danh' : 'Đánh giá ẩn danh' }}</span>
+          </button>
+        </div>
+      </div>
     </div>
+
+    <!-- Thông tin sản phẩm/dịch vụ & Đánh giá sao -->
     <div class="write-review-form__stack-3">
       @if (targetName()) {
         <div class="write-review-form__row-2">
@@ -23,26 +54,34 @@
           <span class="write-review-form__target-name">{{ targetName() }}</span>
         </div>
       }
-      <div class="write-review-form__row-3">
-        <span class="write-review-form__ten-cua-ban-label">Đánh giá của bạn:</span>
-        <div app-star-rating [value]="rating()" (onChange)="rating.set($event)"></div>
+
+       <div class="write-review-form__row-3">
+        <span class="write-review-form__target-label">Đánh giá của bạn:</span>
+        <div
+          app-star-rating
+          [value]="rating()"
+          (onChange)="rating.set($event)"
+        ></div>
+
       </div>
     </div>
   </div>
+
+  <!-- Ô nhập nội dung đánh giá -->
   <div class="write-review-form__box">
     <textarea
-      id="review-text"
-      [value]="review() ?? ''"
-      (input)="review.set($any($event).target.value)"
-      placeholder="Viết đánh giá của bạn..."
-      rows="4"
       class="write-review-form__review-text"
+      placeholder="Viết đánh giá của bạn..."
+      [value]="review()"
+      (input)="review.set($any($event.target).value)"
     ></textarea>
   </div>
+
+  <!-- Nút Gửi đánh giá -->
   <div class="write-review-form__row-4">
     <button
       type="submit"
-      class="btn-brand-yellow flex h-[42px] items-center justify-center gap-2 rounded-[4px] px-[22px] py-2 shadow-elevation"
+      class="rounded-lg bg-[#ffdf38] px-7 py-2.5 transition hover:bg-[#f5d018]"
     >
       <span class="write-review-form__gui-danh-gia-text">Gửi đánh giá</span>
     </button>

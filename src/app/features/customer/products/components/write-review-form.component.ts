@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 
+import { CustomerAuthService } from '../../../../core/customer/services/customer-auth.service';
 import { StarRatingComponent } from './star-rating.component';
 import { productImages } from '../../../../shared/customer/assets/product-images';
 
@@ -19,6 +20,8 @@ import { productImages } from '../../../../shared/customer/assets/product-images
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WriteReviewFormComponent {
+  private readonly authService = inject(CustomerAuthService);
+
   // --- Input / Output (props của React) ---
   readonly targetType = input<any>("product");
   readonly targetId = input<any>(undefined);
@@ -32,19 +35,49 @@ export class WriteReviewFormComponent {
   // --- Giá trị tính toán (computed) ---
   readonly targetLabel = computed<any>(() => this.targetType() === "service" ? "Dịch vụ" : "Sản phẩm");
 
+  readonly loggedInUserName = computed<string>(() => {
+    const user = (this.authService as any).currentUser?.() || (this.authService as any).user?.();
+    return user?.fullName || user?.full_name || user?.name || '';
+  });
+
   // --- Trạng thái (signal = useState / useRef) ---
   readonly rating = signal<any>(0);
   readonly name = signal<any>("");
   readonly review = signal<any>("");
+  readonly isAnonymous = signal<boolean>(false);
+
+  constructor() {
+    effect(() => {
+      const defaultName = this.loggedInUserName();
+      untracked(() => {
+        if (defaultName && !this.name()) {
+          this.name.set(defaultName);
+        }
+      });
+    });
+  }
+
+  protected handleNameInput(event: Event): void {
+    this.name.set((event.target as HTMLInputElement).value);
+  }
+
+  protected toggleAnonymous(): void {
+    this.isAnonymous.update((prev) => !prev);
+  }
 
   protected handleSubmit(event: any) {
     event.preventDefault();
+    const submittedName = this.isAnonymous()
+      ? 'Khách hàng ẩn danh'
+      : (this.name().trim() || this.loggedInUserName() || 'Khách hàng');
+
     this.onSubmit.emit({
       targetType: this.targetType(),
       targetId: this.targetId(),
       targetName: this.targetName(),
       appointmentId: this.appointmentId(),
-      name: this.name(),
+      name: submittedName,
+      isAnonymous: this.isAnonymous(),
       rating: this.rating(),
       review: this.review(),
     });

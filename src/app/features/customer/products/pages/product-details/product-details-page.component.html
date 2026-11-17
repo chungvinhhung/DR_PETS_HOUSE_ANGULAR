@@ -35,31 +35,35 @@
           <div class="product-details-page__stack">
             <!-- Left: image gallery -->
             <div class="product-details-page__left-image-gallery">
-              <!-- Left: thumbnails column -->
-              <div class="product-details-page__left-thumbnails-column">
-                @for (thumb of thumbnails(); track $index; let i = $index) {
+              <!-- Left: thumbnails column — hiện 3 ô, ảnh biến thể xếp đầu, ảnh chung cuộn xuống để xem -->
+              <div #thumbnailsRef class="product-details-page__left-thumbnails-column">
+                @for (thumb of galleryItems(); track $index; let i = $index) {
                   <button
                     type="button"
                     (click)="selectThumbnail(i)"
                     (mouseenter)="thumbHovered.set(i)"
                     (mouseleave)="thumbHovered.set(null)"
                     [class]="`group relative h-[64px] w-[64px] sm:h-[94px] sm:w-[94px] shrink-0 overflow-hidden rounded-[8px] transition-all duration-micro focus-ring-brand focus-visible:ring-2 focus-visible:ring-[#0D47A1] ${
-                        i === selectedImageIdx() && !variantImage()
+                        i === selectedImageIdx()
                           ? 'border-2 border-[#0D47A1] shadow-[0_0_0_1px_#0D47A1]'
                           : thumbHovered() === i
                             ? 'border border-[#90CAF9] shadow-sm'
                             : 'border border-[#E0E0E0]'
                       }`"
-                    [attr.aria-label]="`Xem ảnh ${i + 1}`"
+                    [attr.aria-label]="thumb.label ? `Chọn loại ${thumb.label}` : `Xem ảnh ${i + 1}`"
+                    [attr.title]="thumb.label || null"
                     [attr.aria-current]="i === selectedImageIdx() ? 'true' : undefined"
                   >
                     <img
-                      [attr.src]="thumb"
+                      [attr.src]="thumb.src"
                       alt=""
                       [class]="`h-full w-full object-cover transition-opacity duration-micro ${
                           i !== selectedImageIdx() && thumbHovered() !== i ? 'opacity-70 group-hover:opacity-90' : 'opacity-100'
                         }`"
                     />
+                    @if (thumb.label) {
+                      <span class="product-details-page__thumb-label">{{ thumb.label }}</span>
+                    }
                   </button>
                 }
               </div>

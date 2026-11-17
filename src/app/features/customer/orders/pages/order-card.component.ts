@@ -4,7 +4,7 @@ import { CustomerNavigationService } from '../../../../core/customer/services/cu
 import { ProductSummaryComponent } from './product-summary.component';
 import { OrderPagesPaymentCountdownComponent } from './order-pages-payment-countdown.component';
 import { OrderActionsComponent } from './order-actions.component';
-import { formatCurrency, formatOrderDate, getOrderTotal, ORDER_STATUS } from '../data/order-data';
+import { formatCurrency, formatOrderDate, formatOrderTime, getOrderTotal, ORDER_STATUS } from '../data/order-data';
 
 /**
  * OrderCard — chuyển từ React: src/pages/Order/OrderPages.jsx
@@ -36,6 +36,7 @@ export class OrderCardComponent implements OnInit {
 
   // --- Dữ liệu & hàm dùng trong template ---
   protected readonly formatOrderDate: any = formatOrderDate;
+  protected readonly formatOrderTime: any = formatOrderTime;
   protected readonly formatCurrency: any = formatCurrency;
   protected readonly getOrderTotal: any = getOrderTotal;
 

@@ -4,7 +4,7 @@
 
 const petBong = '/assets/customer/images/notification/pet-bong.png';
 const petLuna = '/assets/customer/images/notification/pet-luna.png';
-const decisionDog = '/assets/customer/images/notification/decision_dog.png';
+const decisionDog = '/assets/customer/images/notification/decision_dog.svg';
 const iconClose = '/assets/customer/images/notification/icon-close.svg';
 const iconSearchPaw = '/assets/customer/images/notification/icon-search-paw.svg';
 const iconCalendar = '/assets/customer/images/notification/icon-calendar.svg';

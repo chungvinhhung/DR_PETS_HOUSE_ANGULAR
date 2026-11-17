@@ -7,8 +7,8 @@
 >
   <div class="order-card__box"> 
     <div class="order-card__row">
-      <strong>Mã đơn hàng: {{ order().id }}</strong>
-      <span>{{ formatOrderDate(order().orderedAt) }}</span>
+      <span>Mã đơn hàng: {{ order().id }}</span>
+      <span>Ngày đặt hàng: {{ formatOrderDate(order().orderedAt) }}</span>
     </div>
     @if (products().length) {
       <div app-product-summary [product]="products()[0]"></div>

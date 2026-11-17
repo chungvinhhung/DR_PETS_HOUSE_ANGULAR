@@ -30,8 +30,14 @@
   @apply flex w-full max-w-[626px] gap-3 sm:gap-[24px] lg:w-[52%] lg:shrink-0 xl:w-[626px] xl:pl-[15px] xl:pt-[8.5px];
 }
 
+/* Khung cao đúng 3 ô (3 × 64 + 2 × 8 / 3 × 94 + 2 × 10, cộng 4px padding cho viền); ảnh còn lại cuộn xuống để xem */
 .product-details-page__left-thumbnails-column {
-  @apply flex h-[627px] w-[70px] sm:w-[100px] shrink-0 flex-col gap-2 sm:gap-[10px] overflow-y-auto pr-1 rounded-[16px];
+  @apply relative flex h-[212px] w-[80px] shrink-0 flex-col gap-2 self-start overflow-y-auto overscroll-contain p-[2px] sm:h-[306px] sm:w-[112px] sm:gap-[10px];
+  scrollbar-width: thin;
+}
+
+.product-details-page__thumb-label {
+  @apply pointer-events-none absolute inset-x-0 bottom-0 truncate bg-black/55 px-1 py-[2px] text-center text-[10px] leading-[14px] text-white sm:text-[11px];
 }
 
 .product-details-page__main-image-with-optional {

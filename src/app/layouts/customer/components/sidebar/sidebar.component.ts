@@ -16,7 +16,7 @@ import { USER_MENU_LINKS } from '../../constants/user-menu-links';
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
   host: {
-    'class': 'w-full lg:w-[342px] flex-shrink-0 bg-[#e5f6fd] border-b lg:border-b-0 lg:border-r border-[#c1c6d5]/30 lg:h-full flex flex-row items-center gap-2 lg:flex-col lg:items-stretch lg:gap-0 py-2 lg:py-8 px-2 sm:px-4 z-10 relative',
+    'class': 'w-full lg:w-[250px] lg:max-w-[250px] flex-shrink-0 bg-[#e5f6fd] border-b lg:border-b-0 lg:border-r border-[#c1c6d5]/30 lg:h-full flex flex-row items-center gap-2 lg:flex-col lg:items-stretch lg:gap-0 py-2 lg:py-8 px-2 sm:px-4 z-10 relative',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

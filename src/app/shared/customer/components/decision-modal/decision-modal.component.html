@@ -1,55 +1,70 @@
 @if (state().open) {
-  <div class="decision-modal__overlay" role="presentation">
-    <section
-      class="decision-modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="decision-modal-title"
-      aria-describedby="decision-modal-message"
+  <div
+    class="decision-modal__backdrop"
+    role="dialog"
+    aria-modal="true"
+    (click)="decisionModal.close()"
+  >
+    <div
+      class="decision-modal__dialog relative w-full max-w-[460px] h-auto rounded-[28px] bg-white px-7 pt-10 pb-8 text-center shadow-2xl"
+      (click)="$event.stopPropagation()"
     >
+      <!-- Nút đóng góc trên bên phải -->
       <button
         type="button"
-        class="decision-modal__close"
+        aria-label="Đóng"
+        class="absolute right-5 top-5 flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-600"
         (click)="decisionModal.close()"
-        aria-label="Đóng popup"
       >
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-        </svg>
+        ✕
       </button>
-      <div [class]="isSuccess() ? 'decision-modal__success-body' : 'decision-modal__body'">
-              @if (state().image) {
-                <div class="decision-modal__illustration">
-                  <img
-                    [src]="state().image"
-                    alt="Minh họa xác nhận"
-                  />
-                  <span class="decision-modal__illustration-warning">!</span>
-                </div>
-              } @else {
-                <div app-warning-mark [type]="state().type"></div>
-              }
-        <div [class]="isSuccess() ? 'decision-modal__copy decision-modal__copy--success' : 'decision-modal__copy'">
-          <h2 id="decision-modal-title">{{ state().title }}</h2>
-          <p id="decision-modal-message">{{ state().message }}@if (state().messageBold) {<strong>{{ state().messageBold }}</strong>}{{ state().messageSuffix }}</p>
+
+        <!-- Hình minh họa -->
+      @if (state().image) {
+        <div class="decision-modal__illustration">
+          <img [src]="state().image" alt="Minh họa xác nhận" />
+          <span class="decision-modal__illustration-warning">!</span>
         </div>
-        <div class="decision-modal__actions">
-          <button
-            type="button"
-            [class]="hasYellowActions() ? 'decision-modal__button decision-modal__button--yellow-outline' : 'decision-modal__button decision-modal__button--outline'"
-            (click)="decisionModal.cancel()"
-          >
-            {{ state().cancelLabel }}
-          </button>
-          <button
-            type="button"
-            [class]="hasYellowActions() ? 'decision-modal__button decision-modal__button--yellow' : 'decision-modal__button decision-modal__button--danger'"
-            (click)="decisionModal.confirm()"
-          >
-            {{ state().confirmLabel }}
-          </button>
+      } @else {
+        <div class="mb-5 flex justify-center">
+          <div app-warning-mark></div>
         </div>
+      }
+      <!-- Tiêu đề (tự xuống dòng mượt mà, không bị đè chữ) -->
+      <h2 class="decision-modal__title mb-3 text-[22px] sm:text-[24px] font-extrabold uppercase leading-snug tracking-tight text-zinc-800">
+        {{ state().title }}
+      </h2>
+
+      <!-- Nội dung mô tả -->
+      <p class="decision-modal__message mb-7 text-[15px] leading-relaxed text-zinc-600">
+        {{ state().message }}
+        @if (state().messageBold) {
+          <strong class="font-bold text-zinc-900">{{ state().messageBold }}</strong>
+        }
+        {{ state().messageSuffix }}
+      </p>
+
+      <!-- Cụm 2 nút bấm nằm gọn bên trong khung trắng -->
+      <div class="decision-modal__actions grid w-full grid-cols-2 gap-3.5">
+        <button
+          type="button"
+          class="decision-modal__btn border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50"
+          (click)="decisionModal.cancel()"
+        >
+          {{ state().cancelLabel || 'Quay lại' }}
+        </button>
+
+        <button
+          type="button"
+          class="decision-modal__btn font-semibold"
+          [class]="hasYellowActions()
+            ? 'bg-[#fff176] text-[#031635] hover:bg-[#fdd835]'
+            : 'bg-[#dc2626] text-white hover:bg-[#b91c1c]'"
+          (click)="decisionModal.confirm()"
+        >
+          {{ state().confirmLabel || 'Xác nhận' }}
+        </button>
       </div>
-    </section>
+    </div>
   </div>
 }
