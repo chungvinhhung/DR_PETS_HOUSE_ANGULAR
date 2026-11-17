@@ -62,7 +62,7 @@ function normalizeSearchPost(post: any = {}) {
   };
 }
 
-function buildResultBuckets(items: any = []) {
+function buildResultBuckets(rawResults: any = []) {
   const buckets: any = {
     services: [],
     otherServices: [],
@@ -73,24 +73,44 @@ function buildResultBuckets(items: any = []) {
     community: [],
   };
 
-  items.forEach((item: any) => {
-    if (item._type === "service") {
-      buckets.services.push(normalizeSearchService(item));
-      return;
+  if (!rawResults) return buckets;
+
+  // Trường hợp 1: Backend MongoDB trả về object { products: [...], services: [...] } khi scope=all
+  if (typeof rawResults === 'object' && !Array.isArray(rawResults)) {
+    if (Array.isArray(rawResults.services)) {
+      rawResults.services.forEach((s: any) => {
+        buckets.services.push(normalizeSearchService(s));
+      });
     }
-    if (item._type === "product") {
-      buckets.products.push(normalizeProduct(item));
-      return;
+    if (Array.isArray(rawResults.products)) {
+      rawResults.products.forEach((p: any) => {
+        buckets.products.push(normalizeProduct(p));
+      });
     }
-    if (item._type === "blog") {
-      const post = normalizeSearchPost(item);
-      if (item.post_type === "community") {
-        buckets.community.push(post);
-      } else {
-        buckets.knowledge.push(post);
+    return buckets;
+  }
+
+  // Trường hợp 2: Mảng phẳng (scope=product hoặc scope=service hoặc legacy items)
+  if (Array.isArray(rawResults)) {
+    rawResults.forEach((item: any) => {
+      if (item._type === "service" || item.serviceType || item.durationMinutes !== undefined) {
+        buckets.services.push(normalizeSearchService(item));
+        return;
       }
-    }
-  });
+      if (item._type === "product" || item.variants || item.productCode) {
+        buckets.products.push(normalizeProduct(item));
+        return;
+      }
+      if (item._type === "blog") {
+        const post = normalizeSearchPost(item);
+        if (item.post_type === "community") {
+          buckets.community.push(post);
+        } else {
+          buckets.knowledge.push(post);
+        }
+      }
+    });
+  }
 
   return buckets;
 }
@@ -103,6 +123,7 @@ export class SearchApiService {
     const response = await this.http.get("/search", {
       params: {
         keyword: query,
+        q: query,
         scope: toBackendScope(type),
         sort: toBackendSort(sort),
         page,
@@ -110,42 +131,67 @@ export class SearchApiService {
       },
     });
     const payload = assertSuccess(response);
-    const results = buildResultBuckets(payload.results || []);
+    const results = buildResultBuckets(payload?.results || payload?.data?.results || []);
     const counts = {
-      service: payload.counts?.service || 0,
-      shopping: payload.counts?.product || 0,
+      service: payload?.counts?.service ?? results.services.length,
+      shopping: payload?.counts?.product ?? results.products.length,
       firstAid: 0,
-      knowledge: payload.counts?.blog || 0,
+      knowledge: payload?.counts?.blog || 0,
       community: results.community.length,
     };
   
     return {
-      query: payload.keyword || query,
+      query: payload?.query || payload?.keyword || query,
       type,
       sort,
-      total: payload.totalRows || 0,
+      total: payload?.totalRows ?? (counts.service + counts.shopping),
       counts,
-      facetCounts: payload.facetCounts || {},
+      facetCounts: payload?.facetCounts || {},
       results,
     };
   }
 
   async getSearchSuggestionsApi(query: any, limit: any = 6) {
+    if (!query || !String(query).trim()) {
+      return { suggestions: [], products: [], total: 0 };
+    }
+
     const response = await this.http.get("/search/suggestions", {
       params: { q: query, limit },
     });
-    const suggestions = assertSuccess(response);
-  
+    const data = assertSuccess(response);
+    const rawList: any[] = Array.isArray(data)
+      ? data
+      : (Array.isArray(data?.suggestions) ? data.suggestions : []);
+
+    const suggestions: any[] = [];
+    const products: any[] = [];
+
+    rawList.forEach((item: any, index: number) => {
+      if (item.type === 'product') {
+        products.push({
+          id: item.id || `prod-${index}`,
+          name: item.keyword || item.name || '',
+          price: item.price || 0,
+          image: item.image || null,
+          href: `/product-details/${item.id || item.code}`,
+        });
+      }
+      suggestions.push({
+        id: `api-suggestion-${item.keyword || index}`,
+        label: item.keyword || item.name || '',
+        count: item.count || 0,
+        type: item.type || 'keyword',
+        targetId: item.id,
+        code: item.code,
+        category: item.category,
+      });
+    });
+
     return {
-      suggestions: Array.isArray(suggestions)
-        ? suggestions.map((item: any, index: any) => ({
-            id: `api-suggestion-${item.keyword || index}`,
-            label: item.keyword || "",
-            count: item.count || 0,
-          })).filter((item: any) => item.label)
-        : [],
-      products: [],
-      total: Array.isArray(suggestions) ? suggestions.length : 0,
+      suggestions,
+      products: products.slice(0, 4),
+      total: rawList.length,
     };
   }
 }

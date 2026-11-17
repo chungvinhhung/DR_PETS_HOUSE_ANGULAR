@@ -20,7 +20,6 @@ import { TYPE_IDS, SORT_OPTIONS, EMPTY_SEARCH_RESPONSE, buildFacets, buildSearch
   standalone: true,
   imports: [NavBarComponent, SearchSidebarComponent, ResultsHeaderComponent, SearchResultsContentComponent, EmptyResultsContentComponent, FooterComponent, ReactStyleDirective],
   templateUrl: './search-results-page.component.html',
-  styleUrl: './search-results-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white font-[\'Roboto\']',
   },
@@ -51,7 +50,7 @@ export class SearchResultsPageComponent {
     if (this.activeType() === "article") return "3079px";
     return "4359px";
   });
-  readonly query = computed<any>(() => this.navService.searchParams().get("q")?.trim() || "tắm");
+  readonly query = computed<any>(() => this.navService.searchParams().get("q")?.trim() || "");
   readonly urlType = computed<any>(() => this.navService.searchParams().get("type") || "all");
   readonly activeType = computed<any>(() => TYPE_IDS.includes(this.urlType()) ? this.urlType() : "all");
   readonly defaultSort = computed<any>(() => this.activeType() === "article" ? "relevant" : "relevant");
@@ -90,10 +89,9 @@ export class SearchResultsPageComponent {
           })
           .catch(() => {
             if (!active) return;
-            const fallback = mockSearchApi({ query: this.query(), type: this.activeType(), sort: this.activeSort() });
             this.searchResponse.set({
               ...EMPTY_SEARCH_RESPONSE,
-              ...fallback,
+              query: this.query(),
               emptyState: SEARCH_EMPTY_STATE,
             });
             this.loadError.set("");
@@ -116,6 +114,7 @@ export class SearchResultsPageComponent {
       if (value) next.set(key, value);
       else next.delete(key);
     });
+    next.set("page", "1");
     this.navService.setSearchParams(next);
   }
 

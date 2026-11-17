@@ -15,7 +15,6 @@ import { SEARCH_DEBOUNCE_MS, EMPTY_SUGGESTIONS } from './nav-search-bar.helpers'
   standalone: true,
   imports: [SearchSuggestionDropdownComponent],
   templateUrl: './nav-search-bar.component.html',
-  styleUrl: './nav-search-bar.component.scss',
   host: {
     '[class]': '`group relative h-[37px] w-[150px] shrink-0 xl:w-[200px] ${className()}`',
     '(submit)': 'handleSubmit($any($event))',
@@ -88,15 +87,14 @@ export class NavSearchBarComponent {
         const timer = window.setTimeout(() => {
           this.searchApi.getSearchSuggestionsApi(this.trimmedTerm())
             .then((apiSuggestions: any) => {
-              const fallback = getMockSearchSuggestions(this.trimmedTerm());
               this.searchSuggestions.set({
-                ...apiSuggestions,
-                products: fallback.products,
-                total: apiSuggestions.total || fallback.total,
+                suggestions: apiSuggestions.suggestions || [],
+                products: apiSuggestions.products || [],
+                total: apiSuggestions.total || 0,
               });
             })
             .catch(() => {
-              this.searchSuggestions.set(getMockSearchSuggestions(this.trimmedTerm()));
+              this.searchSuggestions.set(EMPTY_SUGGESTIONS);
               this.suggestionError.set("");
             })
             .finally(() => {
@@ -116,18 +114,28 @@ export class NavSearchBarComponent {
   }
 
   protected searchByKeyword(keyword: any) {
-    const query = keyword.trim();
+    const query = (keyword || '').trim();
     this.closeSuggestions();
-    this.navService.navigate(query ? `/search?q=${encodeURIComponent(query)}` : "/search");
+    this.navService.navigate(query ? `/search?q=${encodeURIComponent(query)}&page=1` : "/search");
   }
 
   protected openProduct(product: any) {
     this.closeSuggestions();
-    this.navService.navigate(product.href);
+    this.navService.navigate(product.href || `/product-details/${product.id}`);
   }
 
   protected selectSuggestion(suggestion: any) {
     this.term.set(suggestion.label);
+    if (suggestion.type === 'product' && suggestion.targetId) {
+      this.closeSuggestions();
+      this.navService.navigate(`/product-details/${suggestion.targetId}`);
+      return;
+    }
+    if (suggestion.type === 'service') {
+      this.closeSuggestions();
+      this.navService.navigate('/booking');
+      return;
+    }
     this.searchByKeyword(suggestion.label);
   }
 
