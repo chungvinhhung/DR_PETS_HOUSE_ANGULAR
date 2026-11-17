@@ -1,5 +1,5 @@
 .pet-card__box {
-  @apply relative aspect-[216/192] w-full overflow-hidden bg-[#ececf3];
+  @apply relative h-[192px] w-full shrink-0 overflow-hidden bg-[#ececf3];
 }
 
 .pet-card__name {
@@ -44,4 +44,8 @@
 
 .pet-card__pet-id-link {
   @apply mt-4 flex h-8 w-full items-center justify-center rounded-md bg-[#06105a] text-[13px] font-medium text-white transition hover:bg-[#0d1a7a];
+}
+
+.pet-card__pet-id-link--hidden {
+  @apply bg-[#6b6f9e] hover:bg-[#565a8a];
 }

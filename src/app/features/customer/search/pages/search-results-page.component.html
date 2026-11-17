@@ -16,7 +16,7 @@
     <section class="search-results-page__section">
       <header
         app-results-header
-        [query]="query()"
+        [query]="isLoading() ? query() : (searchResponse().query || query())"
         [activeType]="activeType()"
         [activeSort]="activeSort()"
         [counts]="filteredSearchResponse().counts"
@@ -30,7 +30,11 @@
       } @else if (loadError()) {
         <div class="search-results-page__load-error">{{ loadError() }}</div>
       } @else if (hasResults()) {
-        <app-search-results-content [activeType]="activeType()" [results]="filteredSearchResponse().results" />
+        <app-search-results-content
+          [activeType]="activeType()"
+          [results]="filteredSearchResponse().results"
+          [crossSellServices]="searchResponse().crossSellServices || []"
+        />
       } @else {
         <section
           app-empty-results-content

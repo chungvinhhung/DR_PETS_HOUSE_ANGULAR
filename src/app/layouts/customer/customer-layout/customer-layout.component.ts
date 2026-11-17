@@ -10,6 +10,8 @@ import { CheckoutOverlayComponent } from '../../../features/customer/checkout/co
 import { GuestOrderSuccessOverlayComponent } from '../../../features/customer/checkout/components/guest-order-success-overlay.component';
 import { OrderSuccessOverlayComponent } from '../../../features/customer/checkout/components/order-success-overlay.component';
 import { DecisionModalComponent } from '../../../shared/customer/components/decision-modal/decision-modal.component';
+import { AUTH_MODAL_PARAM, CustomerAuthService } from '../../../core/customer/services/customer-auth.service';
+import { RETURN_URL_PARAM } from '../../../core/utils/return-url';
 
 const CUSTOMER_STYLESHEET_ID = 'customer-stylesheet';
 
@@ -43,12 +45,14 @@ const CUSTOMER_STYLESHEET_ID = 'customer-stylesheet';
 export class CustomerLayoutComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly router = inject(Router);
+  private readonly authService = inject(CustomerAuthService);
 
   /** Chỉ hiển thị nội dung khi CSS đã tải xong để tránh "nháy" giao diện chưa có style. */
   protected readonly stylesReady = signal(false);
 
   constructor() {
     this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+      this.openLoginFromUrl();
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       this.document.documentElement.scrollTop = 0;
       this.document.body.scrollTop = 0;
@@ -57,6 +61,16 @@ export class CustomerLayoutComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCustomerStylesheet();
+  }
+
+  /**
+   * Callback URL: /?auth=login&returnUrl=/don-hang-cua-toi -> mở popup đăng nhập,
+   * đăng nhập xong chuyển tới returnUrl (CustomerAuthService đã kiểm tra an toàn).
+   */
+  private openLoginFromUrl(): void {
+    const params = this.router.parseUrl(this.router.url).queryParamMap;
+    if (params.get(AUTH_MODAL_PARAM) !== 'login' && !params.has(RETURN_URL_PARAM)) return;
+    this.authService.loginWithReturnUrl(params.get(RETURN_URL_PARAM) ?? '/');
   }
 
   private loadCustomerStylesheet(): void {

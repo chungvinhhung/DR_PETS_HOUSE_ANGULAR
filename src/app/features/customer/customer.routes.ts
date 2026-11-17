@@ -46,6 +46,10 @@ export const CUSTOMER_ROUTES: Routes = [
   { path: 'shop', loadComponent: shop },
   { path: 'products', loadComponent: productList },
   { path: 'san-pham', loadComponent: productList },
+  // URL chuẩn SEO: /san-pham/<ten-khong-dau>-i.<id> (xem shared/customer/utils/slug.ts)
+  { path: 'san-pham/:productSlug', loadComponent: productDetails },
+  { path: 'san-pham/:productSlug/viet-danh-gia', canActivate: [customerAuthGuard], loadComponent: writeReview },
+  // URL cũ theo id: vẫn mở được, trang chi tiết tự chuyển (replace) sang URL slug chuẩn
   { path: 'product-details', loadComponent: productDetails },
   { path: 'product-details/:productId', loadComponent: productDetails },
   { path: 'product-details/:productId/write-review', canActivate: [customerAuthGuard], loadComponent: writeReview },
@@ -77,6 +81,9 @@ export const CUSTOMER_ROUTES: Routes = [
   { path: 'appointment/history', redirectTo: 'lich-su-dat-lich', pathMatch: 'full' },
   { path: 'appointment-history', redirectTo: 'lich-su-dat-lich', pathMatch: 'full' },
   { path: 'appointments', redirectTo: 'lich-su-dat-lich', pathMatch: 'full' },
+  // Slug tìm kiếm chuẩn SEO: /tim-kiem/thuc-an-cho-meo; /search?q=... cũ tự chuyển sang dạng này
+  { path: 'tim-kiem', loadComponent: search },
+  { path: 'tim-kiem/:keyword', loadComponent: search },
   { path: 'search', loadComponent: search },
   { path: 'about', loadComponent: about },
   { path: 've-chung-toi', loadComponent: about },

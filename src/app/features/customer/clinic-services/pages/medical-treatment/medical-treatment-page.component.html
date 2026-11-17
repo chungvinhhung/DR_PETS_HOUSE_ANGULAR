@@ -1,5 +1,5 @@
 <app-nav-bar />
-<div app-scaled-canvas-layout [className]="'bg-white'"><app-medical-canvas (onOpenPricing)="isPricingOpen.set(true)" /></div>
+<div app-scaled-canvas-layout [className]="'bg-white'" [style.margin-top]="'-6px'"><app-medical-canvas (onOpenPricing)="isPricingOpen.set(true)" /></div>
 <app-footer [variant]="'blue'" />
 <app-service-pricing-modal
   [open]="isPricingOpen()"

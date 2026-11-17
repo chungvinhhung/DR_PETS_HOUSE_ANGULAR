@@ -5,6 +5,10 @@ import { finalize } from 'rxjs';
 
 import { AppHttpError } from '../../../../../core/models/app-http-error.model';
 import { AdminAuthService } from '../../services/admin-auth.service';
+import {
+  RETURN_URL_PARAM,
+  sanitizeAdminReturnUrl,
+} from '../../../../../core/utils/return-url';
 
 type LoginControlName = 'identifier' | 'password';
 
@@ -73,18 +77,9 @@ export class AdminLoginPageComponent {
   }
 
   private safeReturnUrl(): string {
-    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-
-    if (
-      returnUrl &&
-      returnUrl.startsWith('/admin/') &&
-      returnUrl !== '/admin/login' &&
-      returnUrl !== '/admin/forbidden'
-    ) {
-      return returnUrl;
-    }
-
-    return '/admin/dashboard';
+    return sanitizeAdminReturnUrl(
+      this.route.snapshot.queryParamMap.get(RETURN_URL_PARAM),
+    );
   }
 
   private loginErrorMessage(error: unknown): string {

@@ -17,6 +17,8 @@ import { normalizeArray } from '../../../../../core/customer/services/api/produc
 import { FEATURED_PRODUCTS } from '../../../../../shared/customer/data/shop-data';
 import { REVIEW_PAGE_SIZE, EMPTY_REVIEWS_DATA, buildFallbackProduct, findFallbackProduct, formatPrice, formatReviewTime, normalizeReviewsData } from './product-details-page.helpers';
 import { YellowButtonComponent } from '../../../../../shared/customer/components/yellow-button/yellow-button.component';
+import { SeoService, buildProductJsonLd } from '../../../../../core/customer/services/seo.service';
+import { buildProductPath, extractProductId } from '../../../../../shared/customer/utils/slug';
 
 /**
  * ProductDetailsPage — chuyển từ React: src/pages/Product/ProductDetailsPage.jsx
@@ -36,6 +38,7 @@ export class ProductDetailsPageComponent implements OnInit {
   protected readonly cartService = inject(CartService);
   protected readonly productApi = inject(ProductApiService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly seo = inject(SeoService);
 
   // --- Input / Output (props của React) ---
   readonly showWriteReview = input<any>(false);
@@ -75,6 +78,11 @@ export class ProductDetailsPageComponent implements OnInit {
   readonly similarSectionRef = viewChild<ElementRef<any>>('similarSectionRef');
 
   // --- Giá trị tính toán (computed) ---
+  /** Id sản phẩm lấy từ slug /san-pham/<ten>-i.<id> hoặc URL cũ /product-details/<id> */
+  readonly productId = computed<string>(() => {
+    const params = this.navService.params();
+    return extractProductId(params['productSlug'] ?? params['productId']);
+  });
   readonly thumbnails = computed<any>(() => this.product()?.images?.length ? this.product().images : [productImages.detailImage]);
   readonly selectedImage = computed<any>(() => this.variantImage() || (this.thumbnails() as any)[this.selectedImageIdx()] || this.thumbnails()[0]);
   readonly totalReviewPages = computed<any>(() => this.reviewsData().totalPages || 1);
@@ -161,9 +169,9 @@ export class ProductDetailsPageComponent implements OnInit {
   constructor() {
     // useEffect(..., [productId])
     effect((onCleanup: any) => {
-      this.navService.params()['productId'];
+      this.productId();
       const cleanup = untracked(() => {
-        if (!this.navService.params()['productId']) {
+        if (!this.productId()) {
           this.loadError.set("Thiếu mã sản phẩm.");
           this.isLoading.set(false);
           return;
@@ -178,21 +186,22 @@ export class ProductDetailsPageComponent implements OnInit {
         this.notifyEmail.set('');
         this.notifyError.set('');
 
-        this.productApi.getProductDetails(this.navService.params()['productId'])
+        this.productApi.getProductDetails(this.productId())
           .then((detail: any) => {
             if (!active) return;
             this.product.set(detail);
+            this.applySeo(detail);
             const firstSize = detail?.variants?.[0]?.sizes?.[0] ?? "";
             this.dropdownValue.set(firstSize);
-            this.productApi.getSimilarProducts(this.navService.params()['productId']).then((similar: any) => {
+            this.productApi.getSimilarProducts(this.productId()).then((similar: any) => {
               if (active) this.similarProducts.set(normalizeArray(similar));
             });
           })
           .catch(() => {
             if (active) {
-              const fallbackProduct = buildFallbackProduct(findFallbackProduct(this.navService.params()['productId']));
+              const fallbackProduct = buildFallbackProduct(findFallbackProduct(this.productId()));
               this.product.set(fallbackProduct);
-              this.similarProducts.set(FEATURED_PRODUCTS.filter((item: any) => String(item.id) !== String(this.navService.params()['productId'])).map(buildFallbackProduct));
+              this.similarProducts.set(FEATURED_PRODUCTS.filter((item: any) => String(item.id) !== String(this.productId())).map(buildFallbackProduct));
               this.loadError.set(fallbackProduct ? "Không thể tải thông tin sản phẩm, đang hiển thị dữ liệu mẫu." : "Không thể tải thông tin sản phẩm.");
             }
           })
@@ -209,12 +218,12 @@ export class ProductDetailsPageComponent implements OnInit {
 
     // useEffect(..., [productId, reviewPage])
     effect((onCleanup: any) => {
-      this.navService.params()['productId'];
+      this.productId();
       this.reviewPage();
       const cleanup = untracked(() => {
-        if (!this.navService.params()['productId']) return;
+        if (!this.productId()) return;
         let active = true;
-        this.productApi.getProductReviews(this.navService.params()['productId'], this.reviewPage(), REVIEW_PAGE_SIZE)
+        this.productApi.getProductReviews(this.productId(), this.reviewPage(), REVIEW_PAGE_SIZE)
           .then((data: any) => {
             if (active) this.reviewsData.set(normalizeReviewsData(data));
           })
@@ -230,7 +239,7 @@ export class ProductDetailsPageComponent implements OnInit {
 
     // useEffect(..., [productId])
     effect((onCleanup: any) => {
-      this.navService.params()['productId'];
+      this.productId();
       const cleanup = untracked(() => {
         this.selectedImageIdx.set(0);
       });
@@ -264,6 +273,30 @@ export class ProductDetailsPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.isReviewTab.set(this.showWriteReview());
+    this.destroyRef.onDestroy(() => this.seo.reset());
+  }
+
+  /**
+   * SEO cho trang chi tiết: title/description/canonical/JSON-LD Product.
+   * Nếu URL đang mở khác URL chuẩn (URL cũ theo id, hoặc tên sản phẩm đã đổi) -> thay URL tại chỗ
+   * (replaceUrl, không tải lại trang) để người dùng và công cụ tìm kiếm chỉ thấy 1 địa chỉ duy nhất.
+   */
+  private applySeo(detail: any) {
+    const canonicalPath = buildProductPath(detail);
+    const canonicalUrl = new URL(canonicalPath, window.location.origin).toString();
+    this.seo.setPage({
+      title: detail?.categoryName ? `${detail.name} - ${detail.categoryName}` : detail?.name || 'Sản phẩm',
+      description: detail?.description,
+      canonicalPath,
+      image: detail?.image,
+      type: 'product',
+      jsonLd: buildProductJsonLd(detail, canonicalUrl),
+    });
+
+    const { pathname, search, hash } = this.navService.location();
+    if (!this.showWriteReview() && detail?.id && pathname !== canonicalPath) {
+      this.navService.navigate(`${canonicalPath}${search}${hash}`, { replace: true });
+    }
   }
 
   protected selectVariant(i: number, variant: any) {
@@ -294,9 +327,9 @@ export class ProductDetailsPageComponent implements OnInit {
   }
 
   protected async handleLike(reviewId: any) {
-    if (!this.navService.params()['productId']) return;
+    if (!this.productId()) return;
     try {
-      await this.productApi.likeProductReview(this.navService.params()['productId'], reviewId);
+      await this.productApi.likeProductReview(this.productId(), reviewId);
     } catch {
       return;
     }
@@ -453,8 +486,8 @@ export class ProductDetailsPageComponent implements OnInit {
   }
 
   protected async handleReviewSubmit({ rating, review }: any) {
-    await this.productApi.createProductReview(this.navService.params()['productId'], { rating, content: review });
-    const updated = await this.productApi.getProductReviews(this.navService.params()['productId'], 1, REVIEW_PAGE_SIZE);
+    await this.productApi.createProductReview(this.productId(), { rating, content: review });
+    const updated = await this.productApi.getProductReviews(this.productId(), 1, REVIEW_PAGE_SIZE);
     this.reviewPage.set(1);
     this.reviewsData.set(normalizeReviewsData(updated));
   }

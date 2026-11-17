@@ -190,6 +190,7 @@ function toPetPayload(pet: any = {}) {
     health_status: (healthStatusMap as any)[pet.healthStatus] || pet.healthStatus || pet.health_status || "unknown",
     medical_note: pet.medicalNotes || pet.medical_note || null,
     profile_image_url: pet.avatar || pet.profile_image_url || null,
+    ...(pet.isHidden !== undefined ? { is_hidden: Boolean(pet.isHidden) } : {}),
   };
 }
 
@@ -329,6 +330,11 @@ export class PetApiService {
   async updatePet(petId: any, pet: any) {
     const response = await this.http.put(`/pets/${petId}`, toPetPayload(pet));
     return normalizePet(assertSuccess(response));
+  }
+
+  /** Ẩn / hiện lại hồ sơ thú cưng (gửi kèm toàn bộ thông tin vì PUT ghi đè) */
+  async setPetHidden(petId: any, pet: any, hidden: boolean) {
+    return this.updatePet(petId, { ...pet, isHidden: hidden });
   }
 
   async deletePet(petId: any) {

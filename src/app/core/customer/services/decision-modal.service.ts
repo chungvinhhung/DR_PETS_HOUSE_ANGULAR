@@ -7,6 +7,10 @@ export interface DecisionModalOptions {
   type?: DecisionModalType;
   title?: string;
   message?: string;
+  /** Phần in đậm nối ngay sau message, vd. message "Bạn chắc chắn muốn " + messageBold "Ẩn hồ sơ của Ted" + messageSuffix "?" */
+  messageBold?: string;
+  image?: string;
+  messageSuffix?: string;
   cancelLabel?: string;
   confirmLabel?: string;
   onConfirm?: (() => void) | null;
@@ -16,6 +20,7 @@ export interface DecisionModalOptions {
 export interface DecisionModalState extends Required<Omit<DecisionModalOptions, 'onConfirm' | 'onCancel'>> {
   open: boolean;
   variant?: string;
+  image: string;
   onConfirm: (() => void) | null;
   onCancel: (() => void) | null;
 }
@@ -54,6 +59,9 @@ const INITIAL_STATE: DecisionModalState = {
   type: 'delete',
   title: '',
   message: '',
+  messageBold: '',
+  messageSuffix: '',
+  image: '',
   cancelLabel: '',
   confirmLabel: '',
   onConfirm: null,

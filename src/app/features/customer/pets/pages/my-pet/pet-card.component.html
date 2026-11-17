@@ -1,33 +1,49 @@
 <div class="pet-card__box">
   @if (image()) {
-    <img [attr.src]="image()" [attr.alt]="pet().name" class="pet-card__name" loading="lazy" />
+    <img class="pet-card__name" [src]="image()" [alt]="pet().name || 'Thú cưng'" />
   } @else {
-    <div class="flex h-full w-full items-center justify-center text-5xl text-[#c4c4d0]" aria-hidden="true">🐾</div>
+    <div class="flex h-full w-full items-center justify-center text-4xl">🐾</div>
   }
+
   <span
     class="pet-card__text"
     [style.background-color]="badge().bg"
     [style.color]="badge().text"
   >
-    <span class="pet-card__text-2" [style.background-color]="badge().dot"></span>
+    <span
+      class="pet-card__text-2"
+      [style.background-color]="badge().dot"
+    ></span>
     {{ statusLabel() }}
   </span>
 </div>
+
 <div class="pet-card__stack">
   <div class="pet-card__row">
     <div class="pet-card__box-2">
       <h3 class="pet-card__name-2">{{ pet().name }}</h3>
-      <p class="pet-card__breed">{{ pet().breed || 'Chưa phân loại' }}</p>
-      <p class="pet-card__breed">{{ ageText() }}</p>
+      <p class="pet-card__breed">{{ subtitle() }}</p>
     </div>
-    <app-gender-icon [gender]="pet().gender" className="mt-1 h-5 w-5 shrink-0 text-[#52525b]" />
+    <app-gender-icon [gender]="pet().gender" className="mt-1 h-5 w-5 shrink-0" ></app-gender-icon>
   </div>
+
   <div class="pet-card__box-3">
     <p class="pet-card__kham-gan-nhat-text">Khám gần nhất</p>
-    <p [class]="`mt-0.5 text-[14px] leading-5 ${checkup() === 'Chưa khám' ? 'italic text-[#a1a1aa]' : 'text-[#27272a]'}`">{{ checkup() }}</p>
+    <p
+      class="mt-0.5 text-[14px] leading-5"
+      [class]="checkup() === 'Chưa khám' ? 'text-[#71717a]' : 'font-medium text-[#18181b]'"
+    >
+      {{ checkup() }}
+    </p>
   </div>
-  <a
-    [appCustomerLink]="`/thu-cung-cua-toi/${petId()}`"
-    class="pet-card__pet-id-link"
-  >Xem chi tiết</a>
+
+  @if (hidden()) {
+    <span class="pet-card__pet-id-link pet-card__pet-id-link--hidden">
+      Xem chi tiết
+    </span>
+  } @else {
+    <span class="pet-card__pet-id-link">
+      Xem chi tiết
+    </span>
+  }
 </div>

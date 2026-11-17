@@ -20,5 +20,6 @@ export class SearchResultsContentComponent {
   // --- Input / Output (props của React) ---
   readonly activeType = input<any>(undefined);
   readonly results = input<any>(undefined);
+  readonly crossSellServices = input<any[]>([]);
 
 }

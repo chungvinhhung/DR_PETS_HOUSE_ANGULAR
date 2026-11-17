@@ -37,6 +37,7 @@
     [query]="term()"
     [suggestions]="searchSuggestions().suggestions"
     [products]="searchSuggestions().products"
+    [crossSellProducts]="crossSellProducts()"
     [isLoading]="isLoadingSuggestions()"
     [error]="suggestionError()"
     [activeItemId]="suggestionItems()[activeIndex()]?.id"

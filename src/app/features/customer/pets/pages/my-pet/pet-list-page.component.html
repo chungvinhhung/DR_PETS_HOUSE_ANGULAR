@@ -25,6 +25,8 @@
     (onClearSearch)="handle1()"
     [sortBy]="sortBy()"
     (onSortChange)="sortBy.set($event)"
+    [visibility]="visibility()"
+    (onVisibilityChange)="visibility.set($event)"
 ></form>
   <a appCustomerLink="/thu-cung-cua-toi/them-moi" class="pet-list-page__link">
     <button class="pet-list-page__button">
@@ -40,97 +42,27 @@
 @if (isLoading()) {
   <div class="pet-list-page__dang-tai-ho-el">Đang tải hồ sơ thú cưng...</div>
 } @else {
-  <div class="pet-list-page__let-displaystatus-el">
-    @for (pet of filteredPets(); track getPetId(pet) || $index) {
-      @let displayStatus = pet.healthStatus || 'Bình thường';
-      @let statusColor = getHealthStatusColor(displayStatus);
-      @let currentPetImage = pet.avatar || (pet.name ? petImages[pet.name] : null);
-      @let displayAge = getPetAgeText(pet);
-      @let displayCheckup = getLatestCheckupDate(pet);
+  @if (activePets().length) {
+    <div class="pet-list-page__grid">
+      @for (pet of activePets(); track getPetId(pet) || $index) {
+        <article app-pet-card [pet]="pet"></article>
+      }
+    </div>
+  }
 
-      <div>
-           <a [appCustomerLink]="`/thu-cung-cua-toi/${toPetSlug(pet)}`"
-            class="pet-list-page__pet-link"
-          >
-        <!-- Phần hình ảnh & Badge trạng thái góc trên bên phải -->
-        <div class="pet-list-page__phan-hinh-anh-badge">
-          @if (currentPetImage) {
-            <img [attr.src]="currentPetImage" [attr.alt]="pet.name" class="pet-list-page__name" />
-          } @else {
-            <div class="pet-list-page__row-2">
-              🐾
-            </div>
-          }
+  @if (hiddenPets().length) {
+    <div class="pet-list-page__hidden-divider">
+      <span class="pet-list-page__hidden-divider-text">Hồ sơ đã ẩn</span>
+      <span class="pet-list-page__hidden-divider-line"></span>
+    </div>
+    <div class="pet-list-page__grid">
+      @for (pet of hiddenPets(); track getPetId(pet) || $index) {
+        <article app-pet-card [pet]="pet"></article>
+      }
+    </div>
+  }
 
-          <!-- Badge trạng thái góc phải trên -->
-          <div
-            class="pet-list-page__badge-trang-thai-goc backdrop-blur-xs shadow-xs"
-            [style.background-color]="statusColor.bg"
-            [style.color]="statusColor.text"
-          >
-            <span
-              class="pet-list-page__text-2"
-              [style.background-color]="statusColor.dot"
-            ></span>
-            <span>{{ displayStatus }}</span>
-          </div>
-        </div>
-
-        <!-- Phần nội dung thẻ -->
-        <div class="pet-list-page__phan-noi-dung-the">
-          
-          <!-- Hàng Tên thú cưng + Icon giới tính (♂ / ♀) bên phải -->
-          <div class="pet-list-page__hang-ten-thu-cung">
-            <div>
-              <h3 class="pet-list-page__name-2">
-                {{ pet.name }}
-              </h3>
-              <p class="pet-list-page__breed">{{ pet.breed || 'Chưa phân loại' }}</p>
-              <p class="pet-list-page__breed">{{ displayAge }}</p>
-            </div>
-
-            <!-- Icon giới tính đực / cái bên phải -->
-            <div class="pet-list-page__icon-gioi-tinh-duc" [title]="pet.gender">
-              @if (pet.gender === '♀' || pet.gender === 'Cái' || pet.gender === 'FEMALE'|| pet.gender === 'female') {
-                <!-- Icon Giống cái ♀ -->
-                <svg xmlns="http://w3.org" class="pet-list-page__icon-giong-cai" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="9" r="5.5" />
-                  <path d="M12 14.5v6.5" />
-                  <path d="M9 18h6" />
-                </svg>
-              } @else {
-                <!-- Icon Giống đực ♂ -->
-                <svg xmlns="http://w3.org" class="pet-list-page__icon-giong-cai" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="10" cy="14" r="5.5" />
-                  <path d="M14 10l6-6" />
-                  <path d="M15 4h5v5" />
-                </svg>
-              }
-            </div>
-          </div>
-
-          <!-- Đường kẻ ngang ngăn cách -->
-          <hr class="pet-list-page__duong-ke-ngang-ngan" />
-
-          <!-- Thông tin khám gần nhất -->
-          <div class="pet-list-page__thong-tin-kham-gan">
-            <p class="pet-list-page__kham-gan-nhat-text">Khám gần nhất</p>
-            <p class="pet-list-page__display-checkup">
-              {{ displayCheckup || 'Chưa khám' }}
-            </p>
-          </div>
-
-          <!-- Nút Xem chi tiết duy nhất màu xanh navy đậm -->
-          <a [appCustomerLink]="`/thu-cung-cua-toi/${toPetSlug(pet)}`" class="pet-list-page__nut-xem-chi-tiet">
-                  <button class="pet-list-page__xem-chi-tiet-button">Xem chi tiết</button>
-                </a>
-        </div>
-      </a>
-      </div>
-    }
-            
-  </div>
-}
-@if (!isLoading() && filteredPets().length === 0) {
-  <div class="pet-list-page__box"><p class="pet-list-page__khong-tim-thay-text">Không tìm thấy thú cưng nào</p></div>
+  @if (!activePets().length && !hiddenPets().length) {
+    <div class="pet-list-page__box"><p class="pet-list-page__khong-tim-thay-text">Không tìm thấy thú cưng nào</p></div>
+  }
 }

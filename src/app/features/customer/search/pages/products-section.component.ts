@@ -22,5 +22,6 @@ export class ProductsSectionComponent {
   // --- Input / Output (props của React) ---
   readonly results = input<any>(undefined);
   readonly allMode = input<any>(false);
+  readonly crossSellServices = input<any[]>([]);
 
 }

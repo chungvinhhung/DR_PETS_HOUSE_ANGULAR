@@ -7,6 +7,7 @@ import { ProductApiService } from '../../../../core/customer/services/api/produc
 import { SelectValueDirective } from '../../../../shared/customer/directives/select-value.directive';
 import { cartImages } from '../../../../shared/customer/assets/cart-images';
 import { formatPrice, normalizeVariantOption } from './my-cart-panel.helpers';
+import { buildProductPath } from '../../../../shared/customer/utils/slug';
 
 /**
  * CartItemRow — chuyển từ React: src/components/cart/MyCartPanel.jsx
@@ -115,7 +116,7 @@ export class CartItemRowComponent {
 
   protected handleOpenProduct() {
     if (!this.item().productId) return;
-    this.navService.navigate(`/product-details/${this.item().productId}`);
+    this.navService.navigate(buildProductPath({ id: this.item().productId, name: this.item().name }));
   }
 
   protected handleOpenProductByKeyboard(event: any) {

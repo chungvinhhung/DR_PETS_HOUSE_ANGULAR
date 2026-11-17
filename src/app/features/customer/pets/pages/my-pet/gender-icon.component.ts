@@ -13,6 +13,7 @@ export class GenderIconComponent {
   readonly gender = input<any>(undefined);
   readonly className = input<string>('');
 
-  readonly isMale = computed<any>(() => this.gender() === 'Đực' || this.gender() === '♂');
-  readonly isFemale = computed<any>(() => this.gender() === 'Cái' || this.gender() === '♀');
+  private readonly normalized = computed(() => String(this.gender() ?? '').trim().toLowerCase());
+  readonly isMale = computed<any>(() => ['đực', '♂', 'male', 'm'].includes(this.normalized()));
+  readonly isFemale = computed<any>(() => ['cái', '♀', 'female', 'f'].includes(this.normalized()));
 }

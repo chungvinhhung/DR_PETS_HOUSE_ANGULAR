@@ -6,6 +6,7 @@ import { catchError, switchMap, throwError } from 'rxjs';
 import { AppHttpError } from '../models/app-http-error.model';
 import { AuthSessionService } from '../services/auth-session.service';
 import { AuthTokenRefreshService } from '../services/auth-token-refresh.service';
+import { RETURN_URL_PARAM } from '../utils/return-url';
 
 export const refreshTokenInterceptor: HttpInterceptorFn = (request, next) => {
   const authSession = inject(AuthSessionService);
@@ -37,7 +38,7 @@ export const refreshTokenInterceptor: HttpInterceptorFn = (request, next) => {
           // Preserve the session so a later request can retry authentication.
           if (!isTransientRefreshError(refreshError)) {
             authSession.clearSession();
-            void router.navigateByUrl('/admin/login');
+            redirectToLogin(router);
           }
           return throwError(() => refreshError);
         }),
@@ -45,6 +46,20 @@ export const refreshTokenInterceptor: HttpInterceptorFn = (request, next) => {
     }),
   );
 };
+
+/**
+ * Hết phiên: trang quản trị -> /admin/login?returnUrl=<trang đang xem> (đăng nhập lại quay về đúng chỗ);
+ * trang khách hàng -> mở popup đăng nhập của khách, KHÔNG đẩy sang trang login admin.
+ */
+function redirectToLogin(router: Router): void {
+  const currentUrl = router.url;
+  if (currentUrl.startsWith('/admin')) {
+    if (currentUrl.startsWith('/admin/login')) return;
+    void router.navigate(['/admin/login'], { queryParams: { [RETURN_URL_PARAM]: currentUrl } });
+    return;
+  }
+  window.dispatchEvent(new CustomEvent('petclinic:auth-expired'));
+}
 
 function isRefreshRequest(url: string): boolean {
   return /\/auth\/refresh(?:$|[?#])/.test(url);

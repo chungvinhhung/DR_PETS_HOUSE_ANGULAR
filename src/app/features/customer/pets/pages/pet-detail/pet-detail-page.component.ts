@@ -8,6 +8,8 @@ import { ReactStyleDirective } from '../../../../../shared/customer/directives/r
 import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
 import { INITIAL_PET_EVENTS } from '../../data/pet-events';
 import { petImages, matchPetBySlugOrId, calculateAge, formatAgeText, ACCEPTED_UPLOAD_FILE_TYPES, MAX_UPLOAD_FILE_SIZE, createUploadedFile, getFileUrl, isImageFile, getUploadFiles, getColorClass, convertTimeToInputFormat, formatTimeToSACH, toDateKey, isEventInDate, toPetSlug } from './pet-detail-page.helpers';
+import { notificationImages } from '../../../../../shared/customer/assets/notification-images';
+
 
 const lunaImg = '/assets/customer/images/pets/luna.jpg';
 const patternBg = '/assets/customer/images/pets/patterntaddnote.jpg';
@@ -32,6 +34,7 @@ export class PetDetailPageComponent {
   protected readonly navService = inject(CustomerNavigationService);
   protected readonly decisionModalService = inject(DecisionModalService);
   protected readonly petApi = inject(PetApiService);
+  protected readonly notificationImages = notificationImages;
 
   // --- Dữ liệu & hàm dùng trong template ---
   protected readonly uploadIcon: any = uploadIcon;
@@ -110,7 +113,10 @@ export class PetDetailPageComponent {
   readonly selectedColor = signal<any>("");
   readonly existingFiles = signal<any>([]);
   readonly markedDeletions = signal<any>([]);
-  readonly isProfileHidden = signal<boolean>(false);
+  readonly isProfileHidden = computed<boolean>(() => Boolean(this.pet()?.isHidden));
+  readonly isTogglingHidden = signal<boolean>(false);
+  readonly showHideProfileModal = signal<boolean>(false);
+  readonly hideProfileTarget = signal<boolean>(true);
 
   constructor() {
     // useEffect(..., [currentPetId])
@@ -632,20 +638,41 @@ export class PetDetailPageComponent {
     else this.showDayModal.set(false);
   }
 
-  protected handleToggleHideProfile() {
-    const nextState = !this.isProfileHidden();
-    this.isProfileHidden.set(nextState);
+ protected handleToggleHideProfile() {
+  if (this.isTogglingHidden()) return;
 
-    // Nếu muốn gọi xác nhận qua DecisionModalService:
-    /*
-    this.decisionModalService.confirmDelete({
-      message: nextState 
-        ? "Bạn có chắc chắn muốn ẩn hồ sơ thú cưng này?" 
-        : "Hiển thị lại hồ sơ thú cưng này?",
-      confirmLabel: nextState ? "Ẩn hồ sơ" : "Hiển thị",
-      onConfirm: () => this.isProfileHidden.set(nextState),
-    });
-    */
+  const hidden = !this.isProfileHidden();
+  const action = hidden ? 'Ẩn' : 'Hiện';
+
+  this.decisionModalService.confirmDelete({
+    title: `XÁC NHẬN ${action.toUpperCase()} HỒ SƠ`,
+    message: 'Bạn chắc chắn muốn ',
+    messageBold: `${action} hồ sơ của ${this.pet()?.name || 'thú cưng'}`,
+    messageSuffix: '?',
+    cancelLabel: 'Quay lại',
+    confirmLabel: `${action} hồ sơ`,
+    image: this.notificationImages.decisionDog,
+    onConfirm: () => void this.updateHiddenState(hidden),
+  });
+}
+
+  private async updateHiddenState(hidden: boolean) {
+    const petId = this.resolvedPetId() || this.pet()?.id || this.pet()?.pet_id || this.currentPetId();
+    if (!petId) return;
+    this.isTogglingHidden.set(true);
+    try {
+      const saved = await this.petApi.setPetHidden(petId, this.pet(), hidden);
+      // Ưu tiên trạng thái vừa chọn nếu backend chưa trả về cờ ẩn
+      this.pet.update((current: any) => ({ ...current, ...saved, isHidden: hidden }));
+    } catch (error: any) {
+      this.decisionModalService.showNotice({
+        message: error?.message || (hidden ? "Không thể ẩn hồ sơ. Vui lòng thử lại." : "Không thể hiện lại hồ sơ. Vui lòng thử lại."),
+        cancelLabel: "Quay lại",
+        onCancel: () => {},
+      });
+    } finally {
+      this.isTogglingHidden.set(false);
+    }
   }
 
     protected handleEditProfile() {

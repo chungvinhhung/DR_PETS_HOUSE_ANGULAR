@@ -124,7 +124,8 @@ export function filterPriceItems(items: any, selectedPriceRanges: any) {
 export function buildSearchCounts(results: any) {
   return {
     service: results.services.length + results.otherServices.length,
-    shopping: results.products.length + results.suggestedProducts.length,
+    // Sản phẩm bán chéo (suggestedProducts) không phải kết quả khớp -> không cộng vào số đếm
+    shopping: results.products.length,
     firstAid: results.firstAid.length,
     knowledge: results.knowledge.length,
     community: results.community.length,

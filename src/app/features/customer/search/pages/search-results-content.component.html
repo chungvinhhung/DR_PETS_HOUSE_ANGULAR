@@ -1,13 +1,13 @@
 @if (activeType() === 'service') {
   <section app-services-section [results]="results()"></section>
 } @else if (activeType() === 'shopping') {
-  <section app-products-section [results]="results()"></section>
+  <section app-products-section [results]="results()" [crossSellServices]="crossSellServices()"></section>
 } @else if (activeType() === 'article') {
   <section app-articles-section [results]="results()"></section>
 } @else {
   <div class="search-results-content__stack">
     <section app-services-section [results]="results()" [allMode]="true"></section>
-    <section app-products-section [results]="results()" [allMode]="true"></section>
+    <section app-products-section [results]="results()" [allMode]="true" [crossSellServices]="crossSellServices()"></section>
     <section app-articles-section [results]="results()" [allMode]="true"></section>
   </div>
 }

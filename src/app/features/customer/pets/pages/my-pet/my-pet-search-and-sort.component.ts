@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 
 import { SelectValueDirective } from '../../../../../shared/customer/directives/select-value.directive';
 import { appointmentImages } from '../../../../../shared/customer/assets/appointment-images';
-import { PET_SORT_OPTIONS } from './pet-list-page.helpers';
+import { PET_SORT_OPTIONS, PET_VISIBILITY_FILTERS } from './pet-list-page.helpers';
 
 /**
  * MyPetSearchAndSort — chuyển từ React: src/pages/Pet/MyPetPage.jsx (component SearchAndSort)
@@ -27,10 +27,13 @@ export class MyPetSearchAndSortComponent {
   readonly onClearSearch = output<any>();
   readonly sortBy = input<any>(undefined);
   readonly onSortChange = output<any>();
+  readonly visibility = input<string>('all');
+  readonly onVisibilityChange = output<string>();
 
   // --- Dữ liệu & hàm dùng trong template ---
   protected readonly appointmentImages: any = appointmentImages;
   protected readonly PET_SORT_OPTIONS = PET_SORT_OPTIONS;
+  protected readonly PET_VISIBILITY_FILTERS = PET_VISIBILITY_FILTERS;
 
   protected handle1(event: any) {
     event.preventDefault();

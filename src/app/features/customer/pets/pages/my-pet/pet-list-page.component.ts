@@ -2,11 +2,9 @@ import { ChangeDetectionStrategy, Component, DestroyRef, afterNextRender, comput
 
 import { PetApiService } from '../../../../../core/customer/services/api/pet-api.service';
 import { MyPetSearchAndSortComponent } from './my-pet-search-and-sort.component';
-import { SpeciesIconComponent } from './species-icon.component';
-import { GenderIconComponent } from './gender-icon.component';
-import { ReactStyleDirective } from '../../../../../shared/customer/directives/react-style.directive';
+import { PetCardComponent } from './pet-card.component';
 import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
-import { petImages, getHealthStatusColor, getPetStatusLabel, getLatestCheckupDate, getPetAgeText, getPetId, sortPets, PET_STATUS_FILTERS, toPetSlug } from './pet-list-page.helpers';
+import { petImages, getHealthStatusColor, getPetStatusLabel, getLatestCheckupDate, getPetAgeText, getPetId, sortPets, PET_STATUS_FILTERS, toPetSlug, isPetHidden } from './pet-list-page.helpers';
 
 /**
  * PetListPage — chuyển từ React: src/pages/Pet/MyPetPage.jsx
@@ -14,7 +12,7 @@ import { petImages, getHealthStatusColor, getPetStatusLabel, getLatestCheckupDat
 @Component({
   selector: 'div[app-pet-list-page]',
   standalone: true,
-  imports: [MyPetSearchAndSortComponent, SpeciesIconComponent, GenderIconComponent, ReactStyleDirective, CustomerLinkDirective],
+  imports: [MyPetSearchAndSortComponent, PetCardComponent, CustomerLinkDirective],
   templateUrl: './pet-list-page.component.html',
   styleUrl: './pet-list-page.component.scss',
   host: {
@@ -70,6 +68,13 @@ export class PetListPageComponent {
     const currentSort = typeof rawSort === 'object' && rawSort?.target ? rawSort.target.value : rawSort;
     return sortPets(result, currentSort);
   });
+  // Tách hồ sơ đang hoạt động / đã ẩn theo bộ lọc hiển thị
+  readonly activePets = computed<any[]>(() =>
+    this.visibility() === 'hidden' ? [] : this.filteredPets().filter((pet: any) => !isPetHidden(pet)),
+  );
+  readonly hiddenPets = computed<any[]>(() =>
+    this.visibility() === 'active' ? [] : this.filteredPets().filter((pet: any) => isPetHidden(pet)),
+  );
 
   // --- Trạng thái (signal = useState / useRef) ---
   readonly pets = signal<any>([]);
@@ -79,6 +84,7 @@ export class PetListPageComponent {
   readonly searchQuery = signal<any>("");
   readonly filterStatus = signal<any>("Tất cả");
   readonly sortBy = signal<any>("name");
+  readonly visibility = signal<string>("all");
 
   constructor() {
     // useEffect(..., []) -> chạy 1 lần sau khi render

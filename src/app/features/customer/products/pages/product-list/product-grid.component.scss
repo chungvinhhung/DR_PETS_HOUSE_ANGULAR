@@ -3,5 +3,6 @@
 }
 
 .product-grid__grid {
-  @apply grid w-full grid-cols-2 justify-items-center gap-x-[10.75px] gap-y-10 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 xl:gap-y-[64px];
+  // Số cột tự tính theo bề rộng thẻ (170px) + gap tối thiểu 16px => thẻ không bao giờ chồng lên nhau (tối đa 5 cột)
+  @apply grid w-full grid-cols-[repeat(auto-fill,minmax(max(170px,calc((100%_-_64px)/5)),1fr))] justify-items-center gap-x-4 gap-y-10 xl:gap-y-[64px];
 }

@@ -31,7 +31,7 @@
 }
 
 .product-section__grid {
-  @apply grid w-full max-w-page grid-cols-2 justify-items-center gap-x-5 gap-y-6 sm:grid-cols-3 lg:grid-cols-6;
+  @apply grid w-full max-w-page grid-cols-[repeat(auto-fill,minmax(max(170px,calc((100%_-_100px)/6)),1fr))] justify-items-center gap-x-5 gap-y-6;
 }
 
 .product-section__text {

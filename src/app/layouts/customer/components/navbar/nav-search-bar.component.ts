@@ -6,6 +6,8 @@ import { SearchSuggestionDropdownComponent } from './search-suggestion-dropdown.
 import { navbarImages } from '../../../../shared/customer/assets/navbar-images';
 import { getSearchSuggestions as getMockSearchSuggestions } from '../../../../shared/customer/data/search-results-data';
 import { SEARCH_DEBOUNCE_MS, EMPTY_SUGGESTIONS } from './nav-search-bar.helpers';
+import { CrossSellService } from '../../../../core/customer/services/cross-sell.service';
+import { buildSearchPath } from '../../../../shared/customer/utils/slug';
 
 /**
  * NavSearchBar — chuyển từ React: src/components/Navbar/NavSearchBar.jsx
@@ -28,6 +30,7 @@ export class NavSearchBarComponent {
   // --- Service dùng chung ---
   protected readonly navService = inject(CustomerNavigationService);
   protected readonly searchApi = inject(SearchApiService);
+  private readonly crossSell = inject(CrossSellService);
 
   // --- Input / Output (props của React) ---
   readonly className = input<any>("");
@@ -50,6 +53,11 @@ export class NavSearchBarComponent {
         type: "product",
         payload: product,
       })),
+      ...this.crossSellProducts().map((product: any) => ({
+        id: `cross-sell-${product.id}`,
+        type: "product",
+        payload: product,
+      })),
       {
         id: "all-results",
         type: "all-results",
@@ -67,6 +75,8 @@ export class NavSearchBarComponent {
   readonly isLoadingSuggestions = signal<any>(false);
   readonly suggestionError = signal<any>("");
   readonly activeIndex = signal<any>(-1);
+  /** Gợi ý bán chéo ("Thường mua kèm") cho sản phẩm khớp nhất trong dropdown */
+  readonly crossSellProducts = signal<any[]>([]);
 
   constructor() {
     // useEffect(..., [trimmedTerm])
@@ -75,6 +85,7 @@ export class NavSearchBarComponent {
       const cleanup = untracked(() => {
         if (!this.trimmedTerm()) {
           this.searchSuggestions.set(EMPTY_SUGGESTIONS);
+          this.crossSellProducts.set([]);
           this.isLoadingSuggestions.set(false);
           this.suggestionError.set("");
           this.activeIndex.set(-1);
@@ -85,18 +96,18 @@ export class NavSearchBarComponent {
         this.suggestionError.set("");
         this.activeIndex.set(-1);
 
+        let active = true;
         const timer = window.setTimeout(() => {
           this.searchApi.getSearchSuggestionsApi(this.trimmedTerm())
             .then((apiSuggestions: any) => {
-              const fallback = getMockSearchSuggestions(this.trimmedTerm());
-              this.searchSuggestions.set({
-                ...apiSuggestions,
-                products: fallback.products,
-                total: apiSuggestions.total || fallback.total,
-              });
+              if (!active) return;
+              this.searchSuggestions.set(apiSuggestions);
+              this.loadCrossSell(apiSuggestions, () => active);
             })
             .catch(() => {
+              if (!active) return;
               this.searchSuggestions.set(getMockSearchSuggestions(this.trimmedTerm()));
+              this.crossSellProducts.set([]);
               this.suggestionError.set("");
             })
             .finally(() => {
@@ -104,10 +115,29 @@ export class NavSearchBarComponent {
             });
         }, SEARCH_DEBOUNCE_MS);
 
-        return () => window.clearTimeout(timer);
+        return () => {
+          active = false;
+          window.clearTimeout(timer);
+        };
       });
       if (typeof cleanup === 'function') onCleanup(cleanup);
     });
+  }
+
+  /** Lấy 2 sản phẩm bán chéo cho sản phẩm khớp nhất (không chặn hiển thị gợi ý chính). */
+  private loadCrossSell(apiSuggestions: any, isActive: () => boolean) {
+    const seeds = apiSuggestions.products ?? [];
+    if (!seeds.length) {
+      this.crossSellProducts.set([]);
+      return;
+    }
+    this.crossSell.suggest(seeds, { pet: apiSuggestions.analysis?.pet ?? null, limit: 2 })
+      .then((result) => {
+        if (isActive()) this.crossSellProducts.set(result.products);
+      })
+      .catch(() => {
+        if (isActive()) this.crossSellProducts.set([]);
+      });
   }
 
   protected closeSuggestions() {
@@ -118,7 +148,8 @@ export class NavSearchBarComponent {
   protected searchByKeyword(keyword: any) {
     const query = keyword.trim();
     this.closeSuggestions();
-    this.navService.navigate(query ? `/search?q=${encodeURIComponent(query)}` : "/search");
+    // Slug chuẩn SEO trên URL; câu gốc (có dấu) truyền qua history.state để không mất dấu tiếng Việt
+    this.navService.navigate(buildSearchPath(query), { state: { searchQuery: query } });
   }
 
   protected openProduct(product: any) {

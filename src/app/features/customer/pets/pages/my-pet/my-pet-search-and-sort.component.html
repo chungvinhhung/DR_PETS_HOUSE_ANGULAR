@@ -22,6 +22,21 @@
     <img [attr.src]="appointmentImages.searchIcon" alt="" class="my-pet-search-and-sort__search-icon" />
   </button>
 </label>
+<label class="my-pet-search-and-sort__label-3">
+  <select
+    [selectValue]="visibility()"
+    (change)="onVisibilityChange.emit($any($event.target).value)"
+    class="my-pet-search-and-sort__sap-xep-thu-cung"
+    aria-label="Lọc hồ sơ thú cưng theo trạng thái hiển thị"
+  >
+    @for (option of PET_VISIBILITY_FILTERS; track option.value) {
+      <option [value]="option.value">{{ option.label }}</option>
+    }
+  </select>
+  <svg class="h-3 w-3 shrink-0 text-[#414141]" viewBox="0 0 12 8" aria-hidden="true">
+    <path d="M1 1.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5" />
+  </svg>
+</label>
 <label class="my-pet-search-and-sort__label-2">
   <svg class="h-4 w-[18px] shrink-0 text-[#414141]" viewBox="0 0 18 12" aria-hidden="true">
     <path d="M1 1h16M1 6h10M1 11h5" stroke="currentColor" stroke-width="1.5" />

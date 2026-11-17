@@ -42,80 +42,22 @@
   @apply py-12 text-center text-slate-500;
 }
 
-.pet-list-page__let-displaystatus-el {
-  @apply grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+/* Thẻ thú cưng có kích thước cố định (216px), lưới tự xuống dòng thay vì giãn thẻ */
+.pet-list-page__grid {
+  @apply grid justify-center gap-5 sm:justify-start;
+  grid-template-columns: repeat(auto-fill, 216px);
 }
 
-.pet-list-page__pet-link {
-  @apply bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow font-sans cursor-pointer;
+.pet-list-page__hidden-divider {
+  @apply mb-5 mt-10 flex items-center gap-3;
 }
 
-.pet-list-page__phan-hinh-anh-badge {
-  @apply relative w-full h-52 bg-slate-100 overflow-hidden;
+.pet-list-page__hidden-divider-text {
+  @apply shrink-0 text-[15px] text-[#71717a];
 }
 
-.pet-list-page__name {
-  @apply w-full h-full object-cover;
-}
-
-.pet-list-page__row-2 {
-  @apply w-full h-full flex items-center justify-center text-5xl text-slate-300;
-}
-
-.pet-list-page__badge-trang-thai-goc {
-  @apply absolute top-3 right-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-semibold;
-}
-
-.pet-list-page__text-2 {
-  @apply h-2 w-2 rounded-full;
-}
-
-.pet-list-page__phan-noi-dung-the {
-  @apply p-5 flex flex-col flex-1;
-}
-
-.pet-list-page__hang-ten-thu-cung {
-  @apply flex items-start justify-between gap-2;
-}
-
-.pet-list-page__name-2 {
-  @apply text-[20px] leading-snug font-bold text-slate-900 tracking-tight;
-}
-
-.pet-list-page__breed {
-  @apply text-[14px] text-slate-500 font-normal mt-0.5;
-}
-
-.pet-list-page__icon-gioi-tinh-duc {
-  @apply text-slate-600 pt-0.5 flex-shrink-0;
-}
-
-.pet-list-page__icon-giong-cai {
-  @apply w-5 h-5;
-}
-
-.pet-list-page__duong-ke-ngang-ngan {
-  @apply my-4 border-slate-100;
-}
-
-.pet-list-page__thong-tin-kham-gan {
-  @apply mb-5;
-}
-
-.pet-list-page__kham-gan-nhat-text {
-  @apply text-[13px] text-slate-400 font-normal;
-}
-
-.pet-list-page__display-checkup {
-  @apply text-[15px] font-medium text-slate-800 mt-0.5;
-}
-
-.pet-list-page__nut-xem-chi-tiet {
-  @apply w-full;
-}
-
-.pet-list-page__xem-chi-tiet-button {
-  @apply w-full bg-[#0a0f3a] hover:bg-[#070b29] rounded-md py-2 font-medium text-xs text-white transition;
+.pet-list-page__hidden-divider-line {
+  @apply h-px flex-1 bg-[#d4d4d8];
 }
 
 .pet-list-page__box {

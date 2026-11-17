@@ -18,10 +18,20 @@
         </svg>
       </button>
       <div [class]="isSuccess() ? 'decision-modal__success-body' : 'decision-modal__body'">
-        <div app-warning-mark [type]="state().type"></div>
+              @if (state().image) {
+                <div class="decision-modal__illustration">
+                  <img
+                    [src]="state().image"
+                    alt="Minh họa xác nhận"
+                  />
+                  <span class="decision-modal__illustration-warning">!</span>
+                </div>
+              } @else {
+                <div app-warning-mark [type]="state().type"></div>
+              }
         <div [class]="isSuccess() ? 'decision-modal__copy decision-modal__copy--success' : 'decision-modal__copy'">
           <h2 id="decision-modal-title">{{ state().title }}</h2>
-          <p id="decision-modal-message">{{ state().message }}</p>
+          <p id="decision-modal-message">{{ state().message }}@if (state().messageBold) {<strong>{{ state().messageBold }}</strong>}{{ state().messageSuffix }}</p>
         </div>
         <div class="decision-modal__actions">
           <button
