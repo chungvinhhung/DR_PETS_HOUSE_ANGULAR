@@ -34,13 +34,31 @@ export function formatPrice(value: any) {
   return formatVnd(value);
 }
 
-export function formatReviewTime(createdAt: any) {
-  if (!createdAt) return "";
-  return new Intl.RelativeTimeFormat("vi", { numeric: "auto" }).format(
-    Math.round((Number(new Date(createdAt).getTime()) - Number(Date.now())) / 60000),
-    "minute",
-  );
+export function formatReviewTime(createdAt: any): string {
+  if (!createdAt) return '';
+
+  const timestamp = new Date(createdAt).getTime();
+  if (isNaN(timestamp)) return String(createdAt);
+
+  const diffMinutes = Math.floor((Date.now() - timestamp) / 60000);
+  const rtf = new Intl.RelativeTimeFormat('vi', { numeric: 'auto' });
+
+  if (diffMinutes < 1) return 'Vừa xong';
+  if (diffMinutes < 60) return rtf.format(-diffMinutes, 'minute');
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return rtf.format(-diffHours, 'hour');
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) return rtf.format(-diffDays, 'day');
+
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) return rtf.format(-diffMonths, 'month');
+
+  const diffYears = Math.floor(diffDays / 365);
+  return rtf.format(-diffYears, 'year');
 }
+
 
 export function normalizeReviewsData(response: any) {
   const metadataSource = response?.data && !Array.isArray(response.data) ? response.data : response;

@@ -1,3 +1,55 @@
+/* Bổ sung ở đầu file SCSS để đảm bảo trang luôn có sẵn font Roboto */
+@import url('https://googleapis.com');
+
+.product-details-page__box {
+  @apply min-h-screen bg-white font-['Roboto'];
+}
+
+/* Đổi các class đang dùng Oxygen / Inter sang Roboto */
+.product-details-page__review-count {
+  @apply font-['Roboto'] text-[14px] leading-[23.87px] text-[#414141];
+}
+
+.product-details-page__quantity {
+  @apply font-['Roboto'] text-[16px] font-bold text-[#414141];
+}
+
+.product-details-page__author-name {
+  @apply font-['Roboto'] text-[16px] font-medium leading-[normal] text-[#3D3D3D];
+}
+
+.product-details-page__content {
+  @apply font-['Roboto'] text-[16px] leading-[1.705] text-[#616161];
+}
+
+.product-details-page__actions-like-time {
+  @apply flex items-center gap-[15px] font-['Roboto'] text-[15px] leading-[1.705] text-[#757575];
+}
+
+.product-details-page__text-2 {
+  @apply px-3 font-['Roboto'] text-[18px] font-medium leading-[28px] text-[#7D858D];
+}
+
+
+.product-details-page__icon-3 {
+  @apply h-4 w-4 shrink-0 text-[#D32F2F] transition-transform duration-150;
+  fill: #D32F2F;
+  stroke: #D32F2F;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.product-details-page__icon-4 {
+  @apply h-4 w-4 shrink-0 text-[#757575] transition-colors duration-150 hover:text-[#D32F2F];
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
 .product-details-page__dang-tai-san-el {
   @apply flex min-h-screen items-center justify-center text-[#0D47A1];
 }
@@ -84,10 +136,6 @@
   @apply flex items-center gap-[10px];
 }
 
-.product-details-page__review-count {
-  @apply font-['Oxygen'] text-[14px] leading-[23.87px] text-[#414141];
-}
-
 .product-details-page__current-price {
   @apply font-['Roboto'] text-[32px] font-normal leading-[39.52px] tracking-[0.25px] text-[#D32F2F];
 }
@@ -156,9 +204,6 @@
   @apply h-5 w-5;
 }
 
-.product-details-page__quantity {
-  @apply font-['Oxygen'] text-[16px] font-bold text-[#414141];
-}
 
 .product-details-page__da-them-text {
   @apply absolute inset-0 flex items-center justify-center text-[13px] font-bold text-white;
@@ -328,25 +373,12 @@
   @apply flex items-center justify-between;
 }
 
-.product-details-page__author-name {
-  @apply font-['Oxygen'] text-[16px] leading-[normal] text-[#3D3D3D];
-}
-
-.product-details-page__content {
-  @apply font-['Oxygen'] text-[16px] leading-[1.705] text-[#949494];
-}
 
 .product-details-page__actions-like-time {
   @apply flex items-center gap-[15px] font-['Oxygen'] text-[16px] leading-[1.705] text-[#949494];
 }
 
-.product-details-page__icon-3 {
-  @apply h-4 w-4 shrink-0 text-[#D32F2F];
-}
 
-.product-details-page__icon-4 {
-  @apply h-4 w-4 shrink-0;
-}
 
 .product-details-page__pagination {
   @apply flex w-full items-center justify-center gap-[28.3px];

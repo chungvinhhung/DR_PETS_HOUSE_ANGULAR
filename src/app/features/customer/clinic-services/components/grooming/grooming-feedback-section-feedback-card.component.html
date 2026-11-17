@@ -1,29 +1,45 @@
 <app-product-rating
-  [value]="review().rating ?? 5"
+  [value]="review()?.rating ?? 5"
   [size]="18"
   [gap]="2"
-  [fillColor]="'#FF9D00'"
-  [className]="'h-6 shrink-0'"
+  fillColor="#FF9D00"
+  className="h-6 shrink-0"
 />
+
 <p
   class="grooming-feedback-section-feedback-card__text"
   [appStyle]="{ height: FEEDBACK_QUOTE_HEIGHT }"
->“{{ review().text }}”</p>
-<div class="grooming-feedback-section-feedback-card__row" [appStyle]="{ height: FEEDBACK_AUTHOR_HEIGHT }">
-  <img [attr.src]="review().avatar" alt="" class="grooming-feedback-section-feedback-card__avatar" />
+>
+  “{{ review()?.text }}”
+</p>
+
+<div
+  class="grooming-feedback-section-feedback-card__row"
+  [appStyle]="{ height: FEEDBACK_AUTHOR_HEIGHT }"
+>
+  <img
+    [attr.src]="review()?.avatar"
+    alt=""
+    class="grooming-feedback-section-feedback-card__avatar"
+  />
   <div class="grooming-feedback-section-feedback-card__box">
-    <p class="grooming-feedback-section-feedback-card__name">{{ review().name }}</p>
-    <p class="grooming-feedback-section-feedback-card__company">{{ review().company }}</p>
+    <p class="grooming-feedback-section-feedback-card__name">{{ review()?.name }}</p>
+    <p class="grooming-feedback-section-feedback-card__company">{{ review()?.company }}</p>
   </div>
 </div>
+
 <div class="grooming-feedback-section-feedback-card__meta">
+   <time class="grooming-feedback-section-feedback-card__time">
+    {{formatReviewTime(review()?.createdAt ?? review()?.timeAgo ?? 23086) }}
+  </time>
+
+
   <span class="grooming-feedback-section-feedback-card__like">
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M20.84 8.61a5.5 5.5 0 0 0-7.78 0L12 9.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z" />
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
     </svg>
-    <span>Thích ({{ review().likes ?? 0 }})</span>
+    <span>Thích ({{ review()?.likes ?? 0 }})</span>
   </span>
-  <time class="grooming-feedback-section-feedback-card__time">
-    {{ review().timeAgo ?? '23.086 phút trước' }}
-  </time>
+
+ 
 </div>
