@@ -11,7 +11,8 @@ import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 import { productCardImages } from '../../../../shared/customer/assets/product-card-assets';
 import { normalizeBookingService } from './booking-api.service';
 import { normalizeProduct } from './product-api.service';
-import { analyzeSearchQuery, mergeById, rankSearchItems, demoteOtherSpecies } from '../smart-search';
+import { analyzeSearchQuery, describeMatch, mergeById, rankSearchItems, demoteOtherSpecies } from '../smart-search';
+import { ProductSearchIndexService } from '../product-search-index.service';
 import { buildProductPath } from '../../../../shared/customer/utils/slug';
 
 function toBackendScope(type: any) {
@@ -109,13 +110,30 @@ function sortClientSide(items: any[], sort: any) {
   return items;
 }
 
+/** Lần đầu tải chỉ mục có thể chậm (backend Render "ngủ") -> không bắt trang kết quả chờ quá lâu. */
+const LOCAL_INDEX_TIMEOUT_MS = 8000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    promise.catch(() => fallback),
+    new Promise<T>((resolve) => window.setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
 @Injectable({ providedIn: 'root' })
 export class SearchApiService {
   private readonly http = inject(CustomerHttpService);
+  private readonly productIndex = inject(ProductSearchIndexService);
+
+  /** Tải sẵn chỉ mục sản phẩm (tên + mô tả) khi người dùng bắt đầu tìm kiếm. */
+  warmUpIndex(): void {
+    this.productIndex.warmUp();
+  }
 
   /**
    * Tìm kiếm thông minh: phân tích câu -> gọi song song tối đa 3 từ khóa đơn -> gộp -> xếp hạng lại.
    * (Backend hiện từ chối từ khóa có dấu cách và phân biệt dấu — xem smart-search.ts.)
+   * Song song đó tìm trong chỉ mục FE (tên + danh mục + MÔ TẢ, không phân biệt dấu) và gộp vào kết quả.
    */
   async searchAll({ query, type = "all", sort = "relevant", limit = 50 }: any = {}) {
     const analysis = analyzeSearchQuery(query);
@@ -132,28 +150,36 @@ export class SearchApiService {
       return { ...baseResponse, total: 0, counts: this.countBuckets(buckets), results: buckets };
     }
 
-    const settled = await Promise.allSettled(
-      analysis.apiKeywords.map((keyword) =>
-        this.http.get("/search", {
-          params: { keyword, scope: toBackendScope(type), sort: toBackendSort(sort), page: 1, limit },
-        }),
+    const includeProducts = type === "all" || type === "shopping";
+    const [settled, localProducts] = await Promise.all([
+      Promise.allSettled(
+        analysis.apiKeywords.map((keyword) =>
+          this.http.get("/search", {
+            params: { keyword, scope: toBackendScope(type), sort: toBackendSort(sort), page: 1, limit },
+          }),
+        ),
       ),
-    );
+      includeProducts ? withTimeout(this.productIndex.search(analysis.terms, limit), LOCAL_INDEX_TIMEOUT_MS, []) : Promise.resolve([]),
+    ]);
     const payloads = settled
       .filter((result): result is PromiseFulfilledResult<any> => result.status === "fulfilled")
       .map((result) => splitSearchResults(assertSuccess(result.value)));
-    if (!payloads.length) {
+    // Backend lỗi hết mà chỉ mục FE cũng không có gì -> báo lỗi để trang dùng dữ liệu dự phòng
+    if (!payloads.length && !localProducts.length) {
       throw (settled[0] as PromiseRejectedResult).reason;
     }
 
     const products = demoteOtherSpecies(
       rankSearchItems(
-        mergeById(payloads.map((payload) => payload.products), (item: any) => item.id ?? item._id).map(normalizeProduct),
+        mergeById(
+          [...payloads.map((payload) => payload.products), localProducts],
+          (item: any) => item.id ?? item._id,
+        ).map(normalizeProduct),
         analysis.terms,
         "product",
       ),
       analysis.pet,
-    );
+    ).map((product: any) => ({ ...product, ...describeMatch(product, analysis.terms) }));
     const services = rankSearchItems(
       mergeById(payloads.map((payload) => payload.services), (item: any) => item.id ?? item.service_id).map(normalizeSearchService),
       analysis.terms,
@@ -181,20 +207,33 @@ export class SearchApiService {
   /**
    * Gợi ý khi đang gõ: gọi /search/suggestions với từ khóa đặc trưng nhất,
    * rồi xếp hạng lại theo TẤT CẢ các từ người dùng gõ.
+   * /search/suggestions chỉ tìm theo TÊN -> bổ sung sản phẩm khớp MÔ TẢ từ chỉ mục FE (nếu đã tải xong).
    */
   async getSearchSuggestionsApi(query: any, limit: any = 6) {
     const analysis = analyzeSearchQuery(query);
     const keyword = analysis.apiKeywords[0];
     if (!keyword) return { suggestions: [], products: [], total: 0, analysis };
 
-    const response: any = await this.http.get("/search/suggestions", {
-      params: { q: keyword, limit: Math.max(Number(limit) * 2, 10) },
-    });
-    const payload = assertSuccess<any>(response);
-    const rawItems: any[] = Array.isArray(payload) ? payload : Array.isArray(payload?.suggestions) ? payload.suggestions : [];
+    const localProducts = this.productIndex.searchIfReady(analysis.terms, 10);
+    let rawItems: any[] = [];
+    try {
+      const response: any = await this.http.get("/search/suggestions", {
+        params: { q: keyword, limit: Math.max(Number(limit) * 2, 10) },
+      });
+      const payload = assertSuccess<any>(response);
+      rawItems = Array.isArray(payload) ? payload : Array.isArray(payload?.suggestions) ? payload.suggestions : [];
+    } catch (error) {
+      if (!localProducts.length) throw error;
+    }
 
     const ranked = rankSearchItems(
-      rawItems.map((item: any) => ({ ...item, name: item.keyword || item.name || "", categoryName: item.category })),
+      mergeById(
+        [
+          rawItems.map((item: any) => ({ ...item, name: item.keyword || item.name || "", categoryName: item.category })),
+          localProducts.map((product: any) => ({ ...product, keyword: product.name, type: "product" })),
+        ],
+        (item: any) => item.id ?? item.keyword,
+      ),
       analysis.terms,
       "product",
     );
@@ -215,8 +254,8 @@ export class SearchApiService {
     const products = ranked
       .filter((item: any) => item.type === "product" && item.id)
       .slice(0, 2)
-      .map((item: any) => normalizeProduct({ ...item, categoryName: item.category }))
-      .map((product: any) => ({ ...product, href: buildProductPath(product) }));
+      .map((item: any) => normalizeProduct({ ...item, categoryName: item.categoryName ?? item.category }))
+      .map((product: any) => ({ ...product, ...describeMatch(product, analysis.terms), href: buildProductPath(product) }));
 
     return {
       suggestions: textSuggestions,

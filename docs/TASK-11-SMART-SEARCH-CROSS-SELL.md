@@ -27,7 +27,25 @@
 - Bán chéo sang **dịch vụ**: thức ăn → "Khám & điều trị"; chăm sóc/vệ sinh → "Grooming & Spa".
 - Hiển thị: dropdown ô tìm kiếm (mục **"Thường mua kèm"**, 2 sản phẩm) và trang kết quả (mục **"Thường được mua kèm"**).
 
-File sửa: `search-api.service.ts`, `nav-search-bar.*`, `search-suggestion-dropdown.*`, `mobile-search-panel.component.ts`, `search/pages/search-results-page.*`, `products-section.*`, `search-results-content.*`, `search-results-page.helpers.ts`.
+**Tìm trong MÔ TẢ sản phẩm** (bổ sung) — `src/app/core/customer/services/product-search-index.service.ts`:
+
+- Kiểm tra backend: `/search` có tìm trong mô tả nhưng **phân biệt dấu** (`tieu hoa` không ra "tiêu hóa"); `/search/suggestions` **chỉ tìm theo tên** (`stress` → 0 gợi ý dù mô tả sản phẩm KONG có chữ này).
+- FE tải gọn toàn bộ catalog (id, tên, danh mục, **mô tả**, giá, ảnh) **một lần mỗi phiên**: 2 request, cache 10 phút trong sessionStorage, tải sẵn khi người dùng bấm vào ô tìm kiếm. Chỉ bật khi catalog ≤ 600 sản phẩm.
+- Tìm trên tên + danh mục + mô tả: gõ không dấu thì so khớp không dấu, gõ có dấu thì so khớp có dấu. Có điểm thưởng khi cụm từ ("tiêu hóa", "rụng lông") đứng liền nhau trong mô tả. Từ ngắn ≤ 3 ký tự phải khớp nguyên từ.
+- Kết quả được **gộp** với kết quả backend rồi xếp hạng chung: khớp tên được ưu tiên hơn khớp mô tả.
+- Sản phẩm khớp **nhờ mô tả** (từ khóa không có trong tên/danh mục) hiển thị đoạn trích **"Trong mô tả: …[từ khóa]…"** có tô vàng, ở cả trang kết quả lẫn dropdown. Phần tô sáng được render bằng `@for` với từng `<span>`, không dùng `innerHTML`, nên mô tả sản phẩm không thể chèn mã độc.
+- Nếu chỉ mục tải quá 8 giây hoặc lỗi thì bỏ qua, vẫn dùng kết quả backend. Nếu backend lỗi mà chỉ mục có kết quả thì vẫn hiển thị kết quả từ chỉ mục.
+
+Kết quả đo trên catalog thật (122 sản phẩm):
+
+| Từ khóa | Backend | Chỉ mục FE | Ví dụ khớp nhờ mô tả |
+|---|---|---|---|
+| `tieu hoa` | 10 (khớp rời "tieu"/"hoa", phần lớn không liên quan) | 20 (19 nhờ mô tả) | Bát ăn PetBowl: "…hỗ trợ **tiêu hóa** tốt hơn…" |
+| `rung long` | 7 | 5, cả 5 nhờ mô tả | Dây dắt HAND IN HAND: "…giảm sự **rụng lông**…" |
+| `stress` (dropdown) | 0 gợi ý | 1 | KONG Classic: "…giúp chó xả **stress**…" |
+| `omega` | 9 | 9 (7 nhờ mô tả) | Whiskas: "…bổ sung **Omega** 3 & 6…" |
+
+File sửa: `product-search-index.service.ts` (mới), `smart-search.ts` (`filterByTerms`, `buildMatchSnippet`, `describeMatch`), `products-grid.*`, `product-suggestion-card.*`, `search-api.service.ts`, `nav-search-bar.*`, `search-suggestion-dropdown.*`, `mobile-search-panel.component.ts`, `search/pages/search-results-page.*`, `products-section.*`, `search-results-content.*`, `search-results-page.helpers.ts`.
 
 ## 3. Kịch bản test
 
@@ -48,8 +66,16 @@ Lần gọi đầu có thể chậm 30–60 giây do backend Render "ngủ".
 | S11-10 | Bàn phím: gõ `pate`, nhấn ↓ nhiều lần, Enter | Con trỏ đi qua gợi ý → sản phẩm → **sản phẩm mua kèm** → "Xem tất cả"; Enter mở đúng mục |
 | S11-11 | Ngắt mạng (DevTools → Offline), gõ `tắm` | Dropdown vẫn hiện dữ liệu mẫu (fallback), không trắng trang |
 | S11-12 | Trang kết quả, chọn tab "Sản phẩm" | Số đếm Sản phẩm chỉ tính kết quả khớp, **không cộng** sản phẩm bán chéo |
+| S11-13 | Bấm vào ô tìm kiếm (chưa gõ gì) | Network có 2 request `GET /products?page=1&limit=100` và `page=2` (tải chỉ mục). Bấm lần nữa / F5 trong 10 phút thì **không** tải lại (Application → Session Storage có `drPetProductSearchIndex`) |
+| S11-14 | Tìm `tieu hoa` (không dấu) | Có các sản phẩm như *Bát ăn PetBowl*, *Cỏ khô Alfalfa* dù tên không chứa từ này; dưới thẻ có dòng **"Trong mô tả: …hỗ trợ [tiêu hóa]…"**, chữ "tiêu hóa" tô vàng |
+| S11-15 | Gõ `stress` vào ô tìm kiếm (không Enter) | Dropdown hiện sản phẩm **KONG Classic** kèm dòng trích "…xả **stress**…" (API gợi ý của backend trả 0) |
+| S11-16 | Tìm `rung long` | Ra dây dắt HAND IN HAND, gel vitamin… với đoạn trích "giảm **rụng lông**" |
+| S11-17 | Tìm `pate` | Sản phẩm **tên** có "pate" xếp trước KONG Classic (chỉ có "pate" trong mô tả); thẻ pate **không** có dòng "Trong mô tả" |
+| S11-18 | Tìm `ăn` | Đoạn trích không tô "ăn" bên trong "ch**ăn**" (từ ngắn chỉ khớp nguyên từ) |
+| S11-19 | DevTools → Network → chặn URL `*products?page=*` rồi tìm `pate` | Sau tối đa 8 giây vẫn ra kết quả từ backend, không treo, không lỗi console |
 
 ## 4. Giới hạn đã biết
 
 - Khôi phục dấu dựa trên từ điển ngành (khoảng 50 cụm/từ). Từ ngoài từ điển gõ không dấu vẫn phụ thuộc backend. Đây là lý do nên làm phần BE trong `BE-PROPOSAL-TASK-11-14.md`.
 - Mỗi lần tìm gọi tối đa 3 request song song (do backend không nhận dấu cách).
+- Chỉ mục FE phù hợp với catalog nhỏ (hiện 122 sản phẩm, khoảng 950KB dữ liệu gốc mỗi phiên). Khi vượt 600 sản phẩm, chỉ mục tự tắt và chỉ còn dùng backend. Lúc đó cần backend làm mục P2 trong đề xuất.

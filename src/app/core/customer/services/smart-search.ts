@@ -191,14 +191,19 @@ function scoreItem(item: any, terms: string[], fields: RankFieldWeights) {
     if (best > 0) matched += 1;
     score += best;
   }
-  // Thưởng khi 2 từ liền nhau trong câu tìm cũng đứng liền nhau trong tên ("sữa tắm" > "xương vị sữa ... tắm")
-  const name = fieldTexts[0];
+  // Thưởng khi 2 từ liền nhau trong câu tìm cũng đứng liền nhau trong tên/mô tả
+  // ("sữa tắm" > "xương vị sữa ... tắm"; mô tả có "hỗ trợ tiêu hóa" khi tìm "tiêu hóa")
   for (let index = 0; index < terms.length - 1; index += 1) {
     const pair = `${terms[index]} ${terms[index + 1]}`;
     const toned = hasVietnameseTones(pair);
-    if ((toned ? name.toned : name.folded).includes(` ${toned ? pair : foldText(pair)} `)) score += name.weight;
+    const needle = ` ${toned ? pair : foldText(pair)} `;
+    score += Math.max(0, ...fieldTexts.filter((field) => (toned ? field.toned : field.folded).includes(needle)).map((field) => field.weight));
   }
   return { matched, score };
+}
+
+function normalizeTerms(terms: string[]): string[] {
+  return Array.from(new Set(terms.map((term) => term.toLowerCase().normalize('NFC').trim()).filter(Boolean)));
 }
 
 /**
@@ -207,7 +212,7 @@ function scoreItem(item: any, terms: string[], fields: RankFieldWeights) {
  * Loại các mục chỉ khớp quá ít từ (< 60%) khi câu có nhiều từ.
  */
 export function rankSearchItems<T>(items: T[], terms: string[], kind: keyof typeof FIELDS_BY_KIND = 'product'): T[] {
-  const normalizedTerms = Array.from(new Set(terms.map((term) => term.toLowerCase().normalize('NFC').trim()).filter(Boolean)));
+  const normalizedTerms = normalizeTerms(terms);
   if (!normalizedTerms.length) return items;
   const fields = FIELDS_BY_KIND[kind];
 
@@ -223,6 +228,116 @@ export function rankSearchItems<T>(items: T[], terms: string[], kind: keyof type
   return kept
     .sort((a, b) => b.matched - a.matched || b.score - a.score || a.index - b.index)
     .map((entry) => entry.item);
+}
+
+/**
+ * Lọc danh sách do FE tự có (chỉ mục sản phẩm cục bộ): KHÁC rankSearchItems ở chỗ mục không khớp
+ * từ nào ở tên / danh mục / mô tả sẽ bị loại. Không phân biệt dấu khi người dùng gõ không dấu
+ * ("tieu hoa" khớp "tiêu hóa" trong mô tả).
+ */
+export function filterByTerms<T>(items: T[], terms: string[], kind: keyof typeof FIELDS_BY_KIND = 'product'): T[] {
+  const normalizedTerms = normalizeTerms(terms);
+  if (!normalizedTerms.length) return [];
+  const fields = FIELDS_BY_KIND[kind];
+  const minMatched = normalizedTerms.length <= 1 ? 1 : Math.ceil(normalizedTerms.length * 0.6);
+  return items
+    .map((item, index) => ({ item, index, ...scoreItem(item, normalizedTerms, fields) }))
+    .filter((entry) => entry.matched >= minMatched)
+    .sort((a, b) => b.matched - a.matched || b.score - a.score || a.index - b.index)
+    .map((entry) => entry.item);
+}
+
+/** Một đoạn chữ của đoạn trích; hit = true là từ khóa (tô sáng). */
+export interface SnippetSegment {
+  text: string;
+  hit: boolean;
+}
+
+/**
+ * Bản "so khớp được" của 1 chuỗi, GIỮ NGUYÊN độ dài để vị trí khớp trỏ đúng chuỗi gốc:
+ * toned = chữ thường có dấu; folded = bỏ dấu từng ký tự (ký tự nào bỏ dấu ra != 1 ký tự thì giữ nguyên).
+ */
+function searchableForms(text: string) {
+  const toned = text.toLowerCase();
+  const folded = Array.from(toned, (char) => {
+    const plain = removeVietnameseTones(char);
+    return plain.length === char.length ? plain : char;
+  }).join('');
+  return { toned, folded };
+}
+
+function findTermRanges(text: string, terms: string[]): Array<[number, number]> {
+  const forms = searchableForms(text);
+  const ranges: Array<[number, number]> = [];
+  for (const term of terms) {
+    const toned = hasVietnameseTones(term);
+    const haystack = toned ? forms.toned : forms.folded;
+    const needle = toned ? term : foldText(term);
+    if (!needle) continue;
+    // Từ ngắn ("ăn", "da") phải khớp nguyên từ, tránh tô "ăn" trong "chăn", "da" trong "dạng"
+    const wholeWordOnly = needle.length <= 3;
+    const isWordChar = (char: string | undefined) => Boolean(char && /[\p{L}\p{N}]/u.test(char));
+    for (let from = haystack.indexOf(needle); from >= 0; from = haystack.indexOf(needle, from + needle.length)) {
+      const to = from + needle.length;
+      if (wholeWordOnly && (isWordChar(haystack[from - 1]) || isWordChar(haystack[to]))) continue;
+      ranges.push([from, to]);
+    }
+  }
+  // Gộp các đoạn chồng / liền nhau ("tiêu" + " " + "hóa" -> "tiêu hóa")
+  ranges.sort((a, b) => a[0] - b[0]);
+  const merged: Array<[number, number]> = [];
+  for (const range of ranges) {
+    const last = merged[merged.length - 1];
+    if (last && range[0] <= last[1] + 1 && /^\s?$/.test(text.slice(last[1], range[0]))) last[1] = Math.max(last[1], range[1]);
+    else merged.push([...range]);
+  }
+  return merged;
+}
+
+/**
+ * Đoạn trích ~2*radius ký tự quanh vị trí khớp ĐẦU TIÊN trong `text`, đã chia thành segment để tô sáng
+ * (render bằng @for, không dùng innerHTML -> không có rủi ro XSS từ mô tả sản phẩm).
+ */
+export function buildMatchSnippet(text: unknown, terms: string[], radius = 60): SnippetSegment[] {
+  const source = String(text ?? '').normalize('NFC').replace(/\s+/g, ' ').trim();
+  const normalizedTerms = normalizeTerms(terms);
+  if (!source || !normalizedTerms.length) return [];
+  const ranges = findTermRanges(source, normalizedTerms);
+  if (!ranges.length) return [];
+
+  let start = Math.max(0, ranges[0][0] - radius);
+  let end = Math.min(source.length, ranges[0][1] + radius);
+  // Cắt ở ranh giới từ cho dễ đọc
+  if (start > 0) start = source.indexOf(' ', start) + 1 || start;
+  if (end < source.length) end = source.lastIndexOf(' ', end) > ranges[0][1] ? source.lastIndexOf(' ', end) : end;
+
+  const segments: SnippetSegment[] = [];
+  let cursor = start;
+  for (const [from, to] of ranges) {
+    if (to <= start || from >= end) continue;
+    const hitStart = Math.max(from, start);
+    const hitEnd = Math.min(to, end);
+    if (hitStart > cursor) segments.push({ text: source.slice(cursor, hitStart), hit: false });
+    segments.push({ text: source.slice(hitStart, hitEnd), hit: true });
+    cursor = hitEnd;
+  }
+  if (cursor < end) segments.push({ text: source.slice(cursor, end), hit: false });
+  if (start > 0) segments.unshift({ text: '…', hit: false });
+  if (end < source.length) segments.push({ text: '…', hit: false });
+  return segments;
+}
+
+/**
+ * Đánh dấu VÌ SAO 1 sản phẩm khớp: nếu có từ khóa chỉ xuất hiện trong MÔ TẢ (không có trong tên/danh mục)
+ * thì trả về đoạn trích mô tả có tô sáng để hiển thị dưới thẻ sản phẩm.
+ */
+export function describeMatch(product: any, terms: string[]): { matchedInDescription: boolean; matchSnippet: SnippetSegment[] } {
+  const normalizedTerms = normalizeTerms(terms);
+  const titleText = `${product?.name ?? ''} ${product?.categoryName ?? ''} ${product?.productCode ?? ''}`;
+  const titleRanges = (term: string) => findTermRanges(titleText, [term]).length > 0;
+  const descriptionOnly = normalizedTerms.filter((term) => !titleRanges(term) && findTermRanges(String(product?.description ?? ''), [term]).length > 0);
+  if (!descriptionOnly.length) return { matchedInDescription: false, matchSnippet: [] };
+  return { matchedInDescription: true, matchSnippet: buildMatchSnippet(product.description, normalizedTerms) };
 }
 
 /** Gộp nhiều danh sách theo id, giữ bản xuất hiện đầu tiên. */

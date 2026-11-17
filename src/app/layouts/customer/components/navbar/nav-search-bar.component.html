@@ -11,7 +11,7 @@
   placeholder="Bạn muốn tìm gì nè?"
   [value]="term() ?? ''"
   (input)="handle3($any($event))"
-  (focusin)="isSuggestOpen.set(term().trim().length > 0)"
+  (focusin)="isSuggestOpen.set(term().trim().length > 0); searchApi.warmUpIndex()"
   class="input-search pl-10 pr-[50px] text-xs tracking-[0.4px] text-black/87"
   aria-label="Tìm kiếm"
   [attr.aria-expanded]="shouldShowSuggestions()"

@@ -54,6 +54,8 @@ export class MobileSearchPanelComponent {
       this.open();
       const cleanup = untracked(() => {
         if (!this.open()) return undefined;
+        // Tải sẵn chỉ mục sản phẩm (tìm trong mô tả) ngay khi mở khung tìm kiếm
+        this.searchApi.warmUpIndex();
         this.searchApi.getSearchSuggestionsApi("tắm")
           .then((apiSuggestions: any) => {
             this.defaultSuggestions.set(apiSuggestions);

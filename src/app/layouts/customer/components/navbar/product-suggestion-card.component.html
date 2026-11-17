@@ -8,4 +8,12 @@
     <app-highlighted-text [text]="product().name" [keyword]="query()" />
   </span>
   <span class="product-suggestion-card__price">{{ formatVnd(product().price) }}</span>
+  @if (product().matchSnippet?.length) {
+    <!-- Khớp trong MÔ TẢ: hiện đoạn trích có tô sáng từ khóa -->
+    <span class="product-suggestion-card__snippet" [attr.title]="'Khớp trong mô tả sản phẩm'">
+      @for (segment of product().matchSnippet; track $index) {
+        <span [class.product-suggestion-card__hit]="segment.hit">{{ segment.text }}</span>
+      }
+    </span>
+  }
 </span>

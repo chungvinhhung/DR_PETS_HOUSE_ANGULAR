@@ -1,0 +1,16 @@
+
+.products-grid__item {
+  @apply flex flex-col items-center gap-2;
+}
+
+.products-grid__snippet {
+  @apply line-clamp-3 w-full max-w-[200px] font-['Roboto'] text-[12px] leading-[17px] text-black/60;
+}
+
+.products-grid__hit {
+  @apply rounded-[2px] bg-[#FFF176] text-[rgba(0,0,0,0.87)];
+}
+
+.products-grid__snippet-label {
+  @apply mr-1 font-medium text-[#0D47A1];
+}

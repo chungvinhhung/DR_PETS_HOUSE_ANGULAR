@@ -16,7 +16,9 @@ Nguyên nhân có thể nằm ở OpenAPI validator (`allowReserved` / `pattern`
 
 - Lưu thêm trường `searchText` = `lower(unaccent(name + ' ' + categoryName + ' ' + productCode))` khi tạo/sửa sản phẩm, và đánh index.
 - Truy vấn: bỏ dấu từ khóa, tách từ, yêu cầu khớp **tất cả** từ (AND), hoặc dùng MongoDB Atlas Search / text index với `$text` và chấm điểm.
-- Kết quả: `meo` = `mèo`, `thuc an cho meo` ra đúng thức ăn cho mèo, không cần từ điển ở FE.
+- `searchText` nên gồm cả **mô tả** (`description`), có thể đặt trọng số thấp hơn tên. Cho `/search/suggestions` dùng chung chỉ mục này: hiện endpoint gợi ý chỉ tìm theo tên (`?q=stress` → 0 dù mô tả sản phẩm KONG có chữ này).
+- Trả thêm `highlight` / `matchedField` (`name` | `description`) cho từng kết quả, để FE không phải tự tính đoạn trích.
+- Kết quả: `meo` = `mèo`, `thuc an cho meo` ra đúng thức ăn cho mèo, không cần từ điển ở FE. Khi có, FE có thể bỏ chỉ mục cục bộ (`product-search-index.service.ts`), vì chỉ mục này chỉ phù hợp catalog nhỏ (≤ 600 sản phẩm).
 
 ## P3 — Slug sản phẩm thật
 
