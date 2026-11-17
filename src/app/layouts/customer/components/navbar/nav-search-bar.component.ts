@@ -17,6 +17,7 @@ import { buildSearchPath } from '../../../../shared/customer/utils/slug';
   standalone: true,
   imports: [SearchSuggestionDropdownComponent],
   templateUrl: './nav-search-bar.component.html',
+  styleUrl: './nav-search-bar.component.scss',
   host: {
     '[class]': '`group relative h-[37px] w-[150px] shrink-0 xl:w-[200px] ${className()}`',
     '(submit)': 'handleSubmit($any($event))',
@@ -78,71 +79,66 @@ export class NavSearchBarComponent {
   readonly crossSellProducts = signal<any[]>([]);
 
   constructor() {
-        // Phần này nằm trong constructor() hoặc phương thức khởi tạo của bạn
-    effect((onCleanup) => {
-      const term = this.trimmedTerm();
-      
-      // (Tuỳ chọn) Nếu ô tìm kiếm trống thì reset luôn và không gọi API
-      if (!term) {
-        this.searchSuggestions.set(EMPTY_SUGGESTIONS);
-        this.crossSellProducts.set([]);
-        this.isLoadingSuggestions.set(false);
-        return;
-      }
+    // useEffect(..., [trimmedTerm])
+    effect((onCleanup: any) => {
+      this.trimmedTerm();
+      const cleanup = untracked(() => {
+        if (!this.trimmedTerm()) {
+          this.searchSuggestions.set(EMPTY_SUGGESTIONS);
+          this.crossSellProducts.set([]);
+          this.isLoadingSuggestions.set(false);
+          this.suggestionError.set("");
+          this.activeIndex.set(-1);
+          return undefined;
+        }
 
-      this.isLoadingSuggestions.set(true);
-      let active = true;
+        this.isLoadingSuggestions.set(true);
+        this.suggestionError.set("");
+        this.activeIndex.set(-1);
 
-      const timer = window.setTimeout(() => {
-        this.searchApi.getSearchSuggestionsApi(term)
-          .then((apiSuggestions: any) => {
-            if (!active) return;
-
-            this.searchSuggestions.set({
-              suggestions: apiSuggestions?.suggestions || [],
-              products: apiSuggestions?.products || [],
-              total: apiSuggestions?.total || 0,
+        let active = true;
+        const timer = window.setTimeout(() => {
+          this.searchApi.getSearchSuggestionsApi(this.trimmedTerm())
+            .then((apiSuggestions: any) => {
+              if (!active) return;
+              this.searchSuggestions.set(apiSuggestions);
+              this.loadCrossSell(apiSuggestions, () => active);
+            })
+            .catch(() => {
+              if (!active) return;
+              this.searchSuggestions.set(getMockSearchSuggestions(this.trimmedTerm()));
+              this.crossSellProducts.set([]);
+              this.suggestionError.set("");
+            })
+            .finally(() => {
+              this.isLoadingSuggestions.set(false);
             });
+        }, SEARCH_DEBOUNCE_MS);
 
-            this.loadCrossSell(apiSuggestions, () => active);
-          })
-          .catch(() => {
-            if (!active) return;
-
-            this.searchSuggestions.set(getMockSearchSuggestions(term));
-            this.crossSellProducts.set([]);
-            this.suggestionError.set("");
-          })
-          .finally(() => {
-            if (!active) return;
-            this.isLoadingSuggestions.set(false);
-          });
-      }, SEARCH_DEBOUNCE_MS);
-
-      // Đăng ký hàm dọn dẹp trực tiếp với onCleanup của Angular
-      onCleanup(() => {
-        active = false;
-        window.clearTimeout(timer);
+        return () => {
+          active = false;
+          window.clearTimeout(timer);
+        };
       });
+      if (typeof cleanup === 'function') onCleanup(cleanup);
     });
-  } // <-- Dấu đóng của constructor()
+  }
 
   /** Lấy 2 sản phẩm bán chéo cho sản phẩm khớp nhất (không chặn hiển thị gợi ý chính). */
   private loadCrossSell(apiSuggestions: any, isActive: () => boolean) {
-    const seeds = apiSuggestions?.products ?? [];
+    const seeds = apiSuggestions.products ?? [];
     if (!seeds.length) {
       this.crossSellProducts.set([]);
       return;
     }
-    this.crossSell.suggest(seeds, { pet: apiSuggestions?.analysis?.pet ?? null, limit: 2 })
+    this.crossSell.suggest(seeds, { pet: apiSuggestions.analysis?.pet ?? null, limit: 2 })
       .then((result) => {
-        if (isActive()) this.crossSellProducts.set(result?.products ?? []);
+        if (isActive()) this.crossSellProducts.set(result.products);
       })
       .catch(() => {
         if (isActive()) this.crossSellProducts.set([]);
       });
   }
-
 
   protected closeSuggestions() {
     this.isSuggestOpen.set(false);
@@ -150,7 +146,7 @@ export class NavSearchBarComponent {
   }
 
   protected searchByKeyword(keyword: any) {
-    const query = (keyword || '').trim();
+    const query = keyword.trim();
     this.closeSuggestions();
     // Slug chuẩn SEO trên URL; câu gốc (có dấu) truyền qua history.state để không mất dấu tiếng Việt
     this.navService.navigate(buildSearchPath(query), { state: { searchQuery: query } });
@@ -158,21 +154,11 @@ export class NavSearchBarComponent {
 
   protected openProduct(product: any) {
     this.closeSuggestions();
-    this.navService.navigate(product.href || `/product-details/${product.id}`);
+    this.navService.navigate(product.href);
   }
 
   protected selectSuggestion(suggestion: any) {
     this.term.set(suggestion.label);
-    if (suggestion.type === 'product' && suggestion.targetId) {
-      this.closeSuggestions();
-      this.navService.navigate(`/product-details/${suggestion.targetId}`);
-      return;
-    }
-    if (suggestion.type === 'service') {
-      this.closeSuggestions();
-      this.navService.navigate('/booking');
-      return;
-    }
     this.searchByKeyword(suggestion.label);
   }
 

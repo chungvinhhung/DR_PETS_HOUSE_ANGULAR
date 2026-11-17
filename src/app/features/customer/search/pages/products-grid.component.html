@@ -2,6 +2,6 @@
   <app-shopping-product-card
     [product]="product"
     [variant]="product.discountPercent ? 'tag' : index === 1 ? 'hover' : 'default'"
-    [href]="'/product-details/' + (product.id || product._id)"
+    [href]="'/product-details'"
   />
 }

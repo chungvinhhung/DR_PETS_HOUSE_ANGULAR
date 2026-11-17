@@ -23,6 +23,7 @@ import { buildSearchPath, buildSearchSlug, searchSlugToQuery } from '../../../..
   standalone: true,
   imports: [NavBarComponent, SearchSidebarComponent, ResultsHeaderComponent, SearchResultsContentComponent, EmptyResultsContentComponent, FooterComponent, ReactStyleDirective],
   templateUrl: './search-results-page.component.html',
+  styleUrl: './search-results-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white font-[\'Roboto\']',
   },
@@ -143,9 +144,10 @@ export class SearchResultsPageComponent {
           })
           .catch(() => {
             if (!active) return;
+            const fallback = mockSearchApi({ query: this.query(), type: this.activeType(), sort: this.activeSort() });
             this.searchResponse.set({
               ...EMPTY_SEARCH_RESPONSE,
-              query: this.query(),
+              ...fallback,
               emptyState: SEARCH_EMPTY_STATE,
             });
             this.loadError.set("");
