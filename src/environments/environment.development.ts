@@ -1,6 +1,7 @@
-import { EnvironmentConfig } from './environment.model';
+import { EnvironmentConfig } from "./environment.model";
+
 
 export const environment: EnvironmentConfig = {
   production: false,
-  apiBaseUrl: 'http://localhost:8080/api/v1',
+  apiBaseUrl: 'https://pet-clinic-backend-a4lj.onrender.com/api/v1',
 };
