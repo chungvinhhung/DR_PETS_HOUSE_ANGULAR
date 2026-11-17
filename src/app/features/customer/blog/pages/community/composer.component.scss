@@ -35,5 +35,5 @@
 }
 
 .composer__layer-2 {
-  @apply absolute;
+  @apply absolute left-0 top-12 z-20 flex w-44 flex-col gap-2 rounded-2xl bg-white p-3 shadow-xl;
 }
