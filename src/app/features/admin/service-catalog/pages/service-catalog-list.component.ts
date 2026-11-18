@@ -78,6 +78,10 @@ export class ServiceCatalogListComponent {
   readonly openMenuId = signal<string | null>(null);
   readonly configuringService = signal<CatalogService | null>(null);
   readonly searchText = signal('');
+  readonly moreFiltersOpen = signal(false);
+  readonly extraFiltersCount = computed(() =>
+    Number(this.filters().mode !== 'ALL') + Number(this.filters().status !== 'ALL'));
+
 
   readonly filters = signal<ListFilters>({
     branchId: 'ALL',
@@ -148,6 +152,19 @@ export class ServiceCatalogListComponent {
   setServiceType(value: string): void {
     if (!['ALL', 'MEDICAL', 'GROOMING'].includes(value)) return;
     this.patchFilters({ serviceType: value as 'ALL' | 'MEDICAL' | 'GROOMING', page: 1 });
+  }
+
+  toggleMoreFilters(event: MouseEvent): void {
+    event.stopPropagation();
+    this.moreFiltersOpen.update((opened) => !opened);
+    this.openMenuId.set(null);
+  }
+
+  closeMoreFilters(): void { this.moreFiltersOpen.set(false); }
+
+  clearOtherFilters(): void {
+    if (this.extraFiltersCount()) this.patchFilters({ mode: 'ALL', status: 'ALL', page: 1 });
+    this.closeMoreFilters();
   }
 
   setMode(mode: string): void {
@@ -244,14 +261,18 @@ export class ServiceCatalogListComponent {
     this.openMenuId.update((id) => id === serviceId ? null : serviceId);
   }
 
-  @HostListener('document:click')
-  closeMenuOnOutsideClick(): void {
+  @HostListener('document:click', ['$event'])
+  closeMenuOnOutsideClick(event: MouseEvent): void {
     this.openMenuId.set(null);
+    if (!(event.target as HTMLElement | null)?.closest?.('[data-catalog-more]')) {
+      this.moreFiltersOpen.set(false);
+    }
   }
 
   @HostListener('document:keydown.escape')
   closeMenuOnEscape(): void {
     this.openMenuId.set(null);
+    this.closeMoreFilters();
   }
 
   selectAction(action: CatalogAction, service: CatalogService): void {

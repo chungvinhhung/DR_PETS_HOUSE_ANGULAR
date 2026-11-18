@@ -55,7 +55,7 @@
           <input type="tel" placeholder="Nhập số điện thoại" [class.field--identified]="!!selectedCustomer()"
             [value]="customerPhone()" (input)="editCustomerPhone($any($event.target).value)">
         </label>
-        <label class="field">Email (không bắt buộc)
+        <label class="field">Email
           <input type="email" placeholder="Nhập email nếu có" [class.field--identified]="!!selectedCustomer()"
             [readOnly]="!!selectedCustomer()" [value]="customerEmail()" (input)="customerEmail.set($any($event.target).value)">
         </label>
@@ -117,19 +117,22 @@
               <label class="field">Tên thú cưng <span class="required">*</span>
                 <input placeholder="Nhập tên" [value]="pet.name" (input)="updatePet(pet.id,'name',$any($event.target).value)">
               </label>
-              <label class="field">Loài <span class="required">*</span>
+              <div class="field">
+                <label [for]="'appointment-pet-species-' + pet.id">Loài <span class="required">*</span></label>
                 <div class="pet-new__species-control" [class.pet-new__species-control--other]="pet.species === 'Khác'">
-                  <select [value]="pet.species" (change)="updatePet(pet.id,'species',$any($event.target).value)">
+                  <select [id]="'appointment-pet-species-' + pet.id" [value]="pet.species"
+                    (change)="updatePet(pet.id,'species',$any($event.target).value)">
                     <option value="">Chọn loài</option><option value="Chó">Chó</option>
                     <option value="Mèo">Mèo</option><option value="Khác">Khác</option>
                   </select>
                   @if (pet.species === 'Khác') {
                     <input type="text" maxlength="80" placeholder="VD: chim, rắn..."
-                      aria-label="Nhập tên loài khác" [value]="pet.speciesDetail || ''"
+                      aria-label="Nhập chi tiết loài thú cưng" [required]="pet.selected"
+                      [value]="pet.speciesDetail || ''"
                       (input)="updatePet(pet.id,'speciesDetail',$any($event.target).value)">
                   }
                 </div>
-              </label>
+              </div>
               <label class="field">Giống
                 <input placeholder="Nhập giống" [value]="pet.breed" (input)="updatePet(pet.id,'breed',$any($event.target).value)">
               </label>
