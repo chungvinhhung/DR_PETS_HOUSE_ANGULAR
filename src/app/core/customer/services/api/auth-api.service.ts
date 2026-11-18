@@ -83,13 +83,16 @@ export class AuthApiService {
     }
   }
 
-  async register({ fullName, phone, email, password }: any) {
+  async register({ fullName, phone, email, password, confirmPassword }: any) {
     try {
+      const cleanPhone = String(phone || '').replace(/\s+/g, '');
       const payload: any = {
-        fullName: fullName || '',
-        phone: phone || undefined,
-        email: email || undefined,
+        fullName: String(fullName || '').trim(),
+        phone: cleanPhone || undefined,
+        email: email ? String(email).trim().toLowerCase() : undefined,
         password: password,
+        confirmPassword: confirmPassword || password,
+        acceptTerms: true,
       };
       const response = await this.http.post("/auth/register", payload);
       return assertSuccess(response);
@@ -158,9 +161,14 @@ export class AuthApiService {
   }
 
   async verifyRegisterOtp({ loginId, otpCode }: any) {
+    const cleanId = String(loginId || '').trim();
     const response = await this.http.post("/verify-register-otp", {
-      login_id: loginId,
+      identifier: cleanId,
+      login_id: cleanId,
+      loginId: cleanId,
       otp_code: otpCode,
+      otpCode: otpCode,
+      purpose: 'REGISTER',
     });
     return assertSuccess(response);
   }
