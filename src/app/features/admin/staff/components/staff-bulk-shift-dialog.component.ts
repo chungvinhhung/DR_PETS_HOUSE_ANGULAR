@@ -247,7 +247,7 @@ export class StaffBulkShiftDialogComponent implements OnInit {
     } catch (err: unknown) {
       const status = (err as {status?:number})?.status;
       if (this.replacedIds().length && (status===404 || status===405 || status===501)) {
-        this.error.set('Backend chưa có API POST /shifts/bulk-assign để thay thế ca giữa chi nhánh an toàn. Không có lịch cũ nào bị xóa.');
+        this.error.set('Chưa thể thay thế ca hàng loạt lúc này. Lịch làm việc hiện tại vẫn được giữ nguyên.');
       } else if (status===403) {
         this.error.set('Tài khoản không có quyền phân ca hoặc sửa lịch tại một trong các chi nhánh liên quan.');
       } else if (status===409) {

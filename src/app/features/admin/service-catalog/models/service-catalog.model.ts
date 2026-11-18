@@ -92,11 +92,14 @@ export interface CatalogService {
 
 export type CatalogFilterStatus = ServiceMasterStatus | 'ALL';
 export type CatalogFilterMode = ServiceBookingMode | 'ALL';
+export type CatalogFilterServiceType = 'ALL' | 'MEDICAL' | 'GROOMING';
 
 export interface CatalogListQuery {
   search: string;
   branchId: string;
   mode: CatalogFilterMode;
+  /** Optional because other service pickers intentionally do not filter by type. */
+  serviceType?: CatalogFilterServiceType;
   status: CatalogFilterStatus;
   page: number;
   pageSize: number;

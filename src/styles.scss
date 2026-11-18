@@ -9005,3 +9005,20 @@ app-admin-login-page .admin-login .web2-composite-field:focus-within {
 form[app-nav-search-bar].web2-composite-field:focus-within > div:first-child {
   border-color: #1976d2;
 }
+
+
+/* Admin Catalog: preserve usable filters when adding the service-type selector. */
+app-admin-catalog-shell .web2-filterbar.web2-filterbar .service-catalog__filter-selects {
+  flex: 1 1 auto !important;
+  flex-wrap: wrap !important;
+  min-width: 0;
+  gap: 8px !important;
+}
+@media (max-width: 980px) {
+  app-service-catalog-list .service-catalog__search {
+    flex: 1 1 100%;
+  }
+  app-admin-catalog-shell .web2-filterbar.web2-filterbar .service-catalog__filter-selects {
+    justify-content: flex-start !important;
+  }
+}

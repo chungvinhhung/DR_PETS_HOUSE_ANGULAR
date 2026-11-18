@@ -269,11 +269,11 @@ export class AdminArticleEditorComponent {
         // Keep the created ID after a partial publish failure so retry cannot create a duplicate.
         const created = await firstValueFrom(this.api.createPost(body));
         id = storedId(created);
-        if(!id) throw new Error('API không trả về mã bài viết; chưa thể xác minh trạng thái lưu.');
+        if(!id) throw new Error('Chưa xác nhận được bài viết đã lưu. Vui lòng kiểm tra danh sách trước khi thử lại.');
         this.savedId.set(id);
         const actualStatus = String(created?.status || '').toUpperCase();
         if (actualStatus && actualStatus !== 'DRAFT') {
-          throw new Error('BE trả về trạng thái khác bản nháp khi tạo bài viết. Vui lòng kiểm tra trước khi tiếp tục.');
+          throw new Error('Trạng thái bài viết chưa đúng với lựa chọn. Vui lòng tải lại để kiểm tra.');
         }
       }
       // Status updates use the explicit endpoint. Do not report publication

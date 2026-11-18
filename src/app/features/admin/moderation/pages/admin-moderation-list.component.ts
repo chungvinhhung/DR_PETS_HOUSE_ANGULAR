@@ -82,7 +82,7 @@ export class AdminModerationListComponent {
     ?this.api.listReviews():this.mode==='feedback'?this.api.listFeedback():of([]);
   req.pipe(finalize(()=>this.loading.set(false))).subscribe({
    next:rows=>{this.rows.set(rows);this.page.set(1);},
-   error:err=>this.error.set(err?.error?.message||'Không thể tải dữ liệu từ Backend. Vui lòng thử lại.')
+   error:err=>this.error.set('Không thể tải dữ liệu lúc này. Vui lòng thử lại sau.')
   });
  }
  onFilter():void{this.page.set(1);}
@@ -155,7 +155,7 @@ export class AdminModerationListComponent {
    .pipe(finalize(()=>this.busy.set(false))).subscribe({
     next:updated=>{
       this.rows.update(rows=>rows.map(r=>String(r.id||r._id)===id?{...r,...updated,hidden:true}:r));
-      this.reviewDialog.set(null);this.confirmHide.set(false);this.reviewReason.set('');this.notice.set('Đã ẩn đánh giá khỏi Customer.');
+      this.reviewDialog.set(null);this.confirmHide.set(false);this.reviewReason.set('');this.notice.set('Đã ẩn đánh giá khỏi trang dành cho khách hàng.');
     },
     error:err=>this.reviewError.set(err?.error?.message||'Không thể ẩn đánh giá.')
    });

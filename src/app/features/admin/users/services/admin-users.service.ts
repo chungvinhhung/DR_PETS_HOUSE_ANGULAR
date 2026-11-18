@@ -44,7 +44,7 @@ export class AdminUsersService {
       map(response => {
         const data = (response as { data?: { id?: string; credentials?: { username: string; password: string } } })?.data
           ?? response as { id?: string; credentials?: { username: string; password: string } };
-        if (!data?.id) throw new Error('Backend chưa trả mã tài khoản Manager.');
+        if (!data?.id) throw new Error('Chưa xác nhận được tài khoản quản lý vừa tạo. Vui lòng kiểm tra danh sách trước khi thử lại.');
         return { id: data.id, credentials: data.credentials };
       }),
     );

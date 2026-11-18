@@ -446,7 +446,7 @@ export class AdminStaffFormComponent {
     });
   }
   notAvailable(action: string): void {
-    this.toast.show(`${action} đang chờ API Backend và phân quyền Admin.`, 'info');
+    this.toast.show(`Chức năng ${action.toLowerCase()} hiện chưa khả dụng.`, 'info');
   }
 
   hasChanges(): boolean { return this.form.dirty; }

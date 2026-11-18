@@ -30,7 +30,7 @@
 
       <section class="detail-card web2-admin-section address-card">
         <h2 class="web2-admin-section__title">Địa chỉ liên hệ / nhận hàng</h2>
-        <app-admin-data-state kind="technical" title="Chưa có dữ liệu địa chỉ" message="Backend Customer Detail hiện chưa trả danh sách địa chỉ. Thông báo này sẽ được gỡ khi contract được bổ sung." />
+        <app-admin-data-state kind="empty" title="Chưa có địa chỉ" message="Khách hàng chưa có địa chỉ để hiển thị." />
       </section>
 
       <section class="detail-card web2-admin-section">
@@ -42,7 +42,7 @@
               <div>
                 <strong>{{petName(pet)}}</strong>
                 <span>{{petBreed(pet)}}</span>
-                <small>{{pet.gender || pet.sex || '—'}} · {{pet.age || '—'}} tuổi</small>
+                <small>{{pet.gender || pet.sex || '—'}} · {{petAge(pet)}}</small>
               </div>
             </a>
           } @empty {
@@ -110,7 +110,7 @@
                   <td>{{item.message || item.subject || '—'}}</td><td class="is-center">{{item.status || '—'}}</td>
                 </tr>
               } @empty {
-                <tr><td colspan="5" class="web2-admin-empty"><app-admin-data-state kind="technical" title="Chưa có liên kết đánh giá" message="Backend hiện chưa trả khóa liên kết đánh giá/feedback theo khách hàng. Thông báo này sẽ được gỡ khi contract được bổ sung." /></td></tr>
+                <tr><td colspan="5" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có đánh giá" message="Khách hàng chưa có đánh giá hoặc phản hồi để hiển thị." /></td></tr>
               }
             </tbody>
           </table>

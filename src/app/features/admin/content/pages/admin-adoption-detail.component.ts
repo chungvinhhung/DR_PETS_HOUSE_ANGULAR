@@ -65,7 +65,7 @@ export class AdminAdoptionDetailComponent{
    next:updated=>{
     const actual=String(updated?.status||'').toUpperCase();
     if(actual!==status){
-      this.actionError.set('BE chưa xác nhận đúng trạng thái xét duyệt. Vui lòng tải lại dữ liệu.');return;
+      this.actionError.set('Chưa xác nhận được kết quả xét duyệt. Vui lòng tải lại và kiểm tra trạng thái.');return;
     }
     this.data.set({...d,...updated});
     this.reviewChoice.set(null);this.reviewNote.set('');

@@ -144,7 +144,7 @@ export class AdminDashboardPageComponent {
     if (!Array.isArray(revenue.points) || !validMoney(total) ||
         Math.abs(total - revenue.totalRevenue) > 1 ||
         Math.abs(summary.kpis.revenue.current - revenue.totalRevenue) > 1) {
-      return 'Doanh thu biểu đồ không khớp tổng KPI. Vui lòng báo Backend kiểm tra.';
+      return 'Số liệu doanh thu chưa được cập nhật đồng nhất. Vui lòng tải lại trang.';
     }
     return '';
   });
@@ -387,7 +387,7 @@ export class AdminDashboardPageComponent {
       next: data => {
         if (request !== this.requestVersion) return;
         if (!data?.kpis?.orders || !data?.kpis?.revenue) {
-          this.error.set('API Dashboard chưa trả đủ dữ liệu kpis theo contract M23.');
+          this.error.set('Chưa tải được đầy đủ số liệu tổng quan. Vui lòng thử lại sau.');
         } else {
           this.summary.set(data);
         }
@@ -405,7 +405,7 @@ export class AdminDashboardPageComponent {
     this.dashboard.revenue(filters).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: data => {
         if (request !== this.requestVersion) return;
-        if (!data || !Array.isArray(data.points)) this.revenueError.set('API chưa trả chuỗi doanh thu đúng định dạng.');
+        if (!data || !Array.isArray(data.points)) this.revenueError.set('Chưa tải được biểu đồ doanh thu. Vui lòng thử lại.');
         else this.revenue.set(data);
         this.revenueLoading.set(false);
       },
@@ -418,7 +418,7 @@ export class AdminDashboardPageComponent {
     this.dashboard.serviceStats(filters, 5).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: data => {
         if (request !== this.requestVersion) return;
-        if (!data || !Array.isArray(data.items)) this.serviceError.set('API Top dịch vụ trả dữ liệu không hợp lệ.');
+        if (!data || !Array.isArray(data.items)) this.serviceError.set('Chưa tải được danh sách dịch vụ nổi bật. Vui lòng thử lại.');
         else this.services.set(data);
         this.serviceLoading.set(false);
       },
@@ -431,7 +431,7 @@ export class AdminDashboardPageComponent {
     this.dashboard.lowStock(filters.branchId, 5).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: data => {
         if (request !== this.requestVersion) return;
-        if (!data || !Array.isArray(data.items)) this.stockError.set('API tồn kho trả dữ liệu không hợp lệ.');
+        if (!data || !Array.isArray(data.items)) this.stockError.set('Chưa tải được số liệu tồn kho. Vui lòng thử lại.');
         else this.stock.set(data);
         this.stockLoading.set(false);
       },
@@ -445,7 +445,7 @@ export class AdminDashboardPageComponent {
       next: data => {
         if (request !== this.requestVersion) return;
         if (!data || !Array.isArray(data.orders) || !Array.isArray(data.appointments)) {
-          this.attentionError.set('API Cần xử lý ngay trả dữ liệu không hợp lệ.');
+          this.attentionError.set('Chưa tải được danh sách cần xử lý. Vui lòng thử lại.');
         } else this.attention.set(data);
         this.attentionLoading.set(false);
       },

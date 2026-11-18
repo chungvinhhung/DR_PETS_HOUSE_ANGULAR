@@ -73,7 +73,7 @@ function unboxPage<T>(wire: unknown): { items: T[]; nextCursor: string | null } 
   const inner = outer && !Array.isArray(outer) && 'data' in outer ? outer.data : outer;
   if (Array.isArray(inner)) return { items: inner, nextCursor: null };
   if (!inner || !('items' in inner) || !Array.isArray(inner.items)) {
-    throw new Error('API Staff/Shift trả về dữ liệu không đúng hợp đồng.');
+    throw new Error('Không thể đọc dữ liệu nhân sự hoặc ca làm việc lúc này.');
   }
   return { items: inner.items, nextCursor: inner.nextCursor ?? null };
 }
@@ -142,7 +142,7 @@ export class AdminStaffApiService {
       expand((page) => page.nextCursor && page.index < 19
         ? this.api.get<unknown>(path, { params: params.set('limit', '100').set('cursor', page.nextCursor) }).pipe(
           map(raw => ({ ...unboxPage<T>(raw), index: page.index + 1 })),
-        ) : page.nextCursor ? throwError(() => new Error('API phân trang vượt quá 20 trang; cần lọc server.')) : of()),
+        ) : page.nextCursor ? throwError(() => new Error('Có quá nhiều kết quả. Vui lòng thu hẹp phạm vi tìm kiếm.')) : of()),
       reduce((all, page) => [...all, ...page.items], [] as T[]),
     );
   }

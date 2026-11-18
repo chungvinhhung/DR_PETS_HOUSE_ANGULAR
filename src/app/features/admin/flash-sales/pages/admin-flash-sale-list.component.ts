@@ -109,7 +109,7 @@ export class AdminFlashSaleListComponent {
   private message(err: unknown): string {
     const status = err instanceof HttpErrorResponse ? err.status
       : (typeof err === 'object' && err && 'status' in err ? Number(err.status) : 0);
-    if ([404, 405, 501].includes(status)) return 'BE chưa cung cấp API quản lý Flash Sale trên môi trường này.';
+    if ([404, 405, 501].includes(status)) return 'Chưa thể tải danh sách Flash Sale lúc này. Vui lòng thử lại sau.';
     return adminErrorMessage(err, 'Không thể tải danh sách Flash Sale.');
   }
   refresh(): void {this.fetch();}

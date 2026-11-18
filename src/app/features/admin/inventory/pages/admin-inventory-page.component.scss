@@ -264,7 +264,22 @@ td {
 .stock-table th:nth-child(8) { text-align: center; padding: 0 10px; }
 
 .product { font-weight: 400; color: #1e293b; }
-.sku-inline { color: #64748b; font-size: 12px; white-space: nowrap; }
+.sku-inline {
+  color: #64748b;
+  font-size: 12px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+  line-height: 18px;
+}
+/* Long SKU/variant text must never draw into the next inventory column. */
+.stock-table td:nth-child(2) {
+  max-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
 
 small {
   display: block;

@@ -82,6 +82,7 @@ export class ServiceCatalogListComponent {
   readonly filters = signal<ListFilters>({
     branchId: 'ALL',
     mode: 'ALL',
+    serviceType: 'ALL',
     status: 'ALL',
     page: 1,
     pageSize: this.pageSize,
@@ -144,6 +145,11 @@ export class ServiceCatalogListComponent {
     this.patchFilters({ branchId: id, page: 1 });
   }
 
+  setServiceType(value: string): void {
+    if (!['ALL', 'MEDICAL', 'GROOMING'].includes(value)) return;
+    this.patchFilters({ serviceType: value as 'ALL' | 'MEDICAL' | 'GROOMING', page: 1 });
+  }
+
   setMode(mode: string): void {
     if (!['ALL', 'BOOKABLE', 'REQUEST_ONLY', 'CONTACT_ONLY'].includes(mode)) {
       return;
@@ -178,7 +184,7 @@ export class ServiceCatalogListComponent {
   clearFilters(): void {
     this.searchText.set('');
     this.searchSubject.next('');
-    this.patchFilters({ branchId: 'ALL', mode: 'ALL', status: 'ALL', page: 1 });
+    this.patchFilters({ branchId: 'ALL', mode: 'ALL', serviceType: 'ALL', status: 'ALL', page: 1 });
   }
 
   isEffectiveEnabled(service: CatalogService, branchId: string): boolean {

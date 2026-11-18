@@ -55,8 +55,8 @@
           <input type="tel" placeholder="Nhập số điện thoại" [class.field--identified]="!!selectedCustomer()"
             [value]="customerPhone()" (input)="editCustomerPhone($any($event.target).value)">
         </label>
-        <label class="field">Email <span class="required">*</span>
-          <input type="email" placeholder="Nhập email" [class.field--identified]="!!selectedCustomer()"
+        <label class="field">Email (không bắt buộc)
+          <input type="email" placeholder="Nhập email nếu có" [class.field--identified]="!!selectedCustomer()"
             [readOnly]="!!selectedCustomer()" [value]="customerEmail()" (input)="customerEmail.set($any($event.target).value)">
         </label>
       </div>
@@ -118,10 +118,17 @@
                 <input placeholder="Nhập tên" [value]="pet.name" (input)="updatePet(pet.id,'name',$any($event.target).value)">
               </label>
               <label class="field">Loài <span class="required">*</span>
-                <select [value]="pet.species" (change)="updatePet(pet.id,'species',$any($event.target).value)">
-                  <option value="">Chọn loài</option><option value="Chó">Chó</option>
-                  <option value="Mèo">Mèo</option><option value="Khác">Khác</option>
-                </select>
+                <div class="pet-new__species-control" [class.pet-new__species-control--other]="pet.species === 'Khác'">
+                  <select [value]="pet.species" (change)="updatePet(pet.id,'species',$any($event.target).value)">
+                    <option value="">Chọn loài</option><option value="Chó">Chó</option>
+                    <option value="Mèo">Mèo</option><option value="Khác">Khác</option>
+                  </select>
+                  @if (pet.species === 'Khác') {
+                    <input type="text" maxlength="80" placeholder="VD: chim, rắn..."
+                      aria-label="Nhập tên loài khác" [value]="pet.speciesDetail || ''"
+                      (input)="updatePet(pet.id,'speciesDetail',$any($event.target).value)">
+                  }
+                </div>
               </label>
               <label class="field">Giống
                 <input placeholder="Nhập giống" [value]="pet.breed" (input)="updatePet(pet.id,'breed',$any($event.target).value)">
@@ -190,6 +197,36 @@
           </select>
         </label>
       </div>
+      @if (serviceId() && selectedPets().length === 1) {
+        <div class="appointment-create__extra-services">
+          <div class="appointment-create__extra-heading">
+            <div>
+              <strong>Dịch vụ bổ sung</strong>
+              <p>Có thể chọn nhiều dịch vụ cho cùng một thú cưng, thực hiện lần lượt trong một lịch hẹn.</p>
+            </div>
+            <button type="button" class="appointment-create__extra-add"
+              (click)="addExtraService(selectedPets()[0].id)">+ Thêm dịch vụ</button>
+          </div>
+          @for (extra of extraServices(); track extra.id; let i = $index) {
+            <div class="appointment-create__extra-row">
+              <label class="field">
+                <span>Dịch vụ {{ i + 2 }}</span>
+                <select [value]="extra.serviceId" (change)="changeExtraService(extra.id,$any($event.target).value)">
+                  <option value="">Chọn dịch vụ bổ sung</option>
+                  @for (service of services(); track service.id) {
+                    @if (service.id !== serviceId() && service.category === chosenService()?.category) {
+                      <option [value]="service.id">{{service.name}}{{service.durationMinutes ? ' · ' + service.durationMinutes + ' phút' : ''}}</option>
+                    }
+                  }
+                </select>
+              </label>
+              <button type="button" class="appointment-create__extra-remove"
+                [attr.aria-label]="'Bỏ dịch vụ bổ sung ' + (i + 1)"
+                (click)="removeExtraService(extra.id)">Bỏ</button>
+            </div>
+          }
+        </div>
+      }
       @if (branchLoadState()==='error' || serviceLoadState()==='error') {
         <p class="inline-error">{{serviceError()}} <button type="button" class="text-action"
           (click)="branchLoadState()==='error'?loadBranches():selectBranch(branchId())">Thử lại</button></p>

@@ -27,6 +27,11 @@ export class AdminCustomerPetDetailComponent{
    error:()=>this.error.set('Đã có lỗi xảy ra khi tải hồ sơ thú cưng. Vui lòng thử lại.'),
   });
  }
- image(p:any):string{return p?.profileImageUrl||p?.profile_image_url||p?.imageUrl||'/assets/customer/images/booking/pet_picker_luna_photo.jpg';}
+ image(p:any):string{return p?.photoUrl||p?.photo_url||p?.profileImageUrl||p?.profile_image_url||p?.imageUrl||p?.avatarUrl||'/assets/admin-login/mascot.png';}
+  age(p:any):string {
+    const raw=p?.ageYears??p?.age??p?.age_years;
+    return raw===null||raw===undefined||raw===''||!Number.isFinite(Number(raw))
+      ? 'Chưa cập nhật' : new Intl.NumberFormat('vi-VN',{maximumFractionDigits:2}).format(Number(raw))+' tuổi';
+  }
  value(...values:any[]):string{return values.find(v=>v!==undefined&&v!==null&&String(v).trim()!=='')??'—';}
 }

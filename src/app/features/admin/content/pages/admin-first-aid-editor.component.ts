@@ -280,10 +280,10 @@ export class AdminFirstAidEditorComponent {
       else {
         const created=await firstValueFrom(this.api.createPost({...body,status:'DRAFT'}));
         id=backendId(created);
-        if(!id)throw new Error('API không trả mã cẩm nang; không thể xác nhận đã lưu.');
+        if(!id)throw new Error('Chưa xác nhận được cẩm nang đã lưu. Vui lòng kiểm tra danh sách trước khi thử lại.');
         this.savedId.set(id);
         const actual=String(created?.status||'').toUpperCase();
-        if(actual && actual!=='DRAFT')throw new Error('API trả trạng thái không đúng với bản nháp.');
+        if(actual && actual!=='DRAFT')throw new Error('Trạng thái cẩm nang chưa đúng với lựa chọn. Vui lòng tải lại để kiểm tra.');
       }
       if(target!==this.savedStatus())await firstValueFrom(this.api.updatePostStatus(id,target));
       this.savedStatus.set(target);this.dirty.set(false);this.leaving=true;

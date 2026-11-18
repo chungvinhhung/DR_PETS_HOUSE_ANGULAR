@@ -278,7 +278,7 @@ export class AdminContentListComponent{
    next:updated=>{
     const actual=String(updated?.status||'').toUpperCase();
     if(actual && actual!==status) {
-      this.communityError.set('BE chưa xác nhận trạng thái kiểm duyệt chính xác. Vui lòng tải lại dữ liệu.');return;
+      this.communityError.set('Chưa xác nhận được kết quả kiểm duyệt. Vui lòng tải lại để kiểm tra.');return;
     }
     this.rows.update(rows=>rows.map(item=>String(item?._id||item?.id)===id?{...item,...updated,status}:item));
     this.communityDialog.set(null);this.rejectionReason.set('');this.rejecting.set(false);this.confirmCommunityDelete.set(false);

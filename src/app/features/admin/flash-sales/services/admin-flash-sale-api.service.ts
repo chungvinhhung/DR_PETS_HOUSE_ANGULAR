@@ -107,7 +107,7 @@ function asSale(value: unknown): AdminFlashSale {
       !['DRAFT', 'PUBLISHED'].includes(String(sale.status)) ||
       typeof sale.isPaused !== 'boolean' || typeof sale.startAt !== 'string' ||
       typeof sale.endAt !== 'string' || !Array.isArray(sale.items)) {
-    throw new Error('Hợp đồng dữ liệu Flash Sale chưa đồng bộ với Backend.');
+    throw new Error('Thông tin Flash Sale chưa thể hiển thị. Vui lòng thử lại sau.');
   }
   // foundation-v6 returns variantLabel; keep the view's variantName stable.
   const items = sale.items.map(raw => {
@@ -136,7 +136,7 @@ export class AdminFlashSaleApiService {
     return this.api.get<unknown>(this.root, {params}).pipe(map(response => {
       if (!response || typeof response !== 'object' ||
           !('items' in response) || !Array.isArray(response.items)) {
-        throw new Error('Hợp đồng danh sách Flash Sale chưa đồng bộ với Backend.');
+        throw new Error('Danh sách Flash Sale chưa thể hiển thị. Vui lòng thử lại sau.');
       }
       const raw = response as {items: unknown[]; nextCursor?: unknown; totalCount?: unknown};
       return {

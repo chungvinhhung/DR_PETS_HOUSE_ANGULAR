@@ -23,7 +23,7 @@
           <p>{{value(p.breedName, p.breed_name, p.breed, p.speciesName, p.species)}}</p>
           <div class="chips">
             <span>{{value(p.gender, p.sex)}}</span>
-            <span>{{value(p.age)}} tuổi</span>
+            <span>{{age(p)}}</span>
             <span>{{value(p.weightKg, p.weight_kg, p.weight)}} kg</span>
           </div>
         </div>
@@ -51,7 +51,7 @@
 
       <section class="card web2-admin-section">
         <h2 class="web2-admin-section__title">Lịch sử bệnh án</h2>
-        <app-admin-data-state kind="technical" title="Chưa có lịch sử bệnh án" message="Backend Customer/Pet hiện chưa trả lịch sử bệnh án trong endpoint quản trị. Thông báo này sẽ được gỡ khi contract được bổ sung." />
+        <app-admin-data-state kind="empty" title="Chưa có lịch sử bệnh án" message="Chưa có lịch sử khám chữa bệnh được ghi nhận." />
       </section>
     }
   </main>

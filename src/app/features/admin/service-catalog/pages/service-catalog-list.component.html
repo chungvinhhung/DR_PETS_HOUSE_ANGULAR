@@ -39,6 +39,16 @@
       </label>
 
       <label class="service-catalog__select">
+        <span class="sr-only">Loại dịch vụ</span>
+        <select #typeFilter aria-label="Lọc loại dịch vụ" [value]="filters().serviceType || 'ALL'"
+          (change)="setServiceType(typeFilter.value)">
+          <option value="ALL">Tất cả loại dịch vụ</option>
+          <option value="GROOMING">Chăm sóc & Spa</option>
+          <option value="MEDICAL">Khám & Điều trị</option>
+        </select>
+      </label>
+
+      <label class="service-catalog__select">
         <span class="sr-only">Hình thức đặt lịch</span>
         <select #modeFilter [value]="filters().mode" (change)="setMode(modeFilter.value)">
           <option value="ALL">Tất cả hình thức</option>

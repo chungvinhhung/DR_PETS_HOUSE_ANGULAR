@@ -34,6 +34,8 @@ interface PetOption {
 }
 interface PetDraft extends Omit<PetOption, 'id'> {
   id: string;
+  /** Capture concrete "Other" species until BE adds a dedicated structured field. */
+  speciesDetail?: string;
   selected: boolean;
 }
 interface AppointmentSlot {
@@ -77,10 +79,10 @@ function petFromWire(input: unknown): PetOption | null {
     name: textOf(pet['name'] ?? pet['petName'] ?? pet['pet_name']),
     species: textOf(species?.['name'] ?? species?.['species_name'] ?? pet['speciesName'] ?? pet['species_name'] ?? pet['species']),
     breed: textOf(breed?.['name'] ?? breed?.['breed_name'] ?? pet['breedName'] ?? pet['breed_name'] ?? pet['breed']),
-    age: textOf(pet['age'] ?? ''),
+    age: textOf(pet['ageYears'] ?? pet['age'] ?? ''),
     weightKg: textOf(pet['weightKg'] ?? pet['weight_kg'] ?? ''),
     health: textOf(pet['healthStatus'] ?? pet['health_status'] ?? ''),
-    imageUrl: textOf(pet['imageUrl'] ?? pet['image_url'] ?? pet['avatarUrl'] ?? pet['avatar_url'] ?? pet['photoUrl'] ?? pet['photo_url'] ?? ''),
+    imageUrl: textOf(pet['photoUrl'] ?? pet['profileImageUrl'] ?? pet['profile_image_url'] ?? pet['imageUrl'] ?? pet['image_url'] ?? pet['avatarUrl'] ?? pet['avatar_url'] ?? pet['photo_url'] ?? ''),
     additionalInfo: textOf(pet['additionalInfo'] ?? pet['additional_info'] ?? pet['note'] ?? ''),
   };
 }
@@ -320,7 +322,7 @@ export class AdminAppointmentCreateComponent {
   addPet(): void {
     this.newPets.update(items => [...items, {
       id: 'draft-' + ++this.petSequence,
-      name: '', species: '', breed: '', age: '', weightKg: '', health: '',
+      name: '', species: '', speciesDetail: '', breed: '', age: '', weightKg: '', health: '',
       selected: true,
     }]);
     this.recalculateSlots();
@@ -333,7 +335,12 @@ export class AdminAppointmentCreateComponent {
   }
 
   updatePet(id: string, field: keyof Omit<PetDraft, 'id' | 'selected'>, value: string): void {
-    this.newPets.update(items => items.map(p => p.id === id ? { ...p, [field]: value } : p));
+    this.newPets.update(items => items.map(p => {
+      if (p.id !== id) return p;
+      return field === 'species'
+        ? { ...p, species: value, speciesDetail: value === 'Khác' ? p.speciesDetail : '' }
+        : { ...p, [field]: value };
+    }));
     this.clearReview();
   }
 
@@ -380,12 +387,12 @@ export class AdminAppointmentCreateComponent {
     if (!target) return;
     const service = this.services().find(row => row.id === serviceId);
     if (serviceId && (!service || service.bookingMode !== 'BOOKABLE' || service.status !== 'ACTIVE')) {
-      this.toast.show('Chỉ chọn dịch vụ BOOKABLE đang hoạt động tại chi nhánh.');
+      this.toast.show('Dịch vụ này hiện chưa thể đặt lịch tại chi nhánh đã chọn.');
       return;
     }
     const base = this.chosenService();
     if (service && base && service.category !== base.category) {
-      this.toast.show('Các dịch vụ trong một lịch hẹn phải cùng nhóm MEDICAL hoặc GROOMING.');
+      this.toast.show('Vui lòng chọn các dịch vụ cùng nhóm chăm sóc hoặc khám chữa bệnh.');
       return;
     }
     if (hasDuplicatePetService(target.petId, serviceId, this.serviceId(), this.extraServices(), id)) {
@@ -689,8 +696,7 @@ export class AdminAppointmentCreateComponent {
     if (customer?.accountStatus === 'BLOCKED') errors.push('Tài khoản đang bị chặn, không thể tạo lịch hẹn.');
     if (customer) errors.push('Hiện chưa thể tạo lịch nội bộ gắn trực tiếp với khách hàng đã có tài khoản.');
     if (!this.customerName().trim()) errors.push('Nhập họ tên khách hàng.');
-    if (!this.customerEmail().trim()) errors.push('Vui lòng nhập email khách hàng.');
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.customerEmail().trim()))
+    if (this.customerEmail().trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.customerEmail().trim()))
       errors.push('Email chưa đúng định dạng.');
     if (!this.petCount()) errors.push('Chọn hoặc thêm ít nhất một thú cưng.');
     if (this.petCount() > 1) errors.push('Hiện chưa thể tạo một lịch hẹn cho nhiều thú cưng cùng lúc.');
@@ -699,6 +705,8 @@ export class AdminAppointmentCreateComponent {
       errors.push('Có dịch vụ chưa có thời lượng được xác nhận.');
     if (this.newPets().filter(p => p.selected).some(p => !p.name.trim() || !p.species))
       errors.push('Nhập tên và loài cho thú cưng mới.');
+    if (this.newPets().some(p => p.selected && p.species === 'Khác' && !p.speciesDetail?.trim()))
+      errors.push('Vui lòng nhập tên loài thú cưng.');
     if (!this.branchId() || !this.serviceId()) errors.push('Chọn chi nhánh và dịch vụ.');
     if (!this.appointmentDate() || !this.selectedSlotId())
       errors.push('Chọn ngày và khung giờ còn chỗ.');
@@ -729,12 +737,17 @@ export class AdminAppointmentCreateComponent {
         ageYears:Number(pet.age)||0,
         weightKg:Number(pet.weightKg)||0,
         healthStatus:healthMap[pet.health]??pet.health??'',
-        medicalNotes:pet.additionalInfo?.trim()??'',
+        // BE currently stores species as an enum; preserve detail in appointment notes pending schema support.
+        medicalNotes:[
+          ...(pet.species === 'Khác' && 'speciesDetail' in pet && typeof pet.speciesDetail === 'string' && pet.speciesDetail.trim()
+            ? ['Loài cụ thể: ' + pet.speciesDetail.trim()] : []),
+          ...(pet.additionalInfo?.trim() ? [pet.additionalInfo.trim()] : []),
+        ].join('\n'),
       },
       contact:{
         name:this.customerName().trim(),
         phone,
-        email:this.customerEmail().trim().toLowerCase(),
+        ...(this.customerEmail().trim() ? {email:this.customerEmail().trim().toLowerCase()} : {}),
       },
       ...(this.voucherCode().trim()?{voucherCode:this.voucherCode().trim().toUpperCase()}:{}),
       ...(this.note().trim()?{note:this.note().trim()}:{}),

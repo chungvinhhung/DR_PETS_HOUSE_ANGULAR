@@ -221,7 +221,7 @@ export class AdminRescueEditorComponent {
       const id=this.savedId||this.id;
       const result=await firstValueFrom((id?this.api.updateRescuePet(id,body):this.api.createRescuePet(body))
         .pipe(timeout({first:45000})));
-      if(!result?._id&&!result?.id)throw Error('BE chưa xác nhận mã hồ sơ; kiểm tra trước khi thử lại.');
+      if(!result?._id&&!result?.id)throw Error('Chưa xác nhận được hồ sơ đã lưu. Vui lòng kiểm tra danh sách trước khi thử lại.');
       this.savedId=String(result._id||result.id);
       // Verify after a fresh GET, rather than trusting the POST/PATCH echo.
       // Current BE/dev accepts the request but drops partner-support metadata.
@@ -231,7 +231,7 @@ export class AdminRescueEditorComponent {
         !Array.isArray(stored?.images)||stored.images[0]!==this.draft().image||
         (this.isEditing&&String(stored?.status||'')!==this.savedStatus()) ||
         (this.isManager() && String(stored?.branchId?._id||stored?.branchId?.id||stored?.branchId||'') !== this.legacyFields.branchId)){
-        this.error.set('BE đã ghi nhận hồ sơ nhưng dữ liệu đối tác, nhu cầu hỗ trợ, chi nhánh hoặc trạng thái chưa khớp. Đã giữ dữ liệu nhập; không tạo lại để tránh trùng hồ sơ.');
+        this.error.set('Thông tin hồ sơ vừa lưu chưa được cập nhật đầy đủ. Vui lòng kiểm tra chi tiết trước khi thử lại để tránh tạo trùng.');
         this.dirty.set(true);
         return;
       }

@@ -26,7 +26,7 @@ function amountOf(value: unknown): number | null {
 }
 function readPrice(raw: unknown): Omit<AppointmentDraftPricing, 'petCount'> {
   const outer = recordOf(raw);
-  if (!outer) throw new Error('Backend trả về báo giá không đúng định dạng.');
+  if (!outer) throw new Error('Chưa thể hiển thị thông tin tạm tính. Vui lòng thử lại sau.');
   if (outer['EC'] !== undefined && outer['EC'] !== 0)
     throw new Error(String(outer['EM'] || 'Không thể xem báo giá.'));
   const data = recordOf(outer['DT']) ?? recordOf(outer['data']) ?? outer;

@@ -36,7 +36,7 @@
         } @else if (mode === 'community') {
           <select class="web2-admin-filter-select" aria-label="Loại bài"
             [ngModel]="filter()" (ngModelChange)="filter.set($event); onFilter()"
-            [title]="hasCommunityTypes() ? 'Lọc theo thẻ bài đăng Customer' : 'BE chưa trả loại bài của các bài đăng hiện có'">
+            [title]="hasCommunityTypes() ? 'Lọc theo thẻ bài đăng Customer' : 'Chưa có thông tin loại bài để lọc'">
             <option value="">Tất cả loại bài</option>
             @for (type of communityTypes; track type) {
               <option [value]="type">{{type}}</option>

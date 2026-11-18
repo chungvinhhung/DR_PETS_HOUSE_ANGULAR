@@ -210,8 +210,8 @@ export class AdminFlashSaleEditorComponent {
   private message(err: unknown, fallback: string): string {
     const status = err instanceof HttpErrorResponse ? err.status
       : (typeof err === 'object' && err && 'status' in err ? Number(err.status) : 0);
-    if (status === 404) return this.mode === 'create' ? 'Chức năng tạo Flash Sale chưa được BE hỗ trợ.' : 'Không tìm thấy chương trình Flash Sale.';
-    if ([405,501].includes(status)) return 'BE chưa hỗ trợ chức năng quản lý Flash Sale trên môi trường này.';
+    if (status === 404) return this.mode === 'create' ? 'Chưa thể tạo chương trình lúc này. Vui lòng thử lại sau.' : 'Không tìm thấy chương trình Flash Sale.';
+    if ([405,501].includes(status)) return 'Chức năng quản lý Flash Sale tạm thời chưa khả dụng.';
     return adminErrorMessage(err, fallback);
   }
 
@@ -559,7 +559,7 @@ export class AdminFlashSaleEditorComponent {
       const updated=await firstValueFrom(this.api.setPaused(sale.id,checked,activationMode));
       if (updated.isPaused !== checked ||
           (updated.activationMode !== undefined && updated.activationMode !== activationMode)) {
-        throw new Error('BE chưa lưu đúng chế độ kích hoạt của chương trình.');
+        throw new Error('Chế độ kích hoạt chưa được cập nhật. Vui lòng tải lại để kiểm tra.');
       }
       this.original.set(updated);
       this.toast.show(this.isPreStart()
@@ -578,7 +578,7 @@ export class AdminFlashSaleEditorComponent {
     this.saving.set(true);
     try {
       const updated = await firstValueFrom(this.api.setPaused(sale.id,paused,sale.activationMode || 'AUTO'));
-      if (updated.isPaused !== paused) throw new Error('Backend chưa ghi nhận trạng thái chương trình.');
+      if (updated.isPaused !== paused) throw new Error('Trạng thái chương trình chưa được cập nhật. Vui lòng tải lại để kiểm tra.');
       this.original.set(updated);
       this.toast.show(paused ? 'Đã tạm ngừng chương trình.' : 'Đã tiếp tục chương trình.','success');
     } catch (err) {

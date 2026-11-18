@@ -161,7 +161,7 @@ export class AdminVoucherEditorComponent {
           this.saving.set(false);
           if (saved.status !== status) {
             input.checked = v.status === 'ACTIVE';
-            this.toast.show('BE chưa lưu đúng trạng thái voucher. Vui lòng tải lại.', 'error');
+            this.toast.show('Trạng thái voucher chưa được cập nhật. Vui lòng tải lại để kiểm tra.', 'error');
             this.load();
             return;
           }
@@ -187,7 +187,7 @@ export class AdminVoucherEditorComponent {
   toggleMaxDiscountUnlimited(checked: boolean): void {
     if (!this.allowEditing() || this.saving()) return;
     if (checked && this.mode === 'edit' && this.original()?.maxDiscountAmount != null) {
-      const message = 'Backend chưa hỗ trợ xóa mức giảm tối đa đã lưu về trạng thái Không giới hạn.';
+      const message = 'Chưa thể chuyển mức giảm tối đa về Không giới hạn. Vui lòng thử lại sau.';
       this.validation.set(message);
       this.toast.show(message, 'info');
       return;

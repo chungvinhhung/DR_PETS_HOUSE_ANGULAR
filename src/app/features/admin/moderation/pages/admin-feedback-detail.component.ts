@@ -51,7 +51,7 @@ export class AdminFeedbackDetailComponent{
     .pipe(finalize(()=>this.busy.set(false))).subscribe({
    next:v=>{
     if(String(v?.status||'').toUpperCase()!==next){
-      this.error.set('BE chưa xác nhận trạng thái xử lý. Hãy tải lại dữ liệu.');return;
+      this.error.set('Chưa xác nhận được trạng thái xử lý. Vui lòng tải lại để kiểm tra.');return;
     }
     this.data.set({...d,...v});this.actionPanel.set(false);
     this.processingNote.set('');this.nextStatus.set('');

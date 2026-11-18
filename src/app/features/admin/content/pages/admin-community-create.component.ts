@@ -109,7 +109,7 @@ export class AdminCommunityCreateComponent {
       const id=String(created?._id||created?.id||'');
       const actual=String(created?.status||'').toUpperCase();
       if(!id || actual!==target){
-        throw new Error('BE chưa xác nhận mã bài đăng và trạng thái đã lưu. Hãy kiểm tra danh sách trước khi thử lại để tránh tạo trùng.');
+        throw new Error('Chưa xác nhận được bài đăng đã lưu. Vui lòng kiểm tra danh sách trước khi thử lại.');
       }
       this.dirty.set(false);this.leaving=true;
       await this.router.navigate(['/admin/content/community'],{
@@ -119,7 +119,7 @@ export class AdminCommunityCreateComponent {
       const code=Number(err?.status||err?.error?.status||0);
       const hint=code===404||code===405
         ? 'Backend chưa hỗ trợ tạo bài đăng từ Admin (POST /admin/community/posts). Cần BE bổ sung trước khi tính năng hoạt động.'
-        : (err?.error?.message||err?.message||'Không thể lưu bài đăng. Vui lòng kiểm tra API và thử lại.');
+        : (err?.error?.message||err?.message||'Không thể lưu bài đăng lúc này. Vui lòng thử lại sau.');
       this.error.set(hint);
     } finally {this.saving.set(false);}
   }
