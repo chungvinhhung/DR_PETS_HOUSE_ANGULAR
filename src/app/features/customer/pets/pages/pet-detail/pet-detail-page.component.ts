@@ -486,7 +486,7 @@ export class PetDetailPageComponent {
     const formattedDate = `${d}/${m}/${y}`;
 
     const payload = {
-      petId: this.resolvedPetId(),
+      petId: this.resolvedPetId() || this.pet()?.id || this.pet()?.pet_id || this.currentPetId(),
       condition: this.newMedicalName(),
       doctor: this.newMedicalDoctor(),
       visitDate: this.newMedicalDate(),

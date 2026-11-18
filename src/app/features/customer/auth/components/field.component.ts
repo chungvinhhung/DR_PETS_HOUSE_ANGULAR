@@ -26,6 +26,7 @@ export class FieldComponent {
   readonly required = input<any>(false);
   readonly hint = input<any>(undefined);
   readonly placeholder = input<any>(undefined);
+  readonly autoComplete = input<any>(undefined, { alias: 'autoComplete' });
   readonly Icon = input<any>(undefined, { alias: 'icon' });
   readonly error = input<any>("");
   readonly variant = input<any>("default");

@@ -92,6 +92,20 @@ export class CustomerAuthService {
   readonly userProfile = signal<any>(loadUserProfile());
 
   constructor() {
+    // Support Google OAuth direct redirect bridge
+    try {
+      if (typeof window !== 'undefined' && window.location?.search) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const authToken = urlParams.get('auth_token');
+        if (authToken) {
+          this.coreSession.setSession({ accessToken: authToken, roles: ['CUSTOMER'], user: null });
+          this.completeLogin({ fullName: 'Người dùng Google' }, { accessToken: authToken, remember: true });
+          const cleanUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl);
+        }
+      }
+    } catch {}
+
     // Khôi phục Bearer token đã lưu để authInterceptor gắn header Authorization sau khi F5.
     // Chỉ đọc từ đúng kho đang giữ phiên (không lấy token "rơi rớt" ở kho kia).
     const token = this.safe(() => getSessionStorageArea().getItem(ACCESS_TOKEN_KEY), null);
@@ -223,6 +237,13 @@ export class CustomerAuthService {
     this.authenticated.set(false);
     this.authModal.set(null);
     window.clearTimeout(this.expiryTimer);
+    try {
+      this.router.navigate(['/']);
+    } catch {
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
+    }
   }
 
   /** Tự đăng xuất khi hết hạn "Ghi nhớ đăng nhập" (30 ngày). */

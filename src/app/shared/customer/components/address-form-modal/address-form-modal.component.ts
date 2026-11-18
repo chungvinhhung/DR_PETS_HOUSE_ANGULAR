@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal, untracked, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal, untracked, OnInit, inject } from '@angular/core';
 
 import { AddressFormFieldComponent } from './address-form-field.component';
 import { CustomerIconComponent } from '../icon/customer-icon.component';
 import { EMPTY_ADDRESS, VIETNAM_PROVINCES } from './address-form-modal.helpers';
+import { LocationApiService } from '../../../../core/customer/services/api/location-api.service';
 
 /**
  * AddressFormModal — chuyển từ React: src/components/address/AddressFormModal.jsx
@@ -21,7 +22,9 @@ import { EMPTY_ADDRESS, VIETNAM_PROVINCES } from './address-form-modal.helpers';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddressFormModalComponent implements OnInit {
-  protected readonly vietnamProvinces = VIETNAM_PROVINCES;
+  private readonly locationApi = inject(LocationApiService);
+  protected readonly vietnamProvinces = signal<string[]>(VIETNAM_PROVINCES);
+  protected readonly wardOptions = signal<string[]>([]);
   // --- Input / Output (props của React) ---
   readonly address = input<any>(undefined);
   readonly defaultValues = input<any>(undefined);
@@ -51,16 +54,43 @@ export class AddressFormModalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.form.set((() => ({
-    ...EMPTY_ADDRESS,
-    ...this.defaultValues(),
-    ...this.address(),
-    name: this.address()?.name ?? this.address()?.recipient ?? this.defaultValues()?.name ?? "",
-  }))());
+    const initialForm = {
+      ...EMPTY_ADDRESS,
+      ...this.defaultValues(),
+      ...this.address(),
+      name: this.address()?.name ?? this.address()?.recipient ?? this.defaultValues()?.name ?? "",
+    };
+    this.form.set(initialForm);
+
+    // Fetch dynamic provinces from Location API
+    this.locationApi.getProvinces().then((provinces) => {
+      if (provinces && provinces.length > 0) {
+        this.vietnamProvinces.set(provinces.map((p) => p.name));
+      }
+    });
+
+    // If city is already present, fetch wards
+    if (initialForm.city) {
+      this.loadWardsForCity(initialForm.city);
+    }
+  }
+
+  private async loadWardsForCity(city: string) {
+    if (!city || !city.trim()) {
+      this.wardOptions.set([]);
+      return;
+    }
+    const wards = await this.locationApi.getWards('', city);
+    if (wards && wards.length > 0) {
+      this.wardOptions.set(wards.map((w) => w.name));
+    }
   }
 
   protected updateField(field: any, value: any) {
-    return this.form.update((current: any) => ({ ...current, [field]: value }));
+    this.form.update((current: any) => ({ ...current, [field]: value }));
+    if (field === 'city') {
+      this.loadWardsForCity(value);
+    }
   }
 
   protected handleSubmit(event: any) {

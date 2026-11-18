@@ -31,26 +31,34 @@ export const EMPTY_SEARCH_RESPONSE: any = {
 export function buildFacets(facetCounts: any = {}) {
   return SEARCH_FILTER_GROUPS.map((group: any) => {
     if (group.id === "productCategories") {
-      const counts = facetCounts.productCategories || {};
+      const counts = facetCounts?.productCategories || {};
       const total = Object.values(counts).reduce((sum: any, count: any) => sum + Number(count || 0), 0);
       return {
         ...group,
-        options: group.options.map((option: any, index: any) => ({
-          ...option,
-          count: option.id === "all-categories" ? total : Number((counts as any)[String(index)] || (counts as any)[String(index + 1)] || 0),
-        })),
+        options: group.options.map((option: any, index: any) => {
+          const directCount = counts[option.id] ?? counts[option.slug];
+          const indexedCount = (counts as any)[String(index)] ?? (counts as any)[String(index + 1)];
+          return {
+            ...option,
+            count: option.id === "all-categories" ? total : Number(directCount ?? indexedCount ?? 0),
+          };
+        }),
       };
     }
 
     if (group.id === "serviceGroups") {
-      const counts = facetCounts.serviceCategories || {};
+      const counts = facetCounts?.serviceCategories || {};
       const total = Object.values(counts).reduce((sum: any, count: any) => sum + Number(count || 0), 0);
       return {
         ...group,
-        options: group.options.map((option: any, index: any) => ({
-          ...option,
-          count: option.id === "all-services" ? total : Number((counts as any)[String(index)] || (counts as any)[String(index + 1)] || 0),
-        })),
+        options: group.options.map((option: any, index: any) => {
+          const directCount = counts[option.id] ?? counts[option.slug];
+          const indexedCount = (counts as any)[String(index)] ?? (counts as any)[String(index + 1)];
+          return {
+            ...option,
+            count: option.id === "all-services" ? total : Number(directCount ?? indexedCount ?? 0),
+          };
+        }),
       };
     }
 
@@ -93,8 +101,39 @@ export function getSelectedGroupValues(selectedFilters: any, groupId: any, allOp
   return values.includes(allOptionId) ? [] : values;
 }
 
-export function getProductCategoryId(product: any) {
-  return product?.categorySlug || product?.category || product?.categoryId;
+export function getProductCategoryId(product: any): string {
+  const rawSlug = String(product?.categorySlug || product?.category?.slug || product?.categoryId?.slug || '').toLowerCase();
+  if (rawSlug) {
+    if (rawSlug.includes('thuc-an')) return 'thuc-an';
+    if (rawSlug.includes('do-dung') || rawSlug.includes('ve-sinh')) return 'do-dung-thiet-yeu';
+    if (rawSlug.includes('suc-khoe') || rawSlug.includes('y-te')) return 'cham-soc-suc-khoe';
+    if (rawSlug.includes('do-choi')) return 'do-choi';
+    if (rawSlug.includes('phu-kien')) return 'phu-kien';
+    return rawSlug;
+  }
+
+  const name = String(product?.categoryName || product?.category?.name || product?.categoryId?.name || product?.category || product?.name || '').toLowerCase();
+  if (name.includes('thức ăn') || name.includes('thuc an') || name.includes('hạt') || name.includes('pate') || name.includes('snack') || name.includes('bánh thưởng')) {
+    return 'thuc-an';
+  }
+  if (name.includes('đồ dùng') || name.includes('do dung') || name.includes('vệ sinh') || name.includes('khay') || name.includes('chuồng') || name.includes('lồng') || name.includes('cát')) {
+    return 'do-dung-thiet-yeu';
+  }
+  if (name.includes('sức khỏe') || name.includes('suc khoe') || name.includes('thuốc') || name.includes('vitamin') || name.includes('dinh dưỡng') || name.includes('sữa tắm')) {
+    return 'cham-soc-suc-khoe';
+  }
+  if (name.includes('đồ chơi') || name.includes('do choi') || name.includes('bóng') || name.includes('gặm') || name.includes('cào')) {
+    return 'do-choi';
+  }
+  if (name.includes('phụ kiện') || name.includes('phu kien') || name.includes('vòng cổ') || name.includes('dây dắt') || name.includes('quần áo') || name.includes('bát')) {
+    return 'phu-kien';
+  }
+
+  if (typeof product?.categoryIdx === 'number' && product.categoryIdx >= 0 && product.categoryIdx < 5) {
+    return ['thuc-an', 'do-dung-thiet-yeu', 'cham-soc-suc-khoe', 'do-choi', 'phu-kien'][product.categoryIdx];
+  }
+
+  return String(product?.categorySlug || product?.category || product?.categoryId || '');
 }
 
 export function getArticleCategoryId(post: any) {
@@ -155,7 +194,15 @@ export function applySearchFilters(results: any, selectedFilters: any, activeTyp
   const selectedCommunity = filterAppliesToType("community", activeType)
     ? getSelectedGroupValues(selectedFilters, "community", "all-community")
     : [];
-  const filterService = (item: any) => matchesAnySelected(item.groupId, selectedServiceGroups);
+  const filterService = (item: any) => {
+    if (!selectedServiceGroups.length) return true;
+    const itemGroupId = item.groupId || item.group || (
+      String(item.serviceType || '').toUpperCase().includes('GROOMING') || /spa|tắm|tam|tỉa|tia|groom|cắt|cat|vệ sinh|ve sinh/i.test(item.name || item.title || '')
+        ? 'spa-grooming'
+        : 'clinic'
+    );
+    return selectedServiceGroups.includes(itemGroupId);
+  };
   const filterProduct = (item: any) => matchesAnySelected(getProductCategoryId(item), selectedProductCategories);
 
   return {

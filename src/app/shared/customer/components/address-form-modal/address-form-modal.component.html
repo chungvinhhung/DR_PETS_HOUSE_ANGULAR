@@ -62,7 +62,7 @@
           [autoComplete]="'address-level1'"
           [showError]="validationAttempted()"
           [value]="form().city"
-          [options]="vietnamProvinces"
+          [options]="vietnamProvinces()"
           [listId]="'vietnam-provinces-list'"
           (onChange)="updateField('city', $any($event).target.value)"
         ></label>
@@ -73,6 +73,8 @@
           [autoComplete]="'address-level3'"
           [showError]="validationAttempted()"
           [value]="form().ward"
+          [options]="wardOptions()"
+          [listId]="'vietnam-wards-list'"
           (onChange)="updateField('ward', $any($event).target.value)"
         ></label>
 

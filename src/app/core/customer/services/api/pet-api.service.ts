@@ -107,19 +107,30 @@ export function normalizePet(pet: any = {}) {
 
 export function normalizeMedicalRecord(record: any = {}) {
   const attachment = Array.isArray(record.attachments) ? record.attachments[0] : null;
-  const condition = record.record_name || record.condition || record.diagnosis || "Bệnh án";
+  const condition = record.record_name || record.recordName || record.condition || record.diagnosis || "Khám tổng quát";
+  const doctorName = record.doctor?.full_name || record.doctorName || record.doctor_name || record.doctor || "Bác sĩ phụ trách";
+  const visitDate = record.visit_date || record.visitDate || record.examinationDate || record.date;
 
   return {
     ...record,
-    id: String(record.record_id || record.id || Date.now()),
+    id: String(record.record_id || record.id || record._id || Date.now()),
+    _id: record._id || record.id,
+    record_id: record.record_id || record._id || record.id,
     name: record.name || `${condition}.pdf`,
-    date: record.date || formatDateText(record.visit_date),
+    date: formatDateText(visitDate) || record.date || "",
+    visitDate,
+    visit_date: visitDate,
     condition,
-    doctor: record.doctor?.full_name || record.doctor || "Chưa rõ",
-    notes: record.notes || record.treatment_note || record.diagnosis || record.symptoms || "Không có ghi chú y tế.",
-    fileUrl: attachment?.file_url || record.fileUrl || "",
-    fileName: attachment?.file_name || record.fileName || record.name,
-    sourceType: record.source_type,
+    recordName: condition,
+    record_name: condition,
+    doctor: doctorName,
+    doctorName,
+    doctor_name: doctorName,
+    notes: record.notes || record.treatment_note || record.treatmentNote || record.diagnosis || record.symptoms || "Không có ghi chú y tế.",
+    fileUrl: attachment?.file_url || attachment?.fileUrl || record.fileUrl || record.file_url || "",
+    fileName: attachment?.file_name || attachment?.fileName || record.fileName || record.file_name || record.name,
+    attachments: Array.isArray(record.attachments) ? record.attachments : [],
+    sourceType: record.source_type || record.sourceType || "user_uploaded",
   };
 }
 
@@ -177,6 +188,8 @@ function toPetPayload(pet: any = {}) {
     "Cần tái khám": "need_recheck",
   };
 
+  const isHidden = pet.isHidden !== undefined ? Boolean(pet.isHidden) : (pet.is_hidden !== undefined ? Boolean(pet.is_hidden) : undefined);
+
   return {
     pet_name: pet.name || pet.pet_name,
     species_id: pet.speciesId || pet.species_id,
@@ -190,17 +203,31 @@ function toPetPayload(pet: any = {}) {
     health_status: (healthStatusMap as any)[pet.healthStatus] || pet.healthStatus || pet.health_status || "unknown",
     medical_note: pet.medicalNotes || pet.medical_note || null,
     profile_image_url: pet.avatar || pet.profile_image_url || null,
-    ...(pet.isHidden !== undefined ? { is_hidden: Boolean(pet.isHidden) } : {}),
+    ...(isHidden !== undefined ? {
+      is_hidden: isHidden,
+      isHidden: isHidden,
+      status: isHidden ? "HIDDEN" : "ACTIVE",
+      isArchived: isHidden,
+    } : {}),
+    ...(pet.status ? { status: pet.status } : {}),
   };
 }
 
 function toMedicalRecordPayload(record: any = {}) {
+  const doctor = record.doctor || record.doctorName || record.doctor_name || "";
   const payload = {
     pet_id: record.petId || record.pet_id,
-    record_name: record.condition || record.record_name || record.name,
-    visit_date: record.visitDate || record.visit_date,
+    petId: record.petId || record.pet_id,
+    record_name: record.condition || record.record_name || record.name || "Khám tổng quát",
+    condition: record.condition || record.record_name || record.name || "Khám tổng quát",
+    doctor,
+    doctor_name: doctor,
+    doctorName: doctor,
+    visit_date: record.visitDate || record.visit_date || new Date().toISOString().slice(0, 10),
+    visitDate: record.visitDate || record.visit_date || new Date().toISOString().slice(0, 10),
     diagnosis: record.diagnosis || record.condition || "",
     treatment_note: record.notes || record.treatment_note || "",
+    notes: record.notes || record.treatment_note || "",
     symptoms: record.symptoms || "",
   };
 
@@ -334,7 +361,22 @@ export class PetApiService {
 
   /** Ẩn / hiện lại hồ sơ thú cưng (gửi kèm toàn bộ thông tin vì PUT ghi đè) */
   async setPetHidden(petId: any, pet: any, hidden: boolean) {
-    return this.updatePet(petId, { ...pet, isHidden: hidden });
+    try {
+      const response = await this.http.patch(`/pets/${petId}/status`, {
+        status: hidden ? 'HIDDEN' : 'ACTIVE',
+        isHidden: hidden,
+        isArchived: hidden,
+      });
+      return normalizePet(assertSuccess(response));
+    } catch {
+      return this.updatePet(petId, {
+        ...pet,
+        isHidden: hidden,
+        is_hidden: hidden,
+        status: hidden ? 'HIDDEN' : 'ACTIVE',
+        isArchived: hidden,
+      });
+    }
   }
 
   async deletePet(petId: any) {
@@ -350,17 +392,13 @@ export class PetApiService {
 
   async createMedicalRecord(record: any) {
     const payload = toMedicalRecordPayload(record);
-    const response = await this.http.post("/medical-records", payload, payload instanceof FormData ? {
-      headers: { "Content-Type": "multipart/form-data" },
-    } : undefined);
+    const response = await this.http.post("/medical-records", payload);
     return normalizeMedicalRecord(assertSuccess(response));
   }
 
   async updateMedicalRecord(recordId: any, record: any) {
     const payload = toMedicalRecordPayload(record);
-    const response = await this.http.put(`/medical-records/${recordId}`, payload, payload instanceof FormData ? {
-      headers: { "Content-Type": "multipart/form-data" },
-    } : undefined);
+    const response = await this.http.put(`/medical-records/${recordId}`, payload);
     return normalizeMedicalRecord(assertSuccess(response));
   }
 

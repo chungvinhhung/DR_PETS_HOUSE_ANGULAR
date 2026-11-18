@@ -11,6 +11,7 @@
   }
   <input
     [attr.name]="name()"
+    [attr.autocomplete]="autoComplete()"
     [value]="value() ?? ''"
     (input)="onChange.emit($event)"
     [attr.type]="isPassword() && visible() ? 'text' : type()"

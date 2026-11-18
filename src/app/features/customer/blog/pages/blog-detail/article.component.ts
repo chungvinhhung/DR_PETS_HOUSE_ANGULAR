@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 import { CategoryIconComponent } from '../../../../../shared/customer/components/blog-card/category-icon.component';
 import { CustomerIconComponent } from '../../../../../shared/customer/components/icon/customer-icon.component';
+import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
 
 /**
  * Article — chuyển từ React: src/pages/Blog/BlogDetailPage.jsx
@@ -9,7 +10,7 @@ import { CustomerIconComponent } from '../../../../../shared/customer/components
 @Component({
   selector: 'article[app-article]',
   standalone: true,
-  imports: [CategoryIconComponent, CustomerIconComponent],
+  imports: [CategoryIconComponent, CustomerIconComponent, CustomerLinkDirective],
   templateUrl: './article.component.html',
   styleUrl: './article.component.scss',
   host: {
@@ -20,5 +21,5 @@ import { CustomerIconComponent } from '../../../../../shared/customer/components
 export class ArticleComponent {
   // --- Input / Output (props của React) ---
   readonly post = input<any>(undefined);
-
+  protected readonly encodeURIComponent = encodeURIComponent;
 }

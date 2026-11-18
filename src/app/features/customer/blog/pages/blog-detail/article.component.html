@@ -28,9 +28,9 @@
 </div>
 <div class="article__row-2">
   @for (tag of post().tags; track tag) {
-    <button
-      type="button"
-      class="rounded-full bg-[#EEEEEE] px-4 py-2 text-[14px] font-medium text-[#414753] hover:bg-[#FFF9C4]"
-    >{{ tag }}</button>
+    <a
+      [appCustomerLink]="'/blog?keyword=' + encodeURIComponent(tag) + '#latest-posts'"
+      class="rounded-full bg-[#EEEEEE] px-4 py-2 text-[14px] font-medium text-[#414753] hover:bg-[#FFF9C4] hover:text-[#005AB4] transition-colors cursor-pointer"
+    >{{ tag }}</a>
   }
 </div>

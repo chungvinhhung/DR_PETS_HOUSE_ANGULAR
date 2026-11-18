@@ -38,11 +38,19 @@ function formatPublishedAt(value: any) {
 
 function normalizeSearchService(service: any = {}) {
   const normalized = normalizeBookingService(service);
+  const rawType = String(service.serviceType || service.service_type || service.category || service.group || normalized.category || '').toUpperCase();
+  const serviceName = String(service.name || service.title || normalized.name || '').toLowerCase();
+  const isGrooming = rawType.includes('GROOMING') || rawType.includes('SPA') || /spa|tắm|tam|tỉa|tia|groom|cắt|cat|vệ sinh|ve sinh/i.test(serviceName);
+  const groupId = isGrooming ? 'spa-grooming' : 'clinic';
+
   return {
     ...normalized,
     title: normalized.name,
     image: service.image_url || productCardImages.placeholder,
     priceValue: normalized.price,
+    groupId,
+    group: groupId,
+    serviceType: isGrooming ? 'GROOMING' : 'MEDICAL',
   };
 }
 

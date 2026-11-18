@@ -37,26 +37,40 @@ export function formatPrice(value: any) {
 export function formatReviewTime(createdAt: any): string {
   if (!createdAt) return '';
 
-  const timestamp = new Date(createdAt).getTime();
-  if (isNaN(timestamp)) return String(createdAt);
+  let timestamp: number;
+  if (typeof createdAt === 'number') {
+    timestamp = createdAt < 1e11 ? createdAt * 1000 : createdAt;
+  } else if (typeof createdAt === 'string') {
+    if (/^\d+$/.test(createdAt.trim())) {
+      const num = Number(createdAt.trim());
+      timestamp = num < 1e11 ? num * 1000 : num;
+    } else {
+      timestamp = new Date(createdAt).getTime();
+    }
+  } else if (createdAt instanceof Date) {
+    timestamp = createdAt.getTime();
+  } else {
+    return String(createdAt);
+  }
 
-  const diffMinutes = Math.floor((Date.now() - timestamp) / 60000);
-  const rtf = new Intl.RelativeTimeFormat('vi', { numeric: 'auto' });
+  if (isNaN(timestamp) || timestamp <= 0) return String(createdAt);
 
+  const now = Date.now();
+  const diffMs = now - timestamp;
+  if (diffMs < 0) return 'Vừa xong';
+
+  const diffMinutes = Math.floor(diffMs / 60000);
   if (diffMinutes < 1) return 'Vừa xong';
-  if (diffMinutes < 60) return rtf.format(-diffMinutes, 'minute');
+  if (diffMinutes < 60) return `${diffMinutes} phút trước`;
 
   const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return rtf.format(-diffHours, 'hour');
+  if (diffHours < 24) return `${diffHours} giờ trước`;
 
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 30) return rtf.format(-diffDays, 'day');
-
-  const diffMonths = Math.floor(diffDays / 30);
-  if (diffMonths < 12) return rtf.format(-diffMonths, 'month');
-
-  const diffYears = Math.floor(diffDays / 365);
-  return rtf.format(-diffYears, 'year');
+  const dateObj = new Date(timestamp);
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const year = dateObj.getFullYear();
+  return `${day}/${month}/${year}`;
 }
 
 

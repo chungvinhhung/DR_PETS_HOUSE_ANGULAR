@@ -172,6 +172,27 @@ export function normalizeProduct(product: any) {
   const categoryId = getFirstValue(source?.categoryId, source?.category_id, source?.product_category_id);
   const categoryIdx = Number.isFinite(Number(categoryId)) ? Number(Number(categoryId)) - 1 : source?.categoryIdx;
 
+  const rawCatSlug = source?.categorySlug || source?.category?.slug || (typeof source?.categoryId === 'object' ? source?.categoryId?.slug : null);
+  const rawCatName = String(source?.categoryName || source?.category?.name || (typeof source?.categoryId === 'object' ? source?.categoryId?.name : '') || (typeof source?.category === 'string' ? source.category : '') || source?.name || '').toLowerCase();
+  let resolvedCategorySlug = rawCatSlug;
+  if (!resolvedCategorySlug) {
+    if (rawCatName.includes('thức ăn') || rawCatName.includes('thuc an') || rawCatName.includes('hạt') || rawCatName.includes('pate') || rawCatName.includes('snack') || rawCatName.includes('bánh thưởng')) {
+      resolvedCategorySlug = 'thuc-an';
+    } else if (rawCatName.includes('đồ dùng') || rawCatName.includes('do dung') || rawCatName.includes('vệ sinh') || rawCatName.includes('khay') || rawCatName.includes('chuồng') || rawCatName.includes('lồng') || rawCatName.includes('cát')) {
+      resolvedCategorySlug = 'do-dung-thiet-yeu';
+    } else if (rawCatName.includes('sức khỏe') || rawCatName.includes('suc khoe') || rawCatName.includes('thuốc') || rawCatName.includes('vitamin') || rawCatName.includes('dinh dưỡng') || rawCatName.includes('sữa tắm')) {
+      resolvedCategorySlug = 'cham-soc-suc-khoe';
+    } else if (rawCatName.includes('đồ chơi') || rawCatName.includes('do choi') || rawCatName.includes('bóng') || rawCatName.includes('gặm') || rawCatName.includes('cào')) {
+      resolvedCategorySlug = 'do-choi';
+    } else if (rawCatName.includes('phụ kiện') || rawCatName.includes('phu kien') || rawCatName.includes('vòng cổ') || rawCatName.includes('dây dắt') || rawCatName.includes('quần áo') || rawCatName.includes('bát')) {
+      resolvedCategorySlug = 'phu-kien';
+    } else if (typeof categoryIdx === 'number' && categoryIdx >= 0 && categoryIdx < 5) {
+      resolvedCategorySlug = ['thuc-an', 'do-dung-thiet-yeu', 'cham-soc-suc-khoe', 'do-choi', 'phu-kien'][categoryIdx];
+    } else {
+      resolvedCategorySlug = 'thuc-an';
+    }
+  }
+
   return {
     ...source,
     id,
@@ -180,6 +201,7 @@ export function normalizeProduct(product: any) {
     productName: name,
     price: numericPrice,
     originalPrice: numericOriginalPrice > 0 ? numericOriginalPrice : undefined,
+    categorySlug: resolvedCategorySlug,
     discountPercent: getFirstValue(
       source?.discountPercent,
       source?.discount_percent,
@@ -357,6 +379,7 @@ export class ProductApiService {
   }
 
   async createProductReview(productId: any, payload: any) {
+    const idempotencyKey = `review-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
     return unwrap(
       await this.http.post("/reviews", {
         targetType: "PRODUCT",
@@ -364,6 +387,8 @@ export class ProductApiService {
         rating: Number(payload.rating || 5),
         comment: payload.comment ?? payload.content ?? payload.review ?? "",
         anonymous: Boolean(payload.anonymous),
+      }, {
+        headers: { 'Idempotency-Key': idempotencyKey },
       }),
     );
   }

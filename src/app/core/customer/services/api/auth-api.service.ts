@@ -106,6 +106,37 @@ export class AuthApiService {
     return assertSuccess(response);
   }
 
+  async loginWithGoogle(data: any = {}) {
+    const payload = {
+      credential: data.credential || data.idToken || data.token || 'google_mock_credential',
+      email: data.email || 'google_user@test.com',
+      fullName: data.fullName || data.name || 'Người dùng Google',
+      picture: data.picture || data.avatar || null,
+      ...data,
+    };
+    const response: any = await this.http.post("/auth/google", payload);
+    const result = assertSuccess(response);
+    const user = result?.user || result;
+    const token = result?.accessToken || result?.access_token || result?.token;
+    return {
+      accessToken: token,
+      access_token: token,
+      token,
+      user: user
+        ? {
+            user_id: user.id || user.user_id,
+            full_name: user.fullName || user.full_name,
+            email: user.email || '',
+            phone: user.phone || '',
+            role_code: user.systemRole || user.role_code || 'CUSTOMER',
+            customerId: user.customerId || user.id,
+            fullName: user.fullName || user.full_name,
+            userId: user.id || user.user_id,
+          }
+        : null,
+    };
+  }
+
   async requestGuestOtp(phone: string) {
     try {
       const response = await this.http.post("/guest/lookup/otp", { phone });

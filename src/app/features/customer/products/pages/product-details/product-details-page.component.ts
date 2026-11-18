@@ -513,10 +513,15 @@ export class ProductDetailsPageComponent implements OnInit {
   }
 
   protected async handleReviewSubmit({ rating, review }: any) {
-    await this.productApi.createProductReview(this.productId(), { rating, content: review });
-    const updated = await this.productApi.getProductReviews(this.productId(), 1, REVIEW_PAGE_SIZE);
-    this.reviewPage.set(1);
-    this.reviewsData.set(normalizeReviewsData(updated));
+    try {
+      await this.productApi.createProductReview(this.productId(), { rating, content: review });
+      const updated = await this.productApi.getProductReviews(this.productId(), 1, REVIEW_PAGE_SIZE);
+      this.reviewPage.set(1);
+      this.reviewsData.set(normalizeReviewsData(updated));
+      alert("Cảm ơn bạn đã gửi đánh giá sản phẩm thành công!");
+    } catch (err: any) {
+      alert(err?.message || "Không thể gửi đánh giá. Vui lòng thử lại sau.");
+    }
   }
 
   /** (tự sinh) global Math không dùng trực tiếp được trong template */

@@ -116,8 +116,8 @@ export class CartService {
   }
 
   readonly toggleCartItem = (id: string): void => {
-    const currentItem = this.cartItems().find((item) => item.id === id);
-    this.cartItems.update((items) => items.map((item) => (item.id === id ? { ...item, selected: !item.selected } : item)));
+    const currentItem = this.cartItems().find((item) => item.id === id || item.cartItemId === id);
+    this.cartItems.update((items) => items.map((item) => (item.id === id || item.cartItemId === id ? { ...item, selected: !item.selected } : item)));
     if (this.auth.isAuthenticated() && currentItem?.cartItemId) {
       this.cartApi.updateCartItem(currentItem.cartItemId, { isSelected: !currentItem.selected })
         .catch((error) => this.syncFailed(error, 'Không thể cập nhật giỏ hàng'));
@@ -125,17 +125,17 @@ export class CartService {
   }
 
   readonly removeCartItem = (id: string): void => {
-    const currentItem = this.cartItems().find((item) => item.id === id);
-    this.cartItems.update((items) => items.filter((item) => item.id !== id));
+    const currentItem = this.cartItems().find((item) => item.id === id || item.cartItemId === id);
+    this.cartItems.update((items) => items.filter((item) => item.id !== id && item.cartItemId !== id));
     if (this.auth.isAuthenticated() && currentItem?.cartItemId) {
       this.cartApi.deleteCartItem(currentItem.cartItemId).catch((error) => this.syncFailed(error, 'Không thể xóa sản phẩm'));
     }
   }
 
   readonly updateCartQty = (id: string, delta: number): void => {
-    const currentItem = this.cartItems().find((item) => item.id === id);
+    const currentItem = this.cartItems().find((item) => item.id === id || item.cartItemId === id);
     const nextQuantity = Math.max(1, (currentItem?.qty || 1) + delta);
-    this.cartItems.update((items) => items.map((item) => (item.id === id ? { ...item, qty: Math.max(1, item.qty + delta) } : item)));
+    this.cartItems.update((items) => items.map((item) => (item.id === id || item.cartItemId === id ? { ...item, qty: Math.max(1, item.qty + delta) } : item)));
     if (this.auth.isAuthenticated() && currentItem?.cartItemId) {
       this.cartApi.updateCartItem(currentItem.cartItemId, { quantity: nextQuantity })
         .catch((error) => this.syncFailed(error, 'Không thể cập nhật số lượng'));
@@ -144,23 +144,23 @@ export class CartService {
 
   readonly updateCartOptions = (id: string, updates: Record<string, any>): void => {
     const items = this.cartItems();
-    const currentItem = items.find((item) => item.id === id);
+    const currentItem = items.find((item) => item.id === id || item.cartItemId === id);
     if (!currentItem) return;
 
     const nextItem = { ...currentItem, ...updates };
     const nextOptionKey = getCartItemOptionKey(nextItem);
-    const existingItem = items.find((item) => item.id !== id && getCartItemOptionKey(item) === nextOptionKey);
+    const existingItem = items.find((item) => item.id !== id && item.cartItemId !== id && getCartItemOptionKey(item) === nextOptionKey);
 
     this.cartItems.set(
       existingItem
         ? items
-            .filter((item) => item.id !== id)
+            .filter((item) => item.id !== id && item.cartItemId !== id)
             .map((item) =>
               item.id === existingItem.id
                 ? { ...item, qty: item.qty + currentItem.qty, selected: item.selected || currentItem.selected }
                 : item,
             )
-        : items.map((item) => (item.id === id ? { ...item, ...updates, id: item.cartItemId ? item.id : nextOptionKey } : item)),
+        : items.map((item) => (item.id === id || item.cartItemId === id ? { ...item, ...updates, id: item.cartItemId ? item.id : nextOptionKey } : item)),
     );
 
     if (this.auth.isAuthenticated() && currentItem.cartItemId) {
@@ -180,9 +180,9 @@ export class CartService {
   readonly addToCart = (product: any): void => {
     const localId = buildCartItemKey(product);
     this.cartItems.update((items) => {
-      const existing = items.find((i) => i.id === localId);
+      const existing = items.find((i) => i.id === localId || (i.productId === (product.productId || product.id) && i.variantId === product.variantId && (i.size || '') === (product.size || '')));
       if (existing) {
-        return items.map((i) => (i.id === localId ? { ...i, qty: i.qty + (product.qty || 1), selected: true } : i));
+        return items.map((i) => (i === existing || i.id === localId ? { ...i, qty: i.qty + (product.qty || 1), selected: true } : i));
       }
       return [...items, { ...product, id: localId, qty: product.qty || 1, selected: true }];
     });

@@ -2,6 +2,7 @@
   app-field
   [label]="'Họ và Tên'"
   [name]="'name'"
+  [autoComplete]="'name'"
   [value]="form().name"
   (onChange)="update($any($event))"
   [required]="true"
@@ -12,6 +13,7 @@
     app-field
     [label]="'Số điện thoại'"
     [name]="'phone'"
+    [autoComplete]="'tel'"
     [value]="form().phone"
     (onChange)="update($any($event))"
     [type]="'tel'"
@@ -22,6 +24,7 @@
     app-field
     [label]="'Email'"
     [name]="'email'"
+    [autoComplete]="'email'"
     [value]="form().email"
     (onChange)="update($any($event))"
     [type]="'email'"
@@ -32,6 +35,7 @@
   app-field
   [label]="'Mật khẩu'"
   [name]="'password'"
+  [autoComplete]="'new-password'"
   [value]="form().password"
   (onChange)="update($any($event))"
   [type]="'password'"
@@ -68,6 +72,7 @@
   app-field
   [label]="'Xác nhận mật khẩu'"
   [name]="'confirmPassword'"
+  [autoComplete]="'new-password'"
   [value]="form().confirmPassword"
   (onChange)="update($any($event))"
   [type]="'password'"
