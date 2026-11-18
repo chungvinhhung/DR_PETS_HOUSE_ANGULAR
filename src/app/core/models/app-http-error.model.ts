@@ -42,7 +42,13 @@ export function backendProblemMessage(error: unknown): string | null {
     case 'ASSIGNMENT_SCOPE_ERROR':
       return 'Bạn không được phân công thực hiện lịch hẹn hoặc hồ sơ này.';
     case 'INVALID_STATE_TRANSITION':
-      return 'Không thể chuyển trực tiếp Staff thành Manager. Vui lòng tạo Manager qua Nhân sự → Thêm quản lý.';
+      return 'Trạng thái hiện tại không cho phép thao tác này. Vui lòng tải lại thông tin và kiểm tra điều kiện thực hiện.';
+    case 'CONCURRENCY_CONFLICT':
+      return 'Lịch hẹn đã được người khác cập nhật. Vui lòng tải lại dữ liệu mới nhất.';
+    case 'STAFF_UNAVAILABLE':
+      return 'Dịch vụ chưa có nhân viên được phân công hợp lệ hoặc nhân viên đã ngưng hoạt động. Vui lòng phân công lại.';
+    case 'STAFF_ROLE_MISMATCH':
+      return 'Nhân viên được phân công không còn đúng vai trò chuyên môn yêu cầu. Vui lòng phân công lại.';
     case 'MODERATION_ACTION_REQUIRED':
       return 'Vui lòng duyệt hoặc từ chối bài viết trước khi thực hiện xóa.';
     case 'AUTHORIZATION_ERROR':

@@ -1,9 +1,12 @@
 /** Raw BE Service Master contract; response fields are NOT demo data. */
 export interface ServicePriceVariant {
   label: string;
-  price: number;
-  minWeightKg?: number;
-  maxWeightKg?: number;
+  /** Canonical BE tier identifier; labels contain display text and weight range. */
+  tier?: 'XS' | 'S' | 'M' | 'L' | 'XL';
+  mode?: 'FIXED' | 'QUOTE';
+  price: number | null;
+  minWeightKg?: number | null;
+  maxWeightKg?: number | null;
 }
 export interface ServiceDefaultMaterial {
   materialId: string;

@@ -10,6 +10,7 @@ export interface AppointmentHistoryEvent {
 export interface AppointmentServiceSegment {
   serviceId: string;
   serviceName: string;
+  sequence: number;
   assignedStaffId: string;
   requiredStaffRole: string;
   executionStatus: string;
@@ -143,13 +144,15 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
       paidAmount !== null && finalAmount !== null && paidAmount >= finalAmount ? 'PAID' :
       paidAmount !== null && paidAmount > 0 ? 'PARTIAL' : 'PENDING');
   const serviceRows = Array.isArray(item['services']) ? item['services'] : [];
-  const serviceSegments: AppointmentServiceSegment[] = serviceRows.map(raw => {
+  const serviceSegments: AppointmentServiceSegment[] = serviceRows.map((raw, index) => {
     const row = obj(raw) ?? {};
     const scheduledStart = firstString(row['scheduledStart'], row['startAt']);
     const scheduledEnd = firstString(row['scheduledEnd'], row['endAt']);
     return {
       serviceId: firstString(row['serviceId'], obj(row['service'])?.['id'], obj(row['service'])?.['_id']),
       serviceName: firstString(row['serviceName'], obj(row['service'])?.['name']),
+      sequence: typeof row['sequence'] === 'number' && Number.isSafeInteger(row['sequence']) && row['sequence'] > 0
+        ? row['sequence'] : index + 1,
       assignedStaffId: firstString(row['assignedStaffId'], obj(row['staff'])?.['id'], obj(row['staff'])?.['_id']),
       requiredStaffRole: firstString(row['requiredStaffRole']),
       executionStatus: firstString(row['executionStatus']) || 'NOT_STARTED',
@@ -158,7 +161,7 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
       executionStartedAt: isDate(firstString(row['executionStartedAt'])) ? firstString(row['executionStartedAt']) : null,
       executionCompletedAt: isDate(firstString(row['executionCompletedAt'])) ? firstString(row['executionCompletedAt']) : null,
     };
-  }).filter(row => !!row.serviceId);
+  }).filter(row => !!row.serviceId).sort((a, b) => a.sequence - b.sequence);
   return {
     id, code:firstString(item['code'], item['appointmentCode'], item['appointment_code']) || id,
     customerName:firstString(item['customerName'], item['customer_name_snapshot'], customer['fullName'], customer['full_name'], custSnapshot['name'], contact['fullName'], contact['name']),

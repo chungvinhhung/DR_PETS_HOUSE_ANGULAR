@@ -259,7 +259,7 @@
                     <td><strong>{{ weightPricing ? tier.key : 'Chung' }}</strong></td>
                     <td>{{ weightPricing ? tier.weight : 'Mọi cân nặng' }}</td>
                     <td>
-                      <select [disabled]="!mayEdit" class="service-editor__price-select"
+                      <select [disabled]="!mayEdit || (weightPricing && tier.key === 'XL')" class="service-editor__price-select"
                         [ngModel]="tier.mode" (ngModelChange)="setTierMode(tier, $event)"
                         [attr.aria-label]="'Hình thức thu phí mức ' + tier.key">
                         <option value="FIXED">Giá cố định</option>

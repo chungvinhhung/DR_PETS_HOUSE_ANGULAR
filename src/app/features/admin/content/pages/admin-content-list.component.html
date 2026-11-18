@@ -172,8 +172,8 @@
                     <td class="is-center">{{date(r)}}</td><td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
                     <td class="is-center actions">
                       <span class="rescue-action-group">
-                        <button type="button" class="web2-admin-icon-button" aria-label="Chỉnh sửa hồ sơ cứu trợ" (click)="openEdit(r)"><img src="/assets/admin-staff/icon-edit.svg" alt=""></button>
-                        @if (canManageRescue()) {
+                        @if (canManageRescueRow(r)) {
+                          <button type="button" class="web2-admin-icon-button" aria-label="Chỉnh sửa hồ sơ cứu trợ" (click)="openEdit(r)"><img src="/assets/admin-staff/icon-edit.svg" alt=""></button>
                           <button type="button" class="web2-admin-icon-button" aria-label="Xóa hồ sơ cứu trợ" (click)="deleteRow(r)"><img src="/assets/admin-product/icon-delete.svg" alt=""></button>
                         }
                       </span>

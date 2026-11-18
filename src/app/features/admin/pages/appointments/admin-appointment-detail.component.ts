@@ -78,13 +78,19 @@ export class AdminAppointmentDetailComponent {
     const user = this.session.user();
     const appointment = this.item();
     if (!appointment || !user || !this.isExecutionStaff()) return null;
+    if (!this.canAccessAppointmentBranch(appointment.branchId)) return null;
+    if ((user.branchScope ?? []).length && !(user.branchScope ?? []).includes(appointment.branchId)) return null;
     const ownProfile = this.staffDirectory.staff().find(staff => staff.userId === user.id);
-    // BE accepts either the user ID or its StaffProfile ID as an assignment.
+    // A loaded, inactive profile or one outside this branch must not be offered /start.
+    if (ownProfile && (ownProfile.accountStatus === 'BLOCKED' ||
+      (ownProfile.branchIds?.length && !ownProfile.branchIds.includes(appointment.branchId)))) return null;
+    // BE accepts either User ID or StaffProfile ID as an assignment.
     const ownIds = [user.id, ownProfile?.id].filter((id): id is string => !!id);
-    return appointment.serviceSegments.find(segment =>
-      !!segment.assignedStaffId && ownIds.includes(segment.assignedStaffId) &&
-      segment.requiredStaffRole === user.staffSubRole &&
-      segment.executionStatus.toUpperCase() === 'NOT_STARTED') ?? null;
+    const segments = [...appointment.serviceSegments].sort((a,b) => a.sequence - b.sequence);
+    const next = segments.find(segment => segment.executionStatus.toUpperCase() !== 'COMPLETED');
+    if (!next || next.executionStatus.toUpperCase() !== 'NOT_STARTED') return null;
+    return !!next.assignedStaffId && ownIds.includes(next.assignedStaffId) &&
+      next.requiredStaffRole === user.staffSubRole ? next : null;
   });
   readonly checkInSupported = computed(() => this.item()?.checkInStatus != null);
   readonly canCheckIn = computed(() => {
@@ -556,9 +562,16 @@ export class AdminAppointmentDetailComponent {
         this.showActionMessage('Chỉ nhân viên chuyên môn được phân công đúng vai trò mới được bắt đầu dịch vụ.');
         return;
       }
-      request=this.api.post<unknown,{serviceId:string}>(
+      if (!/^[0-9a-f]{24}$/i.test(segment.serviceId)) {
+        this.showActionMessage('Mã dịch vụ không hợp lệ. Vui lòng tải lại lịch hẹn để kiểm tra phân công.'); return;
+      }
+      const startBody: {serviceId:string;expectedVersion?:number} = { serviceId:segment.serviceId };
+      if (Number.isSafeInteger(appointment.version) && appointment.version >= 1) {
+        startBody.expectedVersion = appointment.version;
+      }
+      request=this.api.post<unknown,typeof startBody>(
         '/appointments/'+encodeURIComponent(appointment.id)+'/start',
-        {serviceId:segment.serviceId});
+        startBody,{headers});
     }
 
     this.actionBusy.set(true);
@@ -583,6 +596,10 @@ export class AdminAppointmentDetailComponent {
           action==='check-in'?'Không thể check-in lịch hẹn.':'Không thể bắt đầu phục vụ.');
         this.actionError.set(message);
         this.toast.show(message,'error');
+        // BE rejects stale versions, changed assignments, and invalid transitions
+        // without side effects; refetch current appointment before another attempt.
+        if (['status','check-in'].includes(action) &&
+          [409,422].includes(Number(err?.status))) this.refresh();
       }
     });
   }

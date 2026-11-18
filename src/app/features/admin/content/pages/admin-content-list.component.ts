@@ -42,6 +42,24 @@ export class AdminContentListComponent{
  readonly isAdmin=computed(()=>this.session.user()?.systemRole==='ADMIN');
  readonly canWriteContent=computed(()=>canAdmin(this.session.user(),'content.manage'));
  readonly canManageRescue=computed(()=>canAdmin(this.session.user(),'rescue.manage'));
+ /** Align Manager rescue actions with the BE branch-scope guard. */
+ canManageRescueRow(row:any):boolean {
+   if (!this.canManageRescue()) return false;
+   const user=this.session.user();
+   if(user?.systemRole==='ADMIN')return true;
+   if(user?.systemRole!=='MANAGER')return false;
+   const branch=row?.branchId;
+   const id=String(branch?._id||branch?.id||(typeof branch==='string'?branch:'')||'');
+   return !!id && (user.branchScope??[]).includes(id);
+ }
+ private inManagerScope(row:any):boolean {
+   const user=this.session.user();
+   if(user?.systemRole!=='MANAGER')return true;
+   const branch=this.mode==='adoptions' ? row?.rescuePetId?.branchId : row?.branchId;
+   const id=String(branch?._id||branch?.id||(typeof branch==='string'?branch:'')||'');
+   return !!id && (user.branchScope??[]).includes(id);
+ }
+
  readonly canModerateCommunity=computed(()=>canAdmin(this.session.user(),'community.moderate'));
  readonly canCreate=computed(()=>this.mode==='rescue' ? this.canManageRescue()
    : (this.mode==='articles'||this.mode==='first-aid') ? this.canWriteContent()
@@ -88,7 +106,8 @@ export class AdminContentListComponent{
       return Number.isFinite(created)&&created<=Date.now() &&
         Date.now()-created<=Number(period)*24*60*60*1000;
     })();
-    return (!q||text.includes(q)) && categoryMatches && periodMatches &&
+    return (this.mode!=='rescue'||this.inManagerScope(row))
+      && (!q||text.includes(q)) && categoryMatches && periodMatches &&
       (!this.status() || (this.mode==='community'
         ? this.communityStatus(row)===this.status()
         : String(row.status??row.visibility??'').toUpperCase()===this.status()));
@@ -125,7 +144,7 @@ export class AdminContentListComponent{
  }
  openEdit(row:any):void{
   if ((this.mode==='articles'||this.mode==='first-aid')&&!this.canWriteContent())return;
-  if(this.mode==='rescue'&&!this.canManageRescue())return;
+  if(this.mode==='rescue'&&!this.canManageRescueRow(row))return;
   if(this.mode==='articles') {
    const id=String(row?._id||row?.id||row?.post_id||'');
    if(!id){this.notice.set('Bài viết chưa có mã để chỉnh sửa. Vui lòng tải lại danh sách.');return;}
@@ -189,7 +208,7 @@ export class AdminContentListComponent{
  }
  deleteRow(row:any):void{
   if ((this.mode==='articles'||this.mode==='first-aid')&&!this.canWriteContent())return;
-  if (this.mode==='rescue'&&!this.canManageRescue())return;
+  if (this.mode==='rescue'&&!this.canManageRescueRow(row))return;
   if (this.mode==='community'&&!this.canModerateCommunity())return;
   const id=String(row?._id||row?.id||'');if(!id||this.actionBusy())return;
   if(this.mode==='community') {

@@ -338,7 +338,7 @@ export class ServiceCatalogEditorComponent {
       const price = pricing.fixedTiers.get(t.key);
       return {
         ...t,
-        mode: price !== undefined ? 'FIXED' as const : 'QUOTE' as const,
+        mode: price !== undefined && t.key !== 'XL' ? 'FIXED' as const : 'QUOTE' as const,
         price: price ?? null,
       };
     });
@@ -470,6 +470,7 @@ export class ServiceCatalogEditorComponent {
   }
 
   setTierMode(tier: Tier, mode: PriceMode): void {
+    if (tier.key === 'XL' && this.weightPricing && mode !== 'QUOTE') return;
     tier.mode = mode;
     if (mode === 'QUOTE') {
       tier.price = null;
@@ -655,19 +656,24 @@ export class ServiceCatalogEditorComponent {
     if (!this.weightPricing) {
       return { basePrice: this.priceTiers[0].mode === 'FIXED' ? this.priceTiers[0].price ?? 0 : 0, priceVariants: [] };
     }
-    const bounds: Record<string, [number | undefined, number | undefined]> = {
-      XS: [undefined, 5], S: [5, 10], M: [10, 20], L: [20, 30], XL: [30, undefined],
+    const bounds: Record<string, [number, number | null]> = {
+      XS: [0, 4.999], S: [5, 9.999], M: [10, 19.999], L: [20, 30], XL: [30.001, null],
     };
-    const priceVariants = this.priceTiers.filter((t) => t.mode === 'FIXED' && t.price !== null)
-      .map((t) => {
-        const [minWeightKg, maxWeightKg] = bounds[t.key] ?? [];
-        return {
-          label: t.key, price: t.price!,
-          ...(minWeightKg === undefined ? {} : { minWeightKg }),
-          ...(maxWeightKg === undefined ? {} : { maxWeightKg }),
-        };
-      });
-    return { basePrice: priceVariants.length ? Math.min(...priceVariants.map((v) => v.price)) : 0, priceVariants };
+    const priceVariants: ServicePriceVariant[] = this.priceTiers.map(t => {
+      const [minWeightKg, maxWeightKg] = bounds[t.key];
+      const isQuote = t.key === 'XL' || t.mode === 'QUOTE';
+      return {
+        tier: t.key as ServicePriceVariant['tier'],
+        label: t.key + ' (' + t.weight + ')' + (t.key === 'XL' ? ' - Liên hệ / Báo giá' : ''),
+        mode: isQuote ? 'QUOTE' : 'FIXED',
+        price: isQuote ? null : t.price,
+        minWeightKg,
+        maxWeightKg,
+      };
+    });
+    const fixedPrices = priceVariants.filter(v => v.mode === 'FIXED' && v.price !== null)
+      .map(v => v.price as number);
+    return { basePrice: fixedPrices.length ? Math.min(...fixedPrices) : 0, priceVariants };
   }
 
   validateDraft(): void {

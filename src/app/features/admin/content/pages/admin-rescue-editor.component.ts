@@ -43,7 +43,14 @@ export class AdminRescueEditorComponent {
   readonly branchesError=signal('');
   readonly id=this.route.snapshot.paramMap.get('id')||'';
   readonly isEditing=Boolean(this.id);
-  readonly canWrite=computed(()=>['ADMIN','MANAGER'].includes(this.auth.user()?.systemRole||''));
+  readonly originalBranchId=signal<string|null>(null);
+  readonly canWrite=computed(()=>{
+    const user=this.auth.user();
+    if(user?.systemRole==='ADMIN')return true;
+    if(user?.systemRole!=='MANAGER')return false;
+    return !this.isEditing || (!!this.originalBranchId() &&
+      (user.branchScope??[]).includes(this.originalBranchId()!));
+  });
   readonly breadcrumb=[
     {label:'Cứu trợ & Nhận nuôi',link:'/admin/content/rescue'},
     {label:this.isEditing?'Chỉnh sửa hồ sơ':'Thêm hồ sơ'},
@@ -89,7 +96,7 @@ export class AdminRescueEditorComponent {
   }
   get currentManagerBranch():string{return this.legacyFields.branchId??'';}
   selectManagerBranch(id:string):void {
-    if(!this.isManager() || !this.managerBranches().some(branch=>branch.id===id))return;
+    if(!this.canWrite() || !this.isManager() || !this.managerBranches().some(branch=>branch.id===id))return;
     this.legacyFields.branchId=id;this.dirty.set(true);this.error.set('');
   }
   private async load():Promise<void>{
@@ -107,6 +114,11 @@ export class AdminRescueEditorComponent {
         branchId:String(row.branchId?._id||row.branchId?.id||
           (typeof row.branchId==='string'?row.branchId:'')||'')||null,
       };
+      this.originalBranchId.set(this.legacyFields.branchId);
+      if(this.isManager() &&
+        (!this.legacyFields.branchId || !(this.auth.user()?.branchScope??[]).includes(this.legacyFields.branchId))) {
+        throw new Error('Manager không có quyền chỉnh sửa hồ sơ cứu trợ toàn hệ thống hoặc ngoài chi nhánh được phân công.');
+      }
       this.draft.set({
         petName:String(row.petName||''),species:(['DOG','CAT','OTHER'].includes(row.species)?row.species:'DOG') as RescueSpecies,
         rescueStory:String(row.rescueStory||''),healthStatus:String(row.healthStatus||''),
@@ -115,7 +127,10 @@ export class AdminRescueEditorComponent {
         image:Array.isArray(row.images)?String(row.images[0]||''):'',
       });
       this.dirty.set(false);
-    }catch(err:any){this.loadError.set(err?.error?.message||err?.message||'Không thể tải hồ sơ cứu trợ.');}
+    }catch(err:unknown){
+      this.loadError.set(err instanceof Error && !(err as any).status ? err.message :
+        adminErrorMessage(err,'Không thể tải hồ sơ cứu trợ.'));
+    }
     finally{this.loading.set(false);}
   }
   setField<K extends keyof RescueDraft>(key:K,value:RescueDraft[K]):void{
@@ -177,12 +192,18 @@ export class AdminRescueEditorComponent {
     if(!d.image){
       this.error.set('Vui lòng tải ảnh thú cưng lên máy chủ trước khi lưu.');return null;
     }
+    if(!this.canWrite()){
+      this.error.set('Bạn không có quyền chỉnh sửa hồ sơ này.');return null;
+    }
     if(this.isManager() && (this.branchesLoading() || this.branchesError() ||
+      !this.legacyFields.branchId ||
+      !/^[a-f\d]{24}$/i.test(this.legacyFields.branchId) ||
       !this.managerBranches().some(branch=>branch.id===this.legacyFields.branchId))){
       this.error.set('Vui lòng chọn chi nhánh đang hoạt động trong phạm vi được phân công trước khi lưu.');return null;
     }
     return {
       petName:d.petName.trim(),species:d.species,
+      ownershipType:'PARTNER_MAINTAINED',
       breed:this.legacyFields.breed,ageDescription:this.legacyFields.ageDescription,
       gender:this.legacyFields.gender,
       ...(this.legacyFields.branchId?{branchId:this.legacyFields.branchId}:{}),
@@ -208,8 +229,9 @@ export class AdminRescueEditorComponent {
       if(String(stored?.supportPartnerId||'')!==this.draft().supportPartnerId||
         String(stored?.supportNeeds||'')!==this.draft().supportNeeds.trim()||
         !Array.isArray(stored?.images)||stored.images[0]!==this.draft().image||
-        (this.isEditing&&String(stored?.status||'')!==this.savedStatus())){
-        this.error.set('Hồ sơ đã được ghi nhận nhưng BE chưa lưu đối tác và nhu cầu hỗ trợ. Đã giữ nguyên dữ liệu nhập; cần BE bổ sung supportPartnerId và supportNeeds. Không tạo lại hồ sơ để tránh trùng.');
+        (this.isEditing&&String(stored?.status||'')!==this.savedStatus()) ||
+        (this.isManager() && String(stored?.branchId?._id||stored?.branchId?.id||stored?.branchId||'') !== this.legacyFields.branchId)){
+        this.error.set('BE đã ghi nhận hồ sơ nhưng dữ liệu đối tác, nhu cầu hỗ trợ, chi nhánh hoặc trạng thái chưa khớp. Đã giữ dữ liệu nhập; không tạo lại để tránh trùng hồ sơ.');
         this.dirty.set(true);
         return;
       }
