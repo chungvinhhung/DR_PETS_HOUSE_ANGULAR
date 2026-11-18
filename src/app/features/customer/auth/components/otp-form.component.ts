@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, computed, input, output, signal, viewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, input, output, signal, viewChildren } from '@angular/core';
 
 import { PrimaryButtonComponent } from './primary-button.component';
 import { CustomerIconComponent } from '../../../../shared/customer/components/icon/customer-icon.component';
@@ -33,6 +33,7 @@ export class OtpFormComponent {
   readonly hasOnResendOtp = input<boolean>(false);
   readonly resendDisabled = input<boolean>(false);
   readonly resendLabel = input<string>("Gửi lại mã");
+  readonly initialOtp = input<string>("");
 
   // --- Giá trị tính toán (computed) ---
   readonly complete = computed<any>(() => this.otp().join("").length === 6);
@@ -42,6 +43,15 @@ export class OtpFormComponent {
   private readonly inputs = viewChildren<ElementRef<HTMLInputElement>>('otpInput');
   get refs(): { current: any } {
     return { current: this.inputs().map((ref) => ref.nativeElement) };
+  }
+
+  constructor() {
+    effect(() => {
+      const init = String(this.initialOtp() || '').trim();
+      if (init.length === 6) {
+        this.otp.set(init.split(''));
+      }
+    });
   }
 
   protected handleResend() {

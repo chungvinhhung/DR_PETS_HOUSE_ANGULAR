@@ -61,6 +61,14 @@ export class RecoveryPanelComponent {
   readonly submitting = signal<any>(false);
   readonly submitError = signal<any>("");
   readonly resetToken = signal<any>("");
+  readonly debugOtp = signal<string>("");
+
+  readonly activeDebugOtp = computed<string>(() => {
+    if (this.screen() === 'registerOtp') {
+      return this.forms()?.register?.debugOtp || this.debugOtp();
+    }
+    return this.debugOtp();
+  });
 
   /** Hàm set kiểu React cho signal "forgotValidationAttempted" (dùng khi truyền cho component con / callback) */
   protected readonly setForgotValidationAttemptedFn = reactSetter(this.forgotValidationAttempted);
@@ -80,10 +88,32 @@ export class RecoveryPanelComponent {
       if (!account) {
         throw new Error("Vui lòng nhập số điện thoại hoặc email");
       }
-      await this.authApi.forgotPassword(account);
+      const res: any = await this.authApi.forgotPassword(account);
+      if (res?.debugOtp) {
+        this.debugOtp.set(String(res.debugOtp));
+      }
       this.changeScreen()("resetOtp");
     } catch (error: any) {
       this.submitError.set(error?.message || "Không thể gửi OTP");
+    } finally {
+      this.submitting.set(false);
+    }
+  }
+
+  protected async handleResendOtp() {
+    this.submitting.set(true);
+    this.submitError.set("");
+    try {
+      const isRegister = this.screen() === "registerOtp";
+      const account = isRegister
+        ? (this.forms().register.phone || this.forms().register.email)
+        : this.forms().forgot.account;
+      const res: any = await this.authApi.resendOtp(account, isRegister ? "REGISTER" : "FORGOT_PASSWORD");
+      if (res?.debugOtp) {
+        this.debugOtp.set(String(res.debugOtp));
+      }
+    } catch (error: any) {
+      this.submitError.set(error?.message || "Không thể gửi lại OTP");
     } finally {
       this.submitting.set(false);
     }

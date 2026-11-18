@@ -175,6 +175,15 @@ export class AuthApiService {
     return assertSuccess(response);
   }
 
+  async resendOtp(account: any, purpose: string = 'FORGOT_PASSWORD') {
+    const cleanAccount = String(account || '').trim();
+    const response = await this.http.post("/auth/resend-otp", {
+      identifier: cleanAccount,
+      purpose,
+    });
+    return assertSuccess(response);
+  }
+
   async verifyForgotOtp({ email, account, otpCode }: any) {
     const target = String(account || email || '').trim();
     const response = await this.http.post("/auth/verify-otp", {

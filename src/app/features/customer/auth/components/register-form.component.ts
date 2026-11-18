@@ -127,6 +127,9 @@ export class RegisterFormComponent {
         );
         return;
       }
+      if (data?.debugOtp && this.setForm()) {
+        this.setForm()((prev: any) => ({ ...prev, debugOtp: data.debugOtp }));
+      }
       this.changeScreen()("registerOtp");
     } catch (error: any) {
       this.submitError.set(error?.message || "Đăng ký không thành công");
