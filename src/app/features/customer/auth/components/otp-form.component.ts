@@ -74,7 +74,10 @@ export class OtpFormComponent implements OnInit, OnDestroy {
   readonly maskedPhone = computed<string>(() => {
     const raw = String(this.phone() || '').trim();
     if (!raw) return '';
-    const digits = raw.replace(/\D/g, '');
+    let digits = raw.replace(/\D/g, '');
+    if (digits.startsWith('84') && digits.length >= 11) {
+      digits = '0' + digits.slice(2);
+    }
     if (digits.length >= 7) {
       return `${digits.slice(0, 3)}***${digits.slice(-4)}`;
     }
