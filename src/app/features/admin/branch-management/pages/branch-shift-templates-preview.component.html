@@ -1,0 +1,148 @@
+<section class="branch-management__panel branch-v2" aria-labelledby="branch-shift-heading">
+  <div class="branch-v2__heading">
+    <h2 id="branch-shift-heading">Ca làm việc tại chi nhánh</h2>
+    <div class="branch-shifts__actions">
+      @if (mayEdit()) {
+        <button type="button" class="branch-management__button branch-management__button--primary"
+          [disabled]="busy() || !branchId" (click)="openCreate()">Thêm ca làm việc</button>
+      }
+      <a class="branch-management__button branch-management__button--outline"
+        routerLink="/admin/staff/schedule">Quản lý lịch làm việc</a>
+    </div>
+  </div>
+  @if (notice()) {
+    <p class="branch-shifts__notice" role="status">{{notice()}}</p>
+  }
+  @if (loading()) {
+    <app-admin-data-state kind="loading" title="Đang tải ca làm việc" />
+  } @else if (error()) {
+    <app-admin-data-state kind="error" title="Không thể tải ca làm việc"
+      [message]="error()" (retry)="load()" />
+  } @else {
+    <div class="branch-management__table-scroll">
+      <table class="branch-management__table branch-v2__shifts">
+        <colgroup>
+          <col style="width:22%" /><col style="width:14%" /><col style="width:14%" />
+          <col style="width:24%" /><col style="width:16%" /><col style="width:10%" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th scope="col">Tên ca</th><th scope="col">Bắt đầu</th>
+            <th scope="col">Kết thúc</th><th scope="col">Ngày áp dụng</th>
+            <th scope="col">Trạng thái</th><th scope="col">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (shift of rows(); track shift.id) {
+            <tr>
+              <td><strong>{{shift.name}}</strong></td>
+              <td>{{shift.startTime}}</td>
+              <td>{{shift.endTime}}</td>
+              <td>{{dayLabel(shift.daysOfWeek)}}</td>
+              <td>
+                <span class="branch-shifts__badge" [class.branch-shifts__badge--inactive]="shift.status !== 'ACTIVE'">
+                  {{shift.status === 'ACTIVE' ? 'Đang hoạt động' : 'Ngừng áp dụng'}}
+                </span>
+              </td>
+              <td>
+                @if (mayEdit()) {
+                  <div class="branch-shifts__row-actions">
+                    <button type="button" [disabled]="busy()" (click)="openEdit(shift)" [attr.aria-label]="'Chỉnh sửa ' + shift.name">Sửa</button>
+                    <button type="button" class="branch-shifts__danger" [disabled]="busy()"
+                      (click)="requestDelete(shift)" [attr.aria-label]="'Xóa ' + shift.name">Xóa</button>
+                  </div>
+                } @else { <span>—</span> }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6">
+              <app-admin-data-state kind="empty" title="Chưa có ca làm việc"
+                message="Chi nhánh chưa có mẫu ca làm việc nào được tạo." />
+            </td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+@if (showEditor()) {
+  <div class="branch-shifts__backdrop" role="presentation">
+    <section class="branch-shifts__dialog" role="dialog" aria-modal="true"
+      aria-labelledby="branch-shifts-dialog-title">
+      <header class="branch-shifts__dialog-heading">
+        <div>
+          <h3 id="branch-shifts-dialog-title">{{editingId() ? 'Chỉnh sửa ca làm việc' : 'Thêm ca làm việc'}}</h3>
+          <p>{{branchName}}</p>
+        </div>
+        <button type="button" class="branch-shifts__close" aria-label="Đóng"
+          [disabled]="busy()" (click)="closeEditor()">×</button>
+      </header>
+      <form (submit)="$event.preventDefault(); save()">
+        <div class="branch-shifts__field">
+          <label for="branch-shift-name">Tên ca <span>*</span></label>
+          <input id="branch-shift-name" type="text" maxlength="100" required
+            placeholder="Ví dụ: Ca sáng" [value]="draft().name"
+            (input)="setField('name',$any($event.target).value)" />
+        </div>
+        <div class="branch-shifts__time-grid">
+          <div class="branch-shifts__field">
+            <label for="branch-shift-start">Bắt đầu <span>*</span></label>
+            <input id="branch-shift-start" type="time" required [value]="draft().startTime"
+              (input)="setField('startTime',$any($event.target).value)" />
+          </div>
+          <div class="branch-shifts__field">
+            <label for="branch-shift-end">Kết thúc <span>*</span></label>
+            <input id="branch-shift-end" type="time" required [value]="draft().endTime"
+              (input)="setField('endTime',$any($event.target).value)" />
+          </div>
+        </div>
+        <fieldset class="branch-shifts__days">
+          <legend>Ngày áp dụng <span>*</span></legend>
+          <div class="branch-shifts__days-grid">
+            @for (day of days; track day.id) {
+              <label class="branch-shifts__day" [class.branch-shifts__day--selected]="draft().daysOfWeek.includes(day.id)">
+                <input type="checkbox" [checked]="draft().daysOfWeek.includes(day.id)"
+                  (change)="toggleDay(day.id,$any($event.target).checked)" />
+                {{day.label}}
+              </label>
+            }
+          </div>
+        </fieldset>
+        <div class="branch-shifts__field">
+          <label for="branch-shift-status">Trạng thái</label>
+          <select id="branch-shift-status" [value]="draft().status"
+            (change)="setStatus($any($event.target).value)">
+            <option value="ACTIVE">Đang hoạt động</option>
+            <option value="INACTIVE">Ngừng áp dụng</option>
+          </select>
+        </div>
+        @if (formError()) {
+          <p class="branch-shifts__error" role="alert">{{formError()}}</p>
+        }
+        <footer class="branch-shifts__dialog-actions">
+          <button type="button" class="branch-shifts__secondary" [disabled]="busy()" (click)="closeEditor()">Hủy</button>
+          <button type="submit" class="branch-shifts__primary" [disabled]="busy()">
+            {{busy() ? 'Đang lưu...' : 'Lưu ca làm việc'}}
+          </button>
+        </footer>
+      </form>
+    </section>
+  </div>
+}
+
+@if (deleting(); as item) {
+  <div class="branch-shifts__backdrop" role="presentation">
+    <section class="branch-shifts__dialog branch-shifts__dialog--small" role="alertdialog" aria-modal="true"
+      aria-labelledby="branch-shift-delete-title">
+      <h3 id="branch-shift-delete-title">Xóa ca làm việc?</h3>
+      <p>Bạn có chắc muốn xóa mẫu ca <strong>{{item.name}}</strong>? Thao tác này không thể hoàn tác.</p>
+      @if (formError()) { <p class="branch-shifts__error" role="alert">{{formError()}}</p> }
+      <footer class="branch-shifts__dialog-actions">
+        <button type="button" class="branch-shifts__secondary" [disabled]="busy()" (click)="cancelDelete()">Giữ lại</button>
+        <button type="button" class="branch-shifts__primary branch-shifts__primary--danger" [disabled]="busy()"
+          (click)="confirmDelete()">{{busy() ? 'Đang xóa...' : 'Xóa ca'}}</button>
+      </footer>
+    </section>
+  </div>
+}

@@ -17,6 +17,27 @@ export interface BranchApiRecord {
   openingHours?: readonly { dayOfWeek: number; open: string; close: string }[];
   holidays?: readonly { date: string; note?: string }[];
 }
+/** Canonical BE OPS-03 branch shift template DTO. */
+export interface BranchShiftTemplate {
+  id: string;
+  branchId: string;
+  code?: string | null;
+  name: string;
+  startTime: string;
+  endTime: string;
+  daysOfWeek: number[];
+  status: 'ACTIVE' | 'INACTIVE';
+  version?: number;
+}
+
+export interface BranchShiftTemplateWrite {
+  name: string;
+  startTime: string;
+  endTime: string;
+  daysOfWeek: number[];
+  status: 'ACTIVE' | 'INACTIVE';
+}
+
 export interface BranchServiceApiRecord {
   branchId: string;
   serviceId: string;
@@ -96,6 +117,31 @@ export class BranchManagementApiService {
         ? fetchPage(page.nextCursor)
         : EMPTY),
       reduce((all, page) => [...all, ...page.items], [] as T[]),
+    );
+  }
+
+  /** OPS-03: live shift templates scoped to one selected branch. */
+  listShiftTemplates(branchId: string): Observable<BranchShiftTemplate[]> {
+    return this.api.get<BranchShiftTemplate[]>(
+      '/branches/' + encodeURIComponent(branchId) + '/shift-templates',
+    );
+  }
+
+  createShiftTemplate(branchId: string, body: BranchShiftTemplateWrite): Observable<BranchShiftTemplate> {
+    return this.api.post<BranchShiftTemplate, BranchShiftTemplateWrite>(
+      '/branches/' + encodeURIComponent(branchId) + '/shift-templates', body,
+    );
+  }
+
+  updateShiftTemplate(branchId: string, id: string, body: BranchShiftTemplateWrite): Observable<BranchShiftTemplate> {
+    return this.api.patch<BranchShiftTemplate, BranchShiftTemplateWrite>(
+      '/branches/' + encodeURIComponent(branchId) + '/shift-templates/' + encodeURIComponent(id), body,
+    );
+  }
+
+  deleteShiftTemplate(branchId: string, id: string): Observable<unknown> {
+    return this.api.delete(
+      '/branches/' + encodeURIComponent(branchId) + '/shift-templates/' + encodeURIComponent(id),
     );
   }
 

@@ -11,10 +11,10 @@
    - BE decision required: define field/schema and create/update/get/list contracts, preserve on `POST /internal/appointments` and pet endpoints, return it for edit/detail; coordinate Customer implementation as well.
    - Verification: create and edit an OTHER pet, reload, verify exact text survives; ordinary species must remain normalized.
 
-2. **Branch-level shift-template CRUD.**
-   - Admin `BranchShiftTemplatesPreviewComponent` currently has disabled “Thêm ca làm việc”, no live shift-template endpoint contract.
-   - BE repository includes `ShiftTemplate` model but the existing `/shifts` staff assignment workflow does not establish branch-level template CRUD.
-   - Need contract for list/create/update/disable templates with branch scope and role checks. Do not fabricate templates on FE.
+2. **Branch-level shift-template CRUD — BE contract found; verify deployment.**
+   - Source BE `feat/foundation-v6` has `GET/POST /branches/:branchId/shift-templates` and `PATCH/DELETE /branches/:branchId/shift-templates/:id`, with `ShiftTemplate` DTO and role checks. The FE previously displayed a disabled placeholder; this round connects the actual CRUD API to the branch tab.
+   - No BE API addition is requested until tested. Verify the Render deployment includes these routes, permissions for Admin/Manager and real data persistence.
+   - BE gap if deployed route 404/405: deploy relevant branch routes; FE must not generate mock shift rows.
 
 3. **Customer submitted review absent in Admin.**
    - Admin calls `GET /reviews/admin`; BE does define that route. FE was updated to fetch all pages (up to 100 pages, 100 items/page), not just first 100 items.
@@ -41,6 +41,7 @@
 - Inventory: wrap long SKU/variant values inside the correct column.
 - Text UX: remove BE/Backend/API/contract references from user-visible messages throughout key Admin modules, with more specific actionable copy.
 - Flash Sale editor: copy updates only; timeline/activation behavior remains unchanged pending evidence.
+- Branch shift templates: list/create/edit/delete wired to the BE OPS-03 endpoints; still needs live Render E2E.
 - Customer app files untouched; `main` untouched.
 
 ## QA / handoff checklist
