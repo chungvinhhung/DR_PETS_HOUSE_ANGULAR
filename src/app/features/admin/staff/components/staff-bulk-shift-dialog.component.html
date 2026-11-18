@@ -96,11 +96,11 @@
             </div>
           </div>
         }
-        <p class="bulk-shift-be-note">BE chưa cung cấp API mẫu ca và ngày áp dụng của chi nhánh. Ca thêm tại đây chỉ dùng cho lần phân công này, không tạo mẫu ca dùng chung.</p>
+        <p class="bulk-shift-be-note">Ca thêm trong bảng này chỉ áp dụng cho lần phân công đang thực hiện, không tự tạo mẫu ca chung.</p>
       </div>
 
       @if (replacedIds().length) {
-        <p class="bulk-shift-replace-note" role="status">{{ replacedIds().length }} ca hiện có đang chờ được thay thế. Lịch cũ chưa bị xóa. Chức năng lưu thay thế cần API atomic từ BE.</p>
+        <p class="bulk-shift-replace-note" role="status">{{ replacedIds().length }} ca hiện có đang chờ được thay thế. Lịch cũ chưa bị xóa. Chưa thể lưu thay thế các ca này. Lịch hiện tại vẫn được giữ nguyên.</p>
       }
       @if (info()) { <p class="bulk-shift-info" role="status">{{ info() }}</p> }
       @if (error()) { <p class="bulk-shift-error" role="alert">{{ error() }}</p> }

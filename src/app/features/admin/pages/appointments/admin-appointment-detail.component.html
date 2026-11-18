@@ -98,7 +98,7 @@
           </table>
         </div>
         @if (!checkInSupported()) {
-          <p class="technical-note">Lịch hẹn này chưa có trường checkInStatus từ BE. FE không tự suy luận “Đã đến” từ trạng thái thực hiện.</p>
+          <p class="technical-note">Chưa xác nhận được thông tin khách hàng đã đến. Vui lòng kiểm tra lại lịch hẹn.</p>
         }
       </section>
 
@@ -177,7 +177,7 @@
           <p class="hint hint--info">Chỉ nhân viên chuyên môn được phân công, đúng vai trò và sau khi lịch hẹn đã check-in mới có thể bắt đầu dịch vụ.</p>
         }
         @if (action==='check-in') {
-          <p class="hint hint--info">Xác nhận khách hàng đã đến chi nhánh. Thao tác này cập nhật trạng thái check-in của lịch hẹn trên Backend.</p>
+          <p class="hint hint--info">Xác nhận khách hàng đã đến chi nhánh. Thao tác này sẽ cập nhật trạng thái khách đã đến.</p>
         }
         @if (action==='no-show') {
           <p class="hint hint--warning">Lịch đã đủ điều kiện đánh dấu Không đến. Thao tác này sẽ giải phóng khung giờ và áp dụng chính sách hoàn/khấu trừ hiện hành.</p>

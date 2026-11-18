@@ -240,7 +240,7 @@
           </div>
           @if(action==='refund'){
             <p class="return-detail__refund-confirm">Xác nhận hoàn tiền cho yêu cầu {{data()?.code || data()?.id}}?</p>
-            <p class="return-detail__backend-limit">Backend chưa hỗ trợ chuyển khoản thực tế. Thao tác hiện chỉ ghi nhận giao dịch hoàn tiền trong hệ thống.</p>
+            <p class="return-detail__backend-limit">Thao tác này chỉ ghi nhận hoàn tiền trong hệ thống, chưa thực hiện chuyển khoản thực tế.</p>
           } @else if(action!=='approve' && action!=='receive') {
             <div class="return-detail__notice">
               <strong>Lưu ý</strong><p>{{actionExplanation(action)}}</p>
@@ -317,7 +317,7 @@
                   aria-label="Số tiền hoàn dự kiến theo hàng thực nhận"/>
               </label>
             </div>
-            <p class="return-detail__backend-limit">Backend chưa hỗ trợ thay đổi số tiền hoàn cuối cùng khi phê duyệt.</p>
+            <p class="return-detail__backend-limit">Số tiền hoàn cuối cùng không thể chỉnh sửa ở bước phê duyệt.</p>
             <div class="return-detail__refund-destination">
               <div class="return-detail__field">Thông tin hoàn tiền</div>
               <div class="return-detail__refund-destination-row return-detail__refund-destination-row--three">

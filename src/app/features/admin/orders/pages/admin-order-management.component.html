@@ -513,7 +513,7 @@
                 [value]="statusNote()" (input)="statusNote.set(statusNoteField.value)"
                 placeholder="Nhập ghi chú nếu cần"></textarea>
             </label>
-            <p class="order-admin__muted">BE chưa hỗ trợ lưu ghi chú riêng cho thao tác cập nhật trạng thái trên phiên bản hiện tại.</p>
+            <p class="order-admin__muted">Ghi chú này hiện chưa được lưu khi cập nhật trạng thái đơn hàng.</p>
             @if (action === 'ship') {
               <label class="order-admin__field order-admin__field--required">Đơn vị vận chuyển <span class="order-admin__required" aria-hidden="true">*</span>
                 <input #carrierInput type="text" required aria-required="true" maxlength="120" placeholder="Tên đơn vị vận chuyển" [value]="carrier()" (input)="carrier.set(carrierInput.value)">
