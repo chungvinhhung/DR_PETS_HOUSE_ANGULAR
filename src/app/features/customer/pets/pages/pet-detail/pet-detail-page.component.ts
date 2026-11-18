@@ -164,7 +164,11 @@ export class PetDetailPageComponent {
           if (petResult.status === "fulfilled") {
             this.pet.update((current: any) => ({ ...current, ...petResult.value }));
           }
-          if (recordsResult.status === "fulfilled") {
+          if (recordsResult.status === "fulfilled" && Array.isArray(recordsResult.value) && recordsResult.value.length > 0) {
+            this.medicalHistoryList.set(recordsResult.value);
+          } else if (petResult.status === "fulfilled" && Array.isArray(petResult.value?.medicalRecords) && petResult.value.medicalRecords.length > 0) {
+            this.medicalHistoryList.set(petResult.value.medicalRecords);
+          } else if (recordsResult.status === "fulfilled") {
             this.medicalHistoryList.set(recordsResult.value || []);
           }
           if (diariesResult.status === "fulfilled" || remindersResult.status === "fulfilled") {

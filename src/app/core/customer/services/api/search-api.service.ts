@@ -172,6 +172,17 @@ export class SearchApiService {
     const payloads = settled
       .filter((result): result is PromiseFulfilledResult<any> => result.status === "fulfilled")
       .map((result) => splitSearchResults(assertSuccess(result.value)));
+
+    let facetCounts: any = {};
+    for (const s of settled) {
+      if (s.status === "fulfilled") {
+        const raw = assertSuccess<any>(s.value);
+        if (raw?.facetCounts && (Object.keys(raw.facetCounts.productCategories || {}).length || Object.keys(raw.facetCounts.serviceCategories || {}).length)) {
+          facetCounts = raw.facetCounts;
+          break;
+        }
+      }
+    }
     // Backend lỗi hết mà chỉ mục FE cũng không có gì -> báo lỗi để trang dùng dữ liệu dự phòng
     if (!payloads.length && !localProducts.length) {
       throw (settled[0] as PromiseRejectedResult).reason;

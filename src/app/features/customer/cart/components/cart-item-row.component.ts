@@ -83,19 +83,10 @@ export class CartItemRowComponent {
   }
 
   protected handleDelete() {
-    this.decisionModalService.confirmDelete({
-      message: `Bạn chắc chắn muốn xóa "${this.item().name}" khỏi giỏ hàng?\nHành động này không thể hoàn tác`,
-      confirmLabel: "Xóa",
-      onConfirm: () => {
-        this.deleting.set(true);
-        setTimeout(() => {
-          this.cartService.removeCartItem(this.item().id);
-          this.decisionModalService.showSuccessModal({
-            message: "Đã xóa sản phẩm khỏi giỏ hàng.\nBạn có thể tiếp tục mua sắm hoặc quay về trang chủ",
-          });
-        }, 250);
-      },
-    });
+    this.deleting.set(true);
+    setTimeout(() => {
+      this.cartService.removeCartItem(this.item().id);
+    }, 200);
   }
 
   protected handleVariantChange(event: any) {

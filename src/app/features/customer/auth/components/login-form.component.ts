@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { AuthApiService } from '../../../../core/customer/services/api/auth-api.service';
 import { FieldComponent } from './field.component';
@@ -14,7 +15,7 @@ import { VALIDATION_SCHEMAS, getFormErrors, submitValidatedForm } from './auth-m
 @Component({
   selector: 'form[app-login-form]',
   standalone: true,
-  imports: [FieldComponent, PrimaryButtonComponent, DividerComponent, GoogleButtonComponent],
+  imports: [FieldComponent, PrimaryButtonComponent, DividerComponent, GoogleButtonComponent, RouterLink],
   templateUrl: './login-form.component.html',
   styleUrl: './login-form.component.scss',
   host: {

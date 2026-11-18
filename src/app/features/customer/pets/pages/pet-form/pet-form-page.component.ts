@@ -163,7 +163,9 @@ export class PetFormPageComponent {
               (currentPet.name && (petImages as any)[currentPet.name]) ||
               null,
             );
-            const apiRecords = recordsResult?.status === "fulfilled" ? recordsResult.value || [] : [];
+            const apiRecords = recordsResult?.status === "fulfilled" && Array.isArray(recordsResult.value) && recordsResult.value.length > 0
+              ? recordsResult.value
+              : (Array.isArray(currentPet.medicalRecords) ? currentPet.medicalRecords : []);
             this.medicalRecords.set(apiRecords);
             this.originalMedicalRecordIds.set(apiRecords.map((record: any) => String(record.id)));
             return;

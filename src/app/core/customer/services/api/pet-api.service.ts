@@ -96,6 +96,9 @@ export function normalizePet(pet: any = {}) {
     ),
     lastCheckup: pet.latest_exam_date ?? pet.lastCheckup ?? null,
     avatar: getPrimaryImage(pet),
+    doctorName: pet.doctorName || pet.doctor || "",
+    doctor: pet.doctorName || pet.doctor || "",
+    medicalRecordFileUrl: pet.medicalRecordFileUrl || pet.fileUrl || "",
     medicalRecords: Array.isArray(pet.medicalRecords)
       ? pet.medicalRecords
       : Array.isArray(pet.medical_records)
@@ -203,6 +206,9 @@ function toPetPayload(pet: any = {}) {
     health_status: (healthStatusMap as any)[pet.healthStatus] || pet.healthStatus || pet.health_status || "unknown",
     medical_note: pet.medicalNotes || pet.medical_note || null,
     profile_image_url: pet.avatar || pet.profile_image_url || null,
+    ...(pet.doctorName || pet.doctor ? { doctorName: pet.doctorName || pet.doctor, doctor: pet.doctorName || pet.doctor } : {}),
+    ...(pet.medicalRecordFileUrl ? { medicalRecordFileUrl: pet.medicalRecordFileUrl } : {}),
+    ...(Array.isArray(pet.medicalRecords) ? { medicalRecords: pet.medicalRecords } : {}),
     ...(isHidden !== undefined ? {
       is_hidden: isHidden,
       isHidden: isHidden,

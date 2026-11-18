@@ -102,7 +102,11 @@ export const CUSTOMER_ROUTES: Routes = [
   { path: 'checkout', loadComponent: checkout },
   // Tra cứu đơn hàng / lịch hẹn cho khách chưa có tài khoản (SĐT/email + OTP) — không cần đăng nhập
   { path: 'tra-cuu-don-hang', loadComponent: guestLookup, title: "Tra cứu đơn hàng / lịch hẹn - Dr. Pet's House" },
+  { path: 'tra-cuu', redirectTo: 'tra-cuu-don-hang', pathMatch: 'full' },
+  { path: 'tra-cuu-lich-hen', redirectTo: 'tra-cuu-don-hang', pathMatch: 'full' },
+  { path: 'tra-cuu-khach-vang-lai', redirectTo: 'tra-cuu-don-hang', pathMatch: 'full' },
   { path: 'guest-lookup', redirectTo: 'tra-cuu-don-hang', pathMatch: 'full' },
+  { path: 'guest', redirectTo: 'tra-cuu-don-hang', pathMatch: 'full' },
   // Trang yêu cầu trả hàng hoàn tiền: toàn chiều rộng (không dùng sidebar tài khoản)
   {
     path: 'don-hang-cua-toi/:orderId/yeu-cau-hoan-tien',

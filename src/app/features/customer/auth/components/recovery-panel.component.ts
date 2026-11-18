@@ -77,13 +77,13 @@ export class RecoveryPanelComponent {
     this.submitError.set("");
     try {
       const account = this.forms().forgot.account.trim();
-      if (!EMAIL_PATTERN.test(account)) {
-        throw new Error("Backend hien chi ho tro quen mat khau bang email");
+      if (!account) {
+        throw new Error("Vui lòng nhập số điện thoại hoặc email");
       }
       await this.authApi.forgotPassword(account);
       this.changeScreen()("resetOtp");
     } catch (error: any) {
-      this.submitError.set(error?.message || "Khong the gui OTP");
+      this.submitError.set(error?.message || "Không thể gửi OTP");
     } finally {
       this.submitting.set(false);
     }
@@ -101,14 +101,17 @@ export class RecoveryPanelComponent {
         this.changeScreen()("success");
         return;
       }
-      const data = await this.authApi.verifyForgotOtp({
-        email: this.forms().forgot.account.trim(),
+      const account = this.forms().forgot.account.trim();
+      const data: any = await this.authApi.verifyForgotOtp({
+        account,
+        email: account,
         otpCode,
       });
-      this.resetToken.set(data?.reset_token || "");
+      const token = data?.resetToken || data?.reset_token || data?.token || "";
+      this.resetToken.set(token);
       this.changeScreen()("reset");
     } catch (error: any) {
-      this.submitError.set(error?.message || "OTP khong hop le");
+      this.submitError.set(error?.message || "OTP không hợp lệ");
     } finally {
       this.submitting.set(false);
     }

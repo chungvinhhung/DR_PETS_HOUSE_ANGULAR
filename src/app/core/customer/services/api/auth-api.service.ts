@@ -165,23 +165,36 @@ export class AuthApiService {
     return assertSuccess(response);
   }
 
-  async forgotPassword(email: any) {
-    const response = await this.http.post("/forgot-password", { email });
+  async forgotPassword(account: any) {
+    const cleanAccount = String(account || '').trim();
+    const response = await this.http.post("/auth/forgot-password", {
+      identifier: cleanAccount,
+      email: cleanAccount.includes('@') ? cleanAccount : undefined,
+      phone: !cleanAccount.includes('@') ? cleanAccount : undefined,
+    });
     return assertSuccess(response);
   }
 
-  async verifyForgotOtp({ email, otpCode }: any) {
-    const response = await this.http.post("/verify-otp", {
-      email,
+  async verifyForgotOtp({ email, account, otpCode }: any) {
+    const target = String(account || email || '').trim();
+    const response = await this.http.post("/auth/verify-otp", {
+      identifier: target,
+      email: target.includes('@') ? target : undefined,
+      phone: !target.includes('@') ? target : undefined,
+      otpCode,
       otp_code: otpCode,
+      purpose: 'FORGOT_PASSWORD',
     });
     return assertSuccess(response);
   }
 
   async resetPassword({ resetToken, newPassword }: any) {
-    const response = await this.http.post("/reset-password", {
+    const response = await this.http.post("/auth/reset-password", {
+      resetToken,
       reset_token: resetToken,
+      newPassword,
       new_password: newPassword,
+      confirmPassword: newPassword,
     });
     return assertSuccess(response);
   }
