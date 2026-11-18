@@ -69,13 +69,14 @@
           @if (otpInfo()) {
             <p class="guest-lookup__info" role="status">{{ otpInfo() }}</p>
           }
-          @if (debugOtp()) {
-            <p class="guest-lookup__debug">Môi trường thử nghiệm — mã OTP: <strong>{{ debugOtp() }}</strong></p>
-          }
-
           <form
             app-otp-form
             class="mt-2"
+            [initialOtp]="debugOtp()"
+            [debugOtp]="debugOtp()"
+            [phone]="guestPhone()"
+            [email]="guestEmail()"
+            [brandName]="'DRPETSHOUSE'"
             [hasOnSubmitOtp]="true"
             (onSubmitOtp)="verifyOtp($event)"
             [submitting]="verifying()"

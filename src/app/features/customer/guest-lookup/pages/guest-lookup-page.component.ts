@@ -113,6 +113,16 @@ export class GuestLookupPageComponent implements OnInit {
     return request ? maskContact(request) : this.session.maskedContact();
   });
 
+  protected readonly guestPhone = computed(() => {
+    const req = this.challenge()?.request;
+    return req && 'phone' in req ? req.phone : (!this.contactValue().includes('@') ? this.contactValue() : '');
+  });
+
+  protected readonly guestEmail = computed(() => {
+    const req = this.challenge()?.request;
+    return req && 'email' in req ? req.email : (this.contactValue().includes('@') ? this.contactValue() : '');
+  });
+
   protected readonly otpSecondsLeft = computed(() => {
     const challenge = this.challenge();
     return challenge ? Math.max(0, Math.ceil((challenge.expiresAt - this.now()) / 1000)) : 0;

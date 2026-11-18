@@ -70,6 +70,22 @@ export class RecoveryPanelComponent {
     return this.debugOtp();
   });
 
+  readonly otpRecipientPhone = computed<string>(() => {
+    if (this.screen() === 'registerOtp') {
+      return this.forms()?.register?.phone || '';
+    }
+    const acc = String(this.forms()?.forgot?.account || '').trim();
+    return !acc.includes('@') ? acc : (this.forms()?.forgot?.phone || '');
+  });
+
+  readonly otpRecipientEmail = computed<string>(() => {
+    if (this.screen() === 'registerOtp') {
+      return this.forms()?.register?.email || '';
+    }
+    const acc = String(this.forms()?.forgot?.account || '').trim();
+    return acc.includes('@') ? acc : (this.forms()?.forgot?.email || '');
+  });
+
   /** Hàm set kiểu React cho signal "forgotValidationAttempted" (dùng khi truyền cho component con / callback) */
   protected readonly setForgotValidationAttemptedFn = reactSetter(this.forgotValidationAttempted);
   /** Hàm set kiểu React cho signal "resetValidationAttempted" (dùng khi truyền cho component con / callback) */
