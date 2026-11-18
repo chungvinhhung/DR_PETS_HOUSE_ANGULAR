@@ -79,7 +79,8 @@ export class AdminAppointmentDetailComponent {
     const appointment = this.item();
     if (!appointment || !user || !this.isExecutionStaff()) return null;
     if (!this.canAccessAppointmentBranch(appointment.branchId)) return null;
-    if ((user.branchScope ?? []).length && !(user.branchScope ?? []).includes(appointment.branchId)) return null;
+    // Missing/empty live branch scope is fail-closed, matching BE Edge-4 (403).
+    if (!(user.branchScope ?? []).includes(appointment.branchId)) return null;
     const ownProfile = this.staffDirectory.staff().find(staff => staff.userId === user.id);
     // A loaded, inactive profile or one outside this branch must not be offered /start.
     if (ownProfile && (ownProfile.accountStatus === 'BLOCKED' ||
