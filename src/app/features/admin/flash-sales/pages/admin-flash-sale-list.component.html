@@ -99,9 +99,9 @@
             Đang hiển thị {{ displayRows().length }} chương trình
           }
         </span>
-        <div>
+        <div class="web2-admin-pagination-strip">
           <button type="button" (click)="previous()" [disabled]="loading() || !previousCursors().length" aria-label="Trang trước">‹</button>
-          @for (index of visiblePages(); track $index) {
+          @for (index of visiblePages(); track index === '…' ? 'gap-' + $index : 'page-' + index) {
             @if (index === '…') {
               <span class="flash-list__ellipsis" aria-hidden="true">…</span>
             } @else {

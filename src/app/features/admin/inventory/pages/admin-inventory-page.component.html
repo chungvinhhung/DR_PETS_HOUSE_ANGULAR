@@ -123,9 +123,9 @@
       } @else {
         <span>Hiển thị {{visibleCount()}} dòng biến động thuộc {{currentHistoryTransactionCount()}} giao dịch</span>
       }
-      <nav class="pagination-buttons" aria-label="Phân trang danh sách kho">
+      <nav class="pagination-buttons web2-admin-pagination-strip" aria-label="Phân trang danh sách kho">
         <button type="button" aria-label="Trang trước" (click)="setPage(page()-1)" [disabled]="page()===1">‹</button>
-        @for (n of pageNumbers();track $index) {
+        @for (n of pageNumbers(); track n === '…' ? 'gap-' + $index : 'page-' + n) {
           @if (n==='…') { <span class="pagination-ellipsis" aria-hidden="true">…</span> }
           @else {
             <button type="button" class="pagination-page" [class.pagination-page--active]="page()===n"

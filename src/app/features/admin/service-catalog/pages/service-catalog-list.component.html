@@ -200,10 +200,10 @@
       </p>
 
       @if (!loading() && !error() && total() > pageSize) {
-        <nav class="service-catalog__pages" aria-label="Phân trang danh sách dịch vụ">
+        <nav class="service-catalog__pages web2-admin-pagination-strip" aria-label="Phân trang danh sách dịch vụ">
           <button type="button" (click)="goToPage(currentPage() - 1)"
             [disabled]="currentPage() === 1" aria-label="Trang trước">‹</button>
-          @for (number of pageNumbers(); track $index) {
+          @for (number of pageNumbers(); track number === '…' ? 'gap-' + $index : 'page-' + number) {
             @if(number === '…') {<span aria-hidden="true">…</span>}
             @else {
               <button type="button" (click)="goToPage(number)"

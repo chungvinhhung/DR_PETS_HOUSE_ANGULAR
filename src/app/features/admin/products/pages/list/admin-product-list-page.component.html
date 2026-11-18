@@ -231,9 +231,9 @@
             Đang hiển thị {{products().length}} trên tổng số {{totalProducts()}} sản phẩm
           }
         </span>
-        <div class="pagination-buttons">
+        <div class="pagination-buttons web2-admin-pagination-strip">
           <button type="button" (click)="previous()" [disabled]="loading() || pageNumber() === 1" aria-label="Trang trước">‹</button>
-          @for (page of visiblePageNumbers(); track $index) {
+          @for (page of visiblePageNumbers(); track page === '…' ? 'gap-' + $index : 'page-' + page) {
             @if(page==='…'){<span class="pagination-ellipsis" aria-hidden="true">…</span>}
             @else {
               <button type="button" class="pagination-page" [class.pagination-page--active]="page === pageNumber()"

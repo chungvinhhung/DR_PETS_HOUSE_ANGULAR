@@ -459,9 +459,9 @@
         </div>
         <footer class="order-admin__pagination">
           <span>Đang hiển thị {{ activeTab() === 'orders' ? pageRows().length : returnPageRows().length }} trên tổng số {{ activeRowCount() }} {{ activeTab() === 'orders' ? 'đơn hàng' : 'yêu cầu' }}</span>
-          <div>
+          <div class="web2-admin-pagination-strip">
             <button type="button" [disabled]="page() <= 1" (click)="changePage(page()-1)" aria-label="Trang trước">‹</button>
-            @for (number of pageNumbers(); track $index) {
+            @for (number of pageNumbers(); track number === '…' ? 'gap-' + $index : 'page-' + number) {
               @if(number === '…') {<span class="order-admin__page-ellipsis" aria-hidden="true">…</span>}
               @else {
                 <button type="button" class="order-admin__page-number" [class.order-admin__page-number--active]="page() === number"

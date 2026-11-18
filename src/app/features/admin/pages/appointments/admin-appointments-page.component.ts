@@ -127,9 +127,9 @@ import {
           @if(partial()){<span class="data-scope"> (trong 100 lịch hẹn đã tải)</span>}
         </p>
         @if (pageCount() > 1) {
-          <nav class="pagination" aria-label="Phân trang lịch hẹn">
+          <nav class="pagination web2-admin-pagination-strip" aria-label="Phân trang lịch hẹn">
             <button type="button" [disabled]="page()===1" (click)="goto(page()-1)" aria-label="Trang trước">‹</button>
-            @for(n of pageNumbers(); track $index) {
+            @for (n of pageNumbers(); track n === '…' ? 'gap-' + $index : 'page-' + n) {
               @if(n==='…'){<span aria-hidden="true">…</span>}
               @else {
                 <button type="button" [attr.aria-current]="page()===n?'page':null"
@@ -146,22 +146,22 @@ import {
  styles:[`
  :host{display:block;font-family:Roboto,Arial,sans-serif;color:#26364a}
  .appointments{box-sizing:border-box;width:100%;min-width:0;padding:32px}
- .heading{display:flex;align-items:center;height:48px;margin:0 0 8px}.heading h1{font-size:20px;line-height:28px;font-weight:600;margin:0;color:#101828}
+ .heading{display:flex;align-items:center;min-height:36px;margin:0 0 20px}.heading h1{font-size:28px;line-height:34px;font-weight:700;margin:0;color:#1d2a42}
  .panel{border:1px solid #dee5f0;border-radius:10px;background:#fff;margin-bottom:18px;overflow:hidden}
- .filters{margin-bottom:18px;min-height:54px!important;padding:10px 12px!important;border-radius:8px!important}.search{min-width:0}.search input{color:#26364a;font-size:13px}
- .filters .search{flex:0 1 385px!important;width:385px!important;max-width:385px!important;height:36px!important;min-height:36px!important}
- .filter-actions{display:flex;align-items:center;gap:12px}.filter-control{width:160px;height:36px}
- .filters .filter-control{height:36px!important;min-height:36px!important}
- .filters .filter-control:nth-child(2){width:148px!important}
- .filters .web2-add-button{height:36px!important;min-height:36px!important;padding:0 14px!important}
- .filters .filter-control select{box-sizing:border-box;appearance:none;-webkit-appearance:none;width:100%;height:36px;padding:0 38px 0 12px;
+ .filters{margin-bottom:20px;min-height:70px!important;padding:14px!important;border-radius:10px!important}.search{min-width:0}.search input{color:#26364a;font-size:13px}
+ .filters .search{flex:0 1 430px!important;width:430px!important;max-width:430px!important;height:40px!important;min-height:40px!important}
+ .filter-actions{display:flex;align-items:center;gap:12px}.filter-control{width:170px;height:40px}
+ .filters .filter-control{height:40px!important;min-height:40px!important}
+ .filters .filter-control:nth-child(2){width:170px!important}
+ .filters .web2-add-button{height:40px!important;min-height:40px!important;padding:0 15px!important}
+ .filters .filter-control select{box-sizing:border-box;appearance:none;-webkit-appearance:none;width:100%;height:40px;padding:0 38px 0 12px;
    border:1px solid #dee5f0;border-radius:8px;background:#fff url('/assets/admin-product/icon-chevron-down.svg') no-repeat right 14px center;
    background-size:18px 18px;color:#26364a;font:400 13px Roboto,Arial,sans-serif;cursor:pointer}
  .primary{background:#0d47a1;border:1px solid #0d47a1;color:#fff;text-decoration:none;font-weight:600}
  .primary:hover{background:#083a89}.secondary{padding:9px 15px;border:1px solid #d5deeb;border-radius:8px;color:#0d47a1;background:#fff;cursor:pointer}
  .scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:800px;font-size:12px;color:#41506a}
  th{height:44px;background:#f8fafc;color:#26364a;text-align:left;font-weight:650;padding:10px 12px;white-space:nowrap}
- td{border-top:1px solid #e2e8f0;height:54px;padding:11px 12px;line-height:1.5;overflow-wrap:anywhere}
+ td{border-top:1px solid #e2e8f0;height:76px;padding:12px;line-height:1.5;overflow-wrap:anywhere}
  /* Mã lịch 14% + five equally spaced fields (5 × 15.4%) + Thao tác 9% = 100%.
     Date, time, customer, service and status have equal column widths. */
  th:nth-child(1){width:14%}
