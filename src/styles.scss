@@ -9191,3 +9191,13 @@ app-admin-catalog-shell .web2-admin-pagination-strip.web2-admin-pagination-strip
   color:#64748b;
   background:#fff !important;
 }
+
+/* Admin inventory history: transaction/ref styles outside component CSS budget. */
+app-admin-inventory-page .history-table td:nth-child(4), app-admin-inventory-page .history-table th:nth-child(4) { vertical-align: middle; }
+app-admin-inventory-page .history-code-cell { font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+app-admin-inventory-page .history-code { font-weight: 600; color: #334155; }
+app-admin-inventory-page .history-ref-separator { color: #94a3b8; }
+app-admin-inventory-page .history-reference { color: #0d47a1; text-decoration: none; overflow-wrap: anywhere; }
+app-admin-inventory-page .history-reference:hover { text-decoration: underline; }
+app-admin-inventory-page .history-reference-text { color: #475569; overflow-wrap: anywhere; }
+

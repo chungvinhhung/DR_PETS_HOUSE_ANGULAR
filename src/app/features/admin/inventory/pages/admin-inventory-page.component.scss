@@ -405,13 +405,6 @@ small {
   padding: 0 6px;
 }
 .history-table td:nth-child(3), .history-table td:nth-child(4) { line-height: 20px; }
-.history-table td:nth-child(4), .history-table th:nth-child(4) { vertical-align: middle; }
-.history-code-cell { font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
-.history-code { font-weight: 600; color: #334155; }
-.history-ref-separator { color: #94a3b8; }
-.history-reference { color: #0d47a1; text-decoration: none; overflow-wrap: anywhere; }
-.history-reference:hover { text-decoration: underline; }
-.history-reference-text { color: #475569; overflow-wrap: anywhere; }
 .positive { color: #188038; }
 
 @media (max-width: 1290px) {
