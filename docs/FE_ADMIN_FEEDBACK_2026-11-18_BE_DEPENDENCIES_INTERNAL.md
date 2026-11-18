@@ -49,3 +49,11 @@
 - Use real Admin, Manager, receptionist, clinical staff, and Customer accounts with safe test data on the matching Render environment.
 - Compare API contracts, screenshots, and preserved data. Tick each original feedback item only after UI + BE end-to-end verification.
 - When owner requests, turn this internal log into a separate BE request DOCX; **do not send before then**.
+
+
+## 19 Nov 2026 — Inventory history + branch-shift assignment (6 screenshot feedbacks)
+
+1. **Inventory transaction code/structured reference:** FE now shows `[transactionCode || —] / [sourceCode || referenceCode || sourceId || —]`, with navigable links only for recognized order/return/service-record source types. Verify live `GET` inventory-transactions consistently returns public `transactionCode` and meaningful `sourceCode/referenceCode`, not only Mongo ObjectId. If fields are missing, BE must return stable display codes and source type/ID; FE must not invent them.
+2. **Branch shift templates must be shared and durable:** FE assignment modal now loads `GET /branches/:branchId/shift-templates`, and the Create dialog calls `POST` on the same branch. It does **not** create an employee's actual shift until Lưu phân công submits `POST /shifts`. Validate that templates created on either branch or schedule screen appear in both, after reload, for other employees/dates in the same branch; no cross-branch leaks. If the deployed GET stays empty despite a successful POST, collect request/response logs and investigate BE storage or RBAC.
+3. **Shift assignment payload contract:** `POST /shifts` currently accepts `{staffId,branchId,startAt,endAt}` and has no templateId link. FE deliberately uses selected template's hours to construct a dated assignment; confirm that server returns consistent staff shifts across date boundaries and checks overlapping assignments. Template creation does not save an assignment.
+4. **No BE change assumed for UI issues:** search icon/input layout, column alignment, cell rendering and icon buttons are FE-only fixes. Re-test against responsive widths and production data.

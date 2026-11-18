@@ -100,10 +100,15 @@
           @for (record of currentHistory(); track record.id) {
             <tr>
               <td class="history-code-cell">
-                <button type="button" class="history-code" (click)="openTransactionDrawer(record)">
-                  {{ record.transactionCode || 'Xem chi tiết' }}
-                </button>
-                @if (record.sourceLabel) { <small>{{record.sourceLabel}}</small> }
+                <span class="history-code">{{ record.transactionCode || '—' }}</span>
+                <span class="history-ref-separator" aria-hidden="true"> / </span>
+                @if (record.sourceLabel) {
+                  @if (referenceLink(record); as target) {
+                    <a class="history-reference" [routerLink]="target" [title]="record.sourceLabel">{{record.sourceLabel}}</a>
+                  } @else {
+                    <span class="history-reference-text" [title]="record.sourceLabel">{{record.sourceLabel}}</span>
+                  }
+                } @else { <span>—</span> }
               </td>
               <td>{{record.date}}</td>
               <td><div class="product">{{record.item}}</div><small>{{record.variant}} | {{record.sku}}</small></td>

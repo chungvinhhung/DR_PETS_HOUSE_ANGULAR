@@ -394,8 +394,9 @@ small {
   padding-right: 10px;
 }
 .history-table th:nth-child(4), .history-table td:nth-child(4) {
-  padding-left: clamp(16px, 2.6vw, 38px);
-  padding-right: 4px;
+  text-align: center;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 .history-table th:nth-child(5), .history-table td:nth-child(5),
 .history-table th:nth-child(6), .history-table td:nth-child(6),
@@ -404,6 +405,13 @@ small {
   padding: 0 6px;
 }
 .history-table td:nth-child(3), .history-table td:nth-child(4) { line-height: 20px; }
+.history-table td:nth-child(4), .history-table th:nth-child(4) { vertical-align: middle; }
+.history-code-cell { font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.history-code { font-weight: 600; color: #334155; }
+.history-ref-separator { color: #94a3b8; }
+.history-reference { color: #0d47a1; text-decoration: none; overflow-wrap: anywhere; }
+.history-reference:hover { text-decoration: underline; }
+.history-reference-text { color: #475569; overflow-wrap: anywhere; }
 .positive { color: #188038; }
 
 @media (max-width: 1290px) {
@@ -415,7 +423,7 @@ small {
   .history-table th, .history-table td { padding-left: 5px; padding-right: 5px; }
   .history-table th:nth-child(2), .history-table td:nth-child(2) { padding-left: 5px; padding-right: 3px; }
   .history-table th:nth-child(3), .history-table td:nth-child(3) { padding-left: 3px; padding-right: 5px; }
-  .history-table th:nth-child(4), .history-table td:nth-child(4) { padding-left: 16px; padding-right: 3px; }
+  .history-table th:nth-child(4), .history-table td:nth-child(4) { padding-left: 8px; padding-right: 8px; }
 }
 
 @media (max-width: 600px) {

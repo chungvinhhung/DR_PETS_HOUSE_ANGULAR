@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, forkJoin, Observable, finalize, of, switchMap, tap } from 'rxjs';
 import { AdminProduct } from '../../products/models/admin-product.model';
 import { AdminCategoryService } from '../../categories/services/admin-category.service';
@@ -60,7 +60,7 @@ interface StockHistory {
 @Component({
   selector: 'app-admin-inventory-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminCatalogShellComponent, AdminDataStateComponent, AdminInventoryTransactionDrawerComponent],
+  imports: [CommonModule, FormsModule, RouterLink, AdminCatalogShellComponent, AdminDataStateComponent, AdminInventoryTransactionDrawerComponent],
   templateUrl: './admin-inventory-page.component.html',
   styleUrl: './admin-inventory-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -8,7 +8,8 @@ import { formatStaffWeekRange } from '../utils/staff-week-range';
 import { AdminStaffApiService, staffTodayISO } from '../services/admin-staff-api.service';
 import { JOB_LABELS, JobRole, StaffPreview, displayStaffName } from '../models/staff-preview.model';
 import { DayShiftDraft, ShiftOption, StaffShiftAssignmentDialogComponent, overlaps } from '../components/staff-shift-assignment-dialog.component';
-import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
+import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { canAdmin } from '../../../../core/guards/admin-role-policy';
 
@@ -41,6 +42,7 @@ export class AdminStaffScheduleComponent {
   private readonly session = inject(AuthSessionService);
   readonly canManageShifts = computed(() => canAdmin(this.session.user(), 'shifts.manage'));
   private readonly toast = inject(AdminToastService);
+  private readonly branchApi = inject(BranchManagementApiService);
   readonly monday = signal(mondayOf(staffTodayISO()));
   constructor() {
     this.staffApi.loadRoster();
@@ -55,6 +57,10 @@ export class AdminStaffScheduleComponent {
   readonly branch = signal('');
   readonly dialog = signal<{employee: StaffPreview; date: string} | null>(null);
   readonly createdOptions = signal<ShiftOption[]>([]);
+  readonly templatesLoading = signal(false);
+  readonly templatesError = signal('');
+  readonly pendingTemplateId = signal('');
+  private templateRequestId = 0;
   readonly showCreateTemplate = signal(false);
   readonly templateName = signal('');
   readonly templateStart = signal('08:00');
@@ -99,7 +105,37 @@ export class AdminStaffScheduleComponent {
       shift.branchId === this.branch()).sort((a,b)=>a.time.localeCompare(b.time));
   }
   selectRole(value: string) { this.role.set(value); }
-  selectBranch(value: string) { if (!this.branches().some(b=>b.id===value)) return; this.branch.set(value); this.createdOptions.set([]); }
+  selectBranch(value: string) {
+    if (!this.branches().some(b=>b.id===value)) return;
+    this.branch.set(value);
+    this.createdOptions.set([]);
+    this.pendingTemplateId.set('');
+    this.loadTemplates(value);
+  }
+  private loadTemplates(branchId: string, selectId = ''): void {
+    if (!branchId) return;
+    const requestId = ++this.templateRequestId;
+    this.templatesLoading.set(true);
+    this.templatesError.set('');
+    this.branchApi.listShiftTemplates(branchId).subscribe({
+      next: templates => {
+        if (requestId !== this.templateRequestId || branchId !== this.branch()) return;
+        this.createdOptions.set(templates.map(t => ({
+          id: t.id, name: t.name, start: t.startTime, end: t.endTime,
+          enabled: t.status === 'ACTIVE',
+        })));
+        this.templatesLoading.set(false);
+        if (selectId && templates.some(t => t.id === selectId && t.status === 'ACTIVE')) {
+          this.pendingTemplateId.set(selectId);
+        }
+      },
+      error: err => {
+        if (requestId !== this.templateRequestId || branchId !== this.branch()) return;
+        this.templatesLoading.set(false);
+        this.templatesError.set(adminErrorMessage(err, 'Không tải được các ca của chi nhánh. Vui lòng thử lại.'));
+      },
+    });
+  }
   changeWeek(delta: number) { this.monday.set(dateFor(this.monday(), delta * 7)); }
   goToday(): void { this.monday.set(mondayOf(todayIso())); }
   retrySchedule(): void {
@@ -119,9 +155,13 @@ export class AdminStaffScheduleComponent {
   openDay(employee: StaffPreview, date: string): void {
     if (!this.canManageShifts()) return;
     if (!this.branch() || this.staffApi.shiftLoading() || !!this.staffApi.shiftError()) return;
+    this.pendingTemplateId.set('');
     this.dialog.set({employee,date});
+    this.loadTemplates(this.branch());
   }
-  closeDay():void {this.dialog.set(null);this.showCreateTemplate.set(false);}
+  closeDay():void {
+    this.dialog.set(null);this.showCreateTemplate.set(false);this.pendingTemplateId.set('');
+  }
   forDay():DayShiftDraft[] {
     const dialog=this.dialog();if(!dialog)return [];
     return this.shifts(dialog.employee.id,dialog.date).map((s,i)=>{
@@ -134,93 +174,93 @@ export class AdminStaffScheduleComponent {
     return this.staffApi.shifts().filter(s=>s.staffId===dialog.employee.id && s.isoDate===dialog.date && s.branchId!==this.branch());
   }
   async checkAssignment(data:{draft:DayShiftDraft[];scope:'day'|'weekly';from:string;to:string}):Promise<void> {
-    if (!this.canManageShifts()) return;
+    if (!this.canManageShifts() || this.createSaving()) return;
     if (data.scope !== 'day') {
       this.toast.show('Phân ca lặp hằng tuần chưa được hệ thống hỗ trợ.', 'info');
       return;
     }
-    const existing=this.forDay();
-    const desiredIds=new Set(data.draft.map(row=>row.shiftId).filter((id):id is string=>!!id));
-    const removed=existing.filter(row=>row.shiftId&&!desiredIds.has(row.shiftId));
+    const context=this.dialog();
+    const branchId=this.branch();
+    if (!context || !branchId || !context.employee.branchIds?.includes(branchId)) return;
+    const current=this.forDay();
+    const desiredIds=new Set(data.draft.map(x=>x.shiftId).filter((id):id is string=>!!id));
+    const removed=current.filter(row=>row.shiftId&&!desiredIds.has(row.shiftId));
     const added=data.draft.filter(row=>!row.shiftId);
-    if (added.length) {
-      this.toast.show('Để thêm ca mới, dùng “Tạo ca làm việc mới” để lưu trực tiếp và kiểm tra trùng giờ.', 'info');
+    if (added.some(x=>!this.createdOptions().some(t=>t.id===x.id&&t.enabled))) {
+      this.toast.show('Mẫu ca đã thay đổi. Vui lòng tải lại danh sách ca và thử lại.', 'error');
+      this.loadTemplates(branchId);
       return;
     }
-    if (!removed.length) {
-      this.closeDay();
-      return;
-    }
-    let cancelled=0;
-    for(const row of removed){
-      try{
+    // The selected template is only a draft until Lưu phân công is clicked.
+    // POST /shifts creates a real dated assignment; template CRUD is separate.
+    const toInstant=(date:string,time:string)=>new Date(date+'T'+time+':00+07:00');
+    this.createSaving.set(true);
+    let completed=0;
+    try {
+      for (const row of removed) {
         await firstValueFrom(this.staffApi.cancelShift(row.shiftId!));
-        cancelled++;
-      }catch(err){
-        this.staffApi.loadWeek(this.monday(),true);
-        this.toast.show(cancelled
-          ? 'Đã gỡ '+cancelled+'/'+removed.length+' ca. Một số ca còn lại không thể gỡ do đang có lịch hẹn hoặc quyền hạn.'
-          : 'Không thể gỡ ca làm việc. Ca có thể đang gắn với lịch hẹn đã xác nhận.', 'error');
-        return;
+        completed++;
       }
+      for (const row of added) {
+        const startAt=toInstant(context.date,row.start);
+        const endAt=toInstant(context.date,row.end);
+        if (endAt<=startAt) endAt.setTime(endAt.getTime()+DAY);
+        await firstValueFrom(this.staffApi.createShift({
+          staffId:context.employee.id, branchId,
+          startAt:startAt.toISOString(),endAt:endAt.toISOString(),
+        }));
+        completed++;
+      }
+      this.closeDay();
+      this.staffApi.loadWeek(this.monday(),true);
+      this.toast.show('Đã lưu phân công ca làm việc.', 'success');
+    } catch (error) {
+      this.staffApi.loadWeek(this.monday(),true);
+      this.toast.show(
+        completed ? 'Một số ca đã được cập nhật nhưng có thao tác thất bại. Vui lòng kiểm tra lịch rồi thử lại.'
+          : adminErrorMessage(error,'Không thể lưu phân công. Vui lòng thử lại.'), 'error');
+      // Close only on partial mutations, to avoid resubmitting the same operations.
+      if (completed) this.closeDay();
+    } finally {
+      this.createSaving.set(false);
     }
-    this.closeDay();
-    this.staffApi.loadWeek(this.monday(),true);
-    this.toast.show('Đã cập nhật ca làm việc trong ngày.', 'success');
   }
   beginNewTemplate():void {if (!this.canManageShifts()) return;this.showCreateTemplate.set(true);this.templateError.set('');}
   cancelNewTemplate():void {this.showCreateTemplate.set(false);this.templateError.set('');}
-  /**
-   * Save a real shift immediately for the selected employee and date.
-   * There is no backend contract for reusable branch shift templates yet.
-   */
+  /** Create a reusable branch template. Never save an employee assignment here. */
   createShiftNow(): void {
-    if (!this.canManageShifts()) return;
-    if (this.createSaving()) return;
-    const current = this.dialog();
+    if (!this.canManageShifts() || this.createSaving()) return;
+    const context = this.dialog();
     const branchId = this.branch();
     const name = this.templateName().trim();
     const start = this.templateStart();
     const end = this.templateEnd();
     const validTime = (time: string) => /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time);
-    if (!current || !branchId || !current.employee.branchIds?.includes(branchId)) {
-      this.templateError.set('Nhân viên chưa được phân công tại chi nhánh đã chọn.'); return;
+    if (!context || !branchId) return;
+    if (name.length < 2 || name.length > 100 || !validTime(start) || !validTime(end) || start === end) {
+      this.templateError.set('Nhập tên ca (2–100 ký tự) và giờ bắt đầu, kết thúc hợp lệ.'); return;
     }
-    if (!name || !validTime(start) || !validTime(end) || start === end) {
-      this.templateError.set('Nhập tên ca và giờ bắt đầu, kết thúc hợp lệ và khác nhau.'); return;
-    }
-    const planned: DayShiftDraft = {id:'new',name,start,end};
-    const assigned = this.staffApi.shifts().filter(s =>
-      s.staffId === current.employee.id && s.isoDate === current.date);
-    if (assigned.some(s => {
-      const [from, until] = s.time.split(/[–—-]/).map(x => x.trim());
-      return !!from && !!until && overlaps(planned,{id:s.shiftId ?? 'assigned',name:'',start:from,end:until});
-    })) {
-      this.templateError.set('Ca mới bị trùng giờ với ca đã phân tại chi nhánh này hoặc chi nhánh khác.'); return;
-    }
-    // All times are branch-local Vietnam times. Roll endAt to next day
-    // when a shift crosses midnight, then send ISO 8601 instants to Backend.
-    const startAt = new Date(current.date + 'T' + start + ':00+07:00');
-    const endAt = new Date(current.date + 'T' + end + ':00+07:00');
-    if (endAt <= startAt) endAt.setTime(endAt.getTime() + DAY);
     this.createSaving.set(true);
     this.templateError.set('');
-    this.staffApi.createShift({
-      staffId: current.employee.id,
-      branchId,
-      startAt: startAt.toISOString(),
-      endAt: endAt.toISOString(),
+    this.branchApi.createShiftTemplate(branchId, {
+      name, startTime: start, endTime: end, daysOfWeek: [0,1,2,3,4,5,6],
+      status: 'ACTIVE',
     }).subscribe({
-      next: () => {
+      next: created => {
         this.createSaving.set(false);
         this.showCreateTemplate.set(false);
-        this.closeDay();
-        this.staffApi.loadWeek(this.monday(), true);
-        this.toast.show('Đã tạo ca làm việc và phân cho nhân viên trong ngày được chọn.', 'success');
+        // Keep the assignment modal and its day/employee context mounted.
+        this.createdOptions.update(list=>[
+          ...list.filter(t=>t.id!==created.id),
+          {id:created.id,name:created.name,start:created.startTime,end:created.endTime,enabled:true},
+        ]);
+        this.pendingTemplateId.set(created.id);
+        this.loadTemplates(branchId);
+        this.toast.show('Đã tạo mẫu ca. Kiểm tra ca được chọn rồi bấm Lưu phân công.', 'success');
       },
-      error: () => {
+      error: error => {
         this.createSaving.set(false);
-        this.templateError.set('Không thể tạo ca làm việc. Vui lòng kiểm tra quyền truy cập và thử lại; chưa có thay đổi nào được lưu.');
+        this.templateError.set(adminErrorMessage(error, 'Không tạo được mẫu ca làm việc. Vui lòng thử lại.'));
       },
     });
   }

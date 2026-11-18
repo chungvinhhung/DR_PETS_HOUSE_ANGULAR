@@ -71,7 +71,8 @@
     @if (canManageShifts() && dialog(); as selected) {
       <app-staff-shift-assignment-dialog [employee]="selected.employee" [isoDate]="selected.date"
         [branchName]="activeBranch()?.name || ''" [existing]="forDay()" [otherBranchShifts]="otherBranches()"
-        [options]="selectedOptions()" (closed)="closeDay()" (requestCreate)="beginNewTemplate()"
+        [options]="selectedOptions()" [autoSelectTemplateId]="pendingTemplateId()"
+        [templatesLoading]="templatesLoading()" [templatesError]="templatesError()" [saving]="createSaving()" (closed)="closeDay()" (requestCreate)="beginNewTemplate()"
         (checked)="checkAssignment($event)" />
     }
     @if (showCreateTemplate() && canManageShifts()) {
@@ -83,7 +84,7 @@
           <label class="shift-assign-field">Bắt đầu<input type="time" [value]="templateStart()" (change)="templateStart.set($any($event.target).value)"></label>
           <label class="shift-assign-field">Kết thúc<input type="time" [value]="templateEnd()" (change)="templateEnd.set($any($event.target).value)"></label>
           @if (templateError()) { <p role="alert" class="shift-assign-error">{{ templateError() }}</p> }
-          <p class="shift-assign-hint">Ca mới được lưu trực tiếp vào lịch của nhân viên và ngày đã chọn.</p>
+          <p class="shift-assign-hint">Tạo mẫu ca dùng chung cho chi nhánh. Ca chỉ được phân cho nhân viên khi bạn bấm Lưu phân công ở cửa sổ trước.</p>
           <footer class="shift-assign-footer"><button type="button" [disabled]="createSaving()" (click)="cancelNewTemplate()">Hủy</button><button class="shift-assign-save" type="button" [disabled]="createSaving()" (click)="createShiftNow()">{{ createSaving() ? 'Đang tạo ca...' : 'Tạo ca làm việc' }}</button></footer>
         </section>
       </div>
