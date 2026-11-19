@@ -270,7 +270,7 @@ export class AppointmentHistoryPageComponent {
       return;
     }
 
-    this.actionMessage.set({ type: "error", text: "Chức năng này chưa có API phù hợp để xử lý." });
+    this.actionMessage.set({ type: "error", text: "Hiện chưa thể thực hiện thao tác này. Vui lòng thử lại sau hoặc liên hệ hỗ trợ." });
   }
 
   protected async handleReviewSubmit({ targetId, rating, review }: any) {
