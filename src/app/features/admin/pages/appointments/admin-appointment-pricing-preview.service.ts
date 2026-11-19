@@ -14,6 +14,11 @@ export interface AppointmentDraftPricing {
   total: number;
   /** Read-only service pricing; excludes authoritative voucher and payment settlement. */
   petCount: number;
+  requiresQuote?: boolean;
+  weightMissing?: boolean;
+  quoteMessage?: string;
+  depositAmount?: number | null;
+  balanceAmount?: number | null;
 }
 function recordOf(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' && !Array.isArray(value)
