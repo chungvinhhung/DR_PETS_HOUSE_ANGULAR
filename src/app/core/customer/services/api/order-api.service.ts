@@ -72,6 +72,16 @@ function normalizeOrderProduct(item: any = {}) {
   };
 }
 
+/** Preserve an explicit recipient; never substitute generic placeholder names. */
+function verifiedRecipientName(...values: unknown[]): string {
+  for (const value of values) {
+    if (typeof value !== "string") continue;
+    const text = value.trim();
+    if (text && !/^(khách hàng|guest customer|thành viên|customer)$/i.test(text)) return text;
+  }
+  return "";
+}
+
 export function normalizeOrder(order: any = {}) {
   const rawItems = Array.isArray(order.items) ? order.items : (Array.isArray(order.order_items) ? order.order_items : []);
   const products = rawItems.map(normalizeOrderProduct);
@@ -99,7 +109,12 @@ export function normalizeOrder(order: any = {}) {
     discount,
     totalAmount,
     recipient: {
-      name: order.recipient_name || order.shippingAddress?.recipientName || order.shippingAddress?.fullName || order.contactSnapshot?.fullName || order.address?.recipient_name || "Khách hàng",
+      name: verifiedRecipientName(
+        order.recipient_name, order.shippingAddress?.recipientName, order.shippingAddress?.fullName,
+        order.recipient?.name, order.address?.recipient_name,
+        order.contactSnapshot?.fullName, order.contactSnapshot?.name,
+        order.customer?.fullName, order.customer?.name,
+      ) || "—",
       phone: order.recipient_phone || order.shippingAddress?.phone || order.contactSnapshot?.phone || order.address?.recipient_phone || "",
       address: order.shipping_address || (order.shippingAddress ? [order.shippingAddress.addressLine, order.shippingAddress.line1, order.shippingAddress.ward, order.shippingAddress.district, order.shippingAddress.city].filter(Boolean).join(", ") : "") || order.address?.address_line || (typeof order.shippingAddress === 'string' ? order.shippingAddress : "") || "Tại cửa hàng",
     },
@@ -118,14 +133,26 @@ export function toCheckoutItems(items: any) {
 export class OrderApiService {
   private readonly http = inject(CustomerHttpService);
 
-  async checkoutOrder({ addressId, selectedAddress, paymentMethod, voucherCode, note, items, cartId }: any) {
+  async checkoutOrder({ addressId, selectedAddress, customerProfile, paymentMethod, voucherCode, note, items, cartId }: any) {
     const address = selectedAddress || {};
+    // Address API normalizes the recipient as `name`, not necessarily `fullName`.
+    const recipientName = verifiedRecipientName(
+      address.recipientName, address.fullName, address.name, address.receiverName,
+      customerProfile?.fullName,
+    );
+    const phone = String(address.phone || address.receiverPhone || customerProfile?.phone || "").trim();
+    if (!recipientName || !phone) {
+      throw new Error("Vui lòng cập nhật tên và số điện thoại người nhận trước khi đặt hàng.");
+    }
+    const customerName = verifiedRecipientName(customerProfile?.fullName, recipientName);
     const payload: any = {
       addressId: addressId || undefined,
       cartId: cartId || undefined,
+      contact: customerName ? { fullName: customerName, phone: String(customerProfile?.phone || phone).trim() } : undefined,
       shippingAddress: {
-        fullName: address.fullName || address.receiverName || "Khách hàng",
-        phone: address.phone || address.receiverPhone || "0912345678",
+        recipientName,
+        fullName: recipientName,
+        phone,
         addressLine: address.addressLine || address.address || address.street || "Địa chỉ nhận hàng",
         ward: address.ward || "",
         district: address.district || "",
