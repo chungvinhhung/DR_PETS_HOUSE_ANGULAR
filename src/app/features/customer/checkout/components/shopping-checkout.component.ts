@@ -15,7 +15,6 @@ import { PaymentModeToggleComponent } from './payment-mode-toggle.component';
 import { OnlinePaymentMethodsComponent } from './online-payment-methods.component';
 import { CouponAndSummaryComponent } from './coupon-and-summary.component';
 import { checkoutImages } from '../assets/checkout-assets';
-import { DEFAULT_USER_ADDRESSES } from '../../../../core/customer/constants/user-profile-data';
 
 /**
  * ShoppingCheckout — chuyển từ React: src/components/checkout/ShoppingCheckout.jsx
@@ -96,9 +95,10 @@ export class ShoppingCheckoutComponent {
           })
           .catch((error: any) => {
             if (!isMounted) return;
-            this.addresses.set(DEFAULT_USER_ADDRESSES);
-            this.selectedAddressId.set(DEFAULT_USER_ADDRESSES[0]?.id ?? null);
-            this.addressError.set(error?.message || "Không thể tải địa chỉ, đang hiển thị địa chỉ mẫu.");
+            // Never substitute demo delivery details when the real address API fails.
+            this.addresses.set([]);
+            this.selectedAddressId.set(null);
+            this.addressError.set("Không thể tải địa chỉ giao hàng. Vui lòng thử lại hoặc nhập địa chỉ mới.");
           })
           .finally(() => {
             if (isMounted) this.addressesLoading.set(false);
