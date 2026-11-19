@@ -142,6 +142,17 @@ export class CustomerAuthService {
     this.authModal.set(screen);
   }
 
+  /**
+   * Close the auth modal when navigating to a public Customer page.
+   * Unlike closeAuth(), do not navigate back to the current URL to clear
+   * auth/returnUrl parameters: the destination navigation replaces them.
+   * This prevents a competing navigation from leaving the modal visible.
+   */
+  readonly dismissAuthForNavigation = (): void => {
+    this.pendingAuthAction = null;
+    this.authModal.set(null);
+  }
+
   readonly closeAuth = (): void => {
     this.pendingAuthAction = null;
     this.authModal.set(null);
