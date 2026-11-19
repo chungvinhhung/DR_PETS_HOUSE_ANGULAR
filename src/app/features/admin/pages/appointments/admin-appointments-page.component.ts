@@ -2,6 +2,7 @@ import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-p
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, debounceTime, distinctUntilChanged, forkJoin, of, Subject } from 'rxjs';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
@@ -85,6 +86,11 @@ import {
       }
     </div>
   </section>
+  @if (searchLoading()) {
+    <p class="lookup-hint" role="status">Đang tìm lịch hẹn theo mã...</p>
+  } @else if (searchWarning()) {
+    <p class="lookup-hint" role="status">{{searchWarning()}}</p>
+  }
   <section class="panel">
     @if (loading()) {
       <app-admin-data-state kind="loading" title="Đang tải danh sách lịch hẹn" />
@@ -124,7 +130,7 @@ import {
       </div>
       <footer class="list-footer">
         <p>Đang hiển thị {{rows().length}} trên tổng số {{total()}} lịch hẹn
-          @if(partial()){<span class="data-scope"> (trong 100 lịch hẹn đã tải)</span>}
+          @if(partial()){<span class="data-scope"> (BE giới hạn tối đa 100 lịch mỗi truy vấn)</span>}
         </p>
         @if (pageCount() > 1) {
           <nav class="pagination web2-admin-pagination-strip" aria-label="Phân trang lịch hẹn">
@@ -204,6 +210,7 @@ import {
  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
  @media(max-width:1120px){.filters{flex-wrap:wrap}.filter-actions{flex-wrap:wrap;justify-content:flex-start;width:100%}}
  @media(max-width:1050px){.scroll table :is(th,td):nth-child(5){padding-left:32px}}
+ .lookup-hint{margin:0 0 10px;font-size:12px;color:#546a82}
  .dashboard-scope{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 12px;padding:10px 14px;border:1px solid #d8e6f6;border-radius:9px;background:#f5f9ff;font-size:12px;color:#3d5978}
  .dashboard-scope a{color:#0d47a1;font-weight:650;text-decoration:none}
  .dashboard-scope a:hover{text-decoration:underline}
@@ -218,6 +225,9 @@ export class AdminAppointmentsPageComponent {
   private readonly staffApi=inject(AdminStaffApiService);
   private readonly destroyRef=inject(DestroyRef);
   private requestVersion=0;
+  private searchRequestVersion=0;
+  private lastSearchedTerm='';
+  private readonly searchTerms = new Subject<string>();
   readonly search=signal('');
   readonly status=signal('');
   readonly dashboardFilter=signal<{from:string;to:string;status?:string;branchId?:string}|null>(null);
@@ -226,31 +236,52 @@ export class AdminAppointmentsPageComponent {
   readonly limit=7;
   readonly loading=signal(false);
   readonly error=signal('');
+  readonly searchLoading=signal(false);
+  readonly searchWarning=signal('');
+  private readonly codeSearchRows=signal<AppointmentView[]|null>(null);
   private readonly fetchedRows=signal<AppointmentView[]>([]);
-  readonly partial=computed(()=>this.fetchedRows().length>=100);
+  readonly partial=signal(false);
   readonly canCreateAppointment=computed(()=>{
     const user=this.session.user();
     return user?.systemRole==='ADMIN' || user?.systemRole==='MANAGER' ||
       (user?.systemRole==='STAFF' && user.staffSubRole==='RECEPTIONIST');
   });
-  private readonly scopedRows=computed(()=>{
+  private scopeRows(rows:AppointmentView[]):AppointmentView[] {
     const user=this.session.user();
-    if(!user || user.systemRole==='ADMIN') return this.fetchedRows();
+    if(!user || user.systemRole==='ADMIN') return rows;
     if(user.systemRole==='MANAGER' || (user.systemRole==='STAFF' && user.staffSubRole==='RECEPTIONIST')){
       const scope=user.branchScope ?? [];
-      return this.fetchedRows().filter(row=>scope.includes(row.branchId));
+      return rows.filter(row=>scope.includes(row.branchId));
     }
-    if (user.systemRole==='STAFF') {
-      // M15: Vet, Nurse and Groomer may only see assigned appointments.
-      // assignedStaffId stores StaffProfile ID, not User ID.
+    if(user.systemRole==='STAFF') {
+      // Clinical staff may only see appointments assigned to their StaffProfile.
       const ownProfile=this.staffApi.staff().find(staff=>staff.userId===user.id);
-      if(!ownProfile) return []; // Fail closed until BE supplies own staff profile.
-      return this.fetchedRows().filter(row =>
-        row.reviewerStaffId===ownProfile.id ||
+      if(!ownProfile)return [];
+      return rows.filter(row=>row.reviewerStaffId===ownProfile.id ||
         row.serviceSegments.some(segment=>segment.assignedStaffId===ownProfile.id));
     }
     return [];
-  });
+  }
+  private readonly scopedRows=computed(()=>this.scopeRows(this.fetchedRows()));
+  private normalizeSearch(value:string):string{
+    return value.trim().toLocaleLowerCase('vi').replace(/^#+/,'');
+  }
+  private dateFromAppointmentCode(value:string):string|null{
+    const term=this.normalizeSearch(value);
+    if(!/^apt(?:-|_)/.test(term))return null;
+    const match=term.match(/(?:^|[^0-9])(20\d{6})(?:[^0-9]|$)/);
+    if(!match)return null;
+    const day=match[1];
+    const iso=`${day.slice(0,4)}-${day.slice(4,6)}-${day.slice(6,8)}`;
+    const parsed=new Date(iso+'T12:00:00Z');
+    return Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0,10)!==iso ? null : iso;
+  }
+  private todayInVietnam():string{
+    const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',
+      year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+    const part=(type:string)=>parts.find(item=>item.type===type)?.value||'';
+    return `${part('year')}-${part('month')}-${part('day')}`;
+  }
   readonly kpis=computed(()=>{
     const appointments=this.scopedRows();
     return {
@@ -261,15 +292,24 @@ export class AdminAppointmentsPageComponent {
     };
   });
   readonly filteredRows=computed(()=>{
-    const search=this.search().trim().toLocaleLowerCase('vi');
+    const search=this.normalizeSearch(this.search());
     const status=this.status();
     const days=this.dateRange();
     const cutoff=days==='all'?null:Date.now()-Number(days)*24*60*60*1000;
-    return this.scopedRows().filter(row=>
+    // Code lookup uses a date-scoped BE query; all other searches use the
+    // available list until BE implements global server-side pagination/search.
+    const source=this.codeSearchRows()===null ? this.scopedRows() : this.scopeRows(this.codeSearchRows()!);
+    return source.filter(row=>
       (cutoff===null || (row.createdAt!==null && new Date(row.createdAt).getTime()>=cutoff)) &&
       (!status || row.rawStatus===status) &&
       (!search || [row.code,row.customerName,row.customerPhone,row.id,...row.serviceNames]
-        .some(t=>t.toLocaleLowerCase('vi').includes(search))));
+        .some(t=>this.normalizeSearch(t).includes(search))))
+      .sort((a,b)=>{
+        // Newest CREATED appointment first (not latest scheduled visit).
+        const delta=(b.createdAt ? Date.parse(b.createdAt) || 0 : 0) -
+          (a.createdAt ? Date.parse(a.createdAt) || 0 : 0);
+        return delta || b.code.localeCompare(a.code,'vi');
+      });
   });
   readonly total=computed(()=>this.filteredRows().length);
   readonly pageCount=computed(()=>Math.max(1,Math.ceil(this.total()/this.limit)));
@@ -279,6 +319,8 @@ export class AdminAppointmentsPageComponent {
   constructor(){
     if (this.session.user()?.systemRole==='STAFF' &&
         this.session.user()?.staffSubRole!=='RECEPTIONIST') this.staffApi.loadRoster();
+    this.searchTerms.pipe(debounceTime(350),distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef)).subscribe(term=>this.searchCodeByCreatedDate(term));
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(query=>{
       const from=query.get('from')||'';
       const to=query.get('to')||'';
@@ -291,20 +333,68 @@ export class AdminAppointmentsPageComponent {
       this.status.set(value?.status||'');
       this.dateRange.set('all');
       this.page.set(1);
+      this.resetCodeSearch();
       this.load();
     });
   }
-  onSearch(value:string):void{this.search.set(value);this.page.set(1);}
-  lookup():void{this.page.set(1);}
-  changeStatus(value:string):void{this.status.set(value);this.page.set(1);}
+  private resetCodeSearch():void{
+    ++this.searchRequestVersion;
+    this.lastSearchedTerm='';
+    this.codeSearchRows.set(null);
+    this.searchLoading.set(false);
+    this.searchWarning.set('');
+  }
+  onSearch(value:string):void{
+    this.search.set(value);this.page.set(1);
+    this.resetCodeSearch();
+    if(this.dateFromAppointmentCode(value))this.searchTerms.next(value);
+  }
+  lookup():void{this.page.set(1);this.searchCodeByCreatedDate(this.search());}
+  changeStatus(value:string):void{
+    this.status.set(value);this.page.set(1);
+    this.resetCodeSearch();
+    if(this.dateFromAppointmentCode(this.search()))this.searchTerms.next(this.search());
+  }
   changeDateRange(value:string):void{this.dateRange.set(value);this.page.set(1);}
   goto(page:number):void{
     if(page<1 || page>Math.max(1,Math.ceil(this.total()/this.limit)))return;
     this.page.set(page);
   }
+  private searchCodeByCreatedDate(value:string):void{
+    const date=this.dateFromAppointmentCode(value);
+    // The Dashboard report scope must never be bypassed by searching another day.
+    if(!date || this.dashboardFilter())return;
+    if(this.lastSearchedTerm===value)return;
+    this.lastSearchedTerm=value;
+    const version=++this.searchRequestVersion;
+    const params=new HttpParams().set('limit','100').set('dateField','createdAt')
+      .set('from',date).set('to',date);
+    this.searchLoading.set(true);this.searchWarning.set('');
+    this.api.get<unknown>('/appointments',{params})
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next:response=>{
+          if(version!==this.searchRequestVersion || this.search()!==value)return;
+          try{
+            const data=normalizeAppointmentPage(response);
+            this.codeSearchRows.set(data.items);
+            if(data.items.length>=100)this.searchWarning.set(
+              'BE chỉ trả tối đa 100 lịch trong ngày này; cần BE hỗ trợ tìm kiếm toàn bộ mã lịch.');
+          }catch{
+            this.searchWarning.set('Không đọc được kết quả tìm kiếm từ máy chủ.');
+          }
+          this.searchLoading.set(false);
+        },
+        error:()=>{
+          if(version!==this.searchRequestVersion || this.search()!==value)return;
+          this.searchWarning.set('Chưa thể tìm kiếm theo mã trên máy chủ; đang tìm trong danh sách đã tải.');
+          this.searchLoading.set(false);
+        },
+      });
+  }
   load():void{
-    // BE foundation-v6 lists at most 100 records and ignores page/search.
-    // Use local paging/search for fetched subset; disclose when cap is reached.
+    // The current BE caps each query at 100 and sorts by scheduledStart.
+    // Fetch the recent createdAt day alongside the ordinary list to avoid
+    // hiding newly-created bookings with distant scheduled dates.
     const filter=this.dashboardFilter();
     let params=new HttpParams().set('limit','100');
     if(filter){
@@ -314,21 +404,36 @@ export class AdminAppointmentsPageComponent {
     }
     const version=++this.requestVersion;
     this.loading.set(true);this.error.set('');
-    this.api.get<unknown>('/appointments',{params}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next:raw=>{
+    const baseRequest=this.api.get<unknown>('/appointments',{params});
+    const today=this.todayInVietnam();
+    const recentParams=new HttpParams().set('limit','100').set('dateField','createdAt')
+      .set('from',today).set('to',today);
+    const recentRequest=filter ? of(null) :
+      this.api.get<unknown>('/appointments',{params:recentParams})
+        .pipe(catchError(()=>of(null)));
+    forkJoin([baseRequest,recentRequest]).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:([raw,recentRaw])=>{
         if(version!==this.requestVersion)return;
         try{
           const data=normalizeAppointmentPage(raw);
-          this.fetchedRows.set(data.items);this.loading.set(false);
-        }catch(err){
-          this.fetchedRows.set([]);
+          let recent:AppointmentView[]=[];
+          if(recentRaw!==null){
+            try{recent=normalizeAppointmentPage(recentRaw).items;}catch{recent=[];}
+          }
+          const byId=new Map<string,AppointmentView>();
+          for(const appointment of [...data.items,...recent])byId.set(appointment.id,appointment);
+          this.fetchedRows.set([...byId.values()]);
+          this.partial.set(data.items.length>=100 || recent.length>=100);
+          this.loading.set(false);
+        }catch{
+          this.fetchedRows.set([]);this.partial.set(false);
           this.error.set('Chưa thể hiển thị danh sách lịch hẹn. Vui lòng thử lại.');
           this.loading.set(false);
         }
       },
       error:err=>{
         if(version!==this.requestVersion)return;
-        this.fetchedRows.set([]);
+        this.fetchedRows.set([]);this.partial.set(false);
         this.error.set(adminErrorMessage(err,'Chưa tải được danh sách lịch hẹn. Vui lòng thử lại.'));
         this.loading.set(false);
       },
