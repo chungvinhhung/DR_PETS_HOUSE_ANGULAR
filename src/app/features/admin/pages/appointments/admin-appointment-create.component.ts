@@ -1,7 +1,7 @@
 import { HttpHeaders, HttpParams } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize } from 'rxjs';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged, finalize } from 'rxjs';
 import { Router } from '@angular/router';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
@@ -148,6 +148,15 @@ export class AdminAppointmentCreateComponent {
   readonly services = signal<CatalogService[]>([]);
   readonly branchId = signal('');
   readonly serviceId = signal('');
+  /** Services chosen together in the first booking field, ordered for sequential execution. */
+  readonly selectedServiceIds = signal<string[]>([]);
+  readonly servicePickerOpen = signal(false);
+  readonly selectedServiceLabel = computed(() => {
+    const names = this.selectedServiceIds().map(id =>
+      this.services().find(service => service.id === id)?.name || '').filter(Boolean);
+    return names.length ? names.join(' · ') : 'Chọn dịch vụ';
+  });
+  readonly hasAvailableSlots = computed(() => this.slots().some(slot => slot.available));
   readonly branchLoadState = signal<LoadState>('loading');
   readonly serviceLoadState = signal<LoadState>('idle');
   readonly serviceError = signal('');
@@ -159,6 +168,8 @@ export class AdminAppointmentCreateComponent {
   readonly paymentMethod = signal<PaymentMethod>('PAY_AT_STORE');
   readonly onlineProvider = signal<OnlineProvider | null>(null);
   readonly voucherCode = signal('');
+  /** A typed voucher is not priced until it has passed the Apply validation. */
+  readonly appliedVoucherCode = signal('');
   readonly voucherNotice = signal('');
   readonly pricingStatus = signal<'idle' | 'loading' | 'ready' | 'error'>('idle');
   readonly pricingError = signal('');
@@ -183,14 +194,21 @@ export class AdminAppointmentCreateComponent {
     ...this.newPets().filter(pet => pet.selected),
   ]);
   readonly petCount = computed(() => this.selectedPets().length);
-  readonly plannedSegments = computed(() =>
-    buildAppointmentSegments(this.selectedPets(), this.serviceId(), this.extraServices(), this.services()));
+  readonly plannedSegments = computed(() => {
+    const pets = this.selectedPets();
+    const selected = this.selectedServiceIds();
+    const extraRows: ExtraPetService[] = pets.flatMap(pet => selected.slice(1).map((serviceId, index) => ({
+      id: 'selection-' + pet.id + '-' + index, petId: pet.id, serviceId,
+    })));
+    return buildAppointmentSegments(pets, selected[0] || '', extraRows, this.services());
+  });
   readonly estimatedSubtotal = computed(() => segmentReferenceSubtotal(this.plannedSegments()));
   readonly pricingRequestKey = computed(() => JSON.stringify({
     branch: this.branchId(),
     pets: this.selectedPets().map(pet => [pet.id, pet.name, pet.species, pet.breed, pet.age, pet.weightKg, pet.health]),
     services: this.plannedSegments().map(segment => [segment.petId, segment.serviceId]),
-    voucher: this.voucherCode().trim().toUpperCase(),
+    selectedServices: this.selectedServiceIds(),
+    voucher: this.appliedVoucherCode(),
     pending: this.extraServices().filter(row => !row.serviceId).map(row => row.id),
   }));
   readonly currentPreview = computed(() =>
@@ -219,6 +237,22 @@ export class AdminAppointmentCreateComponent {
   constructor() {
     this.loadBranches();
     this.staffDirectory.loadRoster();
+    // Signal-driven, debounced BE pricing: no manual button and no stale quote.
+    toObservable(this.pricingRequestKey).pipe(
+      debounceTime(350),
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => {
+      if (this.branchId() && this.selectedPets().length === 1 &&
+          this.selectedServiceIds().length && !this.complexBooking()) {
+        this.requestPricingPreview();
+      } else {
+        ++this.priceRequestVersion;
+        this.pricingSnapshot.set(null);
+        this.pricingStatus.set('idle');
+        this.pricingError.set('');
+      }
+    });
     this.destroyRef.onDestroy(() => {
       this.customerRequest++;
       this.petRequest++;
@@ -490,6 +524,8 @@ export class AdminAppointmentCreateComponent {
     }
     this.branchId.set(branchId);
     this.serviceId.set('');
+    this.selectedServiceIds.set([]);
+    this.servicePickerOpen.set(false);
     this.services.set([]);
     this.extraServices.set([]);
     this.assignedStaff.set({});
@@ -518,9 +554,46 @@ export class AdminAppointmentCreateComponent {
       });
   }
 
+  toggleServicePicker(event: MouseEvent): void {
+    event.stopPropagation();
+    if (!this.branchId() || this.serviceLoadState() !== 'ready') return;
+    this.servicePickerOpen.update(open => !open);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onOutsideServicePickerClick(event: MouseEvent): void {
+    if (!(event.target as HTMLElement | null)?.closest?.('.appointment-service-picker')) {
+      this.servicePickerOpen.set(false);
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onServicePickerEscape(): void { this.servicePickerOpen.set(false); }
+
+  toggleSelectedService(id: string): void {
+    const service = this.services().find(row => row.id === id);
+    if (!service || service.status !== 'ACTIVE' || service.bookingMode !== 'BOOKABLE') return;
+    const previous = this.selectedServiceIds();
+    const selected = previous.includes(id);
+    const first = this.services().find(row => row.id === previous[0]);
+    if (!selected && first && first.category !== service.category) {
+      this.toast.show('Chỉ có thể đặt các dịch vụ cùng nhóm trong một lịch hẹn.');
+      return;
+    }
+    const next = selected ? previous.filter(value => value !== id) : [...previous, id];
+    this.selectedServiceIds.set(next);
+    this.serviceId.set(next[0] || '');
+    this.extraServices.set([]);
+    this.assignedStaff.set({});
+    this.recalculateSlots();
+  }
+
+  /** Preserve compatibility with the original one-service interaction. */
   selectService(id: string): void {
+    const next = id ? [id] : [];
+    this.selectedServiceIds.set(next);
     this.serviceId.set(id);
-    this.extraServices.update(rows => rows.filter(row => row.serviceId !== id));
+    this.extraServices.set([]);
     this.assignedStaff.set({});
     this.recalculateSlots();
   }
@@ -542,9 +615,9 @@ export class AdminAppointmentCreateComponent {
 
   loadSlots(): void {
     const service = this.chosenService();
-    if (!service || !this.branchId() || !this.appointmentDate() || !this.petCount()) return;
-    const types = new Set(this.plannedSegments().map(segment =>
-      this.services().find(s => s.id === segment.serviceId)?.category).filter(Boolean));
+    if (!service || !this.branchId() || !this.appointmentDate()) return;
+    const types = new Set(this.selectedServiceIds().map(id =>
+      this.services().find(s => s.id === id)?.category).filter(Boolean));
     if (types.size > 1) {
       this.slotsState.set('unsupported');
       this.slotsError.set('Một lịch hẹn chỉ được chọn các dịch vụ cùng loại Chăm sóc hoặc Khám chữa bệnh.');
@@ -560,7 +633,7 @@ export class AdminAppointmentCreateComponent {
       this.slotsError.set('Lịch có nhiều thú cưng hoặc dịch vụ khám cần được kiểm tra thêm. Vui lòng thử lịch đơn giản hơn.');
       return;
     }
-    const serviceIds=this.plannedSegments().map(row=>row.serviceId);
+    const serviceIds=this.selectedServiceIds();
     if(!serviceIds.length)return;
     const version=++this.slotRequest;
     this.slotsState.set('loading');
@@ -587,9 +660,12 @@ export class AdminAppointmentCreateComponent {
               const remaining=Number(raw['remaining']);
               const rawStatus=textOf(raw['status']).trim().toUpperCase();
               if(!id||!start||!end)return null;
-              const available=rawStatus==='AVAILABLE'&&Number.isFinite(remaining)&&remaining>0;
+              const available=rawStatus==='AVAILABLE' && (raw['available'] === true || (Number.isFinite(remaining) && remaining>0));
               const status:AppointmentSlot['status']=rawStatus==='BLOCKED'?'BLOCKED':available?'AVAILABLE':'FULL';
-              return {id,label:start+' - '+end,status,available} satisfies AppointmentSlot;
+              // BE's "value" is the branch-local human-readable clock time.
+              // Do not shift its UTC-labelled synthetic ISO timestamps by +07.
+              const label=textOf(raw['value']).trim() || start+' - '+end;
+              return {id,label,status,available} satisfies AppointmentSlot;
             }).filter((slot):slot is AppointmentSlot=>slot!==null);
             this.slots.set(slots);
             this.slotsState.set(slots.length?'ready':'empty');
@@ -615,11 +691,10 @@ export class AdminAppointmentCreateComponent {
   /** Canonical BE-07 read-only pricing preview; booking still rechecks availability. */
   requestPricingPreview(): void {
     const pets = this.selectedPets();
-    const serviceIds = this.plannedSegments().map(row => row.serviceId).filter(Boolean);
-    if (!this.branchId() || pets.length !== 1 || !serviceIds.length ||
-        this.extraServices().some(row => !row.serviceId)) {
-      this.pricingStatus.set('error');
-      this.pricingError.set('Chọn một thú cưng, chi nhánh và đầy đủ dịch vụ để xem báo giá.');
+    const serviceIds = this.selectedServiceIds();
+    if (!this.branchId() || pets.length !== 1 || !serviceIds.length) {
+      this.pricingStatus.set('idle');
+      this.pricingSnapshot.set(null);
       return;
     }
     const pet = pets[0];
@@ -629,7 +704,7 @@ export class AdminAppointmentCreateComponent {
       serviceIds,
       ...(this.selectedPetIds().includes(pet.id) ? { petId: pet.id } : {}),
       ...(Number.isFinite(weight) && weight > 0 ? { petWeightKg: weight } : {}),
-      ...(this.voucherCode().trim() ? { voucherCode: this.voucherCode().trim().toUpperCase() } : {}),
+      ...(this.appliedVoucherCode() ? { voucherCode: this.appliedVoucherCode() } : {}),
     };
     const version = ++this.priceRequestVersion;
     const requestKey = this.pricingRequestKey();
@@ -678,6 +753,7 @@ export class AdminAppointmentCreateComponent {
 
   updateVoucher(value: string): void {
     this.voucherCode.set(value);
+    this.appliedVoucherCode.set('');
     this.voucherNotice.set('');
     this.clearReview();
   }
@@ -724,8 +800,9 @@ export class AdminAppointmentCreateComponent {
           this.voucherNotice.set(labels[result.reason??'']??'Mã giảm giá không hợp lệ.');
           return;
         }
-        this.voucherNotice.set('Mã '+result.code+' hợp lệ. Đang tính giá từ hệ thống.');
-        this.requestPricingPreview();
+        if (this.voucherCode().trim().toUpperCase() !== code.toUpperCase()) return;
+        this.voucherNotice.set('Mã '+result.code+' đã được áp dụng vào báo giá.');
+        this.appliedVoucherCode.set(code.toUpperCase());
       },
       error:error=>{
         this.pricingSnapshot.set(null);
@@ -751,9 +828,9 @@ export class AdminAppointmentCreateComponent {
       errors.push('Email chưa đúng định dạng.');
     if (!this.petCount()) errors.push('Chọn hoặc thêm ít nhất một thú cưng.');
     if (this.petCount() > 1) errors.push('Hiện chưa thể tạo một lịch hẹn cho nhiều thú cưng cùng lúc.');
-    if (this.extraServices().some(row => !row.serviceId)) errors.push('Chọn dịch vụ cho tất cả các dòng dịch vụ bổ sung.');
-    const types = new Set(this.plannedSegments().map(segment =>
-      this.services().find(service => service.id === segment.serviceId)?.category).filter(Boolean));
+    if (!this.selectedServiceIds().length) errors.push('Chọn ít nhất một dịch vụ.');
+    const types = new Set(this.selectedServiceIds().map(id =>
+      this.services().find(service => service.id === id)?.category).filter(Boolean));
     if (types.size > 1) errors.push('Một lịch hẹn chỉ được chọn các dịch vụ cùng loại Chăm sóc hoặc Khám chữa bệnh.');
     if (this.plannedSegments().some(row => row.durationMinutes === null))
       errors.push('Có dịch vụ chưa có thời lượng được xác nhận.');
@@ -775,7 +852,7 @@ export class AdminAppointmentCreateComponent {
     }
 
     const pet=this.selectedPets()[0];
-    const serviceIds=this.plannedSegments().map(segment=>segment.serviceId).filter(Boolean);
+    const serviceIds=this.selectedServiceIds();
     const speciesMap:Record<string,string>={Chó:'DOG',Mèo:'CAT',Khác:'OTHER',DOG:'DOG',CAT:'CAT',OTHER:'OTHER'};
     const healthMap:Record<string,string>={
       healthy:'NORMAL',treating:'TREATING',need_recheck:'NEED_RECHECK',unknown:'UNKNOWN',
@@ -806,7 +883,7 @@ export class AdminAppointmentCreateComponent {
           ...(this.customerEmail().trim() ? { email: this.customerEmail().trim().toLowerCase() } : {}),
         },
       } : {}),
-      ...(this.voucherCode().trim() ? { voucherCode: this.voucherCode().trim().toUpperCase() } : {}),
+      ...(this.appliedVoucherCode() ? { voucherCode: this.appliedVoucherCode() } : {}),
       ...(this.note().trim() ? { note: this.note().trim() } : {}),
       ...(pet.additionalInfo?.trim() ? { conditionDescription: pet.additionalInfo.trim() } : {}),
       paymentMethod: this.paymentMethod(),
