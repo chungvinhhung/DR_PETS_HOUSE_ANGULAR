@@ -30,3 +30,11 @@
   justify-content: center;
   text-align: center;
 }
+
+/* BE-08: real address records; preserve existing Admin section typography. */
+.web2-admin-address-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 12px; }
+.web2-admin-address-item { padding: 14px 16px; border: 1px solid #dce5ef; border-radius: 8px; background: #fff; }
+.web2-admin-address-item > div { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.web2-admin-address-item strong { font-size: 13px; font-weight: 600; color: #26364a; }
+.web2-admin-address-item p { margin: 7px 0 0; color: #53637a; font-size: 13px; line-height: 1.5; }
+.web2-admin-address-default { padding: 2px 8px; border-radius: 12px; color: #0d47a1; background: #eef5ff; font-size: 11px; }

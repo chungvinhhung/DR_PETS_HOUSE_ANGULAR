@@ -63,7 +63,13 @@ export class AdminCustomerDetailComponent {
   orderStatus(v:string):string{return ({PENDING:'Chờ xác nhận',CONFIRMED:'Đã xác nhận',PROCESSING:'Chuẩn bị hàng',SHIPPED:'Đang giao',COMPLETED:'Đã giao',CANCELLED:'Đã hủy'} as Record<string,string>)[v]??v;}
   appointmentStatus(v:string):string{return ({PENDING_PAYMENT:'Chờ thanh toán',PENDING_CONFIRMATION:'Chờ xác nhận',CONFIRMED:'Đã xác nhận',IN_PROGRESS:'Đang phục vụ',COMPLETED:'Hoàn thành',CANCELLED:'Đã hủy',NO_SHOW:'Không đến'} as Record<string,string>)[v]??v;}
   petName(p:any):string{return p.name||p.petName||p.pet_name||'Thú cưng';}
-  petBreed(p:any):string{return p.breed||p.breedName||p.breed_name||p.speciesName||({DOG:'Chó',CAT:'Mèo',BIRD:'Chim',RABBIT:'Thỏ',OTHER:'Khác'} as Record<string,string>)[String(p.species||'').toUpperCase()]||p.species||'—';}
+  petBreed(p:any):string{return p.breed||p.breedName||p.breed_name||'Chưa cập nhật giống';}
+  petSpecies(p:any):string {
+    const code=String(p.species||'').toUpperCase();
+    const labels:Record<string,string>={DOG:'Chó',CAT:'Mèo',BIRD:'Chim',RABBIT:'Thỏ',OTHER:'Khác'};
+    const detail=String(p.speciesDetail||p.speciesName||'').trim();
+    return code==='OTHER' && detail ? 'Khác ('+detail+')' : labels[code]||p.species||'—';
+  }
   petAge(p:any):string {
     const raw=p.ageYears??p.age??p.age_years;
     if(raw===null||raw===undefined||raw==='')return 'Chưa cập nhật';

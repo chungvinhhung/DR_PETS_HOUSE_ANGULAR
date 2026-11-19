@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
-import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
+import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
 
@@ -15,6 +15,13 @@ export interface AdminCustomer {
   createdAt?: string | null;
   blockedReason?: string | null;
   userId?: string | null;
+  /** BE-08 expanded customer detail provides address history and pet snapshots. */
+  addresses?: Array<{
+    id?: string; _id?: string; fullName?: string; phone?: string;
+    addressDetail?: string; fullAddress?: string; address?: string;
+    ward?: string; district?: string; province?: string; isDefault?: boolean;
+  }>;
+  pets?: any[];
 }
 
 export interface CustomerListResponse {
@@ -37,7 +44,11 @@ export class AdminCustomerService {
   }
 
   getPets(id: string): Observable<any[]> {
-    return this.api.get<any[]>('/admin/customers/' + encodeURIComponent(id) + '/pets');
+    return this.api.get<any>('/admin/customers/' + encodeURIComponent(id) + '/pets').pipe(
+      map(response => Array.isArray(response) ? response :
+        Array.isArray(response?.items) ? response.items :
+        Array.isArray(response?.pets) ? response.pets : []),
+    );
   }
 
   getOrders(customer: AdminCustomer): Observable<any[]> {
@@ -83,7 +94,10 @@ export class AdminCustomerService {
     return this.getCustomer(id).pipe(
       switchMap(customer => forkJoin({
         customer: of(customer),
-        pets: this.getPets(id),
+        pets: this.getPets(id).pipe(
+          map(rows => rows.length ? rows : (Array.isArray(customer.pets) ? customer.pets : [])),
+          catchError(() => of(Array.isArray(customer.pets) ? customer.pets : [])),
+        ),
         orders: this.getOrders(customer),
         appointments: this.getAppointments(customer),
         feedback: this.getFeedback(id),

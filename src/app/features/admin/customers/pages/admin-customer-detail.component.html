@@ -30,7 +30,22 @@
 
       <section class="detail-card web2-admin-section address-card">
         <h2 class="web2-admin-section__title">Địa chỉ liên hệ / nhận hàng</h2>
-        <app-admin-data-state kind="empty" title="Chưa có địa chỉ" message="Khách hàng chưa có địa chỉ để hiển thị." />
+        @if (c.addresses?.length) {
+          <div class="web2-admin-address-list">
+            @for (address of c.addresses || []; track address.id || address._id || $index) {
+              <article class="web2-admin-address-item">
+                <div>
+                  <strong>{{address.fullName || c.fullName || 'Khách hàng'}}</strong>
+                  @if (address.isDefault) { <span class="web2-admin-address-default">Mặc định</span> }
+                </div>
+                <p>{{address.phone || c.phone || '—'}}</p>
+                <p>{{address.fullAddress || address.address || address.addressDetail || 'Chưa có địa chỉ chi tiết'}}</p>
+              </article>
+            }
+          </div>
+        } @else {
+          <app-admin-data-state kind="empty" title="Chưa có địa chỉ" message="Khách hàng chưa có địa chỉ để hiển thị." />
+        }
       </section>
 
       <section class="detail-card web2-admin-section">
@@ -41,7 +56,7 @@
               <img [src]="petImage(pet)" [alt]="petName(pet)">
               <div>
                 <strong>{{petName(pet)}}</strong>
-                <span>{{petBreed(pet)}}</span>
+                <span>{{petSpecies(pet)}} · {{petBreed(pet)}}</span>
                 <small>{{pet.gender || pet.sex || '—'}} · {{petAge(pet)}}</small>
               </div>
             </a>

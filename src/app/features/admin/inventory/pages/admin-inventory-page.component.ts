@@ -348,7 +348,7 @@ export class AdminInventoryPageComponent implements OnInit {
           ? [tx.transactionType, sourceIdentity, reasonIdentity].join(':')
           : `row:${tx.id}`;
       const transactionCode = explicitCode;
-      const sourceLabel = tx.sourceCode || tx.referenceCode || tx.sourceId || '';
+      const sourceLabel = tx.referenceCode || tx.sourceCode || ''; // Never show raw source ObjectId as a reference.
       return {
         id: tx.id,
         groupKey,

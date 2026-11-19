@@ -28,6 +28,12 @@ export class AdminCustomerPetDetailComponent{
   });
  }
  image(p:any):string{return p?.photoUrl||p?.photo_url||p?.profileImageUrl||p?.profile_image_url||p?.imageUrl||p?.avatarUrl||'/assets/admin-login/mascot.png';}
+  species(p:any):string {
+    const kind=String(p?.species||'').toUpperCase();
+    const labels:Record<string,string>={DOG:'Chó',CAT:'Mèo',BIRD:'Chim',RABBIT:'Thỏ',OTHER:'Khác'};
+    const detail=String(p?.speciesDetail||p?.speciesName||'').trim();
+    return kind==='OTHER' && detail ? 'Khác ('+detail+')' : labels[kind]||p?.species||'—';
+  }
   age(p:any):string {
     const raw=p?.ageYears??p?.age??p?.age_years;
     return raw===null||raw===undefined||raw===''||!Number.isFinite(Number(raw))
