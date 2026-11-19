@@ -4,6 +4,8 @@ import { RouterLink } from '@angular/router';
 import { AuthApiService } from '../../../../core/customer/services/api/auth-api.service';
 import { FieldComponent } from './field.component';
 import { PrimaryButtonComponent } from './primary-button.component';
+import { DividerComponent } from './divider.component';
+import { GoogleButtonComponent } from './google-button.component';
 import { reactSetter } from '../../../../shared/customer/utils/react-setter';
 import { VALIDATION_SCHEMAS, getFormErrors, submitValidatedForm } from './auth-modal.helpers';
 
@@ -13,7 +15,7 @@ import { VALIDATION_SCHEMAS, getFormErrors, submitValidatedForm } from './auth-m
 @Component({
   selector: 'form[app-login-form]',
   standalone: true,
-  imports: [FieldComponent, PrimaryButtonComponent, RouterLink],
+  imports: [FieldComponent, PrimaryButtonComponent, DividerComponent, GoogleButtonComponent, RouterLink],
   templateUrl: './login-form.component.html',
   styleUrl: './login-form.component.scss',
   host: {
