@@ -129,6 +129,7 @@ export class ShoppingCheckoutComponent {
         : await this.orderApi.checkoutOrder({
             addressId: this.selectedAddress()?.addressId || this.selectedAddress()?.id,
             selectedAddress: this.selectedAddress(),
+            customerProfile: this.authService.userProfile(),
             paymentMethod: this.cartService.paymentMode(),
             voucherCode,
             note: this.note(),
