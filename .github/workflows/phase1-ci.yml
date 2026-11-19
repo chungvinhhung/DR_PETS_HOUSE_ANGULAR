@@ -34,5 +34,8 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Check customer component stylesheets
+        run: npm run check:customer-styles
+
       - name: Build Angular application
         run: npm run build

@@ -21,6 +21,7 @@ import { RescheduleModalComponent } from './reschedule-modal.component';
   standalone: true,
   imports: [SearchAndSortComponent, AppointmentCardComponent, DetailPanelComponent, ReviewModalComponent, RescheduleModalComponent],
   templateUrl: './appointment-history-page.component.html',
+  styleUrl: './appointment-history-page.component.scss',
   host: {
     'class': 'relative mx-auto flex w-full max-w-[939px] flex-col gap-8 pb-10',
   },

@@ -11,6 +11,7 @@ import { isBeforeToday, isSlotInPast } from './booking-page.helpers';
   standalone: true,
   imports: [BookingCardComponent],
   templateUrl: './time-slots.component.html',
+  styleUrl: './time-slots.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

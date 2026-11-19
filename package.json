@@ -8,7 +8,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "start:admin": "ng serve --port 3001",
-    "start:admin:local-be": "ng serve --port 3001 --configuration local-backend"
+    "start:admin:local-be": "ng serve --port 3001 --configuration local-backend",
+    "check:customer-styles": "node scripts/check-customer-styles.mjs"
   },
   "dependencies": {
     "@angular/common": "22.2.1",

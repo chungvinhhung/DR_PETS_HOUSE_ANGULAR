@@ -21,6 +21,7 @@ import { EMPTY_COMMENTS, splitBalanced } from './community-page.helpers';
   standalone: true,
   imports: [CanvasLayoutComponent, NavBarComponent, ComposerComponent, CommunityCardComponent, FooterComponent, PostModalComponent, CustomerLinkDirective],
   templateUrl: './community-page.component.html',
+  styleUrl: './community-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white',
   },
