@@ -143,13 +143,10 @@ export class AdminAppointmentDetailComponent {
     return date+' · '+from;
   }
   assignedStaffSummary():string{
-    // Only show employees whose IDs are actually assigned to this appointment
-    // and resolve to a real StaffProfile from the authorized roster.
-    // Use the same source for this summary and the service-table column.
-    const appointment=this.item();
-    if(!appointment)return '—';
-    const names=[...new Set(appointment.serviceSegments
-      .map(segment=>this.staffDisplayName(segment.assignedStaffId))
+    // Preserve the original Admin contract: names come from BE service records,
+    // not from a separately fetched staff roster.
+    const names=[...new Set(this.linkedRecords()
+      .map(record=>this.recordStaffName(record.primaryStaff))
       .filter(name=>name!=='—'))];
     return names.length?names.join(' / '):'—';
   }
@@ -186,17 +183,14 @@ export class AdminAppointmentDetailComponent {
     return new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d).replace(',',' ·');
   }
   /**
-   * Display a staff member only when BE provides an assignedStaffId and the
-   * authorized live staff roster resolves that exact StaffProfile/User ID.
-   * Never infer staff from service-record notes, cached display snapshots,
-   * mock names, or unrelated staff profiles.
+   * A display-only safeguard for the existing BE service-record name.
+   * Do not resolve or infer an employee from assignedStaffId.
    */
-  private staffDisplayName(assignedStaffId:string):string {
-    const id=assignedStaffId.trim();
-    if(!id)return '—';
-    const staff=this.staffDirectory.staff().find(profile=>profile.id===id || profile.userId===id);
-    const name=staff?.fullName?.trim();
-    return name && name!=='Chưa cập nhật họ tên' ? name : '—';
+  private recordStaffName(value:string|undefined|null):string{
+    const name=value?.trim()||'';
+    if(!name || /^[0-9a-f]{24}$/i.test(name) ||
+       /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(name))return '—';
+    return name;
   }
   appointmentRows():{key:string;pet:string;species:string;service:string;staff:string;health:string;note:string;checkIn:string;execution:string;recordId:string}[]{
     const a=this.item();if(!a)return[];
@@ -205,7 +199,7 @@ export class AdminAppointmentDetailComponent {
       return [{
         key:'appointment-'+a.id,
         pet:a.petNames[0]||'—',species:a.petSpecies||'—',service:a.serviceNames[0]||'—',
-        staff:'—',health:a.petHealth||'—',note:a.petNote||'—',
+        staff:this.recordStaffName(this.linkedRecords()[0]?.primaryStaff),health:a.petHealth||'—',note:a.petNote||'—',
         checkIn:this.checkInLabel(),execution:a.status==='COMPLETED'?'Hoàn thành':a.status==='IN_PROGRESS'?'Đang thực hiện':'Chưa bắt đầu',
         recordId:this.linkedRecords()[0]?.id||'',
       }];
@@ -220,7 +214,7 @@ export class AdminAppointmentDetailComponent {
         pet:record?.petName||a.petNames[0]||'—',
         species:a.petSpecies||'—',
         service:segment.serviceName||record?.serviceName||'—',
-        staff:this.staffDisplayName(segment.assignedStaffId),
+        staff:this.recordStaffName(record?.primaryStaff),
         health:a.petHealth||'—',
         note:a.petNote||'—',
         checkIn:this.checkInLabel(),
@@ -255,7 +249,7 @@ export class AdminAppointmentDetailComponent {
   }
 
   constructor() {
-    if (this.session.hasAnyRole(['ADMIN','MANAGER']) || this.isExecutionStaff()) this.staffDirectory.loadRoster();
+    if (this.isExecutionStaff()) this.staffDirectory.loadRoster();
     this.loadRescheduleBranches();
     this.refresh();
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
