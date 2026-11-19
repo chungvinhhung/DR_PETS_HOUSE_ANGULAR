@@ -9,6 +9,9 @@
   <div class="article__layer">
     <app-category-icon [category]="post().category" [className]="'h-4 w-4'" />{{ post().categoryLabel }}</div>
 </div>
+@if (hasRichContent()) {
+  <div class="article__rich-content" [innerHTML]="post().content"></div>
+} @else {
 <div class="article__box-2">
   <p class="article__intro">{{ post().intro }}</p>
   <p class="article__description">{{ post().description }}</p>
@@ -26,6 +29,7 @@
     }
   </ol>
 </div>
+}
 <div class="article__row-2">
   @for (tag of post().tags; track tag) {
     <a

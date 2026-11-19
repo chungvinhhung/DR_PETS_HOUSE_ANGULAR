@@ -9959,3 +9959,127 @@ app-admin-appointment-create .appointment-service-picker__bottom button {
     max-width: min(490px, calc(100vw - 24px));
   }
 }
+
+/* Blog knowledge article rich text — Angular sanitizes [innerHTML]. */
+app-article .article__rich-content,
+article[app-article] .article__rich-content {
+  margin-top: 24px;
+  color: #414753;
+  font-size: 16px;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+article[app-article] .article__rich-content :is(h1,h2,h3,h4,h5,h6) {
+  color: #0d47a1;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 22px 0 12px;
+}
+article[app-article] .article__rich-content h1 { font-size: 26px; }
+article[app-article] .article__rich-content h2 { font-size: 23px; }
+article[app-article] .article__rich-content h3 { font-size: 20px; }
+article[app-article] .article__rich-content :is(h4,h5,h6) { font-size: 17px; }
+article[app-article] .article__rich-content p { margin: 0 0 16px; }
+article[app-article] .article__rich-content :is(ul,ol) {
+  margin: 10px 0 20px;
+  padding-left: 28px;
+  list-style-position: outside;
+}
+article[app-article] .article__rich-content ul { list-style-type: disc; }
+article[app-article] .article__rich-content ol { list-style-type: decimal; }
+article[app-article] .article__rich-content li { margin: 6px 0; padding-left: 2px; }
+article[app-article] .article__rich-content blockquote {
+  margin: 18px 0;
+  padding: 12px 18px;
+  border-left: 4px solid #1976d2;
+  background: #f3f6fb;
+}
+article[app-article] .article__rich-content a {
+  color: #0d47a1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+article[app-article] .article__rich-content :is(img,video) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+article[app-article] .article__rich-content table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+article[app-article] .article__rich-content :is(td,th) {
+  border: 1px solid #dce5f0;
+  padding: 8px 10px;
+}
+
+/* The selected-service summary belongs to the booking section, not the dropdown. */
+app-admin-appointment-create .appointment-selected-services {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid #e0e9f4;
+  border-radius: 8px;
+  background: #f7faff;
+}
+app-admin-appointment-create .appointment-selected-services__title {
+  display: block;
+  margin-bottom: 8px;
+  color: #304563;
+  font-size: 12px;
+  font-weight: 700;
+}
+app-admin-appointment-create .appointment-selected-services__chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+app-admin-appointment-create .appointment-selected-services__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  padding: 6px 9px;
+  border: 1px solid #c5d9f3;
+  border-radius: 6px;
+  background: #eaf3ff;
+  color: #1553a0;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  text-align: left;
+}
+app-admin-appointment-create .appointment-selected-services__chip:hover {
+  background: #dbeafe;
+  border-color: #9fc2ef;
+}
+app-admin-appointment-create .appointment-selected-services__chip:focus-visible {
+  outline: 2px solid #0d47a1;
+  outline-offset: 2px;
+}
+app-admin-appointment-create .appointment-selected-services__chip > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+app-admin-appointment-create .appointment-selected-services__remove {
+  flex: 0 0 auto;
+  color: #1553a0;
+  font-size: 17px;
+  line-height: 16px;
+}
+/* Different service category: the entire card AND its "Chọn" state turn muted. */
+app-admin-appointment-create .appointment-service-picker__option:disabled {
+  color: #9aa7b8;
+  background: #f5f7fa;
+  border-color: #e1e6ed;
+  opacity: .68;
+  cursor: not-allowed;
+}
+app-admin-appointment-create .appointment-service-picker__option:disabled .appointment-service-picker__choice {
+  border-color: #cbd5e1;
+  background: #e5eaf0;
+  color: #8694a5;
+}

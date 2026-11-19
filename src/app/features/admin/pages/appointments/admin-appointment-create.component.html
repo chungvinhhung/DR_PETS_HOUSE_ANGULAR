@@ -228,24 +228,6 @@
                     <p class="appointment-service-picker__empty">Không tìm thấy dịch vụ phù hợp.</p>
                   }
                 </div>
-                <div class="appointment-service-picker__selection" aria-live="polite">
-                  <span class="appointment-service-picker__selection-title">Dịch vụ đang chọn</span>
-                  @if (selectedServiceTags().length) {
-                    <div class="appointment-service-picker__chips">
-                      @for (service of selectedServiceTags(); track service.id) {
-                        <button type="button" class="appointment-service-picker__chip"
-                          [title]="'Bỏ chọn: ' + service.name"
-                          [attr.aria-label]="'Bỏ chọn dịch vụ ' + service.name"
-                          (click)="toggleSelectedService(service.id)">
-                          <span>{{service.name}}</span>
-                          <span class="appointment-service-picker__chip-remove" aria-hidden="true">×</span>
-                        </button>
-                      }
-                    </div>
-                  } @else {
-                    <p class="appointment-service-picker__no-selection">Chưa chọn dịch vụ nào</p>
-                  }
-                </div>
                 <div class="appointment-service-picker__bottom">
                   <span>Các dịch vụ cần thuộc cùng nhóm</span>
                   <button type="button" (click)="closeServicePicker()">Xong</button>
@@ -270,6 +252,21 @@
           </select>
         </label>
       </div>
+      @if (selectedServiceTags().length) {
+        <div class="appointment-selected-services" role="group" aria-label="Các dịch vụ đã chọn">
+          <span class="appointment-selected-services__title">Dịch vụ đã chọn ({{selectedServiceTags().length}})</span>
+          <div class="appointment-selected-services__chips">
+            @for (service of selectedServiceTags(); track service.id) {
+              <button type="button" class="appointment-selected-services__chip"
+                [title]="'Bỏ chọn: ' + service.name"
+                [attr.aria-label]="'Bỏ chọn dịch vụ ' + service.name"
+                (click)="toggleSelectedService(service.id)">
+                <span>{{service.name}}</span><span class="appointment-selected-services__remove" aria-hidden="true">×</span>
+              </button>
+            }
+          </div>
+        </div>
+      }
       @if (branchLoadState()==='error' || serviceLoadState()==='error') {
         <p class="inline-error">{{serviceError()}} <button type="button" class="text-action"
           (click)="branchLoadState()==='error'?loadBranches():selectBranch(branchId())">Thử lại</button></p>
