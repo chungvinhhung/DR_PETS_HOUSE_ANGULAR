@@ -40,7 +40,7 @@
           <div class="rescue-page__dang-tai-danh-el">Đang tải danh sách nhận nuôi...</div>
         } @else if (pets().length) {
           @for (pet of pets(); track pet.id) {
-            <article app-rescue-pet-card [pet]="pet"></article>
+            <article app-rescue-pet-card [pet]="pet" (onAdopt)="selectedAdoptionPet.set($event)"></article>
           }
         } @else {
           <div class="rescue-page__khong-tim-thay-el">Không tìm thấy bạn nhỏ phù hợp.</div>
@@ -122,5 +122,14 @@
       </div>
     </section>
   </main>
+  @if (selectedAdoptionPet()) {
+    <app-adoption-application-modal
+      [open]="Boolean(selectedAdoptionPet())"
+      [pet]="selectedAdoptionPet()"
+      (onClose)="selectedAdoptionPet.set(null)"
+      (onSubmitApplication)="handleSubmitApplication($event)"
+      [hasOnSubmitApplication]="true"
+    />
+  }
   <app-footer [variant]="'white'" />
 </div>
