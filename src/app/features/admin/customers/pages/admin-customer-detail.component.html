@@ -77,7 +77,7 @@
                 <tr>
                   <td>{{date(order.createdAt)}}</td>
                   <td><a class="web2-admin-table-link" [routerLink]="['/admin/orders', order.id]">#{{order.code || order.id}}</a></td>
-                  <td>{{order.fulfillmentBranchId || '—'}}</td>
+                  <td>{{branchName(order.fulfillmentBranchId, order.fulfillmentBranchName || order.branchName)}}</td>
                   <td class="is-right">{{money(order.pricing?.totalAmount || order.totalAmount)}}</td>
                   <td class="is-center">{{orderStatus(order.status)}}</td>
                 </tr>
@@ -101,7 +101,7 @@
                   <td>{{date(apt.scheduledStart)}}</td>
                   <td><a class="web2-admin-table-link" [routerLink]="['/admin/appointments', apt.id]">#{{apt.code || apt.id}}</a></td>
                   <td>{{serviceNames(apt)}}</td>
-                  <td>{{apt.branchId || '—'}}</td>
+                  <td>{{branchName(apt.branchId, apt.branchName)}}</td>
                   <td class="is-center">{{appointmentStatus(apt.status)}}</td>
                 </tr>
               } @empty {
