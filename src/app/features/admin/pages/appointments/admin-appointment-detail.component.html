@@ -77,15 +77,21 @@
             <tbody>
               @for (row of appointmentRows(); track row.key) {
                 <tr>
-                  <td><span class="pet-cell"><span class="pet-avatar">{{row.pet.slice(0,1) || 'P'}}</span><strong>{{row.pet || '—'}}</strong></span></td>
-                  <td>{{row.species}}</td>
-                  <td>{{row.service}}</td>
-                  <td>{{row.staff}}</td>
-                  <td><strong>{{row.health}}</strong></td>
-                  <td>{{row.note}}</td>
+                  <td>
+                    @if (row.pet === '—') {
+                      <span class="empty-cell">—</span>
+                    } @else {
+                      <span class="pet-cell"><span class="pet-avatar">{{row.pet.slice(0,1)}}</span><strong>{{row.pet}}</strong></span>
+                    }
+                  </td>
+                  <td [class.empty-value]="row.species === '—'">{{row.species}}</td>
+                  <td [class.empty-value]="row.service === '—'">{{row.service}}</td>
+                  <td class="staff-name-cell" [class.empty-value]="row.staff === '—'"><span class="staff-name">{{row.staff}}</span></td>
+                  <td [class.empty-value]="row.health === '—'"><strong>{{row.health}}</strong></td>
+                  <td [class.empty-value]="row.note === '—'">{{row.note}}</td>
                   <td><span class="mini-badge" data-state="unknown">{{row.checkIn}}</span></td>
                   <td>{{row.execution}}</td>
-                  <td>
+                  <td class="service-action-cell">
                     @if (row.recordId) {
                       <a class="eye-action" [routerLink]="['/admin/service-records',row.recordId]" title="Xem hồ sơ dịch vụ">
                         <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="">
