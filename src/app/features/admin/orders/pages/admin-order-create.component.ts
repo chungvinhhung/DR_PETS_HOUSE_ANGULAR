@@ -235,7 +235,7 @@ export class AdminOrderCreateComponent {
         const user = this.session.user();
         this.toast.show(
           status === 403 && user?.systemRole === 'STAFF' && user.staffSubRole === 'RECEPTIONIST'
-            ? 'BE chưa cấp quyền tra cứu khách hàng cho Lễ tân trên phiên bản hiện tại.'
+            ? 'Tài khoản của bạn chưa được cấp quyền tra cứu khách hàng.'
             : adminErrorMessage(error, 'Chưa tra cứu được khách hàng.'),
           'error',
         );
