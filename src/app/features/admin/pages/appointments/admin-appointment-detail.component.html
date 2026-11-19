@@ -81,7 +81,15 @@
                     @if (row.pet === '—') {
                       <span class="empty-cell">—</span>
                     } @else {
-                      <span class="pet-cell"><span class="pet-avatar">{{row.pet.slice(0,1)}}</span><strong>{{row.pet}}</strong></span>
+                      <span class="pet-cell">
+                        <span class="pet-avatar">
+                          <span>{{row.pet.slice(0,1)}}</span>
+                          @if (row.photo) {
+                            <img [src]="row.photo" [alt]="row.pet" loading="lazy" (error)="onPetImageError($event)">
+                          }
+                        </span>
+                        <strong>{{row.pet}}</strong>
+                      </span>
                     }
                   </td>
                   <td [class.empty-value]="row.species === '—'">{{row.species}}</td>
