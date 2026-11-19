@@ -184,8 +184,15 @@ export class AdminStaffScheduleComponent {
     if (!context || !branchId || !context.employee.branchIds?.includes(branchId)) return;
     const current=this.forDay();
     const desiredIds=new Set(data.draft.map(x=>x.shiftId).filter((id):id is string=>!!id));
-    const removed=current.filter(row=>row.shiftId&&!desiredIds.has(row.shiftId));
+    const removed=current.filter(row=>!row.shiftId || !desiredIds.has(row.shiftId));
     const added=data.draft.filter(row=>!row.shiftId);
+    // Do not pretend to delete a local placeholder when BE did not provide
+    // the real Shift ObjectId required by DELETE /shifts/:id.
+    if (removed.some(row=>!row.shiftId || !/^[a-f0-9]{24}$/i.test(row.shiftId))) {
+      this.toast.show('Không xác định được mã ca đã phân. Vui lòng tải lại lịch trước khi xóa.', 'error');
+      return;
+    }
+    if (!removed.length && !added.length) {this.closeDay();return;}
     if (added.some(x=>!this.createdOptions().some(t=>t.id===x.id&&t.enabled))) {
       this.toast.show('Mẫu ca đã thay đổi. Vui lòng tải lại danh sách ca và thử lại.', 'error');
       this.loadTemplates(branchId);
@@ -196,11 +203,19 @@ export class AdminStaffScheduleComponent {
     const toInstant=(date:string,time:string)=>new Date(date+'T'+time+':00+07:00');
     this.createSaving.set(true);
     let completed=0;
+    let removing=false;
     try {
       for (const row of removed) {
-        await firstValueFrom(this.staffApi.cancelShift(row.shiftId!));
+        removing=true;
+        // BE allows hard deletion only before the shift begins. Historical
+        // shifts must use the soft-cancel API (audit trail stays intact).
+        const startsAt=toInstant(context.date,row.start);
+        await firstValueFrom(startsAt.getTime()>Date.now()
+          ? this.staffApi.deleteShift(row.shiftId!)
+          : this.staffApi.cancelShift(row.shiftId!));
         completed++;
       }
+      removing=false;
       for (const row of added) {
         const startAt=toInstant(context.date,row.start);
         const endAt=toInstant(context.date,row.end);
@@ -216,9 +231,15 @@ export class AdminStaffScheduleComponent {
       this.toast.show('Đã lưu phân công ca làm việc.', 'success');
     } catch (error) {
       this.staffApi.loadWeek(this.monday(),true);
+      const status=(error as {status?:number})?.status;
+      const message=removing && status===409
+        ? 'Không thể xóa ca vì có lịch hẹn đã xác nhận hoặc đang phục vụ. Vui lòng kiểm tra lịch hẹn liên quan.'
+        : removing && status===400
+          ? 'Máy chủ từ chối xóa/hủy ca này. Vui lòng kiểm tra thời gian ca và điều kiện từ BE.'
+          : adminErrorMessage(error,'Không thể lưu phân công. Vui lòng thử lại.');
       this.toast.show(
-        completed ? 'Một số ca đã được cập nhật nhưng có thao tác thất bại. Vui lòng kiểm tra lịch rồi thử lại.'
-          : adminErrorMessage(error,'Không thể lưu phân công. Vui lòng thử lại.'), 'error');
+        completed ? 'Một số ca đã được cập nhật nhưng có thao tác thất bại. Vui lòng tải lại lịch để kiểm tra.'
+          : message, 'error');
       // Close only on partial mutations, to avoid resubmitting the same operations.
       if (completed) this.closeDay();
     } finally {
