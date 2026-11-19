@@ -386,40 +386,48 @@ export class BookingPageComponent {
       });
       this.success.set(true);
     } catch (error: any) {
-      const rawErrorMsg = error?.data?.detail || error?.data?.message || error?.message || "Không thể đặt lịch.";
-      const errorList = Array.isArray(error?.data?.errors)
-        ? error.data.errors.map((e: any) => `${e.field || ''}: ${e.message || ''}`.trim()).filter(Boolean).join("; ")
-        : "";
-      const isSlotConflict =
-        error?.status === 409 ||
-        String(rawErrorMsg).includes("already reserved") ||
-        String(rawErrorMsg).includes("SLOT_UNAVAILABLE") ||
-        String(rawErrorMsg).includes("kín lịch") ||
-        String(rawErrorMsg).includes("staff") ||
-        String(rawErrorMsg).includes("khung giờ");
+      const details = error?.data && typeof error.data === 'object' ? error.data : {};
+      const errorCode = String(
+        details.code || details.error?.code || details.details?.code || error?.code || '',
+      ).trim().toUpperCase();
+      const rawMessage = details.detail || details.message || error?.message;
+      const errorMessage = typeof rawMessage === 'string' && rawMessage.trim()
+        ? rawMessage.trim()
+        : 'Không thể đặt lịch. Vui lòng thử lại.';
+      const errorList = Array.isArray(details.errors)
+        ? details.errors.map((item: any) => [item.field, item.message].filter(Boolean).join(': '))
+          .filter(Boolean).join('; ')
+        : '';
+
+      // HTTP 409 is NOT always a slot conflict (it may be an idempotency,
+      // state or business-rule conflict). Never assume another customer booked
+      // the slot, nor permanently block it in localStorage on an API error.
+      const isSlotConflict = ['SLOT_UNAVAILABLE', 'SLOT_BLOCKED', 'STAFF_UNAVAILABLE'].includes(errorCode) ||
+        (error?.status === 409 &&
+          /already reserved|slot unavailable|time slot.*(?:reserved|occupied)/i.test(errorMessage));
 
       if (isSlotConflict) {
-        // 1. Mark slot as blocked in local cache so it won't appear again
-        const slotVal = selectedSlotRecord.value;
-        const dateKey = getDateKey(this.selectedDate());
-        this.bookingApi.markSlotAsBlocked(dateKey, this.ownerInfo().branch, slotVal);
-
-        // 2. Remove the conflicted slot from currently loaded slots
-        this.timeSlots.update((slots: any[]) => slots.filter((s: any) => s.value !== slotVal));
         this.selectedSlot.set(null);
-
-        // 3. Take user back to Step 1 to pick an available slot
         this.step.set(1);
-        this.bookingError.set(
-          "Khung giờ này vừa có khách khác đặt hoặc nhân viên phụ trách đã kín lịch. Hệ thống đã tự động gỡ khung giờ, quý khách vui lòng chọn khung giờ khác."
-        );
+        // The server is the only authority for current availability. Refetch
+        // instead of removing a slot locally: a genuine race may already have
+        // cleared, while a staffing mismatch needs to remain visible to QA.
+        this.retryLoadSlots();
+        const explainable = /[À-ỹ]/.test(errorMessage) && errorMessage.length <= 250;
+        this.bookingError.set(explainable
+          ? errorMessage
+          : 'Chưa thể xác nhận khung giờ này. Hệ thống đang kiểm tra lại lịch trống; vui lòng chọn giờ khác hoặc thử lại.');
         window.requestAnimationFrame(() => {
-          window.scrollTo({ top: 200, behavior: "smooth" });
+          window.scrollTo({ top: 200, behavior: 'smooth' });
         });
       } else if (error?.status === 401 && !this.authService.isAuthenticated()) {
-        this.bookingError.set("Hệ thống tạm thời chưa nhận đặt lịch không cần tài khoản. Quý khách vui lòng thử lại sau hoặc liên hệ phòng khám.");
+        this.bookingError.set('Hệ thống tạm thời chưa nhận đặt lịch không cần tài khoản. Quý khách vui lòng thử lại sau hoặc liên hệ phòng khám.');
       } else {
-        this.bookingError.set(errorList ? `${rawErrorMsg} (${errorList})` : rawErrorMsg);
+        // Preserve non-slot errors instead of falsely saying staff are busy.
+        const genericConflict = error?.status === 409 && !errorCode
+          ? 'Yêu cầu đặt lịch chưa được máy chủ chấp nhận. Vui lòng thử lại hoặc liên hệ phòng khám.'
+          : errorMessage;
+        this.bookingError.set(errorList ? `${genericConflict} (${errorList})` : genericConflict);
       }
     } finally {
       this.bookingSubmitting.set(false);
