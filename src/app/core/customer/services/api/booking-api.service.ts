@@ -688,6 +688,7 @@ export class BookingApiService {
       serviceIds,
       slotStart,
       paymentMethod,
+      ...(bookingData.voucherCode ? {voucherCode: String(bookingData.voucherCode).trim().toUpperCase()} : {}),
     };
 
     if (bookingData.note) {
