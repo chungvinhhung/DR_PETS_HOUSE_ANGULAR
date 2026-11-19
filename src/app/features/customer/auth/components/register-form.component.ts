@@ -3,8 +3,6 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, signal } f
 import { AuthApiService } from '../../../../core/customer/services/api/auth-api.service';
 import { FieldComponent } from './field.component';
 import { PrimaryButtonComponent } from './primary-button.component';
-import { DividerComponent } from './divider.component';
-import { GoogleButtonComponent } from './google-button.component';
 import { reactSetter } from '../../../../shared/customer/utils/react-setter';
 import { VALIDATION_SCHEMAS, getFormErrors, submitValidatedForm } from './auth-modal.helpers';
 
@@ -25,7 +23,7 @@ const PASSWORD_LEVELS = [
 @Component({
   selector: 'form[app-register-form]',
   standalone: true,
-  imports: [FieldComponent, PrimaryButtonComponent, DividerComponent, GoogleButtonComponent],
+  imports: [FieldComponent, PrimaryButtonComponent],
   templateUrl: './register-form.component.html',
   styleUrl: './register-form.component.scss',
   host: {

@@ -75,18 +75,35 @@ export class CustomerLayoutComponent implements OnInit {
     this.authService.loginWithReturnUrl(params.get(RETURN_URL_PARAM) ?? '/');
   }
 
+  protected retryCustomerStylesheet(): void {
+    this.stylesReady.set(false);
+    this.document.getElementById(CUSTOMER_STYLESHEET_ID)?.remove();
+    this.loadCustomerStylesheet();
+  }
+
   private loadCustomerStylesheet(): void {
     const existing = this.document.getElementById(CUSTOMER_STYLESHEET_ID) as HTMLLinkElement | null;
     if (existing) {
-      this.stylesReady.set(true);
+      // A pre-existing link might still be loading or may have failed.
+      // Reuse its real load state rather than exposing unstyled Customer content.
+      if (existing.sheet) {
+        this.stylesReady.set(true);
+      } else {
+        existing.addEventListener('load', () => this.stylesReady.set(true), { once: true });
+        existing.addEventListener('error', () => this.stylesReady.set(false), { once: true });
+      }
       return;
     }
     const link = this.document.createElement('link');
     link.id = CUSTOMER_STYLESHEET_ID;
     link.rel = 'stylesheet';
-    link.href = 'customer.css';
+    // Root-relative so direct entry on /blog/cong-dong or any nested route
+    // never requests /blog/customer.css.
+    // The production build publishes a stable /customer.css alongside the
+    // content-hashed CSS bundle (see scripts/publish-customer-styles.mjs).
+    link.href = '/customer.css';
     link.onload = () => this.stylesReady.set(true);
-    link.onerror = () => this.stylesReady.set(true);
+    link.onerror = () => this.stylesReady.set(false);
     this.document.head.appendChild(link);
   }
 }

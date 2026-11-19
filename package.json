@@ -5,7 +5,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build && node scripts/publish-customer-styles.mjs",
     "watch": "ng build --watch --configuration development",
     "start:admin": "ng serve --port 3001",
     "start:admin:local-be": "ng serve --port 3001 --configuration local-backend",
