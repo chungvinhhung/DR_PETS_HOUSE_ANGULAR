@@ -231,10 +231,15 @@ export class AdminAppointmentDetailComponent {
     return state === 'ARRIVED' ? 'Đã đến' : state ? 'Chưa check-in' : 'Chưa có dữ liệu';
   }
   paymentStatusLabel(value:string):string{
-    const key=value.toUpperCase();
+    // Display-only translation. Never alter the BE payment status or amount.
+    const key=value.trim().toUpperCase();
     if(['PAID','COMPLETED','SETTLED'].includes(key))return 'Đã thanh toán';
     if(['PARTIAL','PARTIALLY_PAID'].includes(key))return 'Đã thanh toán một phần';
+    if(['UNPAID','NOT_PAID'].includes(key))return 'Chưa thanh toán';
     if(['PENDING','PENDING_PAYMENT'].includes(key))return 'Đang chờ thanh toán';
+    if(key==='FAILED')return 'Thanh toán thất bại';
+    if(key==='REFUNDED')return 'Đã hoàn tiền';
+    if(key==='CANCELLED' || key==='CANCELED')return 'Đã hủy thanh toán';
     return value||'Chưa xác định';
   }
   historyLabel(value:string):string{
