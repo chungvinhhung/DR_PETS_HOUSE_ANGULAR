@@ -27,6 +27,7 @@ const PASSWORD_LEVELS = [
   standalone: true,
   imports: [FieldComponent, PrimaryButtonComponent, DividerComponent, GoogleButtonComponent],
   templateUrl: './register-form.component.html',
+  styleUrl: './register-form.component.scss',
   host: {
     'novalidate': '',
     'class': 'flex flex-col gap-4',
@@ -100,11 +101,13 @@ export class RegisterFormComponent {
     this.submitting.set(true);
     this.submitError.set("");
     try {
-      const data = await this.authApi.register({
+      const data: any = await this.authApi.register({
         fullName: this.form().name.trim(),
         phone: this.form().phone.trim(),
         email: this.form().email.trim(),
         password: this.form().password,
+        confirmPassword: this.form().confirmPassword || this.form().password,
+        acceptTerms: true,
       });
       this.updateUserProfile()({
         fullName: this.form().name,
@@ -125,6 +128,15 @@ export class RegisterFormComponent {
           },
         );
         return;
+      }
+      if (this.setForm()) {
+        this.setForm()((prev: any) => ({
+          ...prev,
+          debugOtp: data?.debugOtp || '',
+          brandName: data?.brandName || 'DRPETSHOUSE',
+          channels: data?.channels || ['SMS_BRANDNAME', 'EMAIL'],
+          sentTo: data?.sentTo,
+        }));
       }
       this.changeScreen()("registerOtp");
     } catch (error: any) {

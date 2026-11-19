@@ -1,0 +1,81 @@
+@let o = order();
+<header class="guest-detail__header">
+  <div>
+    <p class="guest-detail__eyebrow">Đơn hàng</p>
+    <h1 class="guest-detail__code">#{{ o.code || o._id }}</h1>
+    @if (o.createdAt) {
+      <p class="guest-detail__muted">Đặt lúc {{ formatDateTime(o.createdAt) }}</p>
+    }
+  </div>
+  <span [class]="'guest-detail__status ' + statusTone(o.status)">{{ labelOf(ORDER_STATUS_LABELS, o.status) }}</span>
+</header>
+
+<section class="guest-detail__section">
+  <h2 class="guest-detail__section-title">Sản phẩm</h2>
+  @for (item of o.items ?? []; track $index) {
+    <div class="guest-detail__line">
+      @if (item.image || item.photoUrl) {
+        <img [src]="item.image || item.photoUrl" alt="" class="guest-detail__thumb" />
+      }
+      <div class="min-w-0 flex-1">
+        <p class="font-medium text-[#060b16]">{{ item.nameSnapshot || 'Sản phẩm' }}</p>
+        @if (item.skuSnapshot) {
+          <p class="guest-detail__muted">Phân loại: {{ item.skuSnapshot }}</p>
+        }
+        <p class="guest-detail__muted">
+          @if (item.unitPrice != null) { {{ formatVnd(item.unitPrice) }} } × {{ item.quantity ?? 0 }}
+        </p>
+      </div>
+      @if (item.lineNet != null || item.lineSubtotal != null) {
+        <span class="font-semibold text-[#06105a]">{{ formatVnd(item.lineNet ?? item.lineSubtotal) }}</span>
+      }
+    </div>
+  } @empty {
+    <p class="guest-detail__muted">Không có thông tin sản phẩm.</p>
+  }
+</section>
+
+<div class="guest-detail__grid">
+  @if (o.shippingAddress) {
+    <section class="guest-detail__section">
+      <h2 class="guest-detail__section-title">Giao nhận</h2>
+      @if (recipient()) {
+        <div class="guest-detail__row"><span>Người nhận</span><span>{{ recipient() }}</span></div>
+      }
+      @if (o.shippingAddress.phone) {
+        <div class="guest-detail__row"><span>Số điện thoại</span><span>{{ o.shippingAddress.phone }}</span></div>
+      }
+      @if (address()) {
+        <div class="guest-detail__row"><span>Địa chỉ</span><span>{{ address() }}</span></div>
+      }
+      @if (o.deliveredAt) {
+        <div class="guest-detail__row"><span>Đã giao lúc</span><span>{{ formatDateTime(o.deliveredAt) }}</span></div>
+      }
+    </section>
+  }
+
+  <section class="guest-detail__section">
+    <h2 class="guest-detail__section-title">Thanh toán</h2>
+    @if (o.paymentMethod) {
+      <div class="guest-detail__row"><span>Phương thức</span><span>{{ labelOf(PAYMENT_METHOD_LABELS, o.paymentMethod) }}</span></div>
+    }
+    @if (o.payment?.status) {
+      <div class="guest-detail__row"><span>Trạng thái</span><span>{{ labelOf(PAYMENT_STATUS_LABELS, o.payment!.status) }}</span></div>
+    }
+    @if (o.pricing?.merchandiseSubtotal != null) {
+      <div class="guest-detail__row"><span>Tạm tính</span><span>{{ formatVnd(o.pricing!.merchandiseSubtotal) }}</span></div>
+    }
+    @if (o.pricing?.voucherDiscount) {
+      <div class="guest-detail__row">
+        <span>Giảm giá{{ o.voucher?.code ? ' (' + o.voucher!.code + ')' : '' }}</span>
+        <span>-{{ formatVnd(o.pricing!.voucherDiscount) }}</span>
+      </div>
+    }
+    @if (o.pricing?.shippingFee != null) {
+      <div class="guest-detail__row"><span>Phí vận chuyển</span><span>{{ formatVnd(o.pricing!.shippingFee) }}</span></div>
+    }
+    @if (o.pricing?.totalAmount != null) {
+      <div class="guest-detail__total"><span>Tổng cộng</span><span>{{ formatVnd(o.pricing!.totalAmount) }}</span></div>
+    }
+  </section>
+</div>

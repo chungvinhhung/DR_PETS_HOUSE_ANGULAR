@@ -21,6 +21,7 @@ const uploadIcon = '/assets/customer/icons/upload-icon.png';
   standalone: true,
   imports: [NgTemplateOutlet, MedicalRecordCardComponent, SelectValueDirective, ReactStyleDirective, CustomerLinkDirective],
   templateUrl: './pet-form-page.component.html',
+  styleUrl: './pet-form-page.component.scss',
   host: {
     'class': 'max-w-4xl mx-auto pb-10 pt-6 px-4 font-sans',
   },
@@ -162,7 +163,9 @@ export class PetFormPageComponent {
               (currentPet.name && (petImages as any)[currentPet.name]) ||
               null,
             );
-            const apiRecords = recordsResult?.status === "fulfilled" ? recordsResult.value || [] : [];
+            const apiRecords = recordsResult?.status === "fulfilled" && Array.isArray(recordsResult.value) && recordsResult.value.length > 0
+              ? recordsResult.value
+              : (Array.isArray(currentPet.medicalRecords) ? currentPet.medicalRecords : []);
             this.medicalRecords.set(apiRecords);
             this.originalMedicalRecordIds.set(apiRecords.map((record: any) => String(record.id)));
             return;
@@ -191,9 +194,21 @@ export class PetFormPageComponent {
     }
   }
 
-  protected goBackToPetList() {
-    this.navService.navigate("/thu-cung-cua-toi");
+    protected goBackToPetList() {
+    if (this.isEdit()) {
+      const currentPet = this.pet();
+      const targetSlug = currentPet
+        ? toPetSlug(currentPet)
+        : String(this.navService.params()['id'] || '');
+
+      if (targetSlug) {
+        this.navService.navigate(`/thu-cung-cua-toi/${targetSlug}`);
+        return;
+      }
+    }
+    this.navService.navigate('/thu-cung-cua-toi');
   }
+
 
   protected handleLeaveForm(event: any) {
     event?.preventDefault();
@@ -318,8 +333,12 @@ export class PetFormPageComponent {
         this.onSaved.emit(savedPetForParent);
         return;
       }
+        if (this.isEdit()) {
+            this.navService.navigate(`/thu-cung-cua-toi/${toPetSlug(savedPetForParent)}`);
+            return;
+          }
 
-      this.navService.navigate("/thu-cung-cua-toi");
+      this.navService.navigate('/thu-cung-cua-toi');
     } catch (error: any) {
       this.formError.set(error?.message || "Không thể lưu hồ sơ. Vui lòng thử lại.");
     } finally {

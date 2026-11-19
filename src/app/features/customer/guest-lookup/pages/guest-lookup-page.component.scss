@@ -1,0 +1,119 @@
+.guest-lookup {
+  @apply flex min-h-[calc(100vh-88px)] justify-center bg-[#f5f9fc] px-4 py-10 font-['Roboto'] sm:py-16;
+}
+
+.guest-lookup__card {
+  @apply flex h-fit w-full max-w-[520px] flex-col gap-4 rounded-[16px] border border-[#e3edf2] bg-white px-5 py-8 shadow-[0_12px_40px_rgba(6,16,90,0.08)] sm:px-10;
+}
+
+.guest-lookup__panel {
+  @apply flex h-fit w-full max-w-[960px] flex-col gap-5 rounded-[16px] border border-[#e3edf2] bg-white px-4 py-6 shadow-[0_12px_40px_rgba(6,16,90,0.08)] sm:px-8 sm:py-8;
+}
+
+.guest-lookup__badge {
+  @apply mx-auto flex size-12 items-center justify-center rounded-full bg-[#fff9c4] text-[#06105a];
+}
+
+.guest-lookup__title {
+  @apply text-center text-[24px] font-bold leading-tight text-[#06105a] sm:text-[28px];
+}
+
+.guest-lookup__lead {
+  @apply text-center text-[15px] leading-relaxed text-[#4f5359];
+}
+
+.guest-lookup__subtle {
+  @apply text-sm text-[#7e8085];
+}
+
+.guest-lookup__form {
+  @apply flex flex-col gap-5;
+}
+
+.guest-lookup__notice {
+  @apply flex items-start gap-2 rounded-lg bg-[#fff4e5] px-3 py-2 text-sm text-[#8a4b00];
+}
+
+.guest-lookup__info {
+  @apply rounded-lg bg-[#e8f5e9] px-3 py-2 text-center text-sm text-[#137333];
+}
+
+.guest-lookup__debug {
+  @apply rounded-lg border border-dashed border-[#90caf9] bg-[#f3f9ff] px-3 py-2 text-center text-sm text-[#0d47a1];
+}
+
+.guest-lookup__timer {
+  @apply text-center text-sm text-[#4f5359];
+}
+
+.guest-lookup__hints {
+  @apply mt-2 flex flex-col gap-2 border-t border-[#eef2f4] pt-4 text-[13px] text-[#7e8085];
+
+  li {
+    @apply flex items-start gap-2;
+  }
+}
+
+.guest-lookup__panel-header {
+  @apply flex flex-col gap-3 border-b border-[#eef2f4] pb-4 sm:flex-row sm:items-end sm:justify-between;
+}
+
+.guest-lookup__ghost-btn {
+  @apply rounded-full border border-[#c6dce3] px-4 py-1.5 text-sm font-medium text-[#06105a] transition hover:border-[#0d47a1] hover:bg-[#f3f9ff] disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.guest-lookup__tabs {
+  @apply flex flex-wrap gap-2;
+}
+
+.guest-lookup__tab {
+  @apply flex items-center gap-2 rounded-full border border-[#e3edf2] px-4 py-1.5 text-sm font-medium text-[#4f5359] transition hover:border-[#0d47a1];
+}
+
+.guest-lookup__tab--active {
+  @apply border-[#06105a] bg-[#06105a] text-white hover:border-[#06105a];
+}
+
+.guest-lookup__tab-count {
+  @apply rounded-full bg-black/10 px-2 text-xs;
+}
+
+.guest-lookup__state {
+  @apply flex flex-col items-center gap-3 py-12 text-center text-[15px] text-[#4f5359];
+}
+
+.guest-lookup__list {
+  @apply flex flex-col gap-3;
+}
+
+.guest-lookup__item {
+  @apply flex flex-col gap-3 rounded-xl border border-[#e3edf2] p-4 transition hover:border-[#90caf9] sm:flex-row sm:items-center;
+}
+
+.guest-lookup__item-icon {
+  @apply hidden size-10 shrink-0 items-center justify-center rounded-full bg-[#f3f9ff] text-[#0d47a1] sm:flex;
+}
+
+.guest-lookup__item-type {
+  @apply text-xs font-semibold uppercase tracking-wide text-[#7e8085];
+}
+
+.guest-lookup__item-code {
+  @apply font-semibold text-[#06105a];
+}
+
+.guest-lookup__item-title {
+  @apply mt-1 truncate text-[15px] font-medium text-[#060b16];
+}
+
+.guest-lookup__status {
+  @apply rounded-full px-2.5 py-0.5 text-xs font-semibold;
+}
+
+.guest-lookup__detail-btn {
+  @apply flex shrink-0 items-center justify-center gap-1 rounded-full border border-[#06105a] px-4 py-1.5 text-sm font-medium text-[#06105a] transition hover:bg-[#06105a] hover:text-white;
+}
+
+.guest-lookup__back {
+  @apply flex w-fit items-center gap-2 text-sm font-medium text-[#0d47a1] hover:underline;
+}

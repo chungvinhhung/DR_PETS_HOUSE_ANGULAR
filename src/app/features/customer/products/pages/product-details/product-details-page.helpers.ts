@@ -34,13 +34,45 @@ export function formatPrice(value: any) {
   return formatVnd(value);
 }
 
-export function formatReviewTime(createdAt: any) {
-  if (!createdAt) return "";
-  return new Intl.RelativeTimeFormat("vi", { numeric: "auto" }).format(
-    Math.round((Number(new Date(createdAt).getTime()) - Number(Date.now())) / 60000),
-    "minute",
-  );
+export function formatReviewTime(createdAt: any): string {
+  if (!createdAt) return '';
+
+  let timestamp: number;
+  if (typeof createdAt === 'number') {
+    timestamp = createdAt < 1e11 ? createdAt * 1000 : createdAt;
+  } else if (typeof createdAt === 'string') {
+    if (/^\d+$/.test(createdAt.trim())) {
+      const num = Number(createdAt.trim());
+      timestamp = num < 1e11 ? num * 1000 : num;
+    } else {
+      timestamp = new Date(createdAt).getTime();
+    }
+  } else if (createdAt instanceof Date) {
+    timestamp = createdAt.getTime();
+  } else {
+    return String(createdAt);
+  }
+
+  if (isNaN(timestamp) || timestamp <= 0) return String(createdAt);
+
+  const now = Date.now();
+  const diffMs = now - timestamp;
+  if (diffMs < 0) return 'Vừa xong';
+
+  const diffMinutes = Math.floor(diffMs / 60000);
+  if (diffMinutes < 1) return 'Vừa xong';
+  if (diffMinutes < 60) return `${diffMinutes} phút trước`;
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours} giờ trước`;
+
+  const dateObj = new Date(timestamp);
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const year = dateObj.getFullYear();
+  return `${day}/${month}/${year}`;
 }
+
 
 export function normalizeReviewsData(response: any) {
   const metadataSource = response?.data && !Array.isArray(response.data) ? response.data : response;

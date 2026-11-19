@@ -6,6 +6,7 @@ import { SearchAssetIconComponent } from './search-asset-icon.component';
 import { CustomerIconComponent } from '../../../../shared/customer/components/icon/customer-icon.component';
 import { navbarImages } from '../../../../shared/customer/assets/navbar-images';
 import { getSearchSuggestions as getMockSearchSuggestions } from '../../../../shared/customer/data/search-results-data';
+import { buildSearchPath } from '../../../../shared/customer/utils/slug';
 import { formatVnd } from '../../../../shared/customer/utils/currency';
 import { SEARCH_DEBOUNCE_MS, EMPTY_SUGGESTIONS } from './mobile-nav-bar.helpers';
 
@@ -17,6 +18,7 @@ import { SEARCH_DEBOUNCE_MS, EMPTY_SUGGESTIONS } from './mobile-nav-bar.helpers'
   standalone: true,
   imports: [SearchAssetIconComponent, CustomerIconComponent],
   templateUrl: './mobile-search-panel.component.html',
+  styleUrl: './mobile-search-panel.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -52,14 +54,11 @@ export class MobileSearchPanelComponent {
       this.open();
       const cleanup = untracked(() => {
         if (!this.open()) return undefined;
+        // Tải sẵn chỉ mục sản phẩm (tìm trong mô tả) ngay khi mở khung tìm kiếm
+        this.searchApi.warmUpIndex();
         this.searchApi.getSearchSuggestionsApi("tắm")
           .then((apiSuggestions: any) => {
-            const fallback = getMockSearchSuggestions("tắm");
-            this.defaultSuggestions.set({
-              ...apiSuggestions,
-              products: fallback.products,
-              total: apiSuggestions.total || fallback.total,
-            });
+            this.defaultSuggestions.set(apiSuggestions);
           })
           .catch(() => this.defaultSuggestions.set(getMockSearchSuggestions("tắm")));
 
@@ -88,12 +87,7 @@ export class MobileSearchPanelComponent {
         const timer = window.setTimeout(() => {
           this.searchApi.getSearchSuggestionsApi(this.query())
             .then((apiSuggestions: any) => {
-              const fallback = getMockSearchSuggestions(this.query());
-              this.suggestions.set({
-                ...apiSuggestions,
-                products: fallback.products,
-                total: apiSuggestions.total || fallback.total,
-              });
+                this.suggestions.set(apiSuggestions);
             })
             .catch(() => {
               this.suggestions.set(getMockSearchSuggestions(this.query()));
@@ -113,7 +107,7 @@ export class MobileSearchPanelComponent {
   protected searchByKeyword(keyword: any) {
     const nextQuery = keyword.trim();
     this.onClose.emit(undefined);
-    this.navService.navigate(nextQuery ? `/search?q=${encodeURIComponent(nextQuery)}` : "/search");
+    this.navService.navigate(buildSearchPath(nextQuery), { state: { searchQuery: nextQuery } });
   }
 
   protected handle1(event: any) {

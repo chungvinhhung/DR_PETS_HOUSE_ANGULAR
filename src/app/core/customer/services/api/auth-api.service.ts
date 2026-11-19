@@ -83,13 +83,16 @@ export class AuthApiService {
     }
   }
 
-  async register({ fullName, phone, email, password }: any) {
+  async register({ fullName, phone, email, password, confirmPassword }: any) {
     try {
+      const cleanPhone = String(phone || '').replace(/\s+/g, '');
       const payload: any = {
-        fullName: fullName || '',
-        phone: phone || undefined,
-        email: email || undefined,
+        fullName: String(fullName || '').trim(),
+        phone: cleanPhone || undefined,
+        email: email ? String(email).trim().toLowerCase() : undefined,
         password: password,
+        confirmPassword: confirmPassword || password,
+        acceptTerms: true,
       };
       const response = await this.http.post("/auth/register", payload);
       return assertSuccess(response);
@@ -104,6 +107,39 @@ export class AuthApiService {
   async refreshToken() {
     const response = await this.http.post("/auth/refresh-token");
     return assertSuccess(response);
+  }
+
+  async loginWithGoogle(data: any = {}) {
+    const credential = data.credential || data.idToken || data.token;
+    if (!credential) throw new Error('Không nhận được thông tin xác thực Google.');
+    const payload = {
+      ...data,
+      credential,
+      email: data.email || '',
+      fullName: data.fullName || data.name || '',
+      picture: data.picture || data.avatar || null,
+    };
+    const response: any = await this.http.post("/auth/google", payload);
+    const result = assertSuccess(response);
+    const user = result?.user || result;
+    const token = result?.accessToken || result?.access_token || result?.token;
+    return {
+      accessToken: token,
+      access_token: token,
+      token,
+      user: user
+        ? {
+            user_id: user.id || user.user_id,
+            full_name: user.fullName || user.full_name,
+            email: user.email || '',
+            phone: user.phone || '',
+            role_code: user.systemRole || user.role_code || 'CUSTOMER',
+            customerId: user.customerId || user.id,
+            fullName: user.fullName || user.full_name,
+            userId: user.id || user.user_id,
+          }
+        : null,
+    };
   }
 
   async requestGuestOtp(phone: string) {
@@ -127,30 +163,57 @@ export class AuthApiService {
   }
 
   async verifyRegisterOtp({ loginId, otpCode }: any) {
+    const cleanId = String(loginId || '').trim();
     const response = await this.http.post("/verify-register-otp", {
-      login_id: loginId,
+      identifier: cleanId,
+      login_id: cleanId,
+      loginId: cleanId,
       otp_code: otpCode,
+      otpCode: otpCode,
+      purpose: 'REGISTER',
     });
     return assertSuccess(response);
   }
 
-  async forgotPassword(email: any) {
-    const response = await this.http.post("/forgot-password", { email });
+  async forgotPassword(account: any) {
+    const cleanAccount = String(account || '').trim();
+    const response = await this.http.post("/auth/forgot-password", {
+      identifier: cleanAccount,
+      email: cleanAccount.includes('@') ? cleanAccount : undefined,
+      phone: !cleanAccount.includes('@') ? cleanAccount : undefined,
+    });
     return assertSuccess(response);
   }
 
-  async verifyForgotOtp({ email, otpCode }: any) {
-    const response = await this.http.post("/verify-otp", {
-      email,
+  async resendOtp(account: any, purpose: string = 'FORGOT_PASSWORD') {
+    const cleanAccount = String(account || '').trim();
+    const response = await this.http.post("/auth/resend-otp", {
+      identifier: cleanAccount,
+      purpose,
+    });
+    return assertSuccess(response);
+  }
+
+  async verifyForgotOtp({ email, account, otpCode }: any) {
+    const target = String(account || email || '').trim();
+    const response = await this.http.post("/auth/verify-otp", {
+      identifier: target,
+      email: target.includes('@') ? target : undefined,
+      phone: !target.includes('@') ? target : undefined,
+      otpCode,
       otp_code: otpCode,
+      purpose: 'FORGOT_PASSWORD',
     });
     return assertSuccess(response);
   }
 
   async resetPassword({ resetToken, newPassword }: any) {
-    const response = await this.http.post("/reset-password", {
+    const response = await this.http.post("/auth/reset-password", {
+      resetToken,
       reset_token: resetToken,
+      newPassword,
       new_password: newPassword,
+      confirmPassword: newPassword,
     });
     return assertSuccess(response);
   }

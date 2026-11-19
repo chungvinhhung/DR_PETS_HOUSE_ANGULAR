@@ -1,0 +1,35 @@
+.recovery-panel__dr-pet-s-house {
+  @apply absolute left-[13px] top-[3px] z-10 h-[56px] w-[101px] object-contain md:left-5 md:top-5 md:h-[78px] md:w-auto;
+}
+
+.recovery-panel__row {
+  @apply relative z-10 flex h-[244px] w-[232px] shrink-0 items-center justify-center md:w-1/2 md:pr-7 md:pt-10;
+}
+
+.recovery-panel__search-dog {
+  @apply h-[206px] w-[232px] rounded-full bg-white object-cover shadow-lg md:h-[350px] md:w-[380px];
+}
+
+.recovery-panel__section {
+  @apply relative z-10 mx-auto w-full max-w-[420px] pb-[15px];
+}
+
+.recovery-panel__content {
+  @apply mb-[-8px] text-[20px] font-extrabold leading-9 tracking-[-0.75px] text-[#060b16] md:mb-0 md:text-[30px];
+}
+
+.recovery-panel__content-2 {
+  @apply mb-[23.5px] text-[12px] leading-[26px] text-[#4f5359] md:mb-6 md:mt-2 md:text-[16px];
+}
+
+.recovery-panel__form {
+  @apply flex flex-col gap-[23.5px];
+}
+
+.recovery-panel__submit-error {
+  @apply rounded bg-red-50 px-3 py-2 text-sm text-[#c62828];
+}
+
+.recovery-panel__stack {
+  @apply flex flex-col gap-4;
+}

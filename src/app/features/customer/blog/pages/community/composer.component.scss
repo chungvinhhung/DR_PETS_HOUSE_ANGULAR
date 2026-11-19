@@ -1,0 +1,39 @@
+.composer__layer {
+  @apply absolute right-0 top-0 h-24 w-24 rounded-bl-[34px] rounded-br-[62px] rounded-tl-[58px] rounded-tr-[20px] bg-[#FDD835];
+}
+
+.composer__row {
+  @apply relative flex gap-3 sm:gap-6;
+}
+
+.composer__community-author {
+  @apply h-14 w-14 shrink-0 rounded-full border-2 border-white object-cover shadow;
+}
+
+.composer__box {
+  @apply flex-1;
+}
+
+.composer__textarea {
+  @apply h-[80px] w-full resize-none rounded-[24px] border border-white/80 bg-white/60 px-6 py-4 outline-none;
+}
+
+.composer__row-2 {
+  @apply mt-2 inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-1 text-sm text-[#005AB4];
+}
+
+.composer__row-3 {
+  @apply relative mt-6 flex flex-wrap items-center justify-between gap-3;
+}
+
+.composer__row-4 {
+  @apply flex flex-wrap gap-2 sm:gap-4;
+}
+
+.composer__box-2 {
+  @apply relative;
+}
+
+.composer__layer-2 {
+  @apply absolute;
+}

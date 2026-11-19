@@ -2,23 +2,24 @@
   role="dialog"
   aria-modal="true"
   [attr.aria-label]="title()"
-  class="max-h-[calc(100vh-32px)] w-full max-w-[737px] overflow-y-auto bg-white p-6 shadow-[0_20px_60px_rgba(6,16,90,0.18)]"
+  class="address-modal"
 >
-  <div class="rounded-lg bg-white p-[10px]">
-    <header class="mb-[10px] flex h-[37px] items-center gap-2">
+  <div class="address-modal__panel">
+    <header class="address-modal__header">
       <app-customer-icon name="map-pin" className="h-5 w-4 shrink-0 text-[#00355f]" [strokeWidth]="2" />
-      <h2 class="flex-1 text-[20px] font-bold leading-8 tracking-[0.15px] text-[#00355f]">{{ title() }}</h2>
+      <h2 class="address-modal__title">{{ title() }}</h2>
       <button
         type="button"
         (click)="onClose.emit($event)"
         aria-label="Đóng"
-        class="btn-icon-subtle flex size-[30px] items-center justify-center text-[#727780]"
+        class="btn-icon-subtle address-modal__close"
       >
         <app-customer-icon name="x" className="size-[18px]" [strokeWidth]="1.6" />
       </button>
     </header>
-    <form novalidate (submit)="handleSubmit($any($event))" class="flex flex-col items-center gap-[10px]">
-      <div class="grid w-full gap-x-[46px] gap-y-[10px] sm:grid-cols-2">
+    <form novalidate (submit)="handleSubmit($any($event))" class="address-modal__form">
+      <div class="address-modal__fields">
+        <!-- Dòng 1: Họ tên & Số điện thoại (mỗi ô 1 cột) -->
         <label
           app-address-form-field
           [label]="'Họ tên'"
@@ -39,6 +40,9 @@
           [value]="form().phone"
           (onChange)="updateField('phone', $any($event).target.value)"
         ></label>
+
+
+        <!-- Dòng 2: Email dài hết chiều ngang (2 cột) -->
         <label
           app-address-form-field
           [label]="'Email'"
@@ -46,16 +50,36 @@
           [autoComplete]="'email'"
           [value]="form().email"
           (onChange)="updateField('email', $any($event).target.value)"
+          [className]="'sm:col-span-2'"
+        ></label>
+
+
+        <!-- Dòng 3: Tỉnh/Thành phố & Phường/Xã cùng một dòng -->
+        <label
+          app-address-form-field
+          [label]="'Tỉnh/Thành phố'"
+          [required]="true"
+          [autoComplete]="'address-level1'"
+          [showError]="validationAttempted()"
+          [value]="form().city"
+          [options]="vietnamProvinces()"
+          [listId]="'vietnam-provinces-list'"
+          (onChange)="updateField('city', $any($event).target.value)"
         ></label>
         <label
           app-address-form-field
-          [label]="'Quốc gia'"
+          [label]="'Phường / Xã'"
           [required]="true"
-          [autoComplete]="'country-name'"
+          [autoComplete]="'address-level3'"
           [showError]="validationAttempted()"
-          [value]="form().country"
-          (onChange)="updateField('country', $any($event).target.value)"
+          [value]="form().ward"
+          [options]="wardOptions()"
+          [listId]="'vietnam-wards-list'"
+          (onChange)="updateField('ward', $any($event).target.value)"
         ></label>
+
+
+        <!-- Dòng 4: Địa chỉ cụ thể dài 1 dòng (2 cột) -->
         <label
           app-address-form-field
           [label]="'Địa chỉ cụ thể'"
@@ -66,23 +90,55 @@
           (onChange)="updateField('address', $any($event).target.value)"
           [className]="'sm:col-span-2'"
         ></label>
+
+
+        <!-- Dòng 5: Chọn loại địa chỉ & Ghi chú cùng một dòng -->
+        <div class="flex flex-col justify-between">
+          <span style="display: block; margin-bottom: 8px; font-weight: 500;">
+            Loại địa chỉ
+          </span>
+          <div style="display: flex; gap: 12px; height: 42px;">
+            <button
+              type="button"
+              (click)="updateField('addressType', 'HOME')"
+              [style.border-color]="form().addressType === 'HOME' ? '#facc15' : '#d1d5db'"
+              [style.background-color]="form().addressType === 'HOME' ? '#fefce8' : '#ffffff'"
+              style="flex: 1; padding: 8px 12px; border: 1px solid; border-radius: 6px; cursor: pointer; font-weight: 500;"
+            >
+              Nhà riêng
+            </button>
+
+
+            <button
+              type="button"
+              (click)="updateField('addressType', 'OFFICE')"
+              [style.border-color]="form().addressType === 'OFFICE' ? '#facc15' : '#d1d5db'"
+              [style.background-color]="form().addressType === 'OFFICE' ? '#fefce8' : '#ffffff'"
+              style="flex: 1; padding: 8px 12px; border: 1px solid; border-radius: 6px; cursor: pointer; font-weight: 500;"
+            >
+              Văn phòng
+            </button>
+          </div>
+        </div>
+
+
         <label
           app-address-form-field
-          [label]="'Tỉnh/Thành phố'"
-          [required]="true"
-          [autoComplete]="'address-level1'"
-          [showError]="validationAttempted()"
-          [value]="form().city"
-          [options]="vietnamProvinces"
-          [listId]="'vietnam-provinces-list'"
-          (onChange)="updateField('city', $any($event).target.value)"
-          [className]="'sm:col-span-2'"
+          [label]="'Ghi chú cho bưu tá giao hàng'"
+          [required]="false"
+          [showError]="false"
+          [value]="form().note"
+          (onChange)="updateField('note', $any($event).target.value)"
         ></label>
       </div>
+     
       <button
         type="submit"
-        class="h-[33px] rounded-[4px] bg-[#fff176] px-[22px] text-[15px] font-medium uppercase leading-[26px] tracking-[0.46px] shadow-elevation hover:bg-[#fdd835]"
+        class="address-modal__submit"
       >Lưu</button>
     </form>
   </div>
 </section>
+
+
+

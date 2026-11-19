@@ -1,29 +1,81 @@
-<div class="flex h-14 justify-between gap-2">
+<!-- Thông tin Kênh Xác thực BrandName & Email -->
+<div class="rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50/80 to-slate-50 p-3 text-xs shadow-sm">
+  <div class="flex items-center justify-between border-b border-blue-200/60 pb-2 mb-2">
+    <div class="flex items-center gap-1.5 font-semibold text-blue-900">
+      <span class="inline-block size-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span>Kênh xác thực: SMS BrandName & Email</span>
+    </div>
+    <span class="rounded bg-blue-900 px-2 py-0.5 text-[10px] font-bold tracking-wider text-amber-300">
+      {{ brandName() }}
+    </span>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] text-slate-600">
+    @if (maskedPhone()) {
+      <div class="flex items-center gap-1.5">
+        <svg class="size-3.5 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+        <span>SMS BrandName: <strong class="text-slate-800">{{ maskedPhone() }}</strong></span>
+      </div>
+    }
+    @if (maskedEmail()) {
+      <div class="flex items-center gap-1.5">
+        <svg class="size-3.5 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+        <span>Email OTP: <strong class="text-slate-800">{{ maskedEmail() }}</strong></span>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Nhập 6 chữ số OTP -->
+<div class="otp-form__row mt-2">
   @for (digit of otp(); track $index; let index = $index) {
     <input
+      #otpInput
       [value]="digit ?? ''"
       (input)="updateOtp(index, $any($event).target.value)"
       (keydown)="handle2($any($event), digit, index)"
       inputmode="numeric"
+      maxlength="1"
       [attr.aria-label]="`Số OTP thứ ${index + 1}`"
-      class="h-14 min-w-0 max-w-14 flex-1 rounded-xl border border-[#C6DCE3] bg-[#FAFEFF] text-center text-xl font-bold outline-none transition focus:border-[#0D47A1] focus:ring-1 focus:ring-[#0D47A1]"
+      class="otp-form__th"
     />
   }
 </div>
+
 @if (submitError()) {
-  <p class="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{{ submitError() }}</p>
+  <p class="otp-form__submit-error">{{ submitError() }}</p>
 }
-<button app-primary-button [disabled]="!complete() || submitting()">
+
+<button app-primary-button [disabled]="!complete() || submitting()" class="w-full mt-1">
   @if (submitting()) {
     ĐANG XÁC NHẬN...
   } @else {
-    XÁC NHẬN
+    XÁC NHẬN MÃ OTP
   }
 </button>
-<p class="text-center text-sm text-[#4f5359]">Không nhận được mã? <button type="button" class="text-blue-900">Gửi lại mã</button></p>
-<button
-  type="button"
-  (click)="changeScreen()(previousScreen())"
-  class="flex items-center justify-center gap-2 text-sm text-[#7e8085]"
->
-  <app-customer-icon name="arrow-left" className="size-4" /> Quay lại</button>
+
+<p class="otp-form__khong-nhan-duoc-text">
+  Không nhận được mã?
+  <button
+    type="button"
+    class="text-blue-900 font-semibold hover:underline disabled:cursor-not-allowed disabled:text-[#7e8085] disabled:no-underline"
+    [disabled]="resendDisabled() || !canResendLocal()"
+    (click)="handleResend()"
+  >
+    {{ currentResendText() }}
+  </button>
+</p>
+
+@if (previousScreen() && changeScreen()) {
+  <button
+    type="button"
+    (click)="changeScreen()(previousScreen())"
+    class="flex items-center justify-center gap-2 text-sm text-[#7e8085] hover:text-slate-800 transition py-1"
+  >
+    <app-customer-icon name="arrow-left" className="size-4" /> Quay lại
+  </button>
+}

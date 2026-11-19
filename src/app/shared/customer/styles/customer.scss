@@ -3385,6 +3385,7 @@ html:has(.customer-root) {
    "square"; preserve the compact visual size from the original page. */
 .first-aid-layout-row--mixed {
   width: min(100%, 1020px);
+  margin-inline: auto;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
 }
 .first-aid-layout-row--mixed.first-aid-layout-row--square-first {
@@ -3392,6 +3393,7 @@ html:has(.customer-root) {
 }
 .first-aid-layout-row--single-square {
   width: min(100%, 1020px);
+  margin-inline: auto;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 .first-aid-layout-row .first-aid-card {
@@ -3425,6 +3427,29 @@ html:has(.customer-root) {
   height: 178px;
   flex-shrink: 0;
 }
+/* Compact companion keeps the original readable square proportions while its
+   action always fits inside the card instead of dropping below the border. */
+.first-aid-layout-row--mixed .first-aid-card--square .first-aid-card__layout > div:last-child {
+  padding: 18px 20px 16px;
+  justify-content: flex-start;
+  min-height: 0;
+}
+.first-aid-layout-row--mixed .first-aid-card--square h2 {
+  margin-top: 10px;
+  font-size: 20px;
+  line-height: 1.25;
+}
+.first-aid-layout-row--mixed .first-aid-card--square p:not(:first-child) {
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.first-aid-layout-row--mixed .first-aid-card--square .first-aid-card__layout > div:last-child > span {
+  margin-top: auto;
+  padding-top: 10px;
+  flex-shrink: 0;
+}
+
 @media (max-width: 900px) {
   .first-aid-layout-row .first-aid-card {
     height: 390px;

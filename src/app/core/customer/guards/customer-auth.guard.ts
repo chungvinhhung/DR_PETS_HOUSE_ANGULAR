@@ -1,13 +1,16 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 
-import { CustomerAuthService } from '../services/customer-auth.service';
+import { RETURN_URL_PARAM } from '../../utils/return-url';
+import { AUTH_MODAL_PARAM, CustomerAuthService } from '../services/customer-auth.service';
 
 /**
  * Bảo vệ các trang cần đăng nhập của khách hàng (thay cho routes/ProtectedRoute.jsx).
  *
- * Chưa đăng nhập -> mở popup đăng nhập; đăng nhập xong sẽ tự chuyển tới trang đã yêu cầu.
- * Nếu người dùng vào thẳng URL (lần điều hướng đầu tiên) thì đưa về trang chủ để popup có chỗ hiển thị.
+ * REDIRECT AFTER LOGIN / RETURN URL (Nhiệm vụ 13):
+ *  - Đang dùng app rồi bấm vào trang cần đăng nhập -> mở popup tại chỗ, đăng nhập xong tự chuyển tới trang đó.
+ *  - Vào thẳng URL (gõ địa chỉ, F5, link chia sẻ) -> chuyển về /?auth=login&returnUrl=<trang yêu cầu>.
+ *    Trang đích nằm trên URL nên F5 / mở tab mới vẫn không mất; CustomerLayout đọc 2 tham số này để mở popup.
  */
 export const customerAuthGuard: CanActivateFn = (_route, state) => {
   const auth = inject(CustomerAuthService);
@@ -15,6 +18,11 @@ export const customerAuthGuard: CanActivateFn = (_route, state) => {
 
   if (auth.isAuthenticated()) return true;
 
-  auth.requireAuth(() => void router.navigateByUrl(state.url));
-  return router.navigated ? false : router.createUrlTree(['/']);
+  if (router.navigated) {
+    auth.loginWithReturnUrl(state.url, { replaceUrl: false });
+    return false;
+  }
+  return router.createUrlTree(['/'], {
+    queryParams: { [AUTH_MODAL_PARAM]: 'login', [RETURN_URL_PARAM]: state.url },
+  });
 };
