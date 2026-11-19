@@ -45,15 +45,15 @@ import {
     </article>
     <article class="appointments__kpi" data-kpi-tone="warning">
       <span>Chờ thanh toán</span>
-      <strong class="appointments__kpi--blue">{{ loading() || error() ? '—' : kpis().pendingPayment }}</strong>
+      <strong class="appointments__kpi--blue">{{ loading() || error() || recentOnly() ? '—' : kpis().pendingPayment }}</strong>
     </article>
     <article class="appointments__kpi" data-kpi-tone="info">
       <span>Đang thực hiện</span>
-      <strong>{{ loading() || error() ? '—' : kpis().inProgress }}</strong>
+      <strong>{{ loading() || error() || recentOnly() ? '—' : kpis().inProgress }}</strong>
     </article>
     <article class="appointments__kpi" data-kpi-tone="success">
       <span>Hoàn tất</span>
-      <strong>{{ loading() || error() ? '—' : kpis().completed }}</strong>
+      <strong>{{ loading() || error() || recentOnly() ? '—' : kpis().completed }}</strong>
     </article>
   </section>
   <section class="panel filters web2-filterbar" aria-label="Bộ lọc lịch hẹn">
@@ -412,7 +412,7 @@ export class AdminAppointmentsPageComponent {
       if(filter.branchId)params=params.set('branchId',filter.branchId);
     }
     const version=++this.requestVersion;
-    this.loading.set(true);this.error.set('');
+    this.loading.set(true);this.error.set('');this.recentOnly.set(false);
     const baseRequest=this.api.get<unknown>('/appointments',{params}).pipe(
       map(raw=>({ok:true as const,raw})),
       catchError(error=>of({ok:false as const,error})),
