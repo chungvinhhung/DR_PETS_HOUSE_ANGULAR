@@ -190,8 +190,9 @@ export class AdminInventoryPageComponent implements OnInit {
   readonly pageNumbers = computed(() => adminPageWindowWithEdges(this.page(), this.totalPages()));
   readonly visibleCount = computed(() => this.tab() === 'stock' ? this.currentRows().length : this.currentHistory().length);
   readonly totalCount = computed(() => this.tab() === 'stock' ? this.stockFiltered().length : this.historyFiltered().length);
-  readonly currentHistoryTransactionCount = computed(() =>
-    new Set(this.currentHistory().map(row => row.groupKey)).size,
+  /** Total unique transactions across the entire filtered result, not page slice. */
+  readonly totalHistoryTransactionCount = computed(() =>
+    new Set(this.historyFiltered().map(row => row.groupKey)).size,
   );
   readonly currentQuantity = computed(() => this.modal() === 'receipt' ? this.receiptStock()?.quantity ?? 0 : this.activeItem()?.quantity ?? 0);
   readonly preview = computed(() => {

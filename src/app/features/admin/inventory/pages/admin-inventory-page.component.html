@@ -130,7 +130,7 @@
       @if (tab()==='stock') {
         <span>Đang hiển thị {{visibleCount()}} trên tổng số {{totalCount()}} sản phẩm</span>
       } @else {
-        <span>Hiển thị {{visibleCount()}} dòng biến động thuộc {{currentHistoryTransactionCount()}} giao dịch</span>
+        <span>Đang hiển thị {{visibleCount()}} trên tổng số {{totalCount()}} dòng biến động thuộc {{totalHistoryTransactionCount()}} giao dịch</span>
       }
       <nav class="pagination-buttons web2-admin-pagination-strip" aria-label="Phân trang danh sách kho">
         <button type="button" aria-label="Trang trước" (click)="setPage(page()-1)" [disabled]="page()===1">‹</button>

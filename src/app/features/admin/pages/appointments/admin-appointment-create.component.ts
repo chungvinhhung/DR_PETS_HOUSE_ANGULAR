@@ -42,7 +42,7 @@ interface PetDraft extends Omit<PetOption, 'id'> {
 interface AppointmentSlot {
   id: string;
   label: string;
-  status: 'AVAILABLE' | 'FULL' | 'BLOCKED';
+  status: 'AVAILABLE' | 'FULL' | 'BLOCKED' | 'UNAVAILABLE';
   available: boolean;
 }
 const PHONE = (value: string): string => {
@@ -151,10 +151,25 @@ export class AdminAppointmentCreateComponent {
   /** Services chosen together in the first booking field, ordered for sequential execution. */
   readonly selectedServiceIds = signal<string[]>([]);
   readonly servicePickerOpen = signal(false);
+  readonly serviceSearch = signal('');
   readonly selectedServiceLabel = computed(() => {
     const names = this.selectedServiceIds().map(id =>
       this.services().find(service => service.id === id)?.name || '').filter(Boolean);
     return names.length ? names.join(' · ') : 'Chọn dịch vụ';
+  });
+  readonly selectedServiceShortLabel = computed(() => {
+    const ids = this.selectedServiceIds();
+    if (!ids.length) return 'Chọn dịch vụ';
+    if (ids.length > 1) return ids.length + ' dịch vụ đã chọn';
+    return this.services().find(service => service.id === ids[0])?.name || 'Chọn dịch vụ';
+  });
+  readonly filteredPickerServices = computed(() => {
+    const search = this.serviceSearch().trim().toLocaleLowerCase('vi');
+    const services = this.services();
+    if (!search) return services;
+    return services.filter(service =>
+      [service.name, service.description, service.serviceCode].some(text =>
+        (text || '').toLocaleLowerCase('vi').includes(search)));
   });
   readonly hasAvailableSlots = computed(() => this.slots().some(slot => slot.available));
   readonly branchLoadState = signal<LoadState>('loading');
@@ -526,6 +541,7 @@ export class AdminAppointmentCreateComponent {
     this.serviceId.set('');
     this.selectedServiceIds.set([]);
     this.servicePickerOpen.set(false);
+    this.serviceSearch.set('');
     this.services.set([]);
     this.extraServices.set([]);
     this.assignedStaff.set({});
@@ -558,6 +574,7 @@ export class AdminAppointmentCreateComponent {
     event.stopPropagation();
     if (!this.branchId() || this.serviceLoadState() !== 'ready') return;
     this.servicePickerOpen.update(open => !open);
+    if (!this.servicePickerOpen()) this.serviceSearch.set('');
   }
 
   @HostListener('document:click', ['$event'])
@@ -568,7 +585,15 @@ export class AdminAppointmentCreateComponent {
   }
 
   @HostListener('document:keydown.escape')
-  onServicePickerEscape(): void { this.servicePickerOpen.set(false); }
+  onServicePickerEscape(): void {
+    this.servicePickerOpen.set(false);
+    this.serviceSearch.set('');
+  }
+
+  closeServicePicker(): void {
+    this.servicePickerOpen.set(false);
+    this.serviceSearch.set('');
+  }
 
   toggleSelectedService(id: string): void {
     const service = this.services().find(row => row.id === id);
@@ -661,7 +686,15 @@ export class AdminAppointmentCreateComponent {
               const rawStatus=textOf(raw['status']).trim().toUpperCase();
               if(!id||!start||!end)return null;
               const available=rawStatus==='AVAILABLE' && (raw['available'] === true || (Number.isFinite(remaining) && remaining>0));
-              const status:AppointmentSlot['status']=rawStatus==='BLOCKED'?'BLOCKED':available?'AVAILABLE':'FULL';
+              // BE currently maps both "all staff busy/off shift" and
+              // "capacity occupied" to FULL. Use actual occupancy counters
+              // to distinguish unavailable from genuinely fully booked.
+              const booked=Math.max(0,Number(raw['bookedCount'])||0);
+              const held=Math.max(0,Number(raw['heldCount'])||0);
+              const total=Math.max(0,Number(raw['totalCount'])||0);
+              const status:AppointmentSlot['status']=rawStatus==='BLOCKED'
+                ? 'BLOCKED' : available ? 'AVAILABLE'
+                : total>0 && booked+held>=total ? 'FULL' : 'UNAVAILABLE';
               // BE's "value" is the branch-local human-readable clock time.
               // Do not shift its UTC-labelled synthetic ISO timestamps by +07.
               const label=textOf(raw['value']).trim() || start+' - '+end;

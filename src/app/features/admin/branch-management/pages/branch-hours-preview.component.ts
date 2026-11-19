@@ -11,6 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, from, map, mergeMap, of } from 'rxjs';
 
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminStaffWeekNavComponent } from '../../staff/components/admin-staff-week-nav.component';
@@ -56,7 +57,7 @@ interface SlotRow {
           <button type="button" [class.branch-v2__day--active]="selectedDate() === day.iso"
             [attr.aria-pressed]="selectedDate() === day.iso" (click)="chooseDate(day.iso)">
             <span>{{ day.weekday }}</span><strong>{{ day.dayMonth }}</strong>
-            <small>{{ selectedDate() === day.iso && !loading() && !error() ? daySummary() : '—' }}</small>
+            <small [attr.title]="'Đã đặt / Tổng số chỗ ngày ' + day.dayMonth">{{ weekDaySummary(day.iso) }}</small>
           </button>
         }
       </div>
@@ -161,6 +162,11 @@ export class BranchHoursPreviewComponent implements OnInit, OnChanges {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly response = signal<BranchOperationSlotsResponse | null>(null);
+  /** Keep all seven day totals visible even before a day is selected. */
+  readonly weekSummaries = signal<Record<string, string>>({});
+  private weekSummaryRequest = 0;
+  private currentWeekKey = '';
+  private dayDetailRequest = 0;
 
   readonly weekDays = computed(() => {
     const selected = this.fromIso(this.selectedDate());
@@ -219,7 +225,7 @@ export class BranchHoursPreviewComponent implements OnInit, OnChanges {
     const rows = this.timeRows();
     const booked = rows.reduce((sum, row) => sum + row.booked, 0);
     const total = rows.reduce((sum, row) => sum + row.total, 0);
-    return total ? booked + ' / ' + total : '—';
+    return booked + ' / ' + total;
   });
 
   readonly selectedServiceRows = computed(() => {
@@ -242,25 +248,86 @@ export class BranchHoursPreviewComponent implements OnInit, OnChanges {
     });
   });
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.loadWeekSummaries();
+    this.load();
+  }
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['branchId'] && !changes['branchId'].firstChange) this.load();
+    if (changes['branchId'] && !changes['branchId'].firstChange) {
+      this.loadWeekSummaries();
+      this.load();
+    }
+  }
+
+  weekDaySummary(iso: string): string {
+    // A dash pair is reserved for an API failure. An empty/zero-capacity
+    // day that BE confirms successfully is displayed as 0 / 0.
+    return this.weekSummaries()[iso] ?? 'Đang tải…';
+  }
+
+  private summarizeDay(response: BranchOperationSlotsResponse): string {
+    let booked = 0;
+    let total = 0;
+    for (const entry of response.servicesAvailability ?? []) {
+      for (const slot of entry.slots ?? []) {
+        booked += Math.max(0, Number(slot.bookedCount) || 0);
+        total += Math.max(0, Number(slot.totalCount) || 0);
+      }
+    }
+    return booked + ' / ' + total;
+  }
+
+  /** Fetch the six other days just once per (branch, week).
+   * Concurrency is limited to two to avoid hammering the live BE.
+   */
+  private loadWeekSummaries(): void {
+    if (!this.branchId) return;
+    const days = this.weekDays().map(day => day.iso);
+    const key = this.branchId + ':' + days[0];
+    if (key === this.currentWeekKey) return;
+    this.currentWeekKey = key;
+    const request = ++this.weekSummaryRequest;
+    const branch = this.branchId;
+    const selected = this.selectedDate();
+    this.weekSummaries.set(Object.fromEntries(days.map(day => [day, 'Đang tải…'])));
+
+    from(days.filter(day => day !== selected)).pipe(
+      mergeMap(day => this.api.getOperationSlots(branch, day).pipe(
+        map(response => ({ day, label: this.summarizeDay(response) })),
+        catchError(() => of({ day, label: '— / —' })),
+      ), 2),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(({ day, label }) => {
+      if (request !== this.weekSummaryRequest || key !== this.currentWeekKey) return;
+      this.weekSummaries.update(previous => ({ ...previous, [day]: label }));
+    });
   }
 
   load(): void {
     if (!this.branchId) return;
+    const request = ++this.dayDetailRequest;
+    const branch = this.branchId;
+    const day = this.selectedDate();
     this.loading.set(true);
     this.error.set('');
     this.selectedSlot.set(null);
-    this.api.getOperationSlots(this.branchId, this.selectedDate())
+    this.api.getOperationSlots(branch, day)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: response => {
+          if (request !== this.dayDetailRequest ||
+              branch !== this.branchId || day !== this.selectedDate()) return;
           this.response.set(response);
+          this.weekSummaries.update(previous => ({
+            ...previous, [day]: this.summarizeDay(response),
+          }));
           this.loading.set(false);
         },
         error: () => {
+          if (request !== this.dayDetailRequest ||
+              branch !== this.branchId || day !== this.selectedDate()) return;
           this.response.set(null);
+          this.weekSummaries.update(previous => ({ ...previous, [day]: '— / —' }));
           this.loading.set(false);
           this.error.set('Không thể tải lịch hoạt động. Vui lòng thử lại.');
         },
@@ -318,6 +385,7 @@ export class BranchHoursPreviewComponent implements OnInit, OnChanges {
     const date = this.fromIso(iso);
     if (!Number.isFinite(date.getTime()) || this.toLocalIso(date) !== iso) return;
     this.selectedDate.set(iso);
+    this.loadWeekSummaries();
     this.load();
   }
   moveWeek(steps: number): void {
