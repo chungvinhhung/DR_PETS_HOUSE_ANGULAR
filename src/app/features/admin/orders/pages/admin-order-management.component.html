@@ -188,23 +188,29 @@
         </button>
       </nav>
 
+      @if (activeTab() === 'orders' && limitedOrderRange()) {
+        <div class="order-admin__limited-notice" role="status">
+          <span>Danh sách đầy đủ tạm thời chưa tải được. Đang hiển thị đơn hàng tạo trong {{limitedOrderRange()}}.</span>
+          <button type="button" (click)="refresh()">Tải lại toàn bộ</button>
+        </div>
+      }
       <section class="order-admin__kpis" [attr.aria-label]="activeTab() === 'orders' ? 'Chỉ số đơn hàng' : 'Chỉ số trả hàng và hoàn tiền'">
         @if (activeTab() === 'orders') {
           <div class="order-admin__kpi" data-kpi-tone="neutral">
             <span>Tổng đơn hàng</span>
-            <strong>{{ loading() || error() ? '—' : totalLoaded() }}</strong>
+            <strong>{{ loading() || error() || limitedOrderRange() ? '—' : totalLoaded() }}</strong>
           </div>
           <div class="order-admin__kpi" data-kpi-tone="warning">
             <span>Chờ xác nhận</span>
-            <strong class="order-admin__kpi-number--blue">{{ loading() || error() ? '—' : awaitingCount() }}</strong>
+            <strong class="order-admin__kpi-number--blue">{{ loading() || error() || limitedOrderRange() ? '—' : awaitingCount() }}</strong>
           </div>
           <div class="order-admin__kpi" data-kpi-tone="info">
             <span>Đang giao</span>
-            <strong>{{ loading() || error() ? '—' : shippingCount() }}</strong>
+            <strong>{{ loading() || error() || limitedOrderRange() ? '—' : shippingCount() }}</strong>
           </div>
           <div class="order-admin__kpi" data-kpi-tone="success">
             <span>Hoàn tất</span>
-            <strong>{{ loading() || error() ? '—' : completedOrderCount() }}</strong>
+            <strong>{{ loading() || error() || limitedOrderRange() ? '—' : completedOrderCount() }}</strong>
           </div>
         } @else {
           <div class="order-admin__kpi" data-kpi-tone="neutral">
@@ -458,7 +464,13 @@
           }
         </div>
         <footer class="order-admin__pagination">
-          <span>Đang hiển thị {{ activeTab() === 'orders' ? pageRows().length : returnPageRows().length }} trên tổng số {{ activeRowCount() }} {{ activeTab() === 'orders' ? 'đơn hàng' : 'yêu cầu' }}</span>
+          <span>
+            @if (activeTab() === 'orders' && limitedOrderRange()) {
+              Đang hiển thị {{pageRows().length}} trên {{activeRowCount()}} đơn hàng trong {{limitedOrderRange()}}
+            } @else {
+              Đang hiển thị {{ activeTab() === 'orders' ? pageRows().length : returnPageRows().length }} trên tổng số {{ activeRowCount() }} {{ activeTab() === 'orders' ? 'đơn hàng' : 'yêu cầu' }}
+            }
+          </span>
           <div class="web2-admin-pagination-strip">
             <button type="button" [disabled]="page() <= 1" (click)="changePage(page()-1)" aria-label="Trang trước">‹</button>
             @for (number of pageNumbers(); track number === '…' ? 'gap-' + $index : 'page-' + number) {
