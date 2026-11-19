@@ -294,7 +294,7 @@ export class BookingPageComponent {
     this.slotsRetryTick.update((v) => v + 1);
   }
 
-  protected async handleConfirm({ quantities }: any = {}) {
+  protected async handleConfirm({ quantities, voucherCode }: any = {}) {
     const selectedSlotRecord = this.timeSlots().find((slot: any) => {
       if (!this.selectedSlot()) return false;
       if (slot.value === this.selectedSlot() || slot.id === this.selectedSlot()) return true;
@@ -369,6 +369,7 @@ export class BookingPageComponent {
         petGender,
         service_ids: servicePayload,
         serviceIds: servicePayload.map((s: any) => s.service_id),
+        voucherCode: voucherCode || undefined,
         services: selectedServicesList,
         serviceName: selectedServicesList.map((s: any) => s.name).join(", ") || "Dịch vụ Dr. Pet",
         customer_name_snapshot: this.ownerInfo().name,
