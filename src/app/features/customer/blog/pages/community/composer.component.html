@@ -1,34 +1,34 @@
-<div class="absolute right-0 top-0 h-24 w-24 rounded-bl-[34px] rounded-br-[62px] rounded-tl-[58px] rounded-tr-[20px] bg-[#FDD835]"></div>
-<div class="relative flex gap-3 sm:gap-6">
+<div class="composer__layer"></div>
+<div class="composer__row">
   <img
     [attr.src]="blogImages.communityAuthor"
     alt=""
-    class="h-14 w-14 shrink-0 rounded-full border-2 border-white object-cover shadow"
+    class="composer__community-author"
   />
-  <div class="flex-1">
+  <div class="composer__box">
     <textarea
       [value]="value()"
       (input)="handle1($any($event))"
       (focusin)="requirePostAuth()"
       [attr.placeholder]="canPost() ? 'Sen đang nghĩ gì về các boss hôm nay...' : 'Đăng nhập để chia sẻ với cộng đồng...'"
       [readOnly]="!canPost() || submitting()"
-      class="h-[80px] w-full resize-none rounded-[24px] border border-white/80 bg-white/60 px-6 py-4 outline-none"
+      class="composer__textarea"
     ></textarea>
     @if (media()) {
-      <div class="mt-2 inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-1 text-sm text-[#005AB4]">
+      <div class="composer__row-2">
         <span>
           @if (media().kind === 'image') {
             Ảnh
           } @else {
             Video
           }: {{ media().name }}</span>
-        <button type="button" (click)="clearMedia()" [disabled]="submitting()" aria-label="Bỏ tệp đính kèm"><app-customer-icon name="x" className="h-4 w-4" /></button>
+       <button type="button" (click)="clearMedia()" [disabled]="submitting()" aria-label="Bỏ tệp đính kèm"><app-customer-icon name="x" className="h-4 w-4" /></button>
       </div>
     }
   </div>
 </div>
-<div class="relative mt-6 flex flex-wrap items-center justify-between gap-3">
-  <div class="flex flex-wrap gap-2 sm:gap-4">
+<div class="composer__row-3">
+  <div class="composer__row-4">
     <input
       #imageInput
       type="file"
@@ -40,6 +40,7 @@
       #videoInput
       type="file"
       accept="video/*"
+      
       (change)="selectFile($any($event), 'video')"
       class="hidden"
     />
@@ -52,12 +53,12 @@
       <app-customer-icon name="image" className="h-[18px] w-[18px]" />Ảnh</button>
     <button
       type="button"
-      (click)="!submitting() && requirePostAuth() && videoInput?.click()"
+       (click)="!submitting() && requirePostAuth() && videoInput?.click()"
       [disabled]="submitting()"
       class="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[#005AB4] shadow-sm"
     >
       <app-customer-icon name="video" className="h-[18px] w-[18px]" />Video</button>
-    <div class="relative">
+    <div class="composer__box-2">
       <button
         type="button"
         (click)="handle2()"
@@ -66,7 +67,7 @@
       >
         <app-customer-icon name="tag" className="h-[18px] w-[18px]" />{{ type() || 'Thẻ' }}</button>
       @if (showTypes()) {
-        <div class="absolute left-0 top-full z-10 mt-2 flex flex-col gap-1 rounded-2xl bg-white p-2 shadow-xl">
+        <div class="composer__layer-2">
           @for (item of list3(); track item) {
             <button
               type="button"

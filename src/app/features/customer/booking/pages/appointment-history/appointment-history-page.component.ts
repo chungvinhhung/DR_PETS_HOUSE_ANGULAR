@@ -7,10 +7,11 @@ import { SearchAndSortComponent } from './search-and-sort.component';
 import { AppointmentCardComponent } from './appointment-card.component';
 import { DetailPanelComponent } from './detail-panel.component';
 import { ReviewModalComponent } from './review-modal.component';
-import { RescheduleModalComponent } from './reschedule-modal.component';
+
 import { appointmentImages } from '../../../../../shared/customer/assets/appointment-images';
 import { APPOINTMENT_FILTERS, getAppointmentDisplayStatus } from '../../utils/appointment-display';
 import { getAppointmentDate, formatMoney } from './appointment-history-page.helpers';
+import { RescheduleModalComponent } from './reschedule-modal.component';
 
 /**
  * AppointmentHistoryPage — chuyển từ React: src/pages/Booking/AppointmentHistoryPage.jsx

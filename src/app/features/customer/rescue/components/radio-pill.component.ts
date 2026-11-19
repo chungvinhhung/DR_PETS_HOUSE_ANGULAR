@@ -11,6 +11,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
   standalone: true,
   imports: [],
   templateUrl: './radio-pill.component.html',
+  styleUrl: './radio-pill.component.scss',
   host: {
     '[class]': '`flex cursor-pointer items-center gap-[18px] rounded-[8px] bg-white text-[16px] leading-6 text-[rgba(0,0,0,0.87)] ${ framed() ? \'min-h-[52px] border-2 border-[#D9E3F6] px-[26px] py-[14px]\' : \'\' } ${invalid() && framed() ? \'border-[#c62828] ring-1 ring-[#c62828]\' : \'\'}`',
   },

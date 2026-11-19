@@ -12,6 +12,7 @@ import { SelectValueDirective } from '../../../../../shared/customer/directives/
   standalone: true,
   imports: [BookingCardComponent, CustomerIconComponent, SelectValueDirective],
   templateUrl: './branch-selection-card.component.html',
+  styleUrl: './branch-selection-card.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

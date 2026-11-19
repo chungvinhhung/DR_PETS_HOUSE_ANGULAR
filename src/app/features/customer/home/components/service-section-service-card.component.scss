@@ -1,0 +1,23 @@
+.service-section-service-card__box {
+  @apply relative h-[513px] w-full max-w-[338px] overflow-hidden rounded-t-[189px];
+}
+
+.service-section-service-card__title {
+  @apply h-full w-full object-cover transition-transform duration-component ease-premium;
+}
+
+.service-section-service-card__layer {
+  @apply absolute bottom-[30px] left-[33px] h-[244px] w-[272px];
+}
+
+.service-section-service-card__content {
+  @apply relative flex h-full flex-col items-center justify-center gap-2 px-6 text-center;
+}
+
+.service-section-service-card__title-2 {
+  @apply text-xl font-medium text-black;
+}
+
+.service-section-service-card__description {
+  @apply text-sm leading-snug tracking-wide text-black;
+}

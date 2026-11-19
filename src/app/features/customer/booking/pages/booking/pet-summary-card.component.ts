@@ -12,6 +12,7 @@ const buddyImg = '/assets/customer/images/pets/buddy.jpg';
   standalone: true,
   imports: [],
   templateUrl: './pet-summary-card.component.html',
+  styleUrl: './pet-summary-card.component.scss',
   host: {
     'type': 'button',
     '(click)': 'onClick.emit($event)',

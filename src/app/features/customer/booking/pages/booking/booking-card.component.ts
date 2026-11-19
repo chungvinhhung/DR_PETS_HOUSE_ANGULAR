@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './booking-card.component.html',
+  styleUrl: './booking-card.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

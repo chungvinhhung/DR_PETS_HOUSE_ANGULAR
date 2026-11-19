@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './mobile-social-links.component.html',
+  styleUrl: './mobile-social-links.component.scss',
   host: {
     'class': 'flex flex-1 items-center gap-4 text-[#475569]',
     'aria-label': 'Mạng xã hội',

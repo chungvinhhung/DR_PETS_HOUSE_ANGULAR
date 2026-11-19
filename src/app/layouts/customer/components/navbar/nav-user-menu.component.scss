@@ -1,0 +1,23 @@
+.nav-user-menu__avatar {
+  @apply h-9 w-9 object-cover;
+}
+
+.nav-user-menu__pt-2-vung-dem {
+  @apply absolute right-0 top-full z-50 pt-2 transition-all duration-200;
+}
+
+.nav-user-menu__box {
+  @apply min-w-[260px] rounded-2xl border border-gray-100 bg-white p-3 shadow-lg;
+}
+
+.nav-user-menu__box-2 {
+  @apply relative;
+}
+
+.nav-user-menu__list {
+  @apply absolute right-full top-0 z-10 mr-1 min-w-[220px] rounded-2xl border border-gray-100 bg-white p-3 shadow-lg transition-all duration-200;
+}
+
+.nav-user-menu__box-3 {
+  @apply mt-2 border-t border-gray-100 pt-2;
+}

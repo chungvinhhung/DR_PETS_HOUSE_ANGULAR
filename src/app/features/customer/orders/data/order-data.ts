@@ -148,3 +148,10 @@ export const formatOrderDate = (value: any, includeTime: any = true) =>
       ? { hour: "2-digit", minute: "2-digit", hour12: false }
       : {}),
   }).format(new Date(value));
+
+export const formatOrderTime = (value: any) =>
+  new Intl.DateTimeFormat("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(value));

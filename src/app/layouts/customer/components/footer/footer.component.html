@@ -21,18 +21,18 @@
           [attr.fill]="isBlue() ? '#FFFFFF' : '#E5F6FD'"
         />
       </svg>
-      <div class="relative mx-auto grid min-h-[530px] max-w-[1202px] grid-cols-[minmax(0,329fr)_minmax(0,144fr)_minmax(0,155fr)_minmax(0,210fr)_minmax(0,172fr)] items-start gap-6 px-8 pb-[62px] pt-[100px] xl:gap-12 xl:px-0">
-        <section class="flex flex-col items-start gap-4">
+      <div class="footer__grid">
+        <section class="footer__section">
           <a appCustomerLink="/" aria-label="Dr. Pet's House - Trang chủ">
             <img
               [attr.src]="homeImages.logo"
               alt="Dr. Pet's House"
-              class="h-[88px] w-[202px] object-contain object-left"
+              class="footer__dr-pet-s-house"
             />
           </a>
-          <h2 class="w-full max-w-[335px] font-['Baloo_2','Baloo_Tamma_2',cursive] text-[22px] font-bold leading-[1.1] tracking-[0px] text-[#0D47A1]">TRUNG TÂM CHĂM SÓC THÚ CƯNG</h2>
-          <p class="w-full max-w-[335px] text-[16px] leading-[1.4] text-[#475569]">Cung cấp dịch vụ khám bệnh, làm đẹp, và mua sắm sản phẩm cho thú cưng của bạn.</p>
-          <div class="flex items-center gap-4 text-[#475569]">
+          <h2 class="footer__trung-tam-cham-title">TRUNG TÂM CHĂM SÓC THÚ CƯNG</h2>
+          <p class="footer__cung-cap-dich-text">Cung cấp dịch vụ khám bệnh, làm đẹp, và mua sắm sản phẩm cho thú cưng của bạn.</p>
+          <div class="footer__row">
             <!-- <a href="#" aria-label="Facebook" className="transition-colors hover:text-[#0D47A1]">
               <img src={footerImages.facebook} alt="" className="size-5 object-contain" />
             </a> -->
@@ -71,7 +71,7 @@
                 />
               </svg>
             </a>
-            <a href="#" aria-label="TikTok" class="transition-colors hover:text-[#0D47A1]">
+            <a href="#" aria-label="TikTok" class="footer__tiktok">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <g clip-path="url(#clip0_2498_10299)">
                   <rect width="24" height="24" rx="5" fill="white" />
@@ -113,11 +113,11 @@
             <li app-footer-link [to]="'/about'">Về chúng tôi</li>
             <li app-footer-link [to]="'/contact'">Liên hệ</li>
             <li app-footer-link [to]="'/contact#branches'">
-              <span class="flex items-center gap-2">Danh sách chi nhánh </span>
+              <span class="footer__danh-sach-chi-text">Danh sách chi nhánh </span>
             </li>
           </ul>
-          <p class="py-2 text-[16px] leading-[1.4] text-[rgba(0,0,0,0.87)]"><strong>Hotline:</strong> 086 8686868</p>
-          <p class="py-2 text-[16px] leading-[1.4] text-[rgba(0,0,0,0.87)]">
+          <p class="footer__text"><strong>Hotline:</strong> 086 8686868</p>
+          <p class="footer__text">
             <strong>Giờ làm việc:</strong>
             <br />Thứ 2 - Chủ nhật: 8:00 - 20:00<br />Cấp cứu 24/7</p>
         </section>
@@ -131,17 +131,17 @@
           </ul>
         </section>
       </div>
-      <div class="absolute inset-x-0 bottom-0 flex h-[40px] items-center justify-center bg-[#B3E5FC] px-4 sm:px-8 lg:px-12">
-        <div class="flex h-6 w-full max-w-[1373px] items-center justify-between gap-6 text-[14px] text-[rgba(0,0,0,0.6)]">
-          <p class="min-w-0 shrink text-left italic leading-[1.43]">© 2026 Dr.Pet's House. Bản quyền thuộc về Dr.Pet's House.</p>
+      <div class="footer__layer">
+        <div class="footer__row-2">
+          <p class="footer__text-2">© 2026 Dr.Pet's House. Bản quyền thuộc về Dr.Pet's House.</p>
           <nav
             aria-label="Liên kết pháp lý chân trang"
-            class="hidden shrink-0 items-center gap-3 font-medium leading-none md:flex"
+            class="footer__lien-ket-phap-ly"
           >
             @for (__item4 of LEGAL_LINKS; track $index) {
               @let label = __item4[0];
               @let to = __item4[1];
-              <a [appCustomerLink]="to" class="whitespace-nowrap transition-colors hover:text-[#0D47A1]">{{ label }}</a>
+              <a [appCustomerLink]="to" class="footer__label">{{ label }}</a>
             }
           </nav>
         </div>

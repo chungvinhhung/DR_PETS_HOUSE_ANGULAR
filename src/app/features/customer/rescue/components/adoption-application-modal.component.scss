@@ -1,0 +1,43 @@
+.adoption-application-modal__overlay {
+  @apply fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(6,16,90,0.2)] p-6 font-['Roboto'] backdrop-blur-[2px];
+}
+
+.adoption-application-modal__box {
+  @apply relative;
+}
+
+.adoption-application-modal__form {
+  @apply flex max-h-[calc(100vh-48px)] w-[696px] max-w-[calc(100vw-48px)] flex-col overflow-hidden rounded-[32px] border border-[#D9E3F6] bg-white p-px shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)];
+}
+
+.adoption-application-modal__stack {
+  @apply flex min-h-0 flex-1 flex-col bg-[radial-gradient(circle_at_0_0,#D9E3F6_0_1%,transparent_1.2%)];
+}
+
+.adoption-application-modal__box-2 {
+  @apply min-h-0 flex-1 overflow-y-auto px-16 pb-8 pt-[50px];
+}
+
+.adoption-application-modal__stack-2 {
+  @apply flex flex-col items-center gap-10;
+}
+
+.adoption-application-modal__form-title {
+  @apply text-center text-[28px] font-semibold leading-8 text-[rgba(0,0,0,0.87)];
+}
+
+.adoption-application-modal__submit-error {
+  @apply -mt-6 rounded-[8px] bg-[#FFDAD6] px-4 py-3 text-center text-[14px] font-semibold text-[#93000A];
+}
+
+.adoption-application-modal__box-3 {
+  @apply w-full max-w-[568px];
+}
+
+.adoption-application-modal__box-4 {
+  @apply shrink-0 bg-transparent px-16 pb-16 pt-0;
+}
+
+.adoption-application-modal__row {
+  @apply mx-auto flex max-w-[568px] items-center justify-between;
+}

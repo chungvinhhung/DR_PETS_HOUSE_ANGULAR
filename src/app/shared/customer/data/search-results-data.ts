@@ -6,6 +6,7 @@ import { ALL_BLOG_POSTS } from './blog-data';
 import { COMMUNITY_POSTS } from './community-data';
 import { FIRST_AID_POSTS } from './first-aid-data';
 import { PRODUCT_CATEGORIES, SHOP_PRODUCTS } from './shop-data';
+import { buildProductPath, buildSearchPath } from '../utils/slug';
 import { normalizeSearchText, rankSearchCandidates } from '../utils/search-suggestion.utils';
 
 const searchProducts = SHOP_PRODUCTS.slice(0, 9).map((product: any, index: any) => ({
@@ -310,7 +311,7 @@ function buildKeywordSuggestion(label: any, type: any, metadata: any = []) {
   return {
     id: `${type}-${normalizeSearchText(label)}`,
     label,
-    href: `/search?q=${encodeURIComponent(label)}`,
+    href: buildSearchPath(label),
     type,
     metadata,
   };
@@ -370,7 +371,7 @@ function buildProductSuggestion(product: any) {
     label: product.name,
     price: product.price,
     image: product.image || product.imageSrc || product.thumbnail,
-    href: `/product-details/${product.id}`,
+    href: buildProductPath(product),
     metadata: [
       getProductCategoryLabel(product),
       product.description,

@@ -10,6 +10,7 @@ import { buttonShadow } from './adoption-application-modal.helpers';
   standalone: true,
   imports: [],
   templateUrl: './modal-button.component.html',
+  styleUrl: './modal-button.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

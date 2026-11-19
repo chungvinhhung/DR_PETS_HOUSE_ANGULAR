@@ -12,6 +12,7 @@ import { getFirstAidFallbackImage } from '../../../../../shared/customer/data/fi
   standalone: true,
   imports: [CustomerIconComponent, CustomerLinkDirective],
   templateUrl: './first-aid-card.component.html',
+  styleUrl: './first-aid-card.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

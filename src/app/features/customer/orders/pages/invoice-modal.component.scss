@@ -1,0 +1,71 @@
+.invoice-modal__box {
+  @apply max-h-full w-[595px] max-w-[calc(100vw-24px)] overflow-y-auto bg-white p-[10px];
+}
+
+.invoice-modal__box-2 {
+  @apply border border-[#CACACA] p-[21px] text-black;
+}
+
+.invoice-modal__row {
+  @apply flex items-start justify-between border-b border-[#CACACA] pb-5;
+}
+
+.invoice-modal__nguoi-nhan-text {
+  @apply text-[18px] text-[#726C6C];
+}
+
+.invoice-modal__name {
+  @apply mt-2 text-[24px] font-medium;
+}
+
+.invoice-modal__address {
+  @apply mt-2 max-w-[300px] text-[15px] text-[#726C6C];
+}
+
+.invoice-modal__row-2 {
+  @apply flex items-center gap-2;
+}
+
+.invoice-modal__id {
+  @apply mt-4 text-[20px] font-semibold;
+}
+
+.invoice-modal__ordered-at {
+  @apply mt-1 text-[14px] text-[#726C6C];
+}
+
+.invoice-modal__table {
+  @apply mt-5 w-full text-left text-[14px];
+}
+
+.invoice-modal__thead {
+  @apply bg-[#F0F0F0];
+}
+
+.invoice-modal__san-pham-heading-cell {
+  @apply p-2;
+}
+
+.invoice-modal__tbody {
+  @apply text-[#726C6C];
+}
+
+.invoice-modal__row-3 {
+  @apply border-b border-[#E5E5E5];
+}
+
+.invoice-modal__name-2 {
+  @apply px-2 py-4;
+}
+
+.invoice-modal__box-3 {
+  @apply text-[15px];
+}
+
+.invoice-modal__text {
+  @apply flex justify-between;
+}
+
+.invoice-modal__text-2 {
+  @apply flex justify-between border-t-2 border-[#CACACA] pt-3 text-[20px] font-semibold;
+}

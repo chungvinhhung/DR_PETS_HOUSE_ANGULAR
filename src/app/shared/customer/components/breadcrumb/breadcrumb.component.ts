@@ -11,6 +11,7 @@ import { productImages } from '../../assets/product-images';
   standalone: true,
   imports: [CustomerLinkDirective],
   templateUrl: './breadcrumb.component.html',
+  styleUrl: './breadcrumb.component.scss',
   host: {
     'aria-label': 'Đường dẫn điều hướng',
     '[class]': '`flex ${ isBlog() ? \'min-h-9 items-center bg-transparent py-1 text-[13px] font-medium leading-[20px]\' : \'h-[56px] items-end bg-white px-[120px] text-[16px] leading-[24px]\' } ${className()}`',

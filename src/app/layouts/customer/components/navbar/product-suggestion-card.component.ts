@@ -12,6 +12,7 @@ import { formatVnd } from '../../../../shared/customer/utils/currency';
   standalone: true,
   imports: [HighlightedTextComponent],
   templateUrl: './product-suggestion-card.component.html',
+  styleUrl: './product-suggestion-card.component.scss',
   host: {
     'type': 'button',
     '(click)': 'onSelect.emit(product())',

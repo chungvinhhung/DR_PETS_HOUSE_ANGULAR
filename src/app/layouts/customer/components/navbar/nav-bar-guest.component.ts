@@ -17,6 +17,7 @@ const cartIcon = '/assets/customer/images/cart_icon.svg';
   standalone: true,
   imports: [NavLinksComponent, NavSearchBarComponent, YellowButtonComponent],
   templateUrl: './nav-bar-guest.component.html',
+  styleUrl: './nav-bar-guest.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

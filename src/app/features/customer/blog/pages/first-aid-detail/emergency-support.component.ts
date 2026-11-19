@@ -12,6 +12,7 @@ import { FIRST_AID_SUPPORT_PHONE } from '../../../../../shared/customer/data/fir
   standalone: true,
   imports: [CustomerIconComponent, CustomerLinkDirective],
   templateUrl: './emergency-support.component.html',
+  styleUrl: './emergency-support.component.scss',
   host: {
     'class': 'relative flex h-[364px] w-[373px] shrink-0 flex-col justify-center gap-6 rounded-[32px] border-l-4 border-[#C62828] bg-white px-10 shadow-md',
   },

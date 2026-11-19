@@ -30,15 +30,23 @@ function slugify(value: any = "") {
     .replace(/(^-|-$)/g, "");
 }
 
-const blogCategoryAliases = {
+const blogCategoryAliases: Record<string, string> = {
   "suc-khoe": "health",
   "suc-khoe-thu-cung": "health",
+  "cham-soc-suc-khoe": "health",
+  "y-te-benh-hoc": "health",
+  "y-te": "health",
   "dinh-duong": "nutrition",
+  "dinh-duong-thu-cung": "nutrition",
   "tam-ly": "psychology",
   "hanh-vi": "psychology",
+  "hanh-vi-tam-ly": "psychology",
   "ve-sinh-lam-dep": "grooming",
+  "ve-sinh": "grooming",
+  "lam-dep": "grooming",
   grooming: "grooming",
-  "cham-soc": "care",
+  "cam-nang-nuoi-duong": "grooming",
+  "cham-soc": "grooming",
 };
 
 const firstAidCategoryAliases: Record<string, string> = {
@@ -346,6 +354,10 @@ export class ContentApiService {
   async getCommunityPosts(params: any = {}) {
     try {
       const res = await this.getCommunityPostsPage(params);
+
+
+
+
       return {
         items: res.posts,
         posts: res.posts,

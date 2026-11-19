@@ -11,6 +11,7 @@ import { CONTACT_FIELDS } from '../data/adoption-form-data';
   standalone: true,
   imports: [ContactFieldComponent],
   templateUrl: './contact-step.component.html',
+  styleUrl: './contact-step.component.scss',
   host: {
     'class': 'grid w-full grid-cols-1 gap-4 sm:grid-cols-2',
   },

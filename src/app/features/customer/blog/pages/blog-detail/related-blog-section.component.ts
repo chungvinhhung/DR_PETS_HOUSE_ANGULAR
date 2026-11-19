@@ -12,6 +12,7 @@ import { CustomerIconComponent } from '../../../../../shared/customer/components
   standalone: true,
   imports: [SectionHeadingComponent, BlogCardComponent, CustomerIconComponent],
   templateUrl: './related-blog-section.component.html',
+  styleUrl: './related-blog-section.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

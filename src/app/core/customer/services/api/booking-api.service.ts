@@ -556,7 +556,7 @@ export class BookingApiService {
       return aptDateFormatted === dateFormatted && matchesBranch && apt.status !== "cancelled";
     });
 
-    // Only uncommitted/offline appointments need local deduction; real backend records are already counted by MongoDB
+     // Only uncommitted/offline appointments need local deduction; real backend records are already counted by MongoDB
     const uncommittedLocalAppointments = localAppointments.filter((apt: any) => {
       const idStr = String(apt.id || apt._id || '');
       return !/^[0-9a-fA-F]{24}$/.test(idStr);
@@ -609,8 +609,6 @@ export class BookingApiService {
       const response = await this.http.get("/appointments/slots", { params });
       slotsList = extractSlotsArray(response);
     } catch (primaryError: any) {
-      // Chỉ thử lại đường dẫn /availability khi endpoint /appointments/slots không tồn tại (404).
-      // Các lỗi 503, 500, 400 hoặc lỗi kết nối phải giữ nguyên trạng thái lỗi và ném ra ngoài, không tự tạo slot giả.
       if (primaryError?.status !== 404) {
         this.slotsState.set('error');
         this.slotsError.set(extractErrorMessage(primaryError));
@@ -753,6 +751,7 @@ export class BookingApiService {
     }
     const properTimeRange = `${timeStr} - ${computedEndTimeStr}`;
 
+
     const localApt = {
       id: `apt-${Date.now()}`,
       code: `BK ${Math.floor(1000 + Math.random() * 9000)} ${new Date().getFullYear()}`,
@@ -870,7 +869,7 @@ export class BookingApiService {
       return null;
     }
   }
-
+  
   async rescheduleAppointment(appointmentId: any, newSlotStart: string) {
     const localList = getLocalAppointments();
     const target = localList.find((x) => x.id === appointmentId || x.code === appointmentId);

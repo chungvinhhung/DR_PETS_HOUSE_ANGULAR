@@ -1,0 +1,87 @@
+.blog-page__main {
+  @apply flex min-h-[1931px] flex-col items-center gap-3 bg-[#E5F6FD] px-4 sm:px-6 lg:px-20 pb-6;
+}
+
+.blog-page__nav {
+  @apply flex h-14 w-full max-w-page items-center gap-6 overflow-x-auto whitespace-nowrap text-[16px] sm:gap-10 lg:pr-16;
+}
+
+.blog-page__cong-dong-chia-link {
+  @apply font-medium text-[#4B5563];
+}
+
+.blog-page__section {
+  @apply flex w-full max-w-page flex-wrap items-end justify-between gap-4 pb-5;
+}
+
+.blog-page__kien-thuc-title {
+  @apply flex flex-wrap items-center gap-1 text-[28px] font-bold leading-[36px] tracking-[-0.8px] sm:text-[40px] sm:leading-[48px];
+}
+
+.blog-page__thu-cung-text {
+  @apply text-[#0D47A1];
+}
+
+.blog-page__title-pet {
+  @apply h-12 w-12 object-contain;
+}
+
+.blog-page__kien-thuc-cham-text {
+  @apply mt-2 text-[16px] leading-6 text-[#4B5563];
+}
+
+.blog-page__latest-posts {
+  @apply mt-1 flex w-full max-w-page scroll-mt-4 flex-col items-center gap-8 pt-4;
+}
+
+.blog-page__row {
+  @apply flex w-full flex-wrap items-center gap-2;
+}
+
+.blog-page__bai-viet-title {
+  @apply shrink-0 text-[24px] font-bold leading-8 text-[#111827];
+}
+
+.blog-page__box {
+  @apply ml-2 h-1 min-w-[60px] flex-1 bg-[#FDD835];
+}
+
+.blog-page__row-2 {
+  @apply flex flex-wrap gap-3;
+}
+
+.blog-page__form {
+  @apply flex h-[56px] w-full items-center justify-between rounded-[42px] border border-[rgba(25,118,210,0.5)] bg-white/80 py-2 pl-6 pr-2 backdrop-blur-[11px];
+}
+
+.blog-page__ban-dang-tim-kiem {
+  @apply min-w-0 flex-1 bg-transparent text-[16px] text-[#5F5F5F] outline-none placeholder:text-[#5F5F5F];
+}
+
+.blog-page__search-icon {
+  @apply h-7 w-7;
+}
+
+.blog-page__search-query {
+  @apply -mt-5 w-full text-[16px] leading-6 text-[#414753];
+}
+
+.blog-page__load-error {
+  @apply -mt-5 w-full text-[14px] leading-5 text-[#D32F2F];
+}
+
+.blog-page__api-empty-message {
+  @apply -mt-5 w-full text-[14px] leading-5 text-[#0D47A1];
+}
+
+.blog-page__dang-tai-bai-el {
+  @apply flex h-48 w-full items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1];
+}
+
+.blog-page__grid {
+  @apply grid w-full grid-cols-1 justify-items-center gap-x-[16px] gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+}
+
+.blog-page__khong-tim-thay-el {
+  @apply flex h-48 w-full items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#414753];
+}

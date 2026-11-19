@@ -11,6 +11,7 @@ import { medicalAssets, medicalFaqs } from '../../data/medical-treatment-data';
   standalone: true,
   imports: [PetCareFaqSectionComponent],
   templateUrl: './medical-faq.component.html',
+  styleUrl: './medical-faq.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

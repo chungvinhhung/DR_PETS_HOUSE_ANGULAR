@@ -1,16 +1,16 @@
-<div class="absolute inset-0 h-[422px] w-[355px]" [appStyle]="mask()">
+<div class="service-card__layer" [appStyle]="mask()">
   <img
     [attr.src]="service().image"
     [attr.alt]="service().title"
-    class="size-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.025]"
+    class="service-card__title group-hover:scale-[1.025]"
   />
 </div>
 <div
-  class="absolute inset-0 bg-gradient-to-b from-[rgba(2,0,15,0)] to-[rgba(2,0,15,0.72)] transition-colors duration-300"
+  class="service-card__layer-2"
   [appStyle]="mask()"
 ></div>
 <div
-  class="absolute flex items-center justify-center"
+  class="service-card__layer-3"
   [appStyle]="{
         right: 0,
         top: 8,
@@ -19,9 +19,9 @@
         transform: 'rotate(-36.71deg)'
       }"
 >
-  <div class="flex size-full items-center justify-center rounded-full border border-[#A1A4B1] px-[7px] py-1">
+  <div class="service-card__row">
     <span
-      class="rotate-[36.71deg] text-center text-[#A1A4B1]"
+      class="service-card__id"
       [appStyle]="{
             fontFamily: 'Roboto, sans-serif',
             fontWeight: 400,
@@ -31,9 +31,9 @@
     >{{ service().id }}</span>
   </div>
 </div>
-<div class="absolute inset-x-0 bottom-0 h-[124px] text-white">
+<div class="service-card__layer-4">
   <p
-    class="absolute left-[28px] top-0"
+    class="service-card__title-2"
     [appStyle]="{
           fontFamily: 'Roboto, sans-serif',
           fontWeight: 400,
@@ -42,7 +42,7 @@
         }"
   >{{ service().title }}</p>
   <p
-    class="absolute right-[20px] top-[32px] text-right italic"
+    class="service-card__price"
     [appStyle]="{
           fontFamily: 'Roboto, sans-serif',
           fontWeight: 300,
@@ -51,7 +51,7 @@
         }"
   >{{ service().price }}</p>
   <p
-    class="absolute left-[28px] top-[62px] w-[291px]"
+    class="service-card__description"
     [appStyle]="{
           fontFamily: 'Roboto, sans-serif',
           fontWeight: 400,

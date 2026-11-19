@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './footer-column.component.html',
+  styleUrl: './footer-column.component.scss',
   host: {
     '[class]': 'className()',
   },

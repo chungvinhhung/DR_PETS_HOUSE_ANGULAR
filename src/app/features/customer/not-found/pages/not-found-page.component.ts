@@ -16,6 +16,7 @@ const tennisBallImage = '/assets/customer/images/not-found/tennis-ball.png';
   standalone: true,
   imports: [NavBarComponent, FooterComponent, CustomerLinkDirective],
   templateUrl: './not-found-page.component.html',
+  styleUrl: './not-found-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white font-sans',
   },

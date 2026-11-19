@@ -11,6 +11,7 @@ import { homeImages } from '../../../../shared/customer/assets/home-images';
   standalone: true,
   imports: [YellowButtonComponent],
   templateUrl: './hero-section.component.html',
+  styleUrl: './hero-section.component.scss',
   host: {
     'class': 'relative w-full overflow-hidden bg-white pt-6',
   },

@@ -10,6 +10,7 @@ import { CustomerLinkDirective } from '../../../../shared/customer/directives/cu
   standalone: true,
   imports: [CustomerLinkDirective],
   templateUrl: './service-section-service-card.component.html',
+  styleUrl: './service-section-service-card.component.scss',
   host: {
     'class': 'group flex flex-1 flex-col items-center transition-transform duration-component ease-premium hover:-translate-y-1',
   },

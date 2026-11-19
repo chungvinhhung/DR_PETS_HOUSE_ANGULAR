@@ -1,0 +1,15 @@
+.mobile-footer-section__title {
+  @apply font-['Roboto'] text-[13px] font-bold leading-[20.8px] tracking-[0.15px] text-[#0D47A1];
+}
+
+.mobile-footer-section__let-label-list {
+  @apply flex flex-col gap-[5px] px-5;
+}
+
+.mobile-footer-section__item {
+  @apply flex h-[35px] items-center border-b-[0.5px] border-[#1565C0] pr-5 last:border-b-0;
+}
+
+.mobile-footer-section__label {
+  @apply min-w-0 flex-1 truncate font-['Roboto'] text-[11px] font-normal leading-[16.5px] tracking-[0.15px] text-[#1565C0];
+}

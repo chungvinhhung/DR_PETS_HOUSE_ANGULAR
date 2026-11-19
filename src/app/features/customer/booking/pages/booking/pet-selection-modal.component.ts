@@ -11,6 +11,7 @@ const buddyImg = '/assets/customer/images/pets/buddy.jpg';
   standalone: true,
   imports: [PetFormPageComponent],
   templateUrl: './pet-selection-modal.component.html',
+  styleUrl: './pet-selection-modal.component.scss',
   host: {
     'class': 'fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/45 p-5 backdrop-blur-sm',
   },

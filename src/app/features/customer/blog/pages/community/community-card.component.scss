@@ -1,0 +1,27 @@
+.community-card__video-video {
+  @apply h-64 w-full bg-black object-contain;
+}
+
+.community-card__row {
+  @apply flex items-start justify-between;
+}
+
+.community-card__title {
+  @apply mt-4 text-[16px] font-bold text-[rgba(0,0,0,0.87)];
+}
+
+.community-card__post-content {
+  @apply mt-3 whitespace-pre-line text-[16px] leading-[26px] text-[#414753];
+}
+
+.community-card__row-2 {
+  @apply mt-4 flex flex-wrap gap-2;
+}
+
+.community-card__tag {
+  @apply rounded-lg bg-[rgba(214,227,255,0.5)] px-2 py-0.5 text-[10px] font-semibold text-[#005AB4];
+}
+
+.community-card__box {
+  @apply mt-6;
+}

@@ -1,18 +1,45 @@
 <app-product-rating
-  [value]="review().rating ?? 5"
+  [value]="review()?.rating ?? 5"
   [size]="18"
   [gap]="2"
-  [fillColor]="'#FF9D00'"
-  [className]="'h-6 shrink-0'"
+  fillColor="#FF9D00"
+  className="h-6 shrink-0"
 />
+
 <p
-  class="mt-2 shrink-0 overflow-hidden text-[16px] leading-7 text-[#333] line-clamp-4"
+  class="grooming-feedback-section-feedback-card__text"
   [appStyle]="{ height: FEEDBACK_QUOTE_HEIGHT }"
->“{{ review().text }}”</p>
-<div class="mt-3 flex shrink-0 items-center gap-4" [appStyle]="{ height: FEEDBACK_AUTHOR_HEIGHT }">
-  <img [attr.src]="review().avatar" alt="" class="h-11 w-11 shrink-0 rounded-full object-cover" />
-  <div class="min-w-0 flex-1">
-    <p class="truncate text-[24px] font-medium leading-6 text-[#02000F]">{{ review().name }}</p>
-    <p class="truncate text-[16px] leading-7 text-[#6C6D71]">{{ review().company }}</p>
+>
+  “{{ review()?.text }}”
+</p>
+
+<div
+  class="grooming-feedback-section-feedback-card__row"
+  [appStyle]="{ height: FEEDBACK_AUTHOR_HEIGHT }"
+>
+  <img
+    [attr.src]="review()?.avatar"
+    alt=""
+    class="grooming-feedback-section-feedback-card__avatar"
+  />
+  <div class="grooming-feedback-section-feedback-card__box">
+    <p class="grooming-feedback-section-feedback-card__name">{{ review()?.name }}</p>
+    <p class="grooming-feedback-section-feedback-card__company">{{ review()?.company }}</p>
   </div>
+</div>
+
+<div class="grooming-feedback-section-feedback-card__meta">
+   <time class="grooming-feedback-section-feedback-card__time">
+    {{formatReviewTime(review()?.createdAt ?? review()?.timeAgo ?? 23086) }}
+  </time>
+
+
+  <span class="grooming-feedback-section-feedback-card__like">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+    </svg>
+    <span>Thích ({{ review()?.likes ?? 0 }})</span>
+  </span>
+
+ 
 </div>

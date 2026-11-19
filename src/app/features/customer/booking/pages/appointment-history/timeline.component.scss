@@ -1,0 +1,11 @@
+.timeline__row {
+  @apply flex flex-1 items-start;
+}
+
+.timeline__stack {
+  @apply flex min-w-[74px] flex-col items-center;
+}
+
+.timeline__step-check-icon {
+  @apply h-4 w-4;
+}

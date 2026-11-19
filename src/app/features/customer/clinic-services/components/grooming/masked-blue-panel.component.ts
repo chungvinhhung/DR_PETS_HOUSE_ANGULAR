@@ -11,6 +11,7 @@ import { cssMask } from '../../utils/grooming-mask.utils';
   standalone: true,
   imports: [ReactStyleDirective],
   templateUrl: './masked-blue-panel.component.html',
+  styleUrl: './masked-blue-panel.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

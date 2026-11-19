@@ -1,0 +1,40 @@
+// Màu theo loại (info/success/warning/error) vẫn lấy từ alertStyles()/iconStyles() trong .ts.
+.alert__layout {
+  @apply flex;
+}
+
+.alert__icon-col {
+  @apply flex-shrink-0;
+}
+
+.alert__icon {
+  @apply h-5 w-5;
+}
+
+.alert__content {
+  @apply ml-3 flex-1;
+}
+
+.alert__message {
+  @apply text-sm font-medium;
+}
+
+.alert__description {
+  @apply mt-2 text-sm;
+}
+
+.alert__dismiss-col {
+  @apply ml-auto pl-3;
+}
+
+.alert__dismiss-offset {
+  @apply -mx-1.5 -my-1.5;
+}
+
+.alert__dismiss {
+  @apply inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.alert__sr-only {
+  @apply sr-only;
+}

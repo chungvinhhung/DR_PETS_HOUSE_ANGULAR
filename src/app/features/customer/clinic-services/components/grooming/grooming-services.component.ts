@@ -15,6 +15,7 @@ import { POSITIONS } from './grooming-services.helpers';
   standalone: true,
   imports: [ServiceCardComponent, ReactStyleDirective],
   templateUrl: './grooming-services.component.html',
+  styleUrl: './grooming-services.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

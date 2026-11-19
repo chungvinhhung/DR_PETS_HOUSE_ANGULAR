@@ -11,6 +11,7 @@ import { authImages } from '../../../../shared/customer/assets/auth-images';
   standalone: true,
   imports: [CustomerIconComponent],
   templateUrl: './success-panel.component.html',
+  styleUrl: './success-panel.component.scss',
   host: {
     'class': 'relative flex min-h-[646px] w-full flex-col items-center overflow-hidden rounded-xl rounded-bl-none bg-white pb-[15px] pt-[67px] shadow-2xl md:min-h-[560px] md:flex-row md:justify-center md:gap-10 md:rounded-bl-xl md:p-10',
   },

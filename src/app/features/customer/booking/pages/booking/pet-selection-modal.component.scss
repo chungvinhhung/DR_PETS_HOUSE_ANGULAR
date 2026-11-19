@@ -1,0 +1,87 @@
+.pet-selection-modal__box {
+  @apply relative w-full max-w-[460px] rounded-[24px] bg-white p-6 shadow-2xl sm:p-8;
+}
+
+.pet-selection-modal__row {
+  @apply mb-6 flex items-start justify-between;
+}
+
+.pet-selection-modal__chon-ho-so-title {
+  @apply text-[22px] font-bold leading-tight text-[#1e3a8a];
+}
+
+.pet-selection-modal__chon-thu-cung-text {
+  @apply mt-1 text-sm text-slate-600;
+}
+
+.pet-selection-modal__icon {
+  @apply h-5 w-5;
+}
+
+.pet-selection-modal__box-2 {
+  @apply max-h-[60vh] overflow-y-auto pr-1;
+}
+
+.pet-selection-modal__dang-tai-ho-el {
+  @apply py-8 text-center text-sm text-slate-500;
+}
+
+.pet-selection-modal__error {
+  @apply rounded-xl bg-red-50 p-4 text-center text-sm text-red-600;
+}
+
+.pet-selection-modal__box-3 {
+  @apply cursor-pointer transition-all;
+}
+
+.pet-selection-modal__name {
+  @apply h-14 w-14 shrink-0 rounded-full border border-slate-100 object-cover;
+}
+
+.pet-selection-modal__box-4 {
+  @apply min-w-0 flex-1;
+}
+
+.pet-selection-modal__name-2 {
+  @apply text-[17px] font-bold text-slate-900;
+}
+
+.pet-selection-modal__breed {
+  @apply mt-0.5 text-[13.5px] text-slate-500;
+}
+
+.pet-selection-modal__text {
+  @apply flex items-center gap-1.5;
+}
+
+.pet-selection-modal__icon-2 {
+  @apply h-4 w-4;
+}
+
+.pet-selection-modal__row-2 {
+  @apply flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-slate-100 bg-slate-50 text-slate-400;
+}
+
+.pet-selection-modal__icon-3 {
+  @apply h-6 w-6;
+}
+
+.pet-selection-modal__them-ho-so-el {
+  @apply text-[16px] font-bold text-slate-900;
+}
+
+.pet-selection-modal__thu-cung-chua-el {
+  @apply mt-0.5 text-[13px] text-slate-500;
+}
+
+.pet-selection-modal__box-5 {
+  @apply mt-7;
+}
+
+.pet-selection-modal__overlay {
+  @apply fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-sm;
+}
+
+.pet-selection-modal__box-6 {
+  @apply max-h-[95vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-slate-50 shadow-2xl;
+}

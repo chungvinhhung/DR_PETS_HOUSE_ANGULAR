@@ -22,6 +22,7 @@ const cartIcon = '/assets/customer/images/cart_icon.svg';
   standalone: true,
   imports: [TabletSearchTriggerComponent, SearchAssetIconComponent, NotificationBellComponent, FigmaMenuIconComponent, MobileSearchPanelComponent, MobileMenuPanelComponent, CustomerLinkDirective],
   templateUrl: './mobile-nav-bar.component.html',
+  styleUrl: './mobile-nav-bar.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

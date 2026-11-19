@@ -10,7 +10,8 @@ import { CartService } from '../../../../core/customer/services/cart.service';
 @Component({
   selector: 'app-cart-open-handler',
   standalone: true,
-  template: '',
+  templateUrl: './cart-open-handler.component.html',
+  styleUrl: './cart-open-handler.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CartOpenHandlerComponent implements OnInit {

@@ -22,6 +22,7 @@ import { NEW_ADDRESS_VALUE, initialFormValues, loadUserAddresses, getPrefilledVa
   standalone: true,
   imports: [NgTemplateOutlet, SuccessViewComponent, StepProgressComponent, CommitmentStepComponent, ContactStepComponent, LivingStepComponent, ModalButtonComponent, CustomerIconComponent],
   templateUrl: './adoption-application-modal.component.html',
+  styleUrl: './adoption-application-modal.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

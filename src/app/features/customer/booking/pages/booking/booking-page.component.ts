@@ -24,6 +24,7 @@ import { BRANCH_OPTIONS, INITIAL_BRANCH_OPTIONS, DEFAULT_SERVICE_TYPE_ID, create
   standalone: true,
   imports: [NavBarComponent, StepperComponent, ServiceSelectionComponent, InfoFormComponent, BookingPaymentStepComponent, FooterComponent, BookingSuccessModalComponent],
   templateUrl: './booking-page.component.html',
+  styleUrl: './booking-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white font-sans',
   },
@@ -224,8 +225,8 @@ export class BookingPageComponent {
     effect((onCleanup: any) => {
       this.ownerInfo().branch;
       this.selectedDate();
-      this.selectedServiceType();
       this.selectedServices();
+      this.selectedServiceType();
       this.slotsRetryTick();
       const cleanup = untracked(() => {
         const hasServices = (this.selectedServices() || []).length > 0;
@@ -262,6 +263,7 @@ export class BookingPageComponent {
               return matchedSlot ? matchedSlot.value : null;
             });
           })
+
           .catch((error: any) => {
             console.warn("Appointment slots API unavailable.", error);
             if (active) {

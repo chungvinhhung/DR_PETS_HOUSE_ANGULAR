@@ -10,6 +10,7 @@ import { CustomerIconComponent } from '../../../../shared/customer/components/ic
   standalone: true,
   imports: [CustomerIconComponent],
   templateUrl: './star-rating.component.html',
+  styleUrl: './star-rating.component.scss',
   host: {
     'class': 'flex h-6 items-center gap-[2px]',
     'role': 'radiogroup',

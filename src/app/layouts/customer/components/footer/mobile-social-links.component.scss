@@ -1,0 +1,11 @@
+.mobile-social-links__facebook {
+  @apply flex size-[22px] items-center justify-center rounded bg-white text-[18px] font-bold leading-none;
+}
+
+.mobile-social-links__zalo {
+  @apply flex size-[22px] items-center justify-center rounded bg-white text-[8px] font-bold leading-none;
+}
+
+.mobile-social-links__instagram {
+  @apply flex size-[22px] items-center justify-center rounded bg-white;
+}

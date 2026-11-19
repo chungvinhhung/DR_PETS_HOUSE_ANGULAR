@@ -14,6 +14,7 @@ import { formatPrice } from './my-cart-panel.helpers';
   standalone: true,
   imports: [CartItemRowComponent],
   templateUrl: './my-cart-panel.component.html',
+  styleUrl: './my-cart-panel.component.scss',
   host: {
     'class': 'cart-panel-motion pointer-events-auto absolute inset-0 flex h-screen w-full flex-col items-center gap-[10px] overflow-hidden bg-[#fffde7] px-[10px] py-0 lg:inset-auto lg:right-[94px] lg:top-0 lg:h-[638px] lg:max-h-[calc(100vh-104px)] lg:w-[551px] lg:rounded lg:px-5 lg:py-[10px] lg:shadow-[0_4px_24px_rgba(0,0,0,0.12)]',
     'data-name': 'my cart',

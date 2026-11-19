@@ -1,6 +1,6 @@
 <label
   [attr.for]="`adoption-${question().name}`"
-  class="text-[18px] font-medium leading-7 text-[rgba(0,0,0,0.87)]"
+  class="textarea-question__label"
 >{{ question().label }}@if (question().required) {
     <span app-required-mark></span>
   }

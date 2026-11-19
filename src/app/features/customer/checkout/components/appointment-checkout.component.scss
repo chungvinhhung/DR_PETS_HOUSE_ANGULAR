@@ -1,0 +1,203 @@
+.appointment-checkout__main-container {
+  @apply mx-auto w-full max-w-page pt-[21px] flex flex-col gap-[14px];
+}
+
+.appointment-checkout__back-button-row {
+  @apply flex items-center px-4 sm:px-8 xl:px-[66px] h-[31.68px] gap-[10px];
+}
+
+.appointment-checkout__back {
+  @apply w-[12px] h-[12px];
+}
+
+.appointment-checkout__quay-lai-button {
+  @apply text-[#00355F] text-[20px] font-medium leading-[1.6em] tracking-[0.0075em];
+}
+
+.appointment-checkout__two-columns-layout {
+  @apply flex flex-col gap-6 lg:flex-row justify-between items-stretch px-4 sm:px-8 xl:px-[64px] pt-[10px] pb-[10px];
+}
+
+.appointment-checkout__left-column-appointment-details {
+  @apply w-full min-w-0 lg:flex-1 xl:w-[720px] xl:flex-none bg-[#FFFFFF] border border-[#C2C7D1] rounded-[8px] p-[24px] flex flex-col gap-[24.5px];
+}
+
+.appointment-checkout__header-title-status {
+  @apply flex flex-wrap gap-3 justify-between items-start w-full;
+}
+
+.appointment-checkout__stack {
+  @apply flex flex-col gap-[8px];
+}
+
+.appointment-checkout__chi-tiet-dat-title {
+  @apply text-[24px] font-normal text-[#00355F] leading-[1.334em];
+}
+
+.appointment-checkout__ma-so-bk-8712-text {
+  @apply text-[14px] font-normal text-[#42474F] leading-[1.428em];
+}
+
+.appointment-checkout__box {
+  @apply bg-[#FFDBC9] rounded-[4px] py-[8px] px-[12px];
+}
+
+.appointment-checkout__dang-cho-thanh-text {
+  @apply text-[12px] font-normal text-[#321200] leading-[1.66em] tracking-[0.033em];
+}
+
+.appointment-checkout__box-2 {
+  @apply w-full border-b border-[#C2C7D1] pb-[20px];
+}
+
+.appointment-checkout__appointment-info-grid {
+  @apply flex flex-col pb-[24px] gap-[8.5px];
+}
+
+.appointment-checkout__lich-hen-cua-el {
+  @apply text-[12px] font-bold text-[#727780] leading-[1.333em] tracking-[0.0416em] uppercase;
+}
+
+.appointment-checkout__row {
+  @apply flex flex-row items-center gap-[12px];
+}
+
+.appointment-checkout__calendar {
+  @apply w-[15px] h-[16.67px];
+}
+
+.appointment-checkout__text {
+  @apply text-[16px] font-normal text-[#191C1E] leading-[1.5em] tracking-[0.0093em];
+}
+
+.appointment-checkout__horizontal-grid-for-pet {
+  @apply flex flex-row flex-wrap w-full;
+}
+
+.appointment-checkout__stack-2 {
+  @apply flex flex-col w-full sm:w-1/2 sm:pr-4 gap-[8.5px] mb-[20px];
+}
+
+.appointment-checkout__pet {
+  @apply w-[21px] h-[22px];
+}
+
+.appointment-checkout__phone {
+  @apply w-[18px] h-[18px];
+}
+
+.appointment-checkout__stack-3 {
+  @apply flex flex-col w-full gap-[8.5px];
+}
+
+.appointment-checkout__person {
+  @apply w-[19px] h-[19px];
+}
+
+.appointment-checkout__selected-services {
+  @apply flex flex-col w-full gap-[16.5px] pb-[8px];
+}
+
+.appointment-checkout__stack-4 {
+  @apply flex flex-col w-full gap-[12px];
+}
+
+.appointment-checkout__service-1 {
+  @apply flex flex-row justify-between items-center w-full border-b border-[#EDEEF0] py-[12px];
+}
+
+.appointment-checkout__stack-5 {
+  @apply flex flex-col;
+}
+
+.appointment-checkout__text-2 {
+  @apply text-[14px] font-normal text-[#42474F] leading-[1.429em] tracking-[0.012em];
+}
+
+.appointment-checkout__box-3 {
+  @apply text-[16px] font-normal text-[#191C1E] leading-[1.5em];
+}
+
+.appointment-checkout__info-box {
+  @apply w-full bg-[#F3F4F6] rounded-[4px] p-[16px] flex flex-row items-start gap-[12px];
+}
+
+.appointment-checkout__info {
+  @apply w-[20px] h-[20px] mt-[2px];
+}
+
+.appointment-checkout__box-4 {
+  @apply flex-1 pr-[14.8px];
+}
+
+.appointment-checkout__right-column-payment-section {
+  @apply w-full lg:w-[400px] xl:w-[480px] shrink-0 flex flex-col;
+}
+
+.appointment-checkout__stack-6 {
+  @apply w-full bg-[#FFFFFF] border border-[#C2C7D1] rounded-[8px] px-[24px] py-[23.5px] flex flex-col gap-[24px];
+}
+
+.appointment-checkout__stack-7 {
+  @apply flex flex-col w-full gap-[24px];
+}
+
+.appointment-checkout__payment-mode-toggle {
+  @apply relative w-full bg-[#E7E8EA] rounded-[12px] p-[4px] flex items-center;
+}
+
+.appointment-checkout__layer {
+  @apply absolute top-1 h-8 w-[calc(50%-4px)] rounded-[12px] bg-white shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] transition-[left] duration-component ease-premium;
+}
+
+.appointment-checkout__tai-cua-hang-text {
+  @apply text-[12px] leading-[1.333em] tracking-[0.0416em];
+}
+
+.appointment-checkout__discount-code-section {
+  @apply w-full border-t border-[#C2C7D1] pt-[16px] flex flex-col gap-[12px];
+}
+
+.appointment-checkout__the-qua-tang-title {
+  @apply text-[15px] font-medium text-[#585858] leading-[1.171em];
+}
+
+.appointment-checkout__summary-section {
+  @apply w-full border-t border-[#C2C7D1] pt-[24px] flex flex-col gap-[12px];
+}
+
+.appointment-checkout__row-2 {
+  @apply w-full flex justify-between items-center;
+}
+
+.appointment-checkout__tam-tinh-text {
+  @apply text-[16px] font-normal text-[#W676PB] leading-[1.5em] text-[#727780];
+}
+
+.appointment-checkout__phi-dich-vu-text {
+  @apply text-[16px] font-normal text-[#727780] leading-[1.5em];
+}
+
+.appointment-checkout__row-3 {
+  @apply w-full flex justify-between items-center pt-[12px];
+}
+
+.appointment-checkout__tong-cong-text {
+  @apply text-[20px] font-semibold text-[#00355F] leading-[1.4em];
+}
+
+.appointment-checkout__text-3 {
+  @apply text-[20px] font-bold text-[#00355F] leading-[1.4em];
+}
+
+.appointment-checkout__xac-nhan-dat-text {
+  @apply text-[20px] font-bold text-[#000000] leading-[1.2em];
+}
+
+.appointment-checkout__footer-text {
+  @apply flex flex-wrap justify-center text-center font-['Roboto'] text-[12px] leading-[15px] text-[#727780];
+}
+
+.appointment-checkout__dieu-khoan-dich-link {
+  @apply text-[#00355f] underline hover:no-underline mx-1;
+}

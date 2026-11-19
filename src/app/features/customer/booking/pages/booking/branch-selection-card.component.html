@@ -4,10 +4,10 @@
   [data-booking-error]="invalid() ? 'true' : undefined"
   [tabIndex]="invalid() ? -1 : undefined"
 >
-  <label class="block">
-    <span class="mb-4 flex items-center gap-2 text-xl font-bold text-blue-900">
+  <label class="branch-selection-card__label">
+    <span class="branch-selection-card__text">
       <app-customer-icon name="map-pin" [size]="22" [strokeWidth]="2.2" />Chi nhánh</span>
-    <span class="relative block">
+    <span class="branch-selection-card__text-2">
       <select
         [selectValue]="selectedBranch()"
         (change)="onSelect.emit($any($event).target.value)"

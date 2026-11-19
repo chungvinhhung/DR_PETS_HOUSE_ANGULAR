@@ -11,6 +11,7 @@ import { ReactStyleDirective } from '../../../../shared/customer/directives/reac
   standalone: true,
   imports: [ReactStyleDirective],
   templateUrl: './guest-login-banner.component.html',
+  styleUrl: './guest-login-banner.component.scss',
   host: {
     'class': 'flex min-h-[73px] items-center justify-between gap-4 rounded-2xl bg-white p-6 shadow-[0_4px_13px_rgba(144,202,249,0.85)]',
   },

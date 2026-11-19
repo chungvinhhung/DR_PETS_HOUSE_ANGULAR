@@ -1,12 +1,12 @@
-<div class="max-h-full w-[595px] max-w-[calc(100vw-24px)] overflow-y-auto bg-white p-[10px]" (click)="$any($event).stopPropagation()">
-  <div class="border border-[#CACACA] p-[21px] text-black">
-    <div class="flex items-start justify-between border-b border-[#CACACA] pb-5">
+<div class="invoice-modal__box" (click)="$any($event).stopPropagation()">
+  <div class="invoice-modal__box-2">
+    <div class="invoice-modal__row">
       <div>
-        <p class="text-[18px] text-[#726C6C]">Người nhận</p>
-        <h2 class="mt-2 text-[24px] font-medium">{{ order().recipient.name }}</h2>
-        <p class="mt-2 max-w-[300px] text-[15px] text-[#726C6C]">{{ order().recipient.address }}</p>
+        <p class="invoice-modal__nguoi-nhan-text">Người nhận</p>
+        <h2 class="invoice-modal__name">{{ order().recipient.name }}</h2>
+        <p class="invoice-modal__address">{{ order().recipient.address }}</p>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="invoice-modal__row-2">
         <button
           type="button"
           (click)="downloadInvoice()"
@@ -24,42 +24,42 @@
         <button type="button" (click)="onClose.emit($event)" class="text-2xl" aria-label="Đóng hóa đơn">×</button>
       </div>
     </div>
-    <h3 class="mt-4 text-[20px] font-semibold">Chi tiết đơn hàng #{{ order().id }}</h3>
-    <p class="mt-1 text-[14px] text-[#726C6C]">Ngày đặt: {{ formatOrderDate(order().orderedAt) }}</p>
-    <table class="mt-5 w-full text-left text-[14px]">
-      <thead class="bg-[#F0F0F0]">
+    <h3 class="invoice-modal__id">Chi tiết đơn hàng #{{ order().id }}</h3>
+    <p class="invoice-modal__ordered-at">Ngày đặt: {{ formatOrderDate(order().orderedAt) }}</p>
+    <table class="invoice-modal__table">
+      <thead class="invoice-modal__thead">
         <tr>
-          <th class="p-2">Sản phẩm</th>
-          <th class="p-2">Đơn giá</th>
-          <th class="p-2">SL</th>
-          <th class="p-2">Thành tiền</th>
+          <th class="invoice-modal__san-pham-heading-cell">Sản phẩm</th>
+          <th class="invoice-modal__san-pham-heading-cell">Đơn giá</th>
+          <th class="invoice-modal__san-pham-heading-cell">SL</th>
+          <th class="invoice-modal__san-pham-heading-cell">Thành tiền</th>
         </tr>
       </thead>
-      <tbody class="text-[#726C6C]">
+      <tbody class="invoice-modal__tbody">
         @for (product of order().products; track product.id) {
-          <tr class="border-b border-[#E5E5E5]">
-            <td class="px-2 py-4">{{ product.name }}</td>
-            <td class="px-2 py-4">{{ formatCurrency(product.price) }}</td>
-            <td class="px-2 py-4">{{ product.quantity }}</td>
-            <td class="px-2 py-4">{{ formatCurrency(product.price * product.quantity) }}</td>
+          <tr class="invoice-modal__row-3">
+            <td class="invoice-modal__name-2">{{ product.name }}</td>
+            <td class="invoice-modal__name-2">{{ formatCurrency(product.price) }}</td>
+            <td class="invoice-modal__name-2">{{ product.quantity }}</td>
+            <td class="invoice-modal__name-2">{{ formatCurrency(product.price * product.quantity) }}</td>
           </tr>
         }
       </tbody>
     </table>
-    <div class="mt-4 space-y-2 text-[15px]">
-      <p class="flex justify-between">
+    <div class="invoice-modal__box-3 space-y-2 mt-4">
+      <p class="invoice-modal__text">
         <span>Tạm tính</span>
         <span>{{ formatCurrency(getOrderSubtotal(order())) }}</span>
       </p>
-      <p class="flex justify-between">
+      <p class="invoice-modal__text">
         <span>Phí vận chuyển</span>
         <span>{{ formatCurrency(order().shippingFee) }}</span>
       </p>
-      <p class="flex justify-between">
+      <p class="invoice-modal__text">
         <span>Giảm giá</span>
         <span>-{{ formatCurrency(order().discount) }}</span>
       </p>
-      <p class="flex justify-between border-t-2 border-[#CACACA] pt-3 text-[20px] font-semibold">
+      <p class="invoice-modal__text-2">
         <span>Tổng cộng</span>
         <span>{{ formatCurrency(getOrderTotal(order())) }}</span>
       </p>

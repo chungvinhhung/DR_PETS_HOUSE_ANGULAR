@@ -12,8 +12,9 @@ import { NAV_LINKS } from '../../constants/navbar-menu-links';
   standalone: true,
   imports: [CustomerLinkDirective],
   templateUrl: './nav-links.component.html',
+  styleUrl: './nav-links.component.scss',
   host: {
-    '[class]': '`hidden flex-1 items-center justify-center gap-3 lg:flex xl:gap-[22px] ${className()}`',
+    '[class]': '`hidden flex-auto items-center justify-evenly gap-3 lg:flex xl:gap-[22px] ${className()}`',
     'aria-label': 'Menu chính',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,

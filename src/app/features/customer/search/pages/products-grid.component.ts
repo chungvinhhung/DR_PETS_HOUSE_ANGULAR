@@ -10,8 +10,9 @@ import { ShoppingProductCardComponent } from '../../../../shared/customer/compon
   standalone: true,
   imports: [ShoppingProductCardComponent],
   templateUrl: './products-grid.component.html',
+  styleUrl: './products-grid.component.scss',
   host: {
-    'class': 'grid w-full grid-cols-2 justify-items-center gap-x-[10.75px] gap-y-8 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5',
+    'class': 'grid w-full grid-cols-[repeat(auto-fill,minmax(max(170px,calc((100%_-_64px)/5)),1fr))] justify-items-center gap-x-4 gap-y-8',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

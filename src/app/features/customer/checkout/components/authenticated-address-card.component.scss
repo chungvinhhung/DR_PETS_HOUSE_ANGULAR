@@ -1,0 +1,31 @@
+.authenticated-address-card__row {
+  @apply flex items-center justify-between;
+}
+
+.authenticated-address-card__row-2 {
+  @apply flex items-center gap-2;
+}
+
+.authenticated-address-card__dia-chi-nhan-title {
+  @apply text-xl font-black text-blue-900;
+}
+
+.authenticated-address-card__stack {
+  @apply flex flex-col gap-2 rounded-2xl bg-[#f2f4f6] p-5;
+}
+
+.authenticated-address-card__dang-tai-dia-text {
+  @apply text-sm font-medium leading-5 text-slate-700;
+}
+
+.authenticated-address-card__name {
+  @apply text-base font-bold leading-6 text-slate-900;
+}
+
+.authenticated-address-card__mac-dinh-text {
+  @apply inline-flex w-fit rounded-2xl bg-[#d5e4f3] px-3 py-1 text-xs font-bold text-blue-900;
+}
+
+.authenticated-address-card__error {
+  @apply text-sm font-medium text-red-600;
+}

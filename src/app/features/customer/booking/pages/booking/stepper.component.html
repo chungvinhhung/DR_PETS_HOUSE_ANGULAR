@@ -2,8 +2,8 @@
   @let current = index + 1;
   @let complete = current < step();
   @let active = current === step();
-  <div class="flex min-w-0 items-start">
-    <div class="flex min-w-0 flex-1 flex-col items-center md:min-w-[94px] lg:min-w-[104px]">
+  <div class="stepper__row">
+    <div class="stepper__stack">
       <span [class]="`flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-bold ${
                 complete
                   ? 'border-blue-900 bg-blue-900 text-white'

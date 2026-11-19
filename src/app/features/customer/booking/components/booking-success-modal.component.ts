@@ -12,6 +12,7 @@ import { successPanelBackground, successCheckGroup } from './booking-success-mod
   standalone: true,
   imports: [ReactStyleDirective, CustomerLinkDirective],
   templateUrl: './booking-success-modal.component.html',
+  styleUrl: './booking-success-modal.component.scss',
   host: {
     'class': 'fixed inset-0 z-[100] flex items-center justify-center bg-[#06105a33] p-5 backdrop-blur-md',
   },

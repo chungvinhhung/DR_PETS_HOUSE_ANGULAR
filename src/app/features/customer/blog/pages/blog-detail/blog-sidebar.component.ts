@@ -13,6 +13,7 @@ import { BLOG_CATEGORIES, QUICK_READ_POSTS } from '../../../../../shared/custome
   standalone: true,
   imports: [SidebarHeadingComponent, CategoryIconComponent, CustomerLinkDirective],
   templateUrl: './blog-sidebar.component.html',
+  styleUrl: './blog-sidebar.component.scss',
   host: {
     'class': 'flex w-full shrink-0 flex-col lg:w-[330px] gap-6 self-start',
   },

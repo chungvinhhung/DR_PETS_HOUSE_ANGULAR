@@ -11,6 +11,7 @@ import { ReactStyleDirective } from '../../directives/react-style.directive';
   standalone: true,
   imports: [RatingStarComponent, ReactStyleDirective],
   templateUrl: './product-rating.component.html',
+  styleUrl: './product-rating.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

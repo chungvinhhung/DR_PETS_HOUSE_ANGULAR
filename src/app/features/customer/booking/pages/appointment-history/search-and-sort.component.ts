@@ -11,6 +11,7 @@ import { appointmentImages } from '../../../../../shared/customer/assets/appoint
   standalone: true,
   imports: [SelectValueDirective],
   templateUrl: './search-and-sort.component.html',
+  styleUrl: './search-and-sort.component.scss',
   host: {
     'class': 'flex w-full gap-[10px]',
     '(submit)': 'handle1($any($event))',

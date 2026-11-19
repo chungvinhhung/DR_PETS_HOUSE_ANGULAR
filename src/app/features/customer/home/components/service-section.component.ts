@@ -13,6 +13,7 @@ import { HOME_SERVICES } from '../data/home-data';
   standalone: true,
   imports: [SectionTitleComponent, ServiceSectionServiceCardComponent],
   templateUrl: './service-section.component.html',
+  styleUrl: './service-section.component.scss',
   host: {
     'id': 'dịch-vụ-thú-y',
     'class': 'relative w-full overflow-hidden py-12 md:py-16',

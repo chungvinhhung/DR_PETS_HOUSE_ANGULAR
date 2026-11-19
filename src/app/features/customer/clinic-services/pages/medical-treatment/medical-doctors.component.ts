@@ -11,6 +11,7 @@ import { medicalAssets, medicalDoctorPages } from '../../data/medical-treatment-
   standalone: true,
   imports: [CustomerLinkDirective],
   templateUrl: './medical-doctors.component.html',
+  styleUrl: './medical-doctors.component.scss',
   host: {
     'class': 'medical-doctors',
     'aria-label': 'Đội ngũ bác sĩ thú y',

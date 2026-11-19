@@ -13,6 +13,7 @@ import { getWeightValue, getBookingPets, getPetWeight, getPetId, getDistributedQ
   standalone: true,
   imports: [AppointmentDetailsComponent, PaymentPanelComponent],
   templateUrl: './booking-payment-step.component.html',
+  styleUrl: './booking-payment-step.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

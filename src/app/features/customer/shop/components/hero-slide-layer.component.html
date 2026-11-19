@@ -1,13 +1,13 @@
-<div class="absolute inset-x-[30px] inset-y-0 overflow-hidden rounded-[100px]">
+<div class="hero-slide-layer__layer">
   <img [attr.src]="slide().background" alt="" [class]="`pointer-events-none ${slide().backgroundImgClass}`" />
 </div>
 <div [class]="`absolute rounded-[100px] bg-[#E6D445] ${slide().yellowInset}`"></div>
 <div [class]="`${slide().petFrame} pointer-events-none`">
-  <div class="absolute inset-0 overflow-hidden">
+  <div class="hero-slide-layer__layer-2">
     <img
       [attr.src]="slide().petSrc"
       alt=""
-      class="absolute left-0 top-0 size-full max-w-none object-contain object-bottom"
+      class="hero-slide-layer__pet-src"
     />
   </div>
 </div>

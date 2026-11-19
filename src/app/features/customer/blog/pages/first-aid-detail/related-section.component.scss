@@ -1,0 +1,43 @@
+.related-section__section {
+  @apply pt-10;
+}
+
+.related-section__row {
+  @apply flex flex-wrap items-center gap-4;
+}
+
+.related-section__cac-kien-thuc-title {
+  @apply text-[20px] font-semibold uppercase leading-8 text-[#0D47A1];
+}
+
+.related-section__box {
+  @apply h-1 flex-1 rounded-full bg-[#FDD835];
+}
+
+.related-section__grid {
+  @apply relative mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3;
+}
+
+.related-section__id-link {
+  @apply min-h-[390px] flex-col rounded-[32px] p-6 shadow-sm sm:p-10 transition-transform;
+}
+
+.related-section__image {
+  @apply mb-4 h-40 w-full rounded-[16px] object-cover;
+}
+
+.related-section__category-label {
+  @apply mt-auto text-[12px] font-semibold uppercase text-[#0D47A1];
+}
+
+.related-section__title {
+  @apply mt-3 text-[22px] font-semibold leading-8;
+}
+
+.related-section__description {
+  @apply mt-3 text-[14px] leading-5;
+}
+
+.related-section__doc-ngay-text {
+  @apply mt-4 flex items-center gap-2 font-semibold text-[#0D47A1];
+}

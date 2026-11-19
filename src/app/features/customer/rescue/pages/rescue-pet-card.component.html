@@ -1,44 +1,40 @@
-<div class="h-2 w-full bg-gradient-to-r from-[#0D47A1] via-[#FDD835] to-[#79CCF2]"></div>
-<div class="px-4 pb-2 pt-4">
-  <div class="h-[217px] overflow-hidden rounded-[2px] border-2 border-white bg-[#D9E3F6] p-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-    <img [attr.src]="pet().image" [attr.alt]="pet().name" class="h-full w-full object-cover" />
+<div class="rescue-pet-card__box"></div>
+<div class="rescue-pet-card__box-2">
+  <div class="rescue-pet-card__box-3">
+    <img [attr.src]="pet().image" [attr.alt]="pet().name" class="rescue-pet-card__name" />
   </div>
 </div>
 @if (adopted()) {
-  <div class="absolute left-4 top-4 flex h-[39px] items-center gap-2 rounded-full border-2 border-white bg-[#0058BE] px-[18px] text-[12px] uppercase tracking-[0.6px] text-white">
+  <div class="rescue-pet-card__layer">
     <app-customer-icon name="circle" className="h-[11px] w-[11px] fill-white" />{{ pet().ribbon }}</div>
 } @else {
-  <div class="absolute right-[-42px] top-[18px] rotate-45 border-b border-[#0D47A1] bg-[#FCD34D] px-10 pb-[5px] pt-1 text-[11px] uppercase tracking-[1.1px] text-[rgba(0,0,0,0.87)]">{{ pet().ribbon }}</div>
+  <div class="rescue-pet-card__ribbon">{{ pet().ribbon }}</div>
 }
-<div class="flex min-h-0 flex-1 flex-col px-5 pb-4 pt-2">
-  <div class="rescue-card-details min-h-0 flex-1 overflow-y-auto pr-1" tabindex="0"
-    aria-label="Nội dung đầy đủ về thú cưng, có thể cuộn để đọc">
-  <p class="py-2 text-[16px] leading-6 text-[rgba(0,0,0,0.87)]">{{ pet().description }}</p>
-  <div class="border-y border-dashed border-[rgba(208,198,174,0.5)] pb-[9px] pt-[11px]">
-    <h3 class="text-[24px] font-bold leading-8 text-[#121C2A]">Tình trạng</h3>
-    <p class="mt-1 text-[14px] leading-5 tracking-[0.28px] text-[rgba(0,0,0,0.87)]">{{ pet().status }}</p>
+<div class="rescue-pet-card__stack">
+  <p class="rescue-pet-card__description">{{ pet().description }}</p>
+  <div class="rescue-pet-card__box-4">
+    <h3 class="rescue-pet-card__tinh-trang-title">Tình trạng</h3>
+    <p class="rescue-pet-card__status">{{ pet().status }}</p>
   </div>
-  <div class="pt-[10px]">
-    <h3 class="text-[24px] font-bold leading-8 text-[#121C2A]">Cần hỗ trợ</h3>
-    <p class="mt-1 min-h-[40px] text-[14px] leading-5 tracking-[0.28px] text-[rgba(0,0,0,0.87)]">{{ pet().need }}</p>
-  </div>
+  <div class="rescue-pet-card__box-5">
+    <h3 class="rescue-pet-card__tinh-trang-title">Cần hỗ trợ</h3>
+    <p class="rescue-pet-card__need">{{ pet().need }}</p>
   </div>
   @if (!adopted()) {
-    <div class="rescue-card-actions mt-3 flex shrink-0 flex-col gap-2">
+    <div class="rescue-pet-card__stack-2">
+      <button
+        type="button"
+        (click)="onAdopt.emit(pet())"
+        class="flex h-9 items-center justify-center rounded-[2px] bg-[#FDD835] text-[14px] leading-5 tracking-[0.28px] text-[rgba(0,0,0,0.87)] shadow-[0_1px_1px_rgba(0,0,0,0.05)] transition-colors hover:bg-[#FBC02D]"
+      >Nhận nuôi ngay</button>
       @if (pet().supportPartnerHref) {
         <a
           [href]="pet().supportPartnerHref" target="_blank" rel="noopener noreferrer"
-          [attr.aria-label]="'Liên hệ '+pet().supportPartnerName+' để nhận nuôi'"
-          class="flex h-9 items-center justify-center rounded-[2px] bg-[#FDD835] text-[14px] leading-5 tracking-[0.28px] text-[rgba(0,0,0,0.87)] shadow-[0_1px_1px_rgba(0,0,0,0.05)] transition-colors hover:bg-[#FBC02D]"
-        >Nhận nuôi ngay</a>
-        <a
-          [href]="pet().supportPartnerHref" target="_blank" rel="noopener noreferrer"
           [attr.aria-label]="'Liên hệ '+pet().supportPartnerName+' để hỗ trợ'"
-          class="flex h-[38px] items-center justify-center rounded-[2px] border border-white bg-[#0D47A1] text-[14px] leading-5 tracking-[0.28px] text-white shadow-[0_1px_1px_rgba(0,0,0,0.05)] hover:bg-[#0b408f]"
+          class="rescue-pet-card__lien-he-de-button flex h-[38px] items-center justify-center"
         >Liên hệ để hỗ trợ</a>
       } @else {
-        <span class="flex h-9 items-center justify-center rounded-[2px] bg-[#f4dda6] text-[14px] text-[#685e50] opacity-70" aria-disabled="true" title="Hồ sơ chưa được gắn đối tác cứu trợ">Nhận nuôi ngay</span>
-        <span class="flex h-[38px] items-center justify-center rounded-[2px] bg-[#6c8cb9] text-[14px] text-white opacity-70" aria-disabled="true" title="Hồ sơ chưa được gắn đối tác cứu trợ">Liên hệ để hỗ trợ</span>
+        <button type="button" (click)="onAdopt.emit(pet())" class="rescue-pet-card__lien-he-de-button">Liên hệ để hỗ trợ</button>
       }
     </div>
   }

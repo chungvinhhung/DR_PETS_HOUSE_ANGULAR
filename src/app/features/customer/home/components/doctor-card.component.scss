@@ -1,0 +1,15 @@
+.doctor-card__box {
+  @apply relative h-[312px] w-[312px];
+}
+
+.doctor-card__bac-si {
+  @apply relative z-10 -translate-y-14 h-[312.42px] w-[312.42px] object-contain object-bottom;
+}
+
+.doctor-card__nen-xanh-ten-bac {
+  @apply absolute bottom-[0px] left-1/2 z-20 h-[131px] w-[318px] -translate-x-1/2;
+}
+
+.doctor-card__font-roboto {
+  @apply absolute left-1/2 top-1/2 flex h-[27px] w-[204px] -translate-x-1/2 -translate-y-1/2 rotate-[-13.69deg] items-center justify-center text-center text-[20px] font-medium leading-[160%] tracking-[0.15px] text-secondary;
+}

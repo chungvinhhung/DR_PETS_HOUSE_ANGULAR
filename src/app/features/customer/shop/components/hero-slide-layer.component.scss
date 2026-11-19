@@ -1,0 +1,11 @@
+.hero-slide-layer__layer {
+  @apply absolute inset-x-[30px] inset-y-0 overflow-hidden rounded-[100px];
+}
+
+.hero-slide-layer__layer-2 {
+  @apply absolute inset-0 overflow-hidden;
+}
+
+.hero-slide-layer__pet-src {
+  @apply absolute left-0 top-0 size-full max-w-none object-contain object-bottom;
+}

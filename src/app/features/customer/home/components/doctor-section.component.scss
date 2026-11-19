@@ -1,0 +1,23 @@
+.doctor-section__stack {
+  @apply relative flex flex-col items-center gap-6;
+}
+
+.doctor-section__doi-ngu-bac-text {
+  @apply font-bold;
+}
+
+.doctor-section__row {
+  @apply flex flex-wrap items-center justify-center gap-4;
+}
+
+.doctor-section__row-2 {
+  @apply flex flex-wrap items-center justify-center gap-4 pb-10;
+}
+
+.doctor-section__tim-hieu-them-link {
+  @apply px-2 py-3 text-base font-medium text-blue-900 hover:underline;
+}
+
+.doctor-section__grid {
+  @apply grid w-full grid-cols-1 gap-10 sm:grid-cols-2 xl:grid-cols-4 xl:gap-8;
+}

@@ -12,6 +12,7 @@ import { checkoutImages } from '../assets/checkout-assets';
   standalone: true,
   imports: [AddressFormModalComponent, AddressListComponent],
   templateUrl: './address-change-modal.component.html',
+  styleUrl: './address-change-modal.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

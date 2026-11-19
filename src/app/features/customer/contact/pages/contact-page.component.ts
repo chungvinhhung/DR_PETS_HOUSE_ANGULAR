@@ -16,6 +16,7 @@ import { CONTACT_CHANNELS } from '../data/contact-data';
   standalone: true,
   imports: [CanvasLayoutComponent, NavBarComponent, ContactChannelComponent, ContactFormComponent, BranchDirectoryComponent, FooterComponent],
   templateUrl: './contact-page.component.html',
+  styleUrl: './contact-page.component.scss',
   host: {
     'class': 'contact-page',
   },

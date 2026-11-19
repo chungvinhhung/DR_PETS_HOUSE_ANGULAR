@@ -1,7 +1,7 @@
-<div class="flex items-center justify-between">
-  <div class="flex items-center gap-2">
+<div class="authenticated-address-card__row">
+  <div class="authenticated-address-card__row-2">
     <img [attr.src]="checkoutImages.locationPin" alt="" class="h-5 w-4" aria-hidden="true" />
-    <h2 class="text-xl font-black text-blue-900">ĐỊA CHỈ NHẬN HÀNG</h2>
+    <h2 class="authenticated-address-card__dia-chi-nhan-title">ĐỊA CHỈ NHẬN HÀNG</h2>
   </div>
   <button
     type="button"
@@ -9,19 +9,19 @@
     class="text-sm font-bold text-blue-900 transition-colors duration-micro hover:underline"
   >Thay đổi</button>
 </div>
-<div class="flex flex-col gap-2 rounded-2xl bg-[#f2f4f6] p-5">
+<div class="authenticated-address-card__stack">
   @if (loading()) {
-    <p class="text-sm font-medium leading-5 text-slate-700">Đang tải địa chỉ...</p>
+    <p class="authenticated-address-card__dang-tai-dia-text">Đang tải địa chỉ...</p>
   } @else if (address()) {
-    <p class="text-base font-bold leading-6 text-slate-900">{{ address().name }} | {{ address().phone }}</p>
-    <p class="text-sm font-medium leading-5 text-slate-700">{{ displayAddress() }}</p>
+    <p class="authenticated-address-card__name">{{ address().name }} | {{ address().phone }}</p>
+    <p class="authenticated-address-card__dang-tai-dia-text">{{ displayAddress() }}</p>
   } @else {
-    <p class="text-sm font-medium leading-5 text-slate-700">Chưa có địa chỉ nhận hàng. Vui lòng thêm địa chỉ trước khi đặt hàng.</p>
+    <p class="authenticated-address-card__dang-tai-dia-text">Chưa có địa chỉ nhận hàng. Vui lòng thêm địa chỉ trước khi đặt hàng.</p>
   }
   @if (address()?.isDefault) {
-    <span class="inline-flex w-fit rounded-2xl bg-[#d5e4f3] px-3 py-1 text-xs font-bold text-blue-900">Mặc định</span>
+    <span class="authenticated-address-card__mac-dinh-text">Mặc định</span>
   }
   @if (error()) {
-    <p class="text-sm font-medium text-red-600">{{ error() }}</p>
+    <p class="authenticated-address-card__error">{{ error() }}</p>
   }
 </div>

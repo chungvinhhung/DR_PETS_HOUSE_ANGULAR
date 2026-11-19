@@ -8,6 +8,7 @@ import { CustomerIconComponent } from '../../../../../shared/customer/components
   standalone: true,
   imports: [CommonModule, CustomerIconComponent],
   templateUrl: './reschedule-modal.component.html',
+  styleUrl: './reschedule-modal.component.scss',
   host: {
     'class': 'overlay-fade-in fixed inset-0 z-50 flex items-center justify-center bg-[rgba(6,16,90,0.3)] px-4 backdrop-blur-sm',
   },

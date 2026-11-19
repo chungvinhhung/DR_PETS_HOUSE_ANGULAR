@@ -1,21 +1,21 @@
 @if (!(!open())) {
   <div
-    class="fixed inset-0 z-[95] bg-[rgba(6,16,90,0.2)] backdrop-blur-[6px] lg:hidden"
+    class="mobile-search-panel__tim-kiem"
     role="dialog"
     aria-label="Tìm kiếm"
   >
-    <div class="mobile-panel-enter h-full w-full bg-white">
-      <div class="flex h-12 w-full items-center justify-center bg-white px-[15px] md:h-16">
+    <div class="mobile-search-panel__mobile-panel-enter mobile-panel-enter">
+      <div class="mobile-search-panel__row">
         <form
-          class="flex h-[26px] min-w-0 flex-1 items-center justify-between gap-[13px]"
+          class="mobile-search-panel__form"
           (submit)="handle1($any($event))"
         >
-          <label class="relative h-[26px] min-w-0 flex-1">
-            <span class="absolute inset-0 rounded border border-[#FDD835]"></span>
+          <label class="mobile-search-panel__label">
+            <span class="mobile-search-panel__text"></span>
             <img
               [attr.src]="navbarImages.dogSearch"
               alt=""
-              class="absolute -left-0.5 top-px h-[25px] w-[27px] object-cover"
+              class="mobile-search-panel__dog-search"
             />
             <input
               autofocus
@@ -38,14 +38,14 @@
           </button>
         </form>
       </div>
-      <div class="h-[calc(100vh-48px)] overflow-y-auto bg-[#FFFDE7] pt-1 md:h-[calc(100vh-64px)]">
-        <section class="flex w-full flex-col gap-3 px-4 py-[10px]">
-          <h2 class="font-['Roboto'] text-[16px] font-bold leading-6 tracking-[0.15px] text-[#353535]">Gợi ý phù hợp</h2>
-          <div class="flex min-h-[172px] flex-col justify-between">
+      <div class="mobile-search-panel__box">
+        <section class="mobile-search-panel__section">
+          <h2 class="mobile-search-panel__goi-y-phu-title">Gợi ý phù hợp</h2>
+          <div class="mobile-search-panel__stack">
             @if (isLoading()) {
-              <p class="rounded-[8px] border-b border-[#E0E0E0] p-2 font-['Roboto'] text-[14px] leading-6 text-black/60">Đang tải gợi ý...</p>
+              <p class="mobile-search-panel__dang-tai-goi-text">Đang tải gợi ý...</p>
             } @else if (error()) {
-              <p class="rounded-[8px] border-b border-[#E0E0E0] p-2 font-['Roboto'] text-[14px] leading-6 text-black/60">{{ error() }}</p>
+              <p class="mobile-search-panel__dang-tai-goi-text">{{ error() }}</p>
             } @else {
               @for (suggestion of visibleSuggestions().slice(0, 4); track suggestion.id; let index = $index) {
                 <button
@@ -57,16 +57,16 @@
                     ].join(' ')"
                 >
                   <img app-search-asset-icon />
-                  <span class="min-w-0 truncate">{{ suggestion.label }}</span>
+                  <span class="mobile-search-panel__label-2">{{ suggestion.label }}</span>
                 </button>
               }
             }
           </div>
         </section>
         @if (visibleProducts().length > 0) {
-          <section class="flex w-full flex-col gap-3 px-4 py-[10px]">
-            <h2 class="font-['Roboto'] text-[16px] font-bold leading-6 tracking-[0.15px] text-[#353535]">Sản phẩm liên quan</h2>
-            <div class="grid grid-cols-2 gap-3">
+          <section class="mobile-search-panel__section">
+            <h2 class="mobile-search-panel__goi-y-phu-title">Sản phẩm liên quan</h2>
+            <div class="mobile-search-panel__grid">
               @for (product of visibleProducts().slice(0, 2); track product.id; let index = $index) {
                 <button
                   type="button"
@@ -76,18 +76,18 @@
                   <img
                     [attr.src]="product.image"
                     [attr.alt]="product.name"
-                    class="size-12 shrink-0 rounded-[8px] object-cover"
+                    class="mobile-search-panel__name"
                   />
-                  <span class="min-w-0">
-                    <span class="block truncate font-['Roboto'] text-[13px] leading-[19.5px] text-black/87">{{ product.name }}</span>
-                    <span class="block truncate font-['Roboto'] text-[12px] leading-[18px] text-[#0D47A1]">{{ formatVnd(product.price) }}</span>
+                  <span class="mobile-search-panel__text-2">
+                    <span class="mobile-search-panel__text-black-87 text-black/87">{{ product.name }}</span>
+                    <span class="mobile-search-panel__price">{{ formatVnd(product.price) }}</span>
                   </span>
                 </button>
               }
             </div>
           </section>
         }
-        <div class="px-4 py-[10px]">
+        <div class="mobile-search-panel__box-2">
           <button
             type="button"
             (click)="searchByKeyword(displayQuery())"

@@ -22,8 +22,9 @@ const defaultAvatar = '/assets/customer/images/profile/user-avatar.png';
   standalone: true,
   imports: [AddressFormModalComponent, ChangePasswordModalComponent, CustomerButtonComponent, UserProfileFieldComponent, AddressCardComponent, CustomerIconComponent, SelectValueDirective],
   templateUrl: './user-profile-page.component.html',
+  styleUrl: './user-profile-page.component.scss',
   host: {
-    'class': 'mx-auto w-full max-w-[1160px] font-sans text-[rgba(0,0,0,0.87)]',
+    'class': 'mx-auto w-full max-w-page font-sans text-[rgba(0,0,0,0.87)]',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

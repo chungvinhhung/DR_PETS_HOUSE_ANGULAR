@@ -12,11 +12,11 @@
     fill="#E5F6FD"
   />
 </svg>
-<div class="relative z-10 flex h-full w-full items-center gap-[100px] pl-[120px] pr-[87px]">
-  <div class="flex max-w-[600px] flex-[1_0_0] flex-col items-start justify-center gap-[43px] pb-[123px]">
+<div class="grooming-hero__row">
+  <div class="grooming-hero__stack">
     <h1 [appStyle]="groomingTitleStyles.hero">Dịch vụ<br />Grooming &amp; Spa</h1>
     <p
-      class="w-full text-justify text-[#0F172A]"
+      class="grooming-hero__dich-vu-tam-text"
       [appStyle]="{
             fontFamily: 'Roboto, sans-serif',
             fontWeight: 400,
@@ -24,8 +24,8 @@
             lineHeight: 1.334
           }"
     >Dịch vụ tắm sấy, cắt tỉa lông và chăm sóc vệ sinh giúp thú cưng luôn sạch sẽ, khỏe mạnh và thoải mái.</p>
-    <div class="flex items-start gap-[24px]">
-      <a appCustomerLink="/dat-lich" class="focus-ring-brand group relative rounded-[4px]">
+    <div class="grooming-hero__row-2">
+      <a appCustomerLink="/dat-lich" class="grooming-hero__focus-ring-brand focus-ring-brand group">
         <img
           [attr.src]="groomingImages.heroPaw"
           alt=""
@@ -33,7 +33,7 @@
           aria-hidden="true"
         />
         <span
-          class="flex w-[181px] items-center justify-center rounded-[4px] bg-[#FDD835] px-[22px] py-2 shadow-[0px_3px_1px_-2px_rgba(0,0,0,0.2),0px_2px_2px_0px_rgba(0,0,0,0.14),0px_1px_5px_0px_rgba(0,0,0,0.12)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#FBC02D] hover:shadow-[0_5px_12px_rgba(0,0,0,0.18)] active:translate-y-0 active:scale-[0.98]"
+          class="grooming-hero__dat-lich-ngay-text"
           [appStyle]="{
                 fontFamily: 'Roboto, sans-serif',
                 fontWeight: 700,
@@ -47,7 +47,7 @@
       </a>
       <a
         href="#danh-sach-dich-vu"
-        class="focus-ring-brand flex w-[179px] items-center justify-center rounded-[4px] bg-[#FFF9C4] px-[22px] py-2 shadow-[0px_3px_1px_-2px_rgba(0,0,0,0.2),0px_2px_2px_0px_rgba(0,0,0,0.14),0px_1px_5px_0px_rgba(0,0,0,0.12)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#FFF59D] hover:shadow-[0_5px_12px_rgba(0,0,0,0.18)] active:translate-y-0 active:scale-[0.98]"
+        class="grooming-hero__focus-ring-brand-2 focus-ring-brand"
         [appStyle]="{
               fontFamily: 'Roboto, sans-serif',
               fontWeight: 700,
@@ -61,11 +61,11 @@
     </div>
   </div>
   <!-- Figma: ảnh chó + nền vàng — căn giữa cột phải, cách nền trắng 87px trên/dưới -->
-  <div class="flex flex-[1_0_0] max-w-[636px] items-center justify-center self-stretch py-[87px]">
+  <div class="grooming-hero__figma-anh-cho-nen">
     <img
       [attr.src]="groomingImages.heroPetComposite"
       alt="Grooming & Spa"
-      class="h-full w-full max-h-[516px] object-contain object-center"
+      class="grooming-hero__grooming-spa"
     />
   </div>
 </div>

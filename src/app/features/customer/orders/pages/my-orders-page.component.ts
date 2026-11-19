@@ -20,6 +20,7 @@ import { buildCheckoutItemsFromOrder } from './order-pages-yellow-button.helpers
   standalone: true,
   imports: [OrderPagesSearchAndSortComponent, OrderCardComponent, OrderReviewModalComponent],
   templateUrl: './my-orders-page.component.html',
+  styleUrl: './my-orders-page.component.scss',
   host: {
     'class': 'mx-auto flex w-full max-w-[943px] flex-col gap-6 pb-10',
   },

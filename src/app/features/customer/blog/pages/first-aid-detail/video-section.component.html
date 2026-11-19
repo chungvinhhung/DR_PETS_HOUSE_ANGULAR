@@ -1,17 +1,22 @@
-<div class="w-full lg:w-[532px] lg:shrink-0">
-  <h2 class="text-[24px] sm:text-[32px] font-semibold leading-10">{{ video()?.title }}</h2>
+<div class="video-info">
+  <h2 class="video-info__title">{{ video()?.title }}</h2>
+
   @if (video()?.descriptionHtml) {
-    <div class="first-aid-video-rich mt-4 text-[16px] leading-6"
-      [innerHTML]="video().descriptionHtml"></div>
+    <div
+      class="first-aid-video-rich video-info__rich-desc"
+      [innerHTML]="video().descriptionHtml"
+    ></div>
   } @else {
     @if (video()?.description) {
-      <p class="mt-4 text-[16px] leading-6">{{ video().description }}</p>
+      <p class="video-info__desc">{{ video().description }}</p>
     }
+
     @if (video()?.highlights?.length) {
-      <ul class="mt-4 space-y-2">
+      <ul class="video-info__highlights">
         @for (item of video().highlights; track item) {
-          <li class="flex items-center gap-2 text-[16px] leading-6">
-            <app-customer-icon name="check-circle-2" className="h-4 w-4" /> {{ item }}
+          <li class="video-info__highlight-item">
+            <app-customer-icon name="check-circle-2" className="icon-check" />
+            {{ item }}
           </li>
         }
       </ul>
@@ -24,7 +29,7 @@
     <video
       controls
       preload="metadata"
-      class="w-full max-w-[500px] rounded-[32px] bg-black lg:ml-10 lg:h-[281px] lg:w-[500px]"
+      class="video-media video-media--player"
       [src]="video().url"
     >
       Trình duyệt không hỗ trợ phát video này.
@@ -34,21 +39,25 @@
       [href]="video().url"
       target="_blank"
       rel="noopener noreferrer"
-      class="flex aspect-video w-full max-w-[500px] items-center justify-center gap-3 rounded-[32px] border border-[#C1C6D5] bg-black text-white lg:ml-10 lg:h-[281px] lg:w-[500px] lg:aspect-auto"
+      class="video-media video-media--external"
       aria-label="Mở video hướng dẫn trên trang nguồn"
     >
-      <app-customer-icon name="play" className="h-7 w-7" /> Mở video hướng dẫn
+      <app-customer-icon name="play" className="icon-play-lg" />
+      Mở video hướng dẫn
     </a>
   }
 } @else {
   <button
     type="button"
     (click)="handle1()"
-    class="flex aspect-video w-full max-w-[500px] items-center justify-center rounded-[32px] border border-[#C1C6D5] bg-black lg:ml-10 lg:h-[281px] lg:w-[500px] lg:aspect-auto"
+    class="video-media video-media--trigger"
     [attr.aria-label]="playing() ? 'Tạm dừng video' : 'Phát video hướng dẫn'"
   >
-    <span [class]="`flex h-20 w-20 items-center justify-center rounded-full bg-[#FDD835] text-black transition-transform ${playing() ? 'scale-90' : 'hover:scale-105'}`">
-      <app-customer-icon name="play" className="ml-1 h-7 w-7 fill-current" />
+    <span
+      class="play-button-circle"
+      [class.is-playing]="playing()"
+    >
+      <app-customer-icon name="play" className="icon-play-btn" />
     </span>
   </button>
 }

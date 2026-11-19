@@ -11,6 +11,7 @@ export const QUICK_LINKS = [
   ["Lịch sử đơn hàng", "/don-hang-cua-toi"],
   ["Hồ sơ thú cưng", "/thu-cung-cua-toi"],
   ["Lịch sử đặt lịch", "/lich-su-dat-lich"],
+  ["Tra cứu đơn (không cần tài khoản)", "/tra-cuu-don-hang"],
   ["Thông tin cứu trợ", "/cuu-tro"],
 ];
 

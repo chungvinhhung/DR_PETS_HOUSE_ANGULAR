@@ -10,6 +10,7 @@ import { medicalAssets, medicalStats } from '../../data/medical-treatment-data';
   standalone: true,
   imports: [],
   templateUrl: './medical-stats.component.html',
+  styleUrl: './medical-stats.component.scss',
   host: {
     'class': 'medical-stats',
   },

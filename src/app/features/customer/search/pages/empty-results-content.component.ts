@@ -10,6 +10,7 @@ import { CustomerLinkDirective } from '../../../../shared/customer/directives/cu
   standalone: true,
   imports: [CustomerLinkDirective],
   templateUrl: './empty-results-content.component.html',
+  styleUrl: './empty-results-content.component.scss',
   host: {
     'class': 'flex w-full flex-col items-center justify-center px-4 pb-20 pt-12 text-center',
   },

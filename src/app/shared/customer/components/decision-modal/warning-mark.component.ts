@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   standalone: true,
   imports: [],
   templateUrl: './warning-mark.component.html',
+  styleUrl: './warning-mark.component.scss',
   host: {
     'class': 'decision-modal__icon-wrap',
     'aria-hidden': 'true',

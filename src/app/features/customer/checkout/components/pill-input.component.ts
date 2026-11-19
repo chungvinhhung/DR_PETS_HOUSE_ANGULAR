@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
   standalone: true,
   imports: [],
   templateUrl: './pill-input.component.html',
+  styleUrl: './pill-input.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

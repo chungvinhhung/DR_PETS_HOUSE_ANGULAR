@@ -15,6 +15,7 @@ import { QUICK_LINKS, SERVICE_LINKS, SUPPORT_LINKS, LEGAL_LINKS, GENERAL_LINKS }
   standalone: true,
   imports: [TabletSocialLinksComponent, TabletContactRowComponent, TabletFooterColumnComponent, CustomerLinkDirective],
   templateUrl: './tablet-footer.component.html',
+  styleUrl: './tablet-footer.component.scss',
   host: {
     '[class]': '`hidden w-full flex-col items-start overflow-hidden font-sans md:flex lg:hidden ${ isBlue() ? \'bg-[#E4F5FC]\' : \'bg-white\' }`',
     'data-footer-tablet': 'true',

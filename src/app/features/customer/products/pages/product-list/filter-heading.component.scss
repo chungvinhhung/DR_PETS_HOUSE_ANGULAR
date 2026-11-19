@@ -1,0 +1,7 @@
+.filter-heading__text {
+  @apply h-[24px] w-[3px] rounded-full bg-[#0D47A1];
+}
+
+.filter-heading__title {
+  @apply text-[22px] font-bold leading-none text-[#0D47A1];
+}

@@ -15,6 +15,7 @@ import { invalidInputClass } from './adoption-application-modal.helpers';
   standalone: true,
   imports: [RequiredMarkComponent, FieldErrorComponent],
   templateUrl: './textarea-question.component.html',
+  styleUrl: './textarea-question.component.scss',
   host: {
     'class': 'flex w-full flex-col gap-4 pb-[6px]',
   },

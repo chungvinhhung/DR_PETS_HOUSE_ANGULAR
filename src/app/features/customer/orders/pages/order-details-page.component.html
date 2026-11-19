@@ -1,15 +1,15 @@
 @if (isLoading()) {
-  <div class="mx-auto w-full max-w-[960px] py-16 text-center text-[#0D47A1]">Đang tải chi tiết đơn hàng...</div>
+  <div class="order-details-page__dang-tai-chi-el">Đang tải chi tiết đơn hàng...</div>
 } @else if (!order()) {
-  <div class="mx-auto w-full max-w-[960px] py-16 text-center">
-    <h1 class="text-2xl font-bold">Không tìm thấy đơn hàng</h1>
-    <a appCustomerLink="/don-hang-cua-toi" class="mt-4 inline-block text-[#0D47A1]">Quay lại danh sách đơn hàng</a>
+  <div class="order-details-page__box">
+    <h1 class="order-details-page__khong-tim-thay-title">Không tìm thấy đơn hàng</h1>
+    <a appCustomerLink="/don-hang-cua-toi" class="order-details-page__quay-lai-danh-link">Quay lại danh sách đơn hàng</a>
   </div>
 } @else {
-  <div class="mx-auto w-full max-w-[960px] pb-10">
-    <div class="flex items-center gap-3 mb-5 flex-shrink-0">
-      <a appCustomerLink="/don-hang-cua-toi" class="text-slate-500 hover:text-slate-900 transition">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div class="order-details-page__box-2">
+    <div class="order-details-page__row">
+      <a appCustomerLink="/don-hang-cua-toi" class="order-details-page__link">
+        <svg class="order-details-page__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -18,15 +18,15 @@
           />
         </svg>
       </a>
-      <h1 class="text-2xl font-bold text-slate-900">Chi tiết đơn hàng</h1>
+      <h1 class="order-details-page__chi-tiet-don-title">Chi tiết đơn hàng</h1>
     </div>
     @if (loadError()) {
-      <p class="mb-4 rounded-xl bg-[#E5F6FD] px-4 py-3 text-center text-sm font-medium text-[#0D47A1]">{{ loadError() }}</p>
+      <p class="order-details-page__load-error">{{ loadError() }}</p>
     }
-    <section class="rounded-[14px] bg-white px-6 py-[30px]">
-      <div class="flex items-center justify-between gap-4">
+    <section class="order-details-page__section">
+      <div class="order-details-page__row-2">
         <div>
-            <h1 class="text-[32px] font-bold text-[#344054]">
+            <h1 class="order-details-page__code">
               Mã đơn hàng: {{ order().code || order().order_code || order().id }}
             </h1>
             <span [class]="`mt-2 inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase ${currentStatus().badgeClass}`">
@@ -36,9 +36,9 @@
 
           <button
             (click)="invoiceOpen.set(true)"
-            class="inline-flex items-center gap-2 rounded border border-[#D0D5DD] px-4 py-2 text-[14px] font-bold text-[#667085] transition hover:bg-gray-50"
+            class="order-details-page__button"
           >
-            <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg" class="shrink-0">
+            <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg" class="order-details-page__icon-2">
               <path d="M11.3333 16.1139H5.66667C3.08125 16.1139 1.59375 14.6264 1.59375 12.041V4.95768C1.59375 2.37227 3.08125 0.884766 5.66667 0.884766H11.3333C13.9187 0.884766 15.4062 2.37227 15.4062 4.95768V12.041C15.4062 14.6264 13.9187 16.1139 11.3333 16.1139ZM5.66667 1.94727C3.64083 1.94727 2.65625 2.93185 2.65625 4.95768V12.041C2.65625 14.0668 3.64083 15.0514 5.66667 15.0514H11.3333C13.3592 15.0514 14.3438 14.0668 14.3438 12.041V4.95768C14.3438 2.93185 13.3592 1.94727 11.3333 1.94727H5.66667Z" fill="currentColor"/>
               <path d="M13.1043 6.55208H11.6877C10.611 6.55208 9.73975 5.68083 9.73975 4.60417V3.1875C9.73975 2.89708 9.98058 2.65625 10.271 2.65625C10.5614 2.65625 10.8022 2.89708 10.8022 3.1875V4.60417C10.8022 5.09292 11.1989 5.48958 11.6877 5.48958H13.1043C13.3947 5.48958 13.6356 5.73042 13.6356 6.02083C13.6356 6.31125 13.3947 6.55208 13.1043 6.55208Z" fill="currentColor"/>
               <path d="M8.49984 9.74023H5.6665C5.37609 9.74023 5.13525 9.4994 5.13525 9.20898C5.13525 8.91857 5.37609 8.67773 5.6665 8.67773H8.49984C8.79025 8.67773 9.03109 8.91857 9.03109 9.20898C9.03109 9.4994 8.79025 9.74023 8.49984 9.74023Z" fill="currentColor"/>
@@ -48,22 +48,22 @@
           </button>
 
       </div>
-     <div class="mt-5 flex items-center gap-4 text-[14px] text-[#667085]">
+     <div class="order-details-page__row-3">
             
-           <span class="flex items-center gap-1.5 font-normal text-[#667085]">
+           <span class="order-details-page__text">
             <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M16.625 5.6875H14.875C14.875 3.2725 12.915 1.3125 10.5 1.3125C8.085 1.3125 6.125 3.2725 6.125 5.6875H4.375C3.4125 5.6875 2.625 6.475 2.625 7.4375V17.9375C2.625 18.9 3.4125 19.6875 4.375 19.6875H16.625C17.5875 19.6875 18.375 18.9 18.375 17.9375V7.4375C18.375 6.475 17.5875 5.6875 16.625 5.6875ZM10.5 3.0625C11.9525 3.0625 13.125 4.235 13.125 5.6875H7.875C7.875 4.235 9.0475 3.0625 10.5 3.0625ZM16.625 17.9375H4.375V7.4375H16.625V17.9375ZM10.5 10.9375C9.0475 10.9375 7.875 9.765 7.875 8.3125H6.125C6.125 10.7275 8.085 12.6875 10.5 12.6875C12.915 12.6875 14.875 10.7275 14.875 8.3125H13.125C13.125 9.765 11.9525 10.9375 10.5 10.9375Z" fill="#667085"/>
             </svg>
             <span>Ngày đặt hàng: 
-              <strong class="text-[#1D2939]">{{ formatOrderDate(order().orderedAt) }}</strong>
+              <strong class="order-details-page__ordered-at">{{ formatOrderDate(order().orderedAt) }}</strong>
             </span>
           </span>
 
             @if (order().estimatedDelivery) {
 
-              <span class="h-4 w-[1px] bg-[#D0D5DD]"></span>
+              <span class="order-details-page__text-2"></span>
             
-              <span class="flex items-center gap-1.5 font-normal text-[#12B76A]">
+              <span class="order-details-page__text-3">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M10.8332 12.2921H1.6665C1.32484 12.2921 1.0415 12.0087 1.0415 11.6671V6.3504C1.0415 6.08374 1.20816 5.85038 1.44983 5.75872C1.69983 5.66705 1.97484 5.74208 2.14151 5.94208C2.64984 6.55041 3.44151 6.89207 4.22484 6.86707C4.89151 6.8504 5.50816 6.60042 5.97482 6.15875C6.19149 5.97542 6.36649 5.75874 6.49983 5.51707C6.75816 5.0754 6.88317 4.59206 6.87484 4.10039C6.85817 3.33373 6.52486 2.63373 5.95819 2.1254C5.75819 1.9504 5.69151 1.67538 5.78317 1.43372C5.87484 1.19205 6.10818 1.02539 6.36652 1.02539H12.4998C12.8415 1.02539 13.1248 1.30872 13.1248 1.65039V9.98372C13.1248 11.2671 12.0998 12.2921 10.8332 12.2921ZM2.2915 11.0421H10.8332C11.4082 11.0421 11.8748 10.5754 11.8748 10.0004V2.29207H7.65817C7.94984 2.83374 8.10817 3.44209 8.12484 4.07542C8.1415 4.80042 7.95816 5.51707 7.59149 6.14207C7.39149 6.5004 7.1165 6.84208 6.8165 7.09208C6.14983 7.72541 5.23316 8.10041 4.25816 8.12541C3.55816 8.15041 2.88318 7.97541 2.29985 7.65874V11.0421H2.2915Z" fill="#12B76A"/>
                   <path d="M15.8332 17.291H14.9998C14.6582 17.291 14.3748 17.0077 14.3748 16.666C14.3748 16.091 13.9082 15.6243 13.3332 15.6243C12.7582 15.6243 12.2915 16.091 12.2915 16.666C12.2915 17.0077 12.0082 17.291 11.6665 17.291H8.33317C7.9915 17.291 7.70817 17.0077 7.70817 16.666C7.70817 16.091 7.2415 15.6243 6.6665 15.6243C6.0915 15.6243 5.62484 16.091 5.62484 16.666C5.62484 17.0077 5.3415 17.291 4.99984 17.291H4.1665C2.4415 17.291 1.0415 15.891 1.0415 14.166V11.666C1.0415 11.3243 1.32484 11.041 1.6665 11.041H10.8332C11.4082 11.041 11.8748 10.5743 11.8748 9.99935V4.16602C11.8748 3.82435 12.1582 3.54102 12.4998 3.54102H14.0332C14.8582 3.54102 15.6165 3.98269 16.0248 4.69936L17.4498 7.19102C17.5582 7.38269 17.5582 7.62435 17.4498 7.81602C17.3415 8.00769 17.1332 8.12435 16.9082 8.12435H15.8332C15.7165 8.12435 15.6248 8.21602 15.6248 8.33268V10.8327C15.6248 10.9493 15.7165 11.041 15.8332 11.041H18.3332C18.6748 11.041 18.9582 11.3243 18.9582 11.666V14.166C18.9582 15.891 17.5582 17.291 15.8332 17.291ZM15.5415 16.041H15.8332C16.8665 16.041 17.7082 15.1993 17.7082 14.166V12.291H15.8332C15.0332 12.291 14.3748 11.6327 14.3748 10.8327V8.33268C14.3748 7.53268 15.0248 6.87435 15.8332 6.87435L14.9415 5.31602C14.7582 4.99102 14.4082 4.79102 14.0332 4.79102H13.1248V9.99935C13.1248 11.266 12.0998 12.291 10.8332 12.291H2.2915V14.166C2.2915 15.1993 3.13317 16.041 4.1665 16.041H4.45815C4.73315 15.0827 5.6165 14.3743 6.6665 14.3743C7.7165 14.3743 8.59986 15.0827 8.87486 16.041H11.1332C11.4082 15.0827 12.2915 14.3743 13.3415 14.3743C14.3915 14.3743 15.2665 15.0827 15.5415 16.041Z" fill="#12B76A"/>
@@ -87,23 +87,23 @@
             }`">{{ actionMessage().text }}</div>
       }
       @if (order().status !== 'cancelled' && order().status !== 'awaiting_payment') {
-        <div class="relative mt-7 h-[92px]">
-          <div class="absolute left-[16.666%] right-[16.666%] top-[41px] h-1 rounded-[2px] bg-[#D0D5DD]">
+        <div class="order-details-page__box-3">
+          <div class="order-details-page__layer">
             <div
-              class="h-full rounded-[2px] bg-[#12B76A] transition-[width] duration-300"
+              class="order-details-page__box-4"
               [appStyle]="styles1()"
             ></div>
           </div>
-          <div class="relative flex h-full">
+          <div class="order-details-page__let-completed-el">
             @for (step of STATUS_STEPS; track $index; let index = $index) {
               @let completed = index <= activeStep();
-              <div class="grid flex-1 grid-rows-[28px_32px_24px] place-items-center text-center">
+              <div class="order-details-page__grid">
                 <!-- SỬA DÒNG NÀY -->
                 <span [class]="`text-[18px] font-medium leading-7 ${completed ? 'text-[#12B76A]' : 'text-[#D0D5DD]'}`">
                   {{ (step === 'processing' && index < activeStep()) ? 'Đã xử lý' : ORDER_STATUS[step].label }}
                 </span>
                 <span [class]="`z-10 h-[22px] w-[22px] rounded-full ${completed ? 'bg-[#12B76A]' : 'bg-[#D0D5DD]'}`"></span>
-                <span class="whitespace-nowrap text-[16px] leading-6 text-[#667085]">{{ getStepDateLabel(order(), step) }}</span>
+                <span class="order-details-page__step">{{ getStepDateLabel(order(), step) }}</span>
               </div>
             }
           </div>
@@ -116,26 +116,26 @@
             <div app-product-summary [product]="product" [large]="true"></div>
           }
         } @else {
-          <p class="rounded-xl bg-[#F8FAFC] px-4 py-6 text-center text-[#667085]">Đơn hàng chưa có dữ liệu sản phẩm.</p>
+          <p class="order-details-page__don-hang-chua-text">Đơn hàng chưa có dữ liệu sản phẩm.</p>
         }
       </div>
-      <div class="mt-6 grid grid-cols-2 gap-12 border-y border-[#D0D5DD] py-6">
+      <div class="order-details-page__grid-2">
         <div>
-          <h3 class="text-[20px] font-medium text-[#0D47A1]">Phương thức thanh toán</h3>
-          <p class="mt-2 text-[14px] text-[#667085]">{{ order().paymentMethod }}</p>
+          <h3 class="order-details-page__phuong-thuc-thanh-title">Phương thức thanh toán</h3>
+          <p class="order-details-page__payment-method">{{ order().paymentMethod }}</p>
         </div>
         <div>
-          <h3 class="text-[20px] font-medium text-[#0D47A1]">Vận chuyển</h3>
-          <p class="mt-2 text-[16px] text-[#0D47A1]">Người nhận</p>
-          <p class="text-[14px] text-[#667085]">{{ order().recipient.name }} | {{ order().recipient.phone }}</p>
-          <p class="mt-2 text-[16px] text-[#0D47A1]">Địa chỉ</p>
-          <p class="text-[14px] text-[#667085]">{{ order().recipient.address }}</p>
+          <h3 class="order-details-page__phuong-thuc-thanh-title">Vận chuyển</h3>
+          <p class="order-details-page__nguoi-nhan-text">Người nhận</p>
+          <p class="order-details-page__name">{{ order().recipient.name }} | {{ order().recipient.phone }}</p>
+          <p class="order-details-page__nguoi-nhan-text">Địa chỉ</p>
+          <p class="order-details-page__name">{{ order().recipient.address }}</p>
         </div>
       </div>
-      <div class="grid grid-cols-2 gap-12 py-6">
-        <div class="flex flex-col items-start">
-          <h3 class="text-[20px] font-medium">Cần hỗ trợ</h3>
-          <a appCustomerLink="/lien-he" class="mt-3 inline-flex items-center gap-2 text-[#667085] transition hover:text-[#0D47A1]">
+      <div class="order-details-page__grid-3">
+        <div class="order-details-page__stack">
+          <h3 class="order-details-page__can-ho-tro-title">Cần hỗ trợ</h3>
+          <a appCustomerLink="/lien-he" class="order-details-page__link-2">
             <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M8.49984 16.1139C4.29942 16.1139 0.885254 12.6998 0.885254 8.49935C0.885254 4.29893 4.29942 0.884766 8.49984 0.884766C12.7003 0.884766 16.1144 4.29893 16.1144 8.49935C16.1144 12.6998 12.7003 16.1139 8.49984 16.1139ZM8.49984 1.94727C4.88734 1.94727 1.94775 4.88685 1.94775 8.49935C1.94775 12.1118 4.88734 15.0514 8.49984 15.0514C12.1123 15.0514 15.0519 12.1118 15.0519 8.49935C15.0519 4.88685 12.1123 1.94727 8.49984 1.94727Z" fill="#667085"/>
               <path d="M8.5 9.73893C8.20958 9.73893 7.96875 9.4981 7.96875 9.20768V5.66602C7.96875 5.3756 8.20958 5.13477 8.5 5.13477C8.79042 5.13477 9.03125 5.3756 9.03125 5.66602V9.20768C9.03125 9.4981 8.79042 9.73893 8.5 9.73893Z" fill="#667085"/>
@@ -147,7 +147,7 @@
             
           <a
               appCustomerLink="/policies/doi-tra-hang"
-              class="mt-3 inline-flex items-center gap-2 text-[#667085] transition hover:text-[#0D47A1]"
+              class="order-details-page__link-2"
             >
               <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M8.50011 9.42078C8.40803 9.42078 8.31594 9.39954 8.23094 9.34996L1.97637 5.73039C1.72137 5.58164 1.63635 5.25578 1.7851 5.00078C1.93385 4.74578 2.2597 4.66077 2.50762 4.80952L8.49302 8.27328L14.443 4.83079C14.698 4.68204 15.0239 4.77414 15.1655 5.02205C15.3143 5.27705 15.2222 5.60286 14.9743 5.75161L8.76219 9.34996C8.68428 9.39246 8.5922 9.42078 8.50011 9.42078Z" fill="#667085"/>
@@ -164,7 +164,7 @@
             @if (order()?.status === 'delivered') {
               <a
                 [appCustomerLink]="'/don-hang-cua-toi/' + order().id + '/yeu-cau-hoan-tien'"
-                class="mt-3.5 inline-flex items-center gap-2 text-[#667085] transition hover:text-[#0D47A1]"
+                class="order-details-page__tien-link"
               >
                 <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <mask id="stroke0_8307_18122" fill="white">
@@ -179,23 +179,23 @@
             
         </div>
         <div>
-          <h3 class="text-[20px] font-medium text-[#0D47A1]">Tóm tắt đơn hàng</h3>
+          <h3 class="order-details-page__phuong-thuc-thanh-title">Tóm tắt đơn hàng</h3>
           @for (__item2 of [['Tạm tính', getOrderSubtotal(order())], ['Phí vận chuyển', order().shippingFee], ['Giảm giá', -order().discount]]; track $index) {
             @let label = __item2[0];
             @let value = __item2[1];
-            <div class="mt-3 flex justify-between text-[#727780]">
+            <div class="order-details-page__row-4">
               <span>{{ label }}</span>
-              <span class="text-[#191C1E]">{{ formatCurrency(value) }}</span>
+              <span class="order-details-page__format-currency">{{ formatCurrency(value) }}</span>
             </div>
           }
-          <div class="mt-3 flex justify-between border-t pt-3 text-[20px] font-bold text-[#00355F]">
-            <span>Tổng cộng<small class="block text-[12px] font-normal text-black/40">(Đã bao gồm thuế VAT)</small></span>
+          <div class="order-details-page__row-5">
+            <span>Tổng cộng<small class="order-details-page__da-bao-gom-note">(Đã bao gồm thuế VAT)</small></span>
             <span>{{ formatCurrency(getOrderTotal(order())) }}</span>
           </div>
         </div>
       </div>
       @if (detailActions().length) {
-        <div class="mt-2 flex flex-wrap justify-end gap-3 border-t border-[#D0D5DD] pt-6">
+        <div class="order-details-page__row-6">
           @for (action of detailActions(); track $index) {
             @if (action.variant === 'yellow') {
               <app-order-pages-yellow-button

@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './price-row.component.html',
+  styleUrl: './price-row.component.scss',
   host: {
     'class': 'flex justify-between font-medium text-slate-700',
   },

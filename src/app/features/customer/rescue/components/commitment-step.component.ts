@@ -13,6 +13,7 @@ import { ADOPTION_COMMITMENT_NOTE, COMMITMENT_QUESTIONS } from '../data/adoption
   standalone: true,
   imports: [TextareaQuestionComponent, RadioQuestionComponent, CustomerIconComponent],
   templateUrl: './commitment-step.component.html',
+  styleUrl: './commitment-step.component.scss',
   host: {
     'class': 'flex w-full flex-col gap-6',
   },

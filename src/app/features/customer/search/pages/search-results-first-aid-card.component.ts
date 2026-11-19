@@ -10,6 +10,7 @@ import { CustomerLinkDirective } from '../../../../shared/customer/directives/cu
   standalone: true,
   imports: [CustomerLinkDirective],
   templateUrl: './search-results-first-aid-card.component.html',
+  styleUrl: './search-results-first-aid-card.component.scss',
   host: {
     'class': 'flex min-h-[438px] w-full flex-col rounded-[24px] bg-white p-6 sm:p-[41px] shadow-[0_1px_2px_rgba(0,0,0,0.05)]',
   },

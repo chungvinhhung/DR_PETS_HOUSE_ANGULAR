@@ -10,6 +10,7 @@ import { RequiredMarkComponent } from './required-mark.component';
   standalone: true,
   imports: [RequiredMarkComponent],
   templateUrl: './adoption-application-modal-field-label.component.html',
+  styleUrl: './adoption-application-modal-field-label.component.scss',
   host: {
     '[attr.for]': '`adoption-${field().name}`',
     'class': 'px-1 text-[14px] font-semibold leading-5 tracking-[0.28px] text-[rgba(0,0,0,0.87)]',

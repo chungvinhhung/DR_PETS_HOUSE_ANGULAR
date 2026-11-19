@@ -11,6 +11,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
   standalone: true,
   imports: [],
   templateUrl: './filter-group.component.html',
+  styleUrl: './filter-group.component.scss',
   host: {
     'class': 'w-full overflow-hidden rounded-[40px] border border-[rgba(25,118,210,0.5)] bg-white px-[30px] py-10',
   },

@@ -8,6 +8,7 @@ import { SectionLabelComponent } from './section-label.component';
 import { RescuePetCardComponent } from './rescue-pet-card.component';
 import { AdoptionRequestCardComponent } from './adoption-request-card.component';
 import { PartnerCardComponent } from './partner-card.component';
+import { AdoptionApplicationModalComponent } from '../components/adoption-application-modal.component';
 import { FooterComponent } from '../../../../layouts/customer/components/footer/footer.component';
 import { CustomerIconComponent } from '../../../../shared/customer/components/icon/customer-icon.component';
 import { rescueImages } from '../../../../shared/customer/assets/rescue-images';
@@ -20,8 +21,19 @@ import { RESCUE_PAGE_SIZE } from './rescue-page.helpers';
 @Component({
   selector: 'div[app-rescue-page]',
   standalone: true,
-  imports: [CanvasLayoutComponent, NavBarComponent, SectionLabelComponent, RescuePetCardComponent, AdoptionRequestCardComponent, PartnerCardComponent, FooterComponent, CustomerIconComponent],
+  imports: [
+    CanvasLayoutComponent,
+    NavBarComponent,
+    SectionLabelComponent,
+    RescuePetCardComponent,
+    AdoptionRequestCardComponent,
+    PartnerCardComponent,
+    AdoptionApplicationModalComponent,
+    FooterComponent,
+    CustomerIconComponent,
+  ],
   templateUrl: './rescue-page.component.html',
+  styleUrl: './rescue-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white',
   },
@@ -36,6 +48,7 @@ export class RescuePageComponent {
   // --- Dữ liệu & hàm dùng trong template ---
   protected readonly rescueImages: any = rescueImages;
   protected readonly RESCUE_PARTNERS: any = RESCUE_PARTNERS;
+  protected readonly Boolean: any = Boolean;
 
   // --- Giá trị tính toán (computed) ---
   readonly filteredPets = computed<any>(() => {
@@ -65,6 +78,7 @@ export class RescuePageComponent {
   readonly isLoading = signal<any>(false);
   readonly loadError = signal<any>("");
   readonly isLoadingMyRequests = signal<any>(false);
+  readonly selectedAdoptionPet = signal<any>(null);
 
   constructor() {
     // useEffect(..., []) -> chạy 1 lần sau khi render
@@ -157,6 +171,17 @@ export class RescuePageComponent {
 
   protected handle3() {
     this.currentPage.update((page: any) => Math.min(this.totalPages(), page + 1));
+  }
+
+  protected async handleSubmitApplication(values: any) {
+    const pet = this.selectedAdoptionPet();
+    const petId = pet?.id || pet?._id;
+    if (!petId) return;
+    await this.rescueApi.createAdoptionRequest(petId, values);
+    if (this.authService.isAuthenticated()) {
+      const requests = await this.rescueApi.getMyAdoptionRequests();
+      this.myRequests.set(requests);
+    }
   }
 
 }

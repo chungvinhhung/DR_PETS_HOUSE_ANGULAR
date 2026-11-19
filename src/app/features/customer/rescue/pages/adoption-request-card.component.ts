@@ -10,6 +10,7 @@ import { rescueImages } from '../../../../shared/customer/assets/rescue-images';
   standalone: true,
   imports: [],
   templateUrl: './adoption-request-card.component.html',
+  styleUrl: './adoption-request-card.component.scss',
   host: {
     'class': 'flex min-h-[144px] items-center gap-5 rounded-[24px] border border-[#D9E3F6] bg-white px-5 py-5 shadow-[0_10px_30px_rgba(59,130,246,0.08)]',
   },

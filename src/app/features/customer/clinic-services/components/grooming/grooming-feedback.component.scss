@@ -1,0 +1,19 @@
+.grooming-feedback__stack {
+  @apply relative flex h-[603px] flex-col items-end px-3 py-[34px];
+}
+
+.grooming-feedback__stack-2 {
+  @apply flex w-[1416px] flex-col items-center gap-[58px];
+}
+
+.grooming-feedback__phan-hoi-cua-title {
+  @apply h-[58px] w-[942px];
+}
+
+.grooming-feedback__row {
+  @apply flex w-[1200px] items-center justify-center gap-[10px];
+}
+
+.grooming-feedback__row-2 {
+  @apply flex w-full items-center justify-center gap-[21px];
+}

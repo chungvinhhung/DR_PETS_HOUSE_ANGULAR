@@ -219,6 +219,7 @@ export class SearchApiService {
       ...baseResponse,
       total: buckets.products.length + buckets.services.length + buckets.knowledge.length + buckets.community.length,
       counts,
+      facetCounts,
       results: buckets,
     };
   }

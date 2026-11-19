@@ -18,6 +18,7 @@ const infoIcon = '/assets/customer/icons/info-icon.svg';
   standalone: true,
   imports: [CouponInputComponent, ReactStyleDirective],
   templateUrl: './appointment-checkout.component.html',
+  styleUrl: './appointment-checkout.component.scss',
   host: {
     'class': 'w-full min-h-screen bg-[#F8F9FB] flex justify-center font-sans',
   },

@@ -18,6 +18,7 @@ import { SECTION_TITLE_TYPOGRAPHY, getFallbackFlashSaleEndTime, getFlashSaleCoun
   standalone: true,
   imports: [ShopHeroSectionComponent, ShoppingProductCardComponent, FeedbackSectionComponent, ReactStyleDirective],
   templateUrl: './shop-canvas.component.html',
+  styleUrl: './shop-canvas.component.scss',
   host: {
     'class': 'relative h-[calc(3346px+0.5cm)] w-[1440px] bg-white',
   },

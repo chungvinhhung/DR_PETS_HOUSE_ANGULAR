@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './step-section.component.html',
+  styleUrl: './step-section.component.scss',
   host: {
     'class': 'pt-10',
   },

@@ -12,6 +12,7 @@ import { GROOMING_FAQS } from '../../../../../shared/customer/data/grooming-data
   standalone: true,
   imports: [PetCareFaqSectionComponent],
   templateUrl: './grooming-faq.component.html',
+  styleUrl: './grooming-faq.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

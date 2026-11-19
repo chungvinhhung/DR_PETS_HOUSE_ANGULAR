@@ -1,0 +1,43 @@
+.not-found-page__main {
+  @apply bg-[#E5F6FD];
+}
+
+.not-found-page__section {
+  @apply relative mx-auto flex min-h-[621px] max-w-page justify-center overflow-hidden px-6 pt-[96px] text-center;
+}
+
+.not-found-page__stack {
+  @apply relative flex w-full max-w-[670px] flex-col items-center;
+}
+
+.not-found-page__box {
+  @apply relative h-[240px] w-[670px] max-w-none shrink-0 origin-top max-md:-mb-[120px] max-md:scale-50;
+}
+
+.not-found-page__layer {
+  @apply absolute left-[102px] top-0 flex h-[240px] w-[444px] items-start justify-center font-['Baloo_Tamma'] text-[270px] font-normal leading-[0.95] text-[#0D47A1];
+}
+
+.not-found-page__text {
+  @apply w-[164px] text-center;
+}
+
+.not-found-page__sleeping-pet-image {
+  @apply absolute left-[455px] top-[66px] size-[215px] object-contain;
+}
+
+.not-found-page__tennis-ball-image {
+  @apply absolute left-[65%] top-[210px] size-12 -translate-x-1/2 object-contain;
+}
+
+.not-found-page__title {
+  @apply mt-6 max-w-[649px] text-center text-[52px] font-bold leading-[48px] tracking-[-1.2px] text-black/85;
+}
+
+.not-found-page__description {
+  @apply mt-[27px] whitespace-pre-line text-center text-[20px] font-normal leading-[29.25px] text-black/60;
+}
+
+.not-found-page__focus-ring-brand {
+  @apply mt-[43px] inline-flex h-[42px] min-w-[155px] items-center justify-center rounded bg-[#FDD835] px-[22px] text-[15px] font-bold uppercase leading-[26px] tracking-[0.46px] text-black/90 shadow-elevation transition-[background-color,box-shadow,transform] duration-200 hover:bg-[#FBC02D] hover:shadow-[0px_2px_8px_rgba(253,216,53,0.45)] active:scale-[0.98];
+}

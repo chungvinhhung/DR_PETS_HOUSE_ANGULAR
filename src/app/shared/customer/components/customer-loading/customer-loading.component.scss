@@ -1,0 +1,20 @@
+// Kích thước spinner (small/medium/large) vẫn lấy từ sizeStyles() trong .ts.
+.loading__overlay {
+  @apply fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-75 backdrop-blur-sm;
+}
+
+.loading__inline {
+  @apply flex justify-center p-4;
+}
+
+.loading__spinner {
+  @apply animate-spin text-primary;
+}
+
+.loading__track {
+  @apply opacity-25;
+}
+
+.loading__arc {
+  @apply opacity-75;
+}

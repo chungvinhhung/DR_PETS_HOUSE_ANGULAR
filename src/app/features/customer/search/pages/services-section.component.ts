@@ -12,6 +12,7 @@ import { CustomerLinkDirective } from '../../../../shared/customer/directives/cu
   standalone: true,
   imports: [SearchResultsSectionHeadingComponent, SearchResultsServiceCardComponent, CustomerLinkDirective],
   templateUrl: './services-section.component.html',
+  styleUrl: './services-section.component.scss',
   host: {
     'class': 'flex w-full flex-col gap-8',
   },

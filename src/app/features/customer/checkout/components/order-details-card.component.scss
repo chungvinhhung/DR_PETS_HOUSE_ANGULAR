@@ -1,0 +1,27 @@
+.order-details-card__stack {
+  @apply flex flex-col gap-2;
+}
+
+.order-details-card__chi-tiet-don-title {
+  @apply text-xl font-black text-blue-900;
+}
+
+.order-details-card__order-code {
+  @apply text-sm font-medium text-slate-600;
+}
+
+.order-details-card__stack-2 {
+  @apply flex flex-col gap-4;
+}
+
+.order-details-card__stack-3 {
+  @apply flex flex-col gap-3;
+}
+
+.order-details-card__khong-co-san-text {
+  @apply py-6 text-sm text-slate-500;
+}
+
+.order-details-card__ghi-chu-don-text {
+  @apply text-sm font-bold text-slate-900;
+}

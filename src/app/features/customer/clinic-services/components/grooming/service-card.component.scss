@@ -1,0 +1,39 @@
+.service-card__layer {
+  @apply absolute inset-0 h-[422px] w-[355px];
+}
+
+.service-card__title {
+  @apply size-full object-cover transition-transform duration-300 ease-out;
+}
+
+.service-card__layer-2 {
+  @apply absolute inset-0 bg-gradient-to-b from-[rgba(2,0,15,0)] to-[rgba(2,0,15,0.72)] transition-colors duration-300;
+}
+
+.service-card__layer-3 {
+  @apply absolute flex items-center justify-center;
+}
+
+.service-card__row {
+  @apply flex size-full items-center justify-center rounded-full border border-[#A1A4B1] px-[7px] py-1;
+}
+
+.service-card__id {
+  @apply rotate-[36.71deg] text-center text-[#A1A4B1];
+}
+
+.service-card__layer-4 {
+  @apply absolute inset-x-0 bottom-0 h-[124px] text-white;
+}
+
+.service-card__title-2 {
+  @apply absolute left-[28px] top-0;
+}
+
+.service-card__price {
+  @apply absolute right-[20px] top-[32px] text-right italic;
+}
+
+.service-card__description {
+  @apply absolute left-[28px] top-[62px] w-[291px];
+}

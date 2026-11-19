@@ -1,0 +1,15 @@
+.account-layout__header {
+  @apply flex-shrink-0 z-50 bg-white shadow-sm relative;
+}
+
+.account-layout__phan-than-duoi {
+  @apply flex min-h-0 flex-1 flex-col lg:flex-row overflow-hidden bg-white w-full h-full;
+}
+
+.account-layout__khoi-noi-dung-chinh {
+  @apply min-h-0 min-w-0 flex-1 overflow-y-auto flex flex-col bg-white relative;
+}
+
+.account-layout__box {
+  @apply flex-1 px-4 py-6 sm:px-6 lg:px-8;
+}

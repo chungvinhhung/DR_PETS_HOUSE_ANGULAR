@@ -11,6 +11,7 @@ import { OutlineButtonComponent } from './outline-button.component';
   standalone: true,
   imports: [OrderPagesYellowButtonComponent, OutlineButtonComponent],
   templateUrl: './order-actions.component.html',
+  styleUrl: './order-actions.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

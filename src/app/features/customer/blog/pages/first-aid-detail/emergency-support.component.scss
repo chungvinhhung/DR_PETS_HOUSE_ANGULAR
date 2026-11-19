@@ -1,0 +1,19 @@
+.emergency-support__title {
+  @apply flex items-center gap-2 text-[24px] font-semibold leading-8 text-[#C62828];
+}
+
+.emergency-support__bac-si-truc-text {
+  @apply text-[16px] leading-6;
+}
+
+.emergency-support__stack {
+  @apply flex flex-col gap-4;
+}
+
+.emergency-support__goi-ngay-0868686868-link {
+  @apply flex h-14 items-center justify-center rounded-full bg-[#D32F2F] text-[15px] font-bold uppercase tracking-[0.46px] text-white shadow-elevation transition-transform hover:scale-[1.02];
+}
+
+.emergency-support__dat-lich-kham-link {
+  @apply flex h-[60px] items-center justify-center rounded-full border-2 border-[#FDD835] bg-[#FFF9C4] text-[16px] font-bold;
+}

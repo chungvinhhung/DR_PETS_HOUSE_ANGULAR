@@ -1,0 +1,105 @@
+.service-pricing-modal__overlay {
+  @apply fixed inset-0 z-[200] flex items-center justify-center bg-black/35 px-6 py-8;
+}
+
+.service-pricing-modal__stack {
+  @apply relative flex max-h-[calc(100vh-64px)] w-[1280px] max-w-[calc(100vw-24px)] flex-col items-center overflow-hidden rounded-[24px] bg-white px-3 py-10 sm:px-0 shadow-[0px_20px_25px_-5px_rgba(255,237,213,0.5),0px_8px_10px_-6px_rgba(255,237,213,0.5)];
+}
+
+.service-pricing-modal__stack--single-column {
+  width: 760px;
+}
+
+.service-pricing-modal__header {
+  @apply flex w-full shrink-0 flex-col items-center;
+}
+
+.service-pricing-modal__grooming-pricing-title {
+  @apply m-0 w-full text-center font-['Baloo_Tamma'] text-[34px] sm:text-[48px] lg:text-[64px] font-normal leading-[1.1] text-[#0D47A1];
+}
+
+.service-pricing-modal__dr-pet-s-house-text {
+  @apply text-[#FBC02D];
+}
+
+/* Hàng tiêu đề: dính trên cùng khi cuộn dọc */
+.service-pricing-modal__row {
+  @apply sticky top-0 z-30 flex w-[1130px] shrink-0 items-center bg-white pb-3;
+}
+
+.service-pricing-modal__stack--single-column .service-pricing-modal__row,
+.service-pricing-modal__stack--single-column .service-pricing-modal__stack-2 {
+  width: 700px;
+}
+
+/* Ô lọc: dính trái khi cuộn ngang */
+.service-pricing-modal__box {
+  @apply sticky left-0 z-40 flex h-[44px] w-[260px] shrink-0 items-center bg-white;
+}
+
+.service-pricing-modal__selected-label {
+  @apply font-['Roboto'] text-[16px] font-normal leading-6 text-[rgba(0,0,0,0.87)];
+}
+
+.service-pricing-modal__layer {
+  @apply absolute left-0 top-[46px] w-[232px] overflow-hidden rounded-[16px] border border-[rgba(0,0,0,0.18)] bg-white py-1 shadow-[0_10px_24px_rgba(13,71,161,0.16)];
+}
+
+/* 5 cột giá: 150px, cách nhau 26px (tổng 854px) */
+.service-pricing-modal__cells {
+  @apply flex w-[854px] shrink-0 items-center gap-[26px];
+}
+
+.service-pricing-modal__stack--single-column .service-pricing-modal__cells {
+  width: 420px;
+}
+
+.service-pricing-modal__head-cell {
+  @apply flex h-[40px] w-[150px] shrink-0 items-center justify-center rounded-[16px] border bg-white px-2;
+}
+
+.service-pricing-modal__head-cell--wide {
+  @apply w-[854px];
+}
+
+.service-pricing-modal__stack--single-column .service-pricing-modal__head-cell--wide {
+  width: 420px;
+}
+
+.service-pricing-modal__label {
+  @apply whitespace-nowrap font-['Baloo_Tamma_2'] text-[15px] font-bold leading-5;
+}
+
+.service-pricing-modal__stack-2 {
+  @apply flex w-[1130px] flex-col items-start gap-[15px];
+}
+
+.service-pricing-modal__row-2 {
+  @apply flex min-h-[76px] w-[1130px] items-stretch rounded-[16px] pr-4;
+
+  > .service-pricing-modal__cells {
+    @apply py-4;
+  }
+}
+
+/* Cột tên dịch vụ: dính trái khi cuộn ngang, nền trùng màu hàng để che ô giá trượt qua */
+.service-pricing-modal__row-3 {
+  @apply sticky left-0 z-10 flex w-[260px] shrink-0 items-center gap-4 rounded-l-[16px] py-4 pl-4 pr-[18px];
+}
+
+.service-pricing-modal__row-4 {
+  @apply flex size-[30px] shrink-0 items-center justify-center;
+}
+
+.service-pricing-modal__title {
+  @apply min-w-0 font-['Baloo_Tamma_2'] text-[16px] font-bold leading-6 text-[#1B1C1D];
+}
+
+/* Vùng cuộn chung cho tiêu đề và các hàng giá */
+.service-pricing-modal__box-2 {
+  @apply mt-6 w-full max-w-[1150px] min-h-0 flex-1 overflow-auto;
+}
+
+.service-pricing-modal__stack--single-column .service-pricing-modal__box-2 {
+  max-width: 720px;
+}

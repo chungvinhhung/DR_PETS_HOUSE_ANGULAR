@@ -7,7 +7,6 @@ import { GroomingCombosComponent } from '../../components/grooming/grooming-comb
 import { GroomingWhyUsComponent } from '../../components/grooming/grooming-why-us.component';
 import { GroomingFeedbackSectionComponent } from '../../components/grooming/grooming-feedback-section.component';
 import { GroomingFAQComponent } from '../../components/grooming/grooming-faq.component';
-import { FooterComponent } from '../../../../../layouts/customer/components/footer/footer.component';
 
 /**
  * GroomingCanvas — chuyển từ React: src/pages/Services/GroomingSpaPage.jsx
@@ -15,8 +14,9 @@ import { FooterComponent } from '../../../../../layouts/customer/components/foot
 @Component({
   selector: 'app-grooming-canvas',
   standalone: true,
-  imports: [GroomingHeroComponent, GroomingServicesComponent, GroomingBannerComponent, GroomingCombosComponent, GroomingWhyUsComponent, GroomingFeedbackSectionComponent, GroomingFAQComponent, FooterComponent],
+  imports: [GroomingHeroComponent, GroomingServicesComponent, GroomingBannerComponent, GroomingCombosComponent, GroomingWhyUsComponent, GroomingFeedbackSectionComponent, GroomingFAQComponent],
   templateUrl: './grooming-canvas.component.html',
+  styleUrl: './grooming-canvas.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

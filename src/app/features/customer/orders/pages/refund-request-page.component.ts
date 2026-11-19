@@ -45,6 +45,7 @@ interface EvidenceFile {
   standalone: true,
   imports: [CustomerLinkDirective],
   templateUrl: './refund-request-page.component.html',
+  styleUrl: './refund-request-page.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
