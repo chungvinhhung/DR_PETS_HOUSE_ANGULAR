@@ -12,6 +12,7 @@ import { ArticlesSectionComponent } from './articles-section.component';
   standalone: true,
   imports: [ServicesSectionComponent, ProductsSectionComponent, ArticlesSectionComponent],
   templateUrl: './search-results-content.component.html',
+  styleUrl: './search-results-content.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -19,5 +20,6 @@ export class SearchResultsContentComponent {
   // --- Input / Output (props của React) ---
   readonly activeType = input<any>(undefined);
   readonly results = input<any>(undefined);
+  readonly crossSellServices = input<any[]>([]);
 
 }

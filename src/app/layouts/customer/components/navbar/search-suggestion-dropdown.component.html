@@ -6,7 +6,7 @@
 ></button>
 <aside
   id="site-search-suggestions"
-  class="panel-slide-in absolute right-0 top-[41px] z-[80] flex w-[466px] max-w-[calc(100vw-24px)] flex-col items-start overflow-hidden rounded-[4px] pt-5 shadow-[0px_10px_7.5px_rgba(0,0,0,0.1),0px_4px_3px_rgba(0,0,0,0.1)]"
+  class="search-suggestion-dropdown__panel-slide-in panel-slide-in"
   role="dialog"
   aria-label="Gợi ý tìm kiếm"
 >
@@ -16,9 +16,9 @@
     class="absolute right-[-2px] top-0 size-6"
     aria-hidden="true"
   />
-  <div class="flex w-full flex-col bg-[#FFFDE7] pt-1">
-    <section class="flex w-full flex-col gap-3 px-4 py-[10px]">
-      <h3 class="font-['Roboto'] text-[16px] font-bold leading-6 tracking-[0.15px] text-[#353535]">Gợi ý phù hợp</h3>
+  <div class="search-suggestion-dropdown__stack">
+    <section class="search-suggestion-dropdown__section">
+      <h3 class="search-suggestion-dropdown__goi-y-phu-title">Gợi ý phù hợp</h3>
       <div [class]="[
                 'flex w-full flex-col items-start',
                 shouldUseFigmaListHeight() ? 'h-[172px] justify-between' : 'gap-2'
@@ -47,9 +47,9 @@
       </div>
     </section>
     @if (!isLoading() && !error() && products().length > 0) {
-      <section class="flex w-full flex-col gap-3 px-4 py-[10px]">
-        <h3 class="font-['Roboto'] text-[16px] font-bold leading-6 tracking-[0.15px] text-[#353535]">Sản phẩm liên quan</h3>
-        <div class="flex w-full items-start justify-center gap-3">
+      <section class="search-suggestion-dropdown__section">
+        <h3 class="search-suggestion-dropdown__goi-y-phu-title">Sản phẩm liên quan</h3>
+        <div class="search-suggestion-dropdown__row">
           @for (product of products(); track product.id; let index = $index) {
             <button
               app-product-suggestion-card
@@ -63,7 +63,25 @@
         </div>
       </section>
     }
-    <div class="flex w-full flex-col items-center px-4 py-[10px]">
+    @if (!isLoading() && !error() && crossSellProducts().length > 0) {
+      <section class="search-suggestion-dropdown__section" aria-label="Gợi ý mua kèm">
+        <h3 class="search-suggestion-dropdown__goi-y-phu-title">Thường mua kèm</h3>
+        <div class="search-suggestion-dropdown__row">
+          @for (product of crossSellProducts(); track product.id) {
+            <button
+              app-product-suggestion-card
+              [product]="product"
+              [query]="''"
+              [active]="activeItemId() === `cross-sell-${product.id}`"
+              [attr.title]="product.crossSellReason"
+              (onSelect)="onProductSelect.emit($event)"
+              (onHover)="onItemHover.emit(`cross-sell-${product.id}`)"
+            ></button>
+          }
+        </div>
+      </section>
+    }
+    <div class="search-suggestion-dropdown__stack-2">
       <button
         type="button"
         (click)="onSeeAll.emit($event)"

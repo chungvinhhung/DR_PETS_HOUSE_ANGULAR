@@ -10,6 +10,7 @@ import { CheckoutOverlayComponent } from '../../../features/customer/checkout/co
 import { GuestOrderSuccessOverlayComponent } from '../../../features/customer/checkout/components/guest-order-success-overlay.component';
 import { OrderSuccessOverlayComponent } from '../../../features/customer/checkout/components/order-success-overlay.component';
 import { DecisionModalComponent } from '../../../shared/customer/components/decision-modal/decision-modal.component';
+import { CustomerBackToTopComponent } from '../components/back-to-top/customer-back-to-top.component';
 import { AUTH_MODAL_PARAM, CustomerAuthService } from '../../../core/customer/services/customer-auth.service';
 import { RETURN_URL_PARAM } from '../../../core/utils/return-url';
 
@@ -37,6 +38,7 @@ const CUSTOMER_STYLESHEET_ID = 'customer-stylesheet';
     OrderSuccessOverlayComponent,
     GuestOrderSuccessOverlayComponent,
     DecisionModalComponent,
+    CustomerBackToTopComponent,
   ],
   templateUrl: './customer-layout.component.html',
   styleUrl: './customer-layout.component.scss',

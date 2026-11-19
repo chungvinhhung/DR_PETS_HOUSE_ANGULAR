@@ -1,0 +1,71 @@
+.article__title {
+  @apply text-[24px] font-bold leading-[32px] text-[#0D47A1] sm:text-[32px] sm:leading-[40px];
+}
+
+.article__row {
+  @apply mt-4 flex min-h-[54px] flex-wrap items-center gap-x-6 gap-y-2 py-2 border-y border-[#C1C6D5] text-[14px] font-semibold tracking-[0.14px] text-[#414753];
+}
+
+.article__text {
+  @apply flex items-center gap-2;
+}
+
+.article__box {
+  @apply relative mt-4 h-[240px] overflow-hidden rounded-[12px] sm:h-[340px] lg:h-[450px];
+}
+
+.article__title-2 {
+  @apply h-full w-full object-cover;
+}
+
+.article__layer {
+  @apply absolute left-6 top-6 flex items-center gap-2 rounded-full bg-white/90 px-5 py-2 text-[12px] font-bold uppercase tracking-[0.6px] text-[#0D47A1] shadow-lg backdrop-blur-[4px];
+}
+
+.article__box-2 {
+  @apply mt-6 text-[16px] leading-[26px] text-[#414753];
+}
+
+.article__intro {
+  @apply italic;
+}
+
+.article__description {
+  @apply mt-6;
+}
+
+.article__box-3 {
+  @apply mt-6 rounded-r-[8px] border-l-4 border-[#1976D2] bg-[#F3F4F6] px-6 py-6;
+}
+
+.article__highlight-title {
+  @apply text-[20px] font-semibold leading-7 text-[#005AB4];
+}
+
+.article__highlight-text {
+  @apply mt-2;
+}
+
+.article__lich-tiem-phong-title {
+  @apply mt-6 text-[24px] font-semibold leading-8 text-[#005AB4];
+}
+
+.article__list {
+  @apply mt-5 flex flex-col gap-4;
+}
+
+.article__item {
+  @apply flex items-start gap-4;
+}
+
+.article__text-2 {
+  @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E3F2FD] font-semibold text-[#005AB4];
+}
+
+.article__text-3 {
+  @apply pt-1;
+}
+
+.article__row-2 {
+  @apply mt-8 flex flex-wrap gap-2 border-t border-[#C1C6D5] pt-8;
+}
