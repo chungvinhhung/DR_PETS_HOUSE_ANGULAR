@@ -69,6 +69,10 @@ export class BookingPaymentStepComponent implements OnInit {
   readonly pricingPreview = signal<any>(null);
   readonly pricingLoading = signal<any>(false);
   readonly pricingError = signal<any>("");
+  readonly validatedVoucherCode = signal<string | null>(null);
+  readonly selectedServiceIds = computed<string[]>(() => this.selectedServices()
+    .map((service: any) => String(service.serviceId || service.id || '').trim())
+    .filter(Boolean));
 
   constructor() {
     // useEffect(..., [petCount, selectedServices])
@@ -179,6 +183,6 @@ export class BookingPaymentStepComponent implements OnInit {
       ]),
     );
 
-    this.onConfirm.emit({ quantities: normalizedQuantities });
+    this.onConfirm.emit({ quantities: normalizedQuantities, voucherCode: this.validatedVoucherCode() || undefined });
   }
 }
