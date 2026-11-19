@@ -48,6 +48,20 @@ export class FirstAidPageComponent {
   });
   readonly initialCategory = computed<any>(() => this.navService.searchParams().get("category"));
   readonly visiblePosts = computed<any>(() => this.filteredPosts().slice(0, this.visibleCount()));
+  /** Two masonry lanes; each next card enters the earliest available column.
+   * Unlike grid row spans, uneven card heights never leave empty blocks.
+   * The original order is retained in the single-column mobile view.
+   */
+  readonly masonryColumns = computed(() => {
+    const columns: any[][] = [[], []];
+    const heights = [0, 0];
+    for (const post of this.visiblePosts()) {
+      const lane = heights[0] <= heights[1] ? 0 : 1;
+      columns[lane].push(post);
+      heights[lane] += post.variant === 'urgent' ? 430 : 325;
+    }
+    return columns;
+  });
 
   // --- Trạng thái (signal = useState / useRef) ---
   readonly category = signal<any>(FIRST_AID_CATEGORIES.some((item: any) => item.id === this.initialCategory()) ? this.initialCategory() : "all");

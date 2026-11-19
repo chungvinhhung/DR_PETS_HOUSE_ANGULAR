@@ -3250,3 +3250,165 @@ html:has(.customer-root) {
 .customer-root input[type='password']::-ms-clear {
   display: none;
 }
+
+/* Customer visual fixes: service cards, breadcrumbs, first-aid masonry, rescue. */
+/* The paw in MedicalServices is decorative and must not consume a normal
+   document-flow row: that was pushing all seven service cards far below the title. */
+.medical-services {
+  height: auto;
+  min-height: 0;
+  padding-top: 24px;
+  padding-bottom: 32px;
+  overflow: visible;
+}
+.medical-services__title {
+  height: 170px;
+}
+.medical-services__title > img {
+  pointer-events: none;
+}
+.medical-services__paw {
+  position: absolute;
+  z-index: 0;
+  left: 27px;
+  top: 245px;
+  width: 165px;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+}
+.medical-services__grid {
+  margin-top: 18px;
+  margin-bottom: 0;
+  align-content: start;
+}
+.medical-service-card--center {
+  grid-column: 2;
+}
+.medical-cta {
+  height: auto;
+  min-height: 230px;
+  padding: 8px 0 40px;
+  overflow: visible;
+}
+/* Keep the original visual, but never overlap the next section on a third row. */
+.medical-services + .medical-cta {
+  margin-top: 0;
+}
+
+/* Clear, accessible, lightweight breadcrumb shared by Blog & First Aid detail. */
+.customer-breadcrumb__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+  gap: 6px 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #475569;
+  font-size: 13px;
+  line-height: 20px;
+}
+.customer-breadcrumb__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  max-width: 100%;
+}
+.customer-breadcrumb__item--current {
+  flex: 1 1 auto;
+  min-width: 160px;
+}
+.customer-breadcrumb__chevron {
+  display: block;
+  flex: 0 0 14px;
+  color: #6b829c;
+  stroke-width: 2.5;
+}
+.customer-breadcrumb__link {
+  display: inline-block;
+  max-width: 250px;
+  overflow: hidden;
+  color: #53647c;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 3px;
+  transition: color 150ms ease;
+}
+.customer-breadcrumb__link:hover {
+  color: #0d47a1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.customer-breadcrumb__link:focus-visible {
+  outline: 2px solid #0d47a1;
+  outline-offset: 3px;
+}
+.customer-breadcrumb__current {
+  display: -webkit-box;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  color: #0d47a1;
+  font-weight: 650;
+  line-height: 20px;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 640px) {
+  .customer-breadcrumb__list { font-size: 12px; }
+  .customer-breadcrumb__link { max-width: 165px; }
+  .customer-breadcrumb__item--current { flex-basis: 100%; }
+}
+
+/* Balanced two-lane masonry: independent column flow = no row-height holes. */
+.first-aid-masonry {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  width: 100%;
+  align-items: start;
+}
+.first-aid-masonry__column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+.first-aid-masonry__column a[appcustomerlink] {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+.first-aid-masonry__column a[appcustomerlink] > div {
+  min-height: inherit;
+}
+.first-aid-masonry__column a[appcustomerlink] img {
+  max-width: 100%;
+}
+
+/* All rescue information remains readable inside a fixed-height card, while
+   the adoption and partner-contact actions stay pinned and completely visible. */
+.rescue-card-details {
+  scrollbar-width: thin;
+  scrollbar-color: #c3d4e3 transparent;
+  overscroll-behavior: contain;
+}
+.rescue-card-details:focus-visible {
+  outline: 2px solid #0d47a1;
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+.rescue-card-details::-webkit-scrollbar {
+  width: 5px;
+}
+.rescue-card-details::-webkit-scrollbar-thumb {
+  background: #c3d4e3;
+  border-radius: 10px;
+}
+.rescue-card-actions {
+  background: #faf9f6;
+}

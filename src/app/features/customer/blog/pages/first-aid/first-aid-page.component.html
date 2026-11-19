@@ -48,9 +48,19 @@
       @if (isLoading()) {
         <div class="mt-12 flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">Đang tải cẩm nang sơ cứu...</div>
       } @else if (visiblePosts().length) {
-        <div class="mt-12 grid grid-cols-1 auto-rows-auto gap-6 md:grid-cols-12">
+        <!-- Mobile retains chronological order; desktop fills the shortest column first. -->
+        <div class="mt-12 flex flex-col gap-6 md:hidden">
           @for (post of visiblePosts(); track post.id) {
             <app-first-aid-card [post]="post" />
+          }
+        </div>
+        <div class="first-aid-masonry mt-12 hidden md:grid" aria-label="Danh sách cẩm nang sơ cứu">
+          @for (column of masonryColumns(); track $index) {
+            <div class="first-aid-masonry__column">
+              @for (post of column; track post.id) {
+                <app-first-aid-card [post]="post" />
+              }
+            </div>
           }
         </div>
       } @else {

@@ -56,7 +56,13 @@ export class ServicePricingModalComponent implements OnInit {
     while (columns.length < 9) {
       columns.push((GROOMING_PRICE_COLUMNS as any)[columns.length])
     }
-    return columns
+    // Keep the full meaning in a tooltip but fit within the price header.
+    return columns.map((column: any, index: number) => {
+      const fullLabel = String(column?.label || '');
+      return index === 0 && /giá chuẩn/i.test(fullLabel)
+        ? { ...column, label: 'Giá chuẩn', fullLabel }
+        : column;
+    });
   });
   readonly displayRows = computed<any>(() => {
     return this.rows().map((row: any) => {

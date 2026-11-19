@@ -12,8 +12,8 @@ import { productImages } from '../../assets/product-images';
   imports: [CustomerLinkDirective],
   templateUrl: './breadcrumb.component.html',
   host: {
-    'aria-label': 'Breadcrumb',
-    '[class]': '`flex ${ isBlog() ? \'h-7 items-center bg-transparent text-[12px] font-medium leading-4\' : \'h-[56px] items-end bg-white px-[120px] text-[16px] leading-[24px]\' } ${className()}`',
+    'aria-label': 'Đường dẫn điều hướng',
+    '[class]': '`flex ${ isBlog() ? \'min-h-9 items-center bg-transparent py-1 text-[13px] font-medium leading-[20px]\' : \'h-[56px] items-end bg-white px-[120px] text-[16px] leading-[24px]\' } ${className()}`',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -1,32 +1,20 @@
-<ol [class]="`flex min-w-0 items-center gap-2 ${isBlog() ? 'w-full' : ''} ${listClassName()}`">
-  @for (item of items(); track $index; let index = $index) {
+<ol class="customer-breadcrumb__list" [class.customer-breadcrumb__list--blog]="isBlog()" [class]="listClassName()">
+  @for (item of items() || []; track $index; let index = $index) {
     @let isCurrent = index === items().length - 1;
-    <li [class]="`flex items-center gap-2 ${
-              isBlog() ? (isCurrent ? 'min-w-0 flex-1' : 'shrink-0') : 'min-w-0'
-            }`">
+    <li class="customer-breadcrumb__item" [class.customer-breadcrumb__item--current]="isCurrent">
       @if (index > 0) {
-        <img
-          [attr.src]="productImages.chevronRight"
-          alt=""
-          [class]="`shrink-0 ${isBlog() ? 'h-[6px] w-[4px]' : 'h-2 w-2'} ${separatorClassName()}`"
-        />
+        <svg class="customer-breadcrumb__chevron" width="14" height="14" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="m9 18 6-6-6-6"></path>
+        </svg>
       }
       @if (item.to && !isCurrent) {
-        <a
-          [appCustomerLink]="item.to"
-          [class]="`whitespace-nowrap transition-colors hover:text-[#1976D2] hover:underline ${
-                  linkClassName() || (isBlog() ? 'text-[#414753] hover:no-underline' : 'text-[#0D47A1]')
-                }`"
-        >{{ item.label }}</a>
+        <a [appCustomerLink]="item.to" class="customer-breadcrumb__link"
+          [class]="linkClassName()" [title]="item.label">{{ item.label }}</a>
       } @else {
-        <span
-          [class]="`${isCurrent ? 'min-w-0' : 'whitespace-nowrap'} ${
-                  isCurrent
-                    ? currentClassName() || (isBlog() ? 'font-semibold text-[#005AB4]' : 'truncate text-[#414141]')
-                    : linkClassName() || (isBlog() ? 'text-[#414753]' : 'text-[#0D47A1]')
-                }`"
-          [attr.aria-current]="isCurrent ? 'page' : undefined"
-        >{{ item.label }}</span>
+        <span class="customer-breadcrumb__current" [class]="currentClassName()"
+          [title]="item.label" [attr.aria-current]="isCurrent ? 'page' : null">{{ item.label }}</span>
       }
     </li>
   }

@@ -64,7 +64,7 @@
         <div app-price-cell-group>
           @for (column of displayColumns().slice(0, 3); track column.label) {
             <div [class]="`flex h-[40px] w-[80px] items-center justify-center rounded-[16px] border p-px ${columnToneClasses[column.tone]}`">
-              <span class="whitespace-nowrap font-['Baloo_Tamma_2'] text-[14px] font-bold leading-5">{{ column.label }}</span>
+              <span class="whitespace-nowrap font-['Baloo_Tamma_2'] text-[14px] font-bold leading-5" [attr.title]="column.fullLabel || column.label">{{ column.label }}</span>
             </div>
           }
         </div>
