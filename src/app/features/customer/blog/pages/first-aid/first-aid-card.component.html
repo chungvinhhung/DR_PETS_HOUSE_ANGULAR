@@ -8,7 +8,8 @@
     @if (hasImage()) {
       <div [class]="`first-aid-card__media relative overflow-hidden ${isUrgent() ? 'h-[220px] sm:h-full' : 'h-[178px]'}`">
         <img
-          [attr.src]="post().image"
+          [attr.src]="displayImage()"
+          (error)="onImageError($event)"
           alt=""
           class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         />

@@ -6,6 +6,20 @@ import { blogImages } from '../assets/blog-images';
 // Shared support line for every first-aid guide (confirm the production number with BE).
 export const FIRST_AID_SUPPORT_PHONE = '0868686868';
 
+/** Local fallback images for the public First Aid listing when BE media is missing.
+ * Every path points to an existing checked-in photographic asset, never the
+ * checkerboard post-placeholder file.
+ */
+export const FIRST_AID_IMAGE_FALLBACKS: Record<string, string> = {
+  accident: blogImages.firstAidChoking,
+  poisoning: '/assets/customer/images/pets/luna.jpg',
+  breathing: '/assets/customer/images/grooming/banner-dog.png',
+  injury: '/assets/customer/images/medical/service-treatment.png',
+};
+export function getFirstAidFallbackImage(category: string): string {
+  return FIRST_AID_IMAGE_FALLBACKS[category] || blogImages.firstAidChoking;
+}
+
 export const FIRST_AID_CATEGORIES = [
   { id: "all", label: "Tất cả" },
   { id: "accident", label: "Tai nạn" },
@@ -30,7 +44,7 @@ export const FIRST_AID_POSTS = [
     category: "poisoning",
     categoryLabel: "Ngộ độc",
     variant: "image",
-    image: blogImages.postPlaceholder,
+    image: getFirstAidFallbackImage('poisoning'),
     title: "Xử lý mèo bị ngộ độc thực phẩm",
     description: "Các bước cần làm ngay khi mèo nuốt phải chocolate, cây độc hoặc hóa chất tẩy rửa.",
   },
@@ -39,7 +53,7 @@ export const FIRST_AID_POSTS = [
     category: "accident",
     categoryLabel: "Tai nạn",
     variant: "image",
-    image: blogImages.postPlaceholder,
+    image: '/assets/customer/images/pets/snow.jpg',
     title: "Sơ cứu vết bỏng chó mèo",
     description: "Cách làm dịu vết bỏng bằng nước sạch và băng gạc tạm thời trước khi gặp bác sĩ.",
   },
@@ -82,7 +96,7 @@ export const FIRST_AID_POSTS = [
     category: "injury",
     categoryLabel: "Chấn thương",
     variant: "image",
-    image: blogImages.postPlaceholder,
+    image: getFirstAidFallbackImage('injury'),
     title: "Cố định tạm thời khi nghi gãy xương",
     description: "Hạn chế di chuyển và cố định chi đúng cách trong lúc đưa thú cưng đi cấp cứu.",
   },

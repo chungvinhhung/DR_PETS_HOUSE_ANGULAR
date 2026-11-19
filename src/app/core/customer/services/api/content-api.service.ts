@@ -9,7 +9,7 @@ import { Injectable, inject } from '@angular/core';
 
 import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 import { blogImages } from '../../../../shared/customer/assets/blog-images';
-import { FIRST_AID_CATEGORIES } from '../../../../shared/customer/data/first-aid-data';
+import { FIRST_AID_CATEGORIES, getFirstAidFallbackImage } from '../../../../shared/customer/data/first-aid-data';
 
 function formatDate(value: any) {
   const date = new Date(value);
@@ -220,7 +220,7 @@ export function normalizeFirstAidGuide(guide: any = {}, index: any = 0) {
     guide.image_url ||
     mediaImage ||
     stepImage ||
-    blogImages.postPlaceholder;
+    getFirstAidFallbackImage(getFirstAidCategoryId(category));
   const urgency = String(guide.urgencyLevel || guide.urgency_level || '').toUpperCase();
   const urgent = guide.urgent === true || ['URGENT', 'HIGH', 'EMERGENCY'].includes(urgency);
   const steps = (guide.steps || []).map((step: any, sIdx: number) => ({
@@ -390,7 +390,15 @@ export class ContentApiService {
     const guides = await Promise.all(
       rawGuides.map(async (guide: any, index: any) => {
         const normalizedGuide = normalizeFirstAidGuide(guide, index);
-        const needsDetailImage = normalizedGuide.image === blogImages.postPlaceholder && guide.slug;
+        // Missing list thumbnails can still be present in the detailed guide.
+        // Keep fetching the detail even though the rendered fallback is now a photo.
+        const hasListImage = [
+          guide.thumbnail_url, guide.thumbnailUrl, guide.thumbnail,
+          guide.cover_image_url, guide.image_url,
+          guide.media?.find?.((item: any) => item.media_type === 'image')?.file_url,
+          guide.steps?.find?.((step: any) => step.image_url || step.mediaUrl)?.image_url,
+        ].some((url: any) => typeof url === 'string' && url.trim());
+        const needsDetailImage = !hasListImage && guide.slug;
 
         if (!needsDetailImage) return normalizedGuide;
 

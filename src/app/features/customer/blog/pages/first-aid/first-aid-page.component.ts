@@ -88,42 +88,9 @@ export class FirstAidPageComponent {
   readonly apiEmptyMessage = signal<any>("");
 
   constructor() {
-    // useEffect(..., []) -> chạy 1 lần sau khi render
-    afterNextRender(() => {
-      const cleanup = (() => {
-        let active = true;
-        this.isLoading.set(true);
-        this.loadError.set("");
-        this.apiEmptyMessage.set("");
-
-        Promise.all([
-          this.contentApi.getFirstAidCategories(),
-          this.contentApi.getFirstAidGuidesPage({ limit: 100 }),
-        ])
-          .then(([apiCategories, apiGuides]: any) => {
-            if (!active) return;
-            if (apiCategories.length > 1) this.categories.set(apiCategories);
-            if (apiGuides.guides.length) {
-              this.allPosts.set(apiGuides.guides);
-              return;
-            }
-
-            this.apiEmptyMessage.set("API cẩm nang sơ cứu chưa có dữ liệu, đang hiển thị dữ liệu mẫu từ giao diện.");
-          })
-          .catch((error: any) => {
-            if (!active) return;
-            this.apiEmptyMessage.set(error?.message || "Không thể tải cẩm nang sơ cứu, đang hiển thị dữ liệu mẫu từ giao diện.");
-          })
-          .finally(() => {
-            if (active) this.isLoading.set(false);
-          });
-
-        return () => {
-          active = false;
-        };
-      })();
-      if (typeof cleanup === 'function') this.destroyRef.onDestroy(cleanup);
-    });
+    // Load API content after the first render; retry can use the same method.
+    afterNextRender(() => this.loadGuides());
+    this.destroyRef.onDestroy(() => { ++this.loadRequestToken; });
 
     // useEffect(..., [categories, searchParams])
     effect((onCleanup: any) => {
@@ -136,6 +103,39 @@ export class FirstAidPageComponent {
       });
       if (typeof cleanup === 'function') onCleanup(cleanup);
     });
+  }
+
+  private loadRequestToken = 0;
+
+  protected loadGuides(): void {
+    const token = ++this.loadRequestToken;
+    this.isLoading.set(true);
+    this.loadError.set('');
+    this.apiEmptyMessage.set('');
+
+    Promise.all([
+      this.contentApi.getFirstAidCategories(),
+      this.contentApi.getFirstAidGuidesPage({ limit: 100 }),
+    ])
+      .then(([apiCategories, apiGuides]) => {
+        if (token !== this.loadRequestToken) return;
+        if (apiCategories.length > 1) this.categories.set(apiCategories);
+        if (apiGuides.guides.length > 0) {
+          this.allPosts.set(apiGuides.guides);
+          return;
+        }
+        // The local content is explicitly labeled as reference/demo content.
+        this.apiEmptyMessage.set('Chưa có cẩm nang được công bố. Đang hiển thị bài tham khảo.');
+      })
+      .catch(() => {
+        if (token !== this.loadRequestToken) return;
+        // Do not surface the raw network exception, e.g. "Failed to fetch".
+        // Keep legitimate reference photos visible instead of checkerboard art.
+        this.apiEmptyMessage.set('Chưa kết nối được dữ liệu cẩm nang. Đang hiển thị bài tham khảo.');
+      })
+      .finally(() => {
+        if (token === this.loadRequestToken) this.isLoading.set(false);
+      });
   }
 
   protected chooseCategory(id: any) {
