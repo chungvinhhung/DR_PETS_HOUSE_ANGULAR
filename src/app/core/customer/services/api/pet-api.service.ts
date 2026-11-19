@@ -9,12 +9,17 @@ import { Injectable, inject } from '@angular/core';
 
 import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 
-function getPrimaryImage(pet: any = {}) {
-  const primaryImage = Array.isArray(pet.pet_images)
-    ? pet.pet_images.find((image: any) => image.is_primary) || pet.pet_images[0]
-    : null;
-
-  return pet.photoUrl || pet.profile_image_url || primaryImage?.image_url || null;
+/** Shared read-only image resolver for Customer and Admin pet profiles. */
+export function getPrimaryImage(pet: any = {}): string | null {
+  const photos = Array.isArray(pet.pet_images) ? pet.pet_images :
+    Array.isArray(pet.petImages) ? pet.petImages : [];
+  const primary = photos.find((image: any) => image?.is_primary || image?.isPrimary) || photos[0];
+  const candidates = [
+    pet.photoUrl, pet.photo_url, pet.profile_image_url, pet.profileImageUrl,
+    pet.imageUrl, pet.image_url, pet.avatarUrl, pet.avatar, pet.image,
+    primary?.image_url, primary?.imageUrl, primary?.url,
+  ];
+  return candidates.find((value: unknown) => typeof value === 'string' && value.trim())?.trim() || null;
 }
 
 function formatDateText(value: any) {
