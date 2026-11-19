@@ -1,12 +1,12 @@
 <a
   [appCustomerLink]="`/blog/so-cuu/${post().id}`"
-  [class]="`group relative overflow-hidden rounded-[32px] border border-[#D9E3F6] bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg ${
-        isUrgent() ? 'min-h-[390px]' : 'min-h-[300px]'
+  [class]="`group first-aid-card relative overflow-hidden rounded-[32px] border border-[#D9E3F6] bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg ${
+        isUrgent() ? 'first-aid-card--wide min-h-[390px]' : 'first-aid-card--square min-h-[300px]'
       }`"
 >
-  <div [class]="`${isUrgent() ? 'grid h-full grid-cols-1 sm:grid-cols-2' : 'flex h-full flex-col'}`">
+  <div [class]="`first-aid-card__layout ${isUrgent() ? 'grid h-full grid-cols-1 sm:grid-cols-2' : 'flex h-full flex-col'}`">
     @if (hasImage()) {
-      <div [class]="`relative overflow-hidden ${isUrgent() ? 'h-[220px] sm:h-full' : 'h-[178px]'}`">
+      <div [class]="`first-aid-card__media relative overflow-hidden ${isUrgent() ? 'h-[220px] sm:h-full' : 'h-[178px]'}`">
         <img
           [attr.src]="post().image"
           alt=""

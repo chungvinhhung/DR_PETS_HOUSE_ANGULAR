@@ -48,19 +48,33 @@ export class FirstAidPageComponent {
   });
   readonly initialCategory = computed<any>(() => this.navService.searchParams().get("category"));
   readonly visiblePosts = computed<any>(() => this.filteredPosts().slice(0, this.visibleCount()));
-  /** Two masonry lanes; each next card enters the earliest available column.
-   * Unlike grid row spans, uneven card heights never leave empty blocks.
-   * The original order is retained in the single-column mobile view.
+  /**
+   * Pair consecutive guides into consistent visual rows.
+   * Two wide guides: equal halves.
+   * Wide + compact: original large-wide / small-square proportions (2:1).
+   * One remaining wide guide: keep half width, never enlarge to full width.
+   * This also avoids the whitespace produced by independently sized masonry lanes.
    */
-  readonly masonryColumns = computed(() => {
-    const columns: any[][] = [[], []];
-    const heights = [0, 0];
-    for (const post of this.visiblePosts()) {
-      const lane = heights[0] <= heights[1] ? 0 : 1;
-      columns[lane].push(post);
-      heights[lane] += post.variant === 'urgent' ? 430 : 325;
+  readonly cardRows = computed(() => {
+    const posts: any[] = this.visiblePosts();
+    const rows: Array<{
+      posts: any[];
+      layout: 'equal' | 'mixed' | 'single-wide' | 'single-square';
+      squareFirst: boolean;
+    }> = [];
+    for (let index = 0; index < posts.length; index += 2) {
+      const first = posts[index];
+      const second = posts[index + 1];
+      const firstWide = first.variant === 'urgent';
+      const secondWide = second?.variant === 'urgent';
+      rows.push({
+        posts: second ? [first, second] : [first],
+        layout: !second ? (firstWide ? 'single-wide' : 'single-square')
+          : firstWide !== secondWide ? 'mixed' : 'equal',
+        squareFirst: !!second && !firstWide && secondWide,
+      });
     }
-    return columns;
+    return rows;
   });
 
   // --- Trạng thái (signal = useState / useRef) ---

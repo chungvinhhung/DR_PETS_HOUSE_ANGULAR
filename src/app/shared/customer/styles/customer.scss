@@ -3365,29 +3365,73 @@ html:has(.customer-root) {
   .customer-breadcrumb__item--current { flex-basis: 100%; }
 }
 
-/* Balanced two-lane masonry: independent column flow = no row-height holes. */
-.first-aid-masonry {
+/* First aid rows keep horizontal image/media flush with the full card border.
+   The mixed pair copies the original wide + compact card widths from the design. */
+.first-aid-layout {
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  gap: 24px;
+}
+.first-aid-layout-row {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
+  align-items: stretch;
   width: 100%;
-  align-items: start;
-}
-.first-aid-masonry__column {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
   min-width: 0;
 }
-.first-aid-masonry__column a[appcustomerlink] {
+/* Mixed: ~660px landscape + ~330px compact, rather than a 600px-wide
+   "square"; preserve the compact visual size from the original page. */
+.first-aid-layout-row--mixed {
+  width: min(100%, 1020px);
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+.first-aid-layout-row--mixed.first-aid-layout-row--square-first {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+}
+.first-aid-layout-row--single-square {
+  width: min(100%, 1020px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.first-aid-layout-row .first-aid-card {
   display: block;
   width: 100%;
   min-width: 0;
+  height: 420px;
+  min-height: 0;
 }
-.first-aid-masonry__column a[appcustomerlink] > div {
-  min-height: inherit;
+.first-aid-layout-row .first-aid-card__layout {
+  height: 100%;
+  min-height: 0;
 }
-.first-aid-masonry__column a[appcustomerlink] img {
-  max-width: 100%;
+.first-aid-layout-row .first-aid-card--wide .first-aid-card__layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+.first-aid-layout-row .first-aid-card--wide .first-aid-card__media {
+  height: 100%;
+  min-height: 0;
+  align-self: stretch;
+}
+.first-aid-layout-row .first-aid-card__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.first-aid-layout-row .first-aid-card--square .first-aid-card__media {
+  height: 178px;
+  flex-shrink: 0;
+}
+@media (max-width: 900px) {
+  .first-aid-layout-row .first-aid-card {
+    height: 390px;
+  }
+  .first-aid-layout-row .first-aid-card--wide .first-aid-card__layout > div:last-child {
+    padding: 18px;
+  }
 }
 
 /* All rescue information remains readable inside a fixed-height card, while
