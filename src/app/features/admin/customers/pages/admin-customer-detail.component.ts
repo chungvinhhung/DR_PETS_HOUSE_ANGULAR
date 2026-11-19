@@ -2,13 +2,14 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { catchError, finalize, forkJoin, of } from 'rxjs';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminCustomer, AdminCustomerService } from '../services/admin-customer.service';
+import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
 
 @Component({
   selector:'app-admin-customer-detail',
@@ -21,11 +22,13 @@ import { AdminCustomer, AdminCustomerService } from '../services/admin-customer.
 export class AdminCustomerDetailComponent {
   private readonly route=inject(ActivatedRoute);
   private readonly service=inject(AdminCustomerService);
+  private readonly branchApi=inject(BranchManagementApiService);
   private readonly auth=inject(AuthSessionService);
   readonly customer=signal<AdminCustomer|null>(null);
   readonly pets=signal<any[]>([]);
   readonly orders=signal<any[]>([]);
   readonly appointments=signal<any[]>([]);
+  readonly branchNames=signal<ReadonlyMap<string,string>>(new Map());
   readonly feedback=signal<any[]>([]);
   readonly loading=signal(true);
   readonly error=signal('');
@@ -40,8 +43,14 @@ export class AdminCustomerDetailComponent {
   load():void{
     if(!this.id)return;
     this.loading.set(true);this.error.set('');
-    this.service.loadCustomerDetail(this.id).pipe(finalize(()=>this.loading.set(false))).subscribe({
-      next:data=>{this.customer.set(data.customer);this.pets.set(data.pets);this.orders.set(data.orders);this.appointments.set(data.appointments);this.feedback.set(data.feedback);},
+    forkJoin({
+      detail:this.service.loadCustomerDetail(this.id),
+      branches:this.branchApi.listBranches().pipe(catchError(()=>of([]))),
+    }).pipe(finalize(()=>this.loading.set(false))).subscribe({
+      next:({detail:data,branches})=>{
+        this.branchNames.set(new Map(branches.filter(b=>b.id && b.name).map(b=>[b.id,b.name])));
+        this.customer.set(data.customer);this.pets.set(data.pets);this.orders.set(data.orders);this.appointments.set(data.appointments);this.feedback.set(data.feedback);
+      },
       error:()=>this.error.set('Không thể tải chi tiết khách hàng.'),
     });
   }
@@ -62,6 +71,16 @@ export class AdminCustomerDetailComponent {
   accountLabel(v?:string|null):string{return !v?'Chưa áp dụng':v==='BLOCKED'?'Đã chặn':v==='ACTIVE'?'Đang hoạt động':v;}
   orderStatus(v:string):string{return ({PENDING:'Chờ xác nhận',CONFIRMED:'Đã xác nhận',PROCESSING:'Chuẩn bị hàng',SHIPPED:'Đang giao',COMPLETED:'Đã giao',CANCELLED:'Đã hủy'} as Record<string,string>)[v]??v;}
   appointmentStatus(v:string):string{return ({PENDING_PAYMENT:'Chờ thanh toán',PENDING_CONFIRMATION:'Chờ xác nhận',CONFIRMED:'Đã xác nhận',IN_PROGRESS:'Đang phục vụ',COMPLETED:'Hoàn thành',CANCELLED:'Đã hủy',NO_SHOW:'Không đến'} as Record<string,string>)[v]??v;}
+  /** Only show a branch name returned by BE. Never expose the raw ObjectId. */
+  branchName(raw:unknown, fallback?:unknown):string {
+    const populated=raw && typeof raw==='object' ? raw as {id?:string;_id?:string;name?:string} : null;
+    const id=String(populated?.id ?? populated?._id ?? (typeof raw==='string'?raw:'')).trim();
+    const lookedUp=id ? this.branchNames().get(id) : undefined;
+    const provided=typeof fallback==='string' ? fallback.trim() : '';
+    const inline=typeof populated?.name==='string' ? populated.name.trim() : '';
+    const isIdentifier=(name:string)=>name===id || /^[a-f0-9]{24}$/i.test(name);
+    return lookedUp || (inline && !isIdentifier(inline)?inline:'') || (provided && !isIdentifier(provided)?provided:'') || '—';
+  }
   petName(p:any):string{return p.name||p.petName||p.pet_name||'Thú cưng';}
   petBreed(p:any):string{return p.breed||p.breedName||p.breed_name||'Chưa cập nhật giống';}
   petSpecies(p:any):string {
