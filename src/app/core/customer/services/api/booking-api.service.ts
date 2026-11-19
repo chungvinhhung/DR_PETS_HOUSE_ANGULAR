@@ -874,8 +874,24 @@ export class BookingApiService {
     const data = assertSuccess(response);
     const items = Array.isArray(data?.items)
       ? data.items : Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
-    // Only records confirmed by the backend can be displayed as appointment history.
-    return items.map(normalizeAppointmentHistoryItem);
+    // The authenticated CUSTOMER endpoint is scoped by BE to the actor's own
+    // appointments. For old rows missing a valid name snapshot, use the actual
+    // signed-in account profile only on this customer's own history screen.
+    // This is a display fallback, not a write into any appointment record.
+    const profile = this.authService.isAuthenticated() ? this.authService.userProfile() : null;
+    return items.map((item: any) => {
+      const normalized = normalizeAppointmentHistoryItem(item);
+      if (normalized.owner.name !== "—") return normalized;
+      const verifiedName = appointmentOwnerName(profile?.fullName);
+      return verifiedName === "—" ? normalized : {
+        ...normalized,
+        owner: {
+          ...normalized.owner,
+          name: verifiedName,
+          phone: normalized.owner.phone || profile?.phone || "",
+        },
+      };
+    });
   }
 
   async getCancelPreview(appointmentId: any) {
