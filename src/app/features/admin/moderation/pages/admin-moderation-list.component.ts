@@ -79,7 +79,7 @@ export class AdminModerationListComponent {
  load():void {
   this.loading.set(true);this.error.set('');this.notice.set('');
   const req:Observable<any[]>=this.mode==='reviews'
-    ?this.api.listReviews():this.mode==='feedback'?this.api.listFeedback():of([]);
+    ?this.api.listReviews():this.mode==='feedback'?this.api.listFeedback():this.api.listReports();
   req.pipe(finalize(()=>this.loading.set(false))).subscribe({
    next:rows=>{this.rows.set(rows);this.page.set(1);},
    error:err=>this.error.set('Không thể tải dữ liệu lúc này. Vui lòng thử lại sau.')
@@ -94,19 +94,29 @@ export class AdminModerationListComponent {
  goToPage(value:number):void{this.page.set(Math.max(1,Math.min(value,this.totalPages())));}
  rowStatus(r:any):string {
   if(this.mode==='reviews')return r.hidden||String(r.status||'').toUpperCase()==='HIDDEN'?'HIDDEN':'ACTIVE';
-  return String(r.status||'NEW').toUpperCase();
+  return String(r.status||(this.mode==='reports'?'PENDING':'NEW')).toUpperCase();
  }
  statusLabel(r:any):string {
   const s=this.rowStatus(r);
   return ({ACTIVE:'Hiển thị',HIDDEN:'Ẩn',NEW:'Mới',READ:'Đã đọc',
    PROCESSING:'Đang xử lý',PROCESSED:'Đã xử lý',NEED_CONTACT:'Cần liên hệ',
    REJECTED:'Từ chối',PENDING:'Chờ xử lý',UNDER_REVIEW:'Đang xem xét',
-   NO_VIOLATION:'Không vi phạm'} as Record<string,string>)[s]||s;
+   RESOLVED:'Đã xử lý',NO_VIOLATION:'Không vi phạm'} as Record<string,string>)[s]||s;
  }
  statusKind(r:any):string{
   const s=this.rowStatus(r);
   return /HIDDEN|REJECTED/.test(s)?'danger':/NEW|PENDING/.test(s)?'pending':
    /PROCESSING|UNDER_REVIEW|NEED_CONTACT/.test(s)?'info':'success';
+ }
+ reportReasonLabel(reason: string): string {
+  const map: Record<string, string> = {
+    SPAM: 'Spam / quảng cáo',
+    MISINFORMATION: 'Thông tin sai lệch',
+    INAPPROPRIATE: 'Nội dung không phù hợp',
+    HARASSMENT: 'Quấy rối / xúc phạm',
+    OTHER: 'Khác',
+  };
+  return map[String(reason || '').toUpperCase()] || reason || '—';
  }
  date(value:any):string {
   if(!value)return '—';
