@@ -11,7 +11,7 @@ import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 
 function formatAddressLine(address: any) {
   return ([
-    address.address_line || address.addressLine || address.address,
+    address.address_line || address.addressLine || address.line1 || address.addressDetail || address.address,
     address.ward,
     address.district,
     address.province || address.city,
