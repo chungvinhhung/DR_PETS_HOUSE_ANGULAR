@@ -282,7 +282,7 @@
         </div>
         <div class="payment-summary">
           <div class="payment-summary__rows">
-            <div><span>Tạm tính</span><strong>{{money(currentPreview()?.subtotal ?? estimatedSubtotal())}}</strong></div>
+            <div><span>Tạm tính</span><strong>{{currentPreview()?.requiresQuote ? 'Liên hệ báo giá' : money(currentPreview()?.subtotal ?? estimatedSubtotal())}}</strong></div>
             <div><span>Phụ thu</span>
               <strong>{{currentPreview() ? money(currentPreview()!.surchargeAmount) : money(0)}}</strong></div>
             <div><span>Giảm giá</span>
@@ -290,8 +290,15 @@
           </div>
           <div class="payment-summary__total">
             <span><strong>Tổng cộng</strong></span>
-            <strong>{{money(currentPreview()?.total ?? estimatedSubtotal())}}</strong>
+            <strong>{{currentPreview()?.requiresQuote ? 'Liên hệ báo giá' : currentPreview() ? money(currentPreview()!.total) : 'Chưa xem giá'}}</strong>
           </div>
+          <button type="button" class="btn btn--outline" [disabled]="pricingStatus()==='loading'"
+            (click)="requestPricingPreview()">{{pricingStatus()==='loading' ? 'Đang lấy báo giá...' : 'Xem báo giá từ hệ thống'}}</button>
+          @if (currentPreview()?.requiresQuote) {
+            <p class="hint hint--notice" role="status">{{currentPreview()?.quoteMessage || 'Dịch vụ này cần liên hệ chi nhánh để nhận báo giá.'}}</p>
+          } @else if (currentPreview()?.weightMissing) {
+            <p class="hint hint--notice">Chưa có cân nặng để xác định bậc giá; vui lòng cập nhật cân nặng và xem lại báo giá.</p>
+          }
           @if (pricingStatus()==='error' && pricingError()) {
             <p class="inline-error" role="alert">{{pricingError()}}</p>
           }
