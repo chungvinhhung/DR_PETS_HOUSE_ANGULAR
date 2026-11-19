@@ -17,7 +17,7 @@
       </header>
 
       <section class="pet-hero web2-admin-section web2-admin-pet-hero">
-        <img [src]="image(p)" [alt]="value(p.name, p.petName, p.pet_name)">
+        <img [src]="image(p)" [alt]="value(p.name, p.petName, p.pet_name)" (error)="onPetImageError($event)">
         <div class="pet-hero__content">
           <h2>{{value(p.name, p.petName, p.pet_name)}}</h2>
           <p>{{value(p.breedName, p.breed_name, p.breed)}}</p>
