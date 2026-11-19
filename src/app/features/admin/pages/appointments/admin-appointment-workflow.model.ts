@@ -164,7 +164,13 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
   }).filter(row => !!row.serviceId).sort((a, b) => a.sequence - b.sequence);
   return {
     id, code:firstString(item['code'], item['appointmentCode'], item['appointment_code']) || id,
-    customerName:firstString(item['customerName'], item['customer_name_snapshot'], customer['fullName'], customer['full_name'], custSnapshot['name'], contact['fullName'], contact['name']),
+    customerName:firstString(
+      ...[item['customerName'], item['customer_name_snapshot'], custSnapshot['fullName'],
+        custSnapshot['name'], customer['fullName'], customer['full_name'],
+        contact['fullName'], contact['name']]
+        .filter(value => typeof value === 'string' &&
+          !/^(khách hàng|guest customer|thành viên|customer)$/i.test(value.trim())),
+    ) || '—',
     customerPhone:firstString(item['customerPhone'], item['customer_phone_snapshot'], customer['phone'], custSnapshot['phone'], contact['phone']),
     customerEmail:firstString(item['customerEmail'], customer['email'], contact['email']),
     petNames:namesFrom(item['pets'] ?? item['pet'], 'pet').length
