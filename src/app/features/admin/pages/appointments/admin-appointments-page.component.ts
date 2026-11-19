@@ -2,7 +2,7 @@ import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-p
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, debounceTime, distinctUntilChanged, forkJoin, of, Subject } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, forkJoin, map, of, Subject } from 'rxjs';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
@@ -32,10 +32,16 @@ import {
       <a routerLink="/admin/appointments">Xóa lọc Dashboard</a>
     </div>
   }
+  @if (recentOnly()) {
+    <div class="recent-only-notice" role="status">
+      <span>Danh sách đầy đủ đang tạm gián đoạn. Hiện chỉ hiển thị lịch hẹn được tạo hôm nay.</span>
+      <button type="button" (click)="load()">Tải lại toàn bộ</button>
+    </div>
+  }
   <section class="appointments__kpis" aria-label="Thống kê lịch hẹn trong dữ liệu đã tải">
     <article class="appointments__kpi" data-kpi-tone="neutral">
       <span>Tổng lịch hẹn</span>
-      <strong>{{ loading() || error() ? '—' : kpis().total }}</strong>
+      <strong>{{ loading() || error() || recentOnly() ? '—' : kpis().total }}</strong>
     </article>
     <article class="appointments__kpi" data-kpi-tone="warning">
       <span>Chờ thanh toán</span>
@@ -129,7 +135,8 @@ import {
         </table>
       </div>
       <footer class="list-footer">
-        <p>Đang hiển thị {{rows().length}} trên tổng số {{total()}} lịch hẹn
+        <p>@if (recentOnly()) {Đang hiển thị {{rows().length}} trên {{total()}} lịch hẹn tạo hôm nay}
+          @else {Đang hiển thị {{rows().length}} trên tổng số {{total()}} lịch hẹn}
         </p>
         @if (pageCount() > 1) {
           <nav class="pagination web2-admin-pagination-strip" aria-label="Phân trang lịch hẹn">
@@ -210,6 +217,10 @@ import {
  @media(max-width:1120px){.filters{flex-wrap:wrap}.filter-actions{flex-wrap:wrap;justify-content:flex-start;width:100%}}
  @media(max-width:1050px){.scroll table :is(th,td):nth-child(5){padding-left:32px}}
  .lookup-hint{margin:0 0 10px;font-size:12px;color:#546a82}
+ .recent-only-notice{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px;
+   padding:10px 14px;border:1px solid #d7e6f7;border-radius:8px;background:#f6faff;color:#335376;font-size:12px}
+ .recent-only-notice button{border:1px solid #bfd6f5;background:#fff;color:#0d47a1;border-radius:6px;padding:7px 12px;cursor:pointer;font-weight:600}
+ .recent-only-notice button:hover{background:#eef5ff}
  .dashboard-scope{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 12px;padding:10px 14px;border:1px solid #d8e6f6;border-radius:9px;background:#f5f9ff;font-size:12px;color:#3d5978}
  .dashboard-scope a{color:#0d47a1;font-weight:650;text-decoration:none}
  .dashboard-scope a:hover{text-decoration:underline}
@@ -240,6 +251,7 @@ export class AdminAppointmentsPageComponent {
   private readonly codeSearchRows=signal<AppointmentView[]|null>(null);
   private readonly fetchedRows=signal<AppointmentView[]>([]);
   readonly partial=signal(false);
+  readonly recentOnly=signal(false);
   readonly canCreateAppointment=computed(()=>{
     const user=this.session.user();
     return user?.systemRole==='ADMIN' || user?.systemRole==='MANAGER' ||
@@ -401,36 +413,59 @@ export class AdminAppointmentsPageComponent {
     }
     const version=++this.requestVersion;
     this.loading.set(true);this.error.set('');
-    const baseRequest=this.api.get<unknown>('/appointments',{params});
+    const baseRequest=this.api.get<unknown>('/appointments',{params}).pipe(
+      map(raw=>({ok:true as const,raw})),
+      catchError(error=>of({ok:false as const,error})),
+    );
     const today=this.todayInVietnam();
     const recentParams=new HttpParams().set('limit','100').set('dateField','createdAt')
       .set('from',today).set('to',today);
+    // Keep the fallback date-scoped request independent from the unfiltered one.
+    // An HTTP 500 from the main list must not discard valid data from today.
     const recentRequest=filter ? of(null) :
       this.api.get<unknown>('/appointments',{params:recentParams})
         .pipe(catchError(()=>of(null)));
     forkJoin([baseRequest,recentRequest]).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next:([raw,recentRaw])=>{
+      next:([main,recentRaw])=>{
         if(version!==this.requestVersion)return;
         try{
-          const data=normalizeAppointmentPage(raw);
-          let recent:AppointmentView[]=[];
+          let recent:AppointmentView[]|null=null;
           if(recentRaw!==null){
-            try{recent=normalizeAppointmentPage(recentRaw).items;}catch{recent=[];}
+            try{recent=normalizeAppointmentPage(recentRaw).items;}catch{recent=null;}
           }
-          const byId=new Map<string,AppointmentView>();
-          for(const appointment of [...data.items,...recent])byId.set(appointment.id,appointment);
-          this.fetchedRows.set([...byId.values()]);
-          this.partial.set(data.items.length>=100 || recent.length>=100);
+          if(main.ok){
+            const data=normalizeAppointmentPage(main.raw);
+            const byId=new Map<string,AppointmentView>();
+            for(const row of [...data.items,...(recent||[])])byId.set(row.id,row);
+            this.fetchedRows.set([...byId.values()]);
+            this.partial.set(data.items.length>=100 || (recent?.length||0)>=100);
+            this.recentOnly.set(false);
+            this.page.set(1);
+          }else if(recent!==null && !filter){
+            // The server returned real data, but only for this date. Do not
+            // present these rows or KPI counts as all-time totals.
+            this.fetchedRows.set(recent);
+            this.partial.set(true);
+            this.recentOnly.set(true);
+            this.page.set(1);
+          }else{
+            throw main.ok ? new Error('Dữ liệu lịch hẹn chưa hợp lệ.') : main.error;
+          }
+          this.error.set('');
           this.loading.set(false);
-        }catch{
-          this.fetchedRows.set([]);this.partial.set(false);
-          this.error.set('Chưa thể hiển thị danh sách lịch hẹn. Vui lòng thử lại.');
+        }catch(err){
+          this.fetchedRows.set([]);
+          this.partial.set(false);
+          this.recentOnly.set(false);
+          this.error.set(adminErrorMessage(err,'Chưa tải được danh sách lịch hẹn. Vui lòng thử lại.'));
           this.loading.set(false);
         }
       },
       error:err=>{
         if(version!==this.requestVersion)return;
-        this.fetchedRows.set([]);this.partial.set(false);
+        this.fetchedRows.set([]);
+        this.partial.set(false);
+        this.recentOnly.set(false);
         this.error.set(adminErrorMessage(err,'Chưa tải được danh sách lịch hẹn. Vui lòng thử lại.'));
         this.loading.set(false);
       },
