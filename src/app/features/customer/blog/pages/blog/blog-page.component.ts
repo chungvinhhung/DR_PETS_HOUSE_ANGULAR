@@ -104,16 +104,19 @@ export class BlogPageComponent {
           .then(async ([apiCategories, apiFeatured, apiTrending, apiPosts]: any) => {
             if (!active) return;
             if (apiCategories.length > 1) this.categories.set(apiCategories);
-            if (apiFeatured) this.featuredPost.set(apiFeatured);
-            if (apiTrending.length) this.trendingPosts.set(apiTrending);
-            if (apiPosts.posts.length) {
-              // Admin-selected featured frame takes precedence only if the
-              // published API actually persisted and returned layoutType.
-              const featured = apiPosts.posts.find((post: any) => post.layoutType === 'FEATURED');
+            if (apiTrending.length) {
+              this.trendingPosts.set(apiTrending);
+            } else if (apiPosts?.posts?.length) {
+              this.trendingPosts.set(apiPosts.posts.slice(0, 5));
+            }
+
+            if (apiPosts?.posts?.length) {
+              const featured = apiPosts.posts.find((post: any) => String(post.layoutType || '').toUpperCase() === 'FEATURED') || apiFeatured || apiPosts.posts[0];
               if (featured) this.featuredPost.set(featured);
               this.allPosts.set(apiPosts.posts);
               return;
             }
+            if (apiFeatured) this.featuredPost.set(apiFeatured);
 
             const allApiPosts = await this.contentApi.getPostsPage({ limit: 100 });
             if (!active) return;
