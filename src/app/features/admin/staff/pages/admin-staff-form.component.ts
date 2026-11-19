@@ -114,7 +114,7 @@ export class AdminStaffFormComponent {
           const status = (err as { status?: number } | null)?.status;
           this.toast.show(
             status === 404 || status === 405 || status === 501
-              ? 'BE chưa hỗ trợ API khóa/mở tài khoản nội bộ trên phiên bản hiện tại.'
+              ? 'Không thể thay đổi trạng thái tài khoản lúc này. Vui lòng thử lại sau.'
               : adminErrorMessage(err, 'Không thể cập nhật trạng thái tài khoản.'),
             'error',
           );
