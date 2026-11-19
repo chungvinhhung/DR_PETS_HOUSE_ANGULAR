@@ -65,7 +65,7 @@ export function overlaps(a: DayShiftDraft, b: DayShiftDraft): boolean {
       }
       <footer class="shift-assign-footer">
         <button type="button" (click)="askClose()">Hủy</button>
-        <button type="button" class="shift-assign-save" [disabled]="saving" (click)="save()">{{saving ? 'Đang lưu...' : 'Lưu phân công'}}</button>
+        <button type="button" class="shift-assign-save" [disabled]="saving || !dirty()" (click)="save()">{{saving ? 'Đang lưu...' : 'Lưu phân công'}}</button>
       </footer>
     </section>
   </div>`,
@@ -93,8 +93,25 @@ export class StaffShiftAssignmentDialogComponent implements OnChanges {
   readonly dirty = signal(false);
   readonly confirmDiscard = signal(false);
   readonly displayName = displayStaffName;
+  private lastExistingSignature = '';
   get dateLabel(): string {const [year,month,day]=this.isoDate.split('-');return [day,month,year].join('/');}
   ngOnChanges(changes: SimpleChanges): void {
+    // Existing shifts are loaded asynchronously. The grid can already show a
+    // shift while the dialog still holds an empty snapshot from its first render.
+    // Keep a clean draft in sync, but never overwrite local edits.
+    if (changes['existing'] || changes['isoDate'] || changes['employee']) {
+      const signature=this.existing
+        .map(row=>[row.shiftId||'',row.id,row.start,row.end].join('|'))
+        .sort().join(';');
+      if (!this.dirty() && signature!==this.lastExistingSignature) {
+        this.draft.set(this.existing.map(row=>({...row})));
+        this.lastExistingSignature=signature;
+      }
+    }
+    if(changes['isoDate']) {
+      this.from.set(this.isoDate);
+      this.to.set(this.isoDate);
+    }
     if (!changes['autoSelectTemplateId'] && !changes['options']) return;
     const id=this.autoSelectTemplateId;
     if (!id) return;
@@ -103,11 +120,6 @@ export class StaffShiftAssignmentDialogComponent implements OnChanges {
       this.chosen.set(id);
       this.add();
     }
-  }
-  ngOnInit():void {
-    this.draft.set(this.existing.map(x=>({...x})));
-    this.from.set(this.isoDate);
-    this.to.set(this.isoDate);
   }
   add():void {
     const option=this.options.find(o=>o.id===this.chosen() && o.enabled);
@@ -126,6 +138,7 @@ export class StaffShiftAssignmentDialogComponent implements OnChanges {
   remove(id:string):void {this.draft.update(xs=>xs.filter(x=>x.id!==id));this.dirty.set(true);this.error.set('');}
   askClose():void {if(this.dirty())this.confirmDiscard.set(true);else this.closed.emit();}
   save():void {
+    if (!this.dirty() || this.saving) return;
     const items=this.draft();
     if(items.some((v,i)=>items.slice(i+1).some(y=>overlaps(v,y)))) {this.error.set('Các ca làm việc đang bị trùng giờ.');return;}
     this.checked.emit({draft:items,scope:'day',from:this.isoDate,to:this.isoDate});
