@@ -155,7 +155,11 @@ export class OrderApiService {
     if (!deliveryAddress) {
       throw new Error("Vui lòng nhập địa chỉ nhận hàng trước khi đặt hàng.");
     }
-    const customerName = verifiedRecipientName(customerProfile?.fullName, recipientName);
+    // The contact snapshot identifies the ordering account. It must never
+    // fall back to the selected delivery address's recipient name.
+    // If the signed-in profile has no verified name, BE resolves the live
+    // customer account from the authenticated actor.
+    const customerName = verifiedRecipientName(customerProfile?.fullName);
     const payload: any = {
       addressId: addressId || undefined,
       cartId: cartId || undefined,
