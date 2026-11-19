@@ -452,7 +452,6 @@ export class ContentApiService {
     const response = await this.http.post(`/posts/comments/${commentId}/reply`, { content });
     return assertSuccess(response);
   }
-  }
 
   async togglePostLike(postId: any) {
     const response = await this.http.post(`/posts/${postId}/like`);
