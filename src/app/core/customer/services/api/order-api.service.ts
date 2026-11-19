@@ -144,7 +144,14 @@ export class OrderApiService {
     if (!recipientName || !phone) {
       throw new Error("Vui lòng cập nhật tên và số điện thoại người nhận trước khi đặt hàng.");
     }
-    const deliveryAddress = String(address.addressLine || address.address || address.street || "").trim();
+    // Use the exact saved address shown in "ĐỊA CHỈ NHẬN HÀNG".
+    // Some BE addresses contain only ward/district/city, so normalizeAddress()
+    // has a valid displayAddress even when addressLine is empty.
+    const deliveryAddress = String(
+      address.addressLine || address.address || address.street ||
+      address.displayAddress || address.raw?.address_line ||
+      address.raw?.addressLine || address.raw?.line1 || address.raw?.addressDetail || ""
+    ).trim();
     if (!deliveryAddress) {
       throw new Error("Vui lòng nhập địa chỉ nhận hàng trước khi đặt hàng.");
     }
