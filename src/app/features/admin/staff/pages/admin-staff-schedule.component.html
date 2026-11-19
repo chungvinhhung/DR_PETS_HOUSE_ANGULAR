@@ -35,18 +35,6 @@
         </div>
       </div>
     </section>
-    @if (canManageShifts() && bulkSelection(); as selected) {
-      <div class="schedule-bulk-bar" role="region" aria-label="Chọn nhiều ngày phân ca">
-        <span>
-          <strong>Đã chọn {{ selected.dates.length }} ngày của {{ displayName(selected.employee) }}</strong>
-          <small>Giữ Shift và nhấn vào ô lịch để thêm hoặc bỏ ngày chọn. Nhấn Esc để hủy chọn.</small>
-        </span>
-        <div>
-          <button type="button" class="schedule-bulk-cancel" (click)="cancelBulkSelection()">Hủy chọn</button>
-          <button type="button" class="schedule-bulk-action" (click)="openBulkDialog()">Phân ca ({{ selected.dates.length }})</button>
-        </div>
-      </div>
-    }
     <section class="schedule-panel" aria-label="Bảng lịch làm việc">
       @if (staffApi.loading() || staffApi.shiftLoading()) {
         <app-admin-data-state kind="loading" title="Đang tải lịch làm việc" />
@@ -60,21 +48,16 @@
         <thead><tr><th>Nhân viên</th>@for (day of days(); track day.iso) { <th><span class="schedule-day"><span>{{ day.weekday }}</span><small>{{ day.dayMonth }}</small></span></th> }</tr></thead>
         <tbody>
         @for (staff of rows(); track staff.id) {
-          <tr [class.schedule-row--muted]="bulkSelection() && bulkSelection()?.employee?.id !== staff.id"><th scope="row">@if (canManageShifts()) { <a [routerLink]="['/admin/staff',staff.id]">{{ displayName(staff) }}</a> } @else { <span>{{displayName(staff)}}</span> }<small>{{ roleLabel(staff) }}</small></th>
+          <tr><th scope="row">@if (canManageShifts()) { <a [routerLink]="['/admin/staff',staff.id]">{{ displayName(staff) }}</a> } @else { <span>{{displayName(staff)}}</span> }<small>{{ roleLabel(staff) }}</small></th>
             @for (day of days(); track day.iso) {
               <td>
                 <button type="button" class="schedule-cell"
-                  [class.schedule-cell--bulk-selected]="isBulkSelected(staff.id,day.iso)"
-                  [attr.aria-label]="'Phân công ca cho '+displayName(staff)+' ngày '+day.iso+'. Giữ Shift để chọn nhiều ngày.'"
-                  [attr.aria-pressed]="bulkSelection() ? isBulkSelected(staff.id,day.iso) : null"
-                  [disabled]="!canManageShifts() || !branch() || staffApi.shiftLoading() || !!staffApi.shiftError() || (!!bulkSelection() && bulkSelection()?.employee?.id !== staff.id)"
-                  (click)="onCellClick(staff,day.iso,$event)">
+                  [attr.aria-label]="'Phân công ca cho '+displayName(staff)+' ngày '+day.iso"
+                  [disabled]="!canManageShifts() || !branch() || staffApi.shiftLoading() || !!staffApi.shiftError()"
+                  (click)="onCellClick(staff,day.iso)">
                   @for (shift of shifts(staff.id,day.iso); track shift.shiftId || $index) {
                     <span class="schedule-shift"><strong>{{ shift.time }}</strong></span>
                   } @empty { <span class="schedule-cell-plus">{{canManageShifts() ? '+' : '—'}}</span> }
-                  @if (isBulkSelected(staff.id,day.iso)) {
-                    <span class="schedule-cell-bulk-tick" aria-hidden="true">✓</span>
-                  }
                 </button>
               </td>
             }
@@ -91,13 +74,6 @@
         [options]="selectedOptions()" [autoSelectTemplateId]="pendingTemplateId()"
         [templatesLoading]="templatesLoading()" [templatesError]="templatesError()" [saving]="createSaving()" (closed)="closeDay()" (requestCreate)="beginNewTemplate()"
         (checked)="checkAssignment($event)" />
-    }
-    @if (canManageShifts() && bulkDialog(); as selected) {
-      <app-staff-bulk-shift-dialog
-        [employee]="selected.employee" [branchId]="selected.branchId"
-        [branchName]="selected.branchName" [dates]="selected.dates"
-        (closed)="closeBulkDialog()" (saved)="bulkSaved()"
-        (updated)="bulkUpdated()" />
     }
     @if (showCreateTemplate() && canManageShifts()) {
       <div class="shift-assign-overlay shift-assign-overlay--front">
