@@ -9312,7 +9312,9 @@ app-service-catalog-list .service-catalog__more-trigger {
   align-items: center;
   justify-content: center;
   gap: 9px;
-  height: 40px;
+  height: 48px;
+  min-height: 48px;
+  box-sizing: border-box;
   padding: 0 13px;
   border: 1px solid #dce5ef;
   border-radius: 8px;
@@ -9608,4 +9610,12 @@ app-admin-appointment-create .pet-new .pet-new__species-control--other :is(selec
 .branch-management .branch-v2__status--unavailable {
   color: #7c4a12;
   background: #fff1d6;
+}
+
+/* Match the Filter Other trigger height exactly to the two primary filter selects.
+   This scoped rule overrides older global .web2-filterbar button heights. */
+app-admin-catalog-shell .web2-filterbar.web2-filterbar app-service-catalog-list .service-catalog__filter-selects :is(.service-catalog__select select, .service-catalog__more-trigger) {
+  box-sizing: border-box !important;
+  height: 48px !important;
+  min-height: 48px !important;
 }
