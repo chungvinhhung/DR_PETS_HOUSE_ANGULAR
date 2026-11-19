@@ -34,11 +34,14 @@ export function normalizeUserProfile(user: any = {}) {
 }
 
 export function normalizeAddress(address: any = {}) {
+  const recipientName = address.recipientName ?? address.recipient_name ?? address.name ?? address.fullName ?? address.receiverName ?? "";
   return {
     id: String(address.address_id ?? address.id ?? address._id ?? ""),
     addressId: address.address_id ?? address.id ?? address._id,
-    name: address.recipient_name ?? address.name ?? address.fullName ?? "",
-    phone: address.recipient_phone ?? address.phone ?? "",
+    name: recipientName,
+    fullName: recipientName,
+    recipientName,
+    phone: address.recipient_phone ?? address.phone ?? address.receiverPhone ?? "",
     email: address.recipient_email ?? address.email ?? "",
     country: address.country ?? "Việt Nam",
     address: address.address_line ?? address.addressLine ?? address.address ?? "",
