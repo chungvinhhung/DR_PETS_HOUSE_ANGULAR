@@ -12,6 +12,7 @@ import { CustomerLinkDirective } from '../../../../shared/customer/directives/cu
   standalone: true,
   imports: [SearchResultsSectionHeadingComponent, ProductsGridComponent, CustomerLinkDirective],
   templateUrl: './products-section.component.html',
+  styleUrl: './products-section.component.scss',
   host: {
     'class': 'flex w-full flex-col gap-8',
   },
@@ -21,5 +22,6 @@ export class ProductsSectionComponent {
   // --- Input / Output (props của React) ---
   readonly results = input<any>(undefined);
   readonly allMode = input<any>(false);
+  readonly crossSellServices = input<any[]>([]);
 
 }

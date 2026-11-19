@@ -1,0 +1,19 @@
+.products-section__row {
+  @apply flex justify-center;
+}
+
+.products-section__btn-yellow-main {
+  @apply h-[42px] px-[22px] text-[15px] font-medium;
+}
+
+.products-section__cross-sell-services {
+  @apply flex w-full flex-wrap gap-3;
+}
+
+.products-section__cross-sell-service {
+  @apply flex flex-col gap-1 rounded-[8px] border border-[#BBDEFB] bg-[#E3F2FD] px-4 py-3 text-[14px] text-[#0D47A1] transition-colors hover:bg-[#BBDEFB];
+
+  span {
+    @apply text-[13px] text-black/60;
+  }
+}
