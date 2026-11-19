@@ -20,6 +20,9 @@
         [services]="services()"
         [timeSlots]="timeSlots()"
         [slotsLoading]="slotsLoading()"
+        [slotsError]="slotsError()"
+        [slotsState]="slotsState()"
+        (onRetrySlots)="retryLoadSlots()"
         (onNext)="handle1()"
       />
     }
@@ -64,5 +67,5 @@
   <app-footer />
 </main>
 @if (success()) {
-  <div app-booking-success-modal [isGuest]="!authService.isAuthenticated()"></div>
+  <div app-booking-success-modal [isGuest]="!authService.isAuthenticated()" [status]="createdAppointment()?.status || null" [holdExpiresAt]="createdAppointment()?.holdExpiresAt || null"></div>
 }

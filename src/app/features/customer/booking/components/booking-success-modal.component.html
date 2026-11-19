@@ -4,11 +4,11 @@
 >
   <img [attr.src]="successCheckGroup" alt="" class="booking-success-modal__success-check-group" />
   <div>
-    <h2 class="booking-success-modal__dat-lich-thanh-title">Đặt lịch thành công</h2>
+    <h2 class="booking-success-modal__dat-lich-thanh-title text-3xl font-bold text-[#3d3d3d] md:text-5xl">{{ confirmed() ? 'Đặt lịch thành công' : 'Đã tạo lịch hẹn' }}</h2>
     @if (isGuest()) {
-      <p class="booking-success-modal__lich-hen-cua-text">Lịch hẹn của bạn đã được xác nhận. Bạn có thể tra cứu lịch hẹn bất cứ lúc nào bằng số điện thoại/email đã cung cấp và mã OTP — không cần tài khoản.</p>
+      <p class="booking-success-modal__lich-hen-cua-text mx-auto mt-3 max-w-lg text-base text-[#949494]">Lịch hẹn của bạn đã được xác nhận. Bạn có thể tra cứu lịch hẹn bất cứ lúc nào bằng số điện thoại/email đã cung cấp và mã OTP — không cần tài khoản.</p>
     } @else {
-      <p class="booking-success-modal__lich-hen-cua-text">Lịch hẹn của bạn đã được xác nhận. Xem chi tiết và theo dõi lịch hẹn tại ‘Lịch sử đặt lịch’.</p>
+      <p class="booking-success-modal__lich-hen-cua-text mx-auto mt-3 max-w-lg text-base text-[#949494]">{{ message() || 'Lịch hẹn của bạn đã được xác nhận. Xem chi tiết và theo dõi lịch hẹn tại ‘Lịch sử đặt lịch’.' }}</p>
     }
   </div>
   <div class="booking-success-modal__stack-2">

@@ -46,11 +46,16 @@ export class ServicePricingModalComponent implements OnInit {
   /** Chỉ lọc Khám & Điều trị thì tiêu đề chỉ còn 1 cột giá */
   readonly isSingleColumn = computed<any>(() => this.selectedFilter() === 'medical');
   readonly displayColumns = computed<any>(() => {
-    const apiColumns = this.selectedFilter() === 'all' ? [] : (this.pricingColumns() as any)[this.selectedFilter()] || []
-    return GROOMING_PRICE_COLUMNS.map((column: any, index: any) => ({
-      ...column,
-      label: apiColumns[index]?.label || column.label,
-    }))
+    const apiColumns = this.selectedFilter() === 'all' ? [] : (this.pricingColumns() as any)[this.selectedFilter()] || [];
+    return GROOMING_PRICE_COLUMNS.map((column: any, index: any) => {
+      const fullLabel = apiColumns[index]?.label || column.label;
+      const label = index === 0 && /giá chuẩn/i.test(fullLabel) ? 'Giá chuẩn' : fullLabel;
+      return {
+        ...column,
+        label,
+        fullLabel,
+      };
+    });
   });
   readonly displayRows = computed<any>(() => {
     return this.rows().map((row: any) => {

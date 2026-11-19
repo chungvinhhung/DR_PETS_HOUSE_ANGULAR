@@ -5,7 +5,7 @@
  * - Các hàm async gọi API: gom vào class BookingApiService (inject vào component).
  *   Gọi HTTP qua CustomerHttpService (bọc ApiClientService của core) -> trả về Promise như axios cũ.
  */
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 
 import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 import { CustomerAuthService } from '../customer-auth.service';
@@ -349,13 +349,25 @@ export function normalizeSlot(slot: any) {
   const endRaw = slot.end || slot.end_time || slot.endTime;
   const start = formatTime(startRaw);
   const end = formatTime(endRaw);
-  const statusStr = String(slot.status || "").toLowerCase();
-  const isFullOrBlocked = statusStr === "full" || statusStr === "blocked";
+  const statusStr = String(slot.status || "").trim().toLowerCase();
+  const isBlockedStatus = statusStr === "blocked" || statusStr === "locked" || slot.isBlocked === true;
+  const isFullStatus =
+    statusStr === "full" ||
+    statusStr === "unavailable" ||
+    statusStr === "closed" ||
+    statusStr === "disabled" ||
+    slot.available === false;
+  const isFullOrBlocked = isBlockedStatus || isFullStatus;
   const totalCount = Number(slot.totalCount ?? slot.maxAppointments ?? slot.max_booking ?? 1);
   const bookedCount = Number(slot.occupiedCount ?? slot.bookedCount ?? slot.booked_count ?? 0);
   const rawRemaining = typeof slot.remaining === "number" ? slot.remaining : (slot.available === false ? 0 : Math.max(0, totalCount - bookedCount));
   const remaining = isFullOrBlocked ? 0 : Math.max(0, Number(rawRemaining));
-  const isAvailable = !isFullOrBlocked && (statusStr === "available" || remaining > 0 || slot.available === true);
+  const isAvailable = !isFullOrBlocked && (statusStr === "available" || remaining > 0 || slot.available === true) && remaining > 0;
+  const normalizedStatus: 'AVAILABLE' | 'FULL' | 'BLOCKED' = isBlockedStatus
+    ? 'BLOCKED'
+    : (!isAvailable || remaining <= 0 || isFullStatus)
+      ? 'FULL'
+      : 'AVAILABLE';
 
   const value = slot.value || (start && end ? `${start} - ${end}` : (start || String(slot.value || "09:00 - 10:00")));
   const id = String(slot.id || slot.slot_id || `${startRaw}-${value}`);
@@ -366,10 +378,11 @@ export function normalizeSlot(slot: any) {
     start: startRaw,
     end: endRaw,
     value,
+    status: normalizedStatus,
     bookedCount,
     maxAppointments: totalCount,
     remaining,
-    available: isAvailable && remaining > 0,
+    available: isAvailable,
   };
 }
 
@@ -381,12 +394,19 @@ function groupSlotsByTime(slots: any) {
     const slotRemaining = typeof slot.remaining === 'number' ? slot.remaining : (slot.available ? 1 : 0);
 
     if (!current) {
+      const available = Boolean(slot.available && slotRemaining > 0);
+      const status = slot.status === 'BLOCKED'
+        ? 'BLOCKED'
+        : available
+          ? 'AVAILABLE'
+          : 'FULL';
       groupedSlots.set(slot.value, {
         ...slot,
+        status,
         bookedCount: slot.bookedCount || 0,
         maxAppointments: slot.maxAppointments || 1,
-        available: Boolean(slot.available && slotRemaining > 0),
-        remaining: slotRemaining,
+        available,
+        remaining: available ? slotRemaining : 0,
       });
       return;
     }
@@ -398,6 +418,15 @@ function groupSlotsByTime(slots: any) {
 
     const currentRemaining = current.remaining || 0;
     const shouldUseSlotForBooking = slot.available && (!current.available || slotRemaining > currentRemaining);
+    const nextRemaining = Math.max(currentRemaining, slotRemaining);
+    const nextAvailable = Boolean((current.available || slot.available) && nextRemaining > 0);
+    const nextStatus = nextAvailable
+      ? 'AVAILABLE'
+      : (current.status === 'BLOCKED' && slot.status === 'BLOCKED')
+        ? 'BLOCKED'
+        : (current.status === 'FULL' || slot.status === 'FULL')
+          ? 'FULL'
+          : (slot.status || current.status || 'FULL');
 
     groupedSlots.set(slot.value, {
       ...current,
@@ -407,16 +436,30 @@ function groupSlotsByTime(slots: any) {
             slot_id: slot.slot_id,
             doctor_id: slot.doctor_id,
             doctor: slot.doctor,
-            status: slot.status,
           }
         : {}),
-       bookedCount: Math.max(current.bookedCount || 0, slot.bookedCount || 0),
+      status: nextStatus,
+      bookedCount: Math.max(current.bookedCount || 0, slot.bookedCount || 0),
       maxAppointments: Math.max(current.maxAppointments || 1, slot.maxAppointments || 1),
-      available: (current.available || slot.available) && (currentRemaining > 0 || slotRemaining > 0),
-      remaining: Math.max(currentRemaining, slotRemaining),    });
+      available: nextAvailable,
+      remaining: nextAvailable ? nextRemaining : 0,
+    });
   });
 
   return Array.from(groupedSlots.values());
+}
+
+function extractSlotsArray(response: any): any[] | null {
+  if (response === null || response === undefined) return null;
+  const slots = assertSuccess(response);
+  if (Array.isArray(slots)) return slots;
+  if (slots && typeof slots === 'object') {
+    if (Array.isArray(slots.slots)) return slots.slots;
+    if (Array.isArray(slots.items)) return slots.items;
+    if (Array.isArray(slots.data)) return slots.data;
+    if (Array.isArray(slots.data?.slots)) return slots.data.slots;
+  }
+  return null;
 }
 
 export const LOCAL_APPOINTMENTS_KEY = 'dr_pet_customer_appointments';
@@ -452,10 +495,16 @@ export function saveLocalAppointment(apt: any) {
   }
 }
 
+export type SlotsLoadState = 'idle' | 'loading' | 'ready' | 'empty' | 'error';
+
 @Injectable({ providedIn: 'root' })
 export class BookingApiService {
   private readonly http = inject(CustomerHttpService);
   private readonly authService = inject(CustomerAuthService);
+
+  /** Giữ trạng thái rỗng và lỗi riêng biệt trong dịch vụ khung giờ (QA-R1-28 / TC-17) */
+  readonly slotsState = signal<SlotsLoadState>('idle');
+  readonly slotsError = signal<string>('');
 
   markSlotAsBlocked(date: string, branchId: string, slotValue: string) {
     const timeVal = slotValue?.split(" - ")[0] || slotValue;
@@ -496,6 +545,9 @@ export class BookingApiService {
       serviceIds: resolvedServiceIds,
     };
 
+    this.slotsState.set('loading');
+    this.slotsError.set('');
+
     const localAppointments = getLocalAppointments().filter((apt: any) => {
       const aptDate = apt.rawDate || apt.appointment_date || apt.scheduledStart;
       const aptDateFormatted = aptDate ? String(aptDate).split("T")[0] : "";
@@ -516,8 +568,8 @@ export class BookingApiService {
         const timeVal = slot.value?.split(" - ")[0] || slot.value;
         const key1 = `${dateFormatted}_${timeVal}`;
         const key2 = `${dateFormatted}_${slot.value}`;
-         // If from backend and backend explicitly confirms remaining > 0, trust backend over stale local conflict cache
-        const isBlocked = !isFromBackend && (blockedList.includes(key1) || blockedList.includes(key2));
+        // If from backend and backend explicitly confirms remaining > 0, trust backend over stale local conflict cache
+        const isBlocked = slot.status === 'BLOCKED' || (!isFromBackend && (blockedList.includes(key1) || blockedList.includes(key2)));
 
         const bookedLocal = uncommittedLocalAppointments.filter((apt: any) => {
           const aptTime = apt.service?.time || apt.start_time;
@@ -528,58 +580,67 @@ export class BookingApiService {
         const bookedCount = (slot.bookedCount || 0) + bookedLocal;
         const baseRemaining = typeof slot.remaining === 'number' ? slot.remaining : Math.max(0, maxAppointments - (slot.bookedCount || 0));
         const remaining = isBlocked ? 0 : Math.max(0, baseRemaining - bookedLocal);
-        const available = !isBlocked && slot.available && remaining > 0;
+        const available = Boolean(!isBlocked && slot.available && remaining > 0);
+        const status = isBlocked
+          ? 'BLOCKED'
+          : available
+            ? 'AVAILABLE'
+            : 'FULL';
 
         return {
           ...slot,
+          status,
           maxAppointments,
           bookedCount,
-          remaining,
+          remaining: available ? remaining : 0,
           available,
         };
       });
     };
 
+    const extractErrorMessage = (err: any): string =>
+      err?.data?.detail ||
+      err?.data?.message ||
+      err?.message ||
+      "Không thể tải khung giờ lúc này. Vui lòng thử lại sau.";
+
+    let slotsList: any[] | null = null;
     try {
       const response = await this.http.get("/appointments/slots", { params });
-      const slots = assertSuccess(response);
-      const slotsList = Array.isArray(slots) ? slots : Array.isArray(slots?.slots) ? slots.slots : [];
-      if (slotsList.length > 0) {
-         return adjustWithLocal(groupSlotsByTime(slotsList.map(normalizeSlot)), true);
+      slotsList = extractSlotsArray(response);
+    } catch (primaryError: any) {
+      if (primaryError?.status !== 404) {
+        this.slotsState.set('error');
+        this.slotsError.set(extractErrorMessage(primaryError));
+        throw primaryError;
       }
-    } catch {
-      // Fallback to availability
+      try {
+        const fallbackResponse = await this.http.get("/availability", { params });
+        slotsList = extractSlotsArray(fallbackResponse);
+      } catch (fallbackError: any) {
+        this.slotsState.set('error');
+        this.slotsError.set(extractErrorMessage(fallbackError));
+        throw fallbackError;
+      }
     }
 
-    try {
-      const response = await this.http.get("/availability", { params });
-      const slots = assertSuccess(response);
-      const slotsList = Array.isArray(slots) ? slots : Array.isArray(slots?.slots) ? slots.slots : [];
-      if (slotsList.length > 0) {
-         return adjustWithLocal(groupSlotsByTime(slotsList.map(normalizeSlot)), true);
-      }
-    } catch {
-      // Fallback to operational slots
+    if (!Array.isArray(slotsList)) {
+      const invalidPayloadError = new Error("Không đọc được dữ liệu khung giờ từ máy chủ. Vui lòng thử lại sau.");
+      this.slotsState.set('error');
+      this.slotsError.set(invalidPayloadError.message);
+      throw invalidPayloadError;
     }
 
-    // Operating hours slots fallback (08:30 - 18:00) so user is never blocked on any branch
-    const fallbackTimes = [
-      "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-      "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"
-    ];
-    const defaultSlots = fallbackTimes.map((time) => ({
-      id: `slot-fallback-${time.replace(':', '')}`,
-      slot_id: `slot-fallback-${time.replace(':', '')}`,
-      value: time,
-      label: time,
-      time,
-      available: true,
-      bookedCount: 0,
-      maxAppointments: 3,
-      slotStart: `${dateFormatted}T${time}:00.000Z`,
-      slotEnd: `${dateFormatted}T${time}:30.000Z`,
-    }));
-    return adjustWithLocal(groupSlotsByTime(defaultSlots.map(normalizeSlot)));
+    if (slotsList.length === 0) {
+      this.slotsState.set('empty');
+      this.slotsError.set('');
+      return [];
+    }
+
+    const result = adjustWithLocal(groupSlotsByTime(slotsList.map(normalizeSlot)), true);
+    this.slotsState.set(result.length > 0 ? 'ready' : 'empty');
+    this.slotsError.set('');
+    return result;
   }
 
   async bookAppointment(bookingData: any) {
@@ -748,47 +809,26 @@ export class BookingApiService {
       canRebook: false,
     };
 
+    // Never treat an API failure as a successful booking.
+    let response: any;
     try {
-      const response = await this.http.post("/appointments", payload, options);
-      const resData = assertSuccess(response);
-      if (resData) {
-        if (resData.id || resData._id) localApt.id = String(resData.id || resData._id);
-        if (resData.code) localApt.code = resData.code;
-        if (resData.status) localApt.status = normalizeAppointmentStatus(resData);
-      }
-      saveLocalAppointment(localApt);
-      return resData || localApt;
-    } catch (err: any) {
-      if (err?.status === 404) {
-        try {
-          const response = await this.http.post("/appointments/book", payload, options);
-          const resData = assertSuccess(response);
-          if (resData) {
-            if (resData.id || resData._id) localApt.id = String(resData.id || resData._id);
-            if (resData.code) localApt.code = resData.code;
-            if (resData.status) localApt.status = normalizeAppointmentStatus(resData);
-          }
-          saveLocalAppointment(localApt);
-          return resData || localApt;
-        } catch {
-          saveLocalAppointment(localApt);
-          return localApt;
-        }
-      }
-      if (
-        err?.status === 422 &&
-        (String(err?.message || "").includes("STAFF_UNAVAILABLE") ||
-          String(err?.data?.detail || "").includes("available staff") ||
-          String(err?.data?.code || "") === "STAFF_UNAVAILABLE")
-      ) {
-        saveLocalAppointment(localApt);
-        return {
-          ...localApt,
-          message: "Đặt lịch hẹn thành công (Đang chờ phòng khám chỉ định nhân viên)",
-        };
-      }
-      throw err;
+      response = await this.http.post("/appointments", payload, options);
+    } catch (error: any) {
+      if (error?.status !== 404) throw error;
+      response = await this.http.post("/appointments/book", payload, options);
     }
+    const resData = assertSuccess(response);
+    const realId = resData?._id || resData?.id || resData?.appointmentId ||
+      resData?.appointment?._id || resData?.appointment?.id;
+    if (!realId) {
+      throw new Error('Máy chủ chưa xác nhận mã lịch hẹn. Vui lòng kiểm tra trước khi đặt lại.');
+    }
+    // Local cache can be used for immediate UI hints only after BE confirms success.
+    localApt.id = String(realId);
+    if (resData.code) localApt.code = resData.code;
+    if (resData.status) localApt.status = normalizeAppointmentStatus(resData);
+    saveLocalAppointment(localApt);
+    return resData?.appointment || resData;
   }
 
   async previewAppointmentPricing(payload: any) {
@@ -807,41 +847,18 @@ export class BookingApiService {
   }
 
   async getAppointmentHistory() {
-    let backendItems: any[] = [];
+    let response: any;
     try {
-      let response: any;
-      try {
-        response = await this.http.get("/appointments");
-      } catch {
-        response = await this.http.get("/appointments/my-history");
-      }
-      const data = assertSuccess(response);
-      backendItems = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
-    } catch (e) {
-      console.warn("Backend get appointments failed, using local appointments", e);
+      response = await this.http.get("/appointments");
+    } catch (error: any) {
+      if (error?.status !== 404) throw error;
+      response = await this.http.get("/appointments/my-history");
     }
-
-    const localList = getLocalAppointments();
-
-    const normalizedBackend = backendItems.map(normalizeAppointmentHistoryItem);
-    const normalizedLocal = localList.map(normalizeAppointmentHistoryItem);
-
-    const mergedMap = new Map<string, any>();
-    // Add local first (so newly booked are prioritized)
-    for (const item of normalizedLocal) {
-      const key = item.code || item.id;
-      if (key) mergedMap.set(key, item);
-    }
-    // Then merge backend items
-    for (const item of normalizedBackend) {
-      const key = item.code || item.id;
-      if (key) {
-        const existing = mergedMap.get(key);
-        mergedMap.set(key, existing ? { ...existing, ...item } : item);
-      }
-    }
-
-    return Array.from(mergedMap.values());
+    const data = assertSuccess(response);
+    const items = Array.isArray(data?.items)
+      ? data.items : Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
+    // Only records confirmed by the backend can be displayed as appointment history.
+    return items.map(normalizeAppointmentHistoryItem);
   }
 
   async getCancelPreview(appointmentId: any) {

@@ -1,16 +1,16 @@
 <div app-canvas-layout>
   <app-nav-bar />
-  <main class="first-aid-page__main">
+  <main class="flex min-h-[1900px] flex-col items-center bg-[#E5F6FD] px-4 sm:px-6 pb-12">
     <nav app-first-aid-tabs></nav>
-    <section class="first-aid-page__section">
-      <div class="first-aid-page__row">
+    <section class="w-full max-w-[1200px] pt-6">
+      <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 class="first-aid-page__cam-nang-title">Cẩm nang <span class="first-aid-page__so-cuu-text">sơ cứu</span>
-            <img [attr.src]="blogImages.firstAidTitle" alt="" class="first-aid-page__first-aid-title" />
+          <h1 class="flex flex-wrap items-center gap-2 text-[28px] font-bold leading-[36px] tracking-[-0.8px] sm:text-[40px] sm:leading-[48px]">Cẩm nang <span class="text-[#0D47A1]">sơ cứu</span>
+            <img [attr.src]="blogImages.firstAidTitle" alt="" class="h-12 w-12 object-contain" />
           </h1>
-          <p class="first-aid-page__tra-cuu-cac-text">Tra cứu các triệu chứng và quy trình sơ cứu cơ bản để bảo vệ boss của bạn</p>
+          <p class="mt-2 text-[16px] leading-6 text-[#4B5563]">Tra cứu các triệu chứng và quy trình sơ cứu cơ bản để bảo vệ boss của bạn</p>
         </div>
-        <div class="first-aid-page__row-2">
+        <div class="flex flex-wrap gap-3">
           @for (item of categories(); track item.id) {
             <button
               type="button"
@@ -22,12 +22,12 @@
           }
         </div>
       </div>
-      <label class="first-aid-page__label">
+      <label class="mt-10 flex h-14 w-full items-center rounded-full border border-[rgba(25,118,210,0.5)] bg-white py-2 pl-6 pr-2">
         <input
           [value]="search() ?? ''"
           (input)="search.set($any($event).target.value)"
           placeholder="Tìm kiếm triệu chứng hoặc tình huống..."
-          class="first-aid-page__tim-kiem-trieu-chung"
+          class="min-w-0 flex-1 bg-transparent text-[16px] outline-none"
         />
         @if (search()) {
           <button
@@ -37,28 +37,47 @@
             aria-label="Xóa tìm kiếm sơ cứu"
           >×</button>
         }
-        <img [attr.src]="productImages.searchIcon" alt="" class="first-aid-page__search-icon" />
+        <img [attr.src]="productImages.searchIcon" alt="" class="h-7 w-7 shrink-0" />
       </label>
       @if (loadError()) {
-        <p class="first-aid-page__load-error">{{ loadError() }}</p>
+        <p class="mt-4 text-[14px] text-[#D32F2F]">{{ loadError() }}</p>
       }
       @if (apiEmptyMessage() && !loadError()) {
-        <p class="first-aid-page__api-empty-message">{{ apiEmptyMessage() }}</p>
+        <div role="status" class="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-[#C4DCF4] bg-white/60 px-4 py-3 text-[13px] text-[#244467]">
+          <span>{{ apiEmptyMessage() }}</span>
+          <button type="button" (click)="loadGuides()" [disabled]="isLoading()"
+            class="rounded-md border border-[#0D47A1] px-3 py-1.5 font-semibold text-[#0D47A1] hover:bg-[#E3F2FD] disabled:opacity-50">
+            Thử tải lại
+          </button>
+        </div>
       }
       @if (isLoading()) {
-        <div class="first-aid-page__dang-tai-cam-el">Đang tải cẩm nang sơ cứu...</div>
+        <div class="mt-12 flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">Đang tải cẩm nang sơ cứu...</div>
       } @else if (visiblePosts().length) {
-        <div class="first-aid-page__grid">
+        <!-- Mobile: one column in chronological order. Desktop: responsive paired rows. -->
+        <div class="mt-12 flex flex-col gap-6 md:hidden">
           @for (post of visiblePosts(); track post.id) {
             <app-first-aid-card [post]="post" />
           }
         </div>
+        <div class="first-aid-layout mt-12 hidden md:flex" aria-label="Danh sách cẩm nang sơ cứu">
+          @for (row of cardRows(); track $index) {
+            <div class="first-aid-layout-row"
+              [class.first-aid-layout-row--mixed]="row.layout === 'mixed'"
+              [class.first-aid-layout-row--square-first]="row.squareFirst"
+              [class.first-aid-layout-row--single-square]="row.layout === 'single-square'">
+              @for (post of row.posts; track post.id) {
+                <app-first-aid-card [post]="post" />
+              }
+            </div>
+          }
+        </div>
       } @else {
-        <div class="first-aid-page__khong-tim-thay-el">Không tìm thấy cẩm nang phù hợp.</div>
+        <div class="mt-12 flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#414753]">Không tìm thấy cẩm nang phù hợp.</div>
       }
       <div app-support-cards></div>
       @if (visiblePosts().length < filteredPosts().length) {
-        <div class="first-aid-page__row-3">
+        <div class="mt-8 flex justify-center">
           <button
             type="button"
             (click)="handle2()"

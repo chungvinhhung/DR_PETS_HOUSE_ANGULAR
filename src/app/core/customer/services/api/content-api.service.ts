@@ -9,7 +9,7 @@ import { Injectable, inject } from '@angular/core';
 
 import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 import { blogImages } from '../../../../shared/customer/assets/blog-images';
-import { FIRST_AID_CATEGORIES } from '../../../../shared/customer/data/first-aid-data';
+import { FIRST_AID_CATEGORIES, getFirstAidFallbackImage } from '../../../../shared/customer/data/first-aid-data';
 
 function formatDate(value: any) {
   const date = new Date(value);
@@ -220,8 +220,9 @@ export function normalizeFirstAidGuide(guide: any = {}, index: any = 0) {
     guide.image_url ||
     mediaImage ||
     stepImage ||
-    blogImages.postPlaceholder;
-  const urgent = /hoc|nghet|kho tho|cap cuu|soc|ngo doc/i.test(slugify(`${guide.title} ${guide.situation_description || guide.excerpt || ""}`));
+    getFirstAidFallbackImage(getFirstAidCategoryId(category));
+  const urgency = String(guide.urgencyLevel || guide.urgency_level || '').toUpperCase();
+  const urgent = guide.urgent === true || ['URGENT', 'HIGH', 'EMERGENCY'].includes(urgency);
   const steps = (guide.steps || []).map((step: any, sIdx: number) => ({
     title: step.title || `Bước ${step.step_number || step.stepNumber || sIdx + 1}`,
     description: step.step_content || step.instruction || step.description || "",
@@ -328,7 +329,10 @@ export class ContentApiService {
     const rawPosts = Array.isArray(payload)
       ? payload : (Array.isArray(payload?.items) ? payload.items :
         (Array.isArray(payload?.posts) ? payload.posts : []));
-    const posts = rawPosts.map(normalizeCommunityPostFromApi);
+    // Public feed must never include known non-approved records. BE must enforce this as well.
+    const posts = rawPosts
+      .filter((item: any) => !item.status || String(item.status).toUpperCase() === 'APPROVED')
+      .map(normalizeCommunityPostFromApi);
     return {
       posts,
       items: posts,
@@ -390,7 +394,15 @@ export class ContentApiService {
     const guides = await Promise.all(
       rawGuides.map(async (guide: any, index: any) => {
         const normalizedGuide = normalizeFirstAidGuide(guide, index);
-        const needsDetailImage = normalizedGuide.image === blogImages.postPlaceholder && guide.slug;
+        // Missing list thumbnails can still be present in the detailed guide.
+        // Keep fetching the detail even though the rendered fallback is now a photo.
+        const hasListImage = [
+          guide.thumbnail_url, guide.thumbnailUrl, guide.thumbnail,
+          guide.cover_image_url, guide.image_url,
+          guide.media?.find?.((item: any) => item.media_type === 'image')?.file_url,
+          guide.steps?.find?.((step: any) => step.image_url || step.mediaUrl)?.image_url,
+        ].some((url: any) => typeof url === 'string' && url.trim());
+        const needsDetailImage = !hasListImage && guide.slug;
 
         if (!needsDetailImage) return normalizedGuide;
 
@@ -417,157 +429,33 @@ export class ContentApiService {
   }
 
   async getPostComments(postId: any, params: any = {}) {
-    try {
-      const response = await this.http.get(`/posts/${postId}/comments`, { params });
-      const payload = assertSuccess(response);
-      const comments = Array.isArray(payload?.comments) ? payload.comments.map(normalizePostComment) : [];
-      if (comments.length > 0) {
-        return {
-          comments,
-          totalRows: Number(payload?.totalRows || comments.length),
-          totalPages: Number(payload?.totalPages || 1),
-        };
-      }
-    } catch {
-      // Gracefully fall back to local cache
-    }
-
-    try {
-      const local = typeof localStorage !== 'undefined' ? localStorage.getItem(`dr_pets_comments_${postId}`) : null;
-      const comments = local ? JSON.parse(local) : [];
-      return {
-        comments: comments.map(normalizePostComment),
-        totalRows: comments.length,
-        totalPages: 1,
-      };
-    } catch {
-      return {
-        comments: [],
-        totalRows: 0,
-        totalPages: 1,
-      };
-    }
+    const response = await this.http.get(`/posts/${postId}/comments`, { params });
+    const payload = assertSuccess(response);
+    const rawComments = Array.isArray(payload)
+      ? payload : Array.isArray(payload?.comments) ? payload.comments : [];
+    const comments = rawComments.map(normalizePostComment);
+    return {
+      comments,
+      totalRows: Number(payload?.totalRows ?? comments.length),
+      totalPages: Number(payload?.totalPages ?? 1),
+    };
   }
 
   async createPostComment(postId: any, content: any, authorInfo: any = {}) {
-    const author = authorInfo.fullName || authorInfo.name || "Bạn";
-    const avatar = authorInfo.avatarUrl || authorInfo.avatar || "";
-    const userId = authorInfo.userId || "";
-    let result: any = null;
-    try {
-      const response = await this.http.post(`/posts/${postId}/comments`, { content, author, avatar, userId });
-      result = assertSuccess(response);
-    } catch {
-      // Continue to local persistence
-    }
-
-    try {
-      const newComment = {
-        id: result?.id || `cmt-${Date.now()}`,
-        content,
-        author: result?.author || author,
-        avatar: result?.avatar || avatar,
-        userId: result?.userId || userId,
-        isOwn: true,
-        time: "Vừa xong",
-        createdAt: new Date().toISOString(),
-        replies: [],
-      };
-      const key = `dr_pets_comments_${postId}`;
-      const existing = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
-      const list = existing ? JSON.parse(existing) : [];
-      list.push(newComment);
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(key, JSON.stringify(list));
-      }
-      return result || { success: true, data: newComment };
-    } catch {
-      return { success: true };
-    }
+    const response = await this.http.post(`/posts/${postId}/comments`, { content });
+    return assertSuccess(response);
   }
 
-  async replyPostComment(first: any, second: any, third?: any, fourth: any = {}, fifth: any = "") {
-    let postId = "";
-    let commentId = "";
-    let content = "";
-    let authorInfo: any = {};
-    let replyTo: any = "";
-
-    if (typeof third === 'string') {
-      // Signature: replyPostComment(postId, commentId, content, authorInfo, replyTo)
-      postId = first;
-      commentId = second;
-      content = third;
-      authorInfo = fourth || {};
-      replyTo = fifth || "";
-    } else {
-      // Signature: replyPostComment(commentId, content, authorInfo?)
-      commentId = first;
-      content = second;
-      authorInfo = third || {};
-    }
-
-    const author = authorInfo.fullName || authorInfo.name || "Bạn";
-    const avatar = authorInfo.avatarUrl || authorInfo.avatar || "";
-    const userId = authorInfo.userId || "";
-    let result: any = null;
-    try {
-      const response = await this.http.post(`/posts/comments/${commentId}/reply`, { content, author, avatar, userId, replyTo });
-      result = assertSuccess(response);
-    } catch {
-      // Continue to local persistence
-    }
-
-    try {
-      if (postId) {
-        const key = `dr_pets_comments_${postId}`;
-        const existing = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
-        const list = existing ? JSON.parse(existing) : [];
-        const parent = list.find((c: any) => c.id === commentId);
-        const newReply = {
-          id: result?.id || `reply-${Date.now()}`,
-          content,
-          author: result?.author || author,
-          avatar: result?.avatar || avatar,
-          userId: result?.userId || userId,
-          replyTo: replyTo || parent?.author || "",
-          isOwn: true,
-          time: "Vừa xong",
-          createdAt: new Date().toISOString(),
-        };
-        if (parent) {
-          if (!Array.isArray(parent.replies)) {
-            parent.replies = [];
-          }
-          parent.replies.push(newReply);
-        } else {
-          list.push({
-            ...newReply,
-            replies: [],
-          });
-        }
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem(key, JSON.stringify(list));
-        }
-        return result || { success: true, data: newReply };
-
-
-
-
-
-      }
-      return result || { success: true };
-    } catch {
-      return { success: true };
-    }
+  async replyPostComment(first: any, second: any, third?: any, fourth: any = {}, fifth: any = '') {
+    const commentId = typeof third === 'string' ? second : first;
+    const content = typeof third === 'string' ? third : second;
+    const response = await this.http.post(`/posts/comments/${commentId}/reply`, { content });
+    return assertSuccess(response);
+  }
   }
 
   async togglePostLike(postId: any) {
-    try {
-      const response = await this.http.post(`/posts/${postId}/like`);
-      return assertSuccess(response);
-    } catch {
-      return { success: true };
-    }
+    const response = await this.http.post(`/posts/${postId}/like`);
+    return assertSuccess(response);
   }
 }

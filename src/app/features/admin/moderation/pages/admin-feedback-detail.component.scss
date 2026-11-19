@@ -1,0 +1,18 @@
+:host{display:block;min-width:0}
+
+.feedback-detail__success{margin:14px 0;border:1px solid #bbe1c9;padding:11px 14px;border-radius:9px;background:#f1faf4;color:#236643;font:500 13px/20px Roboto,Arial,sans-serif}
+.feedback-detail__action{display:flex;flex-direction:column;gap:12px;margin:16px 0 20px;padding:20px 24px;border:1px solid #d8e4f2;border-radius:12px;background:#fff}
+.feedback-detail__action h2{margin:0;font:700 17px/25px Roboto,Arial,sans-serif;color:#202e45}
+.feedback-detail__action p{margin:0;font:400 13px/20px Roboto,Arial,sans-serif;color:#64748b}
+.feedback-detail__action label{font:600 13px/20px Roboto,Arial,sans-serif;color:#263c55}
+.feedback-detail__action textarea{box-sizing:border-box;width:100%;min-height:85px;resize:vertical;padding:12px;border:1px solid #d1dfee;border-radius:9px;font:400 14px/22px Roboto,Arial,sans-serif}
+.feedback-detail__action textarea:focus-visible{outline:2px solid #0d47a1;outline-offset:1px}
+.feedback-detail__action-buttons{display:flex;justify-content:flex-end;gap:10px}
+
+.feedback-detail__action select{
+  width:100%;min-height:44px;box-sizing:border-box;padding:10px 12px;
+  border:1px solid #d1dfee;border-radius:9px;background:#fff;
+  color:#20354c;font:400 14px/20px Roboto,Arial,sans-serif;
+}
+.feedback-detail__action select:focus-visible{outline:2px solid #0d47a1;outline-offset:1px}
+.feedback-detail__action label strong{color:#d32f2f}

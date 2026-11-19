@@ -2,7 +2,7 @@
   <div class="nav-links__box group">
     <a
       [appCustomerLink]="item.href"
-      [class]="`nav-link ${navLink1.isActive() ? 'nav-link-active' : ''}`"
+      [class]="`nav-link ${(navLink1.isActive() || (item.label === 'Blog' && isBlogRoute())) ? 'nav-link-active' : ''}`"
       #navLink1="customerLink"
       [exact]="item.href === '/'"
     >{{ item.label }}</a>

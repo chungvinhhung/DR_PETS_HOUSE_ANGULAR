@@ -18,8 +18,7 @@ export interface CategoryPageResponse {
 export interface SaveCategoryRequest {
   name: string;
   slug?: string;
-  // OpenAPI v7 CategoryWrite.parentId is an ObjectId only, not nullable.
-  // Omit this field entirely for root categories.
-  parentId?: string;
+  /** null moves an existing category to the root; omit on create when no parent is chosen. */
+  parentId?: string | null;
   status: CategoryStatus;
 }

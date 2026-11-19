@@ -11,9 +11,12 @@ export type AdminSidebarGroup = 'sales' | 'services' | 'operations' | 'content' 
 export class AdminSidebarAccordionService {
   readonly expandedGroup = signal<AdminSidebarGroup | null>(null);
 
-  /** Open the ancestor for a newly visited route; do not reset an unchanged group. */
+  /** Synchronize the open group with the current route.
+   * Standalone routes such as Customer Management pass null so every
+   * accordion group closes instead of leaking the previously open group.
+   */
   openForRoute(group: AdminSidebarGroup | null): void {
-    if (group !== null && this.expandedGroup() !== group) {
+    if (this.expandedGroup() !== group) {
       this.expandedGroup.set(group);
     }
   }

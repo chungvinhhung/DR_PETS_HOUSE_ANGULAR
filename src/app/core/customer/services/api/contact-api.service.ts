@@ -15,7 +15,18 @@ export class ContactApiService {
 
   async submitContactMessage(data: any) {
     try {
-      const response = await this.http.post('/contacts', data);
+      // Customer Liên hệ fields: name, gender, phone, email, message.
+      // BE /feedback requires subject, but the Customer form has no subject
+      // input. Supply a truthful form source label, not a fabricated user title.
+      const response = await this.http.post('/feedback', {
+        name: String(data?.name || '').trim(),
+        gender: data?.gender || undefined, // Pending BE schema support.
+        phone: String(data?.phone || '').trim(),
+        email: String(data?.email || '').trim(),
+        subject: 'Liên hệ từ website',
+        category: 'GENERAL',
+        message: String(data?.message || '').trim(),
+      });
       return assertSuccess(response);
     } catch (error: any) {
       console.error('Lỗi khi gửi thông điệp liên hệ:', error);

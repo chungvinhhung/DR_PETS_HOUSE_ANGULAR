@@ -15,15 +15,6 @@ import { productImages } from '../../../../../shared/customer/assets/product-ima
 import { BLOG_CATEGORIES, FEATURED_BLOG_POST, ALL_BLOG_POSTS, TRENDING_BLOG_POSTS } from '../../../../../shared/customer/data/blog-data';
 import { PAGE_SIZE } from './blog-page.helpers';
 
-function slugify(value: any = "") {
-  return String(value)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
 /**
  * BlogPage — chuyển từ React: src/pages/Blog/BlogPage.jsx
  */
@@ -51,33 +42,11 @@ export class BlogPageComponent {
   // --- Giá trị tính toán (computed) ---
   readonly filteredPosts = computed<any>(() => {
     const keyword = this.searchQuery().trim().toLocaleLowerCase("vi");
-    const activeCat = this.category();
-    const activeCatObj = this.categories().find((item: any) => item.id === activeCat);
-    const targetLabel = activeCatObj?.label || activeCat;
-    const targetSlug = activeCatObj?.slug || slugify(targetLabel);
-
     return this.allPosts().filter((post: any) => {
-      if (activeCat !== "all") {
-        const postCat = String(post.category || "").toLowerCase();
-        const postLabel = String(post.categoryLabel || "").toLowerCase();
-        const postSlug = slugify(postLabel || postCat);
-        const activeTarget = String(activeCat).toLowerCase();
-
-        const matchesCat =
-          postCat === activeTarget ||
-          postLabel === activeTarget ||
-          postLabel.includes(activeTarget) ||
-          activeTarget.includes(postCat) ||
-          (targetSlug && postSlug === targetSlug) ||
-          (targetSlug && postSlug.includes(targetSlug)) ||
-          (targetSlug && targetSlug.includes(postSlug)) ||
-          (targetLabel && postLabel.includes(String(targetLabel).toLowerCase())) ||
-          (targetLabel && String(targetLabel).toLowerCase().includes(postLabel));
-        if (!matchesCat) return false;
-      }
+      if (this.category() !== "all" && post.category !== this.category()) return false;
       if (!keyword) return true;
       return [post.title, post.excerpt, post.categoryLabel].some((value: any) =>
-        value && String(value).toLocaleLowerCase("vi").includes(keyword),
+        value.toLocaleLowerCase("vi").includes(keyword),
       );
     });
   });
@@ -138,6 +107,10 @@ export class BlogPageComponent {
             if (apiFeatured) this.featuredPost.set(apiFeatured);
             if (apiTrending.length) this.trendingPosts.set(apiTrending);
             if (apiPosts.posts.length) {
+              // Admin-selected featured frame takes precedence only if the
+              // published API actually persisted and returned layoutType.
+              const featured = apiPosts.posts.find((post: any) => post.layoutType === 'FEATURED');
+              if (featured) this.featuredPost.set(featured);
               this.allPosts.set(apiPosts.posts);
               return;
             }
@@ -168,11 +141,12 @@ export class BlogPageComponent {
       if (typeof cleanup === 'function') this.destroyRef.onDestroy(cleanup);
     });
 
-    // useEffect(..., [location.hash]) -> chỉ cuộn khi hash là #latest-posts
+    // useEffect(..., [location.hash, category])
     effect((onCleanup: any) => {
-      const hash = this.navService.location().hash;
+      this.navService.location().hash;
+      this.category();
       const cleanup = untracked(() => {
-        if (hash !== "#latest-posts") return;
+        if (this.navService.location().hash !== "#latest-posts") return;
         window.requestAnimationFrame(() => {
           (document.getElementById("latest-posts") as any)?.scrollIntoView({ behavior: "smooth", block: "start" });
         });
@@ -182,21 +156,10 @@ export class BlogPageComponent {
   }
 
   protected updateParams(nextCategory: any, keyword: any) {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    if (nextCategory !== "all") {
-      params.set("category", nextCategory);
-    } else {
-      params.delete("category");
-    }
-    if (keyword) {
-      params.set("keyword", keyword);
-    } else {
-      params.delete("keyword");
-    }
-    const query = params.toString();
-    const newUrl = window.location.pathname + (query ? `?${query}` : "") + window.location.hash;
-    window.history.replaceState(window.history.state, "", newUrl);
+    const params: any = {};
+    if (nextCategory !== "all") params.category = nextCategory;
+    if (keyword) params.keyword = keyword;
+    this.navService.setSearchParams(params);
   }
 
   protected selectCategory(id: any) {

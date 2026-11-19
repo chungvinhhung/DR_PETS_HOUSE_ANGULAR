@@ -64,6 +64,10 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
   // Only show previews for photos that the user has actually uploaded.
   images: ProductImageDraft[] = [];
   primaryImageId: number | null = null;
+  /** Variant images are optional. Preview the selected product main image instead. */
+  get primaryImagePreviewUrl(): string | null {
+    return this.images.find(image => image.id === this.primaryImageId)?.previewUrl ?? this.images[0]?.previewUrl ?? null;
+  }
   private feedbackValue = '';
   get feedback(): string { return this.feedbackValue; }
   set feedback(message: string) {
@@ -112,6 +116,12 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     };
   }
 
+  /** Removing a variant-specific image never deletes the product main image. */
+  clearVariantImage(variant: VariantDraft): void {
+    if (this.saving || !variant.imageFile) return;
+    this.releaseVariantImage(variant);
+  }
+
   private releaseVariantImage(variant: VariantDraft): void {
     if (variant.imageUrl) URL.revokeObjectURL(variant.imageUrl);
     variant.imageFile = null;
@@ -125,10 +135,13 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     return this.submitted && this.hasVariants && !v.label.trim();
   }
   variantPriceInvalid(v: VariantDraft): boolean {
-    return this.submitted && (v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) <= 0);
+    return (v.price != null && Number(v.price) < 0) ||
+      (this.submitted && (v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) <= 0));
   }
   variantDiscountInvalid(v: VariantDraft): boolean {
-    return this.submitted && (v.discount == null || !Number.isFinite(Number(v.discount)) || Number(v.discount) < 0 || Number(v.discount) > 100);
+    return (v.discount != null && (Number(v.discount) < 0 || Number(v.discount) > 100)) ||
+      (this.submitted && (v.discount == null || !Number.isFinite(Number(v.discount)) ||
+        Number(v.discount) < 0 || Number(v.discount) > 100));
   }
 
   /** Select the complete existing number so typing replaces the default zero. */
@@ -175,7 +188,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
   }
 
   private isValidImage(file: File): boolean {
-    return ['image/jpeg', 'image/png'].includes(file.type) &&
+    return ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) &&
       file.size <= this.maxImageSize;
   }
 
@@ -206,7 +219,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     }
 
     if (validFiles.length !== files.length) {
-      this.feedback = 'Chỉ hỗ trợ ảnh JPG/PNG, tối đa 5MB mỗi ảnh.';
+      this.feedback = 'Chỉ hỗ trợ ảnh JPG, PNG, WEBP, tối đa 5MB mỗi ảnh.';
     } else if (allowed.length !== validFiles.length) {
       this.feedback = 'Chỉ được tải tối đa 10 ảnh sản phẩm.';
     } else {
@@ -229,7 +242,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     const image = this.images.find(item => item.id === id);
     if (!image) return;
     if (!this.isValidImage(file)) {
-      this.feedback = 'Ảnh thay thế phải là JPG/PNG và không quá 5MB.';
+      this.feedback = 'Ảnh thay thế phải là JPG, PNG hoặc WEBP và không quá 5MB.';
       return;
     }
 
@@ -257,7 +270,7 @@ export class AdminProductCreatePageComponent implements OnInit, OnDestroy {
     input.value = '';
     if (!file) return;
     if (!this.isValidImage(file)) {
-      this.feedback = 'Ảnh biến thể phải là JPG/PNG và không quá 5MB.';
+      this.feedback = 'Ảnh biến thể phải là JPG, PNG hoặc WEBP và không quá 5MB.';
       return;
     }
 

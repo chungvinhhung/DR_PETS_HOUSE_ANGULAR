@@ -1,18 +1,26 @@
+import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, from, map, mergeMap, of, toArray } from 'rxjs';
+import { catchError, forkJoin, from, map, mergeMap, of, toArray } from 'rxjs';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
+import { AdminDataStateComponent } from "../../../../shared/admin-data-state/admin-data-state.component";
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { AdminReturnNotificationService } from '../../../../shared/services/admin-return-notification.service';
+import { AdminOrderNotificationService } from '../../../../shared/services/admin-order-notification.service';
 import { orderErrorMessage } from '../services/admin-order-error-message';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
+import { AdminProductService } from '../../products/services/admin-product.service';
+import { AdminInventoryService, InventoryItemDto, InventoryTransactionDto } from '../../inventory/services/admin-inventory.service';
+import { AdminInventoryTransactionDrawerComponent } from '../../inventory/components/admin-inventory-transaction-drawer.component';
 import {
   AdminOrderApiService, OrderRecord, OrderStatus, OrderWriteAction, OrderReturnSummary, ReturnStatus,
 } from '../services/admin-order-api.service';
 
 type OrderFilter = OrderStatus | ReturnStatus | 'ALL';
+interface DashboardOrderFilter { from: string; to: string; status?: OrderStatus; branchId?: string }
 const localDate = (day: Date): string => [day.getFullYear(), String(day.getMonth() + 1).padStart(2, '0'), String(day.getDate()).padStart(2, '0')].join('-');
 const defaultReturnStart = (): string => { const day = new Date(); day.setDate(day.getDate() - 6); return localDate(day); };
 type ActionDialog = OrderWriteAction | 'cancel' | null;
@@ -28,7 +36,7 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 @Component({
   selector: 'app-admin-order-management',
   standalone: true,
-  imports: [AdminCatalogShellComponent, RouterLink],
+  imports: [AdminCatalogShellComponent, AdminBreadcrumbComponent, AdminDataStateComponent, RouterLink, AdminInventoryTransactionDrawerComponent],
   templateUrl: './admin-order-management.component.html',
   styleUrl: './admin-order-management.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,26 +44,35 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 export class AdminOrderManagementComponent {
   private readonly api = inject(AdminOrderApiService);
   private readonly branchApi = inject(BranchManagementApiService);
+  private readonly inventoryApi = inject(AdminInventoryService);
+  private readonly productApi = inject(AdminProductService);
   private readonly route = inject(ActivatedRoute);
   private readonly session = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
   private readonly returnNotifications = inject(AdminReturnNotificationService);
+  private readonly orderNotifications = inject(AdminOrderNotificationService);
   private readonly destroyRef = inject(DestroyRef);
   private ordersRequestVersion = 0;
   private returnsRequestVersion = 0;
   private detailRequestVersion = 0;
 
   readonly statuses = STATUS_LABELS;
-  readonly canCreateOrder = computed(() => this.session.user()?.systemRole === 'ADMIN');
+  readonly canCreateOrder = computed(() => {
+    const user = this.session.user();
+    return user?.systemRole === 'ADMIN' || user?.systemRole === 'MANAGER' ||
+      (user?.systemRole === 'STAFF' && user.staffSubRole === 'RECEPTIONIST');
+  });
   readonly milestones: OrderStatus[] = ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'COMPLETED'];
   readonly orderId = signal('');
   readonly isDetail = computed(() => Boolean(this.orderId()));
+  /** Set only by Dashboard clickthrough. Queries are filtered in Mongo before pagination. */
+  readonly dashboardFilter = signal<DashboardOrderFilter | null>(null);
   readonly allOrders = signal<OrderRecord[]>([]);
   readonly returns = signal<OrderReturnSummary[]>([]);
   readonly activeTab = signal<'orders' | 'returns'>('orders');
   readonly dateRange = signal('0');
-  readonly returnDateFrom = signal(defaultReturnStart());
-  readonly returnDateTo = signal(localDate(new Date()));
+  readonly returnDateFrom = signal('');
+  readonly returnDateTo = signal('');
   readonly returnCalendarOpen = signal(false);
   readonly returnCalendarStart = signal<string | null>(null);
   readonly returnCalendarMonth = signal(localDate(new Date()).slice(0, 7));
@@ -85,29 +102,55 @@ export class AdminOrderManagementComponent {
   readonly hasLoadedReturns = signal(false);
   // Shared with sidebar; loaded on initial page render, not when the tab is clicked.
   readonly returnPendingCount = this.returnNotifications.pendingCount;
+  readonly pendingOrderCount = this.orderNotifications.pendingCount;
   readonly totalLoaded = computed(() => this.allOrders().length);
   readonly awaitingCount = computed(() => this.allOrders().filter(item => item.status === 'PENDING').length);
   readonly shippingCount = computed(() => this.allOrders().filter(item => item.status === 'SHIPPED').length);
+  readonly completedOrderCount = computed(() => this.allOrders().filter(item => item.status === 'COMPLETED').length);
+  readonly totalReturnsCount = computed(() => this.returns().length);
+  readonly requestedReturnCount = computed(() => this.returns().filter(item => item.status === 'REQUESTED').length);
+  // KPI must use the same exact status as the "Đang xử lý" table filter.
+  readonly processingReturnCount = computed(() => this.returns().filter(item =>
+    item.status === 'PROCESSING').length);
+  readonly completedReturnCount = computed(() => this.returns().filter(item => item.status === 'COMPLETED').length);
   readonly selected = signal<OrderRecord | null>(null);
-  // Display EVERY reached order milestone, newest first. Missing BE audit timestamps
-  // remain explicit rather than being invented from the final delivery time.
+  readonly orderInventory = signal<InventoryTransactionDto[]>([]);
+  readonly orderInventoryLoading = signal(false);
+  readonly orderInventoryError = signal(false);
+  readonly inventoryDrawerOpen = signal(false);
+  readonly selectedInventoryGroup = signal<InventoryTransactionDto[]>([]);
+  readonly selectedInventoryCode = signal('');
+  readonly orderInventoryItems = signal<InventoryItemDto[]>([]);
+  readonly orderInventoryGroups = computed(() => {
+    const groups = new Map<string, { key: string; code: string; rows: InventoryTransactionDto[] }>();
+    for (const tx of this.orderInventory()) {
+      const explicit = tx.transactionCode || tx.groupCode || tx.code || '';
+      // Until BE exposes a shared business transaction code, correlate rows by
+      // persisted source + movement type + reason. Do not present Mongo row IDs
+      // as if they were TXK/PNK business codes.
+      const source = tx.sourceId ? (tx.sourceType || 'SOURCE') + ':' + tx.sourceId : '';
+      const fallbackKey = source
+        ? [tx.transactionType, source, tx.reason || ''].join('|')
+        : 'row:' + tx.id;
+      const key = explicit ? 'code:' + explicit : fallbackKey;
+      const current = groups.get(key) ?? { key, code: explicit, rows: [] };
+      current.rows.push(tx);
+      groups.set(key, current);
+    }
+    return [...groups.values()];
+  });
+  readonly productThumbs = signal<Record<string,string>>({});
+  // Only render actual order audit events. The milestone bar is a separate
+  // status visualization and must not create synthetic history records.
   readonly detailHistory = computed(() => {
     const order = this.selected();
     if (!order) return [];
-    const flow: OrderStatus[] = ['PENDING', ...this.milestones];
-    const reached = order.status === 'CANCELLED'
-      ? [...flow.filter(status => status === 'PENDING' || order.statusHistory?.some(entry => entry.status === status)),
-          'CANCELLED' as OrderStatus]
-      : flow.slice(0, flow.indexOf(order.status) + 1);
-    return reached.map(status => {
-      const event = order.statusHistory?.find(entry => entry.status === status);
-      return {
-        status,
-        at: event?.at ?? (status === 'PENDING' ? order.createdAt :
-          status === 'COMPLETED' ? order.deliveredAt : null),
-        note: event?.note ?? null,
-      };
-    }).reverse();
+    const history = (order.statusHistory ?? []).filter(event => !!event.at)
+      .map(event => ({status: event.status, at: event.at, note: event.note ?? null}));
+    if (order.createdAt && !history.some(event => event.status === 'PENDING')) {
+      history.push({status: 'PENDING', at: order.createdAt, note: null});
+    }
+    return history.sort((a,b) => (Date.parse(b.at) || 0) - (Date.parse(a.at) || 0));
   });
   readonly branches = signal<{ id: string; name: string }[]>([]);
   readonly loading = signal(false);
@@ -117,12 +160,13 @@ export class AdminOrderManagementComponent {
   readonly branchId = signal('ALL');
   readonly page = signal(1);
   readonly pageSize = 6;
-  readonly pageNumbers = computed(() => Array.from({length: this.totalPages()}, (_, index) => index + 1));
+  readonly pageNumbers = computed(() => adminPageWindowWithEdges(this.page(),this.totalPages()));
   readonly dialog = signal<ActionDialog>(null);
   readonly dialogBusy = signal(false);
   private cancelRequestKey: string | null = null;
   readonly reason = signal('');
   readonly cancelCategory = signal('');
+  readonly statusNote = signal('');
   readonly carrier = signal('');
   readonly tracking = signal('');
   readonly detailInfo = computed(() => this.selected());
@@ -188,6 +232,27 @@ export class AdminOrderManagementComponent {
     this.returnNotifications.ensureLoaded();
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((query) => {
       if (!this.isDetail() && query.get('tab') === 'returns') this.setTab('returns');
+      const from = query.get('from') ?? '';
+      const to = query.get('to') ?? '';
+      const status = query.get('status') ?? '';
+      const branchId = query.get('branchId') ?? '';
+      const filters: DashboardOrderFilter | null =
+        /^\d{4}-\d{2}-\d{2}$/.test(from) && /^\d{4}-\d{2}-\d{2}$/.test(to) && from <= to
+          ? {from, to, ...(status in STATUS_LABELS ? {status:status as OrderStatus}: {}),
+            ...(branchId ? {branchId} : {})}
+          : null;
+      const previous = JSON.stringify(this.dashboardFilter());
+      this.dashboardFilter.set(filters);
+      if (filters) {
+        this.status.set(filters.status ?? 'ALL');
+        this.branchId.set(filters.branchId ?? 'ALL');
+        this.dateRange.set('0');
+        this.activeTab.set('orders');
+      } else if (previous !== 'null') {
+        this.status.set('ALL'); this.branchId.set('ALL');
+      }
+      // Angular reuses the list component when only query params change.
+      if (!this.isDetail() && previous !== JSON.stringify(filters) && this.allOrders().length) this.loadOrders();
     });
     this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {
       this.orderId.set(params.get('id') ?? '');
@@ -196,7 +261,14 @@ export class AdminOrderManagementComponent {
       else this.loadOrders();
     });
     this.branchApi.listBranches().pipe(takeUntilDestroyed()).subscribe({
-      next: (records) => this.branches.set(records.map((branch) => ({ id: branch.id, name: branch.name }))),
+      next: (records) => {
+        const user = this.session.user();
+        const scope = new Set(user?.branchScope ?? []);
+        const visible = user?.systemRole === 'ADMIN'
+          ? records
+          : records.filter((branch) => scope.has(branch.id));
+        this.branches.set(visible.map((branch) => ({ id: branch.id, name: branch.name })));
+      },
       error: () => { /* Branch titles are optional; Order API remains authoritative. */ },
     });
   }
@@ -208,8 +280,8 @@ export class AdminOrderManagementComponent {
     this.status.set('ALL');
     this.dateRange.set('0');
     this.branchId.set('ALL');
-    this.returnDateFrom.set(defaultReturnStart());
-    this.returnDateTo.set(localDate(new Date()));
+    this.returnDateFrom.set('');
+    this.returnDateTo.set('');
     this.closeReturnCalendar();
     this.page.set(1);
     if (tab === 'returns' && !this.hasLoadedReturns()) this.loadReturns();
@@ -408,7 +480,7 @@ export class AdminOrderManagementComponent {
     const link = document.createElement('a');
     link.href = objectUrl; link.download = filename; link.click();
     URL.revokeObjectURL(objectUrl);
-    this.toast.show('Đã xuất những bản ghi hiện có theo bộ lọc.', 'success');
+    this.toast.show('Đã xuất danh sách yêu cầu trả hàng đang hiển thị theo bộ lọc.', 'success');
   }
 
   setSearch(value: string): void { this.search.set(value); this.page.set(1); }
@@ -430,7 +502,9 @@ export class AdminOrderManagementComponent {
   private loadOrders(): void {
     const version = ++this.ordersRequestVersion;
     this.loading.set(true); this.error.set('');
-    this.api.list().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    const filters = this.dashboardFilter();
+    const source = filters ? this.api.listDashboardFiltered(filters) : this.orderNotifications.listForView();
+    source.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (page) => {
         if (version !== this.ordersRequestVersion) return;
         this.allOrders.set(Array.isArray(page.items) ? page.items : []);
@@ -443,21 +517,110 @@ export class AdminOrderManagementComponent {
       },
     });
   }
+  inventoryName(id: string): string {
+    const item = this.orderInventoryItems().find(entry => entry.id === id);
+    return item ? item.name : 'Mặt hàng ' + id;
+  }
+  inventorySku(id: string): string {
+    return this.orderInventoryItems().find(entry => entry.id === id)?.sku || '—';
+  }
+  inventoryTransactionLabel(tx: InventoryTransactionDto): string {
+    if (tx.transactionType === 'ISSUE') return 'Xuất kho';
+    if (tx.transactionType === 'RECEIPT' && /cancel|hủy|compensation/i.test(tx.reason || '')) {
+      return 'Hoàn tồn do hủy đơn';
+    }
+    if (tx.transactionType === 'RECEIPT') return 'Nhập kho';
+    if (tx.transactionType === 'ADJUSTMENT') return 'Điều chỉnh tồn';
+    return 'Giao dịch kho';
+  }
+  inventoryGroupBranch(group: { rows: InventoryTransactionDto[] }): string {
+    return this.branchName(group.rows[0]?.branchId || this.selected()?.fulfillmentBranchId || '');
+  }
+  openInventoryGroup(code: string, rows: InventoryTransactionDto[]): void {
+    this.selectedInventoryCode.set(code);
+    this.selectedInventoryGroup.set(rows);
+    this.inventoryDrawerOpen.set(true);
+  }
+  closeInventoryDrawer(): void {
+    this.inventoryDrawerOpen.set(false);
+    this.selectedInventoryCode.set('');
+    this.selectedInventoryGroup.set([]);
+  }
+  retryOrderInventory(): void {
+    const order = this.selected();
+    if (order) this.loadOrderInventory(order);
+  }
+
+  private loadOrderImages(order: OrderRecord): void {
+    this.productThumbs.set({});
+    const ids=[...new Set(order.items.map(item=>item.productId).filter(Boolean))];
+    if(!ids.length)return;
+    forkJoin(ids.map(id=>this.productApi.getProduct(id).pipe(
+      map(product=>[id,product.images.find(img=>img.isPrimary)?.url
+        || product.images[0]?.url || ''] as const),
+      catchError(()=>of([id,''] as const)),
+    ))).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(rows=>{
+      if(this.orderId()!==order.id)return;
+      this.productThumbs.set(Object.fromEntries(rows));
+    });
+  }
+
+  private loadOrderInventory(order: OrderRecord): void {
+    // Current BE creates ORDER/ISSUE during checkout, before the Order enters
+    // later lifecycle states. Cancellation may add ORDER/RECEIPT compensation.
+    // Do not infer inventory from status; render every persisted stock movement
+    // that belongs to this Order.
+    this.orderInventory.set([]);
+    this.orderInventoryItems.set([]);
+    this.orderInventoryError.set(false);
+    this.orderInventoryLoading.set(true);
+    const requestedId = order.id;
+    forkJoin({
+      transactions: this.inventoryApi.listTransactions(),
+      items: this.inventoryApi.listItems(),
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({transactions,items}) => {
+        if (this.orderId() !== requestedId) return;
+        this.orderInventoryItems.set(items);
+        this.orderInventory.set(transactions.filter(tx => {
+          const sourceType = tx.sourceType?.toUpperCase() || '';
+          return (tx.transactionType === 'ISSUE' || tx.transactionType === 'RECEIPT') &&
+            (sourceType === 'ORDER' || sourceType === 'ORD' || sourceType.includes('ORDER')) &&
+            (tx.sourceId === order.id || tx.sourceId === order.code);
+        }));
+        this.orderInventoryLoading.set(false);
+      },
+      error: () => {
+        if (this.orderId() !== requestedId) return;
+        this.orderInventoryError.set(true);
+        this.orderInventoryLoading.set(false);
+      },
+    });
+  }
+
   private loadDetail(): void {
     const id = this.orderId();
     const version = ++this.detailRequestVersion;
     if (!id) return;
     this.loading.set(true); this.error.set('');
     this.selected.set(null);
+    this.orderInventory.set([]);
+    this.closeInventoryDrawer();
+    this.productThumbs.set({});
+    this.orderInventoryLoading.set(true);
+    this.orderInventoryError.set(false);
     this.api.get(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (order) => {
         if (this.orderId() !== id || version !== this.detailRequestVersion) return;
         this.selected.set(order); this.loading.set(false);
+        this.loadOrderInventory(order);
+        this.loadOrderImages(order);
       },
       error: (error: unknown) => {
         if (this.orderId() !== id || version !== this.detailRequestVersion) return;
         this.error.set(orderErrorMessage(error, 'Không tải được chi tiết đơn hàng.'));
         this.loading.set(false);
+        this.orderInventoryLoading.set(false);
       },
     });
   }
@@ -468,9 +631,12 @@ export class AdminOrderManagementComponent {
     const recordedAt = order.statusHistory?.find(entry => entry.status === step)?.at
       ?? (step === 'COMPLETED' ? order.deliveredAt : null);
     if (recordedAt) return this.when(recordedAt);
-    return reached ? 'BE chưa ghi thời gian' : 'Chưa bắt đầu';
+    return reached ? '—' : 'Chưa bắt đầu';
   }
   statusLabel(status: OrderStatus): string { return STATUS_LABELS[status] ?? 'Chưa xác định'; }
+  historyEventLabel(status: OrderStatus): string {
+    return status === 'PENDING' ? 'Đơn được tạo' : this.statusLabel(status);
+  }
   customerName(order: OrderRecord): string {
     return order.contactSnapshot?.fullName || order.contactSnapshot?.name || 'Khách hàng';
   }
@@ -537,19 +703,25 @@ export class AdminOrderManagementComponent {
   openAction(action: ActionDialog): void {
     if (!this.canManage() || !action || this.dialogBusy()) return;
     if (action === 'cancel' ? !this.canCancel() : this.availableAction() !== action) return;
-    this.reason.set(''); this.cancelCategory.set(''); this.carrier.set(''); this.tracking.set('');
+    this.reason.set(''); this.cancelCategory.set(''); this.statusNote.set(''); this.carrier.set(''); this.tracking.set('');
     this.cancelRequestKey = action === 'cancel'
       ? 'staff-cancel-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2)
       : null;
     this.dialog.set(action);
   }
   isCancelReasonValid(): boolean {
-    const category = this.cancelCategory();
-    return category.length > 0 && (category !== 'Khác' || this.reason().trim().length >= 5);
+    return this.cancelCategory().length > 0;
+  }
+  isDialogValid(action: ActionDialog): boolean {
+    if (!action) return false;
+    if (action === 'cancel') return this.isCancelReasonValid();
+    if (action === 'ship') return this.carrier().trim().length > 0 && this.tracking().trim().length > 0;
+    return true;
   }
   cancelReasonPayload(): string {
-    const category = this.cancelCategory(), note = this.reason().trim();
-    return category === 'Khác' ? note : (note ? category + ' - ' + note : category);
+    const category = this.cancelCategory();
+    const note = this.reason().trim();
+    return note ? category + ' - ' + note : category;
   }
   closeDialog(): void {
     if (this.dialogBusy()) return;
@@ -562,15 +734,21 @@ export class AdminOrderManagementComponent {
     if (!action || !order || this.dialogBusy() || !this.canManage()) return;
     if (action === 'cancel' && (!this.canCancel() || !this.isCancelReasonValid())) return;
     if (action !== 'cancel' && this.availableAction() !== action) return;
+    if (!this.isDialogValid(action)) return;
     this.dialogBusy.set(true);
     const request = action === 'cancel'
       ? this.api.cancel(order.id, this.cancelReasonPayload(), this.cancelRequestKey ?? 'staff-cancel-' + order.id)
-      : this.api.changeStatus(order.id, action, { carrier: this.carrier().trim(), trackingNumber: this.tracking().trim() });
+      : this.api.changeStatus(order.id, action, {
+          carrier: this.carrier().trim(),
+          trackingNumber: this.tracking().trim(),
+          note: this.statusNote().trim() || undefined,
+        });
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (updated) => {
         this.dialogBusy.set(false); this.dialog.set(null);
         this.cancelRequestKey = null;
         this.selected.set(updated);
+        this.orderNotifications.refresh();
         this.toast.show(action === 'cancel' ? 'Đơn hàng đã được hủy.' : 'Đã cập nhật trạng thái đơn hàng.', 'success');
         this.loadDetail();
       },

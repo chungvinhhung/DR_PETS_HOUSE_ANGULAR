@@ -29,4 +29,9 @@ export class NavLinksComponent {
   // --- Dữ liệu & hàm dùng trong template ---
   protected readonly NAV_LINKS: any = NAV_LINKS;
 
+  /** Keep Blog highlighted for community, first aid, articles and legacy aliases. */
+  protected isBlogRoute(): boolean {
+    return /^\/(blog|bai-viet)(\/|$)/.test(this.navService.location().pathname);
+  }
+
 }

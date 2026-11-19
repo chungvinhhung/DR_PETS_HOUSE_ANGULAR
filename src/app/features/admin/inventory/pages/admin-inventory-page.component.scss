@@ -131,7 +131,12 @@
 }
 
 .toolbar input:focus,
-.toolbar select:focus,
+.toolbar select:focus {
+  border-color: #9dbbe0;
+  outline: none;
+  box-shadow: 0 0 0 2px #eef6ff;
+}
+
 .dialog-body input:focus,
 .dialog-body select:focus,
 .dialog-body textarea:focus {
@@ -215,7 +220,7 @@ table {
 }
 
 thead {
-  background: #f8fafc;
+  background: #f4f6f9;
 }
 
 th, td {
@@ -389,8 +394,9 @@ small {
   padding-right: 10px;
 }
 .history-table th:nth-child(4), .history-table td:nth-child(4) {
-  padding-left: clamp(16px, 2.6vw, 38px);
-  padding-right: 4px;
+  text-align: center;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 .history-table th:nth-child(5), .history-table td:nth-child(5),
 .history-table th:nth-child(6), .history-table td:nth-child(6),
@@ -410,7 +416,7 @@ small {
   .history-table th, .history-table td { padding-left: 5px; padding-right: 5px; }
   .history-table th:nth-child(2), .history-table td:nth-child(2) { padding-left: 5px; padding-right: 3px; }
   .history-table th:nth-child(3), .history-table td:nth-child(3) { padding-left: 3px; padding-right: 5px; }
-  .history-table th:nth-child(4), .history-table td:nth-child(4) { padding-left: 16px; padding-right: 3px; }
+  .history-table th:nth-child(4), .history-table td:nth-child(4) { padding-left: 8px; padding-right: 8px; }
 }
 
 @media (max-width: 600px) {

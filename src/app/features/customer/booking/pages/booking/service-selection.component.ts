@@ -40,6 +40,9 @@ export class ServiceSelectionComponent {
   readonly services = input<any>(undefined);
   readonly timeSlots = input<any>(undefined);
   readonly slotsLoading = input<any>(undefined);
+  readonly slotsError = input<string>("");
+  readonly slotsState = input<string>("idle");
+  readonly onRetrySlots = output<void>();
   readonly onNext = output<void>();
 
   // --- Dữ liệu & hàm dùng trong template ---

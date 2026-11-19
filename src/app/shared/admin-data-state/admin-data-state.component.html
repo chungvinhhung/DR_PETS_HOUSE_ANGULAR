@@ -1,0 +1,16 @@
+<section class="admin-data-state" [attr.data-kind]="kind"
+  [attr.role]="kind === 'error' ? 'alert' : 'status'"
+  [attr.aria-live]="kind === 'loading' ? 'polite' : null">
+  @if (kind !== 'empty') {
+    <div class="admin-data-state__visual" aria-hidden="true">
+      @if (kind === 'loading') { <span class="admin-data-state__spinner"></span> }
+      @else if (kind === 'error') { <span>!</span> }
+      @else { <span>i</span> }
+    </div>
+  }
+  <strong>{{ displayTitle }}</strong>
+  <p>{{ displayMessage }}</p>
+  @if (kind === 'error') {
+    <button type="button" (click)="retry.emit()">{{ retryLabel }}</button>
+  }
+</section>

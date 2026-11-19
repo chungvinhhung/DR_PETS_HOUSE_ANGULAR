@@ -1,307 +1,215 @@
-import { ChangeDetectionStrategy, Component, HostListener, Input, signal } from '@angular/core';
-import { inject } from '@angular/core';
-import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import { ChangeDetectionStrategy, Component, DestroyRef, Input, OnChanges, SimpleChanges, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-interface ShiftTemplatePreview {
-  id: string;
-  name: string;
-  start: string;
-  end: string;
-  days: number[];
-  enabled: boolean;
-}
-const SAMPLE_SHIFTS: ShiftTemplatePreview[] = [
-  { id: 'demo-am', name: 'Ca sáng', start: '07:00', end: '15:00', days: [1, 2, 3, 4, 5, 6, 7], enabled: true },
-  { id: 'demo-pm', name: 'Ca chiều', start: '15:00', end: '22:00', days: [1, 2, 3, 4, 5, 6, 7], enabled: true },
-  { id: 'demo-office', name: 'Ca hành chính', start: '08:00', end: '17:00', days: [1, 2, 3, 4, 5], enabled: true },
-];
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { adminErrorMessage } from '../../../../shared/services/admin-toast.service';
+import {
+  BranchManagementApiService, BranchShiftTemplate, BranchShiftTemplateWrite,
+} from '../services/branch-management-api.service';
 
-/** Figma V2 shift template UI. Local editing is deliberate: BE persistence is not implemented. */
+const DEFAULT_SHIFT: BranchShiftTemplateWrite = {
+  name: '', startTime: '08:00', endTime: '17:00',
+  daysOfWeek: [1, 2, 3, 4, 5], status: 'ACTIVE',
+};
+
 @Component({
   selector: 'app-branch-shift-templates-preview',
   standalone: true,
-  template: `
-    <section class="branch-management__panel branch-v2" aria-labelledby="branch-shift-heading">
-      <div class="branch-v2__heading">
-        <div>
-          <h2 id="branch-shift-heading">Ca làm việc tại chi nhánh</h2>
-          
-        </div>
-        <button class="branch-management__button branch-management__button--primary" type="button"
-          (click)="openEditor()">+ Thêm ca làm việc</button>
-      </div>
-      <div class="branch-management__table-scroll">
-        <table class="branch-management__table branch-v2__shifts">
-          <colgroup>
-            <col style="width: 18%" />
-            <col style="width: 16%" />
-            <col style="width: 18%" />
-            <col style="width: 24%" />
-            <col style="width: 15%" />
-            <col style="width: 9%" />
-          </colgroup>
-          <thead><tr><th scope="col">Tên ca</th><th scope="col">Bắt đầu</th><th scope="col">Kết thúc</th>
-            <th scope="col">Ngày áp dụng</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead>
-          <tbody>
-            @for (item of items(); track item.id) {
-              <tr>
-                <td><strong>{{ item.name }}</strong></td>
-                <td>{{ item.start }}</td>
-                <td>{{ item.end }}{{ item.end < item.start ? ' hôm sau' : '' }}</td>
-                <td>{{ daysLabel(item.days) }}</td>
-                <td><span class="branch-management__pill" [class.branch-management__pill--off]="!item.enabled">
-                  {{ item.enabled ? 'Đang dùng' : 'Ngừng dùng' }}
-                </span></td>
-                <td class="branch-v2__edit-cell"><button class="branch-v2__edit-icon" type="button" title="Chỉnh sửa"
-                  [attr.aria-label]="'Sửa ' + item.name" (click)="openEditor(item)"><img src="/assets/admin-staff/icon-edit.svg" width="20" height="20" alt="" /></button></td>
-              </tr>
-            } @empty {
-              <tr><td colspan="6" class="branch-management__empty">Chưa có mẫu ca nào.</td></tr>
-            }
-          </tbody>
-        </table>
-      </div>
-
-    </section>
-
-    @if (editorOpen()) {
-      <div class="branch-v2__overlay" (click)="requestClose()" role="presentation">
-        <section class="branch-v2__modal" role="dialog" aria-modal="true" aria-labelledby="branch-shift-modal"
-          (click)="$event.stopPropagation()">
-          <header class="branch-v2__modal-header">
-            <div>
-              <h2 id="branch-shift-modal">{{ editingId() ? 'Sửa ca làm việc' : 'Thêm ca làm việc' }}</h2>
-              <p>{{ branchName }}</p>
-            </div>
-            <button type="button" aria-label="Đóng" (click)="requestClose()">×</button>
-          </header>
-          <form (submit)="savePreview($event)" class="branch-v2__form" novalidate>
-            <label class="branch-v2__field">
-              <span>Tên ca làm việc <b>*</b></span>
-              <input #nameInput type="text" maxlength="80" placeholder="Ví dụ: Ca sáng"
-                [value]="formName()" (input)="changeName(nameInput.value)" />
-            </label>
-            <div class="branch-v2__time-fields">
-              <label class="branch-v2__field">
-                <span>Bắt đầu <b>*</b></span>
-                <input #startInput type="time" [value]="formStart()" (input)="changeStart(startInput.value)" />
-              </label>
-              <label class="branch-v2__field">
-                <span>Kết thúc <b>*</b></span>
-                <input #endInput type="time" [value]="formEnd()" (input)="changeEnd(endInput.value)" />
-              </label>
-            </div>
-            <fieldset class="branch-v2__weekday-fieldset">
-              <legend>Ngày áp dụng · Có thể chọn nhiều <b>*</b></legend>
-              <div class="branch-v2__weekday-picker">
-                @for (day of weekdays; track day.id) {
-                  <label>
-                    <input #dayCheck type="checkbox" [checked]="formDays().includes(day.id)"
-                      (change)="toggleDay(day.id, dayCheck.checked)" />
-                    <span>{{ day.label }}</span>
-                  </label>
-                }
-              </div>
-            </fieldset>
-            <label class="branch-v2__toggle-line">
-              <span>Trạng thái ca làm việc <small>{{ formEnabled() ? 'Đang sử dụng' : 'Ngừng sử dụng' }}</small></span>
-              <input #enabledInput type="checkbox" role="switch" [checked]="formEnabled()"
-                (change)="changeEnabled(enabledInput.checked)" />
-            </label>
-            @if (formError()) { <p class="branch-v2__form-error" role="alert">{{ formError() }}</p> }
-            @if (confirmDiscard()) {
-              <div class="branch-v2__discard" role="alert">
-                <p>Bỏ các thay đổi chưa lưu?</p>
-                <button type="button" (click)="closeEditor()">Bỏ thay đổi</button>
-                <button type="button" (click)="confirmDiscard.set(false)">Tiếp tục sửa</button>
-              </div>
-            }
-            <footer class="branch-v2__modal-footer">
-              <button class="branch-management__button branch-management__button--outline" type="button" (click)="requestClose()">Hủy</button>
-              <button class="branch-management__button branch-management__button--primary" type="submit">Lưu ca làm việc</button>
-            </footer>
-          </form>
-        </section>
-      </div>
-    }
-  `,
-  styles: [`
-    /* Component-local: page SCSS cannot reliably style cells in a standalone
-       child component under Angular Emulated ViewEncapsulation. */
-    :host { display: block; min-width: 0; }
-    .branch-management__table-scroll {
-      width: 100%;
-      overflow-x: auto;
-      border: 1px solid #dce4ee;
-      border-radius: 10px;
-      background: #fff;
-    }
-    .branch-v2__shifts {
-      width: 100%;
-      min-width: 780px;
-      border-collapse: collapse;
-      table-layout: fixed;
-      font: 400 13px/20px Roboto, Arial, sans-serif;
-      color: #334155;
-    }
-    .branch-v2__shifts thead { background: #f1f5f9; }
-    .branch-v2__shifts :is(th, td) {
-      padding: 12px 16px;
-      text-align: left;
-      vertical-align: middle;
-      box-sizing: border-box;
-    }
-    .branch-v2__shifts th {
-      height: 54px;
-      color: #475569;
-      font: 500 13px/20px Roboto, Arial, sans-serif;
-      white-space: nowrap;
-      text-transform: none;
-    }
-    .branch-v2__shifts td {
-      height: 72px;
-      border-top: 1px solid #e2e8f0;
-      font-size: 14px;
-    }
-    .branch-v2__shifts tbody td strong { font-weight: 500; }
-    .branch-v2__shifts :is(th, td):last-child {
-      text-align: center;
-      padding-right: 12px;
-      padding-left: 12px;
-    }
-    .branch-v2__shifts tbody tr:hover td { background: #f8fbff; }
-    .branch-management__pill {
-      display: inline-flex;
-      align-items: center;
-      border: 1px solid #c8e6c9;
-      border-radius: 999px;
-      background: #e8f5e9;
-      color: #2e7d32;
-      padding: 4px 10px;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-    .branch-management__pill--off {
-      border-color: #dce4ee;
-      background: #eff2f5;
-      color: #64748b;
-    }
-    .branch-v2__edit-icon {
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      width: 32px;
-      height: 32px;
-      padding: 0;
-      border: 0;
-      border-radius: 6px;
-      background: transparent;
-      cursor: pointer;
-    }
-    .branch-v2__edit-icon:hover { background: #e5f6fd; }
-    .branch-v2__edit-icon img { display: block; width: 20px; height: 20px; }
-  `],
+  imports: [RouterLink, AdminDataStateComponent],
+  templateUrl: './branch-shift-templates-preview.component.html',
+  styleUrl: './branch-shift-templates-preview.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BranchShiftTemplatesPreviewComponent {
-  private readonly toast = inject(AdminToastService);
-  @Input() branchName = 'Chi nhánh';
+export class BranchShiftTemplatesPreviewComponent implements OnChanges {
+  @Input() branchId = '';
+  @Input() branchName = '';
 
-  readonly weekdays = [
-    { id: 1, label: 'Thứ 2' }, { id: 2, label: 'Thứ 3' }, { id: 3, label: 'Thứ 4' },
-    { id: 4, label: 'Thứ 5' }, { id: 5, label: 'Thứ 6' }, { id: 6, label: 'Thứ 7' }, { id: 7, label: 'CN' },
-  ];
-  readonly items = signal<readonly ShiftTemplatePreview[]>(SAMPLE_SHIFTS.map((item) => ({ ...item, days: [...item.days] })));
-  readonly editorOpen = signal(false);
+  private readonly api = inject(BranchManagementApiService);
+  private readonly session = inject(AuthSessionService);
+  private readonly destroyRef = inject(DestroyRef);
+  private requestVersion = 0;
+
+  readonly days = [
+    { id: 1, label: 'T2', longLabel: 'Thứ 2' },
+    { id: 2, label: 'T3', longLabel: 'Thứ 3' },
+    { id: 3, label: 'T4', longLabel: 'Thứ 4' },
+    { id: 4, label: 'T5', longLabel: 'Thứ 5' },
+    { id: 5, label: 'T6', longLabel: 'Thứ 6' },
+    { id: 6, label: 'T7', longLabel: 'Thứ 7' },
+    { id: 0, label: 'CN', longLabel: 'Chủ nhật' },
+  ] as const;
+  readonly rows = signal<BranchShiftTemplate[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal('');
+  readonly notice = signal('');
+  readonly busy = signal(false);
+  readonly showEditor = signal(false);
+  readonly deleting = signal<BranchShiftTemplate | null>(null);
   readonly editingId = signal<string | null>(null);
-  readonly formName = signal('');
-  readonly formStart = signal('08:00');
-  readonly formEnd = signal('17:00');
-  readonly formDays = signal<readonly number[]>([1, 2, 3, 4, 5]);
-  readonly formEnabled = signal(true);
+  readonly draft = signal<BranchShiftTemplateWrite>({ ...DEFAULT_SHIFT, daysOfWeek: [...DEFAULT_SHIFT.daysOfWeek] });
   readonly formError = signal('');
-  readonly feedback = signal('');
-  readonly dirty = signal(false);
-  readonly confirmDiscard = signal(false);
-  private nextId = 1;
+  readonly mayEdit = computed(() => ['ADMIN', 'MANAGER'].includes(this.session.user()?.systemRole || ''));
 
-  get activeCount(): number { return this.items().filter((shift) => shift.enabled).length; }
-
-  daysLabel(days: readonly number[]): string {
-    const sorted = [...days].sort((a, b) => a - b);
-    if (sorted.length === 7) return 'Thứ 2 – Chủ nhật';
-    if (sorted.length === 5 && sorted.every((day, index) => day === index + 1)) return 'Thứ 2 – Thứ 6';
-    return sorted.map((id) => this.weekdays.find((day) => day.id === id)?.label ?? '').join(', ');
-  }
-
-  openEditor(item?: ShiftTemplatePreview): void {
-    this.editingId.set(item?.id ?? null);
-    this.formName.set(item?.name ?? '');
-    this.formStart.set(item?.start ?? '08:00');
-    this.formEnd.set(item?.end ?? '17:00');
-    this.formDays.set([...(item?.days ?? [1, 2, 3, 4, 5])]);
-    this.formEnabled.set(item?.enabled ?? true);
-    this.formError.set('');
-    this.confirmDiscard.set(false);
-    this.dirty.set(false);
-    this.editorOpen.set(true);
-  }
-
-  changeName(v: string): void { this.formName.set(v); this.markDirty(); }
-  changeStart(v: string): void { this.formStart.set(v); this.markDirty(); }
-  changeEnd(v: string): void { this.formEnd.set(v); this.markDirty(); }
-  changeEnabled(v: boolean): void { this.formEnabled.set(v); this.markDirty(); }
-
-  toggleDay(id: number, checked: boolean): void {
-    this.formDays.update((days) => checked ? [...days, id].sort((a, b) => a - b) : days.filter((day) => day !== id));
-    this.markDirty();
-  }
-
-  private markDirty(): void {
-    this.dirty.set(true);
-    this.confirmDiscard.set(false);
-    this.formError.set('');
-  }
-
-  savePreview(event: Event): void {
-    event.preventDefault();
-    const name = this.formName().trim();
-    const start = this.formStart();
-    const end = this.formEnd();
-    if (!name) { this.formError.set('Vui lòng nhập tên mẫu ca.'); return; }
-    if (!/^\d{2}:\d{2}$/.test(start) || !/^\d{2}:\d{2}$/.test(end) || start === end) {
-      this.formError.set('Giờ bắt đầu và kết thúc phải hợp lệ và khác nhau. Ca qua đêm được phép.'); return;
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['branchId']) {
+      this.showEditor.set(false);
+      this.deleting.set(null);
+      this.notice.set('');
+      this.load();
     }
-    if (this.formDays().length === 0) { this.formError.set('Vui lòng chọn ít nhất một ngày áp dụng.'); return; }
-    if (this.items().some((item) => item.id !== this.editingId() && item.name.toLocaleLowerCase('vi') === name.toLocaleLowerCase('vi'))) {
-      this.formError.set('Tên mẫu ca đang trùng với một mẫu khác.'); return;
-    }
-    const id = this.editingId() ?? `local-${this.nextId++}`;
-    const entry: ShiftTemplatePreview = {
-      id, name, start, end, days: [...this.formDays()], enabled: this.formEnabled(),
-    };
-    this.items.update((items) => this.editingId()
-      ? items.map((item) => item.id === id ? entry : item)
-      : [...items, entry]);
-    this.toast.show('Đã cập nhật bản xem trước. Chức năng lưu ca làm việc chưa khả dụng.', 'info');
-    this.closeEditor();
   }
 
-  requestClose(): void {
-    if (this.dirty()) this.confirmDiscard.set(true);
-    else this.closeEditor();
+  load(): void {
+    const request = ++this.requestVersion;
+    if (!this.branchId) {
+      this.rows.set([]);
+      this.loading.set(false);
+      return;
+    }
+    this.loading.set(true);
+    this.error.set('');
+    this.api.listShiftTemplates(this.branchId)
+      .pipe(takeUntilDestroyed(this.destroyRef), finalize(() => {
+        if (request === this.requestVersion) this.loading.set(false);
+      }))
+      .subscribe({
+        next: data => {
+          if (request !== this.requestVersion) return;
+          if (!Array.isArray(data)) {
+            this.error.set('Không thể đọc danh sách ca làm việc. Vui lòng thử lại.');
+            this.rows.set([]);
+            return;
+          }
+          this.rows.set(data);
+        },
+        error: err => {
+          if (request !== this.requestVersion) return;
+          this.rows.set([]);
+          this.error.set(adminErrorMessage(err, 'Không thể tải ca làm việc. Vui lòng thử lại.'));
+        },
+      });
+  }
+
+  dayLabel(days: readonly number[]): string {
+    if (days.length === 7) return 'Hằng ngày';
+    if (days.length === 5 && [1,2,3,4,5].every(day => days.includes(day))) return 'Thứ 2 – Thứ 6';
+    return this.days.filter(day => days.includes(day.id)).map(day => day.longLabel).join(', ') || 'Chưa chọn';
+  }
+
+  openCreate(): void {
+    if (!this.mayEdit() || this.busy()) return;
+    this.editingId.set(null);
+    this.draft.set({ ...DEFAULT_SHIFT, daysOfWeek: [...DEFAULT_SHIFT.daysOfWeek] });
+    this.formError.set('');
+    this.showEditor.set(true);
+  }
+
+  openEdit(item: BranchShiftTemplate): void {
+    if (!this.mayEdit() || this.busy()) return;
+    this.editingId.set(item.id);
+    this.draft.set({
+      name: item.name || '',
+      startTime: item.startTime,
+      endTime: item.endTime,
+      daysOfWeek: [...(item.daysOfWeek || [])],
+      status: item.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE',
+    });
+    this.formError.set('');
+    this.showEditor.set(true);
+  }
+
+  setField(key: 'name' | 'startTime' | 'endTime', value: string): void {
+    this.draft.update(d => ({ ...d, [key]: value }));
+    this.formError.set('');
+  }
+
+  setStatus(value: string): void {
+    this.draft.update(d => ({ ...d, status: value === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE' }));
+  }
+
+  toggleDay(day: number, checked: boolean): void {
+    this.draft.update(d => ({
+      ...d, daysOfWeek: checked
+        ? [...new Set([...d.daysOfWeek, day])]
+        : d.daysOfWeek.filter(value => value !== day),
+    }));
+    this.formError.set('');
   }
 
   closeEditor(): void {
-    this.editorOpen.set(false);
-    this.confirmDiscard.set(false);
-    this.dirty.set(false);
+    if (!this.busy()) this.showEditor.set(false);
   }
 
-  @HostListener('document:keydown.escape')
-  onEscape(): void {
-    if (!this.editorOpen()) return;
-    if (this.confirmDiscard()) { this.confirmDiscard.set(false); return; }
-    this.requestClose();
+  save(): void {
+    if (!this.mayEdit() || this.busy() || !this.branchId) return;
+    const body = this.draft();
+    const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
+    if (body.name.trim().length < 2 || body.name.trim().length > 100) {
+      this.formError.set('Tên ca cần có từ 2 đến 100 ký tự.');
+      return;
+    }
+    if (!timePattern.test(body.startTime) || !timePattern.test(body.endTime) || body.startTime === body.endTime) {
+      this.formError.set('Vui lòng chọn giờ bắt đầu và kết thúc hợp lệ, không trùng nhau.');
+      return;
+    }
+    if (!body.daysOfWeek.length) {
+      this.formError.set('Vui lòng chọn ít nhất một ngày áp dụng.');
+      return;
+    }
+    const payload: BranchShiftTemplateWrite = {
+      name: body.name.trim(),
+      startTime: body.startTime,
+      endTime: body.endTime,
+      daysOfWeek: [...body.daysOfWeek].sort((a,b) => a-b),
+      status: body.status,
+    };
+    const branch = this.branchId;
+    const id = this.editingId();
+    this.busy.set(true);
+    this.formError.set('');
+    const request = id
+      ? this.api.updateShiftTemplate(branch, id, payload)
+      : this.api.createShiftTemplate(branch, payload);
+    request.pipe(takeUntilDestroyed(this.destroyRef), finalize(() => this.busy.set(false))).subscribe({
+      next: () => {
+        if (branch !== this.branchId) return;
+        this.showEditor.set(false);
+        this.notice.set(id ? 'Đã cập nhật ca làm việc.' : 'Đã thêm ca làm việc.');
+        this.load();
+      },
+      error: error => this.formError.set(adminErrorMessage(error, 'Chưa lưu được ca làm việc. Vui lòng thử lại.')),
+    });
+  }
+
+  requestDelete(item: BranchShiftTemplate): void {
+    if (!this.mayEdit() || this.busy()) return;
+    this.formError.set('');
+    this.deleting.set(item);
+  }
+
+  cancelDelete(): void {
+    if (!this.busy()) this.deleting.set(null);
+  }
+
+  confirmDelete(): void {
+    const item = this.deleting();
+    if (!item || !this.mayEdit() || this.busy() || !this.branchId) return;
+    const branch = this.branchId;
+    this.busy.set(true);
+    this.formError.set('');
+    this.api.deleteShiftTemplate(branch, item.id)
+      .pipe(takeUntilDestroyed(this.destroyRef), finalize(() => this.busy.set(false)))
+      .subscribe({
+        next: () => {
+          if (branch !== this.branchId) return;
+          this.deleting.set(null);
+          this.notice.set('Đã xóa ca làm việc.');
+          this.load();
+        },
+        error: err => this.formError.set(adminErrorMessage(err, 'Chưa xóa được ca làm việc. Vui lòng thử lại.')),
+      });
   }
 }

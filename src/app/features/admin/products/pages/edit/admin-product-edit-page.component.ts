@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, firstValueFrom, timeout } from 'rxjs';
 
 import { AdminCatalogShellComponent } from '../../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from '../../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminToastService, adminErrorMessage } from '../../../../../shared/services/admin-toast.service';
 import { AdminCategoryService } from '../../../categories/services/admin-category.service';
 import { AdminCategory } from '../../../categories/models/admin-category.model';
@@ -21,7 +22,7 @@ interface EditableProductImage {
 @Component({
   selector: 'app-admin-product-edit-page',
   standalone: true,
-  imports: [FormsModule, RouterLink, AdminCatalogShellComponent],
+  imports: [FormsModule, RouterLink, AdminCatalogShellComponent, AdminDataStateComponent],
   templateUrl: './admin-product-edit-page.component.html',
   styleUrl: './admin-product-edit-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -94,10 +95,13 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   variantLabelInvalid(v: ProductVariantWrite): boolean { return this.submitted && !v.label.trim(); }
   variantSkuInvalid(v: ProductVariantWrite): boolean { return this.submitted && !v.sku?.trim(); }
   variantPriceInvalid(v: ProductVariantWrite): boolean {
-    return this.submitted && (v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0);
+    return (v.price != null && Number(v.price) < 0) ||
+      (this.submitted && (v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) <= 0));
   }
   variantDiscountInvalid(v: ProductVariantWrite): boolean {
-    return this.submitted && (v.discountPercent == null || !Number.isFinite(Number(v.discountPercent)) || Number(v.discountPercent) < 0 || Number(v.discountPercent) > 100);
+    return (v.discountPercent != null && (Number(v.discountPercent) < 0 || Number(v.discountPercent) > 100)) ||
+      (this.submitted && (v.discountPercent == null || !Number.isFinite(Number(v.discountPercent)) ||
+        Number(v.discountPercent) < 0 || Number(v.discountPercent) > 100));
   }
   selectNumericInput(event: FocusEvent): void {
     (event.target as HTMLInputElement).select();
@@ -120,7 +124,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     this.pricingInputRevision();
     // Use the discounted prices shown in the variant table, not raw list prices.
     const prices = this.variants
-      .filter(v => Number.isFinite(Number(v.price)) && Number(v.price) >= 0)
+      .filter(v => Number.isFinite(Number(v.price)) && Number(v.price) > 0)
       .map(v => {
         const discount = Math.min(100, Math.max(0, Number(v.discountPercent) || 0));
         return Math.round(Number(v.price) * (1 - discount / 100));
@@ -209,7 +213,11 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   }
 
   private fromSavedImages(images: ProductImage[]): EditableProductImage[] {
-    return images.map(image => ({
+    // BE may not return the primary photo first; the editor always displays it first.
+    return [...images].sort((a, b) =>
+      Number(!!b.isPrimary) - Number(!!a.isPrimary) ||
+      (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+    ).map(image => ({
       id: this.nextImageId++,
       savedImage: image,
       previewUrl: image.url,
@@ -263,7 +271,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
         !this.categories().some(category => category.id === this.categoryId) ||
         !this.variants.length ||
         this.variants.some(v => !v.sku?.trim() || !v.label.trim() ||
-          v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) < 0 ||
+          v.price == null || !Number.isSafeInteger(Number(v.price)) || Number(v.price) <= 0 ||
           v.discountPercent == null || !Number.isFinite(Number(v.discountPercent)) ||
           Number(v.discountPercent) < 0 || Number(v.discountPercent) > 100)) {
       this.error.set('Vui lòng kiểm tra các trường bắt buộc và thông tin biến thể được đánh dấu đỏ.');
@@ -361,8 +369,25 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     }).pipe(timeout({ first: 30000 })));
   }
 
+  /** Use the main product image when this SKU has no variant-specific image. */
   variantImagePreview(variant: ProductVariantWrite): string | null {
-    return (variant.id ? this.variantImagePreviews.get(variant.id) : null) || variant.image || null;
+    return (variant.id ? this.variantImagePreviews.get(variant.id) : null)
+      || variant.image
+      || this.imageSlots[0]?.previewUrl
+      || null;
+  }
+
+  variantHasOwnImage(variant: ProductVariantWrite): boolean {
+    return !!(variant.id && this.variantImagePreviews.has(variant.id)) || !!variant.image;
+  }
+
+  clearVariantImage(variant: ProductVariantWrite): void {
+    if (!variant.id || this.saving() || this.product()?.status === 'ARCHIVED') return;
+    const preview = this.variantImagePreviews.get(variant.id);
+    if (preview) URL.revokeObjectURL(preview);
+    this.variantImagePreviews.delete(variant.id);
+    this.variantImageFiles.delete(variant.id);
+    variant.image = null;
   }
 
   selectVariantImage(event: Event, variantId: string): void {
@@ -370,7 +395,7 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
     const file = input.files?.[0];
     input.value = '';
     if (!file || !this.checkImage(file)) {
-      this.imageError = file ? 'Chỉ nhận JPG, PNG tối đa 5MB.' : '';
+      this.imageError = file ? 'Chỉ nhận JPG, PNG hoặc WEBP tối đa 5MB.' : '';
       if (this.imageError) this.toast.show(this.imageError);
       return;
     }
@@ -512,8 +537,8 @@ export class AdminProductEditPageComponent implements OnInit, OnDestroy {
   }
 
   private checkImage(file: File): boolean {
-    if (!['image/jpeg', 'image/png'].includes(file.type)) {
-      this.imageError = 'Chỉ hỗ trợ ảnh JPG hoặc PNG.';
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      this.imageError = 'Chỉ hỗ trợ ảnh JPG, PNG hoặc WEBP.';
       this.toast.show(this.imageError);
       return false;
     }

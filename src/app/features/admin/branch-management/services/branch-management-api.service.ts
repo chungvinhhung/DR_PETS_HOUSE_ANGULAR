@@ -17,6 +17,27 @@ export interface BranchApiRecord {
   openingHours?: readonly { dayOfWeek: number; open: string; close: string }[];
   holidays?: readonly { date: string; note?: string }[];
 }
+/** Canonical BE OPS-03 branch shift template DTO. */
+export interface BranchShiftTemplate {
+  id: string;
+  branchId: string;
+  code?: string | null;
+  name: string;
+  startTime: string;
+  endTime: string;
+  daysOfWeek: number[];
+  status: 'ACTIVE' | 'INACTIVE';
+  version?: number;
+}
+
+export interface BranchShiftTemplateWrite {
+  name: string;
+  startTime: string;
+  endTime: string;
+  daysOfWeek: number[];
+  status: 'ACTIVE' | 'INACTIVE';
+}
+
 export interface BranchServiceApiRecord {
   branchId: string;
   serviceId: string;
@@ -33,26 +54,52 @@ export interface BranchServiceView {
   service: CatalogService;
   config: BranchServiceApiRecord | null;
 }
+export interface BranchInventorySummary {
+  branchId: string;
+  totalItems: number;
+  lowStockItems: number;
+  outOfStockItems: number;
+}
+export interface BranchServiceBlockedWindow {
+  id: string;
+  startAt: string;
+  endAt: string;
+  reason: string;
+  createdBy?: string | null;
+  createdAt?: string | null;
+}
+interface BranchServiceBlockedWindowsResponse {
+  branchId: string;
+  serviceId: string;
+  blockedWindows: BranchServiceBlockedWindow[];
+}
 
 /**
- * The live BE /availability currently only populates start/end/remaining.
- * bookedCount and totalCount are REQUIRED additions to the API contract
- * before the admin UI can display the requested "booked / total" ratio.
- * Never calculate totalCount from configured concurrent capacity: staff
- * availability and sequential segments may reduce real bookable places.
+ * Live BE availability returns bookedCount/heldCount/occupiedCount/totalCount
+ * per slot. Admin UI reads those authoritative values and does not derive
+ * occupancy from configured capacity on the client.
  */
 export interface ServiceAvailabilitySlot {
   start: string;
   end: string;
   remaining: number;
   bookedCount?: number;
+  heldCount?: number;
+  occupiedCount?: number;
   totalCount?: number;
+  status?: 'AVAILABLE' | 'FULL' | 'BLOCKED' | string;
 }
 export interface ServiceAvailabilityResponse {
   branchId: string;
   serviceIds: readonly string[];
   date: string;
   slots: readonly ServiceAvailabilitySlot[];
+}
+export interface BranchOperationSlotsResponse {
+  branchId: string;
+  date: string;
+  servicesCount: number;
+  servicesAvailability: readonly ServiceAvailabilityResponse[];
 }
 
 /** No Figma demo fallback: errors propagate to the page and display retry. */
@@ -75,6 +122,31 @@ export class BranchManagementApiService {
     );
   }
 
+  /** OPS-03: live shift templates scoped to one selected branch. */
+  listShiftTemplates(branchId: string): Observable<BranchShiftTemplate[]> {
+    return this.api.get<BranchShiftTemplate[]>(
+      '/branches/' + encodeURIComponent(branchId) + '/shift-templates',
+    );
+  }
+
+  createShiftTemplate(branchId: string, body: BranchShiftTemplateWrite): Observable<BranchShiftTemplate> {
+    return this.api.post<BranchShiftTemplate, BranchShiftTemplateWrite>(
+      '/branches/' + encodeURIComponent(branchId) + '/shift-templates', body,
+    );
+  }
+
+  updateShiftTemplate(branchId: string, id: string, body: BranchShiftTemplateWrite): Observable<BranchShiftTemplate> {
+    return this.api.patch<BranchShiftTemplate, BranchShiftTemplateWrite>(
+      '/branches/' + encodeURIComponent(branchId) + '/shift-templates/' + encodeURIComponent(id), body,
+    );
+  }
+
+  deleteShiftTemplate(branchId: string, id: string): Observable<unknown> {
+    return this.api.delete(
+      '/branches/' + encodeURIComponent(branchId) + '/shift-templates/' + encodeURIComponent(id),
+    );
+  }
+
   listBranches(): Observable<BranchApiRecord[]> {
     return this.getAllPages<BranchApiRecord>('/branches');
   }
@@ -94,22 +166,52 @@ export class BranchManagementApiService {
     name: string;
     address: string;
     phone?: string;
-    status: 'ACTIVE' | 'INACTIVE';
   }): Observable<BranchApiRecord> {
     return this.api.patch<BranchApiRecord, typeof payload>(
       '/branches/' + encodeURIComponent(id), payload,
     );
   }
 
-  /** Data for one service and a chosen branch/day; not the configured capacity. */
-  getServiceAvailability(
+  activateBranch(id: string, idempotencyKey: string): Observable<BranchApiRecord> {
+    const headers = new HttpHeaders({ 'Idempotency-Key': idempotencyKey });
+    return this.api.post<BranchApiRecord, Record<string, never>>(
+      '/branches/' + encodeURIComponent(id) + '/activate',
+      {},
+      { headers },
+    );
+  }
+
+  deactivateBranch(id: string, reason: string, idempotencyKey: string): Observable<BranchApiRecord> {
+    const headers = new HttpHeaders({ 'Idempotency-Key': idempotencyKey });
+    return this.api.post<BranchApiRecord, { reason: string }>(
+      '/branches/' + encodeURIComponent(id) + '/deactivate',
+      { reason },
+      { headers },
+    );
+  }
+
+  /** Occupancy/availability for one service at a branch/day. */
+  getServiceOccupancy(
     branchId: string, serviceId: string, date: string,
   ): Observable<ServiceAvailabilityResponse> {
-    const params = new HttpParams()
-      .set('branchId', branchId)
-      .set('serviceIds', serviceId)
-      .set('date', date);
-    return this.api.get<ServiceAvailabilityResponse>('/availability', { params });
+    const params = new HttpParams().set('date', date);
+    return this.api.get<ServiceAvailabilityResponse>(
+      '/branches/' + encodeURIComponent(branchId) +
+      '/services/' + encodeURIComponent(serviceId) + '/occupancy',
+      { params },
+    );
+  }
+
+  getInventorySummary(branchId: string): Observable<BranchInventorySummary> {
+    return this.api.get<BranchInventorySummary>('/inventory/summary/' + encodeURIComponent(branchId));
+  }
+
+  getOperationSlots(branchId: string, date: string): Observable<BranchOperationSlotsResponse> {
+    const params = new HttpParams().set('date', date).set('includeFull', 'true');
+    return this.api.get<BranchOperationSlotsResponse>(
+      '/branches/' + encodeURIComponent(branchId) + '/operation-slots',
+      { params },
+    );
   }
 
   listServiceConfigs(branchId: string): Observable<BranchServiceApiRecord[]> {
@@ -127,6 +229,33 @@ export class BranchManagementApiService {
       '/branches/' + encodeURIComponent(branchId) +
       '/service-configs/' + encodeURIComponent(serviceId),
       payload,
+    );
+  }
+
+  listBlockedWindows(branchId: string, serviceId: string): Observable<BranchServiceBlockedWindow[]> {
+    return this.api.get<BranchServiceBlockedWindowsResponse>(
+      '/branches/' + encodeURIComponent(branchId) +
+      '/service-configs/' + encodeURIComponent(serviceId) + '/blocks',
+    ).pipe(map(response => response.blockedWindows ?? []));
+  }
+
+  createBlockedWindow(
+    branchId: string,
+    serviceId: string,
+    payload: { startAt: string; endAt: string; reason: string },
+  ): Observable<BranchServiceBlockedWindow> {
+    return this.api.post<BranchServiceBlockedWindow, typeof payload>(
+      '/branches/' + encodeURIComponent(branchId) +
+      '/service-configs/' + encodeURIComponent(serviceId) + '/blocks',
+      payload,
+    );
+  }
+
+  deleteBlockedWindow(branchId: string, serviceId: string, blockId: string): Observable<unknown> {
+    return this.api.delete(
+      '/branches/' + encodeURIComponent(branchId) +
+      '/service-configs/' + encodeURIComponent(serviceId) +
+      '/blocks/' + encodeURIComponent(blockId),
     );
   }
 

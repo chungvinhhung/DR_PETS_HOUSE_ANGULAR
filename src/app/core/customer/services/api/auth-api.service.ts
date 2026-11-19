@@ -110,12 +110,13 @@ export class AuthApiService {
   }
 
   async loginWithGoogle(data: any = {}) {
+    const credential = data.credential || data.idToken || data.token || 'google_mock_credential';
     const payload = {
-      credential: data.credential || data.idToken || data.token || 'google_mock_credential',
+      ...data,
+      credential,
       email: data.email || 'google_user@test.com',
       fullName: data.fullName || data.name || 'Người dùng Google',
       picture: data.picture || data.avatar || null,
-      ...data,
     };
     const response: any = await this.http.post("/auth/google", payload);
     const result = assertSuccess(response);

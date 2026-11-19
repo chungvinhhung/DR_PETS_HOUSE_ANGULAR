@@ -1,0 +1,56 @@
+<div class="web2-date-range">
+  <button type="button" class="web2-date-range__trigger"
+    aria-label="Chọn khoảng ngày" aria-haspopup="dialog"
+    [attr.aria-expanded]="open()" (click)="toggle()">
+    <span class="web2-date-range__value">
+      @if(from() && to()){
+        <span>{{formatDay(from())}}</span>
+        <span class="web2-date-range__dash" aria-hidden="true">–</span>
+        <span>{{formatDay(to())}}</span>
+      } @else {
+        Chọn khoảng ngày
+      }
+    </span>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M7 3v4m10-4v4M3 10h18"/>
+    </svg>
+  </button>
+
+  @if(open()){
+    <section class="web2-date-range__panel" role="dialog" aria-label="Chọn khoảng ngày">
+      <header class="web2-date-range__header">
+        <button type="button" aria-label="Tháng trước" (click)="changeMonth(-1)">‹</button>
+        <strong>{{label()}}</strong>
+        <button type="button" aria-label="Tháng sau" (click)="changeMonth(1)">›</button>
+      </header>
+      <p class="web2-date-range__instruction" role="status">
+        {{draftStart() ? 'Chọn ngày kết thúc' : 'Chọn ngày bắt đầu'}}
+      </p>
+      <div class="web2-date-range__days" role="group" aria-label="Ngày trong tháng">
+        @for(weekday of weekdays;track weekday){
+          <span class="web2-date-range__weekday">{{weekday}}</span>
+        }
+        @for(day of days();track day.key){
+          <button type="button"
+            [class.web2-date-range__day--muted]="!day.currentMonth"
+            [class.web2-date-range__day--start]="isStart(day.key)"
+            [class.web2-date-range__day--end]="isEnd(day.key)"
+            [class.web2-date-range__day--between]="isBetween(day.key)"
+            [attr.aria-label]="formatDay(day.key)"
+            [attr.aria-pressed]="isStart(day.key) || isEnd(day.key)"
+            (click)="selectDay(day.key)">{{day.number}}</button>
+        }
+      </div>
+      <footer class="web2-date-range__footer">
+        <span>{{draftStart() ? 'Bắt đầu: ' + formatDay(draftStart()!) : 'Chọn 2 ngày để lọc'}}</span>
+        <div>
+          <button type="button" (click)="clear()"
+            [disabled]="!from() && !to() && !draftStart()">Xóa</button>
+          <button type="button" (click)="close()">Đóng</button>
+        </div>
+      </footer>
+    </section>
+  }
+</div>

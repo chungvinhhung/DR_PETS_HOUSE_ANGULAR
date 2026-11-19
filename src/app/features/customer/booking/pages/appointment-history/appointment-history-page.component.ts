@@ -10,7 +10,6 @@ import { ReviewModalComponent } from './review-modal.component';
 
 import { appointmentImages } from '../../../../../shared/customer/assets/appointment-images';
 import { APPOINTMENT_FILTERS, getAppointmentDisplayStatus } from '../../utils/appointment-display';
-import { MOCK_APPOINTMENTS } from '../../data/mock-appointments';
 import { getAppointmentDate, formatMoney } from './appointment-history-page.helpers';
 import { RescheduleModalComponent } from './reschedule-modal.component';
 
@@ -105,18 +104,12 @@ export class AppointmentHistoryPageComponent {
 
         this.bookingApi.getAppointmentHistory()
           .then((items: any) => {
-            if (active) {
-              if (Array.isArray(items) && items.length > 0) {
-                this.appointments.set(items);
-              } else {
-                this.appointments.set(MOCK_APPOINTMENTS);
-              }
-            }
+            if (active) this.appointments.set(Array.isArray(items) ? items : []);
           })
           .catch((error: any) => {
             if (!active) return;
-            this.appointments.set(MOCK_APPOINTMENTS);
-            this.loadError.set(error?.message || "Không thể tải lịch sử đặt lịch, đang hiển thị dữ liệu mẫu.");
+            this.appointments.set([]);
+            this.loadError.set(error?.message || 'Không thể tải lịch sử đặt lịch. Vui lòng thử lại.');
           })
           .finally(() => {
             if (active) this.isLoading.set(false);
@@ -323,11 +316,11 @@ export class AppointmentHistoryPageComponent {
     this.decisionModalService.showSuccessModal({
       message: `Đã đổi lịch hẹn sang ngày ${dateText} lúc ${timeText} thành công.\nCảm ơn bạn đã cập nhật thời gian đến phòng khám!`,
     });
-    this.bookingApi.getAppointmentHistory().then((items: any) => {
-      if (Array.isArray(items) && items.length > 0) {
-        this.appointments.set(items);
-      }
-    });
+    this.bookingApi.getAppointmentHistory()
+      .then((items: any) => this.appointments.set(Array.isArray(items) ? items : []))
+      .catch((error: any) => this.actionMessage.set({
+        type: 'error', text: error?.message || 'Không thể tải lại lịch sử đặt lịch.',
+      }));
   }
 
   protected handle1() {

@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AppHttpError } from '../../core/models/app-http-error.model';
+import { AppHttpError, backendProblemMessage } from '../../core/models/app-http-error.model';
 
 export type AdminToastKind = 'error' | 'success' | 'info';
 export interface AdminToast { message: string; kind: AdminToastKind; }
@@ -25,6 +25,8 @@ export class AdminToastService {
 
 /** Keep transport errors out of user-visible messages. */
 export function adminErrorMessage(error: unknown, fallback = 'Thao tác chưa thành công. Vui lòng thử lại.'): string {
+  const problemMessage = backendProblemMessage(error);
+  if (problemMessage) return problemMessage;
   if (error instanceof AppHttpError) {
     if (error.kind === 'network') return 'Không thể kết nối đến máy chủ.';
     if (error.status === 401) return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';

@@ -12,7 +12,9 @@ const communityDogPark = '/assets/customer/images/blog/community-dog-park.png';
 const communityTitle = '/assets/customer/images/blog/community-title.png';
 const communityUser = '/assets/customer/images/blog/community-user.png';
 const firstAidTitle = '/assets/customer/images/blog/first-aid-title.png';
-const firstAidChoking = '/assets/customer/images/blog/first-aid-choking.png';
+// The legacy first-aid-choking.png is the same checkerboard file as
+// post-placeholder.png, not a photograph. Use an existing real clinic image.
+const firstAidChoking = '/assets/customer/images/medical/service-emergency.png';
 
 export const blogImages = {
   authorMinhAnh,

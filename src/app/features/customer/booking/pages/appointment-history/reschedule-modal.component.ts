@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, afterNextRender, computed, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, afterNextRender, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BookingApiService } from '../../../../../core/customer/services/api/booking-api.service';
 import { CustomerIconComponent } from '../../../../../shared/customer/components/icon/customer-icon.component';
@@ -31,8 +31,19 @@ export class RescheduleModalComponent {
   readonly slots = signal<any[]>([]);
   readonly selectedSlot = signal<any>(null);
   readonly isLoadingSlots = signal<boolean>(false);
+  readonly slotsLoadError = signal<string>('');
   readonly isSubmitting = signal<boolean>(false);
   readonly errorMessage = signal<string>('');
+
+  readonly allSlotsBlocked = computed<boolean>(() => {
+    const list = this.slots();
+    return list.length > 0 && list.every((slot: any) => this.getSlotStatus(slot) === 'BLOCKED');
+  });
+
+  readonly allSlotsUnavailable = computed<boolean>(() => {
+    const list = this.slots();
+    return list.length > 0 && list.every((slot: any) => !this.isSlotBookable(slot));
+  });
 
   constructor() {
     afterNextRender(() => {
@@ -54,6 +65,7 @@ export class RescheduleModalComponent {
     if (!apt) return;
 
     this.isLoadingSlots.set(true);
+    this.slotsLoadError.set('');
     this.errorMessage.set('');
 
     const branchId = apt.branch?.id || apt.branchId || apt.branch_id;
@@ -68,7 +80,6 @@ export class RescheduleModalComponent {
         serviceIds,
       });
 
-      // Flatten grouped slots (morning, afternoon, evening) or plain list
       let flatSlots: any[] = [];
       if (Array.isArray(groupedSlots)) {
         for (const item of groupedSlots) {
@@ -80,15 +91,39 @@ export class RescheduleModalComponent {
         }
       }
       this.slots.set(flatSlots);
+      if (this.selectedSlot() && !flatSlots.some((s) => this.isSlotBookable(s) && (s.value === this.selectedSlot()?.value || s.time === this.selectedSlot()?.time))) {
+        this.selectedSlot.set(null);
+      }
     } catch (err: any) {
-      this.errorMessage.set(err?.message || 'Không thể tải khung giờ cho ngày này.');
+      const msg = err?.data?.detail || err?.data?.message || err?.message || 'Không thể tải khung giờ cho ngày này. Vui lòng thử lại sau.';
+      this.slotsLoadError.set(msg);
       this.slots.set([]);
+      this.selectedSlot.set(null);
     } finally {
       this.isLoadingSlots.set(false);
     }
   }
 
+  protected getSlotStatus(slot: any): 'AVAILABLE' | 'FULL' | 'BLOCKED' {
+    const raw = String(slot?.status || '').trim().toUpperCase();
+    if (raw === 'BLOCKED' || slot?.isBlocked === true) return 'BLOCKED';
+    if (
+      raw === 'FULL' ||
+      slot?.available === false ||
+      (typeof slot?.remaining === 'number' && slot.remaining <= 0) ||
+      (slot?.maxAppointments && (slot?.bookedCount || 0) >= slot.maxAppointments)
+    ) {
+      return 'FULL';
+    }
+    return 'AVAILABLE';
+  }
+
+  protected isSlotBookable(slot: any): boolean {
+    return this.getSlotStatus(slot) === 'AVAILABLE';
+  }
+
   protected selectSlot(slot: any) {
+    if (!this.isSlotBookable(slot)) return;
     this.selectedSlot.set(slot);
     this.errorMessage.set('');
   }
@@ -96,12 +131,13 @@ export class RescheduleModalComponent {
   protected async submitReschedule() {
     const slot = this.selectedSlot();
     const apt = this.appointment();
-    if (!slot || !apt) {
-      this.errorMessage.set('Vui lòng chọn khung giờ mới.');
+    if (!slot || !this.isSlotBookable(slot) || !apt) {
+      this.errorMessage.set('Vui lòng chọn khung giờ mới còn chỗ.');
       return;
     }
 
-    const newSlotStart = slot.slotStart || `${this.selectedDate()}T${slot.value || slot.time}:00.000Z`;
+    const startTimePart = String(slot.time || slot.value || '').split(' - ')[0].trim();
+    const newSlotStart = slot.start || slot.slotStart || `${this.selectedDate()}T${startTimePart}:00.000Z`;
 
     this.isSubmitting.set(true);
     this.errorMessage.set('');
@@ -116,7 +152,7 @@ export class RescheduleModalComponent {
         updatedApt,
       });
     } catch (err: any) {
-      this.errorMessage.set(err?.message || 'Không thể đổi lịch hẹn lúc này.');
+      this.errorMessage.set(err?.data?.detail || err?.data?.message || err?.message || 'Không thể đổi lịch hẹn lúc này.');
     } finally {
       this.isSubmitting.set(false);
     }

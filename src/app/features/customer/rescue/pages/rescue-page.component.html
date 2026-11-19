@@ -124,10 +124,3 @@
   </main>
   <app-footer [variant]="'white'" />
 </div>
-<app-adoption-application-modal
-  [open]="compute4()"
-  [pet]="selectedAdoptionPet()"
-  (onClose)="selectedAdoptionPet.set(null)"
-  (onSubmitApplication)="handleSubmitAdoptionApplication($any($event))"
-  [hasOnSubmitApplication]="true"
-/>

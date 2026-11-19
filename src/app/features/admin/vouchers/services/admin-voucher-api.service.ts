@@ -19,16 +19,20 @@ export interface AdminVoucher {
   quota: number;
   usedCount: number;
   status: VoucherStatus;
-  /* BE does not currently include these in formatVoucherResponse. */
+  /* New BE v7 includes these DTO fields; created/updated remain optional. */
   minOrderAmount?: number | null;
   maxDiscountAmount?: number | null;
   description?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
+  isFlashSale?: boolean;
+  flashSaleStartTime?: string | null;
+  flashSaleEndTime?: string | null;
 }
 export interface VoucherListResult {
   items: AdminVoucher[];
   nextCursor: string | null;
+  totalCount?: number;
 }
 export interface VoucherWriteBody {
   code: string;
@@ -40,6 +44,7 @@ export interface VoucherWriteBody {
   effectiveTo: string;
   quota: number;
   status: VoucherStatus;
+  description?: string;
   minOrderAmount?: number;
   maxDiscountAmount?: number;
 }
@@ -49,17 +54,18 @@ export type VoucherUpdateBody = Partial<VoucherWriteBody>;
 export class AdminVoucherApiService {
   private readonly api = inject(ApiClientService);
 
-  list(filters: { status?: VoucherStatus; scope?: VoucherScope; cursor?: string; limit?: number } = {}): Observable<VoucherListResult> {
+  list(filters: { status?: VoucherStatus; scope?: VoucherScope; cursor?: string; limit?: number; search?: string } = {}): Observable<VoucherListResult> {
     const pageLimit = Number.isInteger(filters.limit) && (filters.limit ?? 0) >= 1 && (filters.limit ?? 0) <= 100 ? filters.limit! : 20;
     let params = new HttpParams().set('limit', String(pageLimit));
     if (filters.status) params = params.set('status', filters.status);
     if (filters.scope) params = params.set('scope', filters.scope);
+    if (filters.search?.trim()) params = params.set('search', filters.search.trim());
     if (filters.cursor) params = params.set('cursor', filters.cursor);
     return this.api.get<unknown>('/vouchers', { params }).pipe(
       map(response => {
         if (!response || typeof response !== 'object' || !('items' in response) ||
             !Array.isArray((response as { items: unknown }).items)) {
-          throw new Error('API Voucher trả về sai cấu trúc danh sách.');
+          throw new Error('Dữ liệu danh sách voucher chưa đồng bộ. Vui lòng tải lại.');
         }
         return response as VoucherListResult;
       }),

@@ -1,0 +1,20 @@
+<app-admin-catalog-shell activeItem="moderation-reports">
+  <main class="report-detail web2-admin-page">
+    <app-admin-breadcrumb [items]="[
+      {label:'Báo cáo vi phạm', link:'/admin/moderation/reports'},
+      {label:'Chi tiết báo cáo'}
+    ]" />
+    <header class="web2-admin-page__header">
+      <h1>Báo cáo vi phạm</h1>
+      <div class="web2-admin-page__actions">
+        <button type="button" class="web2-admin-btn web2-admin-btn--outline" disabled>Không vi phạm</button>
+        <button type="button" class="web2-admin-btn web2-admin-btn--primary" disabled>Ẩn bài đăng</button>
+      </div>
+    </header>
+    <section class="unavailable web2-admin-section">
+      <app-admin-data-state kind="empty"
+        title="Chức năng báo cáo vi phạm chưa sẵn sàng"
+        message="Chức năng xử lý báo cáo vi phạm hiện chưa khả dụng." />
+    </section>
+  </main>
+</app-admin-catalog-shell>

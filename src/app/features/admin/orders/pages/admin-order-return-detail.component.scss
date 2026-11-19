@@ -51,7 +51,6 @@
 .return-detail__timeline-dot{position:absolute;left:-7px;top:3px;width:12px;height:12px;border:3px solid #0d47a1;border-radius:100%;background:#fff}
 .return-detail__timeline strong,.return-detail__timeline small{display:block}
 .return-detail__timeline small,.return-detail__timeline p{font-size:12px;color:var(--muted);margin:4px 0}
-.return-detail__feedback{padding:45px;text-align:center;border:1px solid var(--line);border-radius:12px;color:#64748b}
 .return-detail__overlay{position:fixed;inset:0;z-index:250;display:flex;align-items:center;justify-content:center;padding:20px;background:#10223e9c}
 .return-detail__dialog{width:min(100%,636px);max-height:91vh;overflow-y:auto;border:1px solid var(--line);border-radius:12px;background:white;padding:25px;box-shadow:0 15px 50px #0003}
 .return-detail__dialog-heading{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px}
@@ -75,3 +74,14 @@
 @media(max-width:800px){.return-detail__columns{grid-template-columns:1fr}.return-detail__summary{grid-template-columns:1fr}}
 @media(max-width:520px){.return-detail{padding:18px 12px}.return-detail__metadata{grid-template-columns:1fr}.return-detail__dialog-actions{flex-wrap:wrap}}
 
+
+/* Figma RT detail: real receipt identifiers are links, not disabled actions. */
+.return-detail__stock-links{display:flex;flex-wrap:wrap;gap:6px 10px}
+.return-detail__stock-links a{color:#0d47a1;text-decoration:underline;font-size:12px;overflow-wrap:anywhere}
+.return-detail__button--stock{
+  display:inline-flex;align-items:center;justify-content:center;
+  text-decoration:none;white-space:nowrap;
+}
+.return-detail__button--stock:hover{background:#f0f6ff}
+.return-detail__heading-main{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.return-detail__heading h1{margin-bottom:0}

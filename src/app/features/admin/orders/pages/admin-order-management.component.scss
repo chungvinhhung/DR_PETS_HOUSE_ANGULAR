@@ -17,6 +17,9 @@
 .order-admin__heading-actions {display:flex;gap:10px;flex-wrap:wrap}
 .order-admin__btn {display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:8px;border:1px solid var(--brand);white-space:nowrap;font-weight:500}
 .order-admin__btn--outline {color:var(--brand);background:#fff}
+/* Same red outlined destructive action as Refund/Return "Từ chối hoàn tiền". */
+.order-admin__btn--outline-danger {color:#de414c;border-color:#ed6b72;background:#fff}
+.order-admin__btn--outline-danger:hover:not(:disabled) {background:#fff1f1}
 .order-admin__btn--primary {color:#fff;background:var(--brand)}
 .order-admin__btn--danger {color:#fff;background:#b72b36;border-color:#b72b36}
 .order-admin__btn--primary:not(:disabled):hover {background:#093875}

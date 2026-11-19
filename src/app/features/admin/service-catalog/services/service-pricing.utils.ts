@@ -1,70 +1,88 @@
 import { ServiceApiRecord, ServicePriceVariant } from '../models/service-catalog.model';
 
-/** Tier IDs supported by the current price editor. Keep list/detail/edit in sync. */
+/** Weight tiers agreed with BE canonical catalog, in display order. */
 export const SERVICE_PRICE_TIER_KEYS = ['XS', 'S', 'M', 'L', 'XL'] as const;
 export type ServicePriceTierKey = typeof SERVICE_PRICE_TIER_KEYS[number];
-
-const WEIGHT_BOUNDS: Readonly<Record<ServicePriceTierKey, readonly [number | null, number | null]>> = {
-  XS: [null, 5],
-  S: [5, 10],
-  M: [10, 20],
+const TIER_BOUNDARIES: Readonly<Record<ServicePriceTierKey, readonly [number | null, number | null]>> = {
+  XS: [0, 4.999],
+  S: [5, 9.999],
+  M: [10, 19.999],
   L: [20, 30],
-  XL: [30, null],
+  XL: [30.001, null],
 };
 
-function tierKey(variant: ServicePriceVariant): ServicePriceTierKey | null {
-  const name = typeof variant.label === 'string' ? variant.label.trim().toUpperCase() : '';
-  if (SERVICE_PRICE_TIER_KEYS.some((key) => key === name)) return name as ServicePriceTierKey;
+function isTier(value: unknown): value is ServicePriceTierKey {
+  return typeof value === 'string' &&
+    SERVICE_PRICE_TIER_KEYS.some(key => key === value.toUpperCase());
+}
 
-  // Older BE data may contain range boundaries but not our short display labels.
-  // Only map exact known boundaries; never guess from an array index or a price.
+/** Prefer machine-readable tier; accept canonical descriptive labels and exact legacy boundaries. */
+function tierKey(variant: ServicePriceVariant): ServicePriceTierKey | null {
+  if (isTier(variant.tier)) return variant.tier!.toUpperCase() as ServicePriceTierKey;
+  const label = typeof variant.label === 'string' ? variant.label.trim().toUpperCase() : '';
+  const prefix = /^(XS|S|M|L|XL)(?=\s|\(|$)/.exec(label)?.[1];
+  if (isTier(prefix)) return prefix;
   const min = variant.minWeightKg ?? null;
   const max = variant.maxWeightKg ?? null;
   if (min === null && max === null) return null;
-  return SERVICE_PRICE_TIER_KEYS.find((key) =>
-    WEIGHT_BOUNDS[key][0] === min && WEIGHT_BOUNDS[key][1] === max,
-  ) ?? null;
+  for (const key of SERVICE_PRICE_TIER_KEYS) {
+    const [bMin, bMax] = TIER_BOUNDARIES[key];
+    if (min === bMin && max === bMax) return key;
+  }
+  // Legacy BE used exclusive upper-bound labels without the .999 representation.
+  const legacy: Record<ServicePriceTierKey, readonly [number | null, number | null]> = {
+    XS: [null, 5], S: [5, 10], M: [10, 20], L: [20, 30], XL: [30, null],
+  };
+  return SERVICE_PRICE_TIER_KEYS.find(key =>
+    legacy[key][0] === min && legacy[key][1] === max) ?? null;
 }
 
 export interface ResolvedServicePricing {
-  /** Fixed amounts guaranteed to map to the same rows shown by the edit form. */
   readonly fixedTiers: ReadonlyMap<ServicePriceTierKey, number>;
+  readonly quoteTiers: ReadonlySet<ServicePriceTierKey>;
   readonly weightPricing: boolean;
-  /** A base price is only confirmed in the legacy payload without a variants field. */
   readonly confirmedBasePrice: number | null;
-  /** Backend data cannot be represented unambiguously in the current form. */
   readonly hasUnmappedPricing: boolean;
 }
 
 export function resolveServicePricing(raw: ServiceApiRecord): ResolvedServicePricing {
-  const variants = raw.priceVariants ?? [];
+  const variants = Array.isArray(raw.priceVariants) ? raw.priceVariants : [];
   const fixed = new Map<ServicePriceTierKey, number>();
+  const quoteTiers = new Set<ServicePriceTierKey>();
   let hasUnmappedPricing = false;
 
   for (const variant of variants) {
     const key = tierKey(variant);
-    const validAmount = typeof variant.price === 'number'
-      && Number.isSafeInteger(variant.price) && variant.price > 0;
-    if (!key || !validAmount || fixed.has(key)) {
+    if (!key || fixed.has(key) || quoteTiers.has(key)) {
       hasUnmappedPricing = true;
       continue;
     }
-    fixed.set(key, variant.price);
+    if (variant.mode === 'QUOTE' || (key === 'XL' && variant.price == null)) {
+      if (variant.price != null || (key !== 'XL' && variant.mode !== 'QUOTE')) {
+        hasUnmappedPricing = true;
+      }
+      quoteTiers.add(key);
+      continue;
+    }
+    const value = variant.price;
+    if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0 || key === 'XL') {
+      hasUnmappedPricing = true;
+      continue;
+    }
+    fixed.set(key, value);
   }
 
-  const confirmedBasePrice =
-    raw.priceVariants == null && typeof raw.basePrice === 'number'
-    && Number.isSafeInteger(raw.basePrice) && raw.basePrice > 0
+  // Medical fixed-price services legitimately omit priceVariants in the canonical API.
+  const isSinglePrice = raw.serviceType !== 'GROOMING' && raw.bookingMode !== 'CONTACT_ONLY';
+  const confirmedBasePrice = variants.length === 0 && isSinglePrice &&
+    typeof raw.basePrice === 'number' && Number.isSafeInteger(raw.basePrice) && raw.basePrice > 0
       ? raw.basePrice : null;
-
-  // Explicit [] plus a positive basePrice is ambiguous: this could be stale
-  // BE pricing after selecting quote, or an old fixed-price-only service.
-  if (variants.length === 0 && raw.priceVariants != null && raw.basePrice > 0) {
+  if (raw.serviceType === 'GROOMING' && variants.length === 0 && raw.basePrice > 0) {
     hasUnmappedPricing = true;
   }
-
   return {
     fixedTiers: fixed,
+    quoteTiers,
     weightPricing: variants.length > 0,
     confirmedBasePrice,
     hasUnmappedPricing,

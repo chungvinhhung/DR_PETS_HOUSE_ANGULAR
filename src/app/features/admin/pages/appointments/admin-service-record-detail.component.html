@@ -1,0 +1,298 @@
+<app-admin-catalog-shell activeItem="service-records">
+  <main class="record-detail">
+    @if (loading()) {
+      <app-admin-data-state kind="loading" title="Đang tải hồ sơ dịch vụ" />
+    } @else if (error()) {
+      <app-admin-data-state kind="error" title="Không thể tải hồ sơ dịch vụ" [message]="error()" (retry)="load()" />
+    } @else if (item(); as r) {
+      <header class="record-heading">
+        <div>
+          <app-admin-breadcrumb [items]="[
+            {label:'Dịch vụ'},
+            {label:'Hồ sơ dịch vụ', link:'/admin/service-records'},
+            {label:'Chi tiết hồ sơ dịch vụ'}
+          ]" />
+          <h1>Chi tiết hồ sơ dịch vụ@if (displayRecordCode(r); as code) { #{{ code }}}</h1>
+        </div>
+        @if (r.appointmentId) {
+          <a class="btn btn--outline" [routerLink]="['/admin/appointments', r.appointmentId]">Xem lịch hẹn</a>
+        }
+      </header>
+
+      <section class="record-card record-summary">
+        <h2>Thông tin hồ sơ</h2>
+        <div class="summary-grid">
+          <div class="pet-summary">
+            <span class="pet-avatar" aria-hidden="true">{{ petInitial(r) }}</span>
+            <div><label>Thú cưng</label><strong>{{ petLabel(r) }}</strong></div>
+          </div>
+          <div><label>Dịch vụ</label><strong>{{ serviceLabel(r) }}</strong></div>
+          <div><label>Loại hồ sơ</label><strong>{{ r.category==='UNKNOWN' ? '—' : r.category }}</strong></div>
+          <div><label>Trạng thái</label>
+            <span class="status-badge" [attr.data-status]="statusTone(r)">{{ serviceRecordStatusLabel(r.status,r.rawStatus) }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="record-card">
+        <h2>Thông tin thực hiện</h2>
+        <div class="execution-grid">
+          <div><label>Chi nhánh</label><strong>{{ branchLabel(r) }}</strong></div>
+          <div><label>Nhân viên chính</label><strong>{{ staffLabel(r) }}</strong></div>
+          <div><label>Lịch hẹn</label>
+            @if (r.appointmentId) {
+              <a [routerLink]="['/admin/appointments',r.appointmentId]">#{{ appointmentCode(r) }}</a>
+            } @else { <strong>—</strong> }
+          </div>
+          <div><label>Thời gian hẹn</label><strong>{{ appointmentTime(r) }}</strong></div>
+          <div><label>Hoàn thành lúc</label><strong>{{ r.completedAt ? displayTime(r.completedAt) : 'Chưa hoàn thành' }}</strong></div>
+        </div>
+        <div class="result-row">
+          <label>Kết quả / Ghi chú</label>
+          <p>{{ recordNote(r) }}</p>
+        </div>
+      </section>
+
+      @if (showProfessionalPanel()) {
+        <section class="record-card">
+          <div class="card-heading">
+            <h2>Nội dung chuyên môn</h2>
+            @if (canEditProfessional()) {
+              <button type="button" class="btn btn--outline btn--small" (click)="openProfessionalEditor()">Cập nhật chuyên môn</button>
+            }
+          </div>
+          <div class="professional-grid">
+            <div><label>Chẩn đoán</label><strong>{{ r.professional?.diagnosis || 'Chưa có dữ liệu' }}</strong></div>
+            <div><label>Điều trị</label><strong>{{ r.professional?.treatment || 'Chưa có dữ liệu' }}</strong></div>
+            <div><label>Kết quả</label><strong>{{ r.professional?.result || 'Chưa có dữ liệu' }}</strong></div>
+            <div><label>Ghi chú chuyên môn</label><strong>{{ r.professional?.professionalNote || 'Chưa có dữ liệu' }}</strong></div>
+          </div>
+          <div class="review-strip">
+            <div><span>Bác sĩ chốt hồ sơ</span><strong>{{ reviewerLabel(r) }}</strong></div>
+            <div><span>Trạng thái duyệt</span><strong>{{ reviewLabel(r) }}</strong></div>
+          </div>
+        </section>
+      }
+
+      <section class="record-card">
+        <div class="card-heading">
+          <h2>Vật liệu thực tế đã dùng</h2>
+          @if (canEditMaterials()) {
+            <button type="button" class="btn btn--outline btn--small" (click)="openMaterialsEditor()">+ Thêm vật liệu phát sinh</button>
+          }
+        </div>
+        <div class="table-scroll">
+          <table class="materials-table">
+            <thead><tr>
+              <th>Vật tư</th><th>Chỉ định</th><th>Thực tế</th><th>Tồn sau dịch vụ</th><th>Mã giao dịch kho</th><th>Ghi chú</th>
+            </tr></thead>
+            <tbody>
+              @for (m of r.materials; track m.inventoryItemId || $index) {
+                <tr>
+                  <td>{{ materialName(m) }}</td>
+                  <td>{{ quantityText(m.templateQuantity,m.unit) }}</td>
+                  <td>{{ quantityText(m.actualQuantity,m.unit) }}</td>
+                  <td>
+                    @if (materialStockAfter(m) !== null) { {{ materialStockAfter(m) }} }
+                    @else { — }
+                  </td>
+                  <td>
+                    @if (inventoryTransactionsLoading()) {
+                      <span class="inventory-inline-state">Đang tải...</span>
+                    } @else {
+                      @for (tx of materialTransactions(m); track tx.id) {
+                        <button type="button" class="tx-link" (click)="openInventoryTransactionRow(tx)">
+                          {{ transactionDisplayCode(tx) }}
+                        </button>
+                      } @empty { — }
+                    }
+                  </td>
+                  <td>{{ m.note || '—' }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="6" class="empty-cell"><app-admin-data-state kind="empty" title="Chưa có vật tư sử dụng" message="Hồ sơ này chưa ghi nhận vật tư thực tế." /></td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (inventoryTransactionsError()) {
+          <p class="inventory-warning">{{ inventoryTransactionsError() }}</p>
+        }
+      </section>
+
+      @if (showRecordActions()) {
+      <section class="record-actions">
+        @if (actionError()) { <p class="action-error" role="alert">{{ actionError() }}</p> }
+        <div class="action-buttons">
+          @if (canSubmitReview()) {
+            <button type="button" class="btn btn--outline" [disabled]="busy()" (click)="submitForReview()">Gửi Bác sĩ duyệt</button>
+          }
+          @if (canFinalize()) {
+            <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="requestFinalize()">Hoàn tất &amp; chốt hồ sơ</button>
+          }
+          @if (canReopen()) {
+            <button type="button" class="btn btn--outline" [disabled]="busy()" (click)="openReopenDialog()">Mở lại hồ sơ</button>
+          }
+        </div>
+      </section>
+      }
+    }
+  </main>
+
+  @if (dialog()==='materials' && item(); as r) {
+    <div class="record-overlay">
+      <section class="record-modal"
+        [class.record-modal--material]="materialEditorMode()==='add'"
+        [class.record-modal--wide]="materialEditorMode()==='correct'"
+        role="dialog" aria-modal="true" aria-labelledby="materials-dialog-title">
+        <header>
+          <div class="modal-title-group">
+            <h2 id="materials-dialog-title">
+              {{ materialEditorMode()==='add' ? 'Thêm vật liệu phát sinh' : 'Điều chỉnh vật liệu thực tế' }}
+            </h2>
+            <p>Hồ sơ #{{ displayRecordCode(r) }} · {{ petLabel(r) }} · {{ serviceLabel(r) }}</p>
+          </div>
+          <button type="button" class="modal-close" (click)="closeDialog()" [disabled]="busy()" aria-label="Đóng">
+            <img src="/assets/admin-inventory/close-outlined.svg" alt="">
+          </button>
+        </header>
+
+        @if (materialEditorMode()==='add') {
+          @for (m of materialDrafts(); track $index; let i=$index) {
+            <div class="material-add-form">
+              <label class="material-field material-field--full">
+                <span>Vật tư <b>*</b></span>
+                <select [value]="m.inventoryItemId" (change)="selectMaterial(i,$any($event.target).value)">
+                  <option value="">Tìm vật tư trong kho tại {{ branchLabel(r) }}</option>
+                  @for (option of materialOptions(); track option.id) {
+                    <option [value]="option.id">{{ option.name }} · {{ option.sku }}</option>
+                  }
+                </select>
+              </label>
+              <label class="material-field">
+                <span>Số lượng <b>*</b></span>
+                <div class="quantity-stepper">
+                  <button type="button" (click)="adjustMaterialQuantity(i,-1)" [disabled]="busy() || (m.quantity || 1) <= 1" aria-label="Giảm số lượng">−</button>
+                  <input type="number" min="1" step="1" [value]="m.quantity ?? 1"
+                    (input)="updateMaterialQuantity(i,$any($event.target).value)">
+                  <button type="button" (click)="adjustMaterialQuantity(i,1)" [disabled]="busy()" aria-label="Tăng số lượng">+</button>
+                </div>
+              </label>
+              <label class="material-field">
+                <span>Đơn vị</span>
+                <select [value]="m.unit" (change)="updateMaterialField(i,'unit',$any($event.target).value)">
+                  @for (unit of materialUnits(); track unit) {
+                    <option [value]="unit">{{ unit }}</option>
+                  }
+                </select>
+              </label>
+              <label class="material-field material-field--full">
+                <span>Ghi chú</span>
+                <input type="text" [value]="m.notes"
+                  (input)="updateMaterialField(i,'notes',$any($event.target).value)"
+                  placeholder="Nhập lý do phát sinh vật tư...">
+              </label>
+            </div>
+          }
+        } @else {
+          <div class="material-editor">
+            @for (m of materialDrafts(); track $index; let i=$index) {
+              <div class="material-editor__row">
+                <label>Vật tư
+                  <select [value]="m.inventoryItemId" (change)="selectMaterial(i,$any($event.target).value)">
+                    <option value="">Chọn vật tư</option>
+                    @for (option of materialOptions(); track option.id) {
+                      <option [value]="option.id">{{ option.name }} · {{ option.sku }}</option>
+                    }
+                  </select>
+                </label>
+                <label>Số lượng thực tế
+                  <input type="number" min="0" step="0.01" [value]="m.quantity ?? ''"
+                    (input)="updateMaterialQuantity(i,$any($event.target).value)">
+                </label>
+                <label>Đơn vị
+                  <input type="text" [value]="m.unit" (input)="updateMaterialField(i,'unit',$any($event.target).value)">
+                </label>
+                <label>Ghi chú
+                  <input type="text" [value]="m.notes" (input)="updateMaterialField(i,'notes',$any($event.target).value)">
+                </label>
+                <button type="button" class="remove-row" (click)="removeMaterial(i)" aria-label="Xóa vật tư">×</button>
+              </div>
+            }
+          </div>
+          <button type="button" class="text-button" (click)="addMaterial()">+ Thêm dòng vật tư</button>
+        }
+
+        @if (dialogError()) { <p class="modal-error" role="alert">{{ dialogError() }}</p> }
+        <footer>
+          <button type="button" class="btn btn--outline" (click)="closeDialog()" [disabled]="busy()">Hủy</button>
+          <button type="button" class="btn btn--primary" (click)="saveMaterials()" [disabled]="busy()">
+            {{ materialEditorMode()==='add' ? 'Lưu vật liệu' : 'Lưu hiệu chỉnh' }}
+          </button>
+        </footer>
+      </section>
+    </div>
+  }
+
+  @if (dialog()==='professional') {
+    <div class="record-overlay">
+      <section class="record-modal" role="dialog" aria-modal="true" aria-labelledby="professional-dialog-title">
+        <header><h2 id="professional-dialog-title">Cập nhật nội dung chuyên môn</h2>
+          <button type="button" class="modal-close" (click)="closeDialog()" [disabled]="busy()" aria-label="Đóng"><img src="/assets/admin-inventory/close-outlined.svg" alt=""></button>
+        </header>
+        <div class="professional-editor">
+          <label>Chẩn đoán<textarea rows="2" [value]="professionalDraft().diagnosis" (input)="updateProfessionalField('diagnosis',$any($event.target).value)"></textarea></label>
+          <label>Điều trị<textarea rows="2" [value]="professionalDraft().treatment" (input)="updateProfessionalField('treatment',$any($event.target).value)"></textarea></label>
+          <label>Kết quả<textarea rows="2" [value]="professionalDraft().result" (input)="updateProfessionalField('result',$any($event.target).value)"></textarea></label>
+          <label>Ghi chú chuyên môn<textarea rows="2" [value]="professionalDraft().professionalNote" (input)="updateProfessionalField('professionalNote',$any($event.target).value)"></textarea></label>
+        </div>
+        @if (dialogError()) { <p class="modal-error" role="alert">{{ dialogError() }}</p> }
+        <footer><button type="button" class="btn btn--outline" (click)="closeDialog()" [disabled]="busy()">Đóng</button>
+          <button type="button" class="btn btn--primary" (click)="saveProfessional()" [disabled]="busy()">Lưu nội dung</button></footer>
+      </section>
+    </div>
+  }
+
+  @if (dialog()==='reopen') {
+    <div class="record-overlay">
+      <section class="record-modal" role="dialog" aria-modal="true" aria-labelledby="reopen-dialog-title">
+        <header><h2 id="reopen-dialog-title">Mở lại hồ sơ dịch vụ</h2>
+          <button type="button" class="modal-close" (click)="closeDialog()" [disabled]="busy()" aria-label="Đóng"><img src="/assets/admin-inventory/close-outlined.svg" alt=""></button>
+        </header>
+        <label class="reason-field">Lý do mở lại <span>*</span>
+          <textarea rows="3" [value]="reopenReason()" (input)="reopenReason.set($any($event.target).value)" placeholder="Nhập lý do ít nhất 3 ký tự"></textarea>
+        </label>
+        @if (dialogError()) { <p class="modal-error" role="alert">{{ dialogError() }}</p> }
+        <footer><button type="button" class="btn btn--outline" (click)="closeDialog()" [disabled]="busy()">Đóng</button>
+          <button type="button" class="btn btn--primary" (click)="reopenRecord()" [disabled]="busy()">Xác nhận mở lại</button></footer>
+      </section>
+    </div>
+  }
+
+  @if (dialog()==='finalize') {
+    <div class="record-overlay">
+      <section class="record-modal" role="dialog" aria-modal="true" aria-labelledby="finalize-dialog-title">
+        <header><h2 id="finalize-dialog-title">Chốt lại hồ sơ đã mở</h2>
+          <button type="button" class="modal-close" (click)="closeDialog()" [disabled]="busy()" aria-label="Đóng"><img src="/assets/admin-inventory/close-outlined.svg" alt=""></button>
+        </header>
+        <label class="reason-field">Lý do hiệu chỉnh <span>*</span>
+          <textarea rows="3" [value]="finalizeReason()" (input)="finalizeReason.set($any($event.target).value)" placeholder="Nhập lý do ít nhất 3 ký tự"></textarea>
+        </label>
+        @if (dialogError()) { <p class="modal-error" role="alert">{{ dialogError() }}</p> }
+        <footer><button type="button" class="btn btn--outline" (click)="closeDialog()" [disabled]="busy()">Đóng</button>
+          <button type="button" class="btn btn--primary" (click)="finalizeRecord(finalizeReason())" [disabled]="busy()">Hoàn tất &amp; chốt hồ sơ</button></footer>
+      </section>
+    </div>
+  }
+
+  @if (inventoryDrawerOpen() && item(); as r) {
+    <app-admin-inventory-transaction-drawer
+      [transactions]="selectedTransactions()"
+      [items]="inventoryItems()"
+      [branch]="r.branchName || r.branchId"
+      [transactionCode]="selectedTransactionCode()"
+      [reference]="r.code"
+      [referenceLink]="'/admin/service-records/' + r.id"
+      (closed)="closeInventoryDrawer()" />
+  }
+</app-admin-catalog-shell>

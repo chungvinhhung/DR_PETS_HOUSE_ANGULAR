@@ -25,9 +25,17 @@
       <button
         type="button"
         (click)="onAdopt.emit(pet())"
-        class="h-9 rounded-[2px] bg-[#FDD835] text-[14px] leading-5 tracking-[0.28px] text-[rgba(0,0,0,0.87)] shadow-[0_1px_1px_rgba(0,0,0,0.05)] transition-colors hover:bg-[#FBC02D]"
+        class="flex h-9 items-center justify-center rounded-[2px] bg-[#FDD835] text-[14px] leading-5 tracking-[0.28px] text-[rgba(0,0,0,0.87)] shadow-[0_1px_1px_rgba(0,0,0,0.05)] transition-colors hover:bg-[#FBC02D]"
       >Nhận nuôi ngay</button>
-      <button class="rescue-pet-card__lien-he-de-button">Liên hệ để hỗ trợ</button>
+      @if (pet().supportPartnerHref) {
+        <a
+          [href]="pet().supportPartnerHref" target="_blank" rel="noopener noreferrer"
+          [attr.aria-label]="'Liên hệ '+pet().supportPartnerName+' để hỗ trợ'"
+          class="rescue-pet-card__lien-he-de-button flex h-[38px] items-center justify-center"
+        >Liên hệ để hỗ trợ</a>
+      } @else {
+        <button type="button" (click)="onAdopt.emit(pet())" class="rescue-pet-card__lien-he-de-button">Liên hệ để hỗ trợ</button>
+      }
     </div>
   }
 </div>

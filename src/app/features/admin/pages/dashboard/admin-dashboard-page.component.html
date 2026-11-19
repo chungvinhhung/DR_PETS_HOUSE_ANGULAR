@@ -1,0 +1,498 @@
+<app-admin-catalog-shell activeItem="dashboard">
+<main class="dash" aria-label="Dashboard">
+  <header class="dash__heading">
+    <h1>Dashboard</h1>
+    @if (authorized()) {
+      <div class="dash__heading-actions" aria-label="Bộ lọc Dashboard">
+        <label class="dash__filter dash__filter--period">
+          <span class="dash__sr-only">Khoảng thời gian</span>
+          <select [value]="period()" (change)="changePeriod($any($event.target).value)"
+            aria-label="Chọn khoảng thời gian" [title]="rangeLabel()">
+            <option value="today">Hôm nay</option>
+            <option value="7d">7 ngày qua</option>
+            <option value="30d">30 ngày qua</option>
+            <option value="custom">Tùy chọn ngày</option>
+          </select>
+        </label>
+        <label class="dash__filter dash__filter--branch">
+          <span class="dash__sr-only">Chi nhánh</span>
+          <select [value]="branchId()" (change)="changeBranch($any($event.target).value)"
+            [disabled]="branchLoading() || !!branchError()" aria-label="Lọc chi nhánh">
+            <option value="">{{ manager() ? 'Tất cả chi nhánh được giao' : 'Tất cả chi nhánh' }}</option>
+            @for (branch of accessibleBranches(); track branch.id) {
+              <option [value]="branch.id">{{branch.name}}</option>
+            }
+          </select>
+        </label>
+        <button type="button" class="dash__refresh"
+          [disabled]="loading() || branchLoading() || !!branchError() || !!filterError()"
+          (click)="refresh()" aria-label="Tải lại thống kê">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+            stroke-width="1.8" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.3-5.7M20 4v6h-6"/></svg>
+          Làm mới
+        </button>
+      </div>
+    }
+  </header>
+
+  @if (!authorized()) {
+    <section class="dash__notice" role="alert">
+      <strong>{{manager() ? 'Tài khoản chưa được phân quyền chi nhánh.' : 'Bạn không có quyền xem Dashboard.'}}</strong>
+    </section>
+  } @else {
+    @if (period() === 'custom') {
+      <section class="dash__custom" aria-label="Chọn khoảng thời gian tùy chỉnh">
+        <label><span>Từ ngày</span><input type="date" [value]="from()"
+          (change)="changeFrom($any($event.target).value)" [max]="to()" /></label>
+        <label><span>Đến ngày</span><input type="date" [value]="to()"
+          (change)="changeTo($any($event.target).value)" [min]="from()" /></label>
+        <button type="button" (click)="applyCustom()">Áp dụng</button>
+        <span class="dash__custom-hint">Giai đoạn: {{rangeLabel()}}</span>
+      </section>
+    }
+    @if (filterError()) { <p class="dash__filter-error" role="alert">{{filterError()}}</p> }
+    @if (branchError()) {
+      <p class="dash__filter-error" role="alert">
+        {{branchError()}}
+        <button type="button" (click)="loadBranches()">Thử lại</button>
+      </p>
+    }
+
+    <section class="dash__kpis" aria-label="Bốn chỉ số tổng quan">
+      <article class="dash__kpi">
+        <div class="dash__kpi-title">
+          <span class="dash__kpi-icon" data-kind="revenue">
+            <svg viewBox="0 0 24 24" width="21" height="21" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true"><path d="M4 20V12M9 20V7M14 20v-4M19 20V4"/></svg>
+          </span>
+          <span>Doanh thu</span>
+        </div>
+        @if (metric('revenue'); as m) {
+          <strong class="dash__kpi-value">{{money(m.current)}}</strong>
+          <div class="dash__live-kpi-bottom">
+            <span class="dash__live-delta" [class.dash__live-delta--negative]="m.delta < 0"
+              [class.dash__live-delta--flat]="m.delta === 0">{{kpiDelta(m)}}</span>
+            @if (trendPath(m)) {
+              <svg class="dash__live-spark" viewBox="0 0 100 40" preserveAspectRatio="none"
+                role="img" aria-label="Xu hướng doanh thu theo kỳ">
+                <path [attr.d]="trendPath(m)" fill="none" stroke="#287ED5"
+                  stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            }
+          </div>
+        } @else {
+          <strong class="dash__kpi-value dash__kpi-value--pending">—</strong>
+        }
+      </article>
+
+      <a class="dash__kpi dash__kpi--link" routerLink="/admin/orders"
+        [queryParams]="{from:from(),to:to(),branchId:branchId() || null}"
+        aria-label="Xem danh sách đơn hàng trong kỳ">
+        <div class="dash__kpi-title">
+          <span class="dash__kpi-icon" data-kind="orders">
+            <img src="/assets/admin-dashboard/order-action.svg" width="34" height="34" alt="">
+          </span>
+          <span>Đơn hàng</span>
+        </div>
+        @if (metric('orders'); as m) {
+          <strong class="dash__kpi-value">{{formatInt(m.current)}}</strong>
+          <div class="dash__live-kpi-bottom">
+            <span class="dash__live-delta" [class.dash__live-delta--negative]="m.delta < 0"
+              [class.dash__live-delta--flat]="m.delta === 0">{{kpiDelta(m)}}</span>
+            @if (trendPath(m)) {
+              <svg class="dash__live-spark" viewBox="0 0 100 40" preserveAspectRatio="none"
+                role="img" aria-label="Xu hướng đơn hàng theo kỳ">
+                <path [attr.d]="trendPath(m)" fill="none" stroke="#8152D6"
+                  stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            }
+          </div>
+        } @else {
+          <strong class="dash__kpi-value dash__kpi-value--pending">—</strong>
+        }
+      </a>
+
+      <a class="dash__kpi dash__kpi--link" routerLink="/admin/appointments"
+        [queryParams]="{from:from(),to:to(),dateField:'createdAt',branchId:branchId() || null}"
+        aria-label="Xem danh sách lịch hẹn tạo trong kỳ">
+        <div class="dash__kpi-title">
+          <span class="dash__kpi-icon" data-kind="appointments">
+            <img src="/assets/admin-dashboard/appointment-action.svg" width="34" height="34" alt="">
+          </span>
+          <span>Lịch hẹn</span>
+        </div>
+        @if (metric('appointments'); as m) {
+          <strong class="dash__kpi-value">{{formatInt(m.current)}}</strong>
+          <div class="dash__live-kpi-bottom">
+            <span class="dash__live-delta" [class.dash__live-delta--negative]="m.delta < 0"
+              [class.dash__live-delta--flat]="m.delta === 0">{{kpiDelta(m)}}</span>
+            @if (trendPath(m)) {
+              <svg class="dash__live-spark" viewBox="0 0 100 40" preserveAspectRatio="none"
+                role="img" aria-label="Xu hướng lịch hẹn theo kỳ">
+                <path [attr.d]="trendPath(m)" fill="none" stroke="#F39B29"
+                  stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            }
+          </div>
+        } @else {
+          <strong class="dash__kpi-value dash__kpi-value--pending">—</strong>
+        }
+      </a>
+
+      <a class="dash__kpi dash__kpi--link" routerLink="/admin/customers"
+        aria-label="Xem khách hàng">
+        <div class="dash__kpi-title">
+          <span class="dash__kpi-icon" data-kind="customers">
+            <svg viewBox="0 0 24 24" width="21" height="21" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              aria-hidden="true">
+              <circle cx="9" cy="8" r="3"/>
+              <path d="M3.5 20v-2a5.5 5.5 0 0 1 11 0v2M16 5a3 3 0 0 1 0 6M17 15a5 5 0 0 1 3.5 5"/>
+            </svg>
+          </span>
+          <span>Khách có giao dịch</span>
+        </div>
+        @if (metric('activeCustomers'); as m) {
+          <strong class="dash__kpi-value">{{formatInt(m.current)}}</strong>
+          <div class="dash__live-kpi-bottom">
+            <span class="dash__live-delta" [class.dash__live-delta--negative]="m.delta < 0"
+              [class.dash__live-delta--flat]="m.delta === 0">{{kpiDelta(m)}}</span>
+            @if (trendPath(m)) {
+              <svg class="dash__live-spark" viewBox="0 0 100 40" preserveAspectRatio="none"
+                role="img" aria-label="Xu hướng khách có giao dịch theo kỳ">
+                <path [attr.d]="trendPath(m)" fill="none" stroke="#287ED5"
+                  stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            }
+          </div>
+        } @else {
+          <strong class="dash__kpi-value dash__kpi-value--pending">—</strong>
+        }
+      </a>
+    </section>
+    @if (loading() || branchLoading()) {
+      <div class="dash__loading-note" role="status"><span class="dash__spinner"></span> Đang tải số liệu Dashboard...</div>
+    } @else if (error()) {
+      <div class="dash__error" role="alert">
+        <span>{{error()}}</span><button type="button" (click)="refresh()">Thử lại</button>
+      </div>
+    }
+
+    <div class="dash__middle">
+      <section class="dash__panel dash__panel--revenue">
+        <header class="dash__panel-header">
+          <div><h2>Biểu đồ doanh thu</h2></div>
+          <div class="dash__revenue-total">
+            Doanh thu:
+            <strong>{{revenueReady() ? money(revenue()!.totalRevenue) : (metric('revenue') ? money(metric('revenue')!.current) : '—')}}</strong>
+            @if (metric('revenue'); as m) {
+              <span class="dash__live-revenue-change"
+                [class.dash__live-revenue-change--negative]="m.delta < 0">{{kpiDelta(m)}}</span>
+            }
+          </div>
+        </header>
+        <div class="dash__legend">
+          <span><i class="dash__dot dash__dot--order"></i> Đơn hàng</span>
+          <span><i class="dash__dot dash__dot--service"></i> Dịch vụ</span>
+          <span><i class="dash__dot dash__dot--net"></i> Doanh thu thuần</span>
+        </div>
+        @if (revenueLoading()) {
+          <div class="dash__chart-empty"><span class="dash__spinner"></span> Đang tải biểu đồ...</div>
+        } @else if (revenueError() || revenueIssue()) {
+          <div class="dash__chart-empty">
+            <strong>{{revenueError() || revenueIssue()}}</strong>
+            <button type="button" (click)="refresh()">Thử lại</button>
+          </div>
+        } @else if (chart(); as chartData) {
+          <div class="dash__live-chart">
+            <svg viewBox="0 0 650 250" preserveAspectRatio="xMidYMid meet" role="img"
+              aria-label="Biểu đồ doanh thu theo thời gian, bao gồm doanh thu thuần và điều chỉnh hoàn tiền">
+              <defs>
+                <linearGradient id="dash-live-net-fill" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#245A9C" stop-opacity=".15"/>
+                  <stop offset="100%" stop-color="#245A9C" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              @for (tick of chartData.ticks; track tick.y) {
+                <line x1="56" [attr.y1]="tick.y" x2="626" [attr.y2]="tick.y"
+                  stroke="#E1EAF5" stroke-width="1" stroke-dasharray="3 5"/>
+                <text x="49" [attr.y]="tick.y+4" text-anchor="end" fill="#7186A0" font-size="10">
+                  {{formatCompactMoney(tick.amount)}}
+                </text>
+              }
+              <line x1="56" [attr.y1]="chartData.zeroY" x2="626" [attr.y2]="chartData.zeroY"
+                stroke="#B9C9DC" stroke-width="1"/>
+              @for (label of chartData.labels; track label.index) {
+                <text [attr.x]="label.x" y="230" text-anchor="middle" fill="#7186A0" font-size="10">
+                  {{label.label}}
+                </text>
+              }
+              <path [attr.d]="chartData.area" fill="url(#dash-live-net-fill)"/>
+              <path [attr.d]="chartData.lineOrders" fill="none" stroke="#287ED5" stroke-width="2.3"
+                stroke-linecap="round" stroke-linejoin="round"/>
+              <path [attr.d]="chartData.lineServices" fill="none" stroke="#22A99C" stroke-width="2.3"
+                stroke-linecap="round" stroke-linejoin="round"/>
+              <path [attr.d]="chartData.lineTotal" fill="none" stroke="#1D436E" stroke-width="2.8"
+                stroke-linecap="round" stroke-linejoin="round"/>
+              @for (point of chartData.points; track point.index) {
+                <circle [attr.cx]="point.x" [attr.cy]="point.totalY" r="7" fill="transparent"
+                  tabindex="0"
+                  [attr.aria-label]="point.label+' · Doanh thu thuần '+money(point.totalRevenue)"
+                  (mouseenter)="hoveredRevenueIndex.set(point.index)"
+                  (mouseleave)="hoveredRevenueIndex.set(null)"
+                  (focus)="hoveredRevenueIndex.set(point.index)"
+                  (blur)="hoveredRevenueIndex.set(null)"/>
+              }
+              @if (hoveredRevenuePoint(); as p) {
+                <line [attr.x1]="p.x" y1="14" [attr.x2]="p.x" y2="202"
+                  stroke="#8EA9C8" stroke-dasharray="4 4"/>
+                <circle [attr.cx]="p.x" [attr.cy]="p.totalY" r="4.5" fill="#1D436E" stroke="#fff" stroke-width="2"/>
+              }
+            </svg>
+            @if (hoveredRevenuePoint(); as p) {
+              <div class="dash__live-tooltip" role="status">
+                <strong>{{p.label}}</strong>
+                <span><i class="dash__dot dash__dot--order"></i> Đơn hàng: {{money(p.orderRevenue)}}</span>
+                <span><i class="dash__dot dash__dot--service"></i> Dịch vụ: {{money(p.serviceRevenue)}}</span>
+                <span>Điều chỉnh hoàn tiền: {{money(p.refundAdjustment)}}</span>
+                <b>Tổng thuần: {{money(p.totalRevenue)}}</b>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="dash__chart-empty">
+            <strong>Chưa có dữ liệu doanh thu trong kỳ.</strong>
+          </div>
+        }
+      </section>
+
+      <section class="dash__panel dash__panel--status">
+        <header class="dash__panel-header">
+          <div><h2>Trạng thái đơn hàng</h2></div>
+          <a routerLink="/admin/orders" [queryParams]="{from:from(),to:to(),branchId:branchId() || null}"
+            class="dash__panel-link">Xem tất cả</a>
+        </header>
+        @if (loading()) {
+          <div class="dash__widget-placeholder"><span class="dash__spinner"></span> Đang tải dữ liệu...</div>
+        } @else if (error()) {
+          <div class="dash__widget-placeholder">{{error()}}</div>
+        } @else if (metric('orders') && metric('orders')!.current === 0) {
+          <div class="dash__widget-placeholder">Chưa có đơn hàng trong kỳ.</div>
+        } @else if (orderSlices().length) {
+          <div class="dash__status-layout">
+            <div class="dash__donut" [style.background]="orderDonut()" role="img"
+              [attr.aria-label]="'Tổng ' + formatInt(metric('orders')!.current) + ' đơn hàng theo trạng thái'">
+              <span><strong>{{formatInt(metric('orders')!.current)}}</strong><small>Đơn hàng</small></span>
+            </div>
+            <div class="dash__status-legend">
+              @for (item of orderSlices(); track item.key) {
+                <a class="dash__status-row dash__status-row--link" routerLink="/admin/orders"
+                  [queryParams]="{status:item.key,from:from(),to:to(),branchId:branchId() || null}"
+                  [attr.aria-label]="'Xem đơn hàng trạng thái '+item.label">
+                  <span class="dash__status-name"><i [style.background]="item.color"></i>{{item.label}}</span>
+                  <strong>{{formatInt(item.count)}} <small>({{percentage(item.percent)}})</small></strong>
+                </a>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="dash__widget-placeholder">Chưa có dữ liệu trạng thái đơn hàng.</div>
+        }
+      </section>
+
+      <section class="dash__panel dash__panel--appointment">
+        <header class="dash__panel-header">
+          <div><h2>Trạng thái lịch hẹn</h2></div>
+          <a routerLink="/admin/appointments" class="dash__panel-link"
+            [queryParams]="{from:from(),to:to(),dateField:'createdAt',branchId:branchId() || null}">Xem tất cả</a>
+        </header>
+        @if (loading()) {
+          <div class="dash__widget-placeholder"><span class="dash__spinner"></span> Đang tải dữ liệu...</div>
+        } @else if (error()) {
+          <div class="dash__widget-placeholder">{{error()}}</div>
+        } @else if (metric('appointments') && metric('appointments')!.current === 0) {
+          <div class="dash__widget-placeholder">Chưa có lịch hẹn trong kỳ.</div>
+        } @else if (appointmentSlices().length) {
+          <div class="dash__status-layout">
+            <div class="dash__donut" [style.background]="appointmentDonut()" role="img"
+              [attr.aria-label]="formatInt(metric('appointments')!.current) + ' lịch hẹn theo trạng thái'">
+              <span><strong>{{formatInt(metric('appointments')!.current)}}</strong><small>Lịch hẹn</small></span>
+            </div>
+            <div class="dash__status-legend">
+              @for (item of appointmentSlices(); track item.key) {
+                <a class="dash__status-row dash__status-row--link" routerLink="/admin/appointments"
+                  [queryParams]="{status:item.key,dateField:'createdAt',from:from(),to:to(),branchId:branchId() || null}"
+                  [attr.aria-label]="'Xem lịch hẹn trạng thái '+item.label">
+                  <span class="dash__status-name"><i [style.background]="item.color"></i>{{item.label}}</span>
+                  <strong>{{formatInt(item.count)}} <small>({{percentage(item.percent)}})</small></strong>
+                </a>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="dash__widget-placeholder">Chưa có dữ liệu trạng thái lịch hẹn.</div>
+        }
+      </section>
+    </div>
+
+    <div class="dash__bottom">
+      <section class="dash__panel">
+        <header class="dash__panel-header">
+          <div><h2>Top dịch vụ</h2></div>
+          <a routerLink="/admin/services" class="dash__panel-link">Danh mục</a>
+        </header>
+        <div class="dash__table-head dash__table-head--services"><span>Dịch vụ</span><span>Số lượt</span></div>
+        @if (serviceLoading()) {
+          <div class="dash__bottom-empty"><span class="dash__spinner"></span> Đang tải dữ liệu...</div>
+        } @else if (serviceError()) {
+          <div class="dash__bottom-empty">{{serviceError()}}</div>
+        } @else if (services()?.items?.length) {
+          <div class="dash__live-list">
+            @for (item of services()!.items; track item.serviceId ?? item.name; let i = $index) {
+              <div class="dash__live-service-row">
+                <span class="dash__live-rank">{{i + 1}}</span>
+                <span class="dash__live-name">{{item.name}}</span>
+                <strong>{{formatInt(item.completedCount)}}</strong>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="dash__bottom-empty"><strong>Chưa có dịch vụ hoàn thành trong kỳ.</strong></div>
+        }
+      </section>
+
+      <section class="dash__panel">
+        <header class="dash__panel-header">
+          <div><h2>Tồn kho cần chú ý</h2></div>
+          <a routerLink="/admin/inventory" class="dash__panel-link">Xem kho</a>
+        </header>
+        <div class="dash__table-head dash__table-head--stock">
+          <span>Mặt hàng / Chi nhánh</span><span>Tồn / Ngưỡng</span>
+        </div>
+        @if (stockLoading()) {
+          <div class="dash__bottom-empty"><span class="dash__spinner"></span> Đang tải dữ liệu...</div>
+        } @else if (stockError()) {
+          <div class="dash__bottom-empty">{{stockError()}}</div>
+        } @else if (stock()?.items?.length) {
+          <div class="dash__live-list">
+            @for (item of stock()!.items; track item.stockId) {
+              <div class="dash__live-stock-row">
+                <span class="dash__live-product-photo">
+                  <img class="dash__live-photo-fallback" src="/assets/admin-dashboard/inventory-action.svg"
+                    width="30" height="30" alt="">
+                  @if (item.kind === 'PRODUCT' && item.imageUrl) {
+                    <img class="dash__live-photo-main" [src]="item.imageUrl" [alt]="item.name"
+                      width="40" height="40" loading="lazy" decoding="async"
+                      (error)="onStockImageError($event)">
+                  }
+                </span>
+                <span class="dash__live-stock-name">
+                  <strong [title]="item.name">{{item.name}}</strong>
+                  <small [title]="item.branchName">{{item.branchName}}</small>
+                </span>
+                <strong class="dash__live-stock-number"
+                  [class.dash__live-stock-number--zero]="item.status === 'OUT_OF_STOCK'">
+                  {{item.quantity}} <span>/ {{item.lowStockThreshold}}</span>
+                </strong>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="dash__bottom-empty">
+            <strong>Không có mặt hàng dưới ngưỡng cảnh báo.</strong>
+          </div>
+        }
+      </section>
+
+      <section class="dash__panel dash__panel--shortcuts">
+        <header class="dash__panel-header dash__panel-header--actions"><h2>Cần xử lý ngay</h2></header>
+        <div class="dash__action-tabs" role="tablist" aria-label="Các công việc cần xử lý">
+          <button type="button" role="tab" [attr.aria-selected]="actionTab() === 'orders'"
+            [class.dash__action-tab--active]="actionTab() === 'orders'"
+            (click)="setActionTab('orders')">
+            <img src="/assets/admin-dashboard/order-action.svg" width="24" height="24" alt="">
+            Đơn hàng cần xử lý
+            @if (attention()) { <span>({{formatInt(attention()!.ordersTotal)}})</span> }
+          </button>
+          <button type="button" role="tab" [attr.aria-selected]="actionTab() === 'appointments'"
+            [class.dash__action-tab--active]="actionTab() === 'appointments'"
+            (click)="setActionTab('appointments')">
+            <img src="/assets/admin-dashboard/appointment-action.svg" width="24" height="24" alt="">
+            Lịch hẹn sắp tới
+            @if (attention()) { <span>({{formatInt(attention()!.appointmentsTotal)}})</span> }
+          </button>
+        </div>
+        <div class="dash__action-content" role="tabpanel">
+          @if (actionTab() === 'orders') {
+            <table class="dash__action-table">
+              <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Giá trị</th><th>Thời gian</th><th>Thao tác</th></tr></thead>
+              <tbody>
+                @if (attentionLoading()) {
+                  <tr><td colspan="5" class="dash__action-message">Đang tải đơn hàng...</td></tr>
+                } @else if (attentionError()) {
+                  <tr><td colspan="5" class="dash__action-message">{{attentionError()}}</td></tr>
+                } @else {
+                  @for (order of orderRows(); track order.id) {
+                    <tr>
+                      <td><strong [title]="order.code">{{order.code}}</strong></td>
+                      <td>{{order.customerName}}</td>
+                      <td>{{money(order.totalAmount)}}</td>
+                      <td>{{shortTime(order.createdAt)}}</td>
+                      <td class="dash__action-cell">
+                        <a class="dash__icon-link" [routerLink]="['/admin/orders',order.id]"
+                          [attr.aria-label]="'Xem chi tiết đơn hàng '+order.code" title="Xem chi tiết">
+                          <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="">
+                        </a>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="5" class="dash__action-message">Không có đơn hàng cần xử lý.</td></tr>
+                  }
+                }
+              </tbody>
+            </table>
+          } @else {
+            <table class="dash__action-table">
+              <thead><tr><th>Mã lịch</th><th>Khách hàng</th><th>Thời gian</th><th>Thao tác</th></tr></thead>
+              <tbody>
+                @if (attentionLoading()) {
+                  <tr><td colspan="4" class="dash__action-message">Đang tải lịch hẹn...</td></tr>
+                } @else if (attentionError()) {
+                  <tr><td colspan="4" class="dash__action-message">{{attentionError()}}</td></tr>
+                } @else {
+                  @for (appointment of appointmentRows(); track appointment.id) {
+                    <tr>
+                      <td><strong [title]="appointment.code">{{appointment.code}}</strong></td>
+                      <td>
+                        {{appointment.customerName}}
+                        @if (appointment.petName) { <small class="dash__action-pet">{{appointment.petName}}</small> }
+                      </td>
+                      <td>{{shortTime(appointment.scheduledStart)}}</td>
+                      <td class="dash__action-cell">
+                        <a class="dash__icon-link" [routerLink]="['/admin/appointments',appointment.id]"
+                          [attr.aria-label]="'Xem chi tiết lịch hẹn '+appointment.code" title="Xem chi tiết">
+                          <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="">
+                        </a>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="4" class="dash__action-message">Không có lịch hẹn trong 24 giờ tới.</td></tr>
+                  }
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+        <a class="dash__action-all" [routerLink]="actionTab() === 'orders' ? '/admin/orders' : '/admin/appointments'">
+          <span class="dash__action-all-label">{{actionTab() === 'orders' ? 'Xem tất cả đơn hàng' : 'Xem tất cả lịch hẹn'}}</span>
+          <span class="dash__action-all-arrow" aria-hidden="true">→</span>
+        </a>
+      </section>
+    </div>
+    <footer class="dash__footer">
+      @if (checkedAt()) { <span>Cập nhật lúc {{checkedAt()}} (GMT+7)</span> }
+    </footer>
+  }
+</main>
+</app-admin-catalog-shell>
