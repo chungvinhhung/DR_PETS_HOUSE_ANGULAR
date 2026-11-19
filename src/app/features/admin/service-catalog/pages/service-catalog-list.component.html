@@ -64,28 +64,37 @@
           <div class="service-catalog__more-popover" id="service-catalog-other-filters"
             role="group" aria-label="Bộ lọc bổ sung">
             <h2>Bộ lọc khác</h2>
-            <label class="service-catalog__more-field">
-              <span>Hình thức đặt lịch</span>
-              <select #modeFilter [value]="filters().mode" (change)="setMode(modeFilter.value)"
-                aria-label="Lọc theo hình thức đặt lịch">
-                <option value="ALL">Tất cả hình thức</option>
-                <option value="BOOKABLE">Đặt lịch trực tiếp</option>
-                <option value="REQUEST_ONLY">Yêu cầu đặt lịch</option>
-                <option value="CONTACT_ONLY">Liên hệ tư vấn</option>
-              </select>
-            </label>
-            <label class="service-catalog__more-field">
-              <span>Trạng thái dịch vụ</span>
-              <select #statusFilter [value]="filters().status" (change)="setStatus(statusFilter.value)"
-                aria-label="Lọc theo trạng thái dịch vụ">
-                <option value="ALL">Tất cả trạng thái</option>
-                <option value="ACTIVE">Đang hoạt động</option>
-                <option value="INACTIVE">Tạm ngưng</option>
-              </select>
-            </label>
+            <div class="service-catalog__filter-groups">
+              <fieldset class="service-catalog__checkbox-group">
+                <legend>Hình thức đặt lịch</legend>
+                <label class="service-catalog__checkbox">
+                  <input type="checkbox" [checked]="draftModes().includes('BOOKABLE')"
+                    (change)="toggleDraftMode('BOOKABLE')">Đặt lịch trực tiếp
+                </label>
+                <label class="service-catalog__checkbox">
+                  <input type="checkbox" [checked]="draftModes().includes('REQUEST_ONLY')"
+                    (change)="toggleDraftMode('REQUEST_ONLY')">Yêu cầu đặt lịch
+                </label>
+                <label class="service-catalog__checkbox">
+                  <input type="checkbox" [checked]="draftModes().includes('CONTACT_ONLY')"
+                    (change)="toggleDraftMode('CONTACT_ONLY')">Liên hệ tư vấn
+                </label>
+              </fieldset>
+              <fieldset class="service-catalog__checkbox-group">
+                <legend>Trạng thái dịch vụ</legend>
+                <label class="service-catalog__checkbox">
+                  <input type="checkbox" [checked]="draftStatuses().includes('ACTIVE')"
+                    (change)="toggleDraftStatus('ACTIVE')">Đang hoạt động
+                </label>
+                <label class="service-catalog__checkbox">
+                  <input type="checkbox" [checked]="draftStatuses().includes('INACTIVE')"
+                    (change)="toggleDraftStatus('INACTIVE')">Tạm ngưng
+                </label>
+              </fieldset>
+            </div>
             <div class="service-catalog__more-footer">
-              <button type="button" class="service-catalog__more-clear" (click)="clearOtherFilters()">Xóa bộ lọc</button>
-              <button type="button" class="service-catalog__more-done" (click)="closeMoreFilters()">Xong</button>
+              <button type="button" class="service-catalog__more-clear" (click)="clearOtherDraftFilters()">Xóa tất cả</button>
+              <button type="button" class="service-catalog__more-done" (click)="applyOtherFilters()">Áp dụng</button>
             </div>
           </div>
         }
@@ -93,7 +102,7 @@
 
       @if (isAdmin()) {
         <button type="button" class="service-catalog__create web2-add-button" (click)="createService()">
-          <img class="web2-add-icon" src="/assets/admin-product/icon-add.svg" alt="" aria-hidden="true">
+          <img class="web2-add-icon service-catalog__add-icon" src="/assets/admin-product/icon-add.svg" alt="" aria-hidden="true">
           <span>Thêm dịch vụ</span>
         </button>
       }
@@ -135,8 +144,8 @@
             <tr>
               <td [attr.colspan]="filters().branchId === 'ALL' ? 8 : 9" class="service-catalog__empty-cell">
                 <app-admin-data-state kind="empty"
-                  [title]="searchText().trim() || filters().mode !== 'ALL' || filters().status !== 'ALL' || filters().branchId !== 'ALL' ? 'Không tìm thấy dịch vụ' : 'Chưa có dịch vụ'"
-                  [message]="searchText().trim() || filters().mode !== 'ALL' || filters().status !== 'ALL' || filters().branchId !== 'ALL' ? 'Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác.' : 'Danh mục dịch vụ hiện đang trống.'" />
+                  [title]="searchText().trim() || extraFiltersCount() > 0 || filters().serviceType !== 'ALL' || filters().branchId !== 'ALL' ? 'Không tìm thấy dịch vụ' : 'Chưa có dịch vụ'"
+                  [message]="searchText().trim() || extraFiltersCount() > 0 || filters().serviceType !== 'ALL' || filters().branchId !== 'ALL' ? 'Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác.' : 'Danh mục dịch vụ hiện đang trống.'" />
               </td>
             </tr>
           } @else {

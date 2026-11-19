@@ -28,6 +28,8 @@ import {
   CatalogBranch,
   CatalogFilterMode,
   CatalogFilterStatus,
+  ServiceBookingMode,
+  ServiceMasterStatus,
   CatalogListQuery,
   CatalogService,
 } from '../models/service-catalog.model';
@@ -79,8 +81,13 @@ export class ServiceCatalogListComponent {
   readonly configuringService = signal<CatalogService | null>(null);
   readonly searchText = signal('');
   readonly moreFiltersOpen = signal(false);
+  /** Checkbox drafts are applied atomically, rather than refetching while selecting. */
+  readonly appliedModes = signal<readonly ServiceBookingMode[]>([]);
+  readonly appliedStatuses = signal<readonly ServiceMasterStatus[]>([]);
+  readonly draftModes = signal<readonly ServiceBookingMode[]>([]);
+  readonly draftStatuses = signal<readonly ServiceMasterStatus[]>([]);
   readonly extraFiltersCount = computed(() =>
-    Number(this.filters().mode !== 'ALL') + Number(this.filters().status !== 'ALL'));
+    this.appliedModes().length + this.appliedStatuses().length);
 
 
   readonly filters = signal<ListFilters>({
@@ -156,29 +163,48 @@ export class ServiceCatalogListComponent {
 
   toggleMoreFilters(event: MouseEvent): void {
     event.stopPropagation();
-    this.moreFiltersOpen.update((opened) => !opened);
+    if (!this.moreFiltersOpen()) {
+      this.draftModes.set([...this.appliedModes()]);
+      this.draftStatuses.set([...this.appliedStatuses()]);
+    }
+    this.moreFiltersOpen.update(opened => !opened);
     this.openMenuId.set(null);
   }
 
   closeMoreFilters(): void { this.moreFiltersOpen.set(false); }
 
-  clearOtherFilters(): void {
-    if (this.extraFiltersCount()) this.patchFilters({ mode: 'ALL', status: 'ALL', page: 1 });
+  toggleDraftMode(mode: ServiceBookingMode): void {
+    const current = this.draftModes();
+    this.draftModes.set(current.includes(mode) ? current.filter(value => value !== mode) : [...current, mode]);
+  }
+
+  toggleDraftStatus(status: ServiceMasterStatus): void {
+    const current = this.draftStatuses();
+    this.draftStatuses.set(current.includes(status) ? current.filter(value => value !== status) : [...current, status]);
+  }
+
+  clearOtherDraftFilters(): void {
+    this.draftModes.set([]);
+    this.draftStatuses.set([]);
+  }
+
+  applyOtherFilters(): void {
+    const modes = this.draftModes();
+    const statuses = this.draftStatuses();
+    this.appliedModes.set([...modes]);
+    this.appliedStatuses.set([...statuses]);
+    // BE supports comma-separated bookingMode IN filters. Selecting both statuses
+    // is equivalent to status=ALL. Keep server-side pagination and totals correct.
+    const bookingModes = modes.length > 0 && modes.length < 3 ? [...modes] : [];
+    const mode: CatalogFilterMode = modes.length === 1 ? modes[0] : 'ALL';
+    const status: CatalogFilterStatus = statuses.length === 1 ? statuses[0] : 'ALL';
+    this.patchFilters({ mode, bookingModes, status, page: 1 });
     this.closeMoreFilters();
   }
 
-  setMode(mode: string): void {
-    if (!['ALL', 'BOOKABLE', 'REQUEST_ONLY', 'CONTACT_ONLY'].includes(mode)) {
-      return;
-    }
-    this.patchFilters({ mode: mode as CatalogFilterMode, page: 1 });
-  }
-
-  setStatus(status: string): void {
-    if (!['ALL', 'ACTIVE', 'INACTIVE'].includes(status)) {
-      return;
-    }
-    this.patchFilters({ status: status as CatalogFilterStatus, page: 1 });
+  clearOtherFilters(): void {
+    this.clearOtherDraftFilters();
+    this.applyOtherFilters();
   }
 
   goToPage(page: number): void {
@@ -199,6 +225,10 @@ export class ServiceCatalogListComponent {
   }
 
   clearFilters(): void {
+    this.appliedModes.set([]);
+    this.appliedStatuses.set([]);
+    this.clearOtherDraftFilters();
+    this.closeMoreFilters();
     this.searchText.set('');
     this.searchSubject.next('');
     this.patchFilters({ branchId: 'ALL', mode: 'ALL', serviceType: 'ALL', status: 'ALL', page: 1 });

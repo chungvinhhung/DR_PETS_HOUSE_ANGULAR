@@ -83,7 +83,11 @@ export class ServiceCatalogApiService {
       .set('limit', String(query.pageSize));
     if (query.search.trim()) params = params.set('search', query.search.trim());
     if (query.branchId !== 'ALL') params = params.set('branchId', query.branchId);
-    if (query.mode !== 'ALL') params = params.set('bookingMode', query.mode);
+    if (query.bookingModes?.length && query.bookingModes.length < 3) {
+      params = params.set('bookingMode', query.bookingModes.join(','));
+    } else if (query.mode !== 'ALL') {
+      params = params.set('bookingMode', query.mode);
+    }
     if (query.serviceType && query.serviceType !== 'ALL') params = params.set('serviceType', query.serviceType);
     if (query.status !== 'ALL') params = params.set('status', query.status);
     return this.api.get<ServiceApiPage>('/services', { params }).pipe(

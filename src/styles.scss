@@ -9472,3 +9472,134 @@ app-admin-inventory-page .stock-dialog .dialog-columns--product .field-label sel
   height: 46px;
   min-height: 46px;
 }
+
+
+/* FEEDBACK 19 Nov: multiselect service filters and polished species focus. */
+/* Shared Add button icon: exactly the white 12px product-list icon, not a dark oversized plus. */
+app-service-catalog-list .service-catalog__filters .service-catalog__create img.service-catalog__add-icon {
+  display: block !important;
+  position: static !important;
+  flex: 0 0 12px !important;
+  width: 12px !important;
+  height: 12px !important;
+  margin: 0 !important;
+  object-fit: contain !important;
+  filter: brightness(0) invert(1) !important;
+}
+
+/* Follow Product Management's two-column checkbox popover and bottom actions. */
+app-service-catalog-list .service-catalog__more-popover {
+  width: 460px;
+  max-width: calc(100vw - 48px);
+  padding: 20px;
+}
+app-service-catalog-list .service-catalog__more-popover h2 {
+  margin: 0 0 18px;
+  font-size: 16px;
+}
+app-service-catalog-list .service-catalog__filter-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  padding-bottom: 18px;
+}
+app-service-catalog-list .service-catalog__checkbox-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 13px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+app-service-catalog-list .service-catalog__checkbox-group legend {
+  display: block;
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 0;
+  color: #24354d;
+  font-size: 13px;
+  font-weight: 700;
+}
+app-service-catalog-list .service-catalog__checkbox {
+  display: flex;
+  align-items: flex-start;
+  min-height: 20px;
+  gap: 9px;
+  color: #344154;
+  font-size: 13px;
+  line-height: 20px;
+  cursor: pointer;
+}
+app-service-catalog-list .service-catalog__checkbox input[type="checkbox"] {
+  appearance: auto;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+  margin: 2px 0 0;
+  accent-color: #0d47a1;
+  cursor: pointer;
+}
+app-service-catalog-list .service-catalog__checkbox input[type="checkbox"]:focus-visible {
+  outline: 2px solid #0d47a1;
+  outline-offset: 2px;
+}
+app-service-catalog-list .service-catalog__more-footer {
+  margin-top: 0;
+  padding-top: 15px;
+  border-top: 1px solid #e7edf4;
+}
+app-service-catalog-list .service-catalog__more-footer button {
+  min-height: 40px;
+  font-size: 13px;
+}
+@media (max-width: 510px) {
+  app-service-catalog-list .service-catalog__filter-groups {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  app-service-catalog-list .service-catalog__checkbox-group {
+    gap: 10px;
+  }
+  app-service-catalog-list .service-catalog__more-popover {
+    width: min(460px, calc(100vw - 64px));
+    max-height: min(420px, 70dvh);
+    overflow-y: auto;
+  }
+}
+
+/* A single subtle outer focus ring around species Other; never nested select/input rings. */
+app-admin-appointment-create .pet-new .pet-new__species-control--other {
+  border: 1px solid #d5dfeb;
+  border-radius: 8px;
+  box-shadow: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+app-admin-appointment-create .pet-new .pet-new__species-control--other:hover:not(:focus-within) {
+  border-color: #b8c9db;
+}
+app-admin-appointment-create .pet-new .pet-new__species-control--other:focus-within {
+  border-color: #0d47a1;
+  box-shadow: 0 0 0 2px rgb(13 71 161 / 12%);
+}
+app-admin-appointment-create .pet-new .pet-new__species-control--other select,
+app-admin-appointment-create .pet-new .pet-new__species-control--other input {
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+app-admin-appointment-create .pet-new .pet-new__species-control--other select {
+  border-right: 1px solid #dfe5ee !important;
+}
+app-admin-appointment-create .pet-new .pet-new__species-control--other input {
+  border-right: 0 !important;
+}
+app-admin-appointment-create .pet-new .pet-new__species-control--other :is(select,input):focus-visible,
+app-admin-appointment-create .pet-new .pet-new__species-control--other :is(select,input):focus {
+  outline: none !important;
+  box-shadow: none !important;
+}

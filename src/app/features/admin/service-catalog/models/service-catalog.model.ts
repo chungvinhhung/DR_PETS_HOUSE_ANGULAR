@@ -98,6 +98,8 @@ export interface CatalogListQuery {
   search: string;
   branchId: string;
   mode: CatalogFilterMode;
+  /** Internal listing supports a comma-separated booking-mode OR filter. */
+  bookingModes?: readonly ServiceBookingMode[];
   /** Optional because other service pickers intentionally do not filter by type. */
   serviceType?: CatalogFilterServiceType;
   status: CatalogFilterStatus;
