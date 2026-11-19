@@ -306,8 +306,16 @@ export class AdminStaffApiService {
     });
   }
 
+  /** Permanently delete a shift that has not yet begun (BE checks appointments). */
+  deleteShift(id: string): Observable<unknown> {
+    return this.api.delete('/shifts/' + encodeURIComponent(id));
+  }
+
+  /** Soft-cancel a shift; BE blocks cancellation when appointments depend on it. */
   cancelShift(id: string): Observable<unknown> {
-    return this.api.post('/shifts/' + encodeURIComponent(id) + '/cancel', {});
+    return this.api.post('/shifts/' + encodeURIComponent(id) + '/cancel', {}, {
+      headers: new HttpHeaders().set('Idempotency-Key', crypto.randomUUID()),
+    });
   }
   /** Fresh, employee-scoped shifts for overlap checks, including other visible branches. */
   listStaffShiftRecords(staffId: string, dateFrom: string, dateTo: string): Observable<StaffShiftRecord[]> {
