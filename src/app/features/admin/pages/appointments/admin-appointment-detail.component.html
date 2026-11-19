@@ -77,7 +77,7 @@
             <tbody>
               @for (row of appointmentRows(); track row.key) {
                 <tr>
-                  <td>
+                  <td data-label="Thú cưng">
                     @if (row.pet === '—') {
                       <span class="empty-cell">—</span>
                     } @else {
@@ -92,14 +92,14 @@
                       </span>
                     }
                   </td>
-                  <td [class.empty-value]="row.species === '—'">{{row.species}}</td>
-                  <td [class.empty-value]="row.service === '—'">{{row.service}}</td>
-                  <td class="staff-name-cell" [class.empty-value]="row.staff === '—'"><span class="staff-name">{{row.staff}}</span></td>
-                  <td [class.empty-value]="row.health === '—'"><strong>{{row.health}}</strong></td>
-                  <td [class.empty-value]="row.note === '—'">{{row.note}}</td>
-                  <td><span class="mini-badge" data-state="unknown">{{row.checkIn}}</span></td>
-                  <td>{{row.execution}}</td>
-                  <td class="service-action-cell">
+                  <td data-label="Loài" [class.empty-value]="row.species === '—'">{{row.species}}</td>
+                  <td data-label="Dịch vụ" [class.empty-value]="row.service === '—'">{{row.service}}</td>
+                  <td data-label="Nhân viên" class="staff-name-cell" [class.empty-value]="row.staff === '—'"><span class="staff-name">{{row.staff}}</span></td>
+                  <td data-label="Tình trạng sức khỏe" [class.empty-value]="row.health === '—'"><strong>{{row.health}}</strong></td>
+                  <td data-label="Thông tin thêm" [class.empty-value]="row.note === '—'">{{row.note}}</td>
+                  <td data-label="Check-in"><span class="mini-badge" data-state="unknown">{{row.checkIn}}</span></td>
+                  <td data-label="Thực hiện">{{row.execution}}</td>
+                  <td data-label="Thao tác" class="service-action-cell">
                     @if (row.recordId) {
                       <a class="eye-action" [routerLink]="['/admin/service-records',row.recordId]" title="Xem hồ sơ dịch vụ">
                         <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="">
