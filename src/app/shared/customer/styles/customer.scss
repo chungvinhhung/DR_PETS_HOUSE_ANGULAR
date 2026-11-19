@@ -3481,3 +3481,1752 @@ html:has(.customer-root) {
 .rescue-card-actions {
   background: #faf9f6;
 }
+
+
+/* Shared Customer page styles: extracted from oversized Angular component styles so the UI remains unchanged. */
+
+/* BEGIN extracted src/app/features/customer/guest-lookup/pages/guest-lookup-page.component.scss */
+.guest-lookup {
+  @apply flex min-h-[calc(100vh-88px)] justify-center bg-[#f5f9fc] px-4 py-10 font-['Roboto'] sm:py-16;
+}
+
+.guest-lookup__card {
+  @apply flex h-fit w-full max-w-[520px] flex-col gap-4 rounded-[16px] border border-[#e3edf2] bg-white px-5 py-8 shadow-[0_12px_40px_rgba(6,16,90,0.08)] sm:px-10;
+}
+
+.guest-lookup__panel {
+  @apply flex h-fit w-full max-w-[960px] flex-col gap-5 rounded-[16px] border border-[#e3edf2] bg-white px-4 py-6 shadow-[0_12px_40px_rgba(6,16,90,0.08)] sm:px-8 sm:py-8;
+}
+
+.guest-lookup__badge {
+  @apply mx-auto flex size-12 items-center justify-center rounded-full bg-[#fff9c4] text-[#06105a];
+}
+
+.guest-lookup__title {
+  @apply text-center text-[24px] font-bold leading-tight text-[#06105a] sm:text-[28px];
+}
+
+.guest-lookup__lead {
+  @apply text-center text-[15px] leading-relaxed text-[#4f5359];
+}
+
+.guest-lookup__subtle {
+  @apply text-sm text-[#7e8085];
+}
+
+.guest-lookup__form {
+  @apply flex flex-col gap-5;
+}
+
+.guest-lookup__notice {
+  @apply flex items-start gap-2 rounded-lg bg-[#fff4e5] px-3 py-2 text-sm text-[#8a4b00];
+}
+
+.guest-lookup__info {
+  @apply rounded-lg bg-[#e8f5e9] px-3 py-2 text-center text-sm text-[#137333];
+}
+
+.guest-lookup__debug {
+  @apply rounded-lg border border-dashed border-[#90caf9] bg-[#f3f9ff] px-3 py-2 text-center text-sm text-[#0d47a1];
+}
+
+.guest-lookup__timer {
+  @apply text-center text-sm text-[#4f5359];
+}
+
+.guest-lookup__hints {
+  @apply mt-2 flex flex-col gap-2 border-t border-[#eef2f4] pt-4 text-[13px] text-[#7e8085];
+
+  li {
+    @apply flex items-start gap-2;
+  }
+}
+
+.guest-lookup__panel-header {
+  @apply flex flex-col gap-3 border-b border-[#eef2f4] pb-4 sm:flex-row sm:items-end sm:justify-between;
+}
+
+.guest-lookup__ghost-btn {
+  @apply rounded-full border border-[#c6dce3] px-4 py-1.5 text-sm font-medium text-[#06105a] transition hover:border-[#0d47a1] hover:bg-[#f3f9ff] disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.guest-lookup__tabs {
+  @apply flex flex-wrap gap-2;
+}
+
+.guest-lookup__tab {
+  @apply flex items-center gap-2 rounded-full border border-[#e3edf2] px-4 py-1.5 text-sm font-medium text-[#4f5359] transition hover:border-[#0d47a1];
+}
+
+.guest-lookup__tab--active {
+  @apply border-[#06105a] bg-[#06105a] text-white hover:border-[#06105a];
+}
+
+.guest-lookup__tab-count {
+  @apply rounded-full bg-black/10 px-2 text-xs;
+}
+
+.guest-lookup__state {
+  @apply flex flex-col items-center gap-3 py-12 text-center text-[15px] text-[#4f5359];
+}
+
+.guest-lookup__list {
+  @apply flex flex-col gap-3;
+}
+
+.guest-lookup__item {
+  @apply flex flex-col gap-3 rounded-xl border border-[#e3edf2] p-4 transition hover:border-[#90caf9] sm:flex-row sm:items-center;
+}
+
+.guest-lookup__item-icon {
+  @apply hidden size-10 shrink-0 items-center justify-center rounded-full bg-[#f3f9ff] text-[#0d47a1] sm:flex;
+}
+
+.guest-lookup__item-type {
+  @apply text-xs font-semibold uppercase tracking-wide text-[#7e8085];
+}
+
+.guest-lookup__item-code {
+  @apply font-semibold text-[#06105a];
+}
+
+.guest-lookup__item-title {
+  @apply mt-1 truncate text-[15px] font-medium text-[#060b16];
+}
+
+.guest-lookup__status {
+  @apply rounded-full px-2.5 py-0.5 text-xs font-semibold;
+}
+
+.guest-lookup__detail-btn {
+  @apply flex shrink-0 items-center justify-center gap-1 rounded-full border border-[#06105a] px-4 py-1.5 text-sm font-medium text-[#06105a] transition hover:bg-[#06105a] hover:text-white;
+}
+
+.guest-lookup__back {
+  @apply flex w-fit items-center gap-2 text-sm font-medium text-[#0d47a1] hover:underline;
+}
+/* END extracted src/app/features/customer/guest-lookup/pages/guest-lookup-page.component.scss */
+
+/* BEGIN extracted src/app/features/customer/pets/pages/pet-detail/pet-detail-page.component.scss */
+.pet-detail-page__stack {
+  @apply mx-auto max-w-page w-full pt-3 pb-4 flex-1 flex flex-col;
+}
+
+.pet-detail-page__row {
+  @apply flex items-center gap-3 mb-5 flex-shrink-0;
+}
+
+.pet-detail-page__link {
+  @apply text-slate-500 hover:text-slate-900 transition;
+}
+
+.pet-detail-page__icon {
+  @apply w-5 h-5;
+}
+
+.pet-detail-page__ho-so-chi-title {
+  @apply text-2xl font-bold text-slate-900;
+}
+
+.pet-detail-page__pet-load-error {
+  @apply mb-4 rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700;
+}
+
+.pet-detail-page__grid {
+  @apply grid gap-5 lg:grid-cols-[380px_1fr] items-start flex-1;
+}
+
+.pet-detail-page__stack-2 {
+  @apply flex flex-col h-full;
+}
+
+.pet-detail-page__stack-3 {
+  @apply relative rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col items-center text-center flex-shrink-0;
+}
+
+.pet-detail-page__icon-2 {
+  @apply w-3.5 h-3.5;
+}
+
+.pet-detail-page__nut-sua-ho-so {
+  @apply absolute top-4 right-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#FEF08A] hover:bg-[#FDE047] text-slate-900 text-xs font-semibold transition-colors cursor-pointer;
+}
+
+.pet-detail-page__anh-dai-dien {
+  @apply w-28 h-28 rounded-full overflow-hidden mt-6 mb-3 shadow-sm bg-slate-50 border-4 border-white ring-1 ring-slate-100 flex-shrink-0;
+}
+
+.pet-detail-page__name {
+  @apply w-full h-full object-cover;
+}
+
+.pet-detail-page__row-2 {
+  @apply w-full h-full flex items-center justify-center text-4xl;
+}
+
+.pet-detail-page__giong-loai {
+  @apply text-sm text-slate-500 mt-0.5;
+}
+
+.pet-detail-page__row-3 {
+  @apply flex flex-wrap items-center justify-center gap-2 mt-4 flex-shrink-0;
+}
+
+.pet-detail-page__gioi-tinh {
+  @apply flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FEF08A] text-slate-800 text-xs font-medium;
+}
+
+.pet-detail-page__icon-3 {
+  @apply w-3.5 h-3.5 text-slate-700;
+}
+
+.pet-detail-page__tuoi {
+  @apply flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E0E7FF] text-slate-800 text-xs font-medium;
+}
+
+.pet-detail-page__icon-4 {
+  @apply w-3.5 h-3.5 text-indigo-900;
+}
+
+.pet-detail-page__stack-4 {
+  @apply rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col flex-shrink-0;
+}
+
+.pet-detail-page__grid-2 {
+  @apply grid grid-cols-2 border-b;
+}
+
+.pet-detail-page__box {
+  @apply p-3;
+}
+
+.pet-detail-page__row-4 {
+  @apply w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center mb-1;
+}
+
+.pet-detail-page__icon-5 {
+  @apply w-3.5 h-3.5 text-slate-400;
+}
+
+.pet-detail-page__suc-khoe-chung-text {
+  @apply text-[10px] text-slate-500 font-medium mb-0.5 uppercase tracking-wide;
+}
+
+.pet-detail-page__health-status {
+  @apply text-xs font-bold text-slate-900;
+}
+
+.pet-detail-page__row-5 {
+  @apply w-6 h-6 rounded-full bg-yellow-50 flex items-center justify-center mb-1;
+}
+
+.pet-detail-page__icon-6 {
+  @apply w-3.5 h-3.5 text-yellow-500;
+}
+
+.pet-detail-page__box-2 {
+  @apply p-3 bg-slate-50/50 border-t border-slate-100;
+}
+
+.pet-detail-page__row-6 {
+  @apply flex items-center gap-1 mb-1;
+}
+
+.pet-detail-page__luu-y-y-text {
+  @apply text-[11px] font-bold text-slate-500 uppercase tracking-wide;
+}
+
+.pet-detail-page__medical-notes {
+  @apply text-[11px] text-slate-700 leading-relaxed;
+}
+
+.pet-detail-page__stack-5 {
+  @apply rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col overflow-hidden flex-1;
+}
+
+.pet-detail-page__row-7 {
+  @apply p-4 pb-2 flex items-center justify-between border-b border-slate-100 bg-white flex-shrink-0;
+}
+
+.pet-detail-page__title {
+  @apply text-sm font-bold text-slate-900 flex items-center gap-2;
+}
+
+.pet-detail-page__icon-7 {
+  @apply w-4 h-4 text-slate-400;
+}
+
+.pet-detail-page__row-8 {
+  @apply flex items-center gap-2;
+}
+
+.pet-detail-page__xem-tat-ca-button {
+  @apply text-[10px] font-bold text-slate-500 border border-slate-200 px-2 py-1 rounded-md hover:bg-slate-50 transition flex-shrink-0;
+}
+
+.pet-detail-page__button {
+  @apply bg-[#fcd34d] hover:bg-[#fbbf24] text-slate-900 w-6 h-6 flex items-center justify-center rounded-md font-bold transition flex-shrink-0 shadow-sm;
+}
+
+.pet-detail-page__box-3 {
+  @apply p-4 pt-3;
+}
+
+.pet-detail-page__box-4 {
+  @apply relative border-l-2 border-slate-100 ml-2;
+}
+
+.pet-detail-page__box-5 {
+  @apply relative pl-5;
+}
+
+.pet-detail-page__date {
+  @apply text-[10px] font-bold text-slate-500 mb-0.5 tracking-wide;
+}
+
+.pet-detail-page__condition {
+  @apply text-xs font-bold text-slate-900 mb-1 flex items-center gap-1.5;
+}
+
+.pet-detail-page__text {
+  @apply text-slate-300 font-normal;
+}
+
+.pet-detail-page__text-2 {
+  @apply text-[10px] text-slate-600 flex items-center gap-1.5 mb-2 font-medium;
+}
+
+.pet-detail-page__notes {
+  @apply bg-[#fef9c3] rounded-lg p-2.5 text-xs text-slate-800 leading-relaxed shadow-sm border border-yellow-100;
+}
+
+.pet-detail-page__stack-6 {
+  @apply rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex flex-col h-full;
+}
+
+.pet-detail-page__row-9 {
+  @apply flex items-center justify-between mb-3 flex-shrink-0;
+}
+
+.pet-detail-page__month {
+  @apply text-xl font-bold text-slate-900 flex items-center gap-1.5 relative;
+}
+
+.pet-detail-page__row-10 {
+  @apply relative w-6 h-6 text-slate-800 hover:text-blue-600 transition flex items-center justify-center cursor-pointer;
+}
+
+.pet-detail-page__row-11 {
+  @apply flex items-center gap-1.5;
+}
+
+.pet-detail-page__button-2 {
+  @apply p-0.5 hover:bg-slate-100 rounded border border-transparent transition;
+}
+
+.pet-detail-page__icon-8 {
+  @apply w-4 h-4 text-slate-500;
+}
+
+.pet-detail-page__hom-nay-button {
+  @apply px-2.5 py-1 bg-[#e0e7ff] text-[#4338ca] text-[10px] font-bold rounded-full flex-shrink-0 hover:bg-blue-100 transition;
+}
+
+.pet-detail-page__stack-7 {
+  @apply flex-1 border border-slate-100 rounded-xl overflow-hidden bg-slate-50/30 flex flex-col;
+}
+
+.pet-detail-page__grid-3 {
+  @apply grid grid-cols-7 border-b border-slate-100 bg-white flex-shrink-0;
+}
+
+.pet-detail-page__day {
+  @apply text-center py-2 text-[10px] font-bold text-slate-400 border-r border-slate-100 last:border-r-0;
+}
+
+.pet-detail-page__grid-4 {
+  @apply grid grid-cols-7 bg-white flex-1;
+}
+
+.pet-detail-page__box-6 {
+  @apply overflow-hidden flex-1 pointer-events-none;
+}
+
+.pet-detail-page__row-12 {
+  @apply mt-4 flex justify-end gap-3 flex-shrink-0;
+}
+
+.pet-detail-page__button-3 {
+  @apply flex items-center gap-1.5 bg-[#fcd34d] hover:bg-[#fbbf24] text-slate-900 px-4 py-2 rounded-lg font-bold text-xs transition shadow-sm flex-shrink-0;
+}
+
+.pet-detail-page__animate-fade-in {
+  @apply fixed inset-0 z-50 flex items-center justify-center bg-[#0F172A]/40 backdrop-blur-sm px-4;
+}
+
+.pet-detail-page__box-7 {
+  @apply bg-white rounded-3xl shadow-xl w-full max-w-[480px] p-7 relative;
+}
+
+.pet-detail-page__button-4 {
+  @apply absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition;
+}
+
+.pet-detail-page__icon-9 {
+  @apply w-6 h-6;
+}
+
+.pet-detail-page__them-ghi-chu-title {
+  @apply text-xl font-bold text-slate-900 mb-6;
+}
+
+.pet-detail-page__thoi-gian-label {
+  @apply block text-[11px] font-bold text-slate-600 mb-1.5;
+}
+
+.pet-detail-page__chon-bieu-tuong-label {
+  @apply block text-[11px] font-bold text-slate-600 mb-2;
+}
+
+.pet-detail-page__row-13 {
+  @apply flex gap-2.5;
+}
+
+.pet-detail-page__grid-5 {
+  @apply grid grid-cols-2 gap-5;
+}
+
+.pet-detail-page__key-blue-class-el {
+  @apply flex gap-4 pt-1 px-1;
+}
+
+.pet-detail-page__box-8 {
+  @apply relative;
+}
+
+.pet-detail-page__nhap-chi-tiet-ve {
+  @apply w-full bg-[#f8fafc] border border-transparent rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-slate-200 outline-none resize-none placeholder-slate-400 text-slate-700;
+}
+
+.pet-detail-page__tep-dinh-kem-label {
+  @apply block text-[11px] font-bold text-slate-600 mb-1.5 flex items-center justify-between;
+}
+
+.pet-detail-page__calculate-current-active-files {
+  @apply font-normal text-slate-400;
+}
+
+.pet-detail-page__row-14 {
+  @apply flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-6 relative z-20;
+}
+
+.pet-detail-page__icon-10 {
+  @apply w-4 h-4;
+}
+
+.pet-detail-page__stack-8 {
+  @apply bg-white rounded-3xl shadow-xl w-full max-w-[700px] flex flex-col sm:flex-row max-h-[calc(100vh-32px)] overflow-y-auto sm:overflow-hidden min-h-[450px];
+}
+
+.pet-detail-page__stack-9 {
+  @apply w-full sm:w-[280px] sm:shrink-0 p-6 relative flex flex-col border-b sm:border-b-0 sm:border-r border-slate-100 overflow-hidden bg-[#E5F6FD]/30;
+}
+
+.pet-detail-page__layer {
+  @apply absolute inset-0 pointer-events-none;
+}
+
+.pet-detail-page__row-15 {
+  @apply flex items-center justify-between mb-6 relative z-10;
+}
+
+.pet-detail-page__compute1 {
+  @apply text-sm font-bold text-slate-800;
+}
+
+.pet-detail-page__button-5 {
+  @apply w-6 h-6 rounded-full bg-[#fcd34d] text-slate-900 flex items-center justify-center font-bold text-lg hover:scale-105 transition shadow-sm;
+}
+
+.pet-detail-page__box-9 {
+  @apply flex-1 overflow-y-auto relative z-10;
+}
+
+.pet-detail-page__row-16 {
+  @apply flex items-center gap-3;
+}
+
+.pet-detail-page__text-3 {
+  @apply text-[10px] text-slate-500 mt-0.5 flex items-center gap-1;
+}
+
+.pet-detail-page__icon-11 {
+  @apply w-3 h-3;
+}
+
+.pet-detail-page__icon-12 {
+  @apply w-4 h-4 text-slate-300;
+}
+
+.pet-detail-page__stack-10 {
+  @apply h-full flex flex-col items-center justify-center text-center opacity-80 pb-10;
+}
+
+.pet-detail-page__row-17 {
+  @apply w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-3 text-slate-300;
+}
+
+.pet-detail-page__chua-co-ghi-text {
+  @apply text-xs font-bold text-slate-700;
+}
+
+.pet-detail-page__bam-dau-text {
+  @apply text-[10px] text-slate-500 mt-1;
+}
+
+.pet-detail-page__stack-11 {
+  @apply flex-1 bg-white p-6 flex flex-col relative;
+}
+
+.pet-detail-page__button-6 {
+  @apply absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition z-50;
+}
+
+.pet-detail-page__title-2 {
+  @apply text-sm font-bold text-slate-800 mb-6 pr-8;
+}
+
+.pet-detail-page__box-10 {
+  @apply flex-1 overflow-y-auto pr-2;
+}
+
+.pet-detail-page__row-18 {
+  @apply flex items-start gap-3 mb-6;
+}
+
+.pet-detail-page__row-19 {
+  @apply w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 border border-slate-100;
+}
+
+.pet-detail-page__thoi-gian-text {
+  @apply text-[10px] uppercase font-bold text-slate-400 mb-0.5;
+}
+
+.pet-detail-page__text-4 {
+  @apply text-sm font-bold text-slate-800 flex items-center gap-1;
+}
+
+.pet-detail-page__box-11 {
+  @apply mb-5;
+}
+
+.pet-detail-page__tep-dinh-kem-text {
+  @apply text-[11px] font-bold text-slate-600 mb-2;
+}
+
+.pet-detail-page__row-20 {
+  @apply flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-[#f8fafc];
+}
+
+.pet-detail-page__row-21 {
+  @apply flex min-w-0 items-center gap-3;
+}
+
+.pet-detail-page__box-12 {
+  @apply min-w-0;
+}
+
+.pet-detail-page__name-2 {
+  @apply truncate text-xs font-bold text-slate-800;
+}
+
+.pet-detail-page__size {
+  @apply text-[10px] text-slate-500;
+}
+
+.pet-detail-page__row-22 {
+  @apply flex items-center justify-between p-3 rounded-xl border border-red-100 bg-red-50/50;
+}
+
+.pet-detail-page__row-23 {
+  @apply w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center text-red-500;
+}
+
+.pet-detail-page__name-3 {
+  @apply text-xs font-bold text-slate-800;
+}
+
+.pet-detail-page__khong-co-thong-text {
+  @apply text-sm text-slate-500 italic border-l-2 border-slate-200 pl-3;
+}
+
+.pet-detail-page__row-24 {
+  @apply mt-4 pt-4 border-t border-slate-100 flex items-center justify-end gap-4 relative z-20;
+}
+
+.pet-detail-page__button-7 {
+  @apply text-xs font-bold text-red-500 hover:text-red-700 flex items-center gap-1.5 transition;
+}
+
+.pet-detail-page__button-8 {
+  @apply bg-[#fcd34d] hover:bg-[#fbbf24] text-slate-900 px-5 py-2 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shadow-sm;
+}
+
+.pet-detail-page__stack-12 {
+  @apply flex-1 flex flex-col items-center justify-center text-slate-400;
+}
+
+.pet-detail-page__icon-13 {
+  @apply w-16 h-16 mb-4 text-slate-200;
+}
+
+.pet-detail-page__be-chua-co-text {
+  @apply text-sm font-medium;
+}
+
+.pet-detail-page__form {
+  @apply flex-1 flex flex-col h-full overflow-hidden;
+}
+
+.pet-detail-page__key-blue-class-el-2 {
+  @apply flex gap-4 pt-1 px-1 pb-1;
+}
+
+.pet-detail-page__box-13 {
+  @apply bg-white rounded-2xl shadow-xl w-full max-w-lg p-6;
+}
+
+.pet-detail-page__row-25 {
+  @apply flex items-center justify-between mb-6;
+}
+
+.pet-detail-page__chinh-sua-benh-title {
+  @apply text-lg font-bold text-slate-900;
+}
+
+.pet-detail-page__button-9 {
+  @apply text-slate-400 hover:text-slate-600;
+}
+
+.pet-detail-page__ten-benh-an-label {
+  @apply block text-xs font-semibold text-slate-700 mb-1.5;
+}
+
+.pet-detail-page__text-5 {
+  @apply text-red-500;
+}
+
+.pet-detail-page__grid-6 {
+  @apply grid grid-cols-2 gap-4;
+}
+
+.pet-detail-page__icon-14 {
+  @apply absolute left-3 top-2.5 w-4 h-4 text-slate-400;
+}
+
+.pet-detail-page__nhap-chi-tiet-cac {
+  @apply w-full bg-[#F1F5F9] border border-transparent focus:border-blue-500 rounded-lg px-4 py-3 text-sm outline-none transition placeholder-slate-400 resize-none;
+}
+
+.pet-detail-page__tai-lieu-dinh-label {
+  @apply block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between;
+}
+
+.pet-detail-page__text-6 {
+  @apply text-[10px] font-normal text-slate-400;
+}
+
+.pet-detail-page__row-26 {
+  @apply flex items-center justify-between gap-4 rounded-xl border border-blue-100 bg-[#F0F7FF] p-3;
+}
+
+.pet-detail-page__row-27 {
+  @apply flex flex-shrink-0 items-center gap-1;
+}
+
+.pet-detail-page__icon-15 {
+  @apply h-5 w-5;
+}
+
+.pet-detail-page__icon-16 {
+  @apply h-4 w-4;
+}
+
+.pet-detail-page__stack-13 {
+  @apply border-2 border-dashed border-blue-200 rounded-xl p-6 flex-col items-center justify-center text-center cursor-pointer transition relative;
+}
+
+.pet-detail-page__row-28 {
+  @apply w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mb-2 transition-transform;
+}
+
+.pet-detail-page__upload {
+  @apply w-5 h-5 object-contain opacity-70;
+}
+
+.pet-detail-page__keo-tha-file-text {
+  @apply text-sm font-medium text-slate-700;
+}
+
+.pet-detail-page__chon-tep-text {
+  @apply text-blue-500;
+}
+
+.pet-detail-page__ho-tro-pdf-text {
+  @apply text-xs text-slate-500 mt-1;
+}
+
+.pet-detail-page__row-29 {
+  @apply flex justify-end gap-4 mt-8 pt-4;
+}
+
+.pet-detail-page__stack-14 {
+  @apply bg-white rounded-3xl shadow-xl w-full max-w-[600px] flex flex-col overflow-hidden max-h-[85vh];
+}
+
+.pet-detail-page__row-30 {
+  @apply p-6 border-b border-slate-100 flex justify-between items-center bg-[#E5F6FD]/30 relative;
+}
+
+.pet-detail-page__name-4 {
+  @apply text-lg font-bold text-slate-900 relative z-10;
+}
+
+.pet-detail-page__button-10 {
+  @apply text-slate-400 hover:text-slate-600 transition relative z-10 bg-white rounded-full p-1;
+}
+
+.pet-detail-page__box-14 {
+  @apply p-6 overflow-y-auto flex-1 bg-slate-50;
+}
+
+.pet-detail-page__box-15 {
+  @apply relative border-l-2 border-slate-200 ml-2;
+}
+
+.pet-detail-page__box-16 {
+  @apply relative pl-6;
+}
+
+.pet-detail-page__layer-2 {
+  @apply absolute -left-[10px] top-1 w-4 h-4 rounded-full border-4 border-white shadow-sm flex-shrink-0 bg-blue-500;
+}
+
+.pet-detail-page__date-2 {
+  @apply text-[10px] font-bold text-slate-500 mb-1 tracking-wide;
+}
+
+.pet-detail-page__box-17 {
+  @apply bg-white rounded-xl p-4 shadow-sm border border-slate-100;
+}
+
+.pet-detail-page__row-31 {
+  @apply flex justify-between items-start mb-2;
+}
+
+.pet-detail-page__condition-2 {
+  @apply text-sm font-bold text-slate-900;
+}
+
+.pet-detail-page__text-7 {
+  @apply text-[11px] text-slate-600 flex items-center gap-1.5 mb-3 font-medium;
+}
+
+.pet-detail-page__notes-2 {
+  @apply bg-[#fef9c3] rounded-lg p-3 text-xs text-slate-800 leading-relaxed border border-yellow-100;
+}
+
+.pet-detail-page__box-18 {
+  @apply text-center py-10;
+}
+
+.pet-detail-page__chua-co-lich-text {
+  @apply text-sm text-slate-500;
+}
+
+.pet-detail-page__title-3 {
+  @apply truncate;
+}
+
+.pet-detail-page__stack-15 {
+  @apply w-full relative cursor-pointer border-2 border-[#e2e8f0] border-dashed rounded-xl hover:border-blue-400 transition p-4 flex-col items-center justify-center text-center;
+}
+
+.pet-detail-page__row-32 {
+  @apply w-8 h-8 rounded-full flex items-center justify-center mb-2 shadow-sm transition;
+}
+
+.pet-detail-page__upload-2 {
+  @apply w-4 h-4 object-contain opacity-70;
+}
+
+.pet-detail-page__row-33 {
+  @apply flex items-center gap-3 pr-2 flex-1 min-w-0;
+}
+
+.pet-detail-page__box-19 {
+  @apply flex-1 truncate;
+}
+
+.pet-detail-page__row-34 {
+  @apply flex items-center gap-2 relative z-20 flex-shrink-0;
+}
+
+/* Overlay */
+.pet-hide-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(35, 39, 65, 0.24);
+  backdrop-filter: blur(5px);
+}
+
+/* Modal */
+.pet-hide-modal {
+  position: relative;
+  width: 100%;
+  max-width: 870px;
+  padding: 75px 65px 42px;
+  background: #fff;
+  border-radius: 60px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+
+  h2 {
+    margin: 55px 0 30px;
+    font-size: 40px;
+    font-weight: 800;
+    color: #222;
+  }
+
+  p {
+    margin-bottom: 52px;
+    font-size: 27px;
+    color: #222;
+
+    strong {
+      font-weight: 700;
+    }
+  }
+}
+
+/* Nút X */
+.pet-hide-modal__close {
+  position: absolute;
+  top: 28px;
+  right: 35px;
+  border: none;
+  background: transparent;
+  color: #737987;
+  font-size: 42px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Hình minh họa */
+.pet-hide-modal__image {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 40px;
+  background: radial-gradient(circle, #fff9cb, #fff 75%);
+
+  img {
+    width: 145px;
+    height: 145px;
+    object-fit: contain;
+  }
+}
+
+.pet-hide-modal__warning {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 55px;
+  height: 55px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 5px solid white;
+  border-radius: 50%;
+  background: #ffb000;
+  color: white;
+  font-size: 34px;
+  font-weight: 800;
+}
+
+/* Hai nút */
+.pet-hide-modal__actions {
+  display: flex;
+  gap: 42px;
+
+  button {
+    flex: 1;
+    min-height: 100px;
+    border-radius: 9px;
+    font-size: 24px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+}
+
+.pet-hide-modal__cancel {
+  border: 1px solid #999;
+  background: white;
+  color: #666;
+
+  &:hover {
+    background: #f5f5f5;
+  }
+}
+
+.pet-hide-modal__confirm {
+  border: 1px solid #d9292e;
+  background: #d9292e;
+  color: white;
+
+  &:hover {
+    background: #bd2025;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &--show {
+    border-color: #16a34a;
+    background: #16a34a;
+
+    &:hover {
+      background: #15803d;
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .pet-hide-modal {
+    padding: 55px 20px 25px;
+    border-radius: 28px;
+
+    h2 {
+      margin: 35px 0 20px;
+      font-size: 25px;
+    }
+
+    p {
+      font-size: 17px;
+      margin-bottom: 30px;
+    }
+  }
+
+  .pet-hide-modal__image {
+    width: 125px;
+    height: 125px;
+
+    img {
+      width: 115px;
+      height: 115px;
+    }
+  }
+
+  .pet-hide-modal__actions {
+    gap: 12px;
+
+    button {
+      min-height: 58px;
+      font-size: 15px;
+    }
+  }
+}
+/* END extracted src/app/features/customer/pets/pages/pet-detail/pet-detail-page.component.scss */
+
+/* BEGIN extracted src/app/features/customer/pets/pages/pet-form/pet-form-page.component.scss */
+.pet-form-page__row {
+  @apply flex items-center gap-3 mb-6;
+}
+
+.pet-form-page__link {
+  @apply text-slate-500 hover:text-slate-900 transition;
+}
+
+.pet-form-page__icon {
+  @apply w-5 h-5;
+}
+
+.pet-form-page__chinh-sua-ho-title {
+  @apply text-2xl font-bold text-slate-900;
+}
+
+.pet-form-page__form-error {
+  @apply rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-700;
+}
+
+.pet-form-page__box {
+  @apply bg-white border border-slate-200 rounded-xl p-6 shadow-sm;
+}
+
+.pet-form-page__title {
+  @apply flex items-center gap-2 text-sm font-semibold text-slate-800 mb-6;
+}
+
+.pet-form-page__icon-2 {
+  @apply w-4 h-4;
+}
+
+.pet-form-page__stack {
+  @apply flex flex-col md:flex-row gap-8;
+}
+
+.pet-form-page__box-2 {
+  @apply w-32 h-32 rounded-full overflow-hidden border border-slate-200 flex-shrink-0 relative cursor-pointer mx-auto md:mx-0 shadow-inner;
+}
+
+.pet-form-page__pet {
+  @apply w-full h-full object-cover;
+}
+
+.pet-form-page__row-2 {
+  @apply w-full h-full flex items-center justify-center text-4xl text-slate-300;
+}
+
+.pet-form-page__doi-anh-el {
+  @apply absolute inset-0 bg-black/40 items-center justify-center text-white text-xs font-medium transition;
+}
+
+.pet-form-page__grid {
+  @apply flex-1 grid grid-cols-1 md:grid-cols-2 gap-5;
+}
+
+.pet-form-page__box-3 {
+  @apply md:col-span-2;
+}
+
+.pet-form-page__ten-thu-cung-label {
+  @apply block text-sm font-medium text-slate-700 mb-1;
+}
+
+.pet-form-page__text {
+  @apply text-red-500;
+}
+
+.pet-form-page__khi-chon-khac-dropdown {
+  @apply flex items-center w-full border border-slate-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition overflow-hidden;
+}
+
+.pet-form-page__speciesid {
+  @apply w-[105px] shrink-0 border-0 outline-none bg-transparent pl-3 pr-1 py-2.5 text-sm;
+}
+
+.pet-form-page__box-4 {
+  @apply w-px h-6 bg-slate-300 shrink-0;
+}
+
+.pet-form-page__khi-chon-cho-meo {
+  @apply w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white;
+}
+
+.pet-form-page__row-3 {
+  @apply flex items-center justify-between mb-5;
+}
+
+.pet-form-page__title-2 {
+  @apply flex items-center gap-2 text-sm font-semibold text-slate-800;
+}
+
+.pet-form-page__row-4 {
+  @apply flex items-center gap-3;
+}
+
+.pet-form-page__grid-2 {
+  @apply grid grid-cols-1 lg:grid-cols-2 gap-4;
+}
+
+.pet-form-page__medical-records {
+  @apply text-xs text-center text-slate-500 italic mt-2;
+}
+
+.pet-form-page__stack-2 {
+  @apply flex flex-col items-center justify-center py-6 bg-slate-50/50 border border-dashed border-slate-200 rounded-lg;
+}
+
+.pet-form-page__chua-co-ho-text {
+  @apply text-sm text-slate-500;
+}
+
+.pet-form-page__grid-3 {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6;
+}
+
+.pet-form-page__tuoi-label {
+  @apply block text-sm font-medium text-slate-700 mb-2;
+}
+
+.pet-form-page__gioi-tinh-label {
+  @apply block text-sm font-medium text-slate-700 mb-3;
+}
+
+.pet-form-page__row-5 {
+  @apply flex items-center gap-6 pt-1;
+}
+
+.pet-form-page__label {
+  @apply flex items-center gap-2 text-sm cursor-pointer;
+}
+
+.pet-form-page__box-5 {
+  @apply relative;
+}
+
+.pet-form-page__kg-text {
+  @apply absolute right-3 top-2.5 text-slate-400 text-sm;
+}
+
+.pet-form-page__box-6 {
+  @apply border-t border-slate-100 pt-5;
+}
+
+.pet-form-page__medicalnotes {
+  @apply w-full border border-slate-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition resize-none;
+}
+
+.pet-form-page__row-6 {
+  @apply flex items-center justify-between pt-2;
+}
+
+.pet-form-page__row-7 {
+  @apply flex items-center gap-4;
+}
+
+.pet-form-page__huy-link {
+  @apply text-sm font-medium text-slate-600 hover:text-slate-900 px-4 py-2 transition;
+}
+
+.pet-form-page__overlay {
+  @apply fixed inset-0 z-50 flex items-center justify-center bg-[#0F172A]/40 backdrop-blur-sm px-4;
+}
+
+.pet-form-page__animate-fade-in {
+  @apply bg-white rounded-2xl shadow-xl w-full max-w-lg p-6;
+}
+
+.pet-form-page__row-8 {
+  @apply flex items-center justify-between mb-6;
+}
+
+.pet-form-page__chinh-sua-benh-title {
+  @apply text-lg font-bold text-slate-900;
+}
+
+.pet-form-page__ten-benh-an-label {
+  @apply block text-xs font-semibold text-slate-700 mb-1.5;
+}
+
+.pet-form-page__grid-4 {
+  @apply grid grid-cols-2 gap-4;
+}
+
+.pet-form-page__icon-3 {
+  @apply absolute left-3 top-2.5 w-4 h-4 text-slate-400;
+}
+
+.pet-form-page__nhap-chi-tiet-cac {
+  @apply w-full bg-[#F1F5F9] border border-transparent focus:border-blue-500 rounded-lg px-4 py-3 text-sm outline-none transition placeholder-slate-400 resize-none;
+}
+
+.pet-form-page__tai-lieu-dinh-label {
+  @apply block text-xs font-semibold text-slate-700 mb-1.5 flex items-center justify-between;
+}
+
+.pet-form-page__text-2 {
+  @apply text-[10px] font-normal text-slate-400;
+}
+
+.pet-form-page__row-9 {
+  @apply flex items-center justify-between gap-4 rounded-xl border border-blue-100 bg-[#F0F7FF] p-3;
+}
+
+.pet-form-page__row-10 {
+  @apply flex min-w-0 items-center gap-3;
+}
+
+.pet-form-page__box-7 {
+  @apply min-w-0;
+}
+
+.pet-form-page__name {
+  @apply truncate text-xs font-bold text-slate-800;
+}
+
+.pet-form-page__size {
+  @apply text-[10px] text-slate-500;
+}
+
+.pet-form-page__row-11 {
+  @apply flex flex-shrink-0 items-center gap-1;
+}
+
+.pet-form-page__icon-4 {
+  @apply h-5 w-5;
+}
+
+.pet-form-page__icon-5 {
+  @apply h-4 w-4;
+}
+
+.pet-form-page__stack-3 {
+  @apply border-2 border-dashed border-blue-200 rounded-xl p-6 flex-col items-center justify-center text-center cursor-pointer transition relative;
+}
+
+.pet-form-page__row-12 {
+  @apply w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mb-2 transition-transform;
+}
+
+.pet-form-page__upload {
+  @apply w-5 h-5 object-contain opacity-70;
+}
+
+.pet-form-page__keo-tha-file-text {
+  @apply text-sm font-medium text-slate-700;
+}
+
+.pet-form-page__chon-tep-text {
+  @apply text-blue-500;
+}
+
+.pet-form-page__ho-tro-pdf-text {
+  @apply text-xs text-slate-500 mt-1;
+}
+
+.pet-form-page__row-13 {
+  @apply flex justify-end gap-4 mt-8 pt-4;
+}
+
+.pet-form-page__stack-4 {
+  @apply bg-white rounded-3xl shadow-xl w-full max-w-[600px] flex flex-col overflow-hidden max-h-[85vh];
+}
+
+.pet-form-page__row-14 {
+  @apply p-6 border-b border-slate-100 flex justify-between items-center bg-[#E5F6FD]/30 relative;
+}
+
+.pet-form-page__name-2 {
+  @apply text-lg font-bold text-slate-900 relative z-10;
+}
+
+.pet-form-page__box-8 {
+  @apply p-6 overflow-y-auto flex-1 bg-slate-50;
+}
+
+.pet-form-page__box-9 {
+  @apply relative border-l-2 border-slate-200 ml-2;
+}
+
+.pet-form-page__box-10 {
+  @apply relative pl-6;
+}
+
+.pet-form-page__layer {
+  @apply absolute -left-[10px] top-1 w-4 h-4 rounded-full border-4 border-white shadow-sm flex-shrink-0 bg-blue-500;
+}
+
+.pet-form-page__date {
+  @apply text-[10px] font-bold text-slate-500 mb-1 tracking-wide;
+}
+
+.pet-form-page__box-11 {
+  @apply bg-white rounded-xl p-4 shadow-sm border border-slate-100;
+}
+
+.pet-form-page__row-15 {
+  @apply flex justify-between items-start mb-2;
+}
+
+.pet-form-page__condition {
+  @apply text-sm font-bold text-slate-900;
+}
+
+.pet-form-page__row-16 {
+  @apply flex items-center gap-1.5;
+}
+
+.pet-form-page__icon-6 {
+  @apply w-3.5 h-3.5;
+}
+
+.pet-form-page__text-3 {
+  @apply text-[11px] text-slate-600 flex items-center gap-1.5 mb-3 font-medium;
+}
+
+.pet-form-page__icon-7 {
+  @apply w-3.5 h-3.5 text-slate-400;
+}
+
+.pet-form-page__notes {
+  @apply bg-[#fef9c3] rounded-lg p-3 text-xs text-slate-800 leading-relaxed border border-yellow-100;
+}
+
+.pet-form-page__box-12 {
+  @apply text-center py-10;
+}
+
+.pet-form-page__overlay-2 {
+  @apply fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4;
+}
+
+.pet-form-page__animate-fade-in-up {
+  @apply bg-white rounded-xl shadow-xl w-full max-w-sm p-6;
+}
+
+.pet-form-page__row-17 {
+  @apply flex items-center gap-3 mb-3 text-red-600;
+}
+
+.pet-form-page__row-18 {
+  @apply w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0;
+}
+
+.pet-form-page__pl-13 {
+  @apply text-sm text-slate-600 mb-6;
+}
+
+.pet-form-page__row-19 {
+  @apply flex justify-end gap-3;
+}
+/* END extracted src/app/features/customer/pets/pages/pet-form/pet-form-page.component.scss */
+
+/* BEGIN extracted src/app/features/customer/products/pages/product-details/product-details-page.component.scss */
+/* Bổ sung ở đầu file SCSS để đảm bảo trang luôn có sẵn font Roboto */
+.product-details-page__box {
+  @apply min-h-screen bg-white font-['Roboto'];
+}
+
+/* Đổi các class đang dùng Oxygen / Inter sang Roboto */
+.product-details-page__review-count {
+  @apply font-['Roboto'] text-[14px] leading-[23.87px] text-[#414141];
+}
+
+.product-details-page__quantity {
+  @apply font-['Roboto'] text-[16px] font-bold text-[#414141];
+}
+
+.product-details-page__author-name {
+  @apply font-['Roboto'] text-[16px] font-medium leading-[normal] text-[#3D3D3D];
+}
+
+.product-details-page__content {
+  @apply font-['Roboto'] text-[16px] leading-[1.705] text-[#616161];
+}
+
+.product-details-page__actions-like-time {
+  @apply flex items-center gap-[15px] font-['Roboto'] text-[15px] leading-[1.705] text-[#757575];
+}
+
+.product-details-page__text-2 {
+  @apply px-3 font-['Roboto'] text-[18px] font-medium leading-[28px] text-[#7D858D];
+}
+
+
+.product-details-page__icon-3 {
+  @apply h-4 w-4 shrink-0 text-[#D32F2F] transition-transform duration-150;
+  fill: #D32F2F;
+  stroke: #D32F2F;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.product-details-page__icon-4 {
+  @apply h-4 w-4 shrink-0 text-[#757575] transition-colors duration-150 hover:text-[#D32F2F];
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+.product-details-page__dang-tai-san-el {
+  @apply flex min-h-screen items-center justify-center text-[#0D47A1];
+}
+
+.product-details-page__load-error {
+  @apply flex min-h-screen items-center justify-center text-[#D32F2F];
+}
+
+.product-details-page__box {
+  @apply min-h-screen bg-white;
+}
+
+.product-details-page__load-error-2 {
+  @apply mx-auto mt-2 w-full max-w-page rounded-[12px] bg-[#E5F6FD] px-5 py-3 text-sm font-medium text-[#0D47A1];
+}
+
+.product-details-page__product-detail-section {
+  @apply relative mx-auto w-full max-w-page px-4 pb-12 sm:px-8 xl:h-[778px] xl:px-0 xl:pb-0;
+}
+
+.product-details-page__product-layout {
+  @apply relative mx-auto flex w-full max-w-page items-start overflow-visible pt-5 xl:absolute xl:left-[120px] xl:right-[120px] xl:top-[20px] xl:h-[622px] xl:w-auto xl:pt-0;
+}
+
+.product-details-page__stack {
+  @apply flex w-full flex-col items-center gap-10 lg:flex-row lg:items-start lg:gap-8 xl:ml-[-18px] xl:h-[644px] xl:w-[calc(100%+18px)] xl:gap-[71px];
+}
+
+.product-details-page__left-image-gallery {
+  @apply flex w-full max-w-[626px] gap-3 sm:gap-[24px] lg:w-[52%] lg:shrink-0 xl:w-[626px] xl:pl-[15px] xl:pt-[8.5px];
+}
+
+/* Khung cao đúng 3 ô (3 × 64 + 2 × 8 / 3 × 94 + 2 × 10, cộng 4px padding cho viền); ảnh còn lại cuộn xuống để xem */
+.product-details-page__left-thumbnails-column {
+  @apply relative flex h-[212px] w-[80px] shrink-0 flex-col gap-2 self-start overflow-y-auto overscroll-contain p-[2px] sm:h-[306px] sm:w-[112px] sm:gap-[10px];
+  scrollbar-width: thin;
+}
+
+.product-details-page__thumb-label {
+  @apply pointer-events-none absolute inset-x-0 bottom-0 truncate bg-black/55 px-1 py-[2px] text-center text-[10px] leading-[14px] text-white sm:text-[11px];
+}
+
+.product-details-page__main-image-with-optional {
+  @apply relative aspect-[460/627] h-auto w-full min-w-0 flex-1 overflow-hidden rounded-[4px] xl:h-[627px] xl:w-[460px] xl:flex-none;
+}
+
+.product-details-page__name {
+  @apply h-full w-full rounded-[4px] object-cover;
+}
+
+.product-details-page__layer {
+  @apply absolute inset-0 flex items-center justify-center bg-black/25;
+}
+
+.product-details-page__row {
+  @apply flex h-[136px] w-[136px] items-center justify-center rounded-full bg-[rgba(55,65,81,0.92)] shadow-xl;
+}
+
+.product-details-page__tam-het-text {
+  @apply font-['Roboto'] text-[22px] font-bold uppercase tracking-wider text-white;
+}
+
+.product-details-page__right-product-info {
+  @apply flex w-full max-w-[626px] flex-col justify-between gap-8 lg:max-w-none lg:flex-1 xl:h-[644px] xl:min-w-[511px] xl:gap-0;
+}
+
+.product-details-page__stack-2 {
+  @apply flex w-full flex-col gap-[32px] xl:w-[489px];
+}
+
+.product-details-page__stack-3 {
+  @apply flex flex-col gap-[20px];
+}
+
+.product-details-page__title-stars {
+  @apply flex flex-col gap-[12px];
+}
+
+.product-details-page__name-2 {
+  @apply w-full font-['Roboto'] text-[26px] sm:text-[32px] xl:w-full xl:w-[494px] font-bold leading-[1.235] tracking-[0.25px] text-[#0D47A1];
+}
+
+.product-details-page__row-2 {
+  @apply flex items-center gap-[10px];
+}
+
+.product-details-page__current-price {
+  @apply font-['Roboto'] text-[32px] font-normal leading-[39.52px] tracking-[0.25px] text-[#D32F2F];
+}
+
+.product-details-page__current-original-price {
+  @apply font-['Roboto'] text-[24px] font-normal leading-[32.02px] text-[rgba(0,0,0,0.38)] line-through;
+}
+
+.product-details-page__current-discount-percent {
+  @apply inline-flex h-[21px] w-[50px] items-center justify-center rounded-[40px] bg-[#D32F2F] font-['Roboto'] text-[12px] font-bold leading-[19.92px] tracking-[0.4px] text-white;
+}
+
+.product-details-page__box-2 {
+  @apply h-px w-full xl:w-[494px] bg-[#D7D7D7];
+}
+
+.product-details-page__description-doc-them-scroll {
+  @apply w-full xl:w-[494px] text-[16px] leading-[1.5] tracking-[0.15px] text-[#414141];
+}
+
+.product-details-page__short-description {
+  @apply mb-0 overflow-hidden;
+}
+
+.product-details-page__box-3 {
+  @apply mb-4;
+}
+
+.product-details-page__loai-el {
+  @apply mb-2 text-[14px] font-medium text-[#424242];
+}
+
+.product-details-page__row-3 {
+  @apply flex flex-wrap gap-2;
+}
+
+.product-details-page__kho-el {
+  @apply mb-3 text-[14px] text-[#424242];
+}
+
+.product-details-page__current-stock {
+  @apply font-medium;
+}
+
+.product-details-page__het-hang-text {
+  @apply ml-2 text-red-600 font-medium;
+}
+
+.product-details-page__action-buttons {
+  @apply flex w-full xl:w-[494px] flex-col gap-[15px];
+}
+
+.product-details-page__row-4 {
+  @apply flex min-h-[43px] flex-wrap items-center gap-[15px];
+}
+
+.product-details-page__so-luong-text {
+  @apply font-['Roboto'] text-[14px] text-[#414141];
+}
+
+.product-details-page__quantity-stepper {
+  @apply flex h-[43px] w-[100px] items-center justify-between rounded-[4px] border border-[#D7D7D7] bg-white px-[12px] py-[8px];
+}
+
+.product-details-page__remove {
+  @apply h-5 w-5;
+}
+
+
+.product-details-page__da-them-text {
+  @apply absolute inset-0 flex items-center justify-center text-[13px] font-bold text-white;
+}
+
+.product-details-page__out-of-stock-notification {
+  @apply rounded-[8px] border border-[#D0D5DD] bg-white p-[16px] shadow-sm;
+}
+
+.product-details-page__row-5 {
+  @apply flex items-start gap-[10px];
+}
+
+.product-details-page__icon {
+  @apply mt-[2px] h-5 w-5 shrink-0 text-[#667085];
+}
+
+.product-details-page__box-4 {
+  @apply flex-1;
+}
+
+.product-details-page__dang-ky-nhan-subtitle {
+  @apply font-['Roboto'] text-[14px] font-bold text-[#1D2939];
+}
+
+.product-details-page__chung-toi-se-text {
+  @apply mt-[2px] font-['Roboto'] text-[12px] text-[#475467];
+}
+
+.product-details-page__row-6 {
+  @apply mt-[12px] flex gap-[8px];
+}
+
+.product-details-page__notify-error {
+  @apply mt-[6px] text-[12px] text-[#D32F2F];
+}
+
+.product-details-page__da-ghi-el {
+  @apply mt-[10px] rounded-[4px] bg-[#EDF7ED] px-[12px] py-[8px] text-[13px] text-[#2E7D32];
+}
+
+.product-details-page__icon-2 {
+  @apply h-4 w-4;
+}
+
+.product-details-page__shipping-info {
+  @apply w-full max-w-[350px] pb-[2px] font-['Roboto'] text-[14px] leading-[normal] text-[#424242];
+}
+
+.product-details-page__row-7 {
+  @apply flex items-center gap-[20px];
+}
+
+.product-details-page__free-shipping-threshold {
+  @apply h-6 w-[26px];
+}
+
+.product-details-page__row-8 {
+  @apply flex flex-wrap items-center gap-x-[20px] gap-y-1 sm:flex-nowrap sm:whitespace-nowrap;
+}
+
+.product-details-page__delivery-estimate {
+  @apply h-[26px] w-[26px];
+}
+
+.product-details-page__chinh-sach-giao-link {
+  @apply underline underline-offset-2 hover:no-underline hover:text-[#0D47A1] transition-colors duration-micro;
+}
+
+.product-details-page__tab-bar {
+  @apply flex w-full flex-wrap items-start gap-[20px];
+}
+
+.product-details-page__box-5 {
+  @apply h-[33px] w-0;
+}
+
+.product-details-page__vertical-divider {
+  @apply h-[33px];
+}
+
+.product-details-page__box-6 {
+  @apply w-full scroll-mt-[24px] font-['Roboto'] text-[16px] font-normal leading-[24px] tracking-[0.15px] text-[#575757];
+}
+
+.product-details-page__description {
+  @apply mb-0;
+}
+
+.product-details-page__stack-4 {
+  @apply flex w-full flex-col gap-[40px];
+}
+
+.product-details-page__summary {
+  @apply flex w-full max-w-page flex-wrap items-start justify-center gap-8 self-center md:h-[139px] md:flex-nowrap md:gap-[51px];
+}
+
+.product-details-page__box-7 {
+  @apply w-[198px];
+}
+
+.product-details-page__total-items {
+  @apply font-['Roboto'] text-[32px] font-medium leading-[32px] tracking-[0.15px] text-black;
+}
+
+.product-details-page__box-8 {
+  @apply mt-[16px] h-[87px] rounded-[14px] bg-white px-[22px] py-[11px];
+}
+
+.product-details-page__average-rating {
+  @apply font-['Roboto'] text-[40px] font-bold leading-[40px] tracking-[0.25px] text-black;
+}
+
+.product-details-page__rating-breakdown {
+  @apply mt-px flex h-[138px] w-[263px] flex-col gap-[5px];
+}
+
+.product-details-page__row-9 {
+  @apply flex h-6 items-center gap-px;
+}
+
+.product-details-page__row-10 {
+  @apply flex items-center;
+}
+
+.product-details-page__text {
+  @apply font-['Roboto'] text-[16px] leading-[24px] tracking-[0.15px] text-[rgba(0,0,0,0.7)];
+}
+
+.product-details-page__box-9 {
+  @apply relative h-[22px] w-[200px];
+}
+
+.product-details-page__layer-2 {
+  @apply absolute left-4 right-4 top-[9px] h-[6px] rounded-[3px] bg-[rgba(120,120,120,0.2)];
+}
+
+.product-details-page__layer-3 {
+  @apply absolute left-4 top-[9px] h-[6px] rounded-[3px] bg-[#FFB70A];
+}
+
+.product-details-page__rating-breakdown-2 {
+  @apply font-['Roboto'] text-[14px] leading-[20px] tracking-[0.17px] text-[rgba(0,0,0,0.7)];
+}
+
+.product-details-page__box-10 {
+  @apply w-full rounded-[14px] border border-[#90CAF9] px-4 py-[15px] transition-shadow duration-micro hover:shadow-[0_2px_12px_rgba(144,202,249,0.4)];
+}
+
+.product-details-page__row-11 {
+  @apply flex gap-5;
+}
+
+.product-details-page__review-avatar-block {
+  @apply h-[52px] w-[52px] shrink-0 rounded-full object-cover;
+}
+
+.product-details-page__stack-5 {
+  @apply flex min-w-0 flex-1 flex-col gap-5;
+}
+
+.product-details-page__stack-6 {
+  @apply flex flex-col gap-1;
+}
+
+.product-details-page__row-12 {
+  @apply flex items-center justify-between;
+}
+
+
+.product-details-page__actions-like-time {
+  @apply flex items-center gap-[15px] font-['Oxygen'] text-[16px] leading-[1.705] text-[#949494];
+}
+
+
+
+.product-details-page__pagination {
+  @apply flex w-full items-center justify-center gap-[28.3px];
+}
+
+.product-details-page__pagination-prev {
+  @apply h-6 w-6;
+}
+
+.product-details-page__text-2 {
+  @apply px-3 font-['Inter'] text-[18px] font-medium leading-[28px] text-[#7D858D];
+}
+
+.product-details-page__box-11 {
+  @apply mt-[50px] w-full;
+}
+
+.product-details-page__similar-products {
+  @apply mx-auto flex h-auto w-full max-w-page flex-col items-center justify-center gap-[36px] px-4 py-[60px] sm:px-8 xl:px-[80px];
+}
+
+.product-details-page__box-12 {
+  @apply w-full;
+}
+
+.product-details-page__san-pham-tuong-title {
+  @apply text-[32px] font-bold leading-[1.235] tracking-[0.25px] text-[#0D47A1];
+}
+
+.product-details-page__row-13 {
+  @apply relative flex w-full items-center gap-5;
+}
+
+.product-details-page__cards {
+  @apply overflow-hidden py-3;
+}
+
+.product-details-page__row-14 {
+  @apply flex gap-5 transition-transform duration-300 ease-in-out;
+}
+
+.product-details-page__box-13 {
+  @apply shrink-0;
+}
+/* END extracted src/app/features/customer/products/pages/product-details/product-details-page.component.scss */
