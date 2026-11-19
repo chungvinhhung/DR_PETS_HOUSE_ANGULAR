@@ -12,7 +12,7 @@ import { FooterComponent } from '../../../../../layouts/customer/components/foot
 import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
 import { blogImages } from '../../../../../shared/customer/assets/blog-images';
 import { productImages } from '../../../../../shared/customer/assets/product-images';
-import { BLOG_CATEGORIES, FEATURED_BLOG_POST, ALL_BLOG_POSTS, TRENDING_BLOG_POSTS } from '../../../../../shared/customer/data/blog-data';
+import { BLOG_CATEGORIES } from '../../../../../shared/customer/data/blog-data';
 import { PAGE_SIZE } from './blog-page.helpers';
 
 /**
@@ -61,10 +61,10 @@ export class BlogPageComponent {
   readonly searchQuery = signal<any>(this.initialKeyword());
   readonly visibleCount = signal<any>(PAGE_SIZE);
   readonly categories = signal<any>(BLOG_CATEGORIES);
-  readonly featuredPost = signal<any>(FEATURED_BLOG_POST);
-  readonly trendingPosts = signal<any>(TRENDING_BLOG_POSTS);
-  readonly allPosts = signal<any>(ALL_BLOG_POSTS);
-  readonly isLoading = signal<any>(false);
+  readonly featuredPost = signal<any>(null);
+  readonly trendingPosts = signal<any>([]);
+  readonly allPosts = signal<any>([]);
+  readonly isLoading = signal<any>(true);
   readonly loadError = signal<any>("");
   readonly apiEmptyMessage = signal<any>("");
 
@@ -124,14 +124,15 @@ export class BlogPageComponent {
             const officialPosts = allApiPosts.posts.filter((post: any) => post.section === "knowledge");
             if (officialPosts.length) {
               this.allPosts.set(officialPosts);
+              if (!this.featuredPost()) this.featuredPost.set(officialPosts[0]);
               return;
             }
 
-            this.apiEmptyMessage.set("API blog chưa có dữ liệu, đang hiển thị dữ liệu mẫu từ giao diện.");
+            this.apiEmptyMessage.set("Chưa có bài viết kiến thức được công bố.");
           })
           .catch((error: any) => {
             if (!active) return;
-            this.apiEmptyMessage.set(error?.message || "Không thể tải bài viết mới nhất, đang hiển thị dữ liệu mẫu từ giao diện.");
+            this.loadError.set("Không thể tải bài viết mới nhất. Vui lòng thử tải lại trang.");
           })
           .finally(() => {
             if (active) this.isLoading.set(false);
