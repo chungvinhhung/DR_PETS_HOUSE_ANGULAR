@@ -55,29 +55,60 @@
     </div>
 
     @if (isLoadingSlots()) {
-      <div class="py-8 text-center text-sm text-slate-400">Đang kiểm tra khung giờ trống...</div>
+      <div class="py-8 text-center text-sm text-slate-400" data-slots-state="loading">Đang kiểm tra khung giờ trống...</div>
+    } @else if (slotsLoadError()) {
+      <div class="flex flex-col items-center justify-center gap-2.5 rounded-2xl bg-red-50 p-4 border border-red-200 text-center text-sm text-red-700" data-slots-state="error">
+        <p>{{ slotsLoadError() }}</p>
+        <button
+          type="button"
+          (click)="loadSlotsForDate(selectedDate())"
+          class="rounded-full bg-red-700 px-4 py-1.5 text-xs font-bold text-white hover:bg-red-800 transition"
+        >Thử lại</button>
+      </div>
     } @else if (slots().length > 0) {
+      @if (allSlotsBlocked()) {
+        <div class="mb-2.5 rounded-2xl bg-amber-50 p-3 border border-amber-200 text-center text-xs text-amber-800" data-slots-state="blocked">
+          Các khung giờ trong ngày {{ selectedDate() }} hiện đang tạm khóa. Quý khách vui lòng chọn ngày khác.
+        </div>
+      } @else if (allSlotsUnavailable()) {
+        <div class="mb-2.5 rounded-2xl bg-amber-50 p-3 border border-amber-200 text-center text-xs text-amber-800" data-slots-state="full">
+          Các khung giờ trong ngày {{ selectedDate() }} đã kín chỗ. Quý khách vui lòng chọn ngày khác.
+        </div>
+      }
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[220px] overflow-y-auto pr-1">
         @for (slot of slots(); track slot.value || slot.time || $index) {
-          @let isSelected = selectedSlot()?.value === slot.value || selectedSlot()?.time === slot.time;
+          @let status = getSlotStatus(slot);
+          @let bookable = isSlotBookable(slot);
+          @let isSelected = bookable && (selectedSlot()?.value === slot.value || selectedSlot()?.time === slot.time);
           <button
             type="button"
+            [disabled]="!bookable"
+            [attr.data-slot-status]="status"
+            [attr.data-slot-bookable]="bookable ? 'true' : 'false'"
             (click)="selectSlot(slot)"
             [class]="`flex flex-col items-center justify-center rounded-2xl p-2.5 text-xs font-semibold border transition ${
               isSelected
                 ? 'bg-[#005AB4] text-white border-[#005AB4] shadow-md scale-[1.02]'
-                : 'bg-white text-slate-700 border-slate-200 hover:border-blue-400 hover:bg-blue-50/30'
+                : !bookable
+                  ? 'cursor-not-allowed bg-slate-50 text-slate-400 border-slate-200 opacity-75'
+                  : 'bg-white text-slate-700 border-slate-200 hover:border-blue-400 hover:bg-blue-50/30'
             }`"
           >
             <span class="text-sm font-bold">{{ slot.time || slot.value }}</span>
-            <span [class]="`text-[10px] mt-0.5 ${isSelected ? 'text-blue-100' : 'text-slate-400'}`">
-              Còn {{ slot.remaining ?? (slot.maxAppointments - (slot.bookedCount || 0)) }}/{{ slot.maxAppointments || 3 }}
-            </span>
+            @if (status === 'BLOCKED') {
+              <span class="text-[10px] mt-0.5 font-bold uppercase text-amber-700">Tạm khóa</span>
+            } @else if (status === 'FULL' || !bookable) {
+              <span class="text-[10px] mt-0.5 font-bold uppercase text-red-600">Hết chỗ</span>
+            } @else {
+              <span [class]="`text-[10px] mt-0.5 ${isSelected ? 'text-blue-100' : 'text-slate-400'}`">
+                Còn {{ slot.remaining ?? (slot.maxAppointments - (slot.bookedCount || 0)) }}/{{ slot.maxAppointments || 3 }}
+              </span>
+            }
           </button>
         }
       </div>
     } @else {
-      <div class="rounded-2xl bg-amber-50 p-4 border border-amber-200 text-center text-sm text-amber-800">
+      <div class="rounded-2xl bg-amber-50 p-4 border border-amber-200 text-center text-sm text-amber-800" data-slots-state="empty">
         Không có khung giờ trống nào cho ngày {{ selectedDate() }}. Quý khách vui lòng chọn ngày khác.
       </div>
     }
@@ -103,7 +134,7 @@
     <button
       type="button"
       (click)="submitReschedule()"
-      [disabled]="!selectedSlot() || isSubmitting()"
+      [disabled]="!selectedSlot() || !isSlotBookable(selectedSlot()) || isSubmitting()"
       class="rounded-full bg-[#FDD835] px-7 py-2.5 text-sm font-bold text-[#06105a] shadow hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition"
     >
       {{ isSubmitting() ? 'Đang xử lý...' : 'Xác nhận đổi lịch' }}

@@ -41,6 +41,7 @@ interface PetDraft extends Omit<PetOption, 'id'> {
 interface AppointmentSlot {
   id: string;
   label: string;
+  status: 'AVAILABLE' | 'FULL' | 'BLOCKED';
   available: boolean;
 }
 const PHONE = (value: string): string => {
@@ -574,9 +575,11 @@ export class AdminAppointmentCreateComponent {
               const start=clockOf(raw['start']);
               const end=clockOf(raw['end']);
               const remaining=Number(raw['remaining']);
+              const rawStatus=textOf(raw['status']).trim().toUpperCase();
               if(!id||!start||!end)return null;
-              return {id,label:start+' - '+end,
-                available:raw['status']==='AVAILABLE'&&Number.isFinite(remaining)&&remaining>0} satisfies AppointmentSlot;
+              const available=rawStatus==='AVAILABLE'&&Number.isFinite(remaining)&&remaining>0;
+              const status:AppointmentSlot['status']=rawStatus==='BLOCKED'?'BLOCKED':available?'AVAILABLE':'FULL';
+              return {id,label:start+' - '+end,status,available} satisfies AppointmentSlot;
             }).filter((slot):slot is AppointmentSlot=>slot!==null);
             this.slots.set(slots);
             this.slotsState.set(slots.length?'ready':'empty');

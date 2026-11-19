@@ -56,9 +56,10 @@ export class AdminAppointmentDetailComponent {
   readonly rescheduleServiceId = signal('');
   readonly rescheduleBranches = signal<CatalogBranch[]>([]);
   readonly rescheduleServices = signal<CatalogService[]>([]);
-  readonly rescheduleSlots = signal<{id:string;label:string;available:boolean}[]>([]);
+  readonly rescheduleSlots = signal<{id:string;label:string;status:'AVAILABLE'|'FULL'|'BLOCKED';available:boolean}[]>([]);
   readonly rescheduleSlotId = signal('');
   readonly rescheduleLoading = signal(false);
+  readonly rescheduleSlotsState = signal<'idle'|'loading'|'ready'|'empty'|'error'>('idle');
   readonly rescheduleLoadError = signal('');
   readonly actionError = signal('');
   readonly actionBusy = signal(false);
@@ -376,7 +377,7 @@ export class AdminAppointmentDetailComponent {
     const branchId=this.rescheduleBranchId(), date=this.targetDate();
     const serviceIds=(item?.serviceSegments ?? []).map(segment=>segment.serviceId).filter(Boolean);
     if(!branchId||!serviceIds.length||!date)return;
-    this.rescheduleLoading.set(true);this.rescheduleLoadError.set('');
+    this.rescheduleLoading.set(true);this.rescheduleLoadError.set('');this.rescheduleSlotsState.set('loading');
     const params=new HttpParams().set('date',date).set('branchId',branchId)
       .set('serviceIds',serviceIds.join(',')).set('includeFull','true');
     this.api.get<unknown>('/availability',{params}).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -384,21 +385,31 @@ export class AdminAppointmentDetailComponent {
         const root=this.objectValue(wire);
         const payload=this.objectValue(root?.['DT']??root?.['data']??wire);
         const raw=payload?.['slots'];
-        const slots=Array.isArray(raw)?raw.map(value=>{
+        if(!Array.isArray(raw)){
+          this.rescheduleSlots.set([]);this.rescheduleLoading.set(false);
+          this.rescheduleSlotsState.set('error');
+          this.rescheduleLoadError.set('Không đọc được dữ liệu khung giờ từ máy chủ.');
+          return;
+        }
+        const slots=raw.map(value=>{
           const row=this.objectValue(value);if(!row)return null;
           const id=String(row['start']??'');
           const end=String(row['end']??'');
           if(!id||!end)return null;
           const remaining=Number(row['remaining']);
+          const rawStatus=String(row['status']??'').trim().toUpperCase();
+          const available=rawStatus==='AVAILABLE'&&Number.isFinite(remaining)&&remaining>0;
+          const status:'AVAILABLE'|'FULL'|'BLOCKED'=rawStatus==='BLOCKED'?'BLOCKED':available?'AVAILABLE':'FULL';
           const label=this.clockLabel(id)+' - '+this.clockLabel(end);
-          return {id,label,available:String(row['status']??'').toUpperCase()==='AVAILABLE'&&Number.isFinite(remaining)&&remaining>0};
-        }).filter((row):row is {id:string;label:string;available:boolean}=>!!row):[];
+          return {id,label,status,available};
+        }).filter((row):row is {id:string;label:string;status:'AVAILABLE'|'FULL'|'BLOCKED';available:boolean}=>!!row);
         this.rescheduleSlots.set(slots);
         this.rescheduleLoading.set(false);
-        if(!slots.length)this.rescheduleLoadError.set('Không còn khung giờ phù hợp trong ngày đã chọn.');
+        this.rescheduleSlotsState.set(slots.length?'ready':'empty');
       },
       error:err=>{
         this.rescheduleSlots.set([]);this.rescheduleLoading.set(false);
+        this.rescheduleSlotsState.set('error');
         this.rescheduleLoadError.set(adminErrorMessage(err,'Không tải được khung giờ mới.'));
       }
     });

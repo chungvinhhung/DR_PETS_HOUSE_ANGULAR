@@ -195,7 +195,7 @@
             (change)="chooseSlot($any($event.target).value)">
             <option value="">{{slotsState()==='loading'?'Đang tải khung giờ...':'Chọn khung giờ'}}</option>
             @for (slot of slots(); track slot.id) {
-              <option [value]="slot.id" [disabled]="!slot.available">{{slot.label}}{{slot.available?'':' · Hết chỗ'}}</option>
+              <option [value]="slot.id" [disabled]="!slot.available">{{slot.label}}{{slot.available?'':(slot.status==='BLOCKED'?' · Tạm khóa':' · Hết chỗ')}}</option>
             }
           </select>
         </label>

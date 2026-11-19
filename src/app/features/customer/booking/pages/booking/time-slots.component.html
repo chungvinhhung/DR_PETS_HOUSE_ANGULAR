@@ -6,37 +6,76 @@
 >
   <h3 class="mb-5 flex items-center gap-2 text-xl font-bold text-blue-900"><span>◷</span> Khung giờ trống</h3>
   <div class="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-    @for (slot of visibleSlots(); track slot.value || $index) {
-      @let active = selectedSlot() === slot.value;
-      <button
-        type="button"
-        (click)="onSelect.emit(slot.value)"
-        [class]="`flex w-full items-center justify-between rounded-2xl px-5 py-3 text-left text-sm font-semibold transition ${
-                active
-                  ? 'bg-blue-900 text-white shadow'
-                  : 'bg-slate-100 text-slate-900 hover:bg-slate-200'
-              }`"
-      >
-        <span>{{ slot.value }}</span>
-        <span class="text-[10px] uppercase opacity-80">Còn {{ slot.remaining ?? (slot.maxAppointments - slot.bookedCount) }}/{{ slot.maxAppointments }}</span>
-        @if (active) {
-          <span>✓</span>
-        }
-      </button>
-    } @empty {
-      <div class="flex flex-col items-center justify-center py-10 text-center">
-        <p class="text-sm font-medium text-slate-500">
-          @if (!hasSelectedService()) {
-            Vui lòng chọn dịch vụ trước để xem khung giờ trống
-          } @else if (!selectedDate()) {
-            Vui lòng chọn ngày để xem khung giờ
-          } @else if (isBeforeToday(selectedDate())) {
-            Không thể chọn ngày trong quá khứ
-          } @else {
-            Không có khung giờ trống nào phù hợp cho ngày này. Vui lòng chọn ngày khác.
-          }
-        </p>
+    @if (!hasSelectedService()) {
+      <div class="flex flex-col items-center justify-center py-10 text-center" data-slots-state="no-service">
+        <p class="text-sm font-medium text-slate-500">Vui lòng chọn dịch vụ trước để xem khung giờ trống</p>
       </div>
+    } @else if (!selectedDate()) {
+      <div class="flex flex-col items-center justify-center py-10 text-center" data-slots-state="no-date">
+        <p class="text-sm font-medium text-slate-500">Vui lòng chọn ngày để xem khung giờ</p>
+      </div>
+    } @else if (isBeforeToday(selectedDate())) {
+      <div class="flex flex-col items-center justify-center py-10 text-center" data-slots-state="past-date">
+        <p class="text-sm font-medium text-slate-500">Không thể chọn ngày trong quá khứ</p>
+      </div>
+    } @else if (slotsLoading()) {
+      <div class="flex flex-col items-center justify-center py-10 text-center" data-slots-state="loading">
+        <p class="text-sm font-medium text-blue-900">Đang kiểm tra khung giờ trống...</p>
+      </div>
+    } @else if (slotsError() || slotsState() === 'error') {
+      <div class="flex flex-col items-center justify-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-5 text-center" data-slots-state="error">
+        <p class="text-sm font-medium text-red-700">{{ slotsError() || 'Không thể tải khung giờ lúc này. Vui lòng thử lại sau.' }}</p>
+        <button
+          type="button"
+          (click)="onRetry.emit()"
+          class="rounded-full bg-red-700 px-4 py-1.5 text-xs font-bold text-white transition hover:bg-red-800"
+        >Thử lại</button>
+      </div>
+    } @else if (displaySlots().length === 0) {
+      <div class="flex flex-col items-center justify-center py-10 text-center" data-slots-state="empty">
+        <p class="text-sm font-medium text-slate-500">Không có khung giờ trống nào phù hợp cho ngày này. Vui lòng chọn ngày khác.</p>
+      </div>
+    } @else {
+      @if (allDisplaySlotsBlocked()) {
+        <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-center text-xs font-medium text-amber-800" data-slots-state="blocked">
+          Các khung giờ trong ngày này hiện đang tạm khóa. Vui lòng chọn ngày hoặc chi nhánh khác.
+        </div>
+      } @else if (allDisplaySlotsUnavailable()) {
+        <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-center text-xs font-medium text-amber-800" data-slots-state="full">
+          Các khung giờ trong ngày này đã kín chỗ. Vui lòng chọn ngày khác.
+        </div>
+      }
+      @for (slot of displaySlots(); track slot.value || $index) {
+        @let status = getSlotStatus(slot);
+        @let bookable = isSlotBookableItem(slot);
+        @let active = bookable && selectedSlot() === slot.value;
+        <button
+          type="button"
+          [disabled]="!bookable"
+          [attr.data-slot-status]="status"
+          [attr.data-slot-bookable]="bookable ? 'true' : 'false'"
+          (click)="handleSelectSlot(slot)"
+          [class]="`flex w-full items-center justify-between rounded-2xl px-5 py-3 text-left text-sm font-semibold transition ${
+                  active
+                    ? 'bg-blue-900 text-white shadow'
+                    : !bookable
+                      ? 'cursor-not-allowed bg-slate-50 text-slate-400 opacity-75'
+                      : 'bg-slate-100 text-slate-900 hover:bg-slate-200'
+                }`"
+        >
+          <span>{{ slot.value }}</span>
+          @if (status === 'BLOCKED') {
+            <span class="text-[10px] font-bold uppercase text-amber-700">Tạm khóa</span>
+          } @else if (status === 'FULL' || !bookable) {
+            <span class="text-[10px] font-bold uppercase text-red-600">Hết chỗ</span>
+          } @else {
+            <span class="text-[10px] uppercase opacity-80">Còn {{ slot.remaining ?? (slot.maxAppointments - slot.bookedCount) }}/{{ slot.maxAppointments }}</span>
+          }
+          @if (active) {
+            <span>✓</span>
+          }
+        </button>
+      }
     }
   </div>
 </app-booking-card>

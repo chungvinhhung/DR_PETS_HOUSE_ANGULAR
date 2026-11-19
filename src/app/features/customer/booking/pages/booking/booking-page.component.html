@@ -20,6 +20,9 @@
         [services]="services()"
         [timeSlots]="timeSlots()"
         [slotsLoading]="slotsLoading()"
+        [slotsError]="slotsError()"
+        [slotsState]="slotsState()"
+        (onRetrySlots)="retryLoadSlots()"
         (onNext)="handle1()"
       />
     }

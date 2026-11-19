@@ -59,6 +59,9 @@ export class BookingPageComponent {
   readonly services = signal<any>(BOOKING_SERVICES);
   readonly timeSlots = signal<any>([]);
   readonly slotsLoading = signal<any>(false);
+  readonly slotsError = signal<string>("");
+  readonly slotsState = signal<'idle' | 'loading' | 'ready' | 'empty' | 'error'>('idle');
+  readonly slotsRetryTick = signal<number>(0);
   readonly bookingError = signal<any>("");
   readonly bookingSubmitting = signal<any>(false);
   readonly pets = signal<any>([]);
@@ -217,22 +220,27 @@ export class BookingPageComponent {
       if (typeof cleanup === 'function') onCleanup(cleanup);
     });
 
-    // useEffect(..., [ownerInfo.branch, selectedDate, selectedServiceType, selectedServices])
+    // useEffect(..., [ownerInfo.branch, selectedDate, selectedServiceType, selectedServices, slotsRetryTick])
     effect((onCleanup: any) => {
       this.ownerInfo().branch;
       this.selectedDate();
       this.selectedServiceType();
       this.selectedServices();
+      this.slotsRetryTick();
       const cleanup = untracked(() => {
         const hasServices = (this.selectedServices() || []).length > 0;
         if (!this.selectedDate() || !this.ownerInfo().branch || !hasServices) {
           this.timeSlots.set([]);
           this.selectedSlot.set(null);
+          this.slotsError.set("");
+          this.slotsState.set('idle');
           return;
         }
 
         let active = true;
         this.slotsLoading.set(true);
+        this.slotsError.set("");
+        this.slotsState.set('loading');
         this.bookingApi.getAppointmentSlots({
           date: getDateKey(this.selectedDate()),
           branchId: this.ownerInfo().branch,
@@ -241,21 +249,31 @@ export class BookingPageComponent {
         })
           .then((slots: any) => {
             if (!active) return;
-            this.timeSlots.set(slots);
+            const safeSlots = Array.isArray(slots) ? slots : [];
+            this.timeSlots.set(safeSlots);
+            this.slotsError.set("");
+            this.slotsState.set(safeSlots.length > 0 ? 'ready' : 'empty');
             this.selectedSlot.update((current: any) => {
               if (!current) return null;
               const currentStart = String(current).split(" - ")[0].trim();
-              const matchedSlot = slots.find((s: any) =>
+              const matchedSlot = safeSlots.find((s: any) =>
                 s.available && (s.value === current || s.value?.startsWith(currentStart) || s.time === currentStart)
               );
-              return matchedSlot ? matchedSlot.value : current;
+              return matchedSlot ? matchedSlot.value : null;
             });
           })
           .catch((error: any) => {
             console.warn("Appointment slots API unavailable.", error);
             if (active) {
+              const errMsg =
+                error?.data?.detail ||
+                error?.data?.message ||
+                error?.message ||
+                "Không thể tải khung giờ lúc này. Vui lòng thử lại sau.";
               this.timeSlots.set([]);
               this.selectedSlot.set(null);
+              this.slotsError.set(errMsg);
+              this.slotsState.set('error');
             }
           })
           .finally(() => {
@@ -270,29 +288,20 @@ export class BookingPageComponent {
     });
   }
 
+  protected retryLoadSlots() {
+    this.slotsRetryTick.update((v) => v + 1);
+  }
+
   protected async handleConfirm({ quantities }: any = {}) {
-    let selectedSlotRecord = this.timeSlots().find((slot: any) => {
+    const selectedSlotRecord = this.timeSlots().find((slot: any) => {
       if (!this.selectedSlot()) return false;
       if (slot.value === this.selectedSlot() || slot.id === this.selectedSlot()) return true;
       const currentStart = String(this.selectedSlot()).split(" - ")[0].trim();
       return slot.value?.startsWith(currentStart) || slot.time === currentStart;
     });
 
-    if (!selectedSlotRecord && this.selectedSlot()) {
-      const currentVal = String(this.selectedSlot());
-      const [startPart, endPart] = currentVal.includes(" - ") ? currentVal.split(" - ") : [currentVal, currentVal];
-      const dateKey = getDateKey(this.selectedDate());
-      selectedSlotRecord = {
-        id: `slot-${this.ownerInfo().branch}-${dateKey}-${startPart.trim()}`,
-        value: currentVal,
-        start: `${dateKey}T${startPart.trim()}:00.000Z`,
-        end: `${dateKey}T${(endPart || startPart).trim()}:00.000Z`,
-        available: true,
-      };
-    }
-
-    if (!selectedSlotRecord) {
-      this.bookingError.set("Vui lòng chọn khung giờ khám.");
+    if (!selectedSlotRecord || !selectedSlotRecord.available) {
+      this.bookingError.set("Vui lòng chọn khung giờ khám còn chỗ.");
       return;
     }
 

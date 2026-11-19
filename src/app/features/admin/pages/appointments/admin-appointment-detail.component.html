@@ -160,16 +160,19 @@
               <input type="date" [value]="targetDate()" (input)="changeRescheduleDate($any($event.target).value)">
             </label>
             <label><span class="modal-field-label">Khung giờ <b>*</b></span>
-              <select [value]="rescheduleSlotId()" [disabled]="!rescheduleServiceId() || !targetDate() || rescheduleLoading()"
+              <select [value]="rescheduleSlotId()" [disabled]="!rescheduleServiceId() || !targetDate() || rescheduleLoading() || rescheduleSlotsState()!=='ready'"
                 (change)="chooseRescheduleSlot($any($event.target).value)">
                 <option value="">{{rescheduleLoading()?'Đang tải khung giờ...':'Chọn khung giờ'}}</option>
                 @for (slot of rescheduleSlots(); track slot.id) {
-                  <option [value]="slot.id" [disabled]="!slot.available">{{slot.label}}{{slot.available?'':' · Hết chỗ'}}</option>
+                  <option [value]="slot.id" [disabled]="!slot.available">{{slot.label}}{{slot.available?'':(slot.status==='BLOCKED'?' · Tạm khóa':' · Hết chỗ')}}</option>
                 }
               </select>
             </label>
           </div>
-          @if (rescheduleLoadError()) {
+          @if (rescheduleSlotsState()==='empty') {
+            <p class="hint" role="status">Không còn khung giờ phù hợp trong ngày đã chọn.</p>
+          }
+          @if (rescheduleSlotsState()==='error' && rescheduleLoadError()) {
             <p class="hint hint--warning" role="alert">{{rescheduleLoadError()}}</p>
           }
         }

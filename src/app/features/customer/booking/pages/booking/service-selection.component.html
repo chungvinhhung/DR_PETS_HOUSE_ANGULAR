@@ -122,6 +122,10 @@
       [selectedSlot]="selectedSlot()"
       (onSelect)="setSelectedSlot()?.($event)"
       [timeSlots]="timeSlots()"
+      [slotsLoading]="slotsLoading()"
+      [slotsError]="slotsError()"
+      [slotsState]="slotsState()"
+      (onRetry)="onRetrySlots.emit()"
       [hasSelectedService]="(selectedServices()?.length || 0) > 0"
       [invalid]="validationAttempted() && !slotBookable()"
     />
