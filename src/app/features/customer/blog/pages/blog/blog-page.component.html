@@ -14,8 +14,12 @@
         <p class="blog-page__kien-thuc-cham-text">Kiến thức chăm sóc thú cưng từ chuyên gia!!</p>
       </div>
     </section>
-    <app-featured-post [post]="featuredPost()" />
-    <section app-trending-section [posts]="trendingPosts()"></section>
+    @if (!isLoading() && featuredPost()) {
+      <app-featured-post [post]="featuredPost()" />
+    }
+    @if (!isLoading() && trendingPosts().length) {
+      <section app-trending-section [posts]="trendingPosts()"></section>
+    }
     <section id="latest-posts" class="blog-page__latest-posts">
       <div class="blog-page__row">
         <h2 class="blog-page__bai-viet-title">Bài viết</h2>
