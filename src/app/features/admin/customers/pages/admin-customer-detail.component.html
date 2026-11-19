@@ -53,7 +53,7 @@
         <div class="pet-grid web2-admin-pet-grid">
           @for (pet of pets(); track pet._id || pet.id) {
             <a class="pet-card web2-admin-pet-card" [routerLink]="['/admin/customers', c.id, 'pets', pet._id || pet.id]">
-              <img [src]="petImage(pet)" [alt]="petName(pet)">
+              <img [src]="petImage(pet)" [alt]="petName(pet)" loading="lazy" (error)="onPetImageError($event)">
               <div>
                 <strong>{{petName(pet)}}</strong>
                 <span>{{petSpecies(pet)}} · {{petBreed(pet)}}</span>
