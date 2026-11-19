@@ -110,14 +110,14 @@ export class AuthApiService {
   }
 
   async loginWithGoogle(data: any = {}) {
-    const credential = data.credential || data.idToken || data.token || 'google_mock_credential';
-    const payload = {
-      ...data,
-      credential,
-      email: data.email || 'google_user@test.com',
-      fullName: data.fullName || data.name || 'Người dùng Google',
-      picture: data.picture || data.avatar || null,
-    };
+    // Do not fabricate credentials or user identities. BE must verify the real
+    // Google access token before issuing an application session.
+    const accessToken = data.accessToken || data.access_token;
+    const idToken = data.credential || data.idToken || data.id_token;
+    if (!accessToken && !idToken) {
+      throw new Error('Cần đăng nhập bằng tài khoản Google để tiếp tục.');
+    }
+    const payload = accessToken ? { accessToken } : { credential: idToken };
     const response: any = await this.http.post("/auth/google", payload);
     const result = assertSuccess(response);
     const user = result?.user || result;
