@@ -9663,3 +9663,174 @@ app-service-catalog-list app-admin-catalog-shell .service-catalog__filters .serv
   height: 48px !important;
   min-height: 48px !important;
 }
+
+/* Appointment service multi-picker: one fixed-height, ellipsized field. */
+app-admin-appointment-create .form-grid--4 > .field > input,
+app-admin-appointment-create .form-grid--4 > .field > select {
+  height: 54px;
+  min-height: 54px;
+}
+.service-picker-field__label {
+  display: inline-block;
+  margin-bottom: 8px;
+}
+.appointment-service-picker {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  z-index: 10;
+}
+.appointment-service-picker__trigger {
+  box-sizing: border-box;
+  width: 100%;
+  height: 54px;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid #dee5f0;
+  border-radius: 8px;
+  padding: 0 11px 0 14px;
+  background: #fff;
+  color: #344154;
+  cursor: pointer;
+  text-align: left;
+  font: 400 13px/20px Roboto, Arial, sans-serif;
+}
+.appointment-service-picker__trigger:hover:not(:disabled) {
+  border-color: #b4c9e4;
+}
+.appointment-service-picker__trigger:focus-visible {
+  outline: 2px solid #0d47a1;
+  outline-offset: 2px;
+}
+.appointment-service-picker__trigger:disabled {
+  background: #f7f9fb;
+  color: #8793a5;
+}
+.appointment-service-picker__text {
+  display: block;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.appointment-service-picker__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background: #e9f2ff;
+  color: #0d47a1;
+  font-size: 12px;
+  font-weight: 700;
+  flex: 0 0 23px;
+}
+.appointment-service-picker__trigger img {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+.appointment-service-picker__popover {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 7px);
+  left: 0;
+  box-sizing: border-box;
+  width: max(100%, 400px);
+  max-width: min(440px, calc(100vw - 48px));
+  border: 1px solid #dbe5f2;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 12px 34px rgb(18 45 82 / 16%);
+  overflow: hidden;
+  white-space: normal;
+}
+.appointment-service-picker__top,
+.appointment-service-picker__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
+}
+.appointment-service-picker__top {
+  border-bottom: 1px solid #edf1f7;
+  color: #24364f;
+}
+.appointment-service-picker__top > span,
+.appointment-service-picker__bottom > span {
+  color: #7889a2;
+  font-size: 12px;
+  white-space: normal;
+}
+.appointment-service-picker__options {
+  display: grid;
+  gap: 2px;
+  padding: 7px;
+  max-height: 300px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.appointment-service-picker__option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 7px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #344154;
+  font-size: 13px;
+  line-height: 19px;
+}
+.appointment-service-picker__option:hover,
+.appointment-service-picker__option--selected {
+  background: #f0f6ff;
+}
+.appointment-service-picker__option--disabled {
+  opacity: .46;
+  cursor: not-allowed;
+}
+.appointment-service-picker__option input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 16px;
+  accent-color: #0d47a1;
+}
+.appointment-service-picker__option-name {
+  min-width: 0;
+  flex: 1 1 0;
+  overflow-wrap: anywhere;
+}
+.appointment-service-picker__duration {
+  flex: 0 0 auto;
+  color: #697b93;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.appointment-service-picker__bottom {
+  border-top: 1px solid #edf1f7;
+}
+.appointment-service-picker__bottom button {
+  border: 1px solid #0d47a1;
+  border-radius: 7px;
+  background: #0d47a1;
+  color: #fff;
+  font: 600 12px/20px Roboto, Arial, sans-serif;
+  cursor: pointer;
+  padding: 5px 13px;
+}
+@media (max-width: 640px) {
+  .appointment-service-picker__popover {
+    width: 100%;
+    max-width: 100%;
+  }
+}
