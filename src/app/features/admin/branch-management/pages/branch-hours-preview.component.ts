@@ -70,7 +70,7 @@ interface SlotRow {
           <table class="branch-v2__monitor">
             <thead><tr>
               <th scope="col">Khung giờ</th><th scope="col">Trạng thái</th>
-              <th scope="col">Đặt / Tổng</th><th scope="col" title="Số chỗ có thể đặt thực tế, sau khi tính lịch nhân viên và điều kiện dịch vụ">Còn đặt được</th><th scope="col" title="Tỷ lệ lịch đã đặt trên công suất cấu hình">Đã đặt (%)</th><th scope="col">Thao tác</th>
+              <th scope="col">Đặt / Tổng</th><th scope="col" title="Số chỗ có thể đặt thực tế, sau khi tính lịch nhân viên và điều kiện dịch vụ">Còn trống</th><th scope="col" title="Tỷ lệ lịch đã đặt trên công suất cấu hình">Lấp đầy</th><th scope="col">Thao tác</th>
             </tr></thead>
             <tbody>
               @for (slot of timeRows(); track slot.key) {
@@ -120,12 +120,12 @@ interface SlotRow {
             <div class="branch-v2__slot-stats">
               <div><span>Trạng thái</span><strong>{{ slotStatus(slot) }}</strong></div>
               <div><span>Đã đặt / Tổng</span><strong>{{ slot.booked }} / {{ slot.total }}</strong></div>
-              <div><span>Còn đặt được</span><strong>{{ slot.remaining }}</strong></div>
-              <div><span>Đã đặt</span><strong>{{ slotPercent(slot) }}%</strong></div>
+              <div><span>Còn trống</span><strong>{{ slot.remaining }}</strong></div>
+              <div><span>Lấp đầy</span><strong>{{ slotPercent(slot) }}%</strong></div>
             </div>
             <h3>Dịch vụ trong khung giờ</h3>
             <table class="branch-v2__modal-table">
-              <thead><tr><th>Dịch vụ</th><th>Đã đặt / Tổng</th><th>Còn đặt được</th><th>Trạng thái</th></tr></thead>
+              <thead><tr><th>Dịch vụ</th><th>Đã đặt / Tổng</th><th>Còn trống</th><th>Trạng thái</th></tr></thead>
               <tbody>
                 @for (row of selectedServiceRows(); track row.serviceId) {
                   <tr>
