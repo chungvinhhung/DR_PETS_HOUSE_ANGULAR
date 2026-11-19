@@ -9201,6 +9201,50 @@ app-admin-inventory-page .history-reference { color: #0d47a1; text-decoration: n
 app-admin-inventory-page .history-reference:hover { text-decoration: underline; }
 app-admin-inventory-page .history-reference-text { color: #475569; overflow-wrap: anywhere; }
 
+/* Inventory history: keep transaction code and reference inside column 1.
+   Stack them to avoid overlap with the date column at every table width. */
+app-admin-inventory-page .history-table td.history-code-cell {
+  min-width: 0;
+  overflow: hidden;
+  white-space: normal;
+}
+app-admin-inventory-page .history-code-stack {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+  line-height: 18px;
+}
+app-admin-inventory-page .history-code-stack > .history-code {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+app-admin-inventory-page .history-reference-line {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+app-admin-inventory-page .history-reference-line > .history-ref-separator {
+  flex: 0 0 auto;
+}
+app-admin-inventory-page .history-reference-line > :is(.history-reference, .history-reference-text) {
+  display: block;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+
 
 /* FE Admin 19/11: keep pet species aligned, with an accessible inline Other input. */
 app-admin-appointment-create .pet-new .pet-new__species-control {
