@@ -14,6 +14,9 @@
   />
   <app-payment-panel
     [paymentMode]="paymentMode()"
+    [serviceIds]="selectedServiceIds()"
+    [branchId]="ownerInfo()?.branch || ''"
+    (onVoucherChange)="validatedVoucherCode.set($event)"
     [setPaymentMode]="setPaymentMode()"
     (onConfirm)="handleConfirm()"
     [subtotal]="subtotal()"
