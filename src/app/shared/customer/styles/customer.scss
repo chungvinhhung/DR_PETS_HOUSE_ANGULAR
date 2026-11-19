@@ -3369,7 +3369,7 @@ html:has(.customer-root) {
    The mixed pair copies the original wide + compact card widths from the design. */
 .first-aid-layout {
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
   width: 100%;
   gap: 24px;
 }
@@ -3384,8 +3384,13 @@ html:has(.customer-root) {
 /* Mixed: ~660px landscape + ~330px compact, rather than a 600px-wide
    "square"; preserve the compact visual size from the original page. */
 .first-aid-layout-row--mixed {
+  /* Constrain the whole pair, then center it between the page gutters.
+     Do not distribute leftover space after the compact card. */
   width: min(100%, 1020px);
-  margin-inline: auto;
+  max-width: 100%;
+  align-self: center;
+  margin-left: auto;
+  margin-right: auto;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
 }
 .first-aid-layout-row--mixed.first-aid-layout-row--square-first {
@@ -3393,7 +3398,10 @@ html:has(.customer-root) {
 }
 .first-aid-layout-row--single-square {
   width: min(100%, 1020px);
-  margin-inline: auto;
+  max-width: 100%;
+  align-self: center;
+  margin-left: auto;
+  margin-right: auto;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 .first-aid-layout-row .first-aid-card {
