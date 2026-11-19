@@ -194,10 +194,7 @@
               <div id="appointment-service-options" class="appointment-service-picker__popover"
                 role="dialog" aria-label="Chọn dịch vụ cho lịch hẹn">
                 <div class="appointment-service-picker__top">
-                  <div>
-                    <strong>Chọn dịch vụ</strong>
-                    <p>Chọn một hoặc nhiều dịch vụ cùng nhóm cho lịch hẹn.</p>
-                  </div>
+                  <strong>Chọn dịch vụ</strong>
                   <span class="appointment-service-picker__selected-count">{{selectedServiceIds().length}} đã chọn</span>
                 </div>
                 <div class="appointment-service-picker__search">
@@ -208,34 +205,49 @@
                 </div>
                 <div class="appointment-service-picker__options">
                   @for (service of filteredPickerServices(); track service.id) {
-                    <label class="appointment-service-picker__option"
+                    <button type="button" class="appointment-service-picker__option"
                       [class.appointment-service-picker__option--selected]="selectedServiceIds().includes(service.id)"
-                      [class.appointment-service-picker__option--disabled]="selectedServiceIds().length > 0 && chosenService()?.category !== service.category && !selectedServiceIds().includes(service.id)">
-                      <input type="checkbox" [checked]="selectedServiceIds().includes(service.id)"
-                        [disabled]="selectedServiceIds().length > 0 && chosenService()?.category !== service.category && !selectedServiceIds().includes(service.id)"
-                        (change)="toggleSelectedService(service.id)">
+                      [disabled]="selectedServiceIds().length > 0 && chosenService()?.category !== service.category && !selectedServiceIds().includes(service.id)"
+                      [attr.aria-pressed]="selectedServiceIds().includes(service.id)"
+                      (click)="toggleSelectedService(service.id)">
                       <span class="appointment-service-picker__details">
                         <strong class="appointment-service-picker__option-name" [title]="service.name">{{service.name}}</strong>
                         @if (service.description) {
                           <span class="appointment-service-picker__description" [title]="service.description">{{service.description}}</span>
                         }
                         <span class="appointment-service-picker__meta">
-                          <span>Thời lượng: {{service.durationMinutes == null ? 'Liên hệ' : service.durationMinutes + ' phút'}}</span>
-                          <span class="appointment-service-picker__price">
-                            {{service.referencePrice == null ? 'Liên hệ báo giá' : 'Từ ' + money(service.referencePrice)}}
-                          </span>
+                          <span>{{service.durationMinutes == null ? 'Thời lượng: Liên hệ' : service.durationMinutes + ' phút'}}</span>
+                          <span class="appointment-service-picker__price">{{service.referencePrice == null ? 'Liên hệ báo giá' : 'Từ ' + money(service.referencePrice)}}</span>
                         </span>
                       </span>
                       <span class="appointment-service-picker__choice" aria-hidden="true">
                         {{selectedServiceIds().includes(service.id) ? '✓ Đã chọn' : 'Chọn'}}
                       </span>
-                    </label>
+                    </button>
                   } @empty {
                     <p class="appointment-service-picker__empty">Không tìm thấy dịch vụ phù hợp.</p>
                   }
                 </div>
+                <div class="appointment-service-picker__selection" aria-live="polite">
+                  <span class="appointment-service-picker__selection-title">Dịch vụ đang chọn</span>
+                  @if (selectedServiceTags().length) {
+                    <div class="appointment-service-picker__chips">
+                      @for (service of selectedServiceTags(); track service.id) {
+                        <button type="button" class="appointment-service-picker__chip"
+                          [title]="'Bỏ chọn: ' + service.name"
+                          [attr.aria-label]="'Bỏ chọn dịch vụ ' + service.name"
+                          (click)="toggleSelectedService(service.id)">
+                          <span>{{service.name}}</span>
+                          <span class="appointment-service-picker__chip-remove" aria-hidden="true">×</span>
+                        </button>
+                      }
+                    </div>
+                  } @else {
+                    <p class="appointment-service-picker__no-selection">Chưa chọn dịch vụ nào</p>
+                  }
+                </div>
                 <div class="appointment-service-picker__bottom">
-                  <span>{{selectedServiceIds().length}} dịch vụ đã chọn · chỉ các dịch vụ cùng nhóm</span>
+                  <span>Các dịch vụ cần thuộc cùng nhóm</span>
                   <button type="button" (click)="closeServicePicker()">Xong</button>
                 </div>
               </div>

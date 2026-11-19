@@ -157,6 +157,13 @@ export class AdminAppointmentCreateComponent {
       this.services().find(service => service.id === id)?.name || '').filter(Boolean);
     return names.length ? names.join(' · ') : 'Chọn dịch vụ';
   });
+  /** Named chips in the picker show exactly which services are selected. */
+  readonly selectedServiceTags = computed(() =>
+    this.selectedServiceIds().map(id => ({
+      id,
+      name: this.services().find(service => service.id === id)?.name || id,
+    })),
+  );
   readonly selectedServiceShortLabel = computed(() => {
     const ids = this.selectedServiceIds();
     if (!ids.length) return 'Chọn dịch vụ';

@@ -194,6 +194,9 @@ export class AdminInventoryPageComponent implements OnInit {
   readonly totalHistoryTransactionCount = computed(() =>
     new Set(this.historyFiltered().map(row => row.groupKey)).size,
   );
+  readonly visibleHistoryTransactionCount = computed(() =>
+    new Set(this.currentHistory().map(row => row.groupKey)).size,
+  );
   readonly currentQuantity = computed(() => this.modal() === 'receipt' ? this.receiptStock()?.quantity ?? 0 : this.activeItem()?.quantity ?? 0);
   readonly preview = computed(() => {
     const amount = this.quantity() ?? 0;
