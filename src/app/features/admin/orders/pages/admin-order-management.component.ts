@@ -1,5 +1,5 @@
 import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-pagination';
-import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, forkJoin, from, map, mergeMap, of, toArray } from 'rxjs';
 import { RouterLink, ActivatedRoute } from '@angular/router';
@@ -12,6 +12,7 @@ import { AdminOrderNotificationService } from '../../../../shared/services/admin
 import { orderErrorMessage } from '../services/admin-order-error-message';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
+import { AdminCustomerService } from '../../customers/services/admin-customer.service';
 import { AdminProductService } from '../../products/services/admin-product.service';
 import { AdminInventoryService, InventoryItemDto, InventoryTransactionDto } from '../../inventory/services/admin-inventory.service';
 import { AdminInventoryTransactionDrawerComponent } from '../../inventory/components/admin-inventory-transaction-drawer.component';
@@ -44,6 +45,8 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 export class AdminOrderManagementComponent {
   private readonly api = inject(AdminOrderApiService);
   private readonly branchApi = inject(BranchManagementApiService);
+  private readonly customersApi = inject(AdminCustomerService);
+  private readonly requestedCustomerIds = new Set<string>();
   private readonly inventoryApi = inject(AdminInventoryService);
   private readonly productApi = inject(AdminProductService);
   private readonly route = inject(ActivatedRoute);
@@ -153,6 +156,8 @@ export class AdminOrderManagementComponent {
     return history.sort((a,b) => (Date.parse(b.at) || 0) - (Date.parse(a.at) || 0));
   });
   readonly branches = signal<{ id: string; name: string }[]>([]);
+  /** Account names resolved by exact customer/user ID, never by delivery recipient. */
+  readonly customerNames = signal<Record<string, string>>({});
   readonly loading = signal(false);
   readonly error = signal('');
   readonly search = signal('');
@@ -229,6 +234,14 @@ export class AdminOrderManagementComponent {
     (this.selected()?.status === 'PENDING' || this.selected()?.status === 'CONFIRMED' || this.selected()?.status === 'PROCESSING'));
 
   constructor() {
+    // Only resolve account holders for visible orders (or the order in detail)
+    // so pagination never causes hundreds of unnecessary customer requests.
+    effect(() => {
+      const visible = this.isDetail()
+        ? (this.selected() ? [this.selected()!] : [])
+        : this.pageRows();
+      untracked(() => this.resolveCustomerNames(visible));
+    });
     this.returnNotifications.ensureLoaded();
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((query) => {
       if (!this.isDetail() && query.get('tab') === 'returns') this.setTab('returns');
@@ -637,8 +650,41 @@ export class AdminOrderManagementComponent {
   historyEventLabel(status: OrderStatus): string {
     return status === 'PENDING' ? 'Đơn được tạo' : this.statusLabel(status);
   }
+  /** Customer means the account placing the order, not the shipping recipient. */
   customerName(order: OrderRecord): string {
-    return order.contactSnapshot?.fullName || order.contactSnapshot?.name || 'Khách hàng';
+    if (order.customerId) {
+      const name = this.customerNames()[String(order.customerId)];
+      // BE may have populated contactSnapshot from the delivery address.
+      // Never pass that off as the authenticated customer's name.
+      return name || '—';
+    }
+    // No registered account: show only an explicit guest contact, if present.
+    const name = String(order.contactSnapshot?.fullName || order.contactSnapshot?.name || '').trim();
+    return name && !/^(khách hàng|guest customer|thành viên|customer)$/i.test(name)
+      ? name : '—';
+  }
+
+  private resolveCustomerNames(orders: OrderRecord[]): void {
+    const ids = [...new Set(orders
+      .map(order => String(order.customerId || ''))
+      .filter(id => /^[a-f\d]{24}$/i.test(id) && !this.requestedCustomerIds.has(id)))];
+    if (!ids.length) return;
+    ids.forEach(id => this.requestedCustomerIds.add(id));
+    from(ids).pipe(
+      mergeMap(id => this.customersApi.getCustomer(id).pipe(
+        map(customer => {
+          const profileId = String(customer.userId || customer.id || '');
+          const name = String(customer.fullName || '').trim();
+          const verified = (profileId === id || String(customer.id) === id) &&
+            !!name && !/^(khách hàng|guest customer|thành viên|customer)$/i.test(name);
+          return { id, name: verified ? name : '' };
+        }),
+        catchError(() => of({ id, name: '' })),
+      ), 4),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(({ id, name }) => {
+      this.customerNames.update(current => ({ ...current, [id]: name }));
+    });
   }
   branchName(id: string): string {
     return this.branches().find((b) => b.id === id)?.name ?? 'Chưa có tên chi nhánh';
