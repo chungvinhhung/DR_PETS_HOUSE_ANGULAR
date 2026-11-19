@@ -162,6 +162,7 @@ export class AdminOrderManagementComponent {
   readonly customerNames = signal<Record<string, string>>({});
   readonly loading = signal(false);
   readonly error = signal('');
+  readonly limitedOrderRange = signal('');
   readonly search = signal('');
   readonly status = signal<OrderFilter>('ALL');
   readonly branchId = signal('ALL');
@@ -516,19 +517,63 @@ export class AdminOrderManagementComponent {
 
   private loadOrders(): void {
     const version = ++this.ordersRequestVersion;
-    this.loading.set(true); this.error.set('');
+    this.loading.set(true); this.error.set(''); this.limitedOrderRange.set('');
     const filters = this.dashboardFilter();
     const source = filters ? this.api.listDashboardFiltered(filters) : this.orderNotifications.listForView();
     source.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (page) => {
         if (version !== this.ordersRequestVersion) return;
         this.allOrders.set(Array.isArray(page.items) ? page.items : []);
+        this.limitedOrderRange.set('');
         this.page.set(1); this.loading.set(false);
       },
       error: (error: unknown) => {
         if (version !== this.ordersRequestVersion) return;
+        const status = typeof error === 'object' && error !== null && 'status' in error
+          ? Number((error as {status?:unknown}).status) : -1;
+        // Dashboard filters must never be silently broadened or replaced.
+        if (!filters && [0,500,502,503,504].includes(status)) {
+          this.loadRecentOrdersFallback(version, error);
+          return;
+        }
         this.loading.set(false); this.allOrders.set([]);
         this.error.set(orderErrorMessage(error, 'Không tải được danh sách đơn hàng.'));
+      },
+    });
+  }
+  /**
+   * Recovery for a failing unfiltered order list. A malformed historical
+   * record or a transient server error should not prevent staff from seeing
+   * valid recent orders. Each result remains a real, server-filtered page.
+   * Never pretend the recovered subset represents all orders.
+   */
+  private loadRecentOrdersFallback(version: number, originalError: unknown): void {
+    const today = localDate(new Date());
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - 6);
+    const recentWeek = {from:localDate(weekStart),to:today};
+    const currentDay = {from:today,to:today};
+    this.api.listDashboardFiltered(recentWeek).pipe(
+      map(page => ({page, label:'7 ngày gần đây'})),
+      catchError(() => this.api.listDashboardFiltered(currentDay).pipe(
+        map(page => ({page,label:'hôm nay'})),
+      )),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: ({page,label}) => {
+        if (version !== this.ordersRequestVersion) return;
+        this.allOrders.set(page.items);
+        this.limitedOrderRange.set(label);
+        this.page.set(1);
+        this.loading.set(false);
+        this.error.set('');
+      },
+      error: () => {
+        if (version !== this.ordersRequestVersion) return;
+        this.allOrders.set([]);
+        this.limitedOrderRange.set('');
+        this.loading.set(false);
+        this.error.set(orderErrorMessage(originalError, 'Không tải được danh sách đơn hàng.'));
       },
     });
   }
