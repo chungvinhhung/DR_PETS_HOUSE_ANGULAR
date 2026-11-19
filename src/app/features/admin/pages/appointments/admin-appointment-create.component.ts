@@ -92,8 +92,8 @@ function petFromWire(input: unknown): PetOption | null {
 
 /**
  * WBS 4.3 / Figma A02,A03,A13: Admin appointment creation.
- * The current Backend supports atomic internal booking for guest contacts and one pet.
- * Existing-customer linkage and multi-pet booking remain blocked until their contracts exist.
+ * BE-07 supports internal bookings for a guest or an existing customer and one pet.
+ * Multiple pets in one atomic booking remain unsupported.
  */
 @Component({
   selector: 'app-admin-appointment-create',
@@ -543,6 +543,13 @@ export class AdminAppointmentCreateComponent {
   loadSlots(): void {
     const service = this.chosenService();
     if (!service || !this.branchId() || !this.appointmentDate() || !this.petCount()) return;
+    const types = new Set(this.plannedSegments().map(segment =>
+      this.services().find(s => s.id === segment.serviceId)?.category).filter(Boolean));
+    if (types.size > 1) {
+      this.slotsState.set('unsupported');
+      this.slotsError.set('Một lịch hẹn chỉ được chọn các dịch vụ cùng loại Chăm sóc hoặc Khám chữa bệnh.');
+      return;
+    }
     if (this.extraServices().some(row=>!row.serviceId)) {
       this.slotsState.set('unsupported');
       this.slotsError.set('Chọn đủ dịch vụ bổ sung trước khi tra cứu giờ.');
@@ -745,6 +752,9 @@ export class AdminAppointmentCreateComponent {
     if (!this.petCount()) errors.push('Chọn hoặc thêm ít nhất một thú cưng.');
     if (this.petCount() > 1) errors.push('Hiện chưa thể tạo một lịch hẹn cho nhiều thú cưng cùng lúc.');
     if (this.extraServices().some(row => !row.serviceId)) errors.push('Chọn dịch vụ cho tất cả các dòng dịch vụ bổ sung.');
+    const types = new Set(this.plannedSegments().map(segment =>
+      this.services().find(service => service.id === segment.serviceId)?.category).filter(Boolean));
+    if (types.size > 1) errors.push('Một lịch hẹn chỉ được chọn các dịch vụ cùng loại Chăm sóc hoặc Khám chữa bệnh.');
     if (this.plannedSegments().some(row => row.durationMinutes === null))
       errors.push('Có dịch vụ chưa có thời lượng được xác nhận.');
     if (this.newPets().filter(p => p.selected).some(p => !p.name.trim() || !p.species))
