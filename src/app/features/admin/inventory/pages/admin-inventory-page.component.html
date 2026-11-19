@@ -84,7 +84,7 @@
       } @else {
         <table class="history-table">
           <colgroup>
-            <col style="width:14%"/><col style="width:12%"/><col style="width:18%"/><col style="width:13%"/>
+            <col style="width:16%"/><col style="width:12%"/><col style="width:17%"/><col style="width:12%"/>
             <col style="width:16%"/><col style="width:9%"/><col style="width:8%"/><col style="width:10%"/>
           </colgroup>
           <thead><tr>
@@ -100,15 +100,19 @@
           @for (record of currentHistory(); track record.id) {
             <tr>
               <td class="history-code-cell">
-                <span class="history-code">{{ record.transactionCode || '—' }}</span>
-                <span class="history-ref-separator" aria-hidden="true"> / </span>
-                @if (record.sourceLabel) {
-                  @if (referenceLink(record); as target) {
-                    <a class="history-reference" [routerLink]="target" [title]="record.sourceLabel">{{record.sourceLabel}}</a>
-                  } @else {
-                    <span class="history-reference-text" [title]="record.sourceLabel">{{record.sourceLabel}}</span>
-                  }
-                } @else { <span>—</span> }
+                <div class="history-code-stack">
+                  <span class="history-code" [title]="record.transactionCode || '—'">{{ record.transactionCode || '—' }}</span>
+                  <div class="history-reference-line">
+                    <span class="history-ref-separator" aria-hidden="true">/</span>
+                    @if (record.sourceLabel) {
+                      @if (referenceLink(record); as target) {
+                        <a class="history-reference" [routerLink]="target" [title]="record.sourceLabel">{{record.sourceLabel}}</a>
+                      } @else {
+                        <span class="history-reference-text" [title]="record.sourceLabel">{{record.sourceLabel}}</span>
+                      }
+                    } @else { <span class="history-reference-text">—</span> }
+                  </div>
+                </div>
               </td>
               <td>{{record.date}}</td>
               <td><div class="product">{{record.item}}</div><small>{{record.variant}} | {{record.sku}}</small></td>
