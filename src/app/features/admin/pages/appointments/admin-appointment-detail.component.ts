@@ -5,6 +5,7 @@ import { finalize, Observable } from 'rxjs';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
+import { getPrimaryImage } from '../../../../core/customer/services/api/pet-api.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
@@ -37,6 +38,7 @@ export class AdminAppointmentDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private requestVersion = 0;
+  private readonly requestedPetPhotoIds=new Set<string>();
   private readonly mutationKeys=new Map<string,string>();
   private readonly nowMs = signal(Date.now());
 
@@ -45,6 +47,7 @@ export class AdminAppointmentDetailComponent {
   readonly error = signal('');
   readonly item = signal<AppointmentView | null>(null);
   readonly linkedRecords=signal<ServiceRecord[]>([]);
+  readonly petPhotos=signal<Record<string,string>>({});
   readonly recordsLoading=signal(false);
   readonly recordsError=signal('');
   readonly serviceRecordStatusLabel=serviceRecordStatusLabel;
@@ -192,13 +195,13 @@ export class AdminAppointmentDetailComponent {
        /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(name))return '—';
     return name;
   }
-  appointmentRows():{key:string;pet:string;species:string;service:string;staff:string;health:string;note:string;checkIn:string;execution:string;recordId:string}[]{
+  appointmentRows():{key:string;pet:string;petId:string;photo:string;species:string;service:string;staff:string;health:string;note:string;checkIn:string;execution:string;recordId:string}[]{
     const a=this.item();if(!a)return[];
     const segments=a.serviceSegments.length?a.serviceSegments:[];
     if(!segments.length){
       return [{
         key:'appointment-'+a.id,
-        pet:a.petNames[0]||'—',species:a.petSpecies||'—',service:a.serviceNames[0]||'—',
+        pet:a.petNames[0]||'—',petId:a.petId,photo:this.petPhoto(a.petId,a.petNames[0]||''),species:a.petSpecies||'—',service:a.serviceNames[0]||'—',
         staff:this.recordStaffName(this.linkedRecords()[0]?.primaryStaff),health:a.petHealth||'—',note:a.petNote||'—',
         checkIn:this.checkInLabel(),execution:a.status==='COMPLETED'?'Hoàn thành':a.status==='IN_PROGRESS'?'Đang thực hiện':'Chưa bắt đầu',
         recordId:this.linkedRecords()[0]?.id||'',
@@ -212,6 +215,8 @@ export class AdminAppointmentDetailComponent {
       return {
         key:segment.serviceId+'-'+i,
         pet:record?.petName||a.petNames[0]||'—',
+        petId:record?.petId || segment.petId || a.petId,
+        photo:this.petPhoto(record?.petId || segment.petId || a.petId,record?.petName||a.petNames[0]||''),
         species:a.petSpecies||'—',
         service:segment.serviceName||record?.serviceName||'—',
         staff:this.recordStaffName(record?.primaryStaff),
@@ -223,6 +228,42 @@ export class AdminAppointmentDetailComponent {
       };
     });
   }
+  /** Resolve a stored pet photo only by the matching pet ID. Never use another pet's avatar. */
+  private petPhoto(petId:string,petName:string):string {
+    const appointment=this.item();
+    if (!appointment) return '';
+    const current=this.petPhotos()[petId];
+    if (current) return current;
+    const isSamePet=appointment.petNames.length===1 &&
+      appointment.petNames[0]===petName &&
+      (!petId || !appointment.petId || petId===appointment.petId);
+    return isSamePet?appointment.petPhotoUrl:'';
+  }
+
+  private loadPetPhotos(ids:string[],version:number):void {
+    // Pet profiles and appointment snapshots refer to the same BE records as
+    // Customer's "Quản lý thú cưng"; requests remain subject to BE RBAC.
+    for(const id of [...new Set(ids.filter(v=>/^[a-f0-9]{24}$/i.test(v)))]) {
+      if(this.requestedPetPhotoIds.has(id)) continue;
+      this.requestedPetPhotoIds.add(id);
+      this.api.get<unknown>('/pets/'+encodeURIComponent(id))
+        .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+          next:raw=>{
+            if(version!==this.requestVersion || !raw || typeof raw!=='object') return;
+            const pet=raw as Record<string,unknown>;
+            if(String(pet['_id']||pet['id']||'')!==id) return;
+            const image=getPrimaryImage(pet);
+            if(image) this.petPhotos.update(current=>({...current,[id]:image}));
+          },
+          error:()=>{ /* No authorized/valid photo: keep existing snapshot or initial. */ },
+        });
+    }
+  }
+  onPetImageError(event:Event):void {
+    const target=event.target as HTMLImageElement|null;
+    if(target) target.style.display='none';
+  }
+
   paymentMethodLabel(value:string):string{
     const key=value.toUpperCase();return key.includes('STORE')?'Tại phòng khám':key.includes('ONLINE')?'Trực tuyến':value||'—';
   }
@@ -277,6 +318,7 @@ export class AdminAppointmentDetailComponent {
     const version=++this.requestVersion;
     this.loading.set(true);this.error.set('');this.item.set(null);
     this.linkedRecords.set([]);this.recordsError.set('');
+    this.petPhotos.set({});this.requestedPetPhotoIds.clear();
     // Confirmed read-only GET detail on BE /appointments/:id. Never bypass BE scope checks.
     this.api.get<unknown>('/appointments/' + encodeURIComponent(id))
       .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -291,6 +333,7 @@ export class AdminAppointmentDetailComponent {
               return;
             }
             this.item.set(parsed);this.loading.set(false);
+            this.loadPetPhotos([parsed.petId,...parsed.serviceSegments.map(segment=>segment.petId)],version);
             this.loadLinkedRecords(id,version);
           } catch (err) {
             this.error.set(err instanceof Error ? err.message : 'Không đọc được chi tiết lịch hẹn.');
@@ -322,7 +365,9 @@ export class AdminAppointmentDetailComponent {
       next:response=>{
         if(version!==this.requestVersion)return;
         try{
-          this.linkedRecords.set(normalizeServiceRecordsPage(response).items);
+          const records=normalizeServiceRecordsPage(response).items;
+          this.linkedRecords.set(records);
+          this.loadPetPhotos(records.map(row=>row.petId),version);
           this.recordsError.set('');
         }catch(err){
           this.recordsError.set(err instanceof Error?err.message:'Không đọc được hồ sơ dịch vụ liên quan.');
