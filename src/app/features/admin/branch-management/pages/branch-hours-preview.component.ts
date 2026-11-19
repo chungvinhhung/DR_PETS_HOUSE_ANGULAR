@@ -30,7 +30,7 @@ interface SlotRow {
   booked: number;
   total: number;
   remaining: number;
-  status: 'AVAILABLE' | 'FULL' | 'BLOCKED';
+  status: 'AVAILABLE' | 'FULL' | 'BLOCKED' | 'UNAVAILABLE';
 }
 
 @Component({
@@ -70,7 +70,7 @@ interface SlotRow {
           <table class="branch-v2__monitor">
             <thead><tr>
               <th scope="col">Khung giờ</th><th scope="col">Trạng thái</th>
-              <th scope="col">Đặt / Tổng</th><th scope="col">Còn trống</th><th scope="col">Lấp đầy</th><th scope="col">Thao tác</th>
+              <th scope="col">Đặt / Tổng</th><th scope="col" title="Số chỗ có thể đặt thực tế, sau khi tính lịch nhân viên và điều kiện dịch vụ">Còn đặt được</th><th scope="col" title="Tỷ lệ lịch đã đặt trên công suất cấu hình">Đã đặt (%)</th><th scope="col">Thao tác</th>
             </tr></thead>
             <tbody>
               @for (slot of timeRows(); track slot.key) {
@@ -79,6 +79,8 @@ interface SlotRow {
                   <td><span class="branch-v2__status"
                     [class.branch-v2__status--locked]="slot.status === 'BLOCKED'"
                     [class.branch-v2__status--full]="slot.status === 'FULL'"
+                    [class.branch-v2__status--unavailable]="slot.status === 'UNAVAILABLE'"
+                    [title]="slotStatusHint(slot)"
                     [class.branch-v2__status--near]="slot.status === 'AVAILABLE' && slotPercent(slot) >= 80">
                     {{ slotStatus(slot) }}
                   </span></td>
@@ -118,12 +120,12 @@ interface SlotRow {
             <div class="branch-v2__slot-stats">
               <div><span>Trạng thái</span><strong>{{ slotStatus(slot) }}</strong></div>
               <div><span>Đã đặt / Tổng</span><strong>{{ slot.booked }} / {{ slot.total }}</strong></div>
-              <div><span>Còn trống</span><strong>{{ slot.remaining }}</strong></div>
-              <div><span>Lấp đầy</span><strong>{{ slotPercent(slot) }}%</strong></div>
+              <div><span>Còn đặt được</span><strong>{{ slot.remaining }}</strong></div>
+              <div><span>Đã đặt</span><strong>{{ slotPercent(slot) }}%</strong></div>
             </div>
             <h3>Dịch vụ trong khung giờ</h3>
             <table class="branch-v2__modal-table">
-              <thead><tr><th>Dịch vụ</th><th>Đã đặt / Tổng</th><th>Còn trống</th><th>Trạng thái</th></tr></thead>
+              <thead><tr><th>Dịch vụ</th><th>Đã đặt / Tổng</th><th>Còn đặt được</th><th>Trạng thái</th></tr></thead>
               <tbody>
                 @for (row of selectedServiceRows(); track row.serviceId) {
                   <tr>
@@ -190,6 +192,7 @@ export class BranchHoursPreviewComponent implements OnInit, OnChanges {
         const booked = Math.max(0, Number(slot.bookedCount) || 0);
         const total = Math.max(0, Number(slot.totalCount) || 0);
         const remaining = Math.max(0, Number(slot.remaining) || 0);
+        const status = this.availabilityStatus(slot);
         if (!existing) {
           groups.set(key, {
             key,
@@ -199,13 +202,13 @@ export class BranchHoursPreviewComponent implements OnInit, OnChanges {
             booked,
             total,
             remaining,
-            status: slot.status === 'BLOCKED' ? 'BLOCKED' : remaining <= 0 ? 'FULL' : 'AVAILABLE',
+            status,
           });
         } else {
           existing.booked += booked;
           existing.total += total;
           existing.remaining += remaining;
-          if (existing.status !== 'AVAILABLE' && remaining > 0) existing.status = 'AVAILABLE';
+          existing.status = this.mergeStatuses(existing.status, status);
         }
       }
     }
@@ -234,7 +237,7 @@ export class BranchHoursPreviewComponent implements OnInit, OnChanges {
         booked: Math.max(0, Number(slot.bookedCount) || 0),
         total: Math.max(0, Number(slot.totalCount) || 0),
         remaining,
-        status: slot.status === 'BLOCKED' ? 'Tạm khóa' : remaining <= 0 ? 'Đầy' : 'Còn chỗ',
+        status: this.statusText(this.availabilityStatus(slot)),
       }];
     });
   });
@@ -264,14 +267,51 @@ export class BranchHoursPreviewComponent implements OnInit, OnChanges {
       });
   }
 
+  /**
+   * BE uses FULL both for occupied capacity and absence of a qualifying staff
+   * shift. Only call the slot "Đầy" if bookings + active holds exhaust its capacity.
+   */
+  private availabilityStatus(slot: ServiceAvailabilitySlot): SlotRow['status'] {
+    if (slot.status === 'BLOCKED') return 'BLOCKED';
+    const remaining = Math.max(0, Number(slot.remaining) || 0);
+    if (remaining > 0) return 'AVAILABLE';
+    const total = Math.max(0, Number(slot.totalCount) || 0);
+    const booked = Math.max(0, Number(slot.bookedCount) || 0);
+    const held = Math.max(0, Number(slot.heldCount) || 0);
+    return total > 0 && booked + held >= total ? 'FULL' : 'UNAVAILABLE';
+  }
+
+  private mergeStatuses(a: SlotRow['status'], b: SlotRow['status']): SlotRow['status'] {
+    if (a === 'AVAILABLE' || b === 'AVAILABLE') return 'AVAILABLE';
+    if (a === b) return a;
+    return 'UNAVAILABLE';
+  }
+
+  private statusText(status: SlotRow['status']): string {
+    switch (status) {
+      case 'BLOCKED': return 'Tạm khóa';
+      case 'FULL': return 'Đầy';
+      case 'UNAVAILABLE': return 'Chưa khả dụng';
+      default: return 'Còn chỗ';
+    }
+  }
+
   slotPercent(row: SlotRow): number {
     return row.total > 0 ? Math.min(100, Math.round(row.booked * 100 / row.total)) : 0;
   }
+
   slotStatus(row: SlotRow): string {
-    if (row.status === 'BLOCKED') return 'Tạm khóa';
-    if (row.status === 'FULL') return 'Đầy';
-    if (this.slotPercent(row) >= 80) return 'Sắp đầy';
-    return 'Còn chỗ';
+    if (row.status === 'AVAILABLE' && this.slotPercent(row) >= 80) return 'Sắp đầy';
+    return this.statusText(row.status);
+  }
+
+  slotStatusHint(row: SlotRow): string {
+    if (row.status === 'UNAVAILABLE') {
+      return 'Khung giờ chưa nhận đặt lịch dù công suất chưa sử dụng hết. Có thể do ca nhân viên, giờ hoạt động hoặc điều kiện dịch vụ. BE chưa trả lý do chi tiết.';
+    }
+    if (row.status === 'FULL') return 'Công suất đã hết do lịch đặt và/hoặc lượt giữ chỗ.';
+    if (row.status === 'BLOCKED') return 'Khung giờ bị khóa đặt lịch.';
+    return 'Khung giờ hiện có thể nhận đặt lịch.';
   }
   chooseDate(iso: string): void {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return;

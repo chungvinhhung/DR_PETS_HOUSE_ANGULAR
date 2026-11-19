@@ -9603,3 +9603,9 @@ app-admin-appointment-create .pet-new .pet-new__species-control--other :is(selec
   outline: none !important;
   box-shadow: none !important;
 }
+
+/* Branch operating slots: unbookable despite unused configured capacity. */
+.branch-management .branch-v2__status--unavailable {
+  color: #7c4a12;
+  background: #fff1d6;
+}

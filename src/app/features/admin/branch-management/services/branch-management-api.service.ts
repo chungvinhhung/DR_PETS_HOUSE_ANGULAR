@@ -84,6 +84,8 @@ export interface ServiceAvailabilitySlot {
   end: string;
   remaining: number;
   bookedCount?: number;
+  heldCount?: number;
+  occupiedCount?: number;
   totalCount?: number;
   status?: 'AVAILABLE' | 'FULL' | 'BLOCKED' | string;
 }
