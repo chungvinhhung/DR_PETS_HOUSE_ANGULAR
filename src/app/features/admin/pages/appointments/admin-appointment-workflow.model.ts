@@ -9,6 +9,7 @@ export interface AppointmentHistoryEvent {
 }
 export interface AppointmentServiceSegment {
   serviceId: string;
+  petId: string;
   serviceName: string;
   sequence: number;
   assignedStaffId: string;
@@ -26,6 +27,8 @@ export interface AppointmentView {
   customerPhone: string;
   customerEmail: string;
   petNames: string[];
+  petId: string;
+  petPhotoUrl: string;
   petSpecies: string;
   petHealth: string;
   petNote: string;
@@ -150,6 +153,7 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
     const scheduledEnd = firstString(row['scheduledEnd'], row['endAt']);
     return {
       serviceId: firstString(row['serviceId'], obj(row['service'])?.['id'], obj(row['service'])?.['_id']),
+      petId: firstString(row['petId'], obj(row['petId'])?.['_id'], obj(row['pet'])?.['_id'], obj(row['pet'])?.['id']),
       serviceName: firstString(row['serviceName'], obj(row['service'])?.['name']),
       sequence: typeof row['sequence'] === 'number' && Number.isSafeInteger(row['sequence']) && row['sequence'] > 0
         ? row['sequence'] : index + 1,
@@ -175,6 +179,12 @@ export function normalizeAppointment(raw: unknown): AppointmentView {
     customerEmail:firstString(item['customerEmail'], customer['email'], contact['email']),
     petNames:namesFrom(item['pets'] ?? item['pet'], 'pet').length
       ? namesFrom(item['pets'] ?? item['pet'], 'pet') : firstString(item['petName'], item['pet_name_snapshot'], petSnapshot['name']) ? [firstString(item['petName'], item['pet_name_snapshot'], petSnapshot['name'])] : [],
+    petId:firstString(item['petId'], obj(item['petId'])?.['_id'],
+      obj(item['pet'])?.['_id'], obj(item['pet'])?.['id'],
+      petSnapshot['_id'], petSnapshot['id']),
+    petPhotoUrl:firstString(petSnapshot['photoUrl'], petSnapshot['profile_image_url'],
+      petSnapshot['profileImageUrl'], obj(item['pet'])?.['photoUrl'],
+      obj(item['petId'])?.['photoUrl']),
     petSpecies:firstString(petSnapshot['species'], petSnapshot['speciesName']),
     petHealth:firstString(petSnapshot['healthStatus'], petSnapshot['health'], item['conditionDescription']),
     petNote:firstString(petSnapshot['medicalNotes'], item['conditionDescription'], item['note']),
