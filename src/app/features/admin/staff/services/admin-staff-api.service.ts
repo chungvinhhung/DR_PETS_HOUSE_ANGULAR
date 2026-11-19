@@ -309,23 +309,6 @@ export class AdminStaffApiService {
   cancelShift(id: string): Observable<unknown> {
     return this.api.post('/shifts/' + encodeURIComponent(id) + '/cancel', {});
   }
-  /**
-   * Atomic multi-shift replacement, reserved for the BE bulk-assign contract.
-   * Do NOT emulate a transaction with cancel/create requests: an unsupported
-   * endpoint must fail without deleting any existing shifts.
-   */
-  replaceShiftsAtomically(payload: {
-    staffId: string;
-    branchId: string;
-    create: Array<{ startAt: string; endAt: string }>;
-    cancelShiftIds: string[];
-  }): Observable<unknown> {
-    return this.api.post('/shifts/bulk-assign', payload, {
-      headers: new HttpHeaders().set('Idempotency-Key', crypto.randomUUID()),
-    });
-  }
-
-
   /** Fresh, employee-scoped shifts for overlap checks, including other visible branches. */
   listStaffShiftRecords(staffId: string, dateFrom: string, dateTo: string): Observable<StaffShiftRecord[]> {
     const params = new HttpParams().set('staffId', staffId)
