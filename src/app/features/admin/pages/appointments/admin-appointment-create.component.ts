@@ -795,8 +795,9 @@ export class AdminAppointmentCreateComponent {
             FLASH_SALE_NOT_STARTED:'Chương trình flash sale chưa bắt đầu.',
             FLASH_SALE_EXPIRED:'Chương trình flash sale đã kết thúc.',
           };
-          this.pricingSnapshot.set(null);
-          this.pricingStatus.set('idle');
+          // Preserve the latest price without a voucher and recalculate if a
+          // previously applied voucher has just become invalid.
+          this.appliedVoucherCode.set('');
           this.voucherNotice.set(labels[result.reason??'']??'Mã giảm giá không hợp lệ.');
           return;
         }
@@ -805,8 +806,7 @@ export class AdminAppointmentCreateComponent {
         this.appliedVoucherCode.set(code.toUpperCase());
       },
       error:error=>{
-        this.pricingSnapshot.set(null);
-        this.pricingStatus.set('error');
+        this.appliedVoucherCode.set('');
         this.voucherNotice.set(adminErrorMessage(error,'Không kiểm tra được mã giảm giá.'));
       },
     });
