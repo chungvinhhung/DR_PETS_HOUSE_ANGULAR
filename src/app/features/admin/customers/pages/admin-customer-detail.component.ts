@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, finalize, forkJoin, of } from 'rxjs';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { getPrimaryImage } from '../../../../core/customer/services/api/pet-api.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
 import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
@@ -95,7 +96,12 @@ export class AdminCustomerDetailComponent {
     const value=Number(raw);
     return Number.isFinite(value)&&value>=0 ? new Intl.NumberFormat('vi-VN',{maximumFractionDigits:2}).format(value)+' tuổi' : 'Chưa cập nhật';
   }
-  petImage(p:any):string{return p.photoUrl||p.photo_url||p.profileImageUrl||p.profile_image_url||p.imageUrl||p.image_url||p.avatarUrl||p.image||'/assets/admin-login/mascot.png';}
+  petImage(p:any):string{return getPrimaryImage(p)||'/assets/admin-login/mascot.png';}
+  onPetImageError(event:Event):void {
+    const image=event.target as HTMLImageElement|null;
+    if(image && !image.src.endsWith('/assets/admin-login/mascot.png'))
+      image.src='/assets/admin-login/mascot.png';
+  }
   serviceNames(a:any):string{return (a.services||[]).map((s:any)=>s.serviceName||s.name).filter(Boolean).join(', ')||a.serviceType||'Dịch vụ';}
   money(v:any):string{return new Intl.NumberFormat('vi-VN').format(Number(v||0))+'đ';}
   date(v:any):string{if(!v)return '—';const d=new Date(v);return Number.isNaN(d.getTime())?'—':d.toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}
