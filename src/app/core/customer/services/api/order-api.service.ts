@@ -144,6 +144,10 @@ export class OrderApiService {
     if (!recipientName || !phone) {
       throw new Error("Vui lòng cập nhật tên và số điện thoại người nhận trước khi đặt hàng.");
     }
+    const deliveryAddress = String(address.addressLine || address.address || address.street || "").trim();
+    if (!deliveryAddress) {
+      throw new Error("Vui lòng nhập địa chỉ nhận hàng trước khi đặt hàng.");
+    }
     const customerName = verifiedRecipientName(customerProfile?.fullName, recipientName);
     const payload: any = {
       addressId: addressId || undefined,
@@ -153,7 +157,7 @@ export class OrderApiService {
         recipientName,
         fullName: recipientName,
         phone,
-        addressLine: address.addressLine || address.address || address.street || "Địa chỉ nhận hàng",
+        addressLine: deliveryAddress,
         ward: address.ward || "",
         district: address.district || "",
         city: address.city || "Hồ Chí Minh",
