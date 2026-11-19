@@ -179,6 +179,27 @@ export class AdminAppointmentDetailComponent {
     const d=new Date(value);if(Number.isNaN(d.getTime()))return '—';
     return new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d).replace(',',' ·');
   }
+  /**
+   * Resolve StaffProfile / User IDs to the display name from the staff roster.
+   * Never expose raw internal identifiers as a visible staff name.
+   * Roster access is subject to BE permission checks and branch scoping.
+   */
+  private staffDisplayName(assignedStaffId:string, recordStaffName = ''):string {
+    const id=assignedStaffId.trim();
+    const matchingStaff=id
+      ? this.staffDirectory.staff().find(staff=>staff.id===id || staff.userId===id)
+      : undefined;
+    const name=matchingStaff?.fullName?.trim();
+    if(name && name!=='Chưa cập nhật họ tên')return name;
+
+    // The linked service record sometimes includes a human-readable staff
+    // snapshot, which is preferable to showing the underlying database ID.
+    const snapshot=recordStaffName.trim();
+    const looksLikeId=/^[0-9a-f]{24}$/i.test(snapshot) ||
+      /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(snapshot) ||
+      snapshot===id;
+    return snapshot && !looksLikeId ? snapshot : '—';
+  }
   appointmentRows():{key:string;pet:string;species:string;service:string;staff:string;health:string;note:string;checkIn:string;execution:string;recordId:string}[]{
     const a=this.item();if(!a)return[];
     const segments=a.serviceSegments.length?a.serviceSegments:[];
@@ -186,7 +207,7 @@ export class AdminAppointmentDetailComponent {
       return [{
         key:'appointment-'+a.id,
         pet:a.petNames[0]||'—',species:a.petSpecies||'—',service:a.serviceNames[0]||'—',
-        staff:this.linkedRecords()[0]?.primaryStaff||'—',health:a.petHealth||'—',note:a.petNote||'—',
+        staff:this.staffDisplayName('',this.linkedRecords()[0]?.primaryStaff||''),health:a.petHealth||'—',note:a.petNote||'—',
         checkIn:this.checkInLabel(),execution:a.status==='COMPLETED'?'Hoàn thành':a.status==='IN_PROGRESS'?'Đang thực hiện':'Chưa bắt đầu',
         recordId:this.linkedRecords()[0]?.id||'',
       }];
@@ -201,7 +222,7 @@ export class AdminAppointmentDetailComponent {
         pet:record?.petName||a.petNames[0]||'—',
         species:a.petSpecies||'—',
         service:segment.serviceName||record?.serviceName||'—',
-        staff:record?.primaryStaff||segment.assignedStaffId||'—',
+        staff:this.staffDisplayName(segment.assignedStaffId, record?.primaryStaff||''),
         health:a.petHealth||'—',
         note:a.petNote||'—',
         checkIn:this.checkInLabel(),
@@ -236,7 +257,7 @@ export class AdminAppointmentDetailComponent {
   }
 
   constructor() {
-    if (this.isExecutionStaff()) this.staffDirectory.loadRoster();
+    if (this.session.hasAnyRole(['ADMIN','MANAGER']) || this.isExecutionStaff()) this.staffDirectory.loadRoster();
     this.loadRescheduleBranches();
     this.refresh();
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
