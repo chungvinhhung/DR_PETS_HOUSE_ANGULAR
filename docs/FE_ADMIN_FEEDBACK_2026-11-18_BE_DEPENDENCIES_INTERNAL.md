@@ -73,3 +73,9 @@
 - BE-07 pricing preview controller currently uses `req.actor?.id` for voucher eligibility, even when FE is booking for a different existing customer; confirm customerId scoping and final voucher discount before E2E acceptance.
 - BE-08 `getCustomerById` wraps its pet query in a catch that converts errors to `pets: []`; an empty list may hide a query failure. Verify response and error diagnostics if pets vanish on Render.
 - BE-05 review creation now requires completed orders/appointments by default (Option A). Re-test Customer → Admin with a valid completed transaction rather than arbitrary unverified reviews.
+
+
+### Critical follow-up after source validation (19/11)
+- BE committed support for `pet.speciesDetail` in `createAppointment`, but OpenAPI v6/v7 `PetInline` still has `additionalProperties: false` and only documents `name`, `species`, `breed`, `weightKg`. Global express-openapi-validator validates `/internal/appointments` and does **not** ignore that path. FE payloads containing `speciesDetail`, `speciesName`, `ageYears`, `healthStatus`, or `medicalNotes` risk HTTP 400 before reaching service code. **BE must update both PetInline schemas / validator or provide explicit sanctioned normalization**; confirm with a real POST using a new OTHER pet. Do not silently lose the species detail from FE.
+- Non-mutating `POST /appointments/preview-pricing` is explicitly ignored by OpenAPI validator and the route exists. Customer-linked voucher preview remains a possible mismatch: BE controller uses `req.actor?.id`, not selected customer ID.
+- BE latest source commit at time of review: `1a4c1059` (19 Nov 2026); BE `dev` still behind `feat/foundation-v6`; Render deployment status not verified.
