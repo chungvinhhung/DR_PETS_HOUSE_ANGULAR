@@ -14,6 +14,7 @@ import { AUTO_PLAY_MS, SLIDE_COUNT, INDICATOR_ACTIVE_WIDTH, INDICATOR_INACTIVE_W
   standalone: true,
   imports: [HeroSlideLayerComponent, ReactStyleDirective],
   templateUrl: './shop-hero-section.component.html',
+  styleUrl: './shop-hero-section.component.scss',
   host: {
     'class': 'absolute left-0 top-[13px] w-[1440px] px-[30px] pt-0',
     'aria-label': 'Hero',

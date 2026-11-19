@@ -1,0 +1,11 @@
+.section-title__heading-wrap {
+  @apply relative;
+}
+
+.section-title__heading {
+  @apply font-display text-4xl leading-tight text-slate-900 md:text-5xl lg:text-[64px];
+}
+
+.section-title__subtitle {
+  @apply max-w-3xl text-base leading-relaxed text-slate-900 md:text-lg md:leading-[1.6];
+}

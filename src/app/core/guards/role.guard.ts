@@ -4,19 +4,23 @@ import { map } from 'rxjs';
 
 import { AuthRestoreService } from '../services/auth-restore.service';
 import { AuthSessionService } from '../services/auth-session.service';
+import { AdminCapability, canAdmin } from './admin-role-policy';
 
 export const roleGuard: CanActivateFn = (route, state) => {
   const authSession = inject(AuthSessionService);
   const authRestore = inject(AuthRestoreService);
   const router = inject(Router);
   const configuredRoles = route.data['roles'];
+  const requiredCapability = route.data['adminCapability'] as AdminCapability | undefined;
+  const isAuthorized = () => authSession.hasAnyRole(configuredRoles) &&
+    (!requiredCapability || canAdmin(authSession.user(), requiredCapability));
 
   if (!isValidRoleConfiguration(configuredRoles)) {
     return forbiddenRedirect(router);
   }
 
   if (authSession.isAuthenticated()) {
-    return authSession.hasAnyRole(configuredRoles)
+    return isAuthorized()
       ? true
       : forbiddenRedirect(router);
   }
@@ -31,7 +35,7 @@ export const roleGuard: CanActivateFn = (route, state) => {
         });
       }
 
-      return authSession.hasAnyRole(configuredRoles)
+      return isAuthorized()
         ? true
         : forbiddenRedirect(router);
     }),

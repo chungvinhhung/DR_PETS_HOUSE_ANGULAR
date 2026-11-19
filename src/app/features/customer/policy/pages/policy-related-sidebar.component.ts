@@ -11,6 +11,7 @@ import { getRelatedPolicies } from '../data/policy-data';
   standalone: true,
   imports: [CustomerLinkDirective],
   templateUrl: './policy-related-sidebar.component.html',
+  styleUrl: './policy-related-sidebar.component.scss',
   host: {
     'class': 'w-full shrink-0 rounded-[12px] bg-white px-6 pb-6 pt-6 lg:h-[630px] lg:w-[330px] lg:pb-0',
     'data-node-id': '3102:10766',

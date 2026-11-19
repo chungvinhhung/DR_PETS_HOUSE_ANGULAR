@@ -17,6 +17,7 @@ import { SECTION_TITLE_TYPOGRAPHY } from './feedback-section.helpers';
   standalone: true,
   imports: [FeedbackCardComponent, FeedbackDotComponent, ReactStyleDirective],
   templateUrl: './feedback-section.component.html',
+  styleUrl: './feedback-section.component.scss',
   host: {
     '[class]': 'layout() === \'flow\' ? \'relative mx-auto h-[683px] w-full max-w-[1440px] overflow-hidden\' : \'absolute left-0 top-[calc(2637px+0.5cm)] h-[683px] w-[1440px] overflow-hidden\'',
     'aria-label': 'Phản hồi của khách hàng',

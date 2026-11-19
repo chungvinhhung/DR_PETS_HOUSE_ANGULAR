@@ -1,0 +1,15 @@
+.otp-form__row {
+  @apply flex h-14 justify-between gap-2;
+}
+
+.otp-form__th {
+  @apply h-14 min-w-0 max-w-14 flex-1 rounded-xl border border-[#C6DCE3] bg-[#FAFEFF] text-center text-xl font-bold outline-none transition focus:border-[#0D47A1] focus:ring-1 focus:ring-[#0D47A1];
+}
+
+.otp-form__submit-error {
+  @apply rounded bg-red-50 px-3 py-2 text-sm text-[#c62828];
+}
+
+.otp-form__khong-nhan-duoc-text {
+  @apply text-center text-sm text-[#4f5359];
+}

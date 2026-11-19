@@ -13,6 +13,7 @@ import { FEATURED_BLOG_POST } from '../../../../../shared/customer/data/blog-dat
   standalone: true,
   imports: [CategoryIconComponent, CustomerIconComponent, CustomerLinkDirective],
   templateUrl: './featured-post.component.html',
+  styleUrl: './featured-post.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

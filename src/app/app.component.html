@@ -1,6 +1,21 @@
 <router-outlet (activate)="onRouteActivated()" />
 @if (!routeActivated()) {
-  <main class="app-route-loading" role="status" aria-live="polite">
-    Đang kiểm tra phiên đăng nhập...
+  <main class="app-route-loading" role="status" aria-live="polite" aria-label="Đang chuẩn bị trang">
+    <div class="app-route-loading__content">
+      <picture class="app-route-loading__picture">
+        <source media="(prefers-reduced-motion: no-preference)" srcset="/assets/customer/loading/doctor-clipboard-loading.avif" type="image/avif" />
+        <img
+          class="app-route-loading__mascot"
+          src="/assets/admin-login/mascot.png"
+          alt="Mascot bác sĩ Dr. Pet's House đang chuẩn bị danh sách"
+          width="280"
+          height="277"
+          decoding="async"
+          fetchpriority="high"
+        />
+      </picture>
+      <p class="app-route-loading__title">Đang chuẩn bị trang cho bạn</p>
+      <p class="app-route-loading__description">Vui lòng chờ trong giây lát.</p>
+    </div>
   </main>
 }

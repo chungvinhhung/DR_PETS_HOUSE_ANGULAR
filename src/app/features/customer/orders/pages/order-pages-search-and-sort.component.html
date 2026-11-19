@@ -1,26 +1,26 @@
-<label class="flex h-[52px] min-w-0 flex-1 items-center justify-between rounded-[42px] border border-[rgba(25,118,210,0.5)] bg-white/80 py-2 pl-5 pr-2">
+<label class="order-pages-search-and-sort__label">
   <input
     [value]="searchInput() ?? ''"
     (input)="onSearchInputChange.emit($any($event).target.value)"
     placeholder="Tìm kiếm theo Mã đơn hàng, Thời gian đặt hàng hoặc tên sản phẩm"
-    class="min-w-0 flex-1 bg-transparent text-[15px] text-[#5F5F5F] outline-none placeholder:text-[#5F5F5F]"
+    class="order-pages-search-and-sort__tim-kiem-theo-ma"
   />
   <button
     type="submit"
     class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition hover:bg-[#FFF176]"
     aria-label="Tìm kiếm đơn hàng"
   >
-    <img [attr.src]="productImages.searchIcon" alt="" class="h-6 w-6" />
+    <img [attr.src]="productImages.searchIcon" alt="" class="order-pages-search-and-sort__search-icon" />
   </button>
 </label>
-<label class="flex h-[52px] w-[170px] cursor-pointer items-center gap-[8px] rounded-[42px] border border-[rgba(25,118,210,0.5)] bg-white px-[14px]">
+<label class="order-pages-search-and-sort__label-2">
   <svg class="h-4 w-[18px] shrink-0 text-[#414141]" viewBox="0 0 18 12" aria-hidden="true">
     <path d="M1 1h16M1 6h10M1 11h5" stroke="currentColor" stroke-width="1.5" />
   </svg>
   <select
     [selectValue]="sortOrder()"
     (change)="onSortChange.emit($any($event).target.value)"
-    class="w-full cursor-pointer appearance-none bg-transparent text-center text-[14px] font-medium outline-none"
+    class="order-pages-search-and-sort__sap-xep-don-hang"
     aria-label="Sắp xếp đơn hàng"
   >
     <option value="newest">Mới nhất</option>

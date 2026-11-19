@@ -1,0 +1,100 @@
+// Breakpoints chuẩn của Tailwind
+$screen-sm: 640px;
+$screen-lg: 1024px;
+
+.first-aid-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px; // gap-4
+
+  @media (min-width: $screen-sm) {
+    gap: 30px; // sm:gap-[30px]
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 40px; // leading-10
+    letter-spacing: -0.32px;
+    color: #121c2a;
+
+    @media (min-width: $screen-sm) {
+      font-size: 32px;
+    }
+  }
+
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px; // gap-2
+  }
+
+  &__badge {
+    border-radius: 9999px; // rounded-full
+    background-color: #c62828;
+    padding: 4px 16px; // py-1 px-4
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px; // leading-5
+    letter-spacing: 0.28px;
+    color: #ffffff;
+  }
+}
+
+.first-aid-steps {
+  margin-top: 40px; // mt-10
+  margin-bottom: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr)); // grid-cols-1
+  gap: 24px; // gap-6
+
+  @media (min-width: $screen-sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)); // sm:grid-cols-2
+  }
+
+  @media (min-width: $screen-lg) {
+    grid-template-columns: repeat(3, minmax(0, 1fr)); // lg:grid-cols-3
+  }
+}
+
+.first-aid-step {
+  border-radius: 32px;
+  border: 1px solid #7a8494;
+  background-color: #ffffff;
+  padding: 24px; // p-6
+
+  @media (min-width: $screen-lg) {
+    min-height: 342px; // lg:min-h-[342px]
+  }
+
+  &__number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px; // w-12
+    height: 48px; // h-12
+    border-radius: 9999px; // rounded-full
+    background-color: #fdd835;
+    font-size: 24px;
+    font-weight: 600;
+    color: #005ab4;
+  }
+
+  &__title {
+    margin: 8px 0 0; // mt-2
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 32px; // leading-8
+    color: #005ab4;
+  }
+
+  &__desc {
+    margin: 8px 0 0; // mt-2
+    font-size: 16px;
+    line-height: 26px;
+  }
+}

@@ -1,0 +1,15 @@
+.services-section__stack {
+  @apply flex flex-col gap-8;
+}
+
+.services-section__stack-2 {
+  @apply flex flex-col gap-4;
+}
+
+.services-section__row {
+  @apply flex justify-center;
+}
+
+.services-section__btn-yellow-main {
+  @apply h-[42px] px-[22px] text-[15px] font-medium;
+}

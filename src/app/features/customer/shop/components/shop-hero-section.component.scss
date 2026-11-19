@@ -1,0 +1,31 @@
+.shop-hero-section__box {
+  @apply relative mx-auto h-[729.48px] w-[1380px] overflow-hidden rounded-[100px];
+}
+
+.shop-hero-section__layer {
+  @apply absolute left-1/2 top-0 h-[729.48px] w-[1440px] -translate-x-1/2;
+}
+
+.shop-hero-section__box-2 {
+  @apply pointer-events-none relative z-10 h-full w-full;
+}
+
+.shop-hero-section__flower-icon {
+  @apply absolute left-[60px] top-[195px] h-[30px] w-[30px] object-contain;
+}
+
+.shop-hero-section__thuc-an-huu-text {
+  @apply absolute left-[100px] top-[200px] w-[202.34px] font-['Roboto'] text-[20px] font-bold leading-6 text-[#02000F];
+}
+
+.shop-hero-section__san-pham-tot-title {
+  @apply absolute left-[60px] top-[250px] w-[562.73px] font-bold font-display text-4xl leading-tight text-[#02000f] md:text-[56px] md:leading-[68px];
+}
+
+.shop-hero-section__cac-thanh-phan-text {
+  @apply absolute left-[60px] top-[382.48px] w-[448.9px] font-['Roboto'] text-[20px] font-normal leading-[35px] text-[#4E4E4E];
+}
+
+.shop-hero-section__chon-slide {
+  @apply absolute bottom-[83.48px] left-[75px] z-20 flex items-center gap-[12px];
+}

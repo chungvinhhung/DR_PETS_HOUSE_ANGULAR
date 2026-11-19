@@ -1,10 +1,10 @@
-<div class="relative h-[513px] w-full max-w-[338px] overflow-hidden rounded-t-[189px]">
+<div class="service-section-service-card__box">
   <img
     [attr.src]="image()"
     [attr.alt]="title()"
-    class="h-full w-full object-cover transition-transform duration-component ease-premium group-hover:scale-[1.02]"
+    class="service-section-service-card__title group-hover:scale-[1.02]"
   />
-  <div class="absolute bottom-[30px] left-[33px] h-[244px] w-[272px]">
+  <div class="service-section-service-card__layer">
     <!-- Background shape -->
     <svg
       class="absolute inset-0 h-full w-full"
@@ -20,9 +20,9 @@
       />
     </svg>
     <!-- Content -->
-    <div class="relative flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
-      <h3 class="text-xl font-medium text-black">{{ title() }}</h3>
-      <p class="text-sm leading-snug tracking-wide text-black">{{ description() }}</p>
+    <div class="service-section-service-card__content">
+      <h3 class="service-section-service-card__title-2">{{ title() }}</h3>
+      <p class="service-section-service-card__description">{{ description() }}</p>
       <a
         [appCustomerLink]="href()"
         class="btn-icon mt-2 flex h-12 w-[60px] items-center justify-center bg-secondary text-xl font-bold text-black hover:bg-[#FFEE58]"

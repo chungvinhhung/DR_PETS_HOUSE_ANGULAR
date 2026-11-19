@@ -11,6 +11,7 @@ import { productImages } from '../../../../../shared/customer/assets/product-ima
   standalone: true,
   imports: [SelectValueDirective],
   templateUrl: './product-search-and-sort.component.html',
+  styleUrl: './product-search-and-sort.component.scss',
   host: {
     'class': 'flex w-full gap-[10px]',
     '(submit)': 'handle1($any($event))',

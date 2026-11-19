@@ -17,6 +17,7 @@ import { FooterComponent } from '../../../../layouts/customer/components/footer/
   standalone: true,
   imports: [NavBarComponent, HeroSectionComponent, AboutSectionComponent, ServiceSectionComponent, ProductSectionComponent, DoctorSectionComponent, BlogSectionComponent, FooterComponent],
   templateUrl: './home-page.component.html',
+  styleUrl: './home-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white',
   },

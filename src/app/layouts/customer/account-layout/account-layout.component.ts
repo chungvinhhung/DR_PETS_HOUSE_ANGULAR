@@ -13,6 +13,7 @@ import { FooterComponent } from '../components/footer/footer.component';
   standalone: true,
   imports: [RouterOutlet, NavBarComponent, SidebarComponent, FooterComponent],
   templateUrl: './account-layout.component.html',
+  styleUrl: './account-layout.component.scss',
   host: {
     'class': 'fixed inset-0 flex flex-col overflow-hidden bg-white w-full h-full',
   },

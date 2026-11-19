@@ -1,4 +1,4 @@
-<p class="text-sm font-bold text-slate-900">Phương thức thanh toán trực tuyến</p>
+<p class="online-payment-methods__phuong-thuc-thanh-text">Phương thức thanh toán trực tuyến</p>
 <div class="space-y-3">
   @for (method of ONLINE_PAYMENT_METHODS; track $index) {
     @let selected = cartService.onlineMethod() === method.id;
@@ -11,12 +11,12 @@
                 : 'border-transparent bg-white hover:border-blue-900'
             }`"
     >
-      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow">
-        <img [attr.src]="method.icon" alt="" class="h-6 w-6 object-contain" />
+      <span class="online-payment-methods__text">
+        <img [attr.src]="method.icon" alt="" class="online-payment-methods__icon" />
       </span>
-      <span class="flex-1 text-base font-bold leading-6 text-slate-900">{{ method.label }}</span>
+      <span class="online-payment-methods__label">{{ method.label }}</span>
       @if (selected) {
-        <span class="text-base font-black text-blue-900">✓</span>
+        <span class="online-payment-methods__text-2">✓</span>
       }
     </button>
   }

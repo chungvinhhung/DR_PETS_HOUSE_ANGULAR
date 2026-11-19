@@ -17,6 +17,7 @@ import { groomingTitleStyles } from '../../utils/grooming-title-styles';
   standalone: true,
   imports: [MaskedBluePanelComponent, BookButtonComponent, SmallComboCardComponent, ReactStyleDirective],
   templateUrl: './grooming-combos.component.html',
+  styleUrl: './grooming-combos.component.scss',
   host: {
     'class': 'relative z-10 h-[785px] w-[1440px] overflow-visible',
   },

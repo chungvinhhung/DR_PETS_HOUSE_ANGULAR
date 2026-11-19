@@ -1,0 +1,7 @@
+.tablet-footer-column__title {
+  @apply mb-[10px] font-['Roboto'] text-[17px] font-bold uppercase leading-[1.25] text-[#0D47A1];
+}
+
+.tablet-footer-column__let-label-list {
+  @apply flex flex-col gap-[10px];
+}

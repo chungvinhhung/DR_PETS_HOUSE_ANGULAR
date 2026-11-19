@@ -18,6 +18,7 @@ import { getPolicyDetail } from '../data/policy-data';
   standalone: true,
   imports: [CanvasLayoutComponent, NavBarComponent, BreadcrumbComponent, PolicyArticleComponent, PolicyRelatedSidebarComponent, PolicySupportCtaComponent, FooterComponent],
   templateUrl: './policy-page.component.html',
+  styleUrl: './policy-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white',
   },

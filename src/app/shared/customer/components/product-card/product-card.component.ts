@@ -15,6 +15,7 @@ import { getFirstValue, formatProductPrice, buildProductHref } from './product-c
   standalone: true,
   imports: [ProductRatingComponent, CustomerLinkDirective],
   templateUrl: './product-card.component.html',
+  styleUrl: './product-card.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -7,7 +7,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "start:admin": "ng serve --port 3001"
+    "start:admin": "ng serve --port 3001",
+    "start:admin:local-be": "ng serve --port 3001 --configuration local-backend"
   },
   "dependencies": {
     "@angular/common": "22.2.1",
@@ -21,7 +22,7 @@
     "tslib": "2.8.1"
   },
   "devDependencies": {
-    "@angular/build": "22.2.1",
+    "@angular/build": "^22.2.1",
     "@angular/cli": "22.2.1",
     "@angular/compiler-cli": "22.2.1",
     "tailwindcss": "^3.4.17",

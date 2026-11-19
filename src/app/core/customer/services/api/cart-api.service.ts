@@ -20,15 +20,18 @@ function getPrimaryProductImage(product: any = {}) {
 export function normalizeCartItem(item: any = {}) {
   const product = item.product || {};
   const variant = item.variant || item.product_variant || {};
-  const productId = item.product_id ?? product.product_id ?? item.productId ?? product.id;
+  const productId = item.product_id ?? product.product_id ?? item.productId ?? product.id ?? product._id;
   const variantId = item.variant_id ?? variant.variant_id ?? variant._id ?? item.variantId ?? variant.id ?? null;
   const cartItemId = item.cart_item_id ?? item.cartItemId ?? item.id ?? item._id;
   const price = variant.finalPrice ?? variant.price ?? product.finalPrice ?? product.price ?? item.price ?? 0;
   const typeName = variant.variant_name ?? variant.label ?? variant.name ?? item.type ?? item.variant_name ?? "";
+  const size = item.size ?? "";
+  const compositeKey = `${productId}:${variantId || "default"}:${size || "default"}`;
 
   return {
-    id: String(cartItemId ?? `${productId}:${variantId || "default"}`),
+    id: compositeKey,
     cartItemId,
+    itemKey: compositeKey,
     productId,
     variantId,
     name: product.product_name ?? product.name ?? item.name ?? "",
@@ -36,7 +39,7 @@ export function normalizeCartItem(item: any = {}) {
     image: getPrimaryProductImage(product) || item.image || item.imageUrl || item.thumbnail || product.thumbnailUrl || product.imageUrl,
     type: typeName,
     variant_name: typeName,
-    size: item.size ?? "",
+    size,
     variants: Array.isArray(product.variants) ? product.variants : item.variants,
     qty: Number(item.quantity ?? item.qty ?? 1),
     selected: Boolean(item.is_selected ?? item.isSelected ?? item.selected ?? true),

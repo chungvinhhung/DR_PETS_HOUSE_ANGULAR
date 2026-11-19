@@ -1,0 +1,307 @@
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, HostListener, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+
+import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { canAdmin } from '../../../../core/guards/admin-role-policy';
+import { AdminContentService } from '../services/admin-content.service';
+import { FIRST_AID_CATEGORIES } from '../../../../shared/customer/data/first-aid-data';
+import { CustomerIconComponent } from '../../../../shared/customer/components/icon/customer-icon.component';
+import { blogImages } from '../../../../shared/customer/assets/blog-images';
+import { FirstAidCardComponent } from '../../../customer/blog/pages/first-aid/first-aid-card.component';
+import { AdminArticleRichBlockComponent } from './admin-article-rich-block.component';
+
+type AidUrgency = 'NORMAL' | 'URGENT';
+type AidStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+interface AidStep { id:number; title:string; description:string; }
+
+function backendId(row:any):string {
+  return String(row?._id || row?.guide_id || row?.post_id || row?.id || '');
+}
+function safeHttpUrl(value:string):boolean {
+  try { return ['https:', 'http:'].includes(new URL(value).protocol); }
+  catch { return false; }
+}
+
+function escapeVideoHtml(value:string):string {
+  return value.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function legacyVideoHtml(description:string,highlights:string[]):string {
+  const paragraph=description.trim() ? `<p>${escapeVideoHtml(description.trim()).replace(/\r?\n/g,'<br>')}</p>` : '';
+  const checklist=highlights.length ? '<ul>'+highlights.map(v=>'<li>'+escapeVideoHtml(v)+'</li>').join('')+'</ul>' : '';
+  return paragraph+checklist;
+}
+function legacyVideoFields(html:string):{description:string;highlights:string[]} {
+  if(typeof DOMParser==='undefined')return {description:'',highlights:[]};
+  // DOMParser creates an inert document; the rich editor already sanitizes HTML.
+  const parsed=new DOMParser().parseFromString(html,'text/html');
+  const highlights=[...parsed.body.querySelectorAll('ul > li, ol > li')]
+    .map(li=>li.textContent?.trim() || '').filter(Boolean);
+  const copy=parsed.body.cloneNode(true) as HTMLElement;
+  copy.querySelectorAll('ul,ol').forEach(list=>list.remove());
+  const description=[...copy.childNodes].map(node=>node.textContent?.trim() || '')
+    .filter(Boolean).join('\n');
+  return {description,highlights};
+}
+
+@Component({
+  selector:'app-admin-first-aid-editor',
+  standalone:true,
+  imports:[CommonModule,FormsModule,AdminCatalogShellComponent,AdminBreadcrumbComponent,FirstAidCardComponent,CustomerIconComponent,AdminArticleRichBlockComponent],
+  templateUrl:'./admin-first-aid-editor.component.html',
+  styleUrl:'./admin-first-aid-editor.component.scss',
+  changeDetection:ChangeDetectionStrategy.OnPush,
+})
+export class AdminFirstAidEditorComponent {
+  private readonly route=inject(ActivatedRoute);
+  private readonly router=inject(Router);
+  private readonly api=inject(AdminContentService);
+  private readonly session=inject(AuthSessionService);
+  readonly editId=this.route.snapshot.paramMap.get('id') || '';
+  readonly isEditing=!!this.editId;
+  readonly canWrite=computed(()=>canAdmin(this.session.user(),'content.manage'));
+  readonly categories=FIRST_AID_CATEGORIES.filter(item=>item.id!=='all');
+
+  readonly title=signal('');
+  readonly category=signal('');
+  readonly summary=signal('');
+  readonly coverUrl=signal('');
+  readonly urgency=signal<AidUrgency>('NORMAL');
+  readonly stepBadges=signal<string[]>([]);
+  readonly badgeDraft=signal('');
+  readonly steps=signal<AidStep[]>([{id:1,title:'',description:''}]);
+  readonly videoUrl=signal('');
+  readonly videoTitle=signal('');
+  readonly videoDescription=signal('');
+  readonly videoDescriptionHtml=signal('');
+  readonly videoHighlights=signal('');
+  readonly previewMode=signal<'CARD'|'DETAIL'>('CARD');
+  readonly savedStatus=signal<AidStatus>('DRAFT');
+  readonly savedId=signal(this.editId);
+  readonly loading=signal(this.isEditing);
+  readonly error=signal('');
+  readonly loadError=signal('');
+  readonly saving=signal(false);
+  readonly dirty=signal(false);
+  private nextStepId=2;
+  private leaving=false;
+
+  readonly breadcrumb=[
+    {label:'Cẩm nang sơ cứu',link:'/admin/content/first-aid'},
+    {label:this.isEditing?'Chỉnh sửa cẩm nang':'Tạo cẩm nang sơ cứu'},
+  ];
+  readonly categoryLabel=computed(()=>this.categories.find(c=>c.id===this.category())?.label || 'Nhóm tình huống');
+  readonly completedSteps=computed(()=>this.steps().filter(s=>s.title.trim() && s.description.trim()));
+  readonly videoPoints=computed(()=>this.videoHighlights().split(/\r?\n/).map(v=>v.trim()).filter(Boolean));
+  readonly previewGuide=computed(()=>({
+    id:'preview',
+    category:this.category(),
+    categoryLabel:this.categoryLabel(),
+    title:this.title().trim() || 'Tiêu đề cẩm nang sơ cứu',
+    heroTitle:this.title().trim() || 'Tiêu đề cẩm nang sơ cứu',
+    description:this.summary().trim() || 'Mô tả tình huống và cách nhận biết dấu hiệu.',
+    image:this.coverUrl().trim() || blogImages.postPlaceholder,
+    urgent:this.urgency()==='URGENT',
+    variant:this.urgency()==='URGENT' ? 'urgent' : 'image',
+    steps:this.completedSteps(),
+    stepBadges:this.stepBadges(),
+    videoUrl:this.videoUrl().trim(),
+    videoTitle:this.videoTitle().trim(),
+    videoDescription:this.videoDescription().trim(),
+    videoDescriptionHtml:this.videoDescriptionHtml(),
+    videoHighlights:this.videoPoints(),
+  }));
+
+  constructor(){void this.loadInitial();}
+
+  private async loadInitial():Promise<void>{
+    if(!this.isEditing) return;
+    try {
+      const rows=await firstValueFrom(this.api.listFirstAid());
+      const row=rows.find((item:any)=>backendId(item)===this.editId);
+      if(row) this.hydrate(row);
+      else {
+        const detail=await firstValueFrom(this.api.getPost(this.editId));
+        if(!detail) throw new Error('missing');
+        this.hydrate(detail);
+      }
+    } catch {
+      this.loadError.set('Không thể tải cẩm nang để chỉnh sửa. Vui lòng quay lại danh sách và thử lại.');
+    } finally {this.loading.set(false);}
+  }
+  private hydrate(row:any):void {
+    const rawCategory=row.category;
+    const catText=String(typeof rawCategory==='string' ? rawCategory :
+      rawCategory?.category_name || rawCategory?.name || rawCategory?.label ||
+      rawCategory?.id || rawCategory?.first_aid_category_id || '');
+    const normalized=catText.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    const matched=this.categories.find(c=>c.id===catText ||
+      c.label===catText || c.label.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()===normalized);
+    this.category.set(matched?.id || '');
+    this.title.set(String(row.title || ''));
+    this.summary.set(String(row.situation_description || row.situationDescription || row.excerpt || ''));
+    this.coverUrl.set(String(row.thumbnail_url || row.thumbnailUrl || row.cover_image_url || row.image_url || ''));
+    const rawUrgency=String(row.urgencyLevel || row.urgency_level || row.severity || '').toUpperCase();
+    this.urgency.set(row.urgent === true || rawUrgency==='URGENT' || rawUrgency==='HIGH' ? 'URGENT' : 'NORMAL');
+    const rawBadges=row.step_badges ?? row.stepBadges;
+    const badges=Array.isArray(rawBadges)?rawBadges.filter((x:unknown):x is string=>typeof x==='string') : [];
+    this.stepBadges.set([...new Set(badges.map(v=>v.trim().replace(/\s+/g,' ').slice(0,40)).filter(Boolean))].slice(0,6));
+    const rawSteps=Array.isArray(row.steps)?row.steps:[];
+    const parsedSteps:AidStep[]=rawSteps.map((step:any,index:number)=>({
+      id:index+1,title:String(step.title || ''),
+      description:String(step.step_content || step.instruction || step.description || ''),
+    }));
+    // Preserve the structured steps returned by BE. Never manufacture a first-aid
+    // instruction from an unrelated free-text content field.
+    this.steps.set(parsedSteps);
+
+    this.nextStepId=Math.max(0,...this.steps().map(s=>s.id))+1;
+    this.videoUrl.set(String(row.video_url || row.videoUrl || row.video?.url || ''));
+    this.videoTitle.set(String(row.video_title || row.videoTitle || row.video?.title || ''));
+    const description=String(row.video_description || row.videoDescription || row.video?.description || '');
+    const highlights=row.video_highlights || row.videoHighlights || row.video?.highlights || [];
+    const highlightList=(Array.isArray(highlights)?highlights.map(v=>String(v)):String(highlights||'').split(/\r?\n/)).filter(Boolean);
+    const richHtml=String(row.video_description_html || row.videoDescriptionHtml || row.video?.descriptionHtml || '');
+    this.videoDescriptionHtml.set(richHtml || legacyVideoHtml(description,highlightList));
+    const structured=richHtml ? legacyVideoFields(richHtml) : {description,highlights:highlightList};
+    this.videoDescription.set(structured.description);
+    this.videoHighlights.set(structured.highlights.join('\n'));
+    const status=String(row.status || 'DRAFT').toUpperCase();
+    this.savedStatus.set(status==='PUBLISHED'||status==='ARCHIVED'?status:'DRAFT');
+    this.dirty.set(false);
+  }
+  setField(field:'title'|'category'|'summary'|'coverUrl'|'videoUrl'|'videoTitle',value:string):void {
+    this[field].set(value);this.dirty.set(true);this.error.set('');
+  }
+  setUrgency(value:AidUrgency):void {this.urgency.set(value);this.dirty.set(true);}
+  updateVideoRichContent(value:{text:string;html:string}):void {
+    this.videoDescriptionHtml.set(value.html);
+    const fields=legacyVideoFields(value.html);
+    this.videoDescription.set(fields.description);
+    this.videoHighlights.set(fields.highlights.join('\n'));
+    this.dirty.set(true);this.error.set('');
+  }
+  private normalizeBadge(value:string):string {
+    return value.trim().replace(/\s+/g,' ').slice(0,40);
+  }
+  commitStepBadge():void {
+    const badge=this.normalizeBadge(this.badgeDraft());
+    if(!badge){this.badgeDraft.set('');return;}
+    if(this.stepBadges().length>=6){
+      this.error.set('Tối đa 6 nhãn lưu ý cho mỗi cẩm nang.');return;
+    }
+    if(!this.stepBadges().some(v=>v.toLocaleLowerCase('vi')===badge.toLocaleLowerCase('vi'))){
+      this.stepBadges.update(items=>[...items,badge]);this.dirty.set(true);
+    }
+    this.badgeDraft.set('');
+    this.error.set('');
+  }
+  handleStepBadgeKey(event:KeyboardEvent):void {
+    if(event.key==='Enter'||event.key===','){
+      event.preventDefault();this.commitStepBadge();
+    }
+  }
+  removeStepBadge(badge:string):void {
+    this.stepBadges.update(items=>items.filter(item=>item!==badge));
+    this.dirty.set(true);
+  }
+  addStep():void {
+    this.steps.update(steps=>[...steps,{id:this.nextStepId++,title:'',description:''}]);
+    this.dirty.set(true);
+  }
+  editStep(id:number,key:'title'|'description',value:string):void {
+    this.steps.update(steps=>steps.map(s=>s.id===id?{...s,[key]:value}:s));
+    this.dirty.set(true);
+  }
+  removeStep(id:number):void{
+    this.steps.update(steps=>steps.filter(s=>s.id!==id));
+    this.dirty.set(true);
+  }
+  moveStep(id:number,direction:-1|1):void {
+    this.steps.update(steps=>{
+      const index=steps.findIndex(s=>s.id===id),to=index+direction;
+      if(index<0||to<0||to>=steps.length)return steps;
+      const copy=[...steps];[copy[index],copy[to]]=[copy[to],copy[index]];
+      return copy;
+    });
+    this.dirty.set(true);
+  }
+  private payload():Record<string,unknown>|null {
+    this.commitStepBadge();
+    if(!this.title().trim()||!this.categories.some(c=>c.id===this.category())||!this.summary().trim()){
+      this.error.set('Nhập tiêu đề, chọn nhóm tình huống và mô tả tình huống trước khi lưu.');return null;
+    }
+    const steps=this.steps();
+    if(!steps.length || steps.some(s=>!s.title.trim()||!s.description.trim())){
+      this.error.set('Cẩm nang cần ít nhất một bước sơ cứu; mỗi bước phải có tên và hướng dẫn đầy đủ.');return null;
+    }
+    if(this.coverUrl().trim()&&!safeHttpUrl(this.coverUrl().trim())){
+      this.error.set('URL ảnh bìa không hợp lệ. Chỉ chấp nhận http:// hoặc https://.');return null;
+    }
+    if(this.videoUrl().trim()&&!safeHttpUrl(this.videoUrl().trim())){
+      this.error.set('URL video không hợp lệ. Chỉ chấp nhận http:// hoặc https://.');return null;
+    }
+    if(this.videoUrl().trim()&&!this.videoTitle().trim()){
+      this.error.set('Nhập tiêu đề video nếu có gắn video hướng dẫn.');return null;
+    }
+    const normalizedSteps=steps.map((step,index)=>({
+      step_number:index+1,title:step.title.trim(),step_content:step.description.trim(),
+    }));
+    return {
+      postType:'FIRST_AID',status:this.savedStatus(),
+      title:this.title().trim(),category:this.categoryLabel(),
+      categoryId:this.category(),excerpt:this.summary().trim(),
+      situation_description:this.summary().trim(),
+      heroTitle:this.title().trim(),
+      thumbnail_url:this.coverUrl().trim() || null,
+      urgencyLevel:this.urgency(),urgent:this.urgency()==='URGENT',
+      step_badges:this.stepBadges(),
+      steps:normalizedSteps,
+      video_url:this.videoUrl().trim() || null,
+      video_title:this.videoTitle().trim(),
+      video_description:this.videoDescription().trim(),
+      video_description_html:this.videoDescriptionHtml().trim() || null,
+      video_highlights:this.videoPoints(),
+      content:normalizedSteps.map(s=>s.step_number+'. '+s.title+'\n'+s.step_content).join('\n\n'),
+    };
+  }
+  async save(target:'DRAFT'|'PUBLISHED'):Promise<void>{
+    if(!this.canWrite()||this.loading()||this.saving())return;
+    const body=this.payload();if(!body)return;
+    this.saving.set(true);this.error.set('');
+    try {
+      let id=this.savedId();
+      if(id){await firstValueFrom(this.api.updatePost(id,body));}
+      else {
+        const created=await firstValueFrom(this.api.createPost({...body,status:'DRAFT'}));
+        id=backendId(created);
+        if(!id)throw new Error('Chưa xác nhận được cẩm nang đã lưu. Vui lòng kiểm tra danh sách trước khi thử lại.');
+        this.savedId.set(id);
+        const actual=String(created?.status||'').toUpperCase();
+        if(actual && actual!=='DRAFT')throw new Error('Trạng thái cẩm nang chưa đúng với lựa chọn. Vui lòng tải lại để kiểm tra.');
+      }
+      if(target!==this.savedStatus())await firstValueFrom(this.api.updatePostStatus(id,target));
+      this.savedStatus.set(target);this.dirty.set(false);this.leaving=true;
+      await this.router.navigate(['/admin/content/first-aid'],{
+        queryParams:{notice:target==='PUBLISHED'?'Đã xuất bản cẩm nang.':'Đã lưu bản nháp cẩm nang.'},
+      });
+    } catch(err:any){
+      this.error.set(err?.error?.message || err?.message ||
+        'Không hoàn tất lưu/xuất bản. Nếu dữ liệu đã được tạo, hãy kiểm tra trạng thái trước khi thử lại.');
+    } finally {this.saving.set(false);}
+  }
+  cancel():void{
+    if(this.dirty() && typeof window!=='undefined' &&
+      !window.confirm('Bạn có nội dung chưa lưu. Rời trang?')) return;
+    this.leaving=true;void this.router.navigate(['/admin/content/first-aid']);
+  }
+  @HostListener('window:beforeunload',['$event'])
+  beforeUnload(event:BeforeUnloadEvent):void {
+    if(this.dirty()&&!this.leaving)event.preventDefault();
+  }
+}

@@ -12,6 +12,7 @@ import { CustomerIconComponent } from '../../../../shared/customer/components/ic
   standalone: true,
   imports: [DemandTabsComponent, FilterGroupComponent, CustomerIconComponent],
   templateUrl: './search-sidebar.component.html',
+  styleUrl: './search-sidebar.component.scss',
   host: {
     'class': 'w-full shrink-0 lg:w-[283px]',
   },

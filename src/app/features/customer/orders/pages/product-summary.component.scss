@@ -1,0 +1,23 @@
+.product-summary__name {
+  @apply h-20 w-20 shrink-0 object-cover;
+}
+
+.product-summary__stack {
+  @apply flex min-w-0 flex-1 flex-col gap-[8px];
+}
+
+.product-summary__price {
+  @apply text-[14px] text-[#353535];
+}
+
+.product-summary__row {
+  @apply flex min-w-0 flex-nowrap items-center gap-x-4 text-[12px] text-[#353535];
+}
+
+.product-summary__product-type {
+  @apply min-w-0 truncate;
+}
+
+.product-summary__quantity {
+  @apply shrink-0;
+}

@@ -10,6 +10,7 @@ import { formatCurrency, formatOrderDate, getOrderSubtotal, getOrderTotal } from
   standalone: true,
   imports: [],
   templateUrl: './invoice-modal.component.html',
+  styleUrl: './invoice-modal.component.scss',
   host: {
     'class': 'fixed inset-0 z-[100] flex items-center justify-center bg-black/30 p-5 backdrop-blur-sm',
     '(click)': 'onClose.emit($event)',

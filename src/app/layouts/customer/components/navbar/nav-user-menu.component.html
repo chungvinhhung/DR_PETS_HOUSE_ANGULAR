@@ -4,22 +4,22 @@
   aria-label="Menu tài khoản"
   aria-haspopup="true"
 >
-  <img [attr.src]="avatar()" alt="" class="h-9 w-9 object-cover" />
+  <img [attr.src]="avatar()" alt="" class="nav-user-menu__avatar" />
 </button>
 <!-- pt-2: vùng đệm để di chuột từ avatar xuống menu không bị mất hover -->
-<div class="invisible absolute right-0 top-full z-50 pt-2 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
-  <div class="min-w-[260px] rounded-2xl border border-gray-100 bg-white p-3 shadow-lg">
+<div class="nav-user-menu__pt-2-vung-dem group-hover:visible group-hover:opacity-100 invisible opacity-0">
+  <div class="nav-user-menu__box">
     <ul class="space-y-0.5">
       @for (item of USER_MENU_LINKS; track item.label) {
         <li>
           @if (item.children) {
-            <div class="group/sub relative">
+            <div class="nav-user-menu__box-2 group/sub">
               <a [appCustomerLink]="item.href" [class]="`${linkClass} pr-8 font-medium`">{{ item.label }}<span
                   class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
                   aria-hidden="true"
                 >›</span>
               </a>
-              <ul class="invisible absolute right-full top-0 z-10 mr-1 min-w-[220px] rounded-2xl border border-gray-100 bg-white p-3 opacity-0 shadow-lg transition-all duration-200 group-hover/sub:visible group-hover/sub:opacity-100">
+              <ul class="nav-user-menu__list group-hover/sub:visible group-hover/sub:opacity-100 invisible opacity-0">
                 @for (child of item.children; track child.label) {
                   <li><a [appCustomerLink]="child.href" [class]="linkClass">{{ child.label }}</a></li>
                 }
@@ -31,7 +31,7 @@
         </li>
       }
     </ul>
-    <div class="mt-2 border-t border-gray-100 pt-2">
+    <div class="nav-user-menu__box-3">
       <a
         [attr.href]="USER_MENU_LOGOUT.href"
         [class]="`${linkClass} font-medium text-red-600 hover:bg-red-50 hover:text-red-700`"

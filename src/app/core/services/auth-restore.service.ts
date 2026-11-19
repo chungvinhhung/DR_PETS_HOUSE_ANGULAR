@@ -60,12 +60,17 @@ export class AuthRestoreService {
   private normalizeUser(response: CurrentUserResponse): AuthUser {
     return {
       id: response.id ?? response._id ?? '',
+      username: response.username ?? null,
       phone: response.phone,
       fullName: response.fullName,
       email: response.email ?? null,
       systemRole: response.systemRole,
       staffSubRole: response.staffSubRole ?? null,
       avatarUrl: response.avatarUrl ?? null,
+      accountStatus: response.accountStatus,
+      activationStatus: response.activationStatus,
+      lastLogin: response.lastLogin ?? null,
+      branchScope: [...(response.branchScope ?? [])],
     };
   }
 }

@@ -12,6 +12,7 @@ import { SIDE_CONTENT } from './auth-modal.helpers';
   standalone: true,
   imports: [AuthBackgroundBlobComponent],
   templateUrl: './split-side.component.html',
+  styleUrl: './split-side.component.scss',
   host: {
     'class': 'relative flex h-[242px] w-full shrink-0 flex-col items-center justify-center overflow-hidden bg-[#90CAF9] px-5 text-center md:h-auto md:w-1/2 md:self-stretch md:px-8 lg:w-[48%]',
   },

@@ -1,0 +1,27 @@
+.address-change-modal__overlay {
+  @apply fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(6,16,90,0.2)] p-6 backdrop-blur-[2px];
+}
+
+.address-change-modal__stack {
+  @apply flex max-h-[calc(100vh-48px)] w-[737px] max-w-[calc(100vw-32px)] flex-col items-center gap-[10px] overflow-y-auto rounded-[16px] bg-white p-[24px];
+}
+
+.address-change-modal__section {
+  @apply flex w-full flex-col gap-[16px] rounded-[8px] bg-white p-[10px];
+}
+
+.address-change-modal__row {
+  @apply flex h-[37px] items-center gap-2;
+}
+
+.address-change-modal__location-pin {
+  @apply h-5 w-4 shrink-0;
+}
+
+.address-change-modal__danh-sach-dia-title {
+  @apply flex-1 text-[20px] font-bold leading-[32px] tracking-[0.15px] text-[#00355F];
+}
+
+.address-change-modal__save-error {
+  @apply text-[14px] text-red-600;
+}

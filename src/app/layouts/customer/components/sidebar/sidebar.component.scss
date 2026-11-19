@@ -1,0 +1,15 @@
+.sidebar__let-icon-nav {
+  @apply flex min-w-0 flex-1 gap-2 overflow-x-auto pr-1 lg:block lg:overflow-x-visible lg:overflow-y-auto;
+}
+
+.sidebar__label {
+  @apply font-medium text-[15px] whitespace-nowrap;
+}
+
+.sidebar__row {
+  @apply flex items-center gap-4 px-3 py-2 lg:px-4 lg:py-3 lg:mt-4 rounded-lg cursor-pointer transition-all duration-200 ease-in-out text-[#414753] hover:bg-[#d4effa] flex-shrink-0;
+}
+
+.sidebar__dang-xuat-text {
+  @apply hidden font-medium text-[15px] whitespace-nowrap sm:inline;
+}

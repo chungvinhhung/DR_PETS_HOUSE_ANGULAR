@@ -3,7 +3,7 @@
   @let inputInvalid = invalid() && addressMode() === NEW_ADDRESS_VALUE;
   <div [class]="`flex flex-col gap-4 ${field().fullWidth ? 'col-span-2' : ''}`">
     <label app-adoption-application-modal-field-label [field]="field()"></label>
-    <div class="relative">
+    <div class="contact-field__box">
       <select
         id="adoption-address-select"
         [selectValue]="addressMode()"
@@ -44,7 +44,7 @@
   <div [class]="`flex flex-col gap-4 ${field().fullWidth ? 'col-span-2' : ''}`">
     <label app-adoption-application-modal-field-label [field]="field()"></label>
     @if (field().type === 'select') {
-      <div class="relative">
+      <div class="contact-field__box">
         <select
           [attr.id]="sharedProps().id"
           [attr.name]="sharedProps().name"

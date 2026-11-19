@@ -1,0 +1,43 @@
+.checkout-order-item__row {
+  @apply flex h-full shrink-0 items-center justify-center;
+}
+
+.checkout-order-item__box {
+  @apply h-20 w-20 overflow-hidden rounded-2xl bg-white shadow;
+}
+
+.checkout-order-item__name {
+  @apply size-full object-cover;
+}
+
+.checkout-order-item__stack {
+  @apply flex min-h-0 min-w-0 flex-1 flex-col justify-center gap-2;
+}
+
+.checkout-order-item__row-2 {
+  @apply flex w-full items-start justify-between;
+}
+
+.checkout-order-item__name-2 {
+  @apply line-clamp-2 min-w-0 pr-4 text-base font-bold leading-6 text-blue-900;
+}
+
+.checkout-order-item__qty {
+  @apply shrink-0 whitespace-nowrap text-base font-black text-blue-900;
+}
+
+.checkout-order-item__row-3 {
+  @apply flex w-full items-center justify-between whitespace-nowrap text-xs font-medium text-slate-700;
+}
+
+.checkout-order-item__row-4 {
+  @apply flex flex-wrap items-center gap-x-6 gap-y-1;
+}
+
+.checkout-order-item__row-5 {
+  @apply flex items-center gap-1;
+}
+
+.checkout-order-item__row-6 {
+  @apply flex items-center gap-[5px];
+}

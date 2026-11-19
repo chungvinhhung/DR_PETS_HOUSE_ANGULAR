@@ -1,9 +1,9 @@
 @if (isLoading()) {
-  <div class="flex min-h-screen items-center justify-center text-[#0D47A1]">Đang tải sản phẩm...</div>
+  <div class="product-details-page__dang-tai-san-el">Đang tải sản phẩm...</div>
 } @else if (!product()) {
-  <div class="flex min-h-screen items-center justify-center text-[#D32F2F]">{{ loadError() || 'Không tìm thấy sản phẩm.' }}</div>
+  <div class="product-details-page__load-error">{{ loadError() || 'Không tìm thấy sản phẩm.' }}</div>
 } @else {
-  <div class="min-h-screen bg-white">
+  <div class="product-details-page__box">
     <div app-canvas-layout>
       <app-nav-bar />
       <nav
@@ -15,10 +15,10 @@
           ]"
       ></nav>
       @if (loadError()) {
-        <div class="mx-auto mt-2 w-full max-w-[1200px] rounded-[12px] bg-[#E5F6FD] px-5 py-3 text-sm font-medium text-[#0D47A1]">{{ loadError() }}</div>
+        <div class="product-details-page__load-error-2">{{ loadError() }}</div>
       }
       <!-- —— Product detail section —— -->
-      <section class="relative mx-auto w-full max-w-[1440px] px-4 pb-12 sm:px-8 xl:h-[778px] xl:px-0 xl:pb-0">
+      <section class="product-details-page__product-detail-section">
         <!-- Breadcrumb -->
         <!-- <nav className="absolute left-[120px] top-[32px] flex items-center gap-[4px] text-[16px]" aria-label="Breadcrumb">
             <Link
@@ -31,81 +31,85 @@
             <span className="text-[rgba(0,0,0,0.87)] cursor-default">{product.name}</span>
           </nav> -->
         <!-- Product layout -->
-        <div class="relative mx-auto flex w-full max-w-[1200px] items-start overflow-visible pt-5 xl:absolute xl:left-[120px] xl:top-[20px] xl:h-[622px] xl:w-[1200px] xl:pt-0">
-          <div class="flex w-full flex-col items-center gap-10 lg:flex-row lg:items-start lg:gap-8 xl:ml-[-18px] xl:h-[644px] xl:w-[1218px] xl:gap-[71px]">
+        <div class="product-details-page__product-layout">
+          <div class="product-details-page__stack">
             <!-- Left: image gallery -->
-            <div class="flex w-full max-w-[626px] gap-3 sm:gap-[24px] lg:w-[52%] lg:shrink-0 xl:w-[626px] xl:pl-[15px] xl:pt-[8.5px]">
-              <!-- Left: thumbnails column -->
-              <div class="flex h-[627px] w-[70px] sm:w-[100px] shrink-0 flex-col gap-2 sm:gap-[10px] overflow-y-auto pr-1 rounded-[16px]">
-                @for (thumb of thumbnails(); track $index; let i = $index) {
+            <div class="product-details-page__left-image-gallery">
+              <!-- Left: thumbnails column — hiện 3 ô, ảnh biến thể xếp đầu, ảnh chung cuộn xuống để xem -->
+              <div #thumbnailsRef class="product-details-page__left-thumbnails-column">
+                @for (thumb of galleryItems(); track $index; let i = $index) {
                   <button
                     type="button"
                     (click)="selectThumbnail(i)"
                     (mouseenter)="thumbHovered.set(i)"
                     (mouseleave)="thumbHovered.set(null)"
                     [class]="`group relative h-[64px] w-[64px] sm:h-[94px] sm:w-[94px] shrink-0 overflow-hidden rounded-[8px] transition-all duration-micro focus-ring-brand focus-visible:ring-2 focus-visible:ring-[#0D47A1] ${
-                        i === selectedImageIdx() && !variantImage()
+                        i === selectedImageIdx()
                           ? 'border-2 border-[#0D47A1] shadow-[0_0_0_1px_#0D47A1]'
                           : thumbHovered() === i
                             ? 'border border-[#90CAF9] shadow-sm'
                             : 'border border-[#E0E0E0]'
                       }`"
-                    [attr.aria-label]="`Xem ảnh ${i + 1}`"
+                    [attr.aria-label]="thumb.label ? `Chọn loại ${thumb.label}` : `Xem ảnh ${i + 1}`"
+                    [attr.title]="thumb.label || null"
                     [attr.aria-current]="i === selectedImageIdx() ? 'true' : undefined"
                   >
                     <img
-                      [attr.src]="thumb"
+                      [attr.src]="thumb.src"
                       alt=""
                       [class]="`h-full w-full object-cover transition-opacity duration-micro ${
                           i !== selectedImageIdx() && thumbHovered() !== i ? 'opacity-70 group-hover:opacity-90' : 'opacity-100'
                         }`"
                     />
+                    @if (thumb.label) {
+                      <span class="product-details-page__thumb-label">{{ thumb.label }}</span>
+                    }
                   </button>
                 }
               </div>
               <!-- Main image with optional out of stock badge -->
-              <div class="relative aspect-[460/627] h-auto w-full min-w-0 flex-1 overflow-hidden rounded-[4px] xl:h-[627px] xl:w-[460px] xl:flex-none">
+              <div class="product-details-page__main-image-with-optional">
                 <img
                   [attr.src]="selectedImage()"
                   [attr.alt]="product().name"
-                  class="h-full w-full rounded-[4px] object-cover"
+                  class="product-details-page__name"
                 />
                 @if (isOutOfStock()) {
-                  <div class="absolute inset-0 flex items-center justify-center bg-black/25">
-                    <div class="flex h-[136px] w-[136px] items-center justify-center rounded-full bg-[rgba(55,65,81,0.92)] shadow-xl">
-                      <span class="font-['Roboto'] text-[22px] font-bold uppercase tracking-wider text-white">TẠM HẾT</span>
+                  <div class="product-details-page__layer">
+                    <div class="product-details-page__row">
+                      <span class="product-details-page__tam-het-text">TẠM HẾT</span>
                     </div>
                   </div>
                 }
               </div>
             </div>
             <!-- Right: product info -->
-            <div class="flex w-full max-w-[626px] flex-col justify-between gap-8 lg:max-w-none lg:flex-1 xl:h-[644px] xl:w-[511px] xl:flex-none xl:gap-0">
-              <div class="flex w-full flex-col gap-[32px] xl:w-[489px]">
-                <div class="flex flex-col gap-[20px]">
+            <div class="product-details-page__right-product-info">
+              <div class="product-details-page__stack-2">
+                <div class="product-details-page__stack-3">
                   <!-- Title + stars -->
-                  <div class="flex flex-col gap-[12px]">
-                    <h1 class="w-full font-['Roboto'] text-[26px] sm:text-[32px] xl:w-full xl:w-[494px] font-bold leading-[1.235] tracking-[0.25px] text-[#0D47A1]">{{ product().name }}</h1>
-                    <div class="flex items-center gap-[10px]">
+                  <div class="product-details-page__title-stars">
+                    <h1 class="product-details-page__name-2">{{ product().name }}</h1>
+                    <div class="product-details-page__row-2">
                       <app-product-rating [value]="product().rating" />
-                      <span class="font-['Oxygen'] text-[14px] leading-[23.87px] text-[#414141]">( {{ product().reviewCount || 0 }} review )</span>
+                      <span class="product-details-page__review-count">( {{ product().reviewCount || 0 }} review )</span>
                     </div>
                     <!-- Price with active variant support -->
-                    <div class="flex items-center gap-[10px]">
-                      <span class="font-['Roboto'] text-[32px] font-normal leading-[39.52px] tracking-[0.25px] text-[#D32F2F]">{{ formatPrice(currentPrice()) }}</span>
+                    <div class="product-details-page__row-2">
+                      <span class="product-details-page__current-price">{{ formatPrice(currentPrice()) }}</span>
                       @if (currentOriginalPrice() && currentOriginalPrice()! > currentPrice()) {
-                        <span class="font-['Roboto'] text-[24px] font-normal leading-[32.02px] text-[rgba(0,0,0,0.38)] line-through">{{ formatPrice(currentOriginalPrice()!) }}</span>
+                        <span class="product-details-page__current-original-price">{{ formatPrice(currentOriginalPrice()!) }}</span>
                         @if (currentDiscountPercent()) {
-                          <span class="inline-flex h-[21px] w-[50px] items-center justify-center rounded-[40px] bg-[#D32F2F] font-['Roboto'] text-[12px] font-bold leading-[19.92px] tracking-[0.4px] text-white">-{{ currentDiscountPercent() }}%</span>
+                          <span class="product-details-page__current-discount-percent">-{{ currentDiscountPercent() }}%</span>
                         }
                       }
                     </div>
                   </div>
-                  <div class="h-px w-full xl:w-[494px] bg-[#D7D7D7]"></div>
+                  <div class="product-details-page__box-2"></div>
                   <!-- Description + "Đọc thêm" scroll -->
-                  <div class="w-full xl:w-[494px] text-[16px] leading-[1.5] tracking-[0.15px] text-[#414141]">
+                  <div class="product-details-page__description-doc-them-scroll">
                     <p
-                      class="mb-0 overflow-hidden"
+                      class="product-details-page__short-description"
                       [appStyle]="{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2 }"
                     >{{ product().shortDescription || product().description }}</p>
                     <button
@@ -114,43 +118,45 @@
                       class="mt-[8px] text-[#0D47A1] underline underline-offset-2 hover:no-underline hover:text-[#1565C0] focus-ring-brand transition-all duration-micro"
                     >Đọc thêm...</button>
                   </div>
-                  <div class="h-px w-full xl:w-[494px] bg-[#D7D7D7]"></div>
+                  <div class="product-details-page__box-2"></div>
                   <!-- Type selection -->
                   @if (hasMultipleVariants()) {
-                    <div class="flex flex-wrap items-center gap-[24px]">
-                      <span class="font-['Roboto'] text-[16px] font-medium leading-[24px] text-[#1D2939]">Loại</span>
-                      <div class="flex flex-wrap items-center gap-3 sm:gap-[12px]">
-                        @for (variant of product().variants ?? []; track variant.id || $index; let i = $index) {
-                          @if (variant.label || variant.name) {
-                            <button
-                              type="button"
-                              (click)="selectVariant(i, variant)"
-                              [class]="`h-[38px] min-w-[68px] px-[16px] py-[6px] rounded-[4px] font-['Roboto'] text-[14px] font-medium transition-all duration-micro focus-ring-brand active:scale-95 ${
-                                  i === selectedTypeIdx()
-                                    ? 'border-2 border-[#1976D2] bg-white text-[#1976D2] shadow-sm'
-                                    : 'border border-transparent bg-[#F2F4F7] text-[#1D2939] hover:bg-[#E5E7EB]'
-                                }`"
-                              [attr.aria-pressed]="i === selectedTypeIdx()"
-                            >
-                              {{ variant.label || variant.name }}
-                            </button>
-                          }
-                        }
-                      </div>
-                    </div>
-                  }
-                  <!-- Stock info -->
-                  <div class="font-['Roboto'] text-[14px] text-[#414141]">
-                    Kho: <span class="font-medium text-[#1D2939]">{{ currentStock() }}</span>
-                  </div>
+  <div class="product-details-page__box-3">
+    <div class="product-details-page__loai-el">Loại</div>
+    <div class="product-details-page__row-3">
+      @for (variant of product().variants ?? []; track variant.id || $index; let i = $index) {
+        @if (variant.label || variant.name) {
+          <button
+            type="button"
+            (click)="selectVariant(i, variant)"
+            [class.border-[#0D47A1]]="selectedTypeIdx() === i"
+            [class.text-[#0D47A1]]="selectedTypeIdx() === i"
+            [class.opacity-50]="(variant.availableStock ?? variant.stockQuantity ?? 0) <= 0"
+            class="rounded border px-3 py-2 text-[14px] transition-colors"
+          >
+            {{ variant.label || variant.name }}
+          </button>
+        }
+      }
+    </div>
+  </div>
+}
+
+<div class="product-details-page__kho-el">
+  Kho: <span class="product-details-page__current-stock">{{ currentStock() }}</span>
+  @if (isOutOfStock()) {
+    <span class="product-details-page__het-hang-text">(Hết hàng)</span>
+  }
+</div>
+
                 </div>
               </div>
               <!-- Action buttons -->
-              <div class="flex w-full xl:w-[494px] flex-col gap-[15px]">
-                <div class="flex min-h-[43px] flex-wrap items-center gap-[15px]">
-                  <span class="font-['Roboto'] text-[14px] text-[#414141]">Số lượng:</span>
+              <div class="product-details-page__action-buttons">
+                <div class="product-details-page__row-4">
+                  <span class="product-details-page__so-luong-text">Số lượng:</span>
                   <!-- Quantity stepper -->
-                  <div class="flex h-[43px] w-[100px] items-center justify-between rounded-[4px] border border-[#D7D7D7] bg-white px-[12px] py-[8px]">
+                  <div class="product-details-page__quantity-stepper">
                     <button
                       type="button"
                       (click)="handleDecrement()"
@@ -158,9 +164,9 @@
                       class="flex h-6 w-6 cursor-pointer items-center justify-center text-[20px] leading-6 text-[#414141] transition-colors duration-micro hover:text-[#0D47A1] focus-ring-brand active:scale-90 disabled:cursor-not-allowed disabled:opacity-40"
                       aria-label="Giảm số lượng"
                     >
-                      <img [attr.src]="productImages.remove" alt="" class="h-5 w-5" />
+                      <img [attr.src]="productImages.remove" alt="" class="product-details-page__remove" />
                     </button>
-                    <span class="font-['Oxygen'] text-[16px] font-bold text-[#414141]">{{ quantity() }}</span>
+                    <span class="product-details-page__quantity">{{ quantity() }}</span>
                     <button
                       type="button"
                       (click)="handleIncrement()"
@@ -168,25 +174,31 @@
                       class="flex h-6 w-6 cursor-pointer items-center justify-center text-[20px] leading-6 text-[#414141] transition-colors duration-micro hover:text-[#0D47A1] focus-ring-brand active:scale-90 disabled:cursor-not-allowed disabled:opacity-40"
                       aria-label="Tăng số lượng"
                     >
-                      <img [attr.src]="productImages.add" alt="" class="h-5 w-5" />
+                      <img [attr.src]="productImages.add" alt="" class="product-details-page__remove" />
                     </button>
                   </div>
                   <!-- Add to cart or Out of Stock Button -->
                   @if (!isOutOfStock()) {
+                    
                     <button
-                      type="button"
-                      (click)="handleAddToCart()"
-                      [class]="`relative h-[43px] flex-1 rounded-[4px] px-[22px] py-[8px] font-['Roboto'] text-[15px] font-bold uppercase tracking-[0.46px] shadow-sm transition-all duration-micro focus-ring-brand active:scale-[0.98] ${
-                          cartAdded()
-                            ? 'bg-[#4CAF50] text-white'
-                            : 'bg-[#FFF176] text-black hover:bg-[#FFE082]'
-                        }`"
-                    >
-                      <span [class]="`transition-all duration-200 ${cartAdded() ? 'opacity-0 scale-90' : 'opacity-100 scale-100'}`">THÊM VÀO GIỎ HÀNG</span>
-                      @if (cartAdded()) {
-                        <span class="absolute inset-0 flex items-center justify-center text-[13px] font-bold text-white">✓ ĐÃ THÊM</span>
-                      }
-                    </button>
+  type="button"
+  (click)="handleAddToCart()"
+  [class]="`relative h-[43px] flex-1 rounded-[4px] border px-[22px] py-[8px] font-['Roboto'] text-[15px] font-medium uppercase tracking-[0.46px] transition-all duration-micro focus-ring-brand active:scale-[0.98] ${
+      cartAdded()
+        ? 'border-[#4CAF50] bg-[#4CAF50] text-white font-bold'
+        : 'border-[#FDD835] bg-white text-[#FBC02D] hover:bg-[#FFFDE7] hover:border-[#FBC02D]'
+    }`"
+>
+  <span [class]="`transition-all duration-200 ${cartAdded() ? 'opacity-0 scale-90' : 'opacity-100 scale-100'}`">
+    THÊM VÀO GIỎ HÀNG
+  </span>
+  @if (cartAdded()) {
+    <span class="product-details-page__da-them-text">
+      ✓ ĐÃ THÊM
+    </span>
+  }
+</button>
+
                   } @else {
                     <button
                       type="button"
@@ -200,23 +212,27 @@
 
                 @if (!isOutOfStock()) {
                   <!-- Buy now -->
-                  <button
-                    type="button"
-                    (click)="handleBuyNow()"
-                    class="h-[43px] w-full rounded-[4px] border border-[#FDD835] bg-white px-[22px] py-[8px] font-['Roboto'] text-[15px] font-medium uppercase tracking-[0.46px] text-[#FBC02D] transition-all duration-micro hover:bg-[#FFFDE7] hover:border-[#FBC02D] focus-ring-brand active:scale-[0.98]"
-                  >MUA NGAY</button>
-                } @else {
+                  <app-yellow-button
+                    (onClick)="handleBuyNow()"
+                    [className]="'h-[43px] w-full px-[22px] py-[8px] font-[\'Roboto\'] text-[15px] font-bold uppercase tracking-[0.46px]'"
+                  >
+                    MUA NGAY
+                  </app-yellow-button>
+
+    
+                } 
+                @else {
                   <!-- Out of Stock Notification Subscribe Box -->
-                  <div class="rounded-[8px] border border-[#D0D5DD] bg-white p-[16px] shadow-sm">
-                    <div class="flex items-start gap-[10px]">
-                      <svg class="mt-[2px] h-5 w-5 shrink-0 text-[#667085]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div class="product-details-page__out-of-stock-notification">
+                    <div class="product-details-page__row-5">
+                      <svg class="product-details-page__icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                       </svg>
-                      <div class="flex-1">
-                        <h4 class="font-['Roboto'] text-[14px] font-bold text-[#1D2939]">Đăng ký nhận thông báo khi có hàng</h4>
-                        <p class="mt-[2px] font-['Roboto'] text-[12px] text-[#475467]">Chúng tôi sẽ gửi email cho bạn ngay khi sản phẩm này có hàng lại.</p>
+                      <div class="product-details-page__box-4">
+                        <h4 class="product-details-page__dang-ky-nhan-subtitle">Đăng ký nhận thông báo khi có hàng</h4>
+                        <p class="product-details-page__chung-toi-se-text">Chúng tôi sẽ gửi email cho bạn ngay khi sản phẩm này có hàng lại.</p>
                         @if (!notifySubscribed()) {
-                          <div class="mt-[12px] flex gap-[8px]">
+                          <div class="product-details-page__row-6">
                             <input
                               type="email"
                               [value]="notifyEmail()"
@@ -233,10 +249,10 @@
                             </button>
                           </div>
                           @if (notifyError()) {
-                            <p class="mt-[6px] text-[12px] text-[#D32F2F]">{{ notifyError() }}</p>
+                            <p class="product-details-page__notify-error">{{ notifyError() }}</p>
                           }
                         } @else {
-                          <div class="mt-[10px] rounded-[4px] bg-[#EDF7ED] px-[12px] py-[8px] text-[13px] text-[#2E7D32]">
+                          <div class="product-details-page__da-ghi-el">
                             ✓ Đã ghi nhận đăng ký! Chúng tôi sẽ thông báo cho bạn khi có hàng.
                           </div>
                         }
@@ -250,7 +266,7 @@
                     (click)="handleFindSimilar()"
                     class="flex h-[43px] w-full items-center justify-center gap-[8px] rounded-[4px] border border-[#FDD835] bg-white px-[22px] py-[8px] font-['Roboto'] text-[14px] font-semibold uppercase tracking-[0.46px] text-[#FBC02D] transition-all duration-micro hover:bg-[#FFFDE7] hover:border-[#FBC02D] focus-ring-brand active:scale-[0.98]"
                   >
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="product-details-page__icon-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                     <span>TÌM SẢN PHẨM TƯƠNG TỰ CÒN HÀNG</span>
@@ -258,19 +274,19 @@
                 }
               </div>
               <!-- Shipping info -->
-              <div class="w-full max-w-[350px] space-y-[16px] pb-[2px] font-['Roboto'] text-[14px] leading-[normal] text-[#424242]">
-                <div class="flex items-center gap-[20px]">
-                  <img [attr.src]="productImages.truck" alt="" class="h-6 w-[26px]" />
+              <div class="product-details-page__shipping-info space-y-[16px] mt-[16px]">
+                <div class="product-details-page__row-7">
+                  <img [attr.src]="productImages.truck" alt="" class="product-details-page__free-shipping-threshold" />
                   @if (product().shipping?.freeShippingThreshold) {
                     {{ `Miễn phí vận chuyển cho đơn từ ${formatPrice(product().shipping.freeShippingThreshold)}` }}
                   } @else {
                     Chính sách miễn phí vận chuyển đang cập nhật
                   }
                 </div>
-                <div class="flex flex-wrap items-center gap-x-[20px] gap-y-1 sm:flex-nowrap sm:whitespace-nowrap">
-                  <img [attr.src]="productImages.rotate3d" alt="" class="h-[26px] w-[26px]" />Giao hàng trong: {{ product().shipping?.deliveryEstimate || 'Đang cập nhật' }}                  <a
-                    appCustomerLink="/policies/van-chuyen"
-                    class="underline underline-offset-2 hover:no-underline hover:text-[#0D47A1] transition-colors duration-micro"
+                <div class="product-details-page__row-8">
+                  <img [attr.src]="productImages.rotate3d" alt="" class="product-details-page__delivery-estimate" />Giao hàng trong: {{ product().shipping?.deliveryEstimate || 'Đang cập nhật' }} . Chi tiết xem tại: 
+                  <a appCustomerLink="/policies/van-chuyen"
+                    class="product-details-page__chinh-sach-giao-link"
                   >Chính sách giao hàng</a>
                 </div>
               </div>
@@ -281,7 +297,7 @@
       <!-- —— Description / Review tabs —— -->
       <section
         #tabSectionRef
-        [class]="`mx-auto w-full max-w-[1440px] bg-[#E5F6FD] px-4 sm:px-8 xl:px-[120px] ${
+        [class]="`mx-auto w-full max-w-page bg-[#E5F6FD] px-4 sm:px-8 xl:px-[120px] ${
             showWriteReview()
               ? 'pb-[80px] pt-[80px]'
               : isReviewTab()
@@ -291,7 +307,7 @@
       >
         <div [class]="`flex w-full flex-col gap-[40px] transition-opacity duration-150 ${tabTransitioning() ? 'opacity-0' : 'opacity-100'}`">
           <!-- Tab bar -->
-          <div class="flex w-full flex-wrap items-start gap-[20px]">
+          <div class="product-details-page__tab-bar">
             <button
               type="button"
               (click)="handleTabMota()"
@@ -301,11 +317,11 @@
                     : 'font-normal text-[rgba(0,0,0,0.38)] hover:text-[#0D47A1] hover:font-medium'
                 }`"
             >Mô tả</button>
-            <div class="h-[33px] w-0">
+            <div class="product-details-page__box-5">
               <img
                 [attr.src]="isReviewTab() ? productImages.reviewDivider : productImages.verticalDivider"
                 alt=""
-                class="h-[33px]"
+                class="product-details-page__vertical-divider"
               />
             </div>
             <button
@@ -321,60 +337,60 @@
           @if (!isReviewTab()) {
             <div
               #descriptionRef
-              class="w-full scroll-mt-[24px] font-['Roboto'] text-[16px] font-normal leading-[24px] tracking-[0.15px] text-[#575757]"
+              class="product-details-page__box-6"
             >
-              <p class="mb-0">{{ product().description }}</p>
+              <p class="product-details-page__description">{{ product().description }}</p>
             </div>
           } @else {
-            <div class="flex w-full flex-col gap-[40px]">
+            <div class="product-details-page__stack-4">
               <!-- Summary -->
-              <div class="flex w-full max-w-[1198px] flex-wrap items-start justify-center gap-8 self-center md:h-[139px] md:flex-nowrap md:gap-[51px]">
-                <div class="w-[198px]">
-                  <div class="font-['Roboto'] text-[32px] font-medium leading-[32px] tracking-[0.15px] text-black">{{ reviewsData().totalItems || 0 }} Đánh giá</div>
-                  <div class="mt-[16px] h-[87px] rounded-[14px] bg-white px-[22px] py-[11px]">
-                    <div class="font-['Roboto'] text-[40px] font-bold leading-[40px] tracking-[0.25px] text-black">{{ reviewsData().averageRating || 0 }}</div>
+              <div class="product-details-page__summary">
+                <div class="product-details-page__box-7">
+                  <div class="product-details-page__total-items">{{ reviewsData().totalItems || 0 }} Đánh giá</div>
+                  <div class="product-details-page__box-8">
+                    <div class="product-details-page__average-rating">{{ reviewsData().averageRating || 0 }}</div>
                     <app-product-rating [value]="reviewsData().averageRating" />
                   </div>
                 </div>
                 <!-- Rating breakdown -->
-                <div class="mt-px flex h-[138px] w-[263px] flex-col gap-[5px]">
+                <div class="product-details-page__rating-breakdown">
                   @for (value of [5, 4, 3, 2, 1]; track value) {
-                    <div class="flex h-6 items-center gap-px">
-                      <div class="flex items-center">
-                        <span class="font-['Roboto'] text-[16px] leading-[24px] tracking-[0.15px] text-[rgba(0,0,0,0.7)]">{{ value }}</span>
+                    <div class="product-details-page__row-9">
+                      <div class="product-details-page__row-10">
+                        <span class="product-details-page__text">{{ value }}</span>
                         <app-product-rating [value]="1" [max]="1" [size]="16" [fillColor]="'#FFB70A'" />
                       </div>
-                      <div class="relative h-[22px] w-[200px]">
-                        <div class="absolute left-4 right-4 top-[9px] h-[6px] rounded-[3px] bg-[rgba(120,120,120,0.2)]"></div>
+                      <div class="product-details-page__box-9">
+                        <div class="product-details-page__layer-2"></div>
                         <div
-                          class="absolute left-4 top-[9px] h-[6px] rounded-[3px] bg-[#FFB70A]"
+                          class="product-details-page__layer-3"
                           [appStyle]="styles5(value)"
                         ></div>
                       </div>
-                      <span class="font-['Roboto'] text-[14px] leading-[20px] tracking-[0.17px] text-[rgba(0,0,0,0.7)]">{{ reviewsData().ratingBreakdown?.[value] || 0 }}%</span>
+                      <span class="product-details-page__rating-breakdown-2">{{ reviewsData().ratingBreakdown?.[value] || 0 }}%</span>
                     </div>
                   }
                 </div>
               </div>
               <!-- Review items -->
               @for (review of reviewItems(); track review.id) {
-                <div class="group w-full rounded-[14px] border border-[#90CAF9] bg-white px-4 py-[15px] transition-shadow duration-micro hover:shadow-[0_2px_12px_rgba(144,202,249,0.4)]">
-                  <div class="flex gap-5">
+                <div class="product-details-page__box-10 group bg-white">
+                  <div class="product-details-page__row-11">
                     <img
                       [attr.src]="review.authorAvatar || productImages.reviewAvatarBlock"
                       alt=""
-                      class="h-[52px] w-[52px] shrink-0 rounded-full object-cover"
+                      class="product-details-page__review-avatar-block"
                     />
-                    <div class="flex min-w-0 flex-1 flex-col gap-5">
-                      <div class="flex flex-col gap-1">
-                        <div class="flex items-center justify-between">
-                          <span class="font-['Oxygen'] text-[16px] leading-[normal] text-[#3D3D3D]">{{ review.authorName }}</span>
+                    <div class="product-details-page__stack-5">
+                      <div class="product-details-page__stack-6">
+                        <div class="product-details-page__row-12">
+                          <span class="product-details-page__author-name">{{ review.authorName }}</span>
                           <app-product-rating [value]="review.rating" />
                         </div>
-                        <p class="font-['Oxygen'] text-[16px] leading-[1.705] text-[#949494]">{{ review.content }}</p>
+                        <p class="product-details-page__content">{{ review.content }}</p>
                       </div>
                       <!-- Actions: Like + time -->
-                      <div class="flex items-center gap-[15px] font-['Oxygen'] text-[16px] leading-[1.705] text-[#949494]">
+                      <div class="product-details-page__actions-like-time">
                         <button
                           type="button"
                           (click)="handleLike(review.id)"
@@ -383,29 +399,15 @@
                           [attr.aria-pressed]="!!likedReviews()[`_${review.id}`]"
                         >
                           @if (likedReviews()[`_${review.id}`]) {
-                            <svg
-                              class="h-4 w-4 shrink-0 text-[#D32F2F]"
-                              viewBox="0 0 16 16"
-                              fill="#D32F2F"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path d="M8 14C8 14 2 9.5 2 5C2 3.34315 3.34315 2 5 2C6.10457 2 7.07843 2.55414 7.625 3.4C7.95386 3.99269 8.47193 4.47328 9.10862 4.77682C9.7453 5.08035 10.4686 5.19269 11.1796 5.09882C11.8905 5.00494 12.5539 4.7087 13.0799 4.24981C13.6058 3.79092 13.9677 3.19041 14.115 2.53277C14.2624 1.87514 14.1879 1.19261 13.9021 0.581797C13.6163 -0.0290182 13.1346 -0.507642 12.5 0.5L8 14Z" />
+                            <svg class="product-details-page__icon-3" viewBox="0 0 24 24" aria-hidden="true">
+                              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
                             </svg>
                           } @else {
-                            <svg
-                              class="h-4 w-4 shrink-0"
-                              viewBox="0 0 16 16"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M8 14C8 14 2 9.5 2 5C2 3.34315 3.34315 2 5 2C6.10457 2 7.07843 2.55414 7.625 3.4C7.95386 3.99269 8.47193 4.47328 9.10862 4.77682C9.7453 5.08035 10.4686 5.19269 11.1796 5.09882C11.8905 5.00494 12.5539 4.7087 13.0799 4.24981C13.6058 3.79092 13.9677 3.19041 14.115 2.53277C14.2624 1.87514 14.1879 1.19261 13.9021 0.581797C13.6163 -0.0290182 13.1346 -0.507642 12.5 0.5L8 14Z"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linejoin="round"
-                              />
+                            <svg class="product-details-page__icon-4" viewBox="0 0 24 24" aria-hidden="true">
+                              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
                             </svg>
                           }
+
                           <span [class]="likedReviews()[`_${review.id}`] ? 'text-[#D32F2F]' : ''">
                             @if (likedReviews()[`_${review.id}`]) {
                               Đã thích
@@ -422,7 +424,7 @@
                 </div>
               }
               <!-- Pagination -->
-              <div class="flex w-full items-center justify-center gap-[28.3px]">
+              <div class="product-details-page__pagination">
                 <button
                   type="button"
                   (click)="handle6()"
@@ -430,12 +432,12 @@
                   class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-[4px] border border-transparent p-2 transition-all duration-micro disabled:cursor-not-allowed disabled:opacity-30 hover:border-[#90CAF9] hover:bg-[#E3F2FD] focus-ring-brand"
                   aria-label="Trang trước"
                 >
-                  <img [attr.src]="productImages.paginationPrev" alt="" class="h-6 w-6" />
+                  <img [attr.src]="productImages.paginationPrev" alt="" class="product-details-page__pagination-prev" />
                 </button>
-                <div class="flex items-center">
+                <div class="product-details-page__row-10">
                   @for (page of getPageNumbers(); track $index; let i = $index) {
                     @if (page === '...') {
-                      <span class="px-3 font-['Inter'] text-[18px] font-medium leading-[28px] text-[#7D858D]">...</span>
+                      <span class="product-details-page__text-2">...</span>
                     } @else {
                       <button
                         type="button"
@@ -458,11 +460,11 @@
                   class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-[4px] border border-transparent p-2 transition-all duration-micro disabled:cursor-not-allowed disabled:opacity-30 hover:border-[#90CAF9] hover:bg-[#E3F2FD] focus-ring-brand"
                   aria-label="Trang sau"
                 >
-                  <img [attr.src]="productImages.paginationNext" alt="" class="h-6 w-6" />
+                  <img [attr.src]="productImages.paginationNext" alt="" class="product-details-page__pagination-prev" />
                 </button>
               </div>
               @if (showWriteReview()) {
-                <div class="mt-[50px] w-full">
+                <div class="product-details-page__box-11">
                   <form
                     app-write-review-form
                     [targetId]="product().id"
@@ -476,9 +478,9 @@
         </div>
       </section>
       <!-- —— Similar Products —— -->
-      <section #similarSectionRef class="mx-auto flex h-auto w-full max-w-[1440px] flex-col items-center justify-center gap-[36px] px-4 py-[60px] sm:px-8 xl:px-[80px]">
-        <div class="w-full"><h3 class="text-[32px] font-bold leading-[1.235] tracking-[0.25px] text-[#0D47A1]">Sản phẩm tương tự</h3></div>
-        <div class="relative flex w-full items-center gap-5">
+      <section #similarSectionRef class="product-details-page__similar-products">
+        <div class="product-details-page__box-12"><h3 class="product-details-page__san-pham-tuong-title">Sản phẩm tương tự</h3></div>
+        <div class="product-details-page__row-13">
           <!-- Prev button -->
           <button
             type="button"
@@ -489,15 +491,15 @@
           >‹</button>
           <!-- Cards -->
           <div
-            class="overflow-hidden py-3"
+            class="product-details-page__cards"
             [appStyle]="{ width: SIM_CARD_WIDTH() * SIM_VISIBLE_COUNT() + SIM_CARD_GAP() * (SIM_VISIBLE_COUNT() - 1) }"
           >
             <div
-              class="flex gap-5 transition-transform duration-300 ease-in-out"
+              class="product-details-page__row-14"
               [appStyle]="{ transform: `translateX(-${simOffset() * (SIM_CARD_WIDTH() + SIM_CARD_GAP())}px)` }"
             >
               @for (product of safeSimilarProducts(); track product.id) {
-                <div class="shrink-0" [appStyle]="{ width: SIM_CARD_WIDTH() }">
+                <div class="product-details-page__box-13" [appStyle]="{ width: SIM_CARD_WIDTH() }">
                   <app-shopping-product-card [product]="product" [href]="'/product-details'" />
                 </div>
               }

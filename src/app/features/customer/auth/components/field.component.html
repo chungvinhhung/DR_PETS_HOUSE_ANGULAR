@@ -1,5 +1,5 @@
 <span>{{ label() }}@if (required()) {
-    <span class="text-[#c62828]">*</span>
+    <span class="field__text">*</span>
   }
 </span>
 <span [class]="`${isSoft() ? 'mt-[6px]' : 'mt-1'} relative block`">
@@ -11,6 +11,7 @@
   }
   <input
     [attr.name]="name()"
+    [attr.autocomplete]="autoComplete()"
     [value]="value() ?? ''"
     (input)="onChange.emit($event)"
     [attr.type]="isPassword() && visible() ? 'text' : type()"
@@ -47,8 +48,8 @@
   }
 </span>
 @if (hint()) {
-  <span class="mt-1 block text-[11px] font-normal italic text-gray-500">{{ hint() }}</span>
+  <span class="field__hint">{{ hint() }}</span>
 }
 @if (invalid()) {
-  <span class="mt-1 block text-xs font-normal text-[#c62828]">{{ error() }}</span>
+  <span class="field__error">{{ error() }}</span>
 }

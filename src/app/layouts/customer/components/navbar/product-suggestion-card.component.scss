@@ -1,0 +1,23 @@
+.product-suggestion-card__name {
+  @apply size-12 shrink-0 rounded-[8px] object-cover;
+}
+
+.product-suggestion-card__text {
+  @apply flex min-w-0 flex-1 flex-col items-start;
+}
+
+.product-suggestion-card__text-black-87 {
+  @apply w-full truncate font-['Roboto'] text-[13px] font-normal leading-[19.5px];
+}
+
+.product-suggestion-card__price {
+  @apply w-full truncate font-['Roboto'] text-[12px] font-normal leading-[18px] text-[#0D47A1];
+}
+
+.product-suggestion-card__snippet {
+  @apply line-clamp-2 w-full font-['Roboto'] text-[11px] leading-[15px] text-black/60;
+}
+
+.product-suggestion-card__hit {
+  @apply rounded-[2px] bg-[#FFF176] text-[rgba(0,0,0,0.87)];
+}

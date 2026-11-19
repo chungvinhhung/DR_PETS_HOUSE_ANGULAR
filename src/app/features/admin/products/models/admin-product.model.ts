@@ -63,6 +63,9 @@ export interface ProductPageResponse {
   totalItems?: number;
   totalCount?: number;
   total?: number;
+  /** Authoritative page count on BE foundation-v6. */
+  totalPages?: number;
+  page?: number;
 }
 
 export interface UploadedProductImage {
@@ -90,4 +93,5 @@ export interface ProductQuery {
   sort?: ProductSort;
   limit?: number;
   cursor?: string | null;
+  page?: number;
 }

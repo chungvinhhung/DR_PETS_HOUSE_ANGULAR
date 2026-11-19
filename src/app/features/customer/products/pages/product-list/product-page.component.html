@@ -1,5 +1,5 @@
 <app-nav-bar />
-<div class="w-full overflow-x-clip bg-white">
+<div class="product-page__box">
   <nav
     app-breadcrumb
     [items]="[
@@ -7,8 +7,8 @@
           { label: 'Danh mục sản phẩm' }
         ]"
   ></nav>
-  <main class="min-h-[1607px] bg-[linear-gradient(180deg,#FFFFFF_0%,#E5F6FD_100%)] px-4 pt-[24px] sm:px-8 xl:px-[120px]">
-    <div class="mx-auto flex w-full max-w-[1200px] flex-col gap-[24px] lg:flex-row">
+  <main class="product-page__main">
+    <div class="product-page__stack">
       <aside
         app-filter-sidebar
         [categoryOptions]="categoryOptions()"
@@ -18,9 +18,9 @@
         (onPriceChange)="togglePrice($any($event))"
         (onClear)="clearFilters()"
       ></aside>
-      <section class="w-full min-w-0 flex-1">
-        <h1 class="text-[26px] font-bold leading-[34px] text-[#3D3D3D] sm:text-[36px] sm:leading-[42px]">Danh mục sản phẩm của chúng tôi</h1>
-        <div class="mt-[32px]">
+      <section class="product-page__section">
+        <h1 class="product-page__danh-muc-san-title">Danh mục sản phẩm của chúng tôi</h1>
+        <div class="product-page__box-2">
           <form
             app-product-search-and-sort
             [search]="search()"
@@ -32,13 +32,13 @@
           ></form>
         </div>
         @if (searchQuery()) {
-          <p class="mt-[27px] text-[16px] leading-[27px] text-[#414141]">Kết quả tìm kiếm cho "{{ searchQuery() }}"</p>
+          <p class="product-page__search-query">Kết quả tìm kiếm cho "{{ searchQuery() }}"</p>
         }
-        <div class="mt-[32px]">
+        <div class="product-page__box-2">
           @if (isLoadingProducts()) {
-            <div class="flex h-[532px] items-center justify-center text-[18px] text-[#0D47A1]">Đang tải sản phẩm...</div>
+            <div class="product-page__dang-tai-san-el">Đang tải sản phẩm...</div>
           } @else if (loadError()) {
-            <div class="flex h-[532px] items-center justify-center text-center text-[18px] text-[#D32F2F]">{{ loadError() }}</div>
+            <div class="product-page__load-error">{{ loadError() }}</div>
           } @else {
             <app-product-grid [products]="products()" />
           }

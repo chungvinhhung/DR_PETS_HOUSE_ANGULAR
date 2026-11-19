@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './author.component.html',
+  styleUrl: './author.component.scss',
   host: {
     'class': 'flex items-center gap-3',
   },

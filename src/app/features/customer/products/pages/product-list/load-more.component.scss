@@ -1,0 +1,11 @@
+.load-more__from-label {
+  @apply text-[16px] leading-[27px] text-[#414141];
+}
+
+.load-more__box {
+  @apply relative h-px w-full bg-[#90CAF9];
+}
+
+.load-more__text {
+  @apply absolute inset-y-0 left-0 bg-[#1976D2];
+}

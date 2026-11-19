@@ -1,4 +1,4 @@
-<div class="grid gap-5 md:gap-8 lg:grid-cols-[minmax(0,2fr)_390px]">
+<div class="booking-payment-step__grid">
   <app-appointment-details
     [selectedDate]="selectedDate()"
     [selectedSlot]="selectedSlot()"
@@ -24,7 +24,7 @@
     [pricingError]="pricingError()"
   />
 </div>
-<div class="mt-5 md:mt-6">
+<div class="booking-payment-step__box">
   <button
     type="button"
     (click)="onBack.emit($event)"

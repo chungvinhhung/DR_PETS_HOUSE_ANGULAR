@@ -1,13 +1,13 @@
-<div class="flex h-6 w-full max-w-[1373px] items-center justify-between gap-6 text-[14px] text-[rgba(0,0,0,0.6)] md:h-auto md:text-[13px] lg:h-6 lg:text-[14px]">
-  <p class="min-w-0 shrink text-left italic leading-[1.43] md:whitespace-nowrap md:not-italic md:leading-[1.35] lg:italic lg:leading-[1.43]">© 2026 Dr.Pet's House. Bản quyền thuộc về Dr.Pet's House.</p>
+<div class="account-footer__row">
+  <p class="account-footer__text">© 2026 Dr.Pet's House. Bản quyền thuộc về Dr.Pet's House.</p>
   <nav
     aria-label="Liên kết chân trang tài khoản"
-    class="hidden shrink-0 items-center gap-3 font-medium leading-none sm:flex md:items-start md:gap-[10px] md:leading-[1.3] lg:items-center lg:gap-3 lg:leading-none"
+    class="account-footer__lien-ket-chan-trang"
   >
     @for (__item1 of LEGAL_LINKS; track $index) {
       @let label = __item1[0];
       @let to = __item1[1];
-      <a [appCustomerLink]="to" class="whitespace-nowrap transition-colors hover:text-[#0D47A1]">{{ label }}</a>
+      <a [appCustomerLink]="to" class="account-footer__label">{{ label }}</a>
     }
   </nav>
 </div>

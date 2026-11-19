@@ -14,6 +14,7 @@ import { HOME_FEATURES } from '../data/home-data';
   standalone: true,
   imports: [CheckIconComponent, YellowButtonComponent, ReactStyleDirective],
   templateUrl: './about-section.component.html',
+  styleUrl: './about-section.component.scss',
   host: {
     'id': 'về-chúng-tôi',
     'class': 'w-full bg-white py-12 md:py-[50px]',

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 
 import { CustomerNavigationService } from '../../../../core/customer/services/customer-navigation.service';
 import { SearchApiService } from '../../../../core/customer/services/api/search-api.service';
@@ -11,6 +11,9 @@ import { FooterComponent } from '../../../../layouts/customer/components/footer/
 import { ReactStyleDirective } from '../../../../shared/customer/directives/react-style.directive';
 import { SEARCH_EMPTY_STATE, SEARCH_FILTER_GROUPS, mockSearchApi } from '../../../../shared/customer/data/search-results-data';
 import { TYPE_IDS, SORT_OPTIONS, EMPTY_SEARCH_RESPONSE, buildFacets, buildSearchCounts, applySearchFilters } from './search-results-page.helpers';
+import { CrossSellService } from '../../../../core/customer/services/cross-sell.service';
+import { SeoService } from '../../../../core/customer/services/seo.service';
+import { buildSearchPath, buildSearchSlug, searchSlugToQuery } from '../../../../shared/customer/utils/slug';
 
 /**
  * SearchResultsPage — chuyển từ React: src/pages/Search/SearchResultsPage.jsx
@@ -20,6 +23,7 @@ import { TYPE_IDS, SORT_OPTIONS, EMPTY_SEARCH_RESPONSE, buildFacets, buildSearch
   standalone: true,
   imports: [NavBarComponent, SearchSidebarComponent, ResultsHeaderComponent, SearchResultsContentComponent, EmptyResultsContentComponent, FooterComponent, ReactStyleDirective],
   templateUrl: './search-results-page.component.html',
+  styleUrl: './search-results-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white font-[\'Roboto\']',
   },
@@ -29,6 +33,8 @@ export class SearchResultsPageComponent {
   // --- Service dùng chung ---
   protected readonly navService = inject(CustomerNavigationService);
   protected readonly searchApi = inject(SearchApiService);
+  private readonly crossSell = inject(CrossSellService);
+  private readonly seo = inject(SeoService);
 
   // --- Giá trị tính toán (computed) ---
   readonly filteredSearchResponse = computed<any>(() => {
@@ -50,7 +56,22 @@ export class SearchResultsPageComponent {
     if (this.activeType() === "article") return "3079px";
     return "4359px";
   });
-  readonly query = computed<any>(() => this.navService.searchParams().get("q")?.trim() || "tắm");
+  /**
+   * Từ khóa tìm kiếm, theo thứ tự ưu tiên:
+   *  1. history.state.searchQuery — câu gốc có dấu khi người dùng gõ ở ô tìm kiếm (khớp slug hiện tại)
+   *  2. slug trên path /tim-kiem/:keyword — vào từ Google/link chia sẻ ("thuc-an-meo" -> "thuc an meo",
+   *     SmartSearch tự khôi phục dấu)
+   *  3. ?q= của URL cũ /search?q=...
+   */
+  readonly query = computed<any>(() => {
+    const location = this.navService.location();
+    const slug = this.navService.params()['keyword'];
+    const stateQuery = String(location.state?.searchQuery ?? '').trim();
+    if (slug) {
+      return stateQuery && buildSearchSlug(stateQuery) === slug ? stateQuery : searchSlugToQuery(slug);
+    }
+    return this.navService.searchParams().get("q")?.trim() || stateQuery || "tắm";
+  });
   readonly urlType = computed<any>(() => this.navService.searchParams().get("type") || "all");
   readonly activeType = computed<any>(() => TYPE_IDS.includes(this.urlType()) ? this.urlType() : "all");
   readonly defaultSort = computed<any>(() => this.activeType() === "article" ? "relevant" : "relevant");
@@ -67,12 +88,45 @@ export class SearchResultsPageComponent {
   readonly loadError = signal<any>("");
 
   constructor() {
+    // URL cũ /search?q=thức ăn -> URL chuẩn SEO /tim-kiem/thuc-an (replace, giữ type/sort, giữ câu có dấu trong state)
+    effect(() => {
+      const { pathname } = this.navService.location();
+      const legacyQuery = this.navService.searchParams().get("q")?.trim();
+      if (pathname === "/search" && legacyQuery) {
+        untracked(() => this.navService.navigate(
+          buildSearchPath(legacyQuery, { type: this.urlType(), sort: this.navService.searchParams().get("sort") }),
+          { replace: true, state: { searchQuery: legacyQuery } },
+        ));
+      }
+    });
+
+    // SEO: title/description/canonical theo slug; trang có bộ lọc (type/sort) -> noindex để tránh trùng lặp nội dung
+    effect(() => {
+      const query = this.query();
+      const response = this.searchResponse();
+      const hasFilterParams = Boolean(this.navService.location().search);
+      untracked(() => {
+        const display = response.query || query;
+        this.seo.setPage({
+          title: `Tìm kiếm "${display}"`,
+          description: response.total
+            ? `${response.total} kết quả cho "${display}" tại Dr. Pet's House: sản phẩm, dịch vụ thú cưng giá tốt.`
+            : `Tìm "${display}" tại Dr. Pet's House - thức ăn, phụ kiện, dịch vụ chăm sóc thú cưng.`,
+          canonicalPath: buildSearchPath(query),
+          index: !hasFilterParams && response.total > 0,
+        });
+      });
+    });
+    inject(DestroyRef).onDestroy(() => this.seo.reset());
+
     // useEffect(..., [activeSort, activeType, query])
     effect((onCleanup: any) => {
       this.activeSort();
       this.activeType();
       this.query();
       const cleanup = untracked(() => {
+        // URL cũ đang được chuyển sang slug -> chờ trang mới tìm, tránh gọi API 2 lần
+        if (this.navService.location().pathname === "/search" && this.navService.searchParams().get("q")) return undefined;
         let active = true;
         this.isLoading.set(true);
         this.loadError.set("");
@@ -86,6 +140,7 @@ export class SearchResultsPageComponent {
               facets: buildFacets(data.facetCounts),
               emptyState: SEARCH_EMPTY_STATE,
             });
+            this.loadCrossSell(data, () => active);
           })
           .catch(() => {
             if (!active) return;
@@ -109,13 +164,30 @@ export class SearchResultsPageComponent {
     });
   }
 
+  /** Bán chéo: điền mục "Thường được mua kèm" (results.suggestedProducts) sau khi có kết quả chính. */
+  private loadCrossSell(data: any, isActive: () => boolean) {
+    const products = data?.results?.products ?? [];
+    if (!products.length) return;
+    this.crossSell.suggest(products, { pet: data.analysis?.pet ?? null, limit: 10 })
+      .then((crossSell) => {
+        if (!isActive()) return;
+        this.searchResponse.update((current: any) => ({
+          ...current,
+          crossSellServices: crossSell.services,
+          results: { ...current.results, suggestedProducts: crossSell.products },
+        }));
+      })
+      .catch(() => undefined);
+  }
+
   protected updateParams(patch: any) {
     const next = new URLSearchParams(this.navService.searchParams());
     Object.entries(patch).forEach(([key, value]: any) => {
-      if (value) next.set(key, value);
+      if (value && !(key === "type" && value === "all") && !(key === "sort" && value === "relevant")) next.set(key, value);
       else next.delete(key);
     });
-    this.navService.setSearchParams(next);
+    // Giữ câu có dấu khi đổi bộ lọc (state không tự đi theo khi navigate)
+    this.navService.setSearchParams(next, { state: { searchQuery: this.query() } });
   }
 
   protected handleTypeChange(type: any) {

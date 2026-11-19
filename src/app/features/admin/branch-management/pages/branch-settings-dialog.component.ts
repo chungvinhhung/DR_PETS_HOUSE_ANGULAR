@@ -28,11 +28,11 @@ export interface BranchSettingsPreview {
         <form (submit)="save($event)" class="branch-settings__form">
           <label>
             <span>Tên chi nhánh <b>*</b></span>
-            <input #nameField type="text" maxlength="120" [value]="name()" (input)="name.set(nameField.value)" required />
+            <input #nameField type="text" maxlength="120" placeholder="Nhập tên chi nhánh" [value]="name()" (input)="name.set(nameField.value)" required />
           </label>
           <label>
             <span>Địa chỉ <b>*</b></span>
-            <input #addressField type="text" maxlength="240" [value]="address()" (input)="address.set(addressField.value)" required />
+            <input #addressField type="text" maxlength="240" placeholder="Nhập địa chỉ chi nhánh" [value]="address()" (input)="address.set(addressField.value)" required />
           </label>
           <label>
             <span>Hotline</span>
@@ -40,7 +40,8 @@ export interface BranchSettingsPreview {
           </label>
           <label>
             <span>Trạng thái chi nhánh</span>
-            <select #statusField [value]="status()" (change)="status.set(statusField.value === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE')">
+            <select #statusField [value]="status()" [disabled]="!canChangeStatus"
+              (change)="status.set(statusField.value === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE')">
               <option value="ACTIVE">Đang hoạt động</option>
               <option value="INACTIVE">Ngừng hoạt động</option>
             </select>
@@ -65,6 +66,7 @@ export interface BranchSettingsPreview {
     .branch-settings__form label{display:flex;flex-direction:column;gap:7px;font-size:13px;color:#334155;font-weight:600}
     .branch-settings__form label b{color:#dc2626}
     .branch-settings__form :is(input,select){height:40px;width:100%;padding:0 11px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#1b273b;font:400 13px Roboto,Arial,sans-serif}
+    .branch-settings__form select:disabled{background-color:#f1f5f9;color:#94a3b8;cursor:not-allowed}
     .branch-settings__form select {
       -webkit-appearance:none;
       appearance:none;
@@ -93,6 +95,7 @@ export class BranchSettingsDialogComponent {
   }
   @Input() saving = false;
   @Input() createMode = false;
+  @Input() canChangeStatus = true;
   @Output() dismiss = new EventEmitter<void>();
   @Output() previewSaved = new EventEmitter<BranchSettingsPreview>();
   private id = '';

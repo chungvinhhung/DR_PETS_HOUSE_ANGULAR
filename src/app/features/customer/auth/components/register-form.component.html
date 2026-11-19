@@ -2,16 +2,18 @@
   app-field
   [label]="'Họ và Tên'"
   [name]="'name'"
+  [autoComplete]="'name'"
   [value]="form().name"
   (onChange)="update($any($event))"
   [required]="true"
   [error]="validationAttempted() ? errors().name : ''"
 ></label>
-<div class="grid grid-cols-2 gap-[9px] md:gap-4">
+<div class="register-form__grid">
   <label
     app-field
     [label]="'Số điện thoại'"
     [name]="'phone'"
+    [autoComplete]="'tel'"
     [value]="form().phone"
     (onChange)="update($any($event))"
     [type]="'tel'"
@@ -22,6 +24,7 @@
     app-field
     [label]="'Email'"
     [name]="'email'"
+    [autoComplete]="'email'"
     [value]="form().email"
     (onChange)="update($any($event))"
     [type]="'email'"
@@ -32,6 +35,7 @@
   app-field
   [label]="'Mật khẩu'"
   [name]="'password'"
+  [autoComplete]="'new-password'"
   [value]="form().password"
   (onChange)="update($any($event))"
   [type]="'password'"
@@ -40,23 +44,23 @@
   [error]="validationAttempted() ? errors().password : ''"
 ></label>
 @if (passwordStrength(); as strength) {
-  <div class="-mt-2 flex flex-col gap-2">
-    <div class="flex items-center gap-3">
-      <div class="flex flex-1 gap-1">
+  <div class="register-form__stack">
+    <div class="register-form__row">
+      <div class="register-form__row-2">
         @for (segment of strengthSegments; track segment) {
           <span
-            class="h-1.5 flex-1 rounded-full transition-colors duration-200"
+            class="register-form__text"
             [style.background-color]="segment <= strength.index ? strength.color : '#e5e7eb'"
           ></span>
         }
       </div>
-      <span class="min-w-[76px] text-right text-xs font-semibold" [style.color]="strength.color">
+      <span class="register-form__to-lower-case" [style.color]="strength.color">
         Mật khẩu {{ strength.label.toLowerCase() }}
       </span>
     </div>
-    <ul class="grid grid-cols-1 gap-x-4 gap-y-1 text-xs sm:grid-cols-2">
+    <ul class="register-form__list">
       @for (rule of passwordChecks(); track rule.key) {
-        <li class="flex items-center gap-1.5" [style.color]="rule.passed ? '#2e7d32' : '#9e9e9e'">
+        <li class="register-form__item" [style.color]="rule.passed ? '#2e7d32' : '#9e9e9e'">
           <span aria-hidden="true" class="w-3 text-center font-bold">{{ rule.passed ? '✓' : '○' }}</span>
           {{ rule.label }}
         </li>
@@ -68,14 +72,15 @@
   app-field
   [label]="'Xác nhận mật khẩu'"
   [name]="'confirmPassword'"
+  [autoComplete]="'new-password'"
   [value]="form().confirmPassword"
   (onChange)="update($any($event))"
   [type]="'password'"
   [required]="true"
   [error]="validationAttempted() ? errors().confirmPassword : ''"
 ></label>
-<div class="flex flex-col gap-1">
-  <label class="flex cursor-pointer items-start gap-2.5 text-sm leading-5">
+<div class="register-form__stack-2">
+  <label class="register-form__label">
     <input
       type="checkbox"
       class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer"
@@ -85,19 +90,19 @@
     />
     <span>
       Tôi đồng ý với
-      <a href="/policies/dieu-khoan-dich-vu" target="_blank" rel="noopener" class="font-semibold text-blue-900 underline">Điều khoản dịch vụ</a>
+      <a href="/policies/dieu-khoan-dich-vu" target="_blank" rel="noopener" class="register-form__dieu-khoan-dich-link">Điều khoản dịch vụ</a>
       và
-      <a href="/policies/chinh-sach-bao-mat" target="_blank" rel="noopener" class="font-semibold text-blue-900 underline">Chính sách bảo mật</a>.
+      <a href="/policies/chinh-sach-bao-mat" target="_blank" rel="noopener" class="register-form__dieu-khoan-dich-link">Chính sách bảo mật</a>.
     </span>
   </label>
   @if (showTermsError()) {
-    <p class="text-sm text-[#c62828]" role="alert">
+    <p class="register-form__vui-long-doc-text" role="alert">
       Vui lòng đọc và đồng ý với Điều khoản dịch vụ và Chính sách bảo mật.
     </p>
   }
 </div>
 @if (submitError()) {
-  <p class="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{{ submitError() }}</p>
+  <p class="register-form__submit-error">{{ submitError() }}</p>
 }
 <button app-primary-button [disabled]="submitting()" [inactive]="!agreedTerms()">
   @if (submitting()) {
@@ -108,7 +113,7 @@
 </button>
 <div app-divider></div>
 <button app-google-button></button>
-<p class="text-center text-sm">
+<p class="register-form__da-co-tai-text">
   Đã có tài khoản?
   <button type="button" (click)="changeScreen()('login')" class="font-semibold text-blue-900">Đăng nhập</button>
 </p>

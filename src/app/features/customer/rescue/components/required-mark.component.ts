@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './required-mark.component.html',
+  styleUrl: './required-mark.component.scss',
   host: {
     'class': 'text-[#C62828]',
   },

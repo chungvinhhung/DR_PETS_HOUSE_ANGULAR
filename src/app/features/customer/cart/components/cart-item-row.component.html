@@ -24,19 +24,19 @@
   }
 </button>
 <!-- Product image -->
-<div class="flex h-full shrink-0 items-center justify-center">
-  <div class="h-[64px] w-[64px] lg:h-[92px] lg:w-[92px]">
+<div class="cart-item-row__product-image">
+  <div class="cart-item-row__box">
     <img
       [attr.src]="item().image || item().imageUrl || item().thumbnail || cartImages.productThumb"
       [attr.alt]="item().name"
-      class="size-full object-cover"
+      class="cart-item-row__name"
     />
   </div>
 </div>
 <!-- Product info -->
-<div class="flex min-w-0 flex-1 flex-col justify-center gap-[8px] lg:gap-[12px]">
-  <div class="flex w-full items-start justify-between">
-    <p class="line-clamp-2 min-w-0 pr-3 font-['Roboto'] text-[12px] font-bold leading-[1.43] tracking-[0.17px] text-[#0d47a1] lg:text-[14px]">{{ item().name }}</p>
+<div class="cart-item-row__product-info">
+  <div class="cart-item-row__row">
+    <p class="cart-item-row__name-2">{{ item().name }}</p>
     <button
       type="button"
       (click)="handle2($any($event))"
@@ -46,21 +46,21 @@
       <img
         [attr.src]="cartImages.iconBin"
         alt=""
-        class="size-full transition-colors duration-micro group-hover:brightness-0 group-hover:invert-[0.2] group-hover:sepia-[0.3] group-hover:saturate-[5] group-hover:hue-rotate-[-30deg]"
+        class="cart-item-row__icon-bin group-hover:brightness-0 group-hover:invert-[0.2] group-hover:sepia-[0.3] group-hover:saturate-[5] group-hover:hue-rotate-[-30deg]"
       />
     </button>
   </div>
-  <div class="flex w-full items-center justify-between text-[#353535]">
-    <p class="shrink-0 whitespace-nowrap font-['Roboto'] text-[12px] font-bold leading-[1.43] tracking-[0.17px] lg:text-[14px]">{{ formatPrice(item().price) }}</p>
+  <div class="cart-item-row__row-2">
+    <p class="cart-item-row__price">{{ formatPrice(item().price) }}</p>
     <!-- Quantity stepper -->
-    <div class="flex h-5 w-14 shrink-0 items-center justify-between rounded border border-solid border-[#353535] px-2 font-['Josefin_Sans'] text-[20px] font-medium leading-normal lg:h-[27px] lg:w-[78px] lg:px-[16px] lg:py-[5px]">
+    <div class="cart-item-row__quantity-stepper">
       <button
         type="button"
         (click)="handle3($any($event))"
         class="flex h-5 w-3 shrink-0 items-center justify-center text-[20px] leading-5 text-[#353535] transition-colors duration-micro hover:text-[#0d47a1] active:scale-90 focus-ring-brand lg:h-6 lg:w-6"
         aria-label="Giảm số lượng"
       >−</button>
-      <span class="shrink-0 text-[13px] leading-5 text-[#353535] lg:text-[20px]">{{ item().qty }}</span>
+      <span class="cart-item-row__qty">{{ item().qty }}</span>
       <button
         type="button"
         (click)="handle4($any($event))"
@@ -69,16 +69,16 @@
       >+</button>
     </div>
   </div>
-  <div class="flex w-full flex-wrap items-center gap-x-4 gap-y-2 font-['Roboto'] text-[10px] leading-[1.66] tracking-[0.4px] text-[#353535] lg:gap-x-6 lg:text-[12px]">
-    <div class="flex items-center gap-[5px] lg:gap-[8px]">
-      <span class="font-medium text-[#75777f]">Loại:</span>
+  <div class="cart-item-row__row-3">
+    <div class="cart-item-row__row-4">
+      <span class="cart-item-row__loai-text">Loại:</span>
       @if (variantOptions().length > 1) {
         <select
           [value]="compute5()"
           [selectValue]="compute5()"
           (change)="handleVariantChange($any($event))"
           (click)="stopCardNavigation($any($event))"
-          class="h-[24px] min-w-[130px] max-w-[220px] rounded border border-[#c7c7c7] bg-white px-2 py-0.5 text-[11px] font-medium text-[#353535] outline-none transition-colors focus:border-[#0d47a1] lg:text-[12px]"
+          class="cart-item-row__chon-loai-san-pham"
           aria-label="Chọn loại sản phẩm"
         >
           @for (variant of variantOptions(); track $index) {
@@ -86,7 +86,7 @@
           }
         </select>
       } @else {
-        <span class="font-medium text-[#191c1e]">{{ variantDisplayName() }}</span>
+        <span class="cart-item-row__variant-display-name">{{ variantDisplayName() }}</span>
       }
     </div>
   </div>

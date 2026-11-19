@@ -1,0 +1,35 @@
+.shopping-checkout__stack {
+  @apply mx-auto flex w-full max-w-page flex-col items-center px-6 py-6 lg:px-20;
+}
+
+.shopping-checkout__grid {
+  @apply grid gap-8 lg:grid-cols-[minmax(0,2fr)_390px];
+}
+
+.shopping-checkout__stack-2 {
+  @apply flex w-full flex-col gap-7;
+}
+
+.shopping-checkout__aside {
+  @apply w-full;
+}
+
+.shopping-checkout__stack-3 {
+  @apply flex flex-col gap-5 rounded-2xl bg-white p-8 shadow-[0_4px_13px_rgba(144,202,249,0.85)];
+}
+
+.shopping-checkout__phuong-thuc-thanh-title {
+  @apply text-xl font-black text-blue-900;
+}
+
+.shopping-checkout__stack-4 {
+  @apply flex flex-col gap-5;
+}
+
+.shopping-checkout__stack-5 {
+  @apply flex w-full flex-col gap-5;
+}
+
+.shopping-checkout__back-arrow {
+  @apply size-3;
+}

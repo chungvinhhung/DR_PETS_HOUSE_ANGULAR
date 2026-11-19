@@ -1,7 +1,18 @@
 @for (product of products(); track product.id; let index = $index) {
-  <app-shopping-product-card
-    [product]="product"
-    [variant]="product.discountPercent ? 'tag' : index === 1 ? 'hover' : 'default'"
-    [href]="'/product-details'"
-  />
+  <div class="products-grid__item">
+    <app-shopping-product-card
+      [product]="product"
+      [variant]="product.discountPercent ? 'tag' : index === 1 ? 'hover' : 'default'"
+      [href]="'/product-details'"
+    />
+    @if (product.matchSnippet?.length) {
+      <!-- Sản phẩm khớp nhờ MÔ TẢ: cho người dùng thấy đoạn liên quan -->
+      <p class="products-grid__snippet">
+        <span class="products-grid__snippet-label">Trong mô tả:</span>
+        @for (segment of product.matchSnippet; track $index) {
+          <span [class.products-grid__hit]="segment.hit">{{ segment.text }}</span>
+        }
+      </p>
+    }
+  </div>
 }

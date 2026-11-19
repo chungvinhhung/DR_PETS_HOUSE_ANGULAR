@@ -24,6 +24,7 @@ import { BRANCH_OPTIONS, INITIAL_BRANCH_OPTIONS, DEFAULT_SERVICE_TYPE_ID, create
   standalone: true,
   imports: [NavBarComponent, StepperComponent, ServiceSelectionComponent, InfoFormComponent, BookingPaymentStepComponent, FooterComponent, BookingSuccessModalComponent],
   templateUrl: './booking-page.component.html',
+  styleUrl: './booking-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white font-sans',
   },
@@ -59,6 +60,9 @@ export class BookingPageComponent {
   readonly services = signal<any>(BOOKING_SERVICES);
   readonly timeSlots = signal<any>([]);
   readonly slotsLoading = signal<any>(false);
+  readonly slotsError = signal<string>("");
+  readonly slotsState = signal<'idle' | 'loading' | 'ready' | 'empty' | 'error'>('idle');
+  readonly slotsRetryTick = signal<number>(0);
   readonly bookingError = signal<any>("");
   readonly bookingSubmitting = signal<any>(false);
   readonly pets = signal<any>([]);
@@ -80,6 +84,7 @@ export class BookingPageComponent {
     agreed: false,
   });
   readonly paymentMode = signal<any>("store");
+  readonly createdAppointment = signal<{ status: string; holdExpiresAt: string | null } | null>(null);
   readonly success = signal<any>(false);
 
   /** Hàm set kiểu React cho signal "selectedServiceType" (dùng khi truyền cho component con / callback) */
@@ -216,20 +221,27 @@ export class BookingPageComponent {
       if (typeof cleanup === 'function') onCleanup(cleanup);
     });
 
-    // useEffect(..., [ownerInfo.branch, selectedDate, selectedServiceType])
+    // useEffect(..., [ownerInfo.branch, selectedDate, selectedServiceType, selectedServices, slotsRetryTick])
     effect((onCleanup: any) => {
       this.ownerInfo().branch;
       this.selectedDate();
+      this.selectedServices();
       this.selectedServiceType();
+      this.slotsRetryTick();
       const cleanup = untracked(() => {
-        if (!this.selectedDate() || !this.ownerInfo().branch) {
+        const hasServices = (this.selectedServices() || []).length > 0;
+        if (!this.selectedDate() || !this.ownerInfo().branch || !hasServices) {
           this.timeSlots.set([]);
           this.selectedSlot.set(null);
+          this.slotsError.set("");
+          this.slotsState.set('idle');
           return;
         }
 
         let active = true;
         this.slotsLoading.set(true);
+        this.slotsError.set("");
+        this.slotsState.set('loading');
         this.bookingApi.getAppointmentSlots({
           date: getDateKey(this.selectedDate()),
           branchId: this.ownerInfo().branch,
@@ -238,15 +250,32 @@ export class BookingPageComponent {
         })
           .then((slots: any) => {
             if (!active) return;
-            this.timeSlots.set(slots);
-            this.selectedSlot.update((current: any) =>
-              current && slots.some((slot: any) => slot.value === current && slot.available) ? current : null);
+            const safeSlots = Array.isArray(slots) ? slots : [];
+            this.timeSlots.set(safeSlots);
+            this.slotsError.set("");
+            this.slotsState.set(safeSlots.length > 0 ? 'ready' : 'empty');
+            this.selectedSlot.update((current: any) => {
+              if (!current) return null;
+              const currentStart = String(current).split(" - ")[0].trim();
+              const matchedSlot = safeSlots.find((s: any) =>
+                s.available && (s.value === current || s.value?.startsWith(currentStart) || s.time === currentStart)
+              );
+              return matchedSlot ? matchedSlot.value : null;
+            });
           })
+
           .catch((error: any) => {
             console.warn("Appointment slots API unavailable.", error);
             if (active) {
+              const errMsg =
+                error?.data?.detail ||
+                error?.data?.message ||
+                error?.message ||
+                "Không thể tải khung giờ lúc này. Vui lòng thử lại sau.";
               this.timeSlots.set([]);
               this.selectedSlot.set(null);
+              this.slotsError.set(errMsg);
+              this.slotsState.set('error');
             }
           })
           .finally(() => {
@@ -261,10 +290,20 @@ export class BookingPageComponent {
     });
   }
 
+  protected retryLoadSlots() {
+    this.slotsRetryTick.update((v) => v + 1);
+  }
+
   protected async handleConfirm({ quantities }: any = {}) {
-    const selectedSlotRecord = this.timeSlots().find((slot: any) => slot.value === this.selectedSlot());
-    if (!selectedSlotRecord) {
-      this.bookingError.set("Vui lòng chọn lại khung giờ.");
+    const selectedSlotRecord = this.timeSlots().find((slot: any) => {
+      if (!this.selectedSlot()) return false;
+      if (slot.value === this.selectedSlot() || slot.id === this.selectedSlot()) return true;
+      const currentStart = String(this.selectedSlot()).split(" - ")[0].trim();
+      return slot.value?.startsWith(currentStart) || slot.time === currentStart;
+    });
+
+    if (!selectedSlotRecord || !selectedSlotRecord.available) {
+      this.bookingError.set("Vui lòng chọn khung giờ khám còn chỗ.");
       return;
     }
 
@@ -311,7 +350,7 @@ export class BookingPageComponent {
         petData.species_id = findSpeciesId(this.speciesOptions(), firstPetInfo?.species || "Chó") || "DOG";
       }
 
-      await this.bookingApi.bookAppointment({
+      const created = await this.bookingApi.bookAppointment({
         branchId: this.ownerInfo().branch,
         branchName,
         branchAddress,
@@ -340,6 +379,10 @@ export class BookingPageComponent {
         payment_method: this.paymentMode() === "store" ? "store" : "online",
         paymentMethod: this.paymentMode() === "store" ? "PAY_AT_STORE" : "ONLINE_MOCK",
         totalPrice,
+      });
+      this.createdAppointment.set({
+        status: String(created?.status || created?.appointment?.status || 'PENDING_CONFIRMATION'),
+        holdExpiresAt: created?.holdExpiresAt || created?.appointment?.holdExpiresAt || null,
       });
       this.success.set(true);
     } catch (error: any) {
@@ -373,6 +416,8 @@ export class BookingPageComponent {
         window.requestAnimationFrame(() => {
           window.scrollTo({ top: 200, behavior: "smooth" });
         });
+      } else if (error?.status === 401 && !this.authService.isAuthenticated()) {
+        this.bookingError.set("Hệ thống tạm thời chưa nhận đặt lịch không cần tài khoản. Quý khách vui lòng thử lại sau hoặc liên hệ phòng khám.");
       } else {
         this.bookingError.set(errorList ? `${rawErrorMsg} (${errorList})` : rawErrorMsg);
       }
@@ -395,8 +440,8 @@ export class BookingPageComponent {
     });
   }
 
-  protected handle1() {
-    this.authService.requireAuth(() => this.step.set(2));
+    protected handle1() {
+    this.step.set(2);
   }
 
   /** (tự sinh) function không dùng trực tiếp được trong template */

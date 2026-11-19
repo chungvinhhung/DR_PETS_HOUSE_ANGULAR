@@ -1,0 +1,75 @@
+.community-page__main {
+  @apply flex min-h-[2100px] flex-col items-center gap-3 bg-[#E5F6FD] px-4 sm:px-6 lg:px-20 pb-10;
+}
+
+.community-page__nav {
+  @apply flex h-14 w-full max-w-page items-center gap-6 overflow-x-auto whitespace-nowrap text-[16px] sm:gap-10;
+}
+
+.community-page__kien-thuc-thu-link {
+  @apply font-medium text-[#4B5563];
+}
+
+.community-page__cong-dong-chia-text {
+  @apply flex h-full items-center border-b-2 border-[#0D47A1] font-bold text-[#0D47A1];
+}
+
+.community-page__section {
+  @apply flex flex-col items-center pb-5 pt-2 text-center;
+}
+
+.community-page__ket-noi-title {
+  @apply flex flex-wrap items-center justify-center gap-1 text-[28px] font-bold tracking-[-0.8px] sm:text-[40px];
+}
+
+.community-page__chia-se-text {
+  @apply text-[#0D47A1];
+}
+
+.community-page__community-title {
+  @apply h-12 w-12;
+}
+
+.community-page__noi-chia-se-text {
+  @apply mt-2 text-[16px] leading-6 text-[#414753];
+}
+
+.community-page__load-error {
+  @apply w-full max-w-page text-[14px] text-[#D32F2F];
+}
+
+.community-page__api-empty-message {
+  @apply w-full max-w-page text-[14px] text-[#0D47A1];
+}
+
+.community-page__dang-tai-bai-text {
+  @apply w-full max-w-page text-[16px] text-[#0D47A1];
+}
+
+.community-page__section-2 {
+  @apply mt-7 grid w-full max-w-page grid-cols-1 items-start gap-4 md:grid-cols-2;
+}
+
+.community-page__stack {
+  @apply flex min-w-0 flex-col gap-4;
+}
+
+.community-page__box {
+  @apply rounded-[24px] bg-[#0D47A1] p-8 text-center text-white;
+}
+
+.community-page__gia-dinh-dr-pet-title {
+  @apply font-semibold;
+}
+
+.community-page__tham-gia-cong-text {
+  @apply mt-2 text-[14px];
+}
+
+.community-page__tham-gia-ngay-button {
+  @apply mt-5 rounded-full bg-white px-8 py-2 text-[12px] font-bold text-[#0D47A1];
+}
+
+.community-page__share-notice {
+  @apply fixed bottom-6 left-1/2 z-[110] -translate-x-1/2 rounded-full bg-[#1A1C1C] px-5 py-3 text-sm text-white shadow-xl;
+}

@@ -15,6 +15,7 @@ import { ALL_BLOG_POSTS, FEATURED_BLOG_POST } from '../../../../shared/customer/
   standalone: true,
   imports: [CategoryIconComponent, BlogPostItemComponent, CustomerIconComponent, CustomerLinkDirective],
   templateUrl: './blog-section.component.html',
+  styleUrl: './blog-section.component.scss',
   host: {
     'id': 'blog',
     'class': 'w-full bg-white py-10 md:py-12',

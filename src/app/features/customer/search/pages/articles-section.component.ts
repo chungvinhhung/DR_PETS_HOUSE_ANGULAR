@@ -13,6 +13,7 @@ import { CommunityPostCardComponent } from './community-post-card.component';
   standalone: true,
   imports: [SearchResultsSectionHeadingComponent, SearchResultsFirstAidCardComponent, BlogCardComponent, CommunityPostCardComponent],
   templateUrl: './articles-section.component.html',
+  styleUrl: './articles-section.component.scss',
   host: {
     'class': 'flex w-full flex-col gap-8',
   },

@@ -1,6 +1,7 @@
 <div class="customer-root">
   @if (stylesReady()) {
     <router-outlet />
+    <app-customer-back-to-top />
 
     <!-- Popup dùng chung toàn site (trước đây được render trong các Provider của React) -->
     <app-auth-modal />

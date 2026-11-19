@@ -1,0 +1,31 @@
+.value-prop-card__card {
+  @apply absolute left-[658px] h-[171px] w-[645px] transition-transform duration-200;
+}
+
+.value-prop-card__layer {
+  @apply absolute inset-0;
+}
+
+.value-prop-card__layer-2 {
+  @apply absolute inset-x-0 top-[13px] h-[148px] rounded-[10px] bg-[#FBF6EA];
+}
+
+.value-prop-card__row {
+  @apply relative flex h-full gap-[18px] pl-[46px] pr-[52px] pt-[26px];
+}
+
+.value-prop-card__box {
+  @apply min-w-0 flex-1;
+}
+
+.value-prop-card__title {
+  @apply line-clamp-2 pr-2 text-black;
+}
+
+.value-prop-card__desc {
+  @apply mt-1 line-clamp-3 text-black;
+}
+
+.value-prop-card__num {
+  @apply absolute right-[8px] top-[12px] text-[#02000F];
+}

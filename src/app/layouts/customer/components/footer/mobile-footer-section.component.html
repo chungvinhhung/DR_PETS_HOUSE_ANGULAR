@@ -4,7 +4,7 @@
   class="flex h-[35px] w-full items-center justify-between text-left"
   [attr.aria-expanded]="open()"
 >
-  <span class="font-['Roboto'] text-[13px] font-bold leading-[20.8px] tracking-[0.15px] text-[#0D47A1]">{{ title() }}</span>
+  <span class="mobile-footer-section__title">{{ title() }}</span>
   <app-customer-icon
     name="chevron-down"
     [className]="`size-[18px] text-[#0D47A1] transition-transform ${open() ? 'rotate-180' : ''}`"
@@ -12,11 +12,11 @@
   />
 </button>
 @if (open()) {
-  <ul class="flex flex-col gap-[5px] px-5">
+  <ul class="mobile-footer-section__let-label-list">
     @for (__item1 of links(); track $index) {
       @let label = __item1[0];
       @let to = __item1[1];
-      <li class="flex h-[35px] items-center border-b-[0.5px] border-[#1565C0] pr-5 last:border-b-0">
+      <li class="mobile-footer-section__item">
         @if (label === 'Bảng giá dịch vụ') {
           <button
             type="button"
@@ -26,7 +26,7 @@
         } @else {
           <a
             [appCustomerLink]="to"
-            class="min-w-0 flex-1 truncate font-['Roboto'] text-[11px] font-normal leading-[16.5px] tracking-[0.15px] text-[#1565C0]"
+            class="mobile-footer-section__label"
           >{{ label }}</a>
         }
       </li>

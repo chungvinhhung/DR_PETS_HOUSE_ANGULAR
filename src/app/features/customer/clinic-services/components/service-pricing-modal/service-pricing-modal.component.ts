@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked, OnInit } from '@angular/core';
 
 import { ServicePricingApiService } from '../../../../../core/customer/services/api/service-pricing-api.service';
-import { PriceCellGroupComponent } from './price-cell-group.component';
 import { ServiceIconComponent } from './service-icon.component';
 import { PricePillComponent } from './price-pill.component';
 import { CustomerIconComponent } from '../../../../../shared/customer/components/icon/customer-icon.component';
@@ -9,14 +8,17 @@ import { ReactStyleDirective } from '../../../../../shared/customer/directives/r
 import { GROOMING_PRICE_COLUMNS, SERVICE_PRICE_FILTERS, SERVICE_PRICE_TABLES } from '../../../../../shared/customer/data/grooming-data';
 import { columnToneClasses } from './service-pricing-modal.helpers';
 
+const PRICE_COLUMN_COUNT = GROOMING_PRICE_COLUMNS.length;
+
 /**
  * ServicePricingModal — chuyển từ React: src/components/groomingSpa/ServicePricingModal.jsx
  */
 @Component({
   selector: 'app-service-pricing-modal',
   standalone: true,
-  imports: [PriceCellGroupComponent, ServiceIconComponent, PricePillComponent, CustomerIconComponent, ReactStyleDirective],
+  imports: [ServiceIconComponent, PricePillComponent, CustomerIconComponent, ReactStyleDirective],
   templateUrl: './service-pricing-modal.component.html',
+  styleUrl: './service-pricing-modal.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -35,33 +37,31 @@ export class ServicePricingModalComponent implements OnInit {
 
   // --- Giá trị tính toán (computed) ---
   readonly rows = computed<any>(() => {
-    if (this.selectedFilter() === 'all') {
-      return [
-        ...this.pricingTables().medical,
-        ...this.pricingTables().grooming,
-        ...this.pricingTables().combo,
-      ]
-    }
-
-    return (this.pricingTables() as any)[this.selectedFilter()] || []
+    const categories = this.selectedFilter() === 'all' ? ['medical', 'grooming', 'combo'] : [this.selectedFilter()]
+    // Khám & Điều trị chỉ có 1 mức giá chung cho mọi cân nặng
+    return categories.flatMap((category: any) =>
+      ((this.pricingTables() as any)[category] || []).map((row: any) => ({ ...row, single: category === 'medical' })),
+    )
   });
-  readonly activeColumns = computed<any>(() => {
-    if (this.selectedFilter() !== 'all' && (this.pricingColumns() as any)[this.selectedFilter()]?.length) {
-      return (this.pricingColumns() as any)[this.selectedFilter()]
-    }
-    return GROOMING_PRICE_COLUMNS
-  });
+  /** Chỉ lọc Khám & Điều trị thì tiêu đề chỉ còn 1 cột giá */
+  readonly isSingleColumn = computed<any>(() => this.selectedFilter() === 'medical');
   readonly displayColumns = computed<any>(() => {
-    const columns = this.activeColumns().slice(0, 9)
-    while (columns.length < 9) {
-      columns.push((GROOMING_PRICE_COLUMNS as any)[columns.length])
-    }
-    return columns
+    const apiColumns = this.selectedFilter() === 'all' ? [] : (this.pricingColumns() as any)[this.selectedFilter()] || [];
+    return GROOMING_PRICE_COLUMNS.map((column: any, index: any) => {
+      const fullLabel = apiColumns[index]?.label || column.label;
+      const label = index === 0 && /giá chuẩn/i.test(fullLabel) ? 'Giá chuẩn' : fullLabel;
+      return {
+        ...column,
+        label,
+        fullLabel,
+      };
+    });
   });
   readonly displayRows = computed<any>(() => {
     return this.rows().map((row: any) => {
-      const prices = row.prices.slice(0, 9)
-      while (prices.length < 9) prices.push('Liên hệ')
+      if (row.single) return { ...row, prices: [row.prices[0] ?? 'Liên hệ'] }
+      const prices = row.prices.slice(0, PRICE_COLUMN_COUNT)
+      while (prices.length < PRICE_COLUMN_COUNT) prices.push('Liên hệ')
       return { ...row, prices }
     })
   });

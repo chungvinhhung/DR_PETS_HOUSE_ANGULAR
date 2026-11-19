@@ -68,7 +68,7 @@
     <p class="coupon-title">Thẻ quà tặng / Mã giảm giá</p>
     <div class="coupon-row">
       <div class="coupon-input-col">
-        <div class="coupon-input-box">
+        <div class="coupon-input-box web2-composite-field">
           <input
             type="text"
             [value]="couponCode() ?? ''"
@@ -111,6 +111,13 @@
     </div>
     <p class="total-amount">{{ formatMoney(effectiveTotal()) }}</p>
   </div>
+
+  @if (!online() && depositAmount() > 0) {
+    <div class="price-summary-box">
+      <div app-price-row [label]="'Tiền đặt cọc cần thanh toán (30%)'" [value]="formatMoney(depositAmount())"></div>
+      <div app-price-row [label]="'Số tiền còn lại tại phòng khám'" [value]="formatMoney(balanceAtClinic())"></div>
+    </div>
+  }
 
   <!-- Nút xác nhận -->
   <button type="button" class="confirm-submit-btn" (click)="handleConfirm()">

@@ -1,0 +1,7 @@
+.stepper__row {
+  @apply flex min-w-0 items-start;
+}
+
+.stepper__stack {
+  @apply flex min-w-0 flex-1 flex-col items-center md:min-w-[94px] lg:min-w-[104px];
+}

@@ -14,6 +14,7 @@ const pawIcon = '/assets/customer/icons/paw-icon.png';
   standalone: true,
   imports: [ReactStyleDirective],
   templateUrl: './species-icon.component.html',
+  styleUrl: './species-icon.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

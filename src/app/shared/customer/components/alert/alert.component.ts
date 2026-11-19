@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
   standalone: true,
   imports: [],
   templateUrl: './alert.component.html',
+  styleUrl: './alert.component.scss',
   host: {
     '[class]': '`rounded-md border p-4 ${alertStyles()[type()]}`',
   },

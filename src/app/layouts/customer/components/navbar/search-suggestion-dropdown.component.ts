@@ -13,6 +13,7 @@ import { searchSuggestionImages } from '../../../../shared/customer/assets/searc
   standalone: true,
   imports: [SearchSuggestionStatusComponent, TextSuggestionItemComponent, ProductSuggestionCardComponent],
   templateUrl: './search-suggestion-dropdown.component.html',
+  styleUrl: './search-suggestion-dropdown.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -21,6 +22,8 @@ export class SearchSuggestionDropdownComponent {
   readonly query = input<any>(undefined);
   readonly suggestions = input<any>(undefined);
   readonly products = input<any>(undefined);
+  /** Gợi ý bán chéo cho sản phẩm khớp nhất */
+  readonly crossSellProducts = input<any[]>([]);
   readonly isLoading = input<any>(false);
   readonly error = input<any>("");
   readonly activeItemId = input<any>(undefined);

@@ -4,13 +4,13 @@
   @let disabled = step.state === 'disabled';
   @let color = completed || active ? 'bg-[#0d47a1] text-white' : 'bg-[#e6e8ea] text-[#75777f]';
   @let lineColor = completed ? 'bg-[#0d47a1]' : 'bg-[#e6e8ea]';
-  <div class="flex flex-1 items-start">
-    <div class="flex min-w-[74px] flex-col items-center">
+  <div class="timeline__row">
+    <div class="timeline__stack">
       <span [class]="`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold ${color} ${
                 disabled ? 'opacity-70' : ''
               }`">
         @if (completed) {
-          <img [attr.src]="appointmentImages.stepCheckIcon" alt="" class="h-4 w-4" />
+          <img [attr.src]="appointmentImages.stepCheckIcon" alt="" class="timeline__step-check-icon" />
         } @else if (active) {
           ●
         } @else {

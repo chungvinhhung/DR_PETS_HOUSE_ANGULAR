@@ -68,3 +68,22 @@
 @media(max-width:1100px){.voucher-editor__detail-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.voucher-editor__detail-grid .voucher-editor__summary,
 .voucher-editor__detail-grid .voucher-editor__summary--usage{grid-template-columns:1fr}}
+
+.voucher-editor__button--danger-outline{color:#de414c;border:1px solid #ed6b72;background:#fff}
+.voucher-editor__button--danger-outline:hover:not(:disabled){background:#fff1f1}
+
+/* Keep switch and caption on the same row inside the program card.
+   Component-scoped rules override the legacy display:block form-label rule. */
+.voucher-editor__program-fields .voucher-editor__activation-row {
+  display:inline-flex;flex-direction:row;align-items:center;justify-content:center;
+  gap:12px;width:max-content;max-width:100%;min-height:44px;
+  margin:0;padding:0;text-align:left;
+}
+.voucher-editor__program-fields .voucher-editor__activation-row>.voucher-editor__switch {
+  position:relative;display:inline-flex;align-items:center;
+  flex:0 0 48px;width:48px;height:26px;margin:0;padding:0;
+}
+.voucher-editor__program-fields .voucher-editor__activation-text {
+  display:inline-block;flex:0 1 auto;min-width:0;margin:0;padding:0;
+  color:#203047;font:400 13px/20px Roboto,Arial,sans-serif;
+}

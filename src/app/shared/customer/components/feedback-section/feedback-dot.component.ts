@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
   standalone: true,
   imports: [],
   templateUrl: './feedback-dot.component.html',
+  styleUrl: './feedback-dot.component.scss',
   host: {
     'type': 'button',
     'role': 'tab',

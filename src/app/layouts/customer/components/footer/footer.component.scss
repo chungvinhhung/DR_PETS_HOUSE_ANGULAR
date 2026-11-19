@@ -1,0 +1,55 @@
+.footer__grid {
+  @apply relative mx-auto grid min-h-[530px] max-w-page grid-cols-[minmax(0,329fr)_minmax(0,144fr)_minmax(0,155fr)_minmax(0,210fr)_minmax(0,172fr)] items-start gap-6 px-8 pb-[62px] pt-[100px] xl:gap-12 xl:px-20;
+}
+
+.footer__section {
+  @apply flex flex-col items-start gap-4;
+}
+
+.footer__dr-pet-s-house {
+  @apply h-[88px] w-[202px] object-contain object-left;
+}
+
+.footer__trung-tam-cham-title {
+  @apply w-full max-w-[335px] font-['Baloo_2','Baloo_Tamma_2',cursive] text-[22px] font-bold leading-[1.1] tracking-[0px] text-[#0D47A1];
+}
+
+.footer__cung-cap-dich-text {
+  @apply w-full max-w-[335px] text-[16px] leading-[1.4] text-[#475569];
+}
+
+.footer__row {
+  @apply flex items-center gap-4 text-[#475569];
+}
+
+.footer__tiktok {
+  @apply transition-colors hover:text-[#0D47A1];
+}
+
+.footer__danh-sach-chi-text {
+  @apply flex items-center gap-2;
+}
+
+.footer__text {
+  @apply py-2 text-[16px] leading-[1.4] text-[rgba(0,0,0,0.87)];
+}
+
+.footer__layer {
+  @apply absolute inset-x-0 bottom-0 flex h-[40px] items-center justify-center bg-[#B3E5FC] px-4 sm:px-8 lg:px-12;
+}
+
+.footer__row-2 {
+  @apply flex h-6 w-full max-w-page items-center justify-between gap-6 text-[14px] text-[rgba(0,0,0,0.6)];
+}
+
+.footer__text-2 {
+  @apply min-w-0 shrink text-left italic leading-[1.43];
+}
+
+.footer__lien-ket-phap-ly {
+  @apply hidden shrink-0 items-center gap-3 font-medium leading-none md:flex;
+}
+
+.footer__label {
+  @apply whitespace-nowrap transition-colors hover:text-[#0D47A1];
+}

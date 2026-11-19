@@ -6,7 +6,7 @@
         app-pet-summary-card
         [selectedPets]="selectedPets()"
         [active]="profileMode()"
-        (onClick)="showPetPicker.set(true)"
+        (onClick)="openPetPicker()"
       ></button>
 
       <button
@@ -62,21 +62,43 @@
         (onChange)="updateOwnerInfo('name', $any($event).target.value)"
       ></label>
 
-      <label
-        app-booking-field
-        [label]="'Số điện thoại'"
-        [required]="true"
-        [showError]="validationAttempted()"
-        [value]="ownerInfo().phone"
-        (onChange)="updateOwnerInfo('phone', $any($event).target.value)"
-      ></label>
+      <div class="owner-field-wrapper">
+        <label
+          app-booking-field
+          [label]="'Số điện thoại'"
+          [required]="true"
+          [showError]="validationAttempted() && !!phoneError()"
+          [value]="ownerInfo().phone"
+          (onChange)="updateOwnerInfo('phone', $any($event).target.value)"
+          [attr.data-booking-error]="validationAttempted() && phoneError() ? 'true' : undefined"
+          [attr.tabindex]="validationAttempted() && phoneError() ? -1 : undefined"
+        ></label>
 
-      <label
-        app-booking-field
-        [label]="'Email'"
-        [value]="ownerInfo().email"
-        (onChange)="updateOwnerInfo('email', $any($event).target.value)"
-      ></label>
+        @if (validationAttempted() && phoneError()) {
+          <p class="mt-1 text-sm text-red-600" role="alert">
+            {{ phoneError() }}
+          </p>
+        }
+      </div>
+
+      
+        <div class="owner-field-wrapper">
+          <label
+            app-booking-field
+            [label]="'Email'"
+            [showError]="validationAttempted() && !!emailError()"
+            [value]="ownerInfo().email"
+            (onChange)="updateOwnerInfo('email', $any($event).target.value)"
+            [attr.data-booking-error]="validationAttempted() && emailError() ? 'true' : undefined"
+            [attr.tabindex]="validationAttempted() && emailError() ? -1 : undefined"
+          ></label>
+
+          @if (validationAttempted() && emailError()) {
+            <p class="mt-1 text-sm text-red-600" role="alert">
+              {{ emailError() }}
+            </p>
+          }
+        </div>
 
       <label
         class="agreement-label"

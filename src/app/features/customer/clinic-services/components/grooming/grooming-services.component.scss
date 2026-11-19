@@ -1,0 +1,19 @@
+.grooming-services__danh-sach-dich-vu {
+  @apply flex w-full flex-col items-center gap-6 border-[rgba(0,0,0,0.1)] pt-[28px];
+}
+
+.grooming-services__box {
+  @apply relative h-[162px] w-[1440px] shrink-0;
+}
+
+.grooming-services__dich-vu-title {
+  @apply absolute left-1/2 top-[89.5px] w-[1440px] -translate-x-1/2 -translate-y-1/2;
+}
+
+.grooming-services__box-2 {
+  @apply relative h-[1572px] w-full shrink-0;
+}
+
+.grooming-services__layer {
+  @apply absolute;
+}

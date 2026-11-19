@@ -1,6 +1,6 @@
 <div app-canvas-layout>
   <app-nav-bar />
-  <main class="flex min-h-[2245px] flex-col items-center gap-6 bg-[#E5F6FD] px-4 sm:px-6 pb-12 pt-6">
+  <main class="blog-detail-page__main">
     <nav
       app-breadcrumb
       [items]="[
@@ -11,26 +11,26 @@
             { label: post().title }
           ]"
       [variant]="'blog'"
-      [className]="'w-full max-w-[1200px]'"
+      [className]="'w-full max-w-page'"
     ></nav>
-    <div class="flex w-full max-w-[1200px] flex-col items-start gap-8 lg:flex-row lg:gap-12">
-      <div class="flex w-full min-w-0 flex-1 flex-col gap-3">
+    <div class="blog-detail-page__stack">
+      <div class="blog-detail-page__stack-2">
         @if (isLoading()) {
-          <div class="w-full rounded-[12px] bg-white px-5 py-4 sm:px-8 text-[#0D47A1]">Đang tải bài viết...</div>
+          <div class="blog-detail-page__dang-tai-bai-el">Đang tải bài viết...</div>
         }
         @if (loadError()) {
-          <div class="w-full rounded-[12px] bg-white px-5 py-4 sm:px-8 text-[#0D47A1]">{{ loadError() }}</div>
+          <div class="blog-detail-page__dang-tai-bai-el">{{ loadError() }}</div>
         }
         <article app-article [post]="post()"></article>
       </div>
       <aside app-blog-sidebar [selectedCategory]="post().category"></aside>
     </div>
-    <section class="w-full max-w-[1206px] pt-6">
+    <section class="blog-detail-page__section">
       <div app-section-heading>Sản phẩm liên quan</div>
       @if (productNotice()) {
-        <p class="mt-4 rounded-xl bg-white px-5 py-3 text-sm font-medium text-[#0D47A1]">{{ productNotice() }}</p>
+        <p class="blog-detail-page__product-notice">{{ productNotice() }}</p>
       }
-      <div class="mt-6 grid grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 lg:flex lg:justify-start lg:gap-9">
+      <div class="blog-detail-page__grid">
         @for (product of relatedProducts(); track product.id) {
           <app-shopping-product-card [product]="product" [href]="'/product-details'" />
         }

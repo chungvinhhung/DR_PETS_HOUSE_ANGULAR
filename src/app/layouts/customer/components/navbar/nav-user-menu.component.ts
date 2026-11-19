@@ -14,6 +14,7 @@ import { linkClass } from './nav-user-menu.helpers';
   standalone: true,
   imports: [CustomerLinkDirective],
   templateUrl: './nav-user-menu.component.html',
+  styleUrl: './nav-user-menu.component.scss',
   host: {
     'class': 'group relative shrink-0',
   },

@@ -12,6 +12,7 @@ import { cssMask } from '../../utils/grooming-mask.utils';
   standalone: true,
   imports: [ReactStyleDirective],
   templateUrl: './value-prop-card.component.html',
+  styleUrl: './value-prop-card.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

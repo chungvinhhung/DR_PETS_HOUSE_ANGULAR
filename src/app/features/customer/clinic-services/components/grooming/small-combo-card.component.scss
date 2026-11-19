@@ -1,0 +1,23 @@
+.small-combo-card__grid {
+  @apply relative grid h-full grid-cols-[132px_1fr] gap-5 px-10 pb-[52px] pt-10;
+}
+
+.small-combo-card__image {
+  @apply h-[140px] w-[132px] rounded-[16px] object-cover;
+}
+
+.small-combo-card__stack {
+  @apply flex min-w-0 flex-col gap-0.5 pr-[170px];
+}
+
+.small-combo-card__title {
+  @apply line-clamp-2 font-['Roboto'] text-[24px] font-medium italic leading-[30px] text-[#02000F];
+}
+
+.small-combo-card__price {
+  @apply shrink-0 font-['Roboto'] text-[20px] italic leading-[28px] text-[#02000F];
+}
+
+.small-combo-card__description {
+  @apply line-clamp-2 font-['Roboto'] text-[16px] leading-[22px] text-[#6C6D71];
+}

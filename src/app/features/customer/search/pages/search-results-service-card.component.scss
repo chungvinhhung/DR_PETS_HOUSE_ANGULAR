@@ -1,0 +1,35 @@
+.search-results-service-card__box {
+  @apply h-full w-[192px] shrink-0 overflow-hidden;
+}
+
+.search-results-service-card__title {
+  @apply h-full w-full object-cover;
+}
+
+.search-results-service-card__stack {
+  @apply flex min-w-0 flex-1 flex-col justify-between p-4;
+}
+
+.search-results-service-card__text-black-87 {
+  @apply text-[18px] font-bold leading-7;
+}
+
+.search-results-service-card__list {
+  @apply mt-1 list-decimal pl-6 text-[16px] leading-6 text-[#6C6D71];
+}
+
+.search-results-service-card__description {
+  @apply mt-1 text-[16px] leading-7 text-black/60;
+}
+
+.search-results-service-card__row {
+  @apply flex items-center justify-between;
+}
+
+.search-results-service-card__price {
+  @apply text-[18px] font-bold leading-7 text-[#0D47A1];
+}
+
+.search-results-service-card__btn-yellow {
+  @apply h-[35px] rounded-full px-[22px] text-[16px];
+}

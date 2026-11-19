@@ -4,6 +4,7 @@ import { Injectable, signal } from '@angular/core';
 import {
   AppHttpError,
   AppHttpErrorKind,
+  backendProblemMessage,
 } from '../models/app-http-error.model';
 
 @Injectable({
@@ -45,6 +46,10 @@ export class HttpErrorService {
   }
 
   private messageForError(error: HttpErrorResponse): string {
+    // Precise BE problem codes take precedence over generic HTTP 403/409.
+    const problemMessage = backendProblemMessage(error.error);
+    if (problemMessage) return problemMessage;
+
     const backendMessage = this.extractBackendMessage(error.error);
 
     if (backendMessage) {
@@ -53,25 +58,25 @@ export class HttpErrorService {
 
     switch (error.status) {
       case 0:
-        return 'Unable to reach the server.';
+        return 'Không thể kết nối đến máy chủ.';
       case 400:
-        return 'The request is invalid.';
+        return 'Yêu cầu không hợp lệ.';
       case 401:
-        return 'Authentication is required.';
+        return 'Vui lòng đăng nhập để tiếp tục.';
       case 403:
-        return 'You do not have permission to perform this action.';
+        return 'Bạn không có quyền thực hiện thao tác này.';
       case 404:
-        return 'The requested resource was not found.';
+        return 'Không tìm thấy dữ liệu yêu cầu.';
       case 409:
-        return 'The request conflicts with the current server state.';
+        return 'Dữ liệu đã thay đổi hoặc đang bị xung đột. Vui lòng tải lại.';
       case 422:
-        return 'The submitted data could not be processed.';
+        return 'Dữ liệu gửi lên chưa hợp lệ.';
       case 423:
-        return 'The account is temporarily locked.';
+        return 'Tài khoản đang tạm khóa. Vui lòng thử lại sau.';
       default:
         return error.status >= 500
-          ? 'The server encountered an error.'
-          : 'An unexpected HTTP error occurred.';
+          ? 'Máy chủ đang gặp sự cố. Vui lòng thử lại.'
+          : 'Đã xảy ra lỗi. Vui lòng thử lại.';
     }
   }
 

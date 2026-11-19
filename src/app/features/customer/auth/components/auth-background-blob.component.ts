@@ -10,6 +10,7 @@ import { authImages } from '../../../../shared/customer/assets/auth-images';
   standalone: true,
   imports: [],
   templateUrl: './auth-background-blob.component.html',
+  styleUrl: './auth-background-blob.component.scss',
   host: {
     '[attr.src]': 'authImages.backgroundBlob',
     'alt': '',

@@ -12,6 +12,7 @@ import { ADOPTION_STEPS } from '../data/adoption-form-data';
   standalone: true,
   imports: [CustomerIconComponent, ReactStyleDirective],
   templateUrl: './step-progress.component.html',
+  styleUrl: './step-progress.component.scss',
   host: {
     'class': 'relative flex h-[88px] shrink-0 items-center justify-between overflow-hidden bg-[#E5F6FD] px-4 py-6 sm:px-10',
   },

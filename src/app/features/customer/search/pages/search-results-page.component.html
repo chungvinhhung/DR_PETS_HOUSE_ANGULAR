@@ -1,9 +1,9 @@
 <app-nav-bar />
 <main
-  class="bg-gradient-to-b from-white to-[#E5F6FD] px-4 pt-6 sm:px-8 xl:px-[120px]"
+  class="search-results-page__main"
   [appStyle]="{ minHeight: pageMinHeight() }"
 >
-  <div class="mx-auto flex w-full max-w-[1200px] flex-col items-start gap-6 lg:flex-row">
+  <div class="search-results-page__stack">
     <aside
       app-search-sidebar
       [activeType]="activeType()"
@@ -13,10 +13,10 @@
       (onClear)="selectedFilters.set({})"
       (onTypeChange)="handleTypeChange($any($event))"
     ></aside>
-    <section class="flex w-full min-w-0 flex-1 flex-col gap-8 pb-[75px]">
+    <section class="search-results-page__section">
       <header
         app-results-header
-        [query]="query()"
+        [query]="isLoading() ? query() : (searchResponse().query || query())"
         [activeType]="activeType()"
         [activeSort]="activeSort()"
         [counts]="filteredSearchResponse().counts"
@@ -26,11 +26,15 @@
         [isEmpty]="!hasResults()"
       ></header>
       @if (isLoading()) {
-        <div class="py-20 text-center text-[18px] font-semibold text-[#0D47A1]">Đang tải kết quả tìm kiếm...</div>
+        <div class="search-results-page__dang-tai-ket-el">Đang tải kết quả tìm kiếm...</div>
       } @else if (loadError()) {
-        <div class="py-20 text-center text-[18px] font-semibold text-[#D32F2F]">{{ loadError() }}</div>
+        <div class="search-results-page__load-error">{{ loadError() }}</div>
       } @else if (hasResults()) {
-        <app-search-results-content [activeType]="activeType()" [results]="filteredSearchResponse().results" />
+        <app-search-results-content
+          [activeType]="activeType()"
+          [results]="filteredSearchResponse().results"
+          [crossSellServices]="searchResponse().crossSellServices || []"
+        />
       } @else {
         <section
           app-empty-results-content

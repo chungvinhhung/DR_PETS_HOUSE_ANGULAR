@@ -16,6 +16,7 @@ import { HOME_DOCTORS } from '../data/home-data';
   standalone: true,
   imports: [SectionTitleComponent, YellowButtonComponent, DoctorCardComponent, CustomerLinkDirective],
   templateUrl: './doctor-section.component.html',
+  styleUrl: './doctor-section.component.scss',
   host: {
     'class': 'relative w-full overflow-hidden py-12 md:py-16',
   },

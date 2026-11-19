@@ -1,0 +1,86 @@
+<app-admin-catalog-shell activeItem="content-community">
+  <main class="article-studio community-studio">
+    <app-admin-breadcrumb [items]="breadcrumb"/>
+    <header class="article-studio__heading">
+      <h1>Tạo bài đăng cộng đồng</h1>
+      <div class="article-studio__actions">
+        <button type="button" class="article-studio__btn article-studio__btn--outline"
+          [disabled]="saving()" (click)="cancel()">Hủy bỏ</button>
+        <button type="button" class="article-studio__btn article-studio__btn--danger-outline"
+          [disabled]="saving() || !isAdmin()" (click)="save('DRAFT')">Lưu bản nháp</button>
+        <button type="button" class="article-studio__btn article-studio__btn--primary"
+          [disabled]="saving() || !isAdmin()" (click)="save('APPROVED')">
+          {{saving() ? 'Đang lưu...' : 'Đăng bài'}}
+        </button>
+      </div>
+    </header>
+    @if(error()){
+      <div class="article-studio__message article-studio__message--error" role="alert">{{error()}}</div>
+    }
+    @if(!isAdmin()){
+      <div class="article-studio__message" role="status">Chỉ Quản trị viên được phép tạo bài đăng.</div>
+    }
+    <div class="article-studio__columns">
+      <div class="article-studio__editing">
+        <section class="article-studio__section" aria-labelledby="community-main-heading">
+          <div class="article-studio__section-heading"><h2 id="community-main-heading">Thông tin bài đăng</h2></div>
+          <div class="article-studio__fields">
+            <label class="article-studio__field article-studio__field--wide">
+              <span>Tiêu đề bài đăng <b>*</b></span>
+              <input type="text" maxlength="180" placeholder="Nhập tiêu đề bài đăng"
+                [ngModel]="title()" (ngModelChange)="setTitle($event)" [disabled]="!isAdmin() || saving()">
+            </label>
+            <label class="article-studio__field article-studio__field--wide">
+              <span>Loại bài đăng <b>*</b></span>
+              <select [ngModel]="type()" (ngModelChange)="setType($event)" [disabled]="!isAdmin() || saving()">
+                @for (item of types; track item) { <option [value]="item">{{item}}</option> }
+              </select>
+            </label>
+            <label class="article-studio__field article-studio__field--wide">
+              <span>Nội dung <b>*</b></span>
+              <textarea rows="9" maxlength="10000" placeholder="Chia sẻ nội dung với cộng đồng yêu thú cưng..."
+                [ngModel]="content()" (ngModelChange)="setContent($event)"
+                [disabled]="!isAdmin() || saving()"></textarea>
+            </label>
+          </div>
+        </section>
+        <section class="article-studio__section" aria-labelledby="community-media-heading">
+          <div class="article-studio__section-heading">
+            <h2 id="community-media-heading">Hình ảnh bài đăng</h2>
+            <span class="article-studio__count">{{imageUrls().length}}/5 ảnh</span>
+          </div>
+          <label class="article-studio__field" for="community-image-url">
+            <span>Đường dẫn hình ảnh</span>
+            <div class="community-studio__add-image">
+              <input id="community-image-url" type="url" placeholder="https://.../hinh-anh.jpg"
+                [ngModel]="imageDraft()" (ngModelChange)="imageDraft.set($event)"
+                (keydown)="handleImageKey($event)" [disabled]="!isAdmin() || saving() || imageUrls().length >= 5">
+              <button type="button" class="article-studio__btn article-studio__btn--outline"
+                [disabled]="!isAdmin() || saving() || !imageDraft().trim() || imageUrls().length >= 5"
+                (click)="addImage()">Thêm ảnh</button>
+            </div>
+          </label>
+          @if(imageUrls().length){
+            <div class="community-studio__images">
+              @for(url of imageUrls(); track url){
+                <figure>
+                  <img [src]="url" alt="Ảnh bài đăng">
+                  <button type="button" [disabled]="!isAdmin() || saving()"
+                    [attr.aria-label]="'Xóa ảnh '+($index+1)" (click)="removeImage(url)">×</button>
+                </figure>
+              }
+            </div>
+          }
+        </section>
+      </div>
+      <aside class="article-studio__side" aria-label="Xem trước bài đăng cộng đồng">
+        <section class="article-studio__section community-studio__preview-section">
+          <div class="article-studio__section-heading"><h2>Xem trước trên Customer</h2></div>
+          <div class="community-studio__preview-card">
+            <article app-community-card [post]="previewPost()" [state]="{ liked:false }"></article>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+</app-admin-catalog-shell>

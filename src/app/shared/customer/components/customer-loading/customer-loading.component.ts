@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 /**
@@ -6,8 +7,9 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 @Component({
   selector: 'app-customer-loading',
   standalone: true,
-  imports: [],
+  imports: [NgTemplateOutlet],
   templateUrl: './customer-loading.component.html',
+  styleUrl: './customer-loading.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

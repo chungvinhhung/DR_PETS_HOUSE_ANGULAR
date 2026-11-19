@@ -102,3 +102,14 @@
 .schedule-table th { height:44px; padding:9px 12px; background:#f4f6f9; color:#536783; font-size:12px; font-weight:500; text-transform:none; }
 .schedule-table td { min-height:77px; padding:12px; border-top:1px solid #dee5f0; color:#243045; font-size:12px; line-height:1.45; }
 .schedule-table tbody tr:first-child td { border-top:0; }
+
+/* Manager is a system-level multi-branch role. Keep the form consistent with
+   existing staff controls while making the BE dependency explicit. */
+.manager-api-note{
+  display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+  padding:14px 16px;border:1px solid #d6e3f4;border-radius:10px;
+  background:#f5f9ff;color:#3f5776;
+  font:400 12px/19px Roboto,Arial,sans-serif;
+}
+.manager-api-note strong{font-size:13px;line-height:19px;font-weight:600;color:#0d47a1}
+.manager-api-note span{max-width:580px}

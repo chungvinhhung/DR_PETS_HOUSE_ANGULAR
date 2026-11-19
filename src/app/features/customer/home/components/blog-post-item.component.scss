@@ -1,0 +1,11 @@
+.blog-post-item__text {
+  @apply flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.5px] text-[#0D47A1];
+}
+
+.blog-post-item__title {
+  @apply mt-3 text-2xl font-bold leading-snug transition-colors;
+}
+
+.blog-post-item__text-2 {
+  @apply mt-3 flex items-center gap-1 text-sm text-[#6B7280];
+}

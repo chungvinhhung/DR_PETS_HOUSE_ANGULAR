@@ -5,22 +5,22 @@
     Dịch vụ liên quan
   }
 </div>
-<div class="flex flex-col gap-8">
+<div class="services-section__stack">
   @for (service of results().services; track service.id) {
     <article app-search-results-service-card [service]="service"></article>
   }
 </div>
 @if (!allMode()) {
   <div app-search-results-section-heading>Dịch vụ khác</div>
-  <div class="flex flex-col gap-4">
+  <div class="services-section__stack-2">
     @for (service of results().otherServices; track $index) {
       <article app-search-results-service-card [service]="service"></article>
     }
   </div>
-  <div class="flex justify-center">
+  <div class="services-section__row">
     <a
       appCustomerLink="/services/grooming-spa"
-      class="btn-yellow-main h-[42px] px-[22px] text-[15px] font-medium"
+      class="services-section__btn-yellow-main btn-yellow-main"
     >Xem tất cả dịch vụ</a>
   </div>
 }

@@ -1,19 +1,19 @@
 @if (productHref()) {
   <a [appCustomerLink]="productHref()" [class]="`group block ${cardClass()}`">
-    <div class="relative h-[110px] w-full shrink-0 overflow-hidden rounded-[19px] border border-[rgba(25,118,210,0.5)]">
+    <div class="product-card__box">
       <img
         [attr.src]="productImage()"
         [attr.alt]="productName()"
-        class="pointer-events-none absolute inset-0 size-full rounded-[19px] object-cover transition-transform duration-component ease-premium group-hover:scale-[1.03]"
+        class="product-card__product-name group-hover:scale-[1.03]"
       />
     </div>
-    <div class="mt-auto w-full pb-2 pt-2">
-      <p class="product-card-name line-clamp-2 min-h-[40px] font-['Roboto'] text-[16px] font-bold leading-[20px] tracking-[0.15px] text-black transition-colors duration-micro group-hover:text-blue-900">{{ productName() }}</p>
-      <div class="product-card-price-row flex h-[28px] flex-col justify-center overflow-hidden">
-        <span class="block h-[12px] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap font-normal text-[11px] leading-3 text-[#8A8F98] line-through">{{ productOldPrice() }}</span>
-        <span class="product-card-current-price font-['Roboto'] text-[14px] font-bold leading-none text-black">{{ productPrice() }}</span>
+    <div class="product-card__box-2">
+      <p class="product-card__name product-card-name group-hover:text-blue-900 text-black">{{ productName() }}</p>
+      <div class="product-card__price-row product-card-price-row">
+        <span class="product-card__product-old-price">{{ productOldPrice() }}</span>
+        <span class="product-card__current-price product-card-current-price">{{ productPrice() }}</span>
       </div>
-      <div class="mt-1 w-full"><app-product-rating [value]="productRating()" /></div>
+      <div class="product-card__box-3"><app-product-rating [value]="productRating()" /></div>
     </div>
     <button
       type="button"
@@ -21,30 +21,30 @@
       [attr.aria-label]="`Thêm ${productName()} vào giỏ hàng`"
       (click)="handle1($any($event))"
     >
-      <img [attr.src]="productCardImages.cartBadge" alt="" class="size-full" />
+      <img [attr.src]="productCardImages.cartBadge" alt="" class="product-card__cart-badge" />
     </button>
     @if (isTag()) {
-      <div class="absolute right-[-1px] top-[-1px] flex items-center justify-center rounded-bl-[16px] rounded-tr-[30px] bg-[#0D47A1] pb-[10px] pl-[7px] pr-[9px] pt-[11px]">
-        <span class="w-[30px] text-center font-['Roboto'] text-[12px] leading-[1.66] tracking-[0.4px] text-white">{{ productTagLabel() }}</span>
+      <div class="product-card__layer">
+        <span class="product-card__product-tag-label">{{ productTagLabel() }}</span>
       </div>
     }
   </a>
 } @else {
   <article [class]="`group ${cardClass()}`">
-    <div class="relative h-[110px] w-full shrink-0 overflow-hidden rounded-[19px] border border-[rgba(25,118,210,0.5)]">
+    <div class="product-card__box">
       <img
         [attr.src]="productImage()"
         [attr.alt]="productName()"
-        class="pointer-events-none absolute inset-0 size-full rounded-[19px] object-cover transition-transform duration-component ease-premium group-hover:scale-[1.03]"
+        class="product-card__product-name group-hover:scale-[1.03]"
       />
     </div>
-    <div class="mt-auto w-full pb-2 pt-2">
-      <p class="product-card-name line-clamp-2 min-h-[40px] font-['Roboto'] text-[16px] font-bold leading-[20px] tracking-[0.15px] text-black transition-colors duration-micro group-hover:text-blue-900">{{ productName() }}</p>
-      <div class="product-card-price-row flex h-[28px] flex-col justify-center overflow-hidden">
-        <span class="block h-[12px] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap font-normal text-[11px] leading-3 text-[#8A8F98] line-through">{{ productOldPrice() }}</span>
-        <span class="product-card-current-price font-['Roboto'] text-[14px] font-bold leading-none text-black">{{ productPrice() }}</span>
+    <div class="product-card__box-2">
+      <p class="product-card__name product-card-name group-hover:text-blue-900 text-black">{{ productName() }}</p>
+      <div class="product-card__price-row product-card-price-row">
+        <span class="product-card__product-old-price">{{ productOldPrice() }}</span>
+        <span class="product-card__current-price product-card-current-price">{{ productPrice() }}</span>
       </div>
-      <div class="mt-1 w-full"><app-product-rating [value]="productRating()" /></div>
+      <div class="product-card__box-3"><app-product-rating [value]="productRating()" /></div>
     </div>
     <button
       type="button"
@@ -52,11 +52,11 @@
       [attr.aria-label]="`Thêm ${productName()} vào giỏ hàng`"
       (click)="handle2($any($event))"
     >
-      <img [attr.src]="productCardImages.cartBadge" alt="" class="size-full" />
+      <img [attr.src]="productCardImages.cartBadge" alt="" class="product-card__cart-badge" />
     </button>
     @if (isTag()) {
-      <div class="absolute right-[-1px] top-[-1px] flex items-center justify-center rounded-bl-[16px] rounded-tr-[30px] bg-[#0D47A1] pb-[10px] pl-[7px] pr-[9px] pt-[11px]">
-        <span class="w-[30px] text-center font-['Roboto'] text-[12px] leading-[1.66] tracking-[0.4px] text-white">{{ productTagLabel() }}</span>
+      <div class="product-card__layer">
+        <span class="product-card__product-tag-label">{{ productTagLabel() }}</span>
       </div>
     }
   </article>

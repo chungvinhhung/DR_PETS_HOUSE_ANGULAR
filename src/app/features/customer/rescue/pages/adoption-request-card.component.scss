@@ -1,0 +1,23 @@
+.adoption-request-card__pet-name {
+  @apply h-24 w-24 shrink-0 rounded-[18px] object-cover;
+}
+
+.adoption-request-card__stack {
+  @apply flex min-w-0 flex-1 flex-col gap-2;
+}
+
+.adoption-request-card__row {
+  @apply flex flex-wrap items-center gap-3;
+}
+
+.adoption-request-card__pet-name-2 {
+  @apply text-[22px] font-bold leading-7 text-[#111827];
+}
+
+.adoption-request-card__reason {
+  @apply line-clamp-2 text-[14px] leading-5 text-[#475569];
+}
+
+.adoption-request-card__submitted-date {
+  @apply text-[13px] leading-5 text-[#64748B];
+}

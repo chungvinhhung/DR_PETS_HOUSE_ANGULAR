@@ -1,14 +1,15 @@
 <a
   [appCustomerLink]="`/blog/so-cuu/${post().id}`"
-  [class]="`group relative overflow-hidden rounded-[32px] border border-[#D9E3F6] bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg ${
-        isUrgent() ? 'md:col-span-12 lg:col-span-8 min-h-[420px]' : 'md:col-span-6 lg:col-span-4 min-h-[300px]'
+  [class]="`group first-aid-card relative overflow-hidden rounded-[32px] border border-[#D9E3F6] bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg ${
+        isUrgent() ? 'first-aid-card--wide min-h-[390px]' : 'first-aid-card--square min-h-[300px]'
       }`"
 >
-  <div [class]="`${isUrgent() ? 'grid h-full grid-cols-1 sm:grid-cols-2' : 'flex h-full flex-col'}`">
+  <div [class]="`first-aid-card__layout ${isUrgent() ? 'grid h-full grid-cols-1 sm:grid-cols-2' : 'flex h-full flex-col'}`">
     @if (hasImage()) {
-      <div [class]="`relative overflow-hidden ${isUrgent() ? 'h-[220px] sm:h-full' : 'h-[178px]'}`">
+      <div [class]="`first-aid-card__media relative overflow-hidden ${isUrgent() ? 'h-[220px] sm:h-full' : 'h-[178px]'}`">
         <img
-          [attr.src]="post().image"
+          [attr.src]="displayImage()"
+          (error)="onImageError($event)"
           alt=""
           class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         />
@@ -18,7 +19,7 @@
         }
       </div>
     }
-    <div [class]="`flex flex-1 flex-col justify-center ${isUrgent() ? 'p-6 sm:p-10' : 'p-6 sm:p-8'}`">
+    <div [class]="`flex flex-1 flex-col justify-center ${isUrgent() ? 'p-6' : 'p-6 sm:p-8'}`">
       <p class="text-[12px] font-semibold uppercase tracking-[0.3px] text-[#0D47A1]">{{ post().categoryLabel }}</p>
       <h2 [class]="`mt-3 font-semibold leading-tight text-[rgba(0,0,0,0.87)] ${isUrgent() ? 'text-[26px]' : 'text-[20px]'}`">{{ post().title }}</h2>
       <p class="mt-4 text-[14px] leading-5 text-[#414753]">{{ post().description }}</p>

@@ -11,6 +11,7 @@ import { SelectValueDirective } from '../../../../../shared/customer/directives/
   standalone: true,
   imports: [CustomerIconComponent, SelectValueDirective],
   templateUrl: './booking-field.component.html',
+  styleUrl: './booking-field.component.scss',
   host: {
     '[class]': 'className()',
     '[attr.title]': 'invalid() ? \'Vui lòng điền thông tin\' : undefined',

@@ -1,0 +1,321 @@
+<app-admin-catalog-shell activeItem="vouchers">
+  <main class="flash-editor">
+    <app-admin-breadcrumb [items]="[
+      {label:'Flash Sale', link:'/admin/flash-sales'},
+      {label:mode==='create'?'Tạo Flash Sale':mode==='edit'?'Chỉnh sửa Flash Sale':'Chi tiết Flash Sale'}
+    ]" />
+    <header class="flash-editor__header">
+      <h1>{{ mode==='create'?'Tạo Flash Sale':mode==='edit'?'Chỉnh sửa Flash Sale':'Chi tiết Flash Sale' }}</h1>
+      <div class="flash-editor__actions">
+        @if (mode==='view') {
+          @if (canManage() && original()?.status==='PUBLISHED' && currentState()!=='ENDED') {
+            <button type="button" class="flash-editor__btn flash-editor__btn--outline"
+              [disabled]="saving()" (click)="togglePausedFromDetail()">
+              {{ saving() ? 'Đang cập nhật...' : original()?.isPaused ? 'Tiếp tục' : 'Tạm ngừng' }}
+            </button>
+          }
+          @if (canManage() && currentState()!=='ENDED') {
+            <a class="flash-editor__btn flash-editor__btn--primary"
+              [routerLink]="['/admin/flash-sales',id,'edit']">Chỉnh sửa</a>
+          }
+        } @else {
+          <button type="button" class="flash-editor__btn flash-editor__btn--outline"
+            [disabled]="saving()" (click)="cancel()">Hủy bỏ</button>
+          <button type="button" class="flash-editor__btn flash-editor__btn--primary"
+            [disabled]="!editable() || loading()" (click)="save()">
+            {{ saving() ? 'Đang lưu...' : mode==='create' ? 'Tạo Flash Sale' : 'Lưu thay đổi' }}
+          </button>
+        }
+      </div>
+    </header>
+
+    @if (loading()) {
+      <app-admin-data-state kind="loading" title="Đang tải thông tin Flash Sale" />
+    } @else if (error()) {
+      <app-admin-data-state kind="error" title="Không thể tải Flash Sale"
+        [message]="error()" (retry)="load()" />
+    } @else {
+      @if (validation()) {
+        <p class="flash-editor__validation" role="alert">{{validation()}}</p>
+      }
+      <div class="flash-editor__top">
+        <section class="flash-editor__panel flash-editor__info">
+          <div class="flash-editor__info-heading">
+            <h2>Thông tin chương trình</h2>
+            @if (mode !== 'create') {
+              <span class="flash-editor__badge" [attr.data-state]="currentState()">
+                {{ currentState() === 'DRAFT' ? 'Chưa phát hành' : stateLabels[currentState()] }}
+              </span>
+            }
+          </div>
+          @if (mode==='view') {
+            @if (original(); as sale) {
+              <div class="flash-editor__overview">
+                <div class="flash-editor__overview-primary">
+                  <div class="flash-editor__overview-name">
+                    <span>Tên chương trình</span>
+                    <strong>{{sale.name}}</strong>
+                  </div>
+                  <div class="flash-editor__overview-timeline">
+                    <div><span>Bắt đầu</span><strong>{{date(sale.startAt)}}</strong></div>
+                    <div><span>Kết thúc</span><strong>{{date(sale.endAt)}}</strong></div>
+                  </div>
+                </div>
+                @if (sale.description) {
+                  <div class="flash-editor__overview-description">
+                    <span>Mô tả chương trình</span>
+                    <p>{{sale.description}}</p>
+                  </div>
+                }
+                <div class="flash-editor__overview-stats" aria-label="Thống kê chiến dịch">
+                  <div><span>SKU áp dụng</span><strong>{{form().items.length}}</strong></div>
+                  <div><span>Tổng số lượng áp dụng</span><strong>{{totalQuota()}}</strong></div>
+                  <div><span>Số lượng đã bán</span><strong>{{totalSold()}}</strong></div>
+                </div>
+              </div>
+            }
+          } @else {
+            <div class="flash-editor__fields">
+              <label class="flash-editor__wide">Tên chương trình (không bắt buộc)
+                <input #name type="text" maxlength="120" [value]="form().name"
+                  (input)="update('name',name.value)" [disabled]="!editable()"
+                  placeholder="Để trống để hệ thống tự đặt tên theo ngày bắt đầu">
+              </label>
+              <label>Thời gian bắt đầu <span class="flash-editor__required">*</span>
+                <input #from type="datetime-local" [value]="form().from"
+                  [min]="minimumStartAt()" (change)="changeStart(from)"
+                  [disabled]="!editable() || startTimeLocked()">
+              </label>
+              <label>Thời gian kết thúc <span class="flash-editor__required">*</span>
+                <input #to type="datetime-local" [value]="form().to"
+                  [min]="form().from || minimumStartAt()" (change)="update('to',to.value)" [disabled]="!editable()">
+              </label>
+              <label class="flash-editor__wide">Mô tả (không bắt buộc)
+                <textarea #description rows="3" [value]="form().description"
+                  (input)="update('description',description.value)" [disabled]="!editable()"
+                  placeholder="Nhập mô tả chương trình"></textarea>
+              </label>
+            </div>
+          }
+        </section>
+      </div>
+
+      <section class="flash-editor__panel flash-editor__products">
+        <div class="flash-editor__section-heading">
+          <h2>Sản phẩm áp dụng ({{form().items.length}})</h2>
+          @if (mode!=='view' && canManage()) {
+            <button #addProductTrigger type="button" class="flash-editor__btn flash-editor__btn--outline"
+              [disabled]="!editable()" (click)="openPicker()">
+              <span class="web2-add-icon" aria-hidden="true">+</span> Thêm sản phẩm
+            </button>
+          }
+        </div>
+
+        @if (mode!=='view' && form().items.length) {
+          <div class="flash-editor__selection-toolbar">
+            <span class="flash-editor__selected-count">Đã chọn <strong>{{selectedCount()}}/{{form().items.length}}</strong> SKU</span>
+            <label class="flash-editor__discount-control">
+              <span>Mức giảm chung (%)</span>
+              <input #bulkPercent type="number" min="0.0000000001" max="99.9999999999" step="any"
+                inputmode="decimal" placeholder="VD: 20" [disabled]="!editable()"
+                [value]="bulkDiscount()" (input)="updateBulkDiscount(bulkPercent.value)"
+                [class.flash-editor__numeric-invalid]="discountInvalid(bulkDiscount())"
+                [attr.aria-invalid]="discountInvalid(bulkDiscount())">
+            </label>
+            <button type="button" class="flash-editor__btn flash-editor__btn--primary"
+              [disabled]="!editable() || !selectedCount() || !bulkDiscount().trim() || discountInvalid(bulkDiscount())"
+              (click)="applyBulkDiscount()">Áp dụng mức giảm</button>
+            <label class="flash-editor__discount-control">
+              <span>Số lượng áp dụng</span>
+              <input #bulkQuota type="number" min="1" step="1" inputmode="numeric"
+                placeholder="VD: 20" [disabled]="!editable()"
+                [value]="bulkQuantity()" (input)="bulkQuantity.set(bulkQuota.value)"
+                [class.flash-editor__numeric-invalid]="!!bulkQuantityError()"
+                [attr.aria-invalid]="!!bulkQuantityError()">
+            </label>
+            <button type="button" class="flash-editor__btn flash-editor__btn--outline"
+              [disabled]="!editable() || !selectedCount() || !bulkQuantity().trim() || !!bulkQuantityError()"
+              (click)="applyBulkQuantity()">Áp dụng số lượng</button>
+            @if (discountInvalid(bulkDiscount())) {
+              <small class="flash-editor__input-error">Mức giảm phải lớn hơn 0% và nhỏ hơn 100%.</small>
+            }
+            @if (bulkQuantityError()) {
+              <small class="flash-editor__input-error">{{bulkQuantityError()}}</small>
+            }
+          </div>
+        }
+
+        @if (form().items.length) {
+          <div class="flash-editor__scroll">
+            <table class="flash-editor__table flash-editor__table--applied"
+              [class.flash-editor__table--editing]="mode!=='view'"
+              [class.flash-editor__table--view]="mode==='view'">
+              <thead><tr>
+                @if (mode!=='view') {
+                  <th scope="col" class="flash-editor__select-column">
+                    <input type="checkbox" aria-label="Chọn tất cả SKU"
+                      [checked]="allRowsSelected()" [disabled]="!editable()"
+                      (change)="toggleSelectAll($any($event.target).checked)">
+                  </th>
+                }
+                <th scope="col">Sản phẩm / SKU</th>
+                <th scope="col">Giá hiện tại</th>
+                <th scope="col" class="flash-editor__stock-heading">Tổng tồn kho</th>
+                <th scope="col">Giảm thêm (%)</th>
+                <th scope="col">Giá sau giảm</th>
+                @if (mode==='view') { <th scope="col">Số lượng / Đã bán</th> }
+                @if (mode!=='view') { <th scope="col" class="flash-editor__actions-column">Thao tác</th> }
+              </tr></thead>
+              <tbody>
+                @for (product of form().items; track product.productId+'::'+product.variantId; let i=$index) {
+                  <tr>
+                    @if (mode!=='view') {
+                      <td class="flash-editor__select-column">
+                        <input type="checkbox" [checked]="isSelected(product.sku)"
+                          [disabled]="!editable()" [attr.aria-label]="'Chọn SKU ' + product.sku"
+                          (change)="toggleSelected(product.sku,$any($event.target).checked)">
+                      </td>
+                    }
+                    <td>
+                      <div class="flash-editor__product-info">
+                        @if (product.imageUrl) { <img [src]="product.imageUrl" width="42" height="42" alt=""> }
+                        <span><strong>{{product.productName}}</strong><small>{{product.sku}} · {{product.variantName}}</small></span>
+                      </div>
+                    </td>
+                    <td>{{money(product.originalPrice)}}</td>
+                    <td class="flash-editor__stock" [attr.title]="stockFor(product) === null ? 'Chưa có dữ liệu tồn kho cho SKU này' : null">
+                      {{stockFor(product) ?? '—'}}
+                    </td>
+                    <td>
+                      @if (mode==='view') {
+                        <strong class="flash-editor__percent-view">{{product.discountPercent}}%</strong>
+                      } @else {
+                        <input #percent type="number" min="0.0000000001" max="99.9999999999" step="any" inputmode="decimal"
+                          [attr.aria-label]="'Mức giảm phần trăm cho ' + product.sku"
+                          [value]="product.discountPercent" [disabled]="!editable()"
+                          [class.flash-editor__numeric-invalid]="discountInvalid(product.discountPercent)"
+                          [attr.aria-invalid]="discountInvalid(product.discountPercent)"
+                          (input)="updateItem(i,'discountPercent',percent.value)">
+                        @if (discountInvalid(product.discountPercent)) {
+                          <small class="flash-editor__input-error">Mức giảm phải trong khoảng 0–100%.</small>
+                        }
+                      }
+                    </td>
+                    <td>
+                      @if (mode==='view') {
+                        <strong class="flash-editor__price-view">{{moneyFromText(product.salePrice)}}</strong>
+                      } @else {
+                        <input #salePrice type="number" min="1" step="1" inputmode="numeric"
+                          [attr.max]="product.originalPrice - 1" [attr.aria-label]="'Giá sau giảm cho ' + product.sku"
+                          [value]="product.salePrice" [disabled]="!editable()"
+                          [class.flash-editor__numeric-invalid]="priceInvalid(product)"
+                          [attr.aria-invalid]="priceInvalid(product)"
+                          (input)="updateItem(i,'salePrice',salePrice.value)">
+                        @if (priceInvalid(product)) {
+                          <small class="flash-editor__input-error">Giá phải lớn hơn 0 và thấp hơn giá gốc.</small>
+                        }
+                      }
+                    </td>
+                    @if (mode==='view') {
+                      <td>
+                        <div class="flash-editor__sales-count">
+                          <strong>{{product.soldQuantity}} / {{product.quantityLimit}}</strong>
+                          <small>Đã bán / Giới hạn</small>
+                          <span class="flash-editor__sales-progress" aria-hidden="true">
+                            <span [style.width.%]="soldPercent(product)"></span>
+                          </span>
+                        </div>
+                      </td>
+                    }
+                    @if (mode!=='view') {
+                      <td class="flash-editor__remove">
+                        <button type="button" aria-label="Xóa sản phẩm khỏi chương trình"
+                          [disabled]="!editable()" (click)="removeItem(i)">
+                          <img src="/assets/admin-product/icon-delete.svg" width="18" height="18" alt="">
+                        </button>
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="flash-editor__no-products">Chưa có sản phẩm trong chương trình.</div>
+        }
+      </section>
+    }
+  </main>
+
+  @if (pickerOpen()) {
+    <div class="flash-editor__overlay" role="presentation" (click)="closePicker()">
+      <section #pickerDialog class="flash-editor__dialog" role="dialog" aria-modal="true" aria-labelledby="flash-product-dialog-title"
+        (click)="$event.stopPropagation()">
+        <header class="flash-editor__dialog-heading">
+          <h2 id="flash-product-dialog-title">Thêm sản phẩm</h2>
+          <button type="button" class="flash-editor__close" (click)="closePicker()" aria-label="Đóng"><img src="/assets/admin-inventory/close-outlined.svg" alt="" width="18" height="18"></button>
+        </header>
+        <label class="flash-editor__picker-search">
+          <img src="/assets/service-catalog/search.svg" width="18" height="18" alt="">
+          <input #productSearch type="search" [value]="pickerSearch()" (input)="searchProducts(productSearch.value)"
+            placeholder="Tìm tên sản phẩm hoặc SKU..." aria-label="Tìm sản phẩm">
+        </label>
+        <div class="flash-editor__picker-scroll">
+          @if (pickerError()) {
+            <div class="flash-editor__picker-error" role="alert">{{pickerError()}}
+              <button type="button" class="flash-editor__btn flash-editor__btn--outline"
+                (click)="loadProducts()">Thử lại</button>
+            </div>
+          }
+          <table class="flash-editor__table flash-editor__picker-table">
+            <thead><tr><th scope="col">Chọn</th><th scope="col">Sản phẩm</th><th scope="col">SKU / Biến thể</th><th scope="col">Giá hiện tại</th></tr></thead>
+            <tbody>
+              @for (opt of pickerOptions(); track opt.key) {
+                <tr>
+                  <td><input #selected type="checkbox"
+                    [checked]="isPending(opt) || isInForm(opt)"
+                    [disabled]="isInForm(opt)"
+                    (change)="chooseOption(opt,selected.checked)"
+                    [attr.aria-label]="'Chọn ' + opt.productName + ' ' + opt.variantName"></td>
+                  <td><div class="flash-editor__product-info">
+                    @if(opt.imageUrl){<img [src]="opt.imageUrl" width="36" height="36" alt="">}
+                    <strong>{{opt.productName}}</strong>
+                  </div></td>
+                  <td>{{opt.sku}}<small>{{opt.variantName}}</small></td>
+                  <td>{{money(opt.price)}}</td>
+                </tr>
+              } @empty {
+                @if (!pickerLoading() && !pickerError()) {
+                  <tr><td colspan="4" class="flash-editor__no-products">Không có sản phẩm phù hợp.</td></tr>
+                }
+              }
+            </tbody>
+          </table>
+          @if (pickerLoading()) { <p class="flash-editor__muted">Đang tải sản phẩm...</p> }
+          @if (pickerNextCursor() && !pickerLoading()) {
+            <button type="button" class="flash-editor__btn flash-editor__btn--tertiary flash-editor__load-more"
+              (click)="loadProducts(pickerNextCursor())">Tải thêm sản phẩm</button>
+          }
+        </div>
+        <footer class="flash-editor__dialog-actions">
+          <span>Đã chọn: {{pickerSelected().length}} sản phẩm</span>
+          <button type="button" class="flash-editor__btn flash-editor__btn--outline" (click)="closePicker()">Hủy bỏ</button>
+          <button type="button" class="flash-editor__btn flash-editor__btn--primary"
+            [disabled]="!pickerSelected().length" (click)="applySelection()">Thêm sản phẩm</button>
+        </footer>
+      </section>
+    </div>
+  }
+  @if (leaveOpen()) {
+    <div class="flash-editor__overlay" role="presentation">
+      <section #leaveDialog class="flash-editor__leave-dialog" role="dialog" aria-modal="true" aria-labelledby="flash-leave-title">
+        <h2 id="flash-leave-title">Rời trang khi chưa lưu?</h2>
+        <p>Những thay đổi chưa lưu sẽ bị mất.</p>
+        <div class="flash-editor__dialog-actions">
+          <button #keepEditing type="button" class="flash-editor__btn flash-editor__btn--outline" (click)="resolveLeave(false)">Tiếp tục chỉnh sửa</button>
+          <button type="button" class="flash-editor__btn flash-editor__btn--primary" (click)="resolveLeave(true)">Rời trang</button>
+        </div>
+      </section>
+    </div>
+  }
+</app-admin-catalog-shell>

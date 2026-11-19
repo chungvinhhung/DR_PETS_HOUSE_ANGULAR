@@ -18,6 +18,7 @@ import { EMPTY_FORMS } from './auth-modal.helpers';
   standalone: true,
   imports: [SplitSideComponent, LoginFormComponent, RegisterFormComponent, SuccessPanelComponent, RecoveryPanelComponent, CustomerIconComponent],
   templateUrl: './auth-modal.component.html',
+  styleUrl: './auth-modal.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -14,6 +14,7 @@ import { QUICK_LINKS, SERVICE_LINKS, MOBILE_SUPPORT_LINKS } from './footer.helpe
   standalone: true,
   imports: [MobileFooterSectionComponent, MobileSocialLinksComponent, CustomerLinkDirective],
   templateUrl: './mobile-footer.component.html',
+  styleUrl: './mobile-footer.component.scss',
   host: {
     '[class]': '`relative flex w-full flex-col items-start px-5 pb-[35px] pt-5 font-sans md:hidden ${ isBlue() ? \'bg-[#E5F6FD]\' : \'bg-white\' }`',
     'data-footer-mobile': 'true',

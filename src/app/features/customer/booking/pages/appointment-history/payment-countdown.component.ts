@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   standalone: true,
   imports: [],
   templateUrl: './payment-countdown.component.html',
+  styleUrl: './payment-countdown.component.scss',
   host: {
     '[class]': '`text-xs font-semibold ${remainingSeconds() ? \'text-[#c62828]\' : \'text-[#75777f]\'}`',
   },

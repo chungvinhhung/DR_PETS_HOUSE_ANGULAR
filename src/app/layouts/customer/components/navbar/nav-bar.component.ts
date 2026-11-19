@@ -13,6 +13,7 @@ import { NavBarGuestComponent } from './nav-bar-guest.component';
   standalone: true,
   imports: [MobileNavBarComponent, NavBarAuthenticatedComponent, NavBarGuestComponent],
   templateUrl: './nav-bar.component.html',
+  styleUrl: './nav-bar.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -1,0 +1,23 @@
+.filter-group__row {
+  @apply flex items-center gap-[17px];
+}
+
+.filter-group__box {
+  @apply h-6 w-[3px] rounded-full bg-[#0D47A1];
+}
+
+.filter-group__title {
+  @apply flex-1 text-[22px] font-bold leading-none text-[#0D47A1];
+}
+
+.filter-group__option-label-option-count-el {
+  @apply mt-6 flex flex-col gap-4;
+}
+
+.filter-group__label {
+  @apply flex cursor-pointer items-center gap-5 text-[#414141];
+}
+
+.filter-group__label-2 {
+  @apply text-[16px] leading-[27px];
+}

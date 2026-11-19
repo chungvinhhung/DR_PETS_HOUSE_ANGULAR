@@ -17,6 +17,7 @@ import { inputClass, invalidInputClass, NEW_ADDRESS_VALUE } from './adoption-app
   standalone: true,
   imports: [AdoptionApplicationModalFieldLabelComponent, FieldErrorComponent, CustomerIconComponent, SelectValueDirective],
   templateUrl: './contact-field.component.html',
+  styleUrl: './contact-field.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

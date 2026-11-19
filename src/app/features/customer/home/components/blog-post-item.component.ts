@@ -12,6 +12,7 @@ import { CustomerLinkDirective } from '../../../../shared/customer/directives/cu
   standalone: true,
   imports: [CategoryIconComponent, CustomerIconComponent, CustomerLinkDirective],
   templateUrl: './blog-post-item.component.html',
+  styleUrl: './blog-post-item.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -10,6 +10,7 @@ import { ProductDetailsPageComponent } from '../product-details/product-details-
   standalone: true,
   imports: [ProductDetailsPageComponent],
   templateUrl: './write-review-page.component.html',
+  styleUrl: './write-review-page.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

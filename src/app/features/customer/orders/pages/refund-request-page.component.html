@@ -1,0 +1,405 @@
+@if (isLoading()) {
+  <div class="refund-request-page__dang-tai-don-el">Đang tải đơn hàng...</div>
+} @else if (!order()) {
+  <div class="refund-request-page__box">
+    <h1 class="refund-request-page__khong-tim-thay-title">Không tìm thấy đơn hàng</h1>
+    <a appCustomerLink="/don-hang-cua-toi" class="refund-request-page__quay-lai-danh-link">Quay lại danh sách đơn hàng</a>
+  </div>
+} @else {
+  <div class="refund-request-page__grid">
+    <!-- ===== Cột trái: form yêu cầu ===== -->
+    <div class="refund-request-page__cot-trai-form-yeu">
+      <a [appCustomerLink]="'/don-hang-cua-toi/' + order().id" class="refund-request-page__id-link">
+        <svg class="refund-request-page__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span class="refund-request-page__quay-lai-don-text">Quay lại đơn hàng</span>
+      </a>
+      <h1 class="refund-request-page__gui-yeu-cau-title">Gửi yêu cầu trả hàng hoàn tiền</h1>
+
+      @if (loadError()) {
+        <p class="refund-request-page__load-error">{{ loadError() }}</p>
+      }
+      @if (!canRequest()) {
+        <p class="refund-request-page__chi-co-the-text">
+          Chỉ có thể yêu cầu trả hàng hoàn tiền cho đơn hàng đã giao thành công.
+        </p>
+      }
+
+      <!-- Thông tin đơn & chọn sản phẩm -->
+      <section class="refund-request-page__thong-tin-don-chon">
+        <div class="refund-request-page__row">
+          <div>
+            <h2 class="refund-request-page__code">Đơn hàng #{{ order().code || order().id }}</h2>
+            <div class="refund-request-page__row-2">
+              <span class="refund-request-page__text">
+                <svg class="refund-request-page__icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12l1 13H5L6 7zm3 0V6a3 3 0 016 0v1m-6 6 2 2 4-4" />
+                </svg>
+                Ngày đặt hàng: <span class="refund-request-page__ordered-at">{{ formatDate(order().orderedAt) }}</span>
+              </span>
+              @if (order().estimatedDelivery) {
+                <span class="refund-request-page__text-2"></span>
+                <span class="refund-request-page__text-3">
+                  <svg class="refund-request-page__icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h11v10H3zM14 9h4l3 3v4h-7M7 19a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4z" />
+                  </svg>
+                  Ngày giao hàng: {{ formatDate(order().estimatedDelivery) }}
+                </span>
+              }
+            </div>
+          </div>
+          <div class="refund-request-page__box-2">
+            <p class="refund-request-page__tong-gia-tri-text">Tổng giá trị đơn hàng</p>
+            <p class="refund-request-page__total-amount">{{ formatCurrency(order().totalAmount) }}</p>
+          </div>
+        </div>
+
+        <div class="refund-request-page__row-3">
+          <p class="refund-request-page__chon-san-pham-text">Chọn sản phẩm bạn muốn yêu cầu trả hàng & hoàn tiền:</p>
+          <button
+            type="button"
+            (click)="toggleAll()"
+            [disabled]="!canRequest()"
+            class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#344054] px-3 py-1 text-[11px] font-bold uppercase text-[#344054] transition hover:bg-[#F2F4F7] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <svg class="refund-request-page__icon-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 7l2 2 4-4M3 15l2 2 4-4M12 7h9M12 15h9" />
+            </svg>
+            {{ allSelected() ? 'Bỏ chọn tất cả' : 'Chọn tất cả' }}
+          </button>
+        </div>
+
+        <div class="mt-4 space-y-4">
+          @for (product of products(); track product.id) {
+            @let selected = qtyOf(product) > 0;
+            <div
+              [class]="`flex flex-wrap items-start gap-4 rounded-[24px] border-2 px-5 py-4 transition sm:flex-nowrap ${
+                selected ? 'border-[#FDD835] bg-[#FFFDE7]' : 'border-[#F2F4F7] bg-[#FFFEF8]'
+              }`"
+            >
+              <button
+                type="button"
+                (click)="toggleProduct(product)"
+                [disabled]="!canRequest()"
+                [attr.aria-pressed]="selected"
+                [attr.aria-label]="'Chọn ' + product.name"
+                [class]="`mt-5 grid h-5 w-5 shrink-0 place-items-center rounded-full border transition disabled:cursor-not-allowed ${
+                  selected ? 'border-[#1E55A5] bg-[#1E55A5] text-white' : 'border-[#D0D5DD] bg-white'
+                }`"
+              >
+                @if (selected) {
+                  <svg class="refund-request-page__icon-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                }
+              </button>
+              <img [src]="product.image" [alt]="product.name" class="refund-request-page__name" />
+              <div class="refund-request-page__box-3">
+                <p class="refund-request-page__chon-san-pham-text">{{ product.name }}</p>
+                @if (product.variant) {
+                  <p class="refund-request-page__variant">Loại: {{ product.variant }}</p>
+                }
+                <div class="refund-request-page__row-4">
+                  <span>Số lượng mua: x {{ product.quantity }}</span>
+                  <span>Tổng giá trị: {{ formatCurrency(product.price * product.quantity) }}</span>
+                </div>
+              </div>
+              <div class="refund-request-page__stack">
+                <div class="refund-request-page__row-5">
+                  <span>Số lượng trả:</span>
+                  <div class="refund-request-page__row-6">
+                    <button type="button" (click)="setQty(product, qtyOf(product) - 1)" [disabled]="!canRequest() || qtyOf(product) <= 0" class="px-1.5 text-[16px] disabled:opacity-40" aria-label="Giảm">-</button>
+                    <span class="refund-request-page__product">{{ qtyOf(product) }}</span>
+                    <button type="button" (click)="setQty(product, qtyOf(product) + 1)" [disabled]="!canRequest() || qtyOf(product) >= product.quantity" class="px-1.5 text-[16px] disabled:opacity-40" aria-label="Tăng">+</button>
+                  </div>
+                </div>
+                <span>Số tiền hoàn: <strong class="refund-request-page__product-2">{{ formatCurrency(refundOf(product)) }}</strong></span>
+              </div>
+            </div>
+          } @empty {
+            <p class="refund-request-page__don-hang-chua-text">Đơn hàng chưa có dữ liệu sản phẩm.</p>
+          }
+        </div>
+
+        <div class="refund-request-page__row-7">
+          <div class="refund-request-page__box-4">
+            <div class="refund-request-page__row-8">
+              <span>Tổng số tiền hoàn</span>
+              <span class="refund-request-page__total-refund">{{ formatCurrency(totalRefund()) }}</span>
+            </div>
+            <p class="refund-request-page__dua-tren-gia-text">(Dựa trên giá đã áp dụng mã giảm giá và không bao gồm phí vận chuyển)</p>
+          </div>
+        </div>
+      </section>
+
+      @if (hasSelection()) {
+        <hr class="refund-request-page__divider" />
+
+        <!-- Chi tiết lý do & phương thức -->
+        <section class="refund-request-page__chi-tiet-ly-do">
+          <p class="refund-request-page__chon-san-pham-text">Nêu chi tiết lý do trả hàng hoàn tiền:</p>
+
+          <!-- 1. Lý do -->
+          <div class="refund-request-page__box-5">
+            <h3 class="refund-request-page__title">1. Lý do bạn muốn trả hàng <span class="refund-request-page__text-4">*</span></h3>
+            <p class="refund-request-page__vui-long-chon-text">Vui lòng chọn tình huống bạn đang gặp phải để Dr. Pets House hỗ trợ nhanh chóng hơn.</p>
+            <div class="refund-request-page__grid-2">
+              @for (item of RETURN_REASONS; track item.key) {
+                <label
+                  [class]="`flex cursor-pointer items-center gap-3 rounded-full border-2 px-4 py-3 text-[13px] font-semibold transition ${
+                    reason() === item.key ? 'border-[#FDD835] bg-[#FFFDE7] text-[#1E55A5]' : 'border-[#EAECF0] text-[#1D2939] hover:border-[#FDE68A]'
+                  }`"
+                >
+                  <input type="radio" name="return-reason" class="h-4 w-4 accent-[#1E55A5]" [checked]="reason() === item.key" (change)="reason.set(item.key)" />
+                  {{ item.label }}
+                </label>
+              }
+              <label
+                [class]="`flex cursor-pointer items-center gap-3 rounded-full border-2 px-4 py-2.5 text-[13px] font-semibold transition sm:col-span-2 ${
+                  reason() === 'other' ? 'border-[#FDD835] bg-[#FFFDE7] text-[#1E55A5]' : 'border-[#EAECF0] text-[#1D2939] hover:border-[#FDE68A]'
+                }`"
+              >
+                <input type="radio" name="return-reason" class="h-4 w-4 accent-[#1E55A5]" [checked]="reason() === 'other'" (change)="reason.set('other')" />
+                <span class="refund-request-page__ly-do-khac-text">Lý do khác:</span>
+                <input
+                  type="text"
+                  maxlength="200"
+                  placeholder="Vui lòng nhập lý do trả hàng vào đây"
+                  class="min-w-0 flex-1 border-b border-[#EAECF0] bg-transparent px-2 py-1 font-normal text-[#1D2939] outline-none focus:border-[#1E55A5]"
+                  [value]="otherReason()"
+                  (focus)="reason.set('other')"
+                  (input)="otherReason.set($any($event.target).value)"
+                />
+              </label>
+            </div>
+            @if (submitted() && errors()['reason']) {
+              <p class="refund-request-page__reason">{{ errors()['reason'] }}</p>
+            }
+          </div>
+
+          <!-- 2. Mô tả -->
+          <div class="refund-request-page__box-6">
+            <h3 class="refund-request-page__title">2. Mô tả chi tiết vấn đề <span class="refund-request-page__text-4">*</span></h3>
+            <p class="refund-request-page__vui-long-chon-text">Mô tả tình trạng thực tế của sản phẩm khi bạn mở hộp hoặc nhận từ nhân viên giao hàng.</p>
+            <textarea
+              rows="4"
+              maxlength="1000"
+              class="refund-request-page__vi-du-khi-mo"
+              placeholder="Ví dụ: Khi mở kiện hàng kiểm tra, bao bì thức ăn Royal Canin Mini Puppy 2kg có ngày dập date là 11/2024, chỉ còn 1 tháng là hết hạn. Cún nhà mình ăn chậm nên sợ không kịp dùng hết. Mong Dr. Pets đổi túi date xa hơn hoặc hoàn tiền giúp mình nhé..."
+              [value]="description()"
+              (input)="description.set($any($event.target).value)"
+            ></textarea>
+            @if (submitted() && errors()['description']) {
+              <p class="refund-request-page__description">{{ errors()['description'] }}</p>
+            }
+          </div>
+
+          <!-- 3. Minh chứng -->
+          <div class="refund-request-page__box-6">
+            <h3 class="refund-request-page__title">3. Tải lên hình ảnh / video minh chứng <span class="refund-request-page__text-4">*</span></h3>
+            <p class="refund-request-page__vui-long-chon-text">Cung cấp tối thiểu 02 ảnh (chụp rõ nhãn hạn sử dụng, hình ảnh lỗi). Tối đa 5 tệp (JPG, PNG, MP4) dưới 25MB.</p>
+            <div class="refund-request-page__if-evidence-length-el">
+              @if (evidence().length < MAX_EVIDENCE) {
+                <label
+                  (dragover)="onDragOver($event)"
+                  (dragleave)="isDragging.set(false)"
+                  (drop)="onDrop($event)"
+                  [class]="`flex aspect-[16/9] cursor-pointer flex-col items-center justify-center gap-1 rounded-[20px] border-2 border-dashed text-center transition ${
+                    isDragging() ? 'border-[#1E55A5] bg-[#EFF6FF]' : 'border-[#D0D5DD] bg-[#FCFCFD] hover:border-[#1E55A5]'
+                  }`"
+                >
+                  <span class="refund-request-page__text-5">
+                    <svg class="refund-request-page__icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4-4 3 3 5-5 4 4M4 5h10M19 3v6m-3-3h6M4 5v14h16v-6" />
+                    </svg>
+                  </span>
+                  <span class="refund-request-page__them-anh-text">Thêm ảnh / video</span>
+                  <span class="refund-request-page__keo-tha-hoac-text">Kéo thả hoặc nhấp để tải</span>
+                  <input type="file" class="sr-only" multiple accept="image/jpeg,image/png,video/mp4" (change)="onFileInput($event)" />
+                </label>
+              }
+              @for (item of evidence(); track item.id) {
+                <div class="refund-request-page__box-7 group bg-[#F2F4F7]">
+                  @if (item.isVideo) {
+                    <video [src]="item.previewUrl" class="refund-request-page__preview-url-video" muted></video>
+                  } @else {
+                    <img [src]="item.previewUrl" [alt]="item.file.name" class="refund-request-page__preview-url-video" />
+                  }
+                  <span class="refund-request-page__name-2">{{ item.file.name }}</span>
+                  <button
+                    type="button"
+                    (click)="removeFile(item)"
+                    class="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-black/50 text-white transition hover:bg-[#D92D20]"
+                    [attr.aria-label]="'Xóa ' + item.file.name"
+                  >
+                    <svg class="refund-request-page__icon-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" /></svg>
+                  </button>
+                </div>
+              }
+            </div>
+            @if (fileError()) {
+              <p class="refund-request-page__reason">{{ fileError() }}</p>
+            } @else if (submitted() && errors()['evidence']) {
+              <p class="refund-request-page__reason">{{ errors()['evidence'] }}</p>
+            }
+          </div>
+
+          <!-- 4. Phương thức hoàn tiền -->
+          <div class="refund-request-page__box-6">
+            <h3 class="refund-request-page__title-2">
+              4. Phương thức hoàn tiền
+              <span class="refund-request-page__xac-dinh-tu-text">Xác định tự động</span>
+            </h3>
+            <p class="refund-request-page__vui-long-chon-text"><strong class="refund-request-page__hoan-tien-ve-strong">Hoàn tiền về phương thức thanh toán của đơn hàng</strong> sau khi yêu cầu được duyệt.</p>
+            <p class="refund-request-page__thong-tin-hoan-text">Thông tin hoàn tiền</p>
+            <div class="refund-request-page__grid-3 divide-y divide-[#EAECF0] sm:divide-x sm:divide-y-0 border-[#EAECF0]">
+              <div class="refund-request-page__box-8">
+                <p class="refund-request-page__so-tien-hoan-text">Số tiền hoàn dự kiến:</p>
+                <p class="refund-request-page__total-refund-2">{{ formatCurrency(totalRefund()) }}</p>
+              </div>
+              <div class="refund-request-page__box-8">
+                <p class="refund-request-page__so-tien-hoan-text">Phương thức hoàn tiền</p>
+                <p class="refund-request-page__refund-method-label">{{ refundMethodLabel() }}</p>
+              </div>
+              <div class="refund-request-page__box-8">
+                <p class="refund-request-page__so-tien-hoan-text">Thời gian nhận tiền</p>
+                <p class="refund-request-page__refund-method-label">1 - 3 ngày làm việc<br />sau khi yêu cầu được duyệt</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Phương thức trả hàng -->
+          <div class="refund-request-page__box-9">
+            <h3 class="refund-request-page__title">5. Phương thức trả hàng <span class="refund-request-page__text-4">*</span></h3>
+            <div class="refund-request-page__grid-4">
+              <label
+                [class]="`cursor-pointer rounded-[20px] border-2 px-5 py-4 transition ${
+                  returnMethod() === 'pickup' ? 'border-[#FDD835] bg-[#FFFDE7]' : 'border-[#EAECF0] hover:border-[#FDE68A]'
+                }`"
+              >
+                <span [class]="`flex items-center gap-2 text-[15px] font-semibold ${returnMethod() === 'pickup' ? 'text-[#1E55A5]' : 'text-[#1D2939]'}`">
+                  <input type="radio" name="return-method" class="h-4 w-4 accent-[#1E55A5]" [checked]="returnMethod() === 'pickup'" (change)="returnMethod.set('pickup')" />
+                  Đơn vị vận chuyển đến lấy hàng (Miễn phí)
+                </span>
+                <span class="refund-request-page__nhan-vien-van-text">Nhân viên vận chuyển sẽ liên hệ và tới địa chỉ của bạn để lấy hàng.</span>
+              </label>
+              <label
+                [class]="`cursor-pointer rounded-[20px] border-2 px-5 py-4 transition ${
+                  returnMethod() === 'store' ? 'border-[#FDD835] bg-[#FFFDE7]' : 'border-[#EAECF0] hover:border-[#FDE68A]'
+                }`"
+              >
+                <span [class]="`flex items-center gap-2 text-[15px] font-semibold ${returnMethod() === 'store' ? 'text-[#1E55A5]' : 'text-[#1D2939]'}`">
+                  <input type="radio" name="return-method" class="h-4 w-4 accent-[#1E55A5]" [checked]="returnMethod() === 'store'" (change)="returnMethod.set('store')" />
+                  Tự mang đến chi nhánh Dr. Pets House
+                </span>
+                <span class="refund-request-page__nhan-vien-van-text">Bạn có thể mang trực tiếp sản phẩm đến phòng khám hoặc chi nhánh Dr. Pets House gần nhất để được kiểm tra và hoàn tiền tại chỗ.</span>
+              </label>
+            </div>
+
+            @if (returnMethod() === 'pickup') {
+              <div class="refund-request-page__box-10">
+                <div class="refund-request-page__row-9">
+                  <span class="refund-request-page__text-6">
+                    <svg class="refund-request-page__icon-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-6.2-7-11.5a7 7 0 0114 0C19 14.8 12 21 12 21z" />
+                      <circle cx="12" cy="9.5" r="2.5" />
+                    </svg>
+                    Địa chỉ nhận hàng
+                  </span>
+                  <button type="button" (click)="editingAddress.set(!editingAddress())" class="text-[13px] font-medium text-[#1E55A5] hover:underline">
+                    {{ editingAddress() ? 'Xong' : 'Thay đổi' }}
+                  </button>
+                </div>
+                @if (editingAddress()) {
+                  <div class="refund-request-page__grid-5">
+                    <input type="text" placeholder="Họ và tên" class="rounded-lg border border-[#D0D5DD] px-3 py-2 text-[14px] outline-none focus:border-[#1E55A5]" [value]="pickupAddress().name" (input)="updateAddress('name', $any($event.target).value)" />
+                    <input type="tel" placeholder="Số điện thoại" class="rounded-lg border border-[#D0D5DD] px-3 py-2 text-[14px] outline-none focus:border-[#1E55A5]" [value]="pickupAddress().phone" (input)="updateAddress('phone', $any($event.target).value)" />
+                    <input type="text" placeholder="Địa chỉ" class="rounded-lg border border-[#D0D5DD] px-3 py-2 text-[14px] outline-none focus:border-[#1E55A5] sm:col-span-2" [value]="pickupAddress().address" (input)="updateAddress('address', $any($event.target).value)" />
+                  </div>
+                } @else {
+                  <p class="refund-request-page__name-3">{{ pickupAddress().name || 'Chưa có tên người nhận' }}{{ pickupAddress().phone ? ' | ' + pickupAddress().phone : '' }}</p>
+                  <p class="refund-request-page__address">{{ pickupAddress().address || 'Chưa có địa chỉ, vui lòng nhấn "Thay đổi" để cập nhật.' }}</p>
+                  <span class="refund-request-page__dia-chi-don-text">Địa chỉ đơn hàng</span>
+                }
+                @if (submitted() && errors()['address']) {
+                  <p class="refund-request-page__reason">{{ errors()['address'] }}</p>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
+        @if (submitError()) {
+          <p class="refund-request-page__submit-error">{{ submitError() }}</p>
+        }
+
+        <div class="refund-request-page__row-7">
+          <button
+            type="button"
+            (click)="handleSubmit()"
+            [disabled]="submitting() || !canRequest()"
+            class="inline-flex h-12 items-center gap-3 rounded-[4px] bg-[#FDD835] px-6 text-[15px] font-bold uppercase text-[#1D2939] shadow-elevation transition hover:bg-[#FBC02D] disabled:cursor-not-allowed disabled:bg-[#E4E7EC] disabled:text-[#98A2B3] disabled:shadow-none"
+          >
+            <svg class="refund-request-page__icon" fill="currentColor" viewBox="0 0 24 24"><path d="M3 20.5l18-8.5L3 3.5 3 10l12 2-12 2z" /></svg>
+            {{ submitting() ? 'Đang gửi...' : 'Gửi yêu cầu hoàn tiền' }}
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- ===== Cột phải: quy trình & hỗ trợ ===== -->
+    <aside class="space-y-8">
+      <div class="refund-request-page__box-11">
+        <h2 class="refund-request-page__quy-trinh-xu-title">Quy trình xử lý yêu cầu trả hàng hoàn tiền</h2>
+        <ol class="refund-request-page__list">
+          @for (step of REFUND_STEPS; track $index; let index = $index, last = $last) {
+            <li class="refund-request-page__item">
+              <span [class]="`grid h-9 w-9 place-items-center rounded-full text-[15px] font-semibold ${index === 0 ? 'bg-[#FDD835] text-[#1D2939]' : 'bg-[#EAECF0] text-[#344054]'}`">{{ index + 1 }}</span>
+              <p class="refund-request-page__title-3">{{ step.title }}</p>
+              <p class="refund-request-page__description-2">{{ step.description }}</p>
+              @if (!last) {
+                <span [class]="`my-3 h-11 w-[3px] rounded ${index === 0 ? 'bg-[#1E55A5]' : 'bg-[#EAECF0]'}`"></span>
+              }
+            </li>
+          }
+        </ol>
+      </div>
+
+      <div class="refund-request-page__box-12">
+        <div class="refund-request-page__row-10">
+          <span class="refund-request-page__text-7">
+            <svg class="refund-request-page__icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 14v-2a8 8 0 0116 0v2M4 14a2 2 0 002 2h1v-5H6a2 2 0 00-2 2zm16 0a2 2 0 01-2 2h-1v-5h1a2 2 0 012 2zM17 16v1a3 3 0 01-3 3h-2" />
+            </svg>
+          </span>
+          <div>
+            <p class="refund-request-page__ban-can-ho-text">Bạn cần hỗ trợ gấp?</p>
+            <p class="refund-request-page__chon-san-pham-text">Liên hệ ngay với chúng tôi</p>
+          </div>
+        </div>
+        <p class="refund-request-page__doi-ngu-chuyen-text">Đội ngũ chuyên viên chăm sóc khách hàng luôn sẵn sàng lắng nghe và giải quyết nhanh chóng mọi khiếu nại của quý khách.</p>
+        <a href="tel:0868686868" class="refund-request-page__link">
+          <svg class="refund-request-page__icon-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2" />
+          </svg>
+          Gọi ngay: 086 8686868
+        </a>
+      </div>
+
+      <div class="refund-request-page__row-11">
+        <span class="refund-request-page__text-7">
+          <svg class="refund-request-page__icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-7-6.2-7-11.5a7 7 0 0114 0C19 14.8 12 21 12 21z" />
+            <circle cx="12" cy="9.5" r="2.5" />
+          </svg>
+        </span>
+        <div>
+          <p class="refund-request-page__he-thong-cua-text">Hệ thống cửa hàng</p>
+          <p class="refund-request-page__san-sang-nhan-text">Sẵn sàng nhận đổi trả hàng trực tiếp tại cửa hàng.</p>
+          <a appCustomerLink="/lien-he" class="refund-request-page__xem-link">
+            Xem <strong>Danh sách chi nhánh</strong> ↗
+          </a>
+        </div>
+      </div>
+    </aside>
+  </div>
+}

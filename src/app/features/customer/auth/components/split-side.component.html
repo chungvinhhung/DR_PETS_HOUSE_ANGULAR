@@ -5,12 +5,12 @@
 <img
   [attr.src]="authImages.logo"
   alt="Dr. Pet's House"
-  class="absolute left-[13px] top-[3px] z-10 h-[56px] w-[101px] object-contain md:left-5 md:top-5 md:h-[78px] md:w-auto"
+  class="split-side__dr-pet-s-house"
 />
 <img
   [attr.src]="content().image"
   alt=""
-  class="relative z-10 h-[116px] w-[118px] rounded-full border-4 border-white bg-white object-cover shadow-lg md:h-[183px] md:w-[180px] lg:h-64 lg:w-64"
+  class="split-side__image"
 />
-<h2 class="relative z-10 mt-1 text-[16px] font-semibold leading-8 text-[#191C1E] md:mt-6 md:text-2xl">{{ content().title }}</h2>
-<p class="relative z-10 max-w-[320px] text-center text-[12px] leading-[1.3] md:mt-2 md:text-[16px] md:leading-6">{{ content().text }}</p>
+<h2 class="split-side__title">{{ content().title }}</h2>
+<p class="split-side__text">{{ content().text }}</p>

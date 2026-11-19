@@ -2,7 +2,7 @@
 .voucher-list{box-sizing:border-box;max-width:1480px;width:100%;margin:auto;padding:34px 36px;color:#1c2d43;font:13px/1.5 Roboto,Arial,sans-serif}
 .voucher-list *{box-sizing:border-box}
 .voucher-list__heading{display:flex;justify-content:space-between;margin-bottom:25px}
-.voucher-list__heading h1{font-size:25px;font-weight:650;margin:0}
+.voucher-list__heading h1{font:700 28px/36px Roboto,Arial,sans-serif;margin:0;color:#1c2d43}
 .voucher-list__toolbar{display:grid;grid-template-columns:minmax(215px,1fr) minmax(157px,185px) minmax(145px,170px) minmax(145px,165px) 138px;grid-template-rows:44px;gap:10px;align-items:center;min-width:0;overflow-x:auto;padding:16px;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:18px}
 .voucher-list__search{display:flex;gap:9px;align-items:center;min-width:0;width:100%;height:44px;border:1px solid #dce5f0;border-radius:8px;padding:0 13px}
 .voucher-list__search img{flex:none}
@@ -61,3 +61,12 @@
 .voucher-list__table :is(th,td){padding-inline:12px}
 .voucher-list__table :is(th,td):first-child{padding-left:20px}
 .voucher-list__table :is(th,td):last-child{padding-right:20px}
+
+/* Shared local tab rhythm with Flash Sale, Orders and Product Management. */
+.voucher-list__tabs{display:flex;gap:24px;align-items:stretch;min-height:46px;border-bottom:1px solid #dce5f0;margin:0 0 24px}
+.voucher-list__tabs a{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 24px;border-bottom:3px solid transparent;color:#475569;font:500 16px/24px Roboto,Arial,sans-serif;letter-spacing:.2px;white-space:nowrap;text-decoration:none}
+.voucher-list__tabs a:hover{color:#0d47a1}
+.voucher-list__tabs .voucher-list__tab--active{color:#0d47a1;border-bottom-color:#0d47a1;font-weight:500}
+
+/* Active and keyboard-focused tabs retain the same type weight; only color/underline signal selection. */
+.voucher-list__tabs a:focus{font-weight:500}

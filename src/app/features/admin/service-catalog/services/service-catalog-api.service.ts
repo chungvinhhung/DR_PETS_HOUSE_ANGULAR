@@ -22,6 +22,23 @@ interface BranchApiPage {
 }
 interface BranchApiEnvelope { data?: BranchApiPage; items?: BranchApiPage['items']; nextCursor?: string | null; }
 
+export interface ServiceBranchConfigRecord {
+  branchId: string;
+  branchName: string;
+  branchCode?: string;
+  branchStatus?: 'ACTIVE' | 'INACTIVE';
+  enabled: boolean;
+  capacity: number;
+  availability?: readonly { dayOfWeek: number; open: string; close: string }[];
+  blockedWindows?: readonly unknown[];
+  version?: number;
+}
+interface ServiceBranchConfigsResponse {
+  serviceId: string;
+  serviceName: string;
+  configs: ServiceBranchConfigRecord[];
+}
+
 export function serviceFromApi(raw: ServiceApiRecord, branchId = 'ALL'): CatalogService {
   const pricing = resolveServicePricing(raw);
   const fixed = [...pricing.fixedTiers.values()];
@@ -66,7 +83,12 @@ export class ServiceCatalogApiService {
       .set('limit', String(query.pageSize));
     if (query.search.trim()) params = params.set('search', query.search.trim());
     if (query.branchId !== 'ALL') params = params.set('branchId', query.branchId);
-    if (query.mode !== 'ALL') params = params.set('bookingMode', query.mode);
+    if (query.bookingModes?.length && query.bookingModes.length < 3) {
+      params = params.set('bookingMode', query.bookingModes.join(','));
+    } else if (query.mode !== 'ALL') {
+      params = params.set('bookingMode', query.mode);
+    }
+    if (query.serviceType && query.serviceType !== 'ALL') params = params.set('serviceType', query.serviceType);
     if (query.status !== 'ALL') params = params.set('status', query.status);
     return this.api.get<ServiceApiPage>('/services', { params }).pipe(
       map((res) => ({
@@ -91,6 +113,21 @@ export class ServiceCatalogApiService {
     return this.api.patch<ServiceApiRecord, Partial<ServiceWrite>>(
       '/services/' + encodeURIComponent(id), body,
     );
+  }
+
+  archive(id: string, idempotencyKey: string): Observable<ServiceApiRecord> {
+    const headers = new HttpHeaders({ 'Idempotency-Key': idempotencyKey });
+    return this.api.post<ServiceApiRecord, Record<string, never>>(
+      '/services/' + encodeURIComponent(id) + '/archive',
+      {},
+      { headers },
+    );
+  }
+
+  getBranchConfigs(id: string): Observable<ServiceBranchConfigRecord[]> {
+    return this.api.get<ServiceBranchConfigsResponse>(
+      '/services/' + encodeURIComponent(id) + '/branch-configs',
+    ).pipe(map((response) => response.configs ?? []));
   }
 
   /** All accessible branches for Service Detail, including inactive branches.

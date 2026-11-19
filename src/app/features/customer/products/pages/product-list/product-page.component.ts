@@ -21,6 +21,7 @@ import { PAGE_SIZE, MULTI_CATEGORY_FETCH_LIMIT, buildCategoryOptions, toBackendS
   standalone: true,
   imports: [NavBarComponent, BreadcrumbComponent, FilterSidebarComponent, ProductSearchAndSortComponent, ProductGridComponent, LoadMoreComponent, FooterComponent],
   templateUrl: './product-page.component.html',
+  styleUrl: './product-page.component.scss',
   host: {
     'class': 'min-h-screen bg-[#f5f5f5]',
   },
@@ -175,15 +176,32 @@ export class ProductPageComponent {
         minPrice: onlySpec.range?.min,
         maxPrice: Number.isFinite(onlySpec.range?.max) ? onlySpec.range.max : undefined,
       });
-      this.products.update((current: any) => (append ? [...current, ...result.products] : result.products));
+      this.products.update((current: any) => {
+        const rawList = append ? [...current, ...result.products] : result.products;
+        const seen = new Set();
+        return rawList.filter((item: any) => {
+          const key = String(item.id || item._id || item.productCode || item.code);
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      });
       this.totalProducts.set(result.totalRows);
       this.totalPages.set(result.totalPages || 1);
       this.currentPage.set(page);
     } catch {
       const fallbackProducts = getFallbackProducts({ searchQuery: this.searchQuery(), selectedCategories: this.selectedCategories(), selectedPrices: this.selectedPrices(), sortOrder: this.sortOrder() });
       const fallbackPage = fallbackProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-      if (!append) this.products.set(fallbackPage);
-      else this.products.update((current: any) => [...current, ...fallbackPage]);
+      this.products.update((current: any) => {
+        const rawList = append ? [...current, ...fallbackPage] : fallbackPage;
+        const seen = new Set();
+        return rawList.filter((item: any) => {
+          const key = String(item.id || item._id || item.productCode || item.code);
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      });
       this.totalProducts.set(fallbackProducts.length);
       this.totalPages.set(Math.max(1, Math.ceil(fallbackProducts.length / PAGE_SIZE)));
       this.currentPage.set(page);

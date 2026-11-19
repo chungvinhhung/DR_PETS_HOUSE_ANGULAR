@@ -1,0 +1,43 @@
+.product-card__box {
+  @apply relative h-[110px] w-full shrink-0 overflow-hidden rounded-[19px] border border-[rgba(25,118,210,0.5)];
+}
+
+.product-card__product-name {
+  @apply pointer-events-none absolute inset-0 size-full rounded-[19px] object-cover transition-transform duration-component ease-premium;
+}
+
+.product-card__box-2 {
+  @apply mt-auto w-full pb-2 pt-2;
+}
+
+.product-card__name {
+  @apply line-clamp-2 min-h-[40px] font-['Roboto'] text-[16px] font-bold leading-[20px] tracking-[0.15px] transition-colors duration-micro;
+}
+
+.product-card__price-row {
+  @apply flex h-[28px] flex-col justify-center overflow-hidden;
+}
+
+.product-card__product-old-price {
+  @apply block h-[12px] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap font-normal text-[11px] leading-3 text-[#8A8F98] line-through;
+}
+
+.product-card__current-price {
+  @apply font-['Roboto'] text-[14px] font-bold leading-none text-black;
+}
+
+.product-card__box-3 {
+  @apply mt-1 w-full;
+}
+
+.product-card__cart-badge {
+  @apply size-full;
+}
+
+.product-card__layer {
+  @apply absolute right-[-1px] top-[-1px] flex items-center justify-center rounded-bl-[16px] rounded-tr-[30px] bg-[#0D47A1] pb-[10px] pl-[7px] pr-[9px] pt-[11px];
+}
+
+.product-card__product-tag-label {
+  @apply w-[30px] text-center font-['Roboto'] text-[12px] leading-[1.66] tracking-[0.4px] text-white;
+}

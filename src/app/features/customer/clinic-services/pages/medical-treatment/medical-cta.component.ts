@@ -12,6 +12,7 @@ import { medicalAssets } from '../../data/medical-treatment-data';
   standalone: true,
   imports: [ReactStyleDirective, CustomerLinkDirective],
   templateUrl: './medical-cta.component.html',
+  styleUrl: './medical-cta.component.scss',
   host: {
     'class': 'medical-cta',
   },

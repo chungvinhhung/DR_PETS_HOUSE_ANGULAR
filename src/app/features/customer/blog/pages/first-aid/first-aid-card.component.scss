@@ -1,0 +1,19 @@
+.first-aid-card__image {
+  @apply h-full w-full object-cover transition-transform duration-300;
+}
+
+.first-aid-card__text {
+  @apply absolute left-4 top-4 flex items-center gap-2 rounded-full bg-[#FFDAD6] px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.3px] text-[#C62828];
+}
+
+.first-aid-card__category-label {
+  @apply text-[12px] font-semibold uppercase tracking-[0.3px] text-[#0D47A1];
+}
+
+.first-aid-card__description {
+  @apply mt-4 text-[14px] leading-5 text-[#414753];
+}
+
+.first-aid-card__doc-ngay-text {
+  @apply mt-6 flex items-center gap-2 text-[13px] font-semibold text-[#005AB4];
+}

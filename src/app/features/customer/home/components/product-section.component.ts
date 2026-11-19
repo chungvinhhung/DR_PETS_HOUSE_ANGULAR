@@ -16,6 +16,7 @@ import { FEATURED_PRODUCTS, PRODUCT_CATEGORIES } from '../../../../shared/custom
   standalone: true,
   imports: [SectionTitleComponent, ProductCardComponent, YellowButtonComponent, ReactStyleDirective, CustomerLinkDirective],
   templateUrl: './product-section.component.html',
+  styleUrl: './product-section.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

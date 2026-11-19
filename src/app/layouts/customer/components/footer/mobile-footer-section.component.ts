@@ -11,6 +11,7 @@ import { CustomerLinkDirective } from '../../../../shared/customer/directives/cu
   standalone: true,
   imports: [CustomerIconComponent, CustomerLinkDirective],
   templateUrl: './mobile-footer-section.component.html',
+  styleUrl: './mobile-footer-section.component.scss',
   host: {
     'class': 'border-b-[0.5px] border-[#0D47A1]',
   },

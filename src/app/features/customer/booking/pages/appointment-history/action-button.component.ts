@@ -10,6 +10,7 @@ import { actionClasses } from './appointment-history-page.helpers';
   standalone: true,
   imports: [],
   templateUrl: './action-button.component.html',
+  styleUrl: './action-button.component.scss',
   host: {
     'type': 'button',
     '(click)': 'onClick.emit(action().key)',

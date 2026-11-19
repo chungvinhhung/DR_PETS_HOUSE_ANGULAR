@@ -15,6 +15,7 @@ import { BookingFieldComponent } from './booking-field.component';
   standalone: true,
   imports: [BookingCardComponent, BookingFieldComponent],
   templateUrl: './pet-info-card.component.html',
+  styleUrl: './pet-info-card.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -12,6 +12,7 @@ import { notificationImages } from '../../../../shared/customer/assets/notificat
   standalone: true,
   imports: [NotificationItemComponent],
   templateUrl: './notification-popup.component.html',
+  styleUrl: './notification-popup.component.scss',
   host: {
     'class': 'notification-popover',
     'data-node-id': '3075:10754',

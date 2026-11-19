@@ -1,0 +1,27 @@
+.blog-detail-page__main {
+  @apply flex min-h-[2245px] flex-col items-center gap-6 bg-[#E5F6FD] px-4 sm:px-6 lg:px-20 pb-12 pt-6;
+}
+
+.blog-detail-page__stack {
+  @apply flex w-full max-w-page flex-col items-start gap-8 lg:flex-row lg:gap-12;
+}
+
+.blog-detail-page__stack-2 {
+  @apply flex w-full min-w-0 flex-1 flex-col gap-3;
+}
+
+.blog-detail-page__dang-tai-bai-el {
+  @apply w-full rounded-[12px] bg-white px-5 py-4 sm:px-8 text-[#0D47A1];
+}
+
+.blog-detail-page__section {
+  @apply w-full max-w-page pt-6;
+}
+
+.blog-detail-page__product-notice {
+  @apply mt-4 rounded-xl bg-white px-5 py-3 text-sm font-medium text-[#0D47A1];
+}
+
+.blog-detail-page__grid {
+  @apply mt-6 grid grid-cols-2 justify-items-center gap-4 sm:grid-cols-3 lg:flex lg:justify-start lg:gap-9;
+}

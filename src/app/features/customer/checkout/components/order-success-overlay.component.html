@@ -1,32 +1,32 @@
 @if (!(!cartService.isOrderSuccessOpen())) {
   <div
-    class="overlay-fade-in pointer-events-auto fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(6,16,90,0.12)] p-4 backdrop-blur-[3px]"
+    class="order-success-overlay__overlay-fade-in overlay-fade-in"
     role="dialog"
     aria-label="Đặt hàng thành công"
     aria-modal="true"
   >
-    <div class="panel-slide-in relative inline-grid shrink-0 place-items-start leading-none">
-      <div class="relative h-[456.096px] w-[1023px] max-w-[calc(100vw-32px)] rounded-[10px] border border-solid border-[#ababab] bg-white shadow-[0px_100px_203px_0px_rgba(0,0,0,0.07),0px_22.336px_45.343px_0px_rgba(0,0,0,0.04),0px_6.65px_13.5px_0px_rgba(0,0,0,0.03)]"></div>
-      <div class="absolute left-1/2 top-1/2 flex w-full max-w-[1023px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-10 px-6">
-        <img [attr.src]="orderSuccessImages.successIcon" alt="" class="size-[69px] shrink-0" />
-        <div class="flex flex-col items-center gap-2">
-          <h2 class="whitespace-nowrap font-['Roboto'] text-[48px] font-bold leading-[1.167] text-[#3d3d3d]">Đặt hàng thành công</h2>
-          <p class="w-[481px] max-w-full text-center font-['Roboto'] text-[16px] leading-[1.5] tracking-[0.15px] text-[#949494]">Đơn đặt hàng của bạn đã được xác nhận. Xem chi tiết và theo dõi đơn hàng tại 'Đơn hàng của tôi'.</p>
+    <div class="order-success-overlay__panel-slide-in panel-slide-in">
+      <div class="order-success-overlay__box"></div>
+      <div class="order-success-overlay__layer">
+        <img [attr.src]="orderSuccessImages.successIcon" alt="" class="order-success-overlay__success-icon" />
+        <div class="order-success-overlay__stack">
+          <h2 class="order-success-overlay__dat-hang-thanh-title">Đặt hàng thành công</h2>
+          <p class="order-success-overlay__don-dat-hang-text">Đơn đặt hàng của bạn đã được xác nhận. Xem chi tiết và theo dõi đơn hàng tại 'Đơn hàng của tôi'.</p>
         </div>
-        <div class="flex flex-wrap items-start justify-center gap-5">
+        <div class="order-success-overlay__row">
           <button
             type="button"
             (click)="handleGoHome()"
             class="btn-yellow px-[22px] py-2 normal-case tracking-[0.46px]"
           >
-            <span class="whitespace-nowrap font-['Roboto'] text-[15px] font-bold uppercase leading-[26px] tracking-[0.46px] text-black">Trở về trang chủ</span>
+            <span class="order-success-overlay__tro-ve-trang-text">Trở về trang chủ</span>
           </button>
           <button
             type="button"
             (click)="handleOrderDetails()"
             class="btn-yellow-outline px-[22px] py-2 normal-case tracking-[0.46px]"
           >
-            <span class="whitespace-nowrap font-['Roboto'] text-[15px] font-medium uppercase leading-[26px] tracking-[0.46px] text-black">chi tiết đơn hàng</span>
+            <span class="order-success-overlay__chi-tiet-don-text">chi tiết đơn hàng</span>
           </button>
         </div>
       </div>

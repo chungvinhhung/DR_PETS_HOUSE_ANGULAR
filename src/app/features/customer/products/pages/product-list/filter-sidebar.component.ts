@@ -11,6 +11,7 @@ import { PRODUCT_PRICE_RANGES as PRICE_RANGES } from '../../../../../shared/cust
   standalone: true,
   imports: [FilterHeadingComponent],
   templateUrl: './filter-sidebar.component.html',
+  styleUrl: './filter-sidebar.component.scss',
   host: {
     'class': 'w-full shrink-0 lg:w-[283px] lg:pt-[75px]',
   },

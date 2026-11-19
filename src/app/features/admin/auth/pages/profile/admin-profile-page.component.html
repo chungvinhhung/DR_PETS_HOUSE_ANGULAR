@@ -1,0 +1,98 @@
+<app-admin-catalog-shell activeItem="account-profile">
+  <main class="account-profile web2-admin-page">
+    <header class="account-profile__page-header">
+      <div>
+        <h1>Thông tin tài khoản</h1>
+      </div>
+    </header>
+
+    <div class="account-profile__columns">
+      <section class="account-profile__card">
+          <h2>Thông tin cá nhân</h2>
+          <div class="account-profile__identity">
+            <img class="account-profile__avatar"
+              src="/assets/admin-product/admin-mascot-avatar.svg"
+              alt="Ảnh đại diện tài khoản" width="64" height="64">
+            <div class="account-profile__identity-text">
+              <strong>{{ user()?.fullName || 'Quản trị viên' }}</strong>
+              <span>Quản trị viên hệ thống</span>
+            </div>
+          </div>
+          <div class="account-profile__summary">
+            <div><span>Số điện thoại liên hệ</span><strong>{{ user()?.phone || '—' }}</strong></div>
+            <div><span>Vai trò hệ thống</span><strong>ADMIN</strong></div>
+          </div>
+
+          <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+            <div class="account-profile__form-grid">
+              <label>
+                <span>Họ và tên <em>*</em></span>
+                <input type="text" formControlName="fullName" maxlength="100" autocomplete="name"
+                  [attr.aria-invalid]="form.controls.fullName.invalid && form.controls.fullName.touched">
+                @if (form.controls.fullName.invalid && form.controls.fullName.touched) {
+                  <small class="account-profile__field-error">Vui lòng nhập họ tên từ 2–100 ký tự.</small>
+                }
+              </label>
+              <label>
+                <span>Email</span>
+                <input type="email" formControlName="email" autocomplete="email"
+                  placeholder="Nhập email liên hệ"
+                  [attr.aria-invalid]="form.controls.email.invalid && form.controls.email.touched">
+                @if (form.controls.email.invalid && form.controls.email.touched) {
+                  <small class="account-profile__field-error">Email không đúng định dạng.</small>
+                }
+              </label>
+            </div>
+            @if (errorMessage()) { <p class="account-profile__error" role="alert">{{ errorMessage() }}</p> }
+            @if (notice()) { <p class="account-profile__success" role="status">{{ notice() }}</p> }
+            <div class="account-profile__actions">
+              <button type="submit" class="account-profile__btn account-profile__btn--primary"
+                [disabled]="saving() || form.invalid || !form.dirty">
+                {{ saving() ? 'Đang lưu...' : 'Lưu thay đổi' }}
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section class="account-profile__card account-profile__password">
+          <div class="account-profile__section-heading">
+            <h2>Đổi mật khẩu</h2>
+          </div>
+          <div class="account-profile__username-card">
+            <span>Tên đăng nhập</span>
+            <strong>{{ user()?.username || '—' }}</strong>
+          </div>
+          <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" novalidate>
+            <div class="account-profile__password-fields">
+              <label>
+                <span>Mật khẩu hiện tại <em>*</em></span>
+                <input type="password" formControlName="oldPassword"
+                  autocomplete="current-password" placeholder="Nhập mật khẩu hiện tại">
+              </label>
+              <label>
+                <span>Mật khẩu mới <em>*</em></span>
+                <input type="password" formControlName="newPassword"
+                  autocomplete="new-password" placeholder="Nhập mật khẩu mới">
+                @if(passwordForm.controls.newPassword.invalid && passwordForm.controls.newPassword.touched){
+                  <small class="account-profile__field-error">Ít nhất 8 ký tự, có 1 chữ hoa và 1 chữ số.</small>
+                }
+              </label>
+              <label>
+                <span>Xác nhận mật khẩu mới <em>*</em></span>
+                <input type="password" formControlName="confirmPassword"
+                  autocomplete="new-password" placeholder="Nhập lại mật khẩu mới">
+              </label>
+            </div>
+            @if (passwordError()) { <p class="account-profile__error" role="alert">{{ passwordError() }}</p> }
+            @if (passwordNotice()) { <p class="account-profile__success" role="status">{{ passwordNotice() }}</p> }
+            <div class="account-profile__actions">
+              <button type="submit" class="account-profile__btn account-profile__btn--primary"
+                [disabled]="changingPassword() || passwordForm.invalid">
+                {{ changingPassword() ? 'Đang đổi mật khẩu...' : 'Đổi mật khẩu' }}
+              </button>
+            </div>
+          </form>
+        </section>
+    </div>
+  </main>
+</app-admin-catalog-shell>

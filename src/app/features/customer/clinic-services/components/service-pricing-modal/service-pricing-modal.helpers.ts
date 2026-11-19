@@ -6,7 +6,9 @@ import { GROOMING_PRICE_COLUMNS, SERVICE_PRICE_FILTERS, SERVICE_PRICE_TABLES } f
 
 export const columnToneClasses = {
   primary: 'border-[#0D47A1] text-[#0D47A1]',
+  success: 'border-[#2BA52E] text-[#2BA52E]',
   secondary: 'border-[#FDD835] text-[#FBC02D]',
+  danger: 'border-[#E53935] text-[#E53935]',
   info: 'border-[#0288D1] text-[#0288D1]',
 }
 

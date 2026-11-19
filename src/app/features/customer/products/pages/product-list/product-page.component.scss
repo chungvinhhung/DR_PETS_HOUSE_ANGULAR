@@ -1,0 +1,35 @@
+.product-page__box {
+  @apply w-full overflow-x-clip bg-white;
+}
+
+.product-page__main {
+  @apply min-h-[1607px] bg-[linear-gradient(180deg,#FFFFFF_0%,#E5F6FD_100%)] px-4 pt-[24px] sm:px-8 xl:px-[120px];
+}
+
+.product-page__stack {
+  @apply mx-auto flex w-full max-w-page flex-col gap-[24px] lg:flex-row;
+}
+
+.product-page__section {
+  @apply w-full min-w-0 flex-1;
+}
+
+.product-page__danh-muc-san-title {
+  @apply text-[26px] font-bold leading-[34px] text-[#3D3D3D] sm:text-[36px] sm:leading-[42px];
+}
+
+.product-page__box-2 {
+  @apply mt-[32px];
+}
+
+.product-page__search-query {
+  @apply mt-[27px] text-[16px] leading-[27px] text-[#414141];
+}
+
+.product-page__dang-tai-san-el {
+  @apply flex h-[532px] items-center justify-center text-[18px] text-[#0D47A1];
+}
+
+.product-page__load-error {
+  @apply flex h-[532px] items-center justify-center text-center text-[18px] text-[#D32F2F];
+}

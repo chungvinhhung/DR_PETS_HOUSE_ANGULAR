@@ -11,6 +11,7 @@ import { navbarImages } from '../../../../shared/customer/assets/navbar-images';
   standalone: true,
   imports: [SearchAssetIconComponent],
   templateUrl: './tablet-search-trigger.component.html',
+  styleUrl: './tablet-search-trigger.component.scss',
   host: {
     'type': 'button',
     '(click)': 'onOpen.emit($event)',

@@ -5,6 +5,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './primary-button.component.html',
+  styleUrl: './primary-button.component.scss',
   host: {
     'type': 'submit',
     'class': 'btn-yellow h-[43px] w-full disabled:opacity-50',

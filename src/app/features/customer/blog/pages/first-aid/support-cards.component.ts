@@ -10,6 +10,7 @@ import { CustomerIconComponent } from '../../../../../shared/customer/components
   standalone: true,
   imports: [CustomerIconComponent],
   templateUrl: './support-cards.component.html',
+  styleUrl: './support-cards.component.scss',
   host: {
     'class': 'mt-6 grid w-full grid-cols-1 gap-6 md:grid-cols-12',
   },

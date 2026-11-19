@@ -15,6 +15,7 @@ import { getGoogleMapsLink, getGoogleMapsEmbedLink, normalizeContactBranch } fro
   standalone: true,
   imports: [BranchCardComponent, TrustResourceUrlPipe, ReactStyleDirective],
   templateUrl: './branch-directory.component.html',
+  styleUrl: './branch-directory.component.scss',
   host: {
     'class': 'contact-branches',
     'id': 'branches',

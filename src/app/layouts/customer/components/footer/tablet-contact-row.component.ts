@@ -10,6 +10,7 @@ import { CustomerIconComponent } from '../../../../shared/customer/components/ic
   standalone: true,
   imports: [CustomerIconComponent],
   templateUrl: './tablet-contact-row.component.html',
+  styleUrl: './tablet-contact-row.component.scss',
   host: {
     'class': 'flex items-start gap-2 font-[\'Roboto\'] text-[15px] font-normal leading-[1.4] text-[#20262E]',
   },

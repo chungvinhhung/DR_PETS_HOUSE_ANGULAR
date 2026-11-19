@@ -12,6 +12,7 @@ import { checkoutImages } from '../assets/checkout-assets';
   standalone: true,
   imports: [FieldLabelComponent, PillInputComponent],
   templateUrl: './guest-shipping-form.component.html',
+  styleUrl: './guest-shipping-form.component.scss',
   host: {
     'class': 'flex flex-col gap-5 rounded-2xl bg-white p-8 shadow-[0_4px_13px_rgba(144,202,249,0.85)]',
   },

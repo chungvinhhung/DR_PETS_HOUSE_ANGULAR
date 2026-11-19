@@ -10,6 +10,7 @@ import { TabletFooterLinkComponent } from './tablet-footer-link.component';
   standalone: true,
   imports: [TabletFooterLinkComponent],
   templateUrl: './tablet-footer-column.component.html',
+  styleUrl: './tablet-footer-column.component.scss',
   host: {
     'class': 'w-full min-w-0 max-w-[328px]',
   },

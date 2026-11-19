@@ -1,21 +1,24 @@
+import { adminPageWindow, AdminPageItem } from '../../../../shared/utils/admin-table-pagination';
 import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, signal } from '@angular/core';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { catchError, from, map, mergeMap, of, toArray } from 'rxjs';
+import { catchError, forkJoin, from, map, mergeMap, of, switchMap, toArray } from 'rxjs';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from "../../../../shared/admin-data-state/admin-data-state.component";
 import {
   BranchServiceConfigDialogComponent, BranchServiceConfigPreview,
 } from '../../service-catalog/components/branch-service-config-dialog.component';
 import { CatalogBranch, CatalogService } from '../../service-catalog/models/service-catalog.model';
 import { BranchHoursPreviewComponent } from './branch-hours-preview.component';
 import { BranchShiftTemplatesPreviewComponent } from './branch-shift-templates-preview.component';
+import { AdminStaffApiService } from '../../staff/services/admin-staff-api.service';
 import { BranchSettingsDialogComponent, BranchSettingsPreview } from './branch-settings-dialog.component';
 import {
   BranchApiRecord, BranchManagementApiService, BranchServiceApiRecord,
-  BranchServiceView,
+  BranchServiceBlockedWindow, BranchServiceView,
 } from '../services/branch-management-api.service';
 
 interface BranchRow extends CatalogBranch {
@@ -36,7 +39,7 @@ interface OccupancySnapshot {
   selector: 'app-branch-management-page',
   standalone: true,
   imports: [
-    RouterLink, AdminCatalogShellComponent, BranchServiceConfigDialogComponent,
+    RouterLink, AdminCatalogShellComponent, AdminDataStateComponent, BranchServiceConfigDialogComponent,
     BranchHoursPreviewComponent, BranchShiftTemplatesPreviewComponent,
     BranchSettingsDialogComponent,
   ],
@@ -47,6 +50,7 @@ export class BranchManagementPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly api = inject(BranchManagementApiService);
+  private readonly staffApi = inject(AdminStaffApiService);
   private readonly session = inject(AuthSessionService);
   private readonly toast = inject(AdminToastService);
   private readonly destroyRef = inject(DestroyRef);
@@ -70,6 +74,8 @@ export class BranchManagementPageComponent {
   readonly branchMenuOpen = signal(false);
   readonly savingBranch = signal(false);
   readonly savingConfig = signal(false);
+  readonly blockedWindows = signal<readonly BranchServiceConfigPreview['blockedWindows'][number][]>([]);
+  readonly blockedWindowsLoading = signal(false);
   private lastCreatePayload = '';
   private lastCreateKey = '';
 
@@ -90,6 +96,7 @@ export class BranchManagementPageComponent {
 
   constructor() {
     this.refreshBranches();
+    this.staffApi.loadRoster();
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const id = params.get('id');
       this.detailTab.set('services');
@@ -100,6 +107,13 @@ export class BranchManagementPageComponent {
       this.occupancyLoading.set(false);
       this.servicesError.set('');
       if (id) {
+        if (!this.canAccessBranch(id)) {
+          this.detailLoading.set(false);
+          this.servicesLoading.set(false);
+          this.detailRecord.set(null);
+          this.detailError.set('Bạn không có quyền xem chi nhánh này.');
+          return;
+        }
         this.fetchDetail(id);
         this.fetchServiceConfigs(id);
       } else {
@@ -118,27 +132,22 @@ export class BranchManagementPageComponent {
   }
 
   private managerAssignedBranches(): readonly string[] {
-    // This is UI-only filtering; Backend MUST enforce authorization on every request.
-    // AuthUser omits the assigned branches but the Backend JWT includes them.
-    const token = this.session.accessToken();
-    if (!token) return [];
-    try {
-      const part = token.split('.')[1];
-      if (!part) return [];
-      const bytes = atob(part.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - part.length % 4) % 4));
-      const claims: { assignedBranchIds?: unknown } = JSON.parse(bytes);
-      return Array.isArray(claims.assignedBranchIds)
-        ? claims.assignedBranchIds.filter((id): id is string => typeof id === 'string')
-        : [];
-    } catch { return []; }
+    // /auth/me is the canonical source for Manager branch scope.
+    return [...(this.session.user()?.branchScope ?? [])];
+  }
+
+  private canAccessBranch(id: string): boolean {
+    return this.isAdmin || (
+      this.session.user()?.systemRole === 'MANAGER' &&
+      this.managerAssignedBranches().includes(id)
+    );
   }
 
   get branch(): BranchRow | null {
     const id = this.branchId;
     if (!id) return null;
     const match = this.visibleBranches.find((row) => row.id === id) ?? this.detailRecord();
-    // A Manager must not render an unverified, out-of-scope branch from /branches/:id.
-    if (!this.isAdmin && !this.managerAssignedBranches().includes(id)) return null;
+    if (!this.canAccessBranch(id)) return null;
     return match?.id === id ? match : null;
   }
   get pickerServices(): readonly CatalogService[] {
@@ -154,6 +163,10 @@ export class BranchManagementPageComponent {
       (this.branchStatus() === 'ALL' || row.status === this.branchStatus()) &&
       (!text || [row.name, row.address, row.hotline].some((part) => part.toLocaleLowerCase('vi').includes(text))),
     );
+  }
+  staffCount(branchId: string): number | null {
+    if (!this.staffApi.loaded() || this.staffApi.error()) return null;
+    return this.staffApi.staff().filter(person=>person.branchIds?.includes(branchId) ?? false).length;
   }
   get pageCount(): number { return Math.max(1, Math.ceil(this.filteredBranches.length / this.pageSize)); }
   get pagedBranches(): readonly BranchRow[] {
@@ -179,6 +192,7 @@ export class BranchManagementPageComponent {
         this.branchRows.set(rows.map((row) => this.fromApi(row)));
         this.branchListLoading.set(false);
         this.fetchEnabledCountsForVisibleBranches();
+        this.fetchInventorySummariesForVisibleBranches();
       },
       error: () => {
         this.branchListLoading.set(false);
@@ -186,6 +200,35 @@ export class BranchManagementPageComponent {
       },
     });
   }
+  private fetchInventorySummariesForVisibleBranches(): void {
+    for (const row of this.visibleBranches) {
+      this.api.getInventorySummary(row.id).pipe(
+        catchError(() => of(null)),
+        takeUntilDestroyed(this.destroyRef),
+      ).subscribe(summary => {
+        if (!summary) return;
+        this.branchRows.update(all => all.map(branch => branch.id === row.id ? {
+          ...branch,
+          inventory: {
+            total: summary.totalItems,
+            low: summary.lowStockItems,
+            out: summary.outOfStockItems,
+          },
+        } : branch));
+        if (this.detailRecord()?.id === row.id) {
+          this.detailRecord.update(current => current ? {
+            ...current,
+            inventory: {
+              total: summary.totalItems,
+              low: summary.lowStockItems,
+              out: summary.outOfStockItems,
+            },
+          } : current);
+        }
+      });
+    }
+  }
+
   private fetchEnabledCountsForVisibleBranches(): void {
     // BE GET /branches does not include enabledServiceCount.
     // Only actual GET service-configs results may populate this column.
@@ -253,11 +296,8 @@ export class BranchManagementPageComponent {
     this.branchStatus.set(value); this.listPage.set(1);
   }
   changePage(page: number): void { if (page >= 1 && page <= this.pageCount) this.listPage.set(page); }
-  get visiblePageNumbers(): number[] {
-    const total = this.pageCount;
-    const current = this.listPage();
-    const start = Math.max(1, Math.min(current - 1, total - 2));
-    return Array.from({ length: Math.min(3,total) }, (_, i) => start + i);
+  get visiblePageNumbers(): AdminPageItem[] {
+    return adminPageWindow(this.listPage(), this.pageCount);
   }
   setDetailTab(tab: Tab): void { this.detailTab.set(tab); }
   branchLink(row: BranchRow): string[] { return ['/admin/branches', row.id]; }
@@ -301,17 +341,20 @@ export class BranchManagementPageComponent {
   closeBranchSettings(): void { if (!this.savingBranch()) this.branchSettingsOpen.set(null); }
   saveBranchSettings(value: BranchSettingsPreview): void {
     if (this.savingBranch()) return;
-    const payload = {
+    const createPayload = {
       name: value.name, address: value.address, phone: value.hotline, status: value.status,
+    };
+    const updatePayload = {
+      name: value.name, address: value.address, phone: value.hotline,
     };
     this.savingBranch.set(true);
     if (!value.id) {
-      const serialized = JSON.stringify(payload);
+      const serialized = JSON.stringify(createPayload);
       if (serialized !== this.lastCreatePayload) {
         this.lastCreatePayload = serialized;
         this.lastCreateKey = crypto.randomUUID();
       }
-      this.api.createBranch(payload, this.lastCreateKey).pipe(
+      this.api.createBranch(createPayload, this.lastCreateKey).pipe(
         takeUntilDestroyed(this.destroyRef),
       ).subscribe({
         next: (saved) => {
@@ -329,7 +372,17 @@ export class BranchManagementPageComponent {
       });
       return;
     }
-    this.api.updateBranch(value.id, payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    const current = this.branchRows().find((row) => row.id === value.id) ?? this.detailRecord();
+    const statusChanged = this.isAdmin && current && current.status !== value.status;
+    this.api.updateBranch(value.id, updatePayload).pipe(
+      switchMap((saved) => {
+        if (!statusChanged) return of(saved);
+        return value.status === 'ACTIVE'
+          ? this.api.activateBranch(value.id, crypto.randomUUID())
+          : this.api.deactivateBranch(value.id, 'Cập nhật trạng thái từ trang quản lý chi nhánh', crypto.randomUUID());
+      }),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
       next: (saved) => {
         const row = this.fromApi(saved);
         this.branchRows.update((all) => all.map((x) => x.id === row.id
@@ -366,10 +419,9 @@ export class BranchManagementPageComponent {
   closeServicePicker(): void { this.servicePickerBranch.set(null); }
   configurePickedService(service: CatalogService): void {
     const branch = this.servicePickerBranch();
-    if (!branch) return;
-    this.configuredServiceBranch.set(branch);
-    this.activeService.set(service);
+    if (!branch || this.blockedWindowsLoading()) return;
     this.servicePickerBranch.set(null);
+    this.loadBlockedWindows(branch.id, service.id, true);
   }
 
   private getConfig(service: CatalogService): BranchServiceApiRecord | null {
@@ -387,11 +439,7 @@ export class BranchManagementPageComponent {
     return occupancy ? `${occupancy.bookedCount}/${occupancy.totalCount}` : 'Chưa có dữ liệu';
   }
 
-  /**
-   * BE currently returns slots[].remaining, but NOT bookedCount/totalCount.
-   * Render the requested occupied/total ratio only when BE returns both.
-   * A fully booked start time must also be present in the BE response.
-   */
+  /** Load booked/total occupancy for the selected branch, date and time. */
   private fetchOccupancy(): void {
     const requestVersion = ++this.occupancyRequestVersion;
     const branchId = this.branchId;
@@ -416,7 +464,7 @@ export class BranchManagementPageComponent {
     this.occupancyLoading.set(true);
     from(services).pipe(
       mergeMap((row) =>
-        this.api.getServiceAvailability(branchId, row.service.id, date).pipe(
+        this.api.getServiceOccupancy(branchId, row.service.id, date).pipe(
           map((result): { serviceId: string; data: OccupancySnapshot } | null => {
             const slot = result.slots?.find((candidate) =>
               typeof candidate.start === 'string' && candidate.start.slice(11, 16) === time,
@@ -454,7 +502,49 @@ export class BranchManagementPageComponent {
       },
     });
   }
-  get currentBlockedWindows(): BranchServiceConfigPreview['blockedWindows'] | null { return []; }
+  get currentBlockedWindows(): BranchServiceConfigPreview['blockedWindows'] | null {
+    return this.blockedWindowsLoading() ? null : this.blockedWindows();
+  }
+
+  private blockedWindowFromApi(window: BranchServiceBlockedWindow): BranchServiceConfigPreview['blockedWindows'][number] {
+    const localInput = (iso: string): string => {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return iso.slice(0, 16);
+      const two = (n: number) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}T${two(d.getHours())}:${two(d.getMinutes())}`;
+    };
+    return {
+      id: window.id,
+      start: localInput(window.startAt),
+      end: localInput(window.endAt),
+      reason: window.reason,
+    };
+  }
+
+  private loadBlockedWindows(branchId: string, serviceId: string, openAfter: boolean): void {
+    this.blockedWindowsLoading.set(true);
+    this.blockedWindows.set([]);
+    this.api.listBlockedWindows(branchId, serviceId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: windows => {
+          this.blockedWindows.set(windows.map(window => this.blockedWindowFromApi(window)));
+          this.blockedWindowsLoading.set(false);
+          if (openAfter) {
+            const service = this.serviceViews().find(row => row.service.id === serviceId)?.service;
+            const branch = this.visibleBranches.find(row => row.id === branchId) ?? this.branch;
+            if (service && branch) {
+              this.configuredServiceBranch.set(branch);
+              this.activeService.set(service);
+            }
+          }
+        },
+        error: err => {
+          this.blockedWindowsLoading.set(false);
+          this.toast.show(adminErrorMessage(err, 'Không thể tải khoảng tạm khóa của dịch vụ.'), 'error');
+        },
+      });
+  }
 
   toggleService(service: CatalogService): void {
     const branch = this.branch;
@@ -470,25 +560,94 @@ export class BranchManagementPageComponent {
     this.persistServiceConfig(branch.id, service.id, !config.enabled, config.capacity, config.availability);
   }
   openConfiguration(service: CatalogService): void {
-    if (!this.branch) return;
-    this.configuredServiceBranch.set(this.branch);
-    this.activeService.set(service);
+    const branch = this.branch;
+    if (!branch || this.blockedWindowsLoading()) return;
+    this.loadBlockedWindows(branch.id, service.id, true);
   }
   closeConfiguration(): void {
     if (this.savingConfig()) return;
     this.activeService.set(null);
     this.configuredServiceBranch.set(null);
+    this.blockedWindows.set([]);
   }
   applyServiceConfiguration(value: BranchServiceConfigPreview): void {
-    if (value.blockedWindows.length > 0) {
-      this.toast.show('Chưa thể lưu khoảng tạm khóa. Vui lòng xóa các khoảng đã thêm để tiếp tục.', 'error');
+    if (!Number.isInteger(value.capacity) || value.capacity < 1) {
+      this.toast.show('Sức chứa đồng thời phải là số nguyên từ 1 trở lên.', 'error');
       return;
     }
-    const existing = this.serviceViews().find((row) => row.service.id === value.serviceId)?.config;
-    this.persistServiceConfig(
-      value.branchId, value.serviceId, value.enabled, value.capacity,
-      existing?.availability ?? [],
+    if (this.savingConfig()) return;
+
+    const existingConfig = this.serviceViews().find(row => row.service.id === value.serviceId)?.config;
+    const original = this.blockedWindows();
+    const sameWindow = (
+      a: BranchServiceConfigPreview['blockedWindows'][number],
+      b: BranchServiceConfigPreview['blockedWindows'][number],
+    ) => a.start === b.start && a.end === b.end && a.reason.trim() === b.reason.trim();
+
+    const toCreate = value.blockedWindows.filter(window =>
+      window.id.startsWith('new-') ||
+      original.some(old => old.id === window.id && !sameWindow(old, window)),
     );
+    const toDelete = original.filter(old => {
+      const desired = value.blockedWindows.find(window => window.id === old.id);
+      return !desired || !sameWindow(old, desired);
+    });
+
+    const createRequests = toCreate.map(window => this.api.createBlockedWindow(
+      value.branchId,
+      value.serviceId,
+      {
+        startAt: new Date(window.start).toISOString(),
+        endAt: new Date(window.end).toISOString(),
+        reason: window.reason.trim(),
+      },
+    ));
+    const deleteRequests = toDelete.map(window =>
+      this.api.deleteBlockedWindow(value.branchId, value.serviceId, window.id));
+
+    this.savingConfig.set(true);
+    this.api.updateServiceConfig(value.branchId, value.serviceId, {
+      enabled: value.enabled,
+      capacity: value.capacity,
+      availability: existingConfig?.availability ?? [],
+    }).pipe(
+      switchMap(config => (createRequests.length ? forkJoin(createRequests) : of([])).pipe(
+        switchMap(() => deleteRequests.length ? forkJoin(deleteRequests) : of([])),
+        map(() => config),
+      )),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: config => {
+        this.serviceViews.update(all => all.map(row => row.service.id === value.serviceId ? {
+          ...row,
+          config,
+          service: {
+            ...row.service,
+            branchServices: [{
+              branchId: value.branchId,
+              capacity: config.capacity,
+              enabled: config.enabled,
+              availability: 'BY_SHIFT' as const,
+            }],
+          },
+        } : row));
+        this.savingConfig.set(false);
+        this.activeService.set(null);
+        this.configuredServiceBranch.set(null);
+        this.blockedWindows.set([]);
+        this.fetchOccupancy();
+        this.branchRows.update(all => all.map(branch => branch.id === value.branchId ? {
+          ...branch,
+          enabledServiceCount: this.serviceViews().filter(row => row.config?.enabled).length,
+        } : branch));
+        this.toast.show('Lưu cấu hình dịch vụ thành công.', 'success');
+      },
+      error: err => {
+        this.savingConfig.set(false);
+        this.loadBlockedWindows(value.branchId, value.serviceId, false);
+        this.toast.show(adminErrorMessage(err, 'Không thể lưu đầy đủ cấu hình dịch vụ. Vui lòng thử lại.'), 'error');
+      },
+    });
   }
   private persistServiceConfig(
     branchId: string, serviceId: string, enabled: boolean, capacity: number,
@@ -531,8 +690,8 @@ export class BranchManagementPageComponent {
       },
     });
   }
-  showPending(action: string): void {
-    this.toast.show(action + ' hiện chưa khả dụng.', 'info');
+  openBranchInventory(branchId: string): void {
+    void this.router.navigate(['/admin/inventory'], { queryParams: { branchId } });
   }
   changeDate(value: string): void {
     if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {

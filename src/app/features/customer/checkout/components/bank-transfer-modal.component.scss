@@ -1,0 +1,55 @@
+.bank-transfer-modal__overlay-fade-in {
+  @apply pointer-events-auto fixed inset-0 z-[75] flex items-center justify-center bg-[rgba(6,16,90,0.2)] p-4 backdrop-blur-[6px];
+}
+
+.bank-transfer-modal__panel-slide-in {
+  @apply flex h-[336px] w-[385px] max-w-[calc(100vw-32px)] flex-col gap-[15px] rounded-[4px] border border-[#c2c7d1] bg-white p-[17px];
+}
+
+.bank-transfer-modal__row {
+  @apply flex w-full shrink-0 items-start justify-center;
+}
+
+.bank-transfer-modal__box {
+  @apply rounded-[6px] border border-[#c2c7d1] bg-white p-[5px];
+}
+
+.bank-transfer-modal__box-2 {
+  @apply size-[128px] overflow-hidden rounded-[inherit];
+}
+
+.bank-transfer-modal__qr-thanh-toan {
+  @apply size-full object-cover;
+}
+
+.bank-transfer-modal__stack {
+  @apply flex w-full flex-col gap-3 pt-px;
+}
+
+.bank-transfer-modal__row-2 {
+  @apply flex w-full items-center justify-between;
+}
+
+.bank-transfer-modal__ngan-hang-text {
+  @apply font-['Roboto'] text-[14px] leading-5 text-[#727780];
+}
+
+.bank-transfer-modal__bank {
+  @apply font-['Roboto'] text-[14px] leading-5 text-[#191c1e];
+}
+
+.bank-transfer-modal__row-3 {
+  @apply flex items-center gap-2;
+}
+
+.bank-transfer-modal__copy-icon {
+  @apply h-[13.333px] w-[11.333px];
+}
+
+.bank-transfer-modal__amount {
+  @apply font-['Roboto'] text-[14px] font-bold leading-5 text-[#9a4600];
+}
+
+.bank-transfer-modal__order-code {
+  @apply text-center font-['Roboto'] text-[11px] leading-[16.5px] text-red-600;
+}

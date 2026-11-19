@@ -11,6 +11,7 @@ import { BookButtonComponent } from './book-button.component';
   standalone: true,
   imports: [MaskedBluePanelComponent, BookButtonComponent],
   templateUrl: './small-combo-card.component.html',
+  styleUrl: './small-combo-card.component.scss',
   host: {
     'class': 'relative h-[220px] w-full overflow-visible',
   },

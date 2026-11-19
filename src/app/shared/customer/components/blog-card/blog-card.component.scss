@@ -1,0 +1,32 @@
+// Khung thẻ (bo góc, đổ bóng, hover nhấc lên, class `group`) nằm ở host trong .ts.
+.blog-card__media {
+  @apply relative h-[178px] shrink-0 p-2;
+}
+
+.blog-card__image {
+  @apply h-full w-full rounded-[16px] object-cover;
+}
+
+.blog-card__body {
+  @apply flex min-h-0 flex-1 flex-col px-6 pb-4 pt-3;
+}
+
+.blog-card__title {
+  @apply line-clamp-2 text-[20px] font-normal leading-[25px] text-[#111827];
+}
+
+.blog-card__excerpt {
+  @apply mt-2 line-clamp-2 text-[14px] leading-5 text-[#6B7280];
+}
+
+.blog-card__footer {
+  @apply mt-auto flex items-center justify-between border-t border-[#F9FAFB] pt-4 text-[12px];
+}
+
+.blog-card__date {
+  @apply flex items-center gap-1 text-[#9CA3AF];
+}
+
+.blog-card__read-more {
+  @apply flex items-center gap-1 font-semibold text-[#0D47A1];
+}

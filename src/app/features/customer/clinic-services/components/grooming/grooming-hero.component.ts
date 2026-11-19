@@ -13,6 +13,7 @@ import { groomingTitleStyles } from '../../utils/grooming-title-styles';
   standalone: true,
   imports: [ReactStyleDirective, CustomerLinkDirective],
   templateUrl: './grooming-hero.component.html',
+  styleUrl: './grooming-hero.component.scss',
   host: {
     'class': 'relative h-[690px] w-[1440px] overflow-hidden bg-white',
   },

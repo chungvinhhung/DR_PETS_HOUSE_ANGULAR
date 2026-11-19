@@ -11,6 +11,7 @@ import { formatMoney } from './shopping-checkout.helpers';
   standalone: true,
   imports: [],
   templateUrl: './checkout-order-item.component.html',
+  styleUrl: './checkout-order-item.component.scss',
   host: {
     'class': 'flex w-full items-center gap-4 rounded-2xl bg-[#f2f4f6] p-4',
   },

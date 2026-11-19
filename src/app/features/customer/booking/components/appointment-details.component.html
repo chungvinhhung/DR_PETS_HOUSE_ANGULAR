@@ -1,12 +1,12 @@
 <section app-card [className]="'p-5 md:p-8'">
-  <div class="mb-6 flex items-start justify-between gap-3">
+  <div class="appointment-details__row">
     <div>
-      <h1 class="text-xl font-black text-blue-900 md:text-2xl lg:text-xl">CHI TIẾT ĐẶT LỊCH</h1>
-      <p class="mt-2 text-sm font-medium text-slate-600">Mã số: BK-8712-2023</p>
+      <h1 class="appointment-details__chi-tiet-dat-title">CHI TIẾT ĐẶT LỊCH</h1>
+      <p class="appointment-details__ma-so-bk-8712-text">Mã số: BK-8712-2023</p>
     </div>
-    <span class="rounded-2xl bg-[#FFF9C4] px-3 py-2 text-center text-xs font-bold text-slate-900 shadow-elevation md:px-4">Đang chờ thanh toán</span>
+    <span class="appointment-details__dang-cho-thanh-text">Đang chờ thanh toán</span>
   </div>
-  <div class="grid gap-3 border-b border-slate-200 pb-6 md:grid-cols-2 md:gap-4">
+  <div class="appointment-details__grid">
     <div
       app-detail
       [label]="'LỊCH HẸN CỦA BẠN'"
@@ -33,7 +33,7 @@
       [icon]="paymentPhoneIcon"
     ></div>
   </div>
-  <h2 class="mt-6 text-xl font-black text-blue-900">DỊCH VỤ ĐÃ CHỌN</h2>
+  <h2 class="appointment-details__dich-vu-da-title">DỊCH VỤ ĐÃ CHỌN</h2>
   <div class="mt-5 space-y-3 md:space-y-4">
     @for (service of selectedServices(); track $index) {
       @let quantity = normalizeServiceQuantity(quantities()[service.id], petCount());
@@ -45,17 +45,17 @@
       @let serviceTotal = pricingLine && pricingLineTotal > 0
             ? pricingLineTotal
             : service.price * quantity + weightSurcharge;
-      <div class="flex items-start justify-between gap-3 rounded-2xl bg-[#f2f4f6] p-4 md:items-center md:p-5">
-        <div class="min-w-0">
-          <p class="font-bold text-blue-900">{{ service.name }}</p>
-          <p class="mt-1 text-sm text-slate-700">{{ service.desc }}</p>
-          <span class="mt-3 inline-flex h-9 items-center overflow-hidden rounded-full border border-blue-900 bg-white text-sm font-bold text-blue-900">
+      <div class="appointment-details__row-2">
+        <div class="appointment-details__box">
+          <p class="appointment-details__name">{{ service.name }}</p>
+          <p class="appointment-details__desc">{{ service.desc }}</p>
+          <span class="appointment-details__text">
             <button
               type="button"
               (click)="onQuantityChange.emit([service.id, -1])"
               class="h-full px-3 hover:bg-blue-50"
             >-</button>
-            <span class="min-w-8 px-2 text-center">{{ quantity }}</span>
+            <span class="appointment-details__quantity">{{ quantity }}</span>
             <button
               type="button"
               (click)="onQuantityChange.emit([service.id, 1])"
@@ -63,21 +63,21 @@
             >+</button>
           </span>
           @if (petCount() > 1) {
-            <p class="mt-2 text-xs font-medium text-slate-500">Số lượng tối thiểu theo {{ petCount() }} thú cưng</p>
+            <p class="appointment-details__pet-count">Số lượng tối thiểu theo {{ petCount() }} thú cưng</p>
           }
         </div>
-        <div class="shrink-0 text-right">
-          <p class="text-base font-black text-blue-900 md:text-lg">{{ formatMoney(serviceTotal) }}</p>
-          <p class="text-xs text-slate-700">{{ formatMoney(service.price) }} x {{ quantity }}</p>
+        <div class="appointment-details__box-2">
+          <p class="appointment-details__service-total">{{ formatMoney(serviceTotal) }}</p>
+          <p class="appointment-details__price">{{ formatMoney(service.price) }} x {{ quantity }}</p>
           @if (weightSurcharge > 0) {
-            <p class="mt-1 text-xs text-slate-500">Phụ thu cân nặng: +{{ formatMoney(weightSurcharge) }}</p>
+            <p class="appointment-details__weight-surcharge">Phụ thu cân nặng: +{{ formatMoney(weightSurcharge) }}</p>
           }
         </div>
       </div>
     }
     @if (selectedServices().length === 0) {
-      <p class="py-4 text-sm text-slate-500">Chưa chọn dịch vụ.</p>
+      <p class="appointment-details__chua-chon-dich-text">Chưa chọn dịch vụ.</p>
     }
   </div>
-  <div class="mt-5 rounded-2xl bg-[#d5e4f3] p-5 text-sm font-medium text-slate-700">ⓘ Vui lòng kiểm tra lại thông tin lịch hẹn. Bạn có thể thay đổi lịch hẹn trước tối thiểu 24 giờ. Liên hệ bộ phận hỗ trợ nếu cần thêm thông tin.</div>
+  <div class="appointment-details__i-vui-long-el">ⓘ Vui lòng kiểm tra lại thông tin lịch hẹn. Bạn có thể thay đổi lịch hẹn trước tối thiểu 24 giờ. Liên hệ bộ phận hỗ trợ nếu cần thêm thông tin.</div>
 </section>

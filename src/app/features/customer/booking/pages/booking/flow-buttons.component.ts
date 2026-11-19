@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, output } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './flow-buttons.component.html',
+  styleUrl: './flow-buttons.component.scss',
   host: {
     'class': 'mt-5 flex w-full items-center justify-between md:mt-6',
   },

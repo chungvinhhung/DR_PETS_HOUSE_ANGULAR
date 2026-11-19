@@ -1,7 +1,7 @@
 @if (!(!open())) {
-  <div class="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(6,16,90,0.2)] p-6 font-['Roboto'] backdrop-blur-[2px]">
+  <div class="adoption-application-modal__overlay">
     @if (submitted()) {
-      <div class="relative">
+      <div class="adoption-application-modal__box">
         <button
           type="button"
           (click)="onClose.emit($event)"
@@ -13,7 +13,7 @@
         <div app-success-view (onClose)="onClose.emit($event)"></div>
       </div>
     } @else {
-      <div class="relative">
+      <div class="adoption-application-modal__box">
         <button
           type="button"
           (click)="onClose.emit($event)"
@@ -25,21 +25,21 @@
         <form
           novalidate
           (submit)="handleNext($any($event))"
-          class="flex max-h-[calc(100vh-48px)] w-[696px] max-w-[calc(100vw-48px)] flex-col overflow-hidden rounded-[32px] border border-[#D9E3F6] bg-white p-px shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)]"
+          class="adoption-application-modal__form"
         >
           <div app-step-progress [stepIndex]="stepIndex()"></div>
-          <div class="flex min-h-0 flex-1 flex-col bg-[radial-gradient(circle_at_0_0,#D9E3F6_0_1%,transparent_1.2%)]">
-            <div class="min-h-0 flex-1 overflow-y-auto px-16 pb-8 pt-[50px]">
-              <div class="flex flex-col items-center gap-10">
-                <h2 class="text-center text-[28px] font-semibold leading-8 text-[rgba(0,0,0,0.87)]">{{ formTitle() }}</h2>
+          <div class="adoption-application-modal__stack">
+            <div class="adoption-application-modal__box-2">
+              <div class="adoption-application-modal__stack-2">
+                <h2 class="adoption-application-modal__form-title">{{ formTitle() }}</h2>
                 @if (submitError()) {
-                  <p class="-mt-6 rounded-[8px] bg-[#FFDAD6] px-4 py-3 text-center text-[14px] font-semibold text-[#93000A]">{{ submitError() }}</p>
+                  <p class="adoption-application-modal__submit-error">{{ submitError() }}</p>
                 }
-                <div class="w-full max-w-[568px]"><ng-container *ngTemplateOutlet="renderStepTpl; context: {  }" /></div>
+                <div class="adoption-application-modal__box-3"><ng-container *ngTemplateOutlet="renderStepTpl; context: {  }" /></div>
               </div>
             </div>
-            <div class="shrink-0 bg-transparent px-16 pb-16 pt-0">
-              <div class="mx-auto flex max-w-[568px] items-center justify-between">
+            <div class="adoption-application-modal__box-4">
+              <div class="adoption-application-modal__row">
                 <app-modal-button
                   [variant]="stepIndex() === 0 ? 'danger' : 'light'"
                   (onClick)="stepIndex() === 0 ? onClose.emit($event) : handle1()"

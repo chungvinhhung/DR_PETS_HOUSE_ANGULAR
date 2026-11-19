@@ -1,0 +1,31 @@
+.pet-summary-card__service-selected-check {
+  @apply absolute right-4 top-4 h-5 w-5;
+}
+
+.pet-summary-card__name {
+  @apply h-[60px] w-[60px] shrink-0 rounded-full object-cover md:h-20 md:w-20;
+}
+
+.pet-summary-card__text {
+  @apply min-w-0 flex-1;
+}
+
+.pet-summary-card__name-2 {
+  @apply block text-lg text-slate-900;
+}
+
+.pet-summary-card__breed {
+  @apply text-sm text-slate-600;
+}
+
+.pet-summary-card__extra-count {
+  @apply shrink-0 text-right text-sm font-normal leading-6 tracking-[0.15px] text-[#d32f2f] md:text-base;
+}
+
+.pet-summary-card__chon-ho-so-strong {
+  @apply block text-xl text-slate-900;
+}
+
+.pet-summary-card__ban-da-tao-text {
+  @apply mt-3 block text-base text-slate-600;
+}

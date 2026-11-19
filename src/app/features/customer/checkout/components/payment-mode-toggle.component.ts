@@ -10,6 +10,7 @@ import { CartService } from '../../../../core/customer/services/cart.service';
   standalone: true,
   imports: [],
   templateUrl: './payment-mode-toggle.component.html',
+  styleUrl: './payment-mode-toggle.component.scss',
   host: {
     'class': 'grid rounded-2xl bg-[#f2f4f6] p-1.5 text-center text-sm font-bold',
   },

@@ -1,4 +1,4 @@
-<nav class="flex min-w-0 flex-1 gap-2 overflow-x-auto pr-1 lg:block lg:space-y-2 lg:overflow-x-visible lg:overflow-y-auto" [appStyle]="{ scrollbarWidth: 'none' }">
+<nav class="sidebar__let-icon-nav lg:space-y-2" [appStyle]="{ scrollbarWidth: 'none' }">
   @for (item of menuItems(); track $index) {
     @let Icon = item.icon;
     @let active = isActive(item.path);
@@ -15,14 +15,14 @@
             `"
     >
       <app-customer-icon [name]="Icon" className="text-xl w-5 h-5 flex-shrink-0" />
-      <span class="font-medium text-[15px] whitespace-nowrap">{{ item.label }}</span>
+      <span class="sidebar__label">{{ item.label }}</span>
     </div>
   }
 </nav>
 <div
   (click)="handleLogout()"
-  class="flex items-center gap-4 px-3 py-2 lg:px-4 lg:py-3 lg:mt-4 rounded-lg cursor-pointer transition-all duration-200 ease-in-out text-[#414753] hover:bg-[#d4effa] flex-shrink-0"
+  class="sidebar__row"
 >
   <app-customer-icon name="ant-logout" className="text-xl w-5 h-5 flex-shrink-0" />
-  <span class="hidden font-medium text-[15px] whitespace-nowrap sm:inline">Đăng xuất</span>
+  <span class="sidebar__dang-xuat-text">Đăng xuất</span>
 </div>

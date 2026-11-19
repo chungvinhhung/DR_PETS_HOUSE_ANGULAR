@@ -1,0 +1,55 @@
+.hero-section__box {
+  @apply relative mx-auto w-[95%] max-w-page;
+}
+
+.hero-section__background-xanh {
+  @apply absolute inset-0 h-[580px] rounded-[70px] bg-[#E5F6FD] shadow-[inset_0_0_20px_rgba(126,128,133,0.25)];
+}
+
+.hero-section__content {
+  @apply relative z-10 flex min-h-[560px] flex-col items-center justify-between gap-10 px-8 lg:flex-row lg:px-[100px];
+}
+
+.hero-section__left {
+  @apply max-w-[500px] self-center;
+}
+
+.hero-section__trung-tam-cham-text {
+  @apply mb-0 text-xl font-bold text-black/80;
+}
+
+.hero-section__dr-pet-s-house {
+  @apply mb-5 w-full max-w-[600px];
+}
+
+.hero-section__chung-toi-mang-text {
+  @apply mb-8 text-xl leading-relaxed text-slate-800;
+}
+
+.hero-section__row {
+  @apply flex flex-wrap gap-5;
+}
+
+.hero-section__box-2 {
+  @apply relative;
+}
+
+.hero-section__paw {
+  @apply pointer-events-none absolute left-[-54px] top-[-43px] h-[70px] w-[60px] transition-all duration-300;
+}
+
+.hero-section__right {
+  @apply relative h-[650px] w-[520px] shrink-0 max-sm:-my-[107px] max-sm:scale-[0.67];
+}
+
+.hero-section__ellipse {
+  @apply absolute bottom-[59px] left-1/2 h-[460px] w-[470px] -translate-x-1/2 rounded-full bg-[#90CAF9] shadow-[0_4px_20px_rgba(0,0,0,0.25)];
+}
+
+.hero-section__shape {
+  @apply absolute right-[80px] top-[90px] z-20;
+}
+
+.hero-section__pets {
+  @apply absolute bottom-[-40px] left-1/2 z-10 w-[390px] -translate-x-1/2 object-contain;
+}
