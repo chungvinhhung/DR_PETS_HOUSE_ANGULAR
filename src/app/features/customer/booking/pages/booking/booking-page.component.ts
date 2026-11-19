@@ -24,6 +24,7 @@ import { BRANCH_OPTIONS, INITIAL_BRANCH_OPTIONS, DEFAULT_SERVICE_TYPE_ID, create
   standalone: true,
   imports: [NavBarComponent, StepperComponent, ServiceSelectionComponent, InfoFormComponent, BookingPaymentStepComponent, FooterComponent, BookingSuccessModalComponent],
   templateUrl: './booking-page.component.html',
+  styleUrl: './booking-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white font-sans',
   },
@@ -59,6 +60,9 @@ export class BookingPageComponent {
   readonly services = signal<any>(BOOKING_SERVICES);
   readonly timeSlots = signal<any>([]);
   readonly slotsLoading = signal<any>(false);
+  readonly slotsError = signal<string>("");
+  readonly slotsState = signal<'idle' | 'loading' | 'ready' | 'empty' | 'error'>('idle');
+  readonly slotsRetryTick = signal<number>(0);
   readonly bookingError = signal<any>("");
   readonly bookingSubmitting = signal<any>(false);
   readonly pets = signal<any>([]);
@@ -80,6 +84,7 @@ export class BookingPageComponent {
     agreed: false,
   });
   readonly paymentMode = signal<any>("store");
+  readonly createdAppointment = signal<{ status: string; holdExpiresAt: string | null } | null>(null);
   readonly success = signal<any>(false);
 
   /** Hàm set kiểu React cho signal "selectedServiceType" (dùng khi truyền cho component con / callback) */
@@ -216,20 +221,27 @@ export class BookingPageComponent {
       if (typeof cleanup === 'function') onCleanup(cleanup);
     });
 
-    // useEffect(..., [ownerInfo.branch, selectedDate, selectedServiceType])
+    // useEffect(..., [ownerInfo.branch, selectedDate, selectedServiceType, selectedServices, slotsRetryTick])
     effect((onCleanup: any) => {
       this.ownerInfo().branch;
       this.selectedDate();
+      this.selectedServices();
       this.selectedServiceType();
+      this.slotsRetryTick();
       const cleanup = untracked(() => {
-        if (!this.selectedDate() || !this.ownerInfo().branch) {
+        const hasServices = (this.selectedServices() || []).length > 0;
+        if (!this.selectedDate() || !this.ownerInfo().branch || !hasServices) {
           this.timeSlots.set([]);
           this.selectedSlot.set(null);
+          this.slotsError.set("");
+          this.slotsState.set('idle');
           return;
         }
 
         let active = true;
         this.slotsLoading.set(true);
+        this.slotsError.set("");
+        this.slotsState.set('loading');
         this.bookingApi.getAppointmentSlots({
           date: getDateKey(this.selectedDate()),
           branchId: this.ownerInfo().branch,
@@ -238,15 +250,32 @@ export class BookingPageComponent {
         })
           .then((slots: any) => {
             if (!active) return;
-            this.timeSlots.set(slots);
-            this.selectedSlot.update((current: any) =>
-              current && slots.some((slot: any) => slot.value === current && slot.available) ? current : null);
+            const safeSlots = Array.isArray(slots) ? slots : [];
+            this.timeSlots.set(safeSlots);
+            this.slotsError.set("");
+            this.slotsState.set(safeSlots.length > 0 ? 'ready' : 'empty');
+            this.selectedSlot.update((current: any) => {
+              if (!current) return null;
+              const currentStart = String(current).split(" - ")[0].trim();
+              const matchedSlot = safeSlots.find((s: any) =>
+                s.available && (s.value === current || s.value?.startsWith(currentStart) || s.time === currentStart)
+              );
+              return matchedSlot ? matchedSlot.value : null;
+            });
           })
+
           .catch((error: any) => {
             console.warn("Appointment slots API unavailable.", error);
             if (active) {
+              const errMsg =
+                error?.data?.detail ||
+                error?.data?.message ||
+                error?.message ||
+                "Không thể tải khung giờ lúc này. Vui lòng thử lại sau.";
               this.timeSlots.set([]);
               this.selectedSlot.set(null);
+              this.slotsError.set(errMsg);
+              this.slotsState.set('error');
             }
           })
           .finally(() => {
@@ -261,10 +290,20 @@ export class BookingPageComponent {
     });
   }
 
-  protected async handleConfirm({ quantities }: any = {}) {
-    const selectedSlotRecord = this.timeSlots().find((slot: any) => slot.value === this.selectedSlot());
-    if (!selectedSlotRecord) {
-      this.bookingError.set("Vui lòng chọn lại khung giờ.");
+  protected retryLoadSlots() {
+    this.slotsRetryTick.update((v) => v + 1);
+  }
+
+  protected async handleConfirm({ quantities, voucherCode }: any = {}) {
+    const selectedSlotRecord = this.timeSlots().find((slot: any) => {
+      if (!this.selectedSlot()) return false;
+      if (slot.value === this.selectedSlot() || slot.id === this.selectedSlot()) return true;
+      const currentStart = String(this.selectedSlot()).split(" - ")[0].trim();
+      return slot.value?.startsWith(currentStart) || slot.time === currentStart;
+    });
+
+    if (!selectedSlotRecord || !selectedSlotRecord.available) {
+      this.bookingError.set("Vui lòng chọn khung giờ khám còn chỗ.");
       return;
     }
 
@@ -311,7 +350,7 @@ export class BookingPageComponent {
         petData.species_id = findSpeciesId(this.speciesOptions(), firstPetInfo?.species || "Chó") || "DOG";
       }
 
-      await this.bookingApi.bookAppointment({
+      const created = await this.bookingApi.bookAppointment({
         branchId: this.ownerInfo().branch,
         branchName,
         branchAddress,
@@ -330,6 +369,7 @@ export class BookingPageComponent {
         petGender,
         service_ids: servicePayload,
         serviceIds: servicePayload.map((s: any) => s.service_id),
+        voucherCode: voucherCode || undefined,
         services: selectedServicesList,
         serviceName: selectedServicesList.map((s: any) => s.name).join(", ") || "Dịch vụ Dr. Pet",
         customer_name_snapshot: this.ownerInfo().name,
@@ -341,40 +381,54 @@ export class BookingPageComponent {
         paymentMethod: this.paymentMode() === "store" ? "PAY_AT_STORE" : "ONLINE_MOCK",
         totalPrice,
       });
+      this.createdAppointment.set({
+        status: String(created?.status || created?.appointment?.status || 'PENDING_CONFIRMATION'),
+        holdExpiresAt: created?.holdExpiresAt || created?.appointment?.holdExpiresAt || null,
+      });
       this.success.set(true);
     } catch (error: any) {
-      const rawErrorMsg = error?.data?.detail || error?.data?.message || error?.message || "Không thể đặt lịch.";
-      const errorList = Array.isArray(error?.data?.errors)
-        ? error.data.errors.map((e: any) => `${e.field || ''}: ${e.message || ''}`.trim()).filter(Boolean).join("; ")
-        : "";
-      const isSlotConflict =
-        error?.status === 409 ||
-        String(rawErrorMsg).includes("already reserved") ||
-        String(rawErrorMsg).includes("SLOT_UNAVAILABLE") ||
-        String(rawErrorMsg).includes("kín lịch") ||
-        String(rawErrorMsg).includes("staff") ||
-        String(rawErrorMsg).includes("khung giờ");
+      const details = error?.data && typeof error.data === 'object' ? error.data : {};
+      const errorCode = String(
+        details.code || details.error?.code || details.details?.code || error?.code || '',
+      ).trim().toUpperCase();
+      const rawMessage = details.detail || details.message || error?.message;
+      const errorMessage = typeof rawMessage === 'string' && rawMessage.trim()
+        ? rawMessage.trim()
+        : 'Không thể đặt lịch. Vui lòng thử lại.';
+      const errorList = Array.isArray(details.errors)
+        ? details.errors.map((item: any) => [item.field, item.message].filter(Boolean).join(': '))
+          .filter(Boolean).join('; ')
+        : '';
+
+      // HTTP 409 is NOT always a slot conflict (it may be an idempotency,
+      // state or business-rule conflict). Never assume another customer booked
+      // the slot, nor permanently block it in localStorage on an API error.
+      const isSlotConflict = ['SLOT_UNAVAILABLE', 'SLOT_BLOCKED', 'STAFF_UNAVAILABLE'].includes(errorCode) ||
+        (error?.status === 409 &&
+          /already reserved|slot unavailable|time slot.*(?:reserved|occupied)/i.test(errorMessage));
 
       if (isSlotConflict) {
-        // 1. Mark slot as blocked in local cache so it won't appear again
-        const slotVal = selectedSlotRecord.value;
-        const dateKey = getDateKey(this.selectedDate());
-        this.bookingApi.markSlotAsBlocked(dateKey, this.ownerInfo().branch, slotVal);
-
-        // 2. Remove the conflicted slot from currently loaded slots
-        this.timeSlots.update((slots: any[]) => slots.filter((s: any) => s.value !== slotVal));
         this.selectedSlot.set(null);
-
-        // 3. Take user back to Step 1 to pick an available slot
         this.step.set(1);
-        this.bookingError.set(
-          "Khung giờ này vừa có khách khác đặt hoặc nhân viên phụ trách đã kín lịch. Hệ thống đã tự động gỡ khung giờ, quý khách vui lòng chọn khung giờ khác."
-        );
+        // The server is the only authority for current availability. Refetch
+        // instead of removing a slot locally: a genuine race may already have
+        // cleared, while a staffing mismatch needs to remain visible to QA.
+        this.retryLoadSlots();
+        const explainable = /[À-ỹ]/.test(errorMessage) && errorMessage.length <= 250;
+        this.bookingError.set(explainable
+          ? errorMessage
+          : 'Chưa thể xác nhận khung giờ này. Hệ thống đang kiểm tra lại lịch trống; vui lòng chọn giờ khác hoặc thử lại.');
         window.requestAnimationFrame(() => {
-          window.scrollTo({ top: 200, behavior: "smooth" });
+          window.scrollTo({ top: 200, behavior: 'smooth' });
         });
+      } else if (error?.status === 401 && !this.authService.isAuthenticated()) {
+        this.bookingError.set('Hệ thống tạm thời chưa nhận đặt lịch không cần tài khoản. Quý khách vui lòng thử lại sau hoặc liên hệ phòng khám.');
       } else {
-        this.bookingError.set(errorList ? `${rawErrorMsg} (${errorList})` : rawErrorMsg);
+        // Preserve non-slot errors instead of falsely saying staff are busy.
+        const genericConflict = error?.status === 409 && !errorCode
+          ? 'Yêu cầu đặt lịch chưa được máy chủ chấp nhận. Vui lòng thử lại hoặc liên hệ phòng khám.'
+          : errorMessage;
+        this.bookingError.set(errorList ? `${genericConflict} (${errorList})` : genericConflict);
       }
     } finally {
       this.bookingSubmitting.set(false);
@@ -395,8 +449,8 @@ export class BookingPageComponent {
     });
   }
 
-  protected handle1() {
-    this.authService.requireAuth(() => this.step.set(2));
+    protected handle1() {
+    this.step.set(2);
   }
 
   /** (tự sinh) function không dùng trực tiếp được trong template */

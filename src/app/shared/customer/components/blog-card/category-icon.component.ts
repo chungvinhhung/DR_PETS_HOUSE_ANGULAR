@@ -10,6 +10,7 @@ import { CustomerIconComponent } from '../icon/customer-icon.component';
   standalone: true,
   imports: [CustomerIconComponent],
   templateUrl: './category-icon.component.html',
+  styleUrl: './category-icon.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

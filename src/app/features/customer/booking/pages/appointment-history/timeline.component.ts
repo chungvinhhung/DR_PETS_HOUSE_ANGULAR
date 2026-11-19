@@ -11,6 +11,7 @@ import { getAppointmentTimelineSteps } from '../../utils/appointment-display';
   standalone: true,
   imports: [],
   templateUrl: './timeline.component.html',
+  styleUrl: './timeline.component.scss',
   host: {
     'class': 'flex items-start justify-between px-2 py-5',
   },

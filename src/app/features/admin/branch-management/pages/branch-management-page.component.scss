@@ -1166,12 +1166,6 @@ app-branch-management-page { display:block; font-family:Roboto,Arial,sans-serif;
 .branch-v2-page .branch-v2-page__table--services tbody td:last-child .branch-v2-page__icon-action {
   margin-inline: auto;
 }
-/* A disabled backend feature needs a clear message, not implementation terminology. */
-.branch-v2-page__api-note {
-  color: #64748b;
-  font-size: 12px;
-  line-height: 1.55;
-}
 
 
 /*
@@ -1282,4 +1276,23 @@ app-branch-management-page { display:block; font-family:Roboto,Arial,sans-serif;
   border-top: 1px solid #e2e8f0;
   color: #64748b;
   font-size: 12px;
+}
+
+
+/* QA 08/11 — Branch search is ONE focusable visual field.
+   Global input focus rules must not draw a rectangular ring inside the shell. */
+.branch-management .branch-v2-page__filters .branch-v2-page__search:focus-within {
+  border-color: #0d47a1 !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 2px rgba(13,71,161,.14) !important;
+}
+.branch-management .branch-v2-page__filters .branch-v2-page__search > input:is(:focus,:focus-visible) {
+  border: 0 !important;
+  border-color: transparent !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  background: transparent !important;
 }

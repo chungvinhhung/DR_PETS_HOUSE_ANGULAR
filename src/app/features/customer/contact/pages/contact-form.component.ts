@@ -14,6 +14,7 @@ import { INITIAL_FORM } from './contact-page.helpers';
   standalone: true,
   imports: [SelectValueDirective, ReactStyleDirective],
   templateUrl: './contact-form.component.html',
+  styleUrl: './contact-form.component.scss',
   host: {
     'class': 'contact-form',
     '(submit)': 'submitForm($any($event))',

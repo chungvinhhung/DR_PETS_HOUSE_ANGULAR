@@ -1,6 +1,6 @@
 <app-product-rating [value]="review().rating ?? 5" [size]="16" [gap]="8" [fillColor]="'#FF9D00'" />
 <div
-  class="h-[118px] text-justify text-[#333]"
+  class="review-card__box"
   [appStyle]="{
         fontFamily: 'Roboto, sans-serif',
         fontWeight: 400,
@@ -10,7 +10,7 @@
       }"
 >
   @for (line of review().lines; track $index; let index = $index) {
-    <p class="mb-0">
+    <p class="review-card__line">
       @if (index === 0) {
         {{ `"${line}` }}
       } @else {
@@ -22,11 +22,11 @@
     </p>
   }
 </div>
-<div class="flex items-center gap-4">
-  <img [attr.src]="groomingImages.feedbackAvatar" alt="" class="size-[44px] rounded-full object-cover" />
-  <div class="flex w-[149.936px] flex-col gap-[2px]">
+<div class="review-card__row">
+  <img [attr.src]="groomingImages.feedbackAvatar" alt="" class="review-card__feedback-avatar" />
+  <div class="review-card__stack">
     <span
-      class="text-[#02000F]"
+      class="review-card__author"
       [appStyle]="{
             fontFamily: 'Fredoka, sans-serif',
             fontWeight: 500,
@@ -35,7 +35,7 @@
           }"
     >{{ review().author }}</span>
     <span
-      class="text-[#6C6D71]"
+      class="review-card__company"
       [appStyle]="{
             fontFamily: 'Onest, sans-serif',
             fontWeight: 400,

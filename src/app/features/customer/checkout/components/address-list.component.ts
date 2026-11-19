@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
   standalone: true,
   imports: [],
   templateUrl: './address-list.component.html',
+  styleUrl: './address-list.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

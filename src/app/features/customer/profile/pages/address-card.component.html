@@ -1,11 +1,11 @@
-<div class="flex flex-wrap items-start justify-between gap-3">
-  <div class="flex items-center gap-2">
+<div class="address-card__row">
+  <div class="address-card__row-2">
     <strong>{{ recipient() }}</strong>
     @if (address().isDefault) {
-      <span class="rounded bg-[#d2e4ff] px-2 py-1 text-xs">Mặc định</span>
+      <span class="address-card__mac-dinh-text">Mặc định</span>
     }
   </div>
-  <div class="flex flex-wrap items-center gap-4 text-sm font-medium">
+  <div class="address-card__row-3">
     <button type="button" (click)="onEdit.emit(address())" class="hover:text-[#0d47a1]">Thay đổi</button>
     @if (!address().isDefault) {
       <button type="button" (click)="onSetDefault.emit(address().id)" class="text-[#0d47a1]">Đặt làm mặc định</button>
@@ -13,5 +13,5 @@
     }
   </div>
 </div>
-<p class="mt-2">{{ address().phone }}</p>
+<p class="address-card__phone">{{ address().phone }}</p>
 <p>{{ addressLine() }}</p>

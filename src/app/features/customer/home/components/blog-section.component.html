@@ -1,7 +1,7 @@
-<div class="mx-auto flex max-w-[1200px] flex-col gap-8 px-6 lg:flex-row lg:gap-[30px]">
-  <div class="flex flex-1 flex-col gap-8">
-    <div class="relative">
-      <h2 class="text-[32px] font-bold tracking-wide text-[#232536] font-baloo relative z-10">Bài viết nổi bật</h2>
+<div class="blog-section__stack">
+  <div class="blog-section__stack-2">
+    <div class="blog-section__box">
+      <h2 class="blog-section__font-baloo font-baloo">Bài viết nổi bật</h2>
       <!-- Vector vàng -->
       <svg
         class="
@@ -24,35 +24,35 @@
     </div>
     <a
       [appCustomerLink]="`/blog/${featuredPost().id}`"
-      class="group flex flex-col gap-6 border border-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(13,71,161,0.12)] md:p-8"
+      class="blog-section__id-link group flex hover:-translate-y-1"
     >
-      <div class="relative overflow-hidden rounded-[24px]">
+      <div class="blog-section__box-2">
         <img
           [attr.src]="featuredPost().image"
           [attr.alt]="featuredPost().title"
-          class="h-auto max-h-[348px] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          class="blog-section__title group-hover:scale-105"
         />
-        <span class="absolute left-4 top-4 flex items-center gap-1 rounded-full bg-[#FDD835] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.5px] text-[#D32F2F] shadow-lg">
+        <span class="blog-section__text">
           <app-category-icon [category]="featuredPost().category" [className]="'h-3 w-3'" />{{ featuredPost().categoryLabel }}</span>
       </div>
-      <p class="flex items-center gap-2 text-sm text-[#6B7280]">
-        <span>By <span class="font-semibold text-[#0D47A1]">{{ featuredPost().author }}</span></span>
+      <p class="blog-section__text-2">
+        <span>By <span class="blog-section__author">{{ featuredPost().author }}</span></span>
         <span>|</span>
-        <span class="flex items-center gap-1">
+        <span class="blog-section__text-3">
           <app-customer-icon name="calendar-days" className="h-3.5 w-3.5" />{{ featuredPost().publishedAt }}</span>
       </p>
-      <h3 class="text-2xl font-bold text-[#232536] transition-colors group-hover:text-[#0D47A1]">{{ featuredPost().title }}</h3>
-      <p class="text-xl leading-relaxed text-[#6d6e76]">{{ featuredPost().excerpt }}</p>
-      <span class="btn-yellow-light focus-ring-brand w-fit bg-[#fff176]">ĐỌC THÊM →</span>
+      <h3 class="blog-section__title-2 group-hover:text-[#0D47A1] text-[#232536]">{{ featuredPost().title }}</h3>
+      <p class="blog-section__excerpt">{{ featuredPost().excerpt }}</p>
+      <span class="blog-section__btn-yellow-light btn-yellow-light focus-ring-brand">ĐỌC THÊM →</span>
     </a>
   </div>
-  <div class="flex w-full flex-col gap-px lg:max-w-[576px]">
-    <div class="mb-4 flex items-start justify-between">
-      <h2 class="text-[32px] font-bold text-[#232536]">Bài viết mới nhất</h2>
-      <a appCustomerLink="/blog#latest-posts" class="text-base font-semibold text-[#0D47A1] hover:underline">Xem tất cả</a>
+  <div class="blog-section__stack-3">
+    <div class="blog-section__row">
+      <h2 class="blog-section__bai-viet-moi-title">Bài viết mới nhất</h2>
+      <a appCustomerLink="/blog#latest-posts" class="blog-section__xem-tat-ca-link">Xem tất cả</a>
     </div>
     @if (fallbackNotice()) {
-      <p class="mb-2 rounded-xl bg-[#E5F6FD] px-4 py-2 text-sm font-medium text-[#0D47A1]">{{ fallbackNotice() }}</p>
+      <p class="blog-section__fallback-notice">{{ fallbackNotice() }}</p>
     }
     @for (post of latestPosts(); track post.id; let index = $index) {
       <app-blog-post-item [post]="post" [highlighted]="index === 1" />

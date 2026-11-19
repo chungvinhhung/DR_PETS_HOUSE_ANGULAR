@@ -2,6 +2,7 @@
   app-field
   [label]="'Số điện thoại / Email'"
   [name]="'phone'"
+  [autoComplete]="'username'"
   [value]="form().phone"
   (onChange)="update($any($event))"
   [icon]="'phone'"
@@ -12,6 +13,7 @@
   app-field
   [label]="'Mật khẩu'"
   [name]="'password'"
+  [autoComplete]="'current-password'"
   [value]="form().password"
   (onChange)="update($any($event))"
   [icon]="'lock-keyhole'"
@@ -20,10 +22,10 @@
   [error]="validationAttempted() ? errors().password : ''"
 ></label>
 @if (submitError()) {
-  <p class="rounded bg-red-50 px-3 py-2 text-sm text-[#c62828]">{{ submitError() }}</p>
+  <p class="login-form__submit-error">{{ submitError() }}</p>
 }
-<div class="flex items-center justify-between pb-2 text-sm">
-  <label class="flex items-center gap-2">
+<div class="login-form__row">
+  <label class="login-form__label">
     <input
       name="remember"
       type="checkbox"
@@ -42,5 +44,9 @@
 </button>
 <div app-divider></div>
 <button app-google-button></button>
-<p class="text-center text-sm">Chưa có tài khoản?    <button type="button" (click)="changeScreen()('register')" class="font-semibold text-blue-900">Đăng ký ngay</button>
+<p class="login-form__chua-co-tai-text">Chưa có tài khoản?    <button type="button" (click)="changeScreen()('register')" class="font-semibold text-blue-900">Đăng ký ngay</button>
+</p>
+<p class="text-center text-xs text-slate-500 -mt-2">
+  Khách vãng lai?
+  <a href="/tra-cuu-don-hang" (click)="goToGuestLookup($event)" class="font-semibold text-blue-900 underline ml-1">Tra cứu đơn hàng / lịch hẹn</a>
 </p>

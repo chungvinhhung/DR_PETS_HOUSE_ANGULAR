@@ -7,17 +7,17 @@
           <span aria-hidden="true">›</span>
           <strong>{{ isEdit ? 'Chỉnh sửa nhân viên' : 'Thêm mới' }}</strong>
         </nav>
-        <h1>{{ isEdit ? 'Chỉnh sửa nhân viên' : 'Thêm nhân viên' }}</h1>
+        <h1>{{ isEdit ? 'Chỉnh sửa nhân viên' : (isManager ? 'Thêm quản lý' : 'Thêm nhân viên') }}</h1>
       </div>
       <div class="head-actions">
         <button type="button" class="secondary" (click)="cancel()">Hủy bỏ</button>
-        @if (!isEdit) {
+        @if (!isEdit && !isManager) {
           <button type="button" class="secondary icon-button" (click)="submit('assign')">
             <img src="/assets/admin-staff/calendar-today.svg" width="16" height="16" alt="" aria-hidden="true">
             Tạo và phân ca
           </button>
         }
-        <button type="button" class="primary" (click)="submit('save')">{{ isEdit ? 'Lưu thay đổi' : 'Tạo nhân viên' }}</button>
+        <button type="button" class="primary" (click)="submit('save')">{{ isEdit ? 'Lưu thay đổi' : (isManager ? 'Tạo quản lý' : 'Tạo nhân viên') }}</button>
         @if (isEdit) {
           @if (canManageAccount && staff) {
             <button type="button" class="danger-outline" (click)="openAccountStatusDialog()">
@@ -28,17 +28,19 @@
       </div>
     </header>
 
-    @if (staffApi.loading()) { <p role="status">Đang tải hồ sơ nhân viên từ Backend...</p> }
-    @if (staffApi.error()) { <p role="alert">{{ staffApi.error() }}</p> }
-    @if (isEdit && !staff && !staffApi.loading()) {
+    @if (staffApi.loading()) {
+      <app-admin-data-state kind="loading" title="Đang tải hồ sơ nhân viên" />
+    } @else if (staffApi.error()) {
+      <app-admin-data-state kind="error" title="Không thể tải hồ sơ nhân viên" [message]="staffApi.error()" />
+    } @else if (isEdit && !staff) {
       <section class="panel" role="alert">
         <h2>Không tìm thấy nhân viên</h2>
-        <p>Chưa tìm thấy mã {{ staffId }} trong dữ liệu Backend. <a routerLink="/admin/staff">Quay lại danh sách nhân viên</a>.</p>
+        <p>Chưa tìm thấy mã {{ staffId }}. <a routerLink="/admin/staff">Quay lại danh sách nhân viên</a>.</p>
       </section>
     } @else {
       <form [formGroup]="form" (ngSubmit)="submit('save')" novalidate>
         <section class="panel">
-          <h2>{{ isEdit ? 'Hồ sơ nhân viên' : 'Thông tin nhân viên' }}</h2>
+          <h2>{{ isEdit ? 'Hồ sơ nhân viên' : (isManager ? 'Thông tin quản lý' : 'Thông tin nhân viên') }}</h2>
           <div class="fields basic-fields">
             <label>
               <span class="field-label">Họ và tên <em>*</em></span>
@@ -51,10 +53,14 @@
               @if (fieldError('phone')) { <small class="error">{{ fieldError('phone') }}</small> }
             </label>
             <label>
-              <span class="field-label">Vai trò nghiệp vụ <em>*</em></span>
+              <span class="field-label">Vai trò nhân sự <em>*</em></span>
               <span class="select-wrap">
                 <select formControlName="jobRole">
-                  @for (role of roles; track role) { <option [value]="role">{{ labels[role] }}</option> }
+                  @for (role of roles; track role) {
+                    @if (role !== 'MANAGER' || canCreateManager) {
+                      <option [value]="role">{{ labels[role] }}</option>
+                    }
+                  }
                 </select>
                 <img src="/assets/admin-product/expand_more.svg" width="16" height="16" alt="" aria-hidden="true">
               </span>
@@ -70,8 +76,9 @@
 
         <div class="lower-cards">
           <section class="panel branch-panel">
-            <h2>Phân công chi nhánh</h2>
-            <div class="fields stacked" [class.edit-branch-fields]="isEdit">
+            <h2>{{ isManager ? 'Phạm vi quản lý chi nhánh' : 'Phân công chi nhánh' }}</h2>
+            <div class="fields stacked" [class.edit-branch-fields]="isEdit && !isManager">
+              @if (!isManager) {
               <label>
                 <span class="field-label">Chi nhánh chính @if (!isEdit) { <em>*</em> }</span>
                 <span class="select-wrap">
@@ -85,8 +92,9 @@
                 </span>
                 @if (fieldError('homeBranch')) { <small class="error">{{ fieldError('homeBranch') }}</small> }
               </label>
+              }
               <div class="multi-field">
-                <span class="field-label">{{ isEdit ? 'Chi nhánh được phân công' : 'Chi nhánh làm việc' }} @if (!isEdit) { <em>*</em> }</span>
+                <span class="field-label">{{ isManager ? 'Chi nhánh quản lý' : (isEdit ? 'Chi nhánh được phân công' : 'Chi nhánh làm việc') }} <em>*</em></span>
                 <div class="branch-picker">
                   <button type="button" class="branch-trigger" (click)="toggleBranchMenu()"
                     [attr.aria-expanded]="branchMenuOpen" aria-controls="staff-branch-options">
@@ -94,7 +102,7 @@
                     <img src="/assets/admin-product/expand_more.svg" width="17" height="17" alt="" aria-hidden="true">
                   </button>
                   @if (branchMenuOpen) {
-                    <div class="branch-menu" id="staff-branch-options" role="group" aria-label="Danh sách chi nhánh làm việc">
+                    <div class="branch-menu" id="staff-branch-options" role="group" [attr.aria-label]="isManager ? 'Danh sách chi nhánh quản lý' : 'Danh sách chi nhánh làm việc'">
                       @for (branch of branches; track branch) {
                         <label class="branch-option">
                           <input type="checkbox" [checked]="selectedBranches.has(branch)"
@@ -112,6 +120,12 @@
 
           <section class="panel account-panel">
             <h2>{{ isEdit ? 'Tài khoản đăng nhập' : 'Tạo tài khoản đăng nhập' }}</h2>
+            @if (isManager) {
+              <div class="manager-api-note" role="status">
+                <strong>Phạm vi quản lý chi nhánh</strong>
+                <span>Chỉ Admin được tạo và phân công Manager. Mỗi Manager chỉ quản lý các chi nhánh được gán; tài khoản mới sẽ được cấp thông tin đăng nhập một lần sau khi tạo.</span>
+              </div>
+            }
             @if (isEdit) {
               <div class="account-edit-layout">
                 <div class="account-data">
@@ -128,32 +142,11 @@
                   <button type="button" class="secondary reset-button" (click)="openResetPassword()">Đặt lại mật khẩu</button>
                 }
               </div>
-            } @else {
-              <div class="fields stacked">
-                <label>
-                  <span class="field-label">Tài khoản đăng nhập <em>*</em></span>
-                  <input formControlName="loginIdentifier" type="text" autocomplete="off" placeholder="Nhập tài khoản đăng nhập">
-                  @if (fieldError('loginIdentifier')) { <small class="error">{{ fieldError('loginIdentifier') }}</small> }
-                </label>
-                <label>
-                  <span class="field-label">Mật khẩu <em>*</em></span>
-                  <span class="password-wrap">
-                    <input formControlName="password" [type]="showPassword ? 'text' : 'password'"
-                      autocomplete="new-password" placeholder="Nhập mật khẩu">
-                    <button type="button" (click)="showPassword = !showPassword"
-                      [attr.aria-label]="showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'">
-                      <img [src]="showPassword ? '/assets/admin-login/visibility-off-outlined.svg' : '/assets/admin-login/visibility-outlined.svg'"
-                        width="20" height="20" alt="" aria-hidden="true">
-                    </button>
-                  </span>
-                  @if (fieldError('password')) { <small class="error">{{ fieldError('password') }}</small> }
-                </label>
-              </div>
             }
           </section>
         </div>
 
-        @if (isEdit) {
+        @if (isEdit && !isManager) {
           <section class="panel schedule-panel" aria-labelledby="schedule-heading">
             <div class="schedule-header">
               <h2 id="schedule-heading">Lịch làm việc theo tuần</h2>
@@ -172,28 +165,8 @@
                   @for (day of weekDays; track day.key) {
                     <tr>
                       <td><span class="shift-day"><span class="shift-day__weekday">{{ day.weekday }}</span><small class="shift-day__date">{{ day.dayMonth }}</small></span></td>
-                      <td>
-                        <span class="select-wrap">
-                          <select aria-label="Chi nhánh của {{ day.label }}" [value]="day.branch"
-                            (change)="setShift(day.key, 'branch', $any($event.target).value)"
-                            [disabled]="!day.template">
-                            <option value="">—</option>
-                            @for (branch of selectedBranches; track branch) { <option [value]="branch">{{ branch }}</option> }
-                          </select>
-                          @if (day.template) { <img src="/assets/admin-product/expand_more.svg" width="15" height="15" alt=""> }
-                        </span>
-                      </td>
-                      <td>
-                        <span class="select-wrap">
-                          <select aria-label="Ca làm của {{ day.label }}" [value]="day.template"
-                            (change)="setShift(day.key, 'template', $any($event.target).value)">
-                            <option value="">Chưa phân ca</option>
-                            <option value="Ca sáng">Ca sáng</option>
-                            <option value="Ca chiều">Ca chiều</option>
-                          </select>
-                          <img src="/assets/admin-product/expand_more.svg" width="15" height="15" alt="">
-                        </span>
-                      </td>
+                      <td>{{ day.branch || '—' }}</td>
+                      <td>{{ day.template || 'Chưa phân ca' }}</td>
                       <td>{{ day.hours }}</td>
                       <td>{{ day.template && day.branch ? 'Đã xếp' : 'Chưa xếp' }}</td>
                     </tr>
@@ -201,7 +174,6 @@
                 </tbody>
               </table>
             </div>
-            <p class="schedule-note">Lịch hiển thị mẫu Figma. Phân ca thực tế và xác nhận xung đột phải được Backend xử lý.</p>
           </section>
         }
       </form>
@@ -262,9 +234,8 @@
       @if (resetError) { <p class="staff-reset-error" role="alert">{{ resetError }}</p> }
       <div class="staff-reset-actions">
         <button type="button" class="secondary" (click)="closeResetPassword()">Hủy</button>
-        <button type="button" class="primary" (click)="validateResetPassword()">Đặt lại mật khẩu</button>
+        <button type="button" class="primary" (click)="validateResetPassword()" [disabled]="resetBusy">{{ resetBusy ? 'Đang lưu...' : 'Đặt lại mật khẩu' }}</button>
       </div>
-      <p class="staff-reset-note">Chưa kết nối API Backend. Không lưu hoặc thay đổi mật khẩu thật.</p>
     </section>
   </div>
 }
@@ -274,10 +245,10 @@
     <section class="staff-leave-dialog" role="alertdialog" aria-modal="true"
       aria-labelledby="staff-account-status-title" tabindex="-1">
       <h2 id="staff-account-status-title">{{ staff.accountStatus === 'BLOCKED' ? 'Bỏ chặn tài khoản?' : 'Chặn tài khoản?' }}</h2>
-      <p>{{ displayName }} · {{ staffId }}. Đây là bản FE preview; chưa kết nối API nên trạng thái tài khoản sẽ không thay đổi.</p>
+      <p>{{ displayName }} · {{ staffId }}. Trạng thái tài khoản sẽ được cập nhật ngay khi xác nhận.</p>
       <div class="staff-leave-actions">
         <button type="button" class="secondary" (click)="closeAccountStatusDialog()">Hủy</button>
-        <button type="button" class="danger-outline" (click)="confirmAccountStatusPreview()">Xác nhận</button>
+        <button type="button" class="danger-outline" (click)="confirmAccountStatusPreview()" [disabled]="accountStatusBusy">{{ accountStatusBusy ? 'Đang cập nhật...' : 'Xác nhận' }}</button>
       </div>
     </section>
   </div>

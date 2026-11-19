@@ -113,7 +113,7 @@ export class AdminStaffShiftAssignComponent {
     this.errors.set([]);
     if (!this.selectedStaff()) { this.errors.set(['Vui lòng chọn nhân viên.']); return; }
     if (!this.draft().length) { this.errors.set(['Chưa có ca mới trong bản nháp.']); return; }
-    this.success.set('Đã kiểm tra bản nháp cục bộ. API Shift có tạo ca, nhưng FE chưa xác nhận hợp đồng mẫu ca/chi nhánh để ghi an toàn; chưa lưu lên Backend.');
+    this.success.set('Đã kiểm tra bản nháp, nhưng chưa thể lưu phân công ca. Lịch làm việc hiện tại không thay đổi.');
   }
   requestClose() { if (this.hasChanges()) this.confirmLeave.set(true); else void this.router.navigateByUrl('/admin/staff/schedule'); }
   discard() { this.draft.set([]); this.hasChanges.set(false); this.confirmLeave.set(false); this.errors.set([]); void this.router.navigateByUrl('/admin/staff/schedule'); }

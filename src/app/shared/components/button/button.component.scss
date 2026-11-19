@@ -27,7 +27,7 @@
 }
 
 .shared-button:focus-visible {
-  outline: 3px solid rgb(59 130 246 / 35%);
+  outline: 2px solid var(--web2-focus-color, #0d47a1);
   outline-offset: 2px;
 }
 

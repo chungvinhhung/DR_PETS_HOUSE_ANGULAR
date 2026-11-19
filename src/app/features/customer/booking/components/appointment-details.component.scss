@@ -1,0 +1,75 @@
+.appointment-details__row {
+  @apply mb-6 flex items-start justify-between gap-3;
+}
+
+.appointment-details__chi-tiet-dat-title {
+  @apply text-xl font-black text-blue-900 md:text-2xl lg:text-xl;
+}
+
+.appointment-details__ma-so-bk-8712-text {
+  @apply mt-2 text-sm font-medium text-slate-600;
+}
+
+.appointment-details__dang-cho-thanh-text {
+  @apply rounded-2xl bg-[#FFF9C4] px-3 py-2 text-center text-xs font-bold text-slate-900 shadow-elevation md:px-4;
+}
+
+.appointment-details__grid {
+  @apply grid gap-3 border-b border-slate-200 pb-6 md:grid-cols-2 md:gap-4;
+}
+
+.appointment-details__dich-vu-da-title {
+  @apply mt-6 text-xl font-black text-blue-900;
+}
+
+.appointment-details__row-2 {
+  @apply flex items-start justify-between gap-3 rounded-2xl bg-[#f2f4f6] p-4 md:items-center md:p-5;
+}
+
+.appointment-details__box {
+  @apply min-w-0;
+}
+
+.appointment-details__name {
+  @apply font-bold text-blue-900;
+}
+
+.appointment-details__desc {
+  @apply mt-1 text-sm text-slate-700;
+}
+
+.appointment-details__text {
+  @apply mt-3 inline-flex h-9 items-center overflow-hidden rounded-full border border-blue-900 bg-white text-sm font-bold text-blue-900;
+}
+
+.appointment-details__quantity {
+  @apply min-w-8 px-2 text-center;
+}
+
+.appointment-details__pet-count {
+  @apply mt-2 text-xs font-medium text-slate-500;
+}
+
+.appointment-details__box-2 {
+  @apply shrink-0 text-right;
+}
+
+.appointment-details__service-total {
+  @apply text-base font-black text-blue-900 md:text-lg;
+}
+
+.appointment-details__price {
+  @apply text-xs text-slate-700;
+}
+
+.appointment-details__weight-surcharge {
+  @apply mt-1 text-xs text-slate-500;
+}
+
+.appointment-details__chua-chon-dich-text {
+  @apply py-4 text-sm text-slate-500;
+}
+
+.appointment-details__i-vui-long-el {
+  @apply mt-5 rounded-2xl bg-[#d5e4f3] p-5 text-sm font-medium text-slate-700;
+}

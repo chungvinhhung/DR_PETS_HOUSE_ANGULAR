@@ -1,7 +1,8 @@
 import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { EMPTY, expand, map, Observable, reduce, retry, throwError, timer } from 'rxjs';
 import { ApiClientService } from '../../../../core/services/api-client.service';
+import { AppHttpError } from '../../../../core/models/app-http-error.model';
 
 export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
 export type OrderPaymentMethod = 'ONLINE_MOCK' | 'COD';
@@ -53,13 +54,19 @@ export interface OrderListResponse {
 export type ReturnStatus = 'REQUESTED' | 'PROCESSING' | 'RECEIVED' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
 export interface OrderReturnSummary {
   id: string;
+  code?: string;
   orderId: string;
+  orderCode?: string | null;
+  fulfillmentBranchId?: string | null;
+  createdAt?: string;
+  allowedActions?: string[];
   status: ReturnStatus;
   items: {
     orderItemId: string; productName: string; orderedQty: number;
     alreadyReturnedQty: number; requestedQty: number; refundAmount: number;
     /** Optional fields: only display them if the backend actually supplies them. */
     receivedQty?: number | null; approvedQty?: number | null; finalRefundAmount?: number | null;
+    quality?: 'RESELLABLE' | 'DAMAGED' | 'DISCARDED';
   }[];
   refundBreakdown: { merchandiseNet: number; shippingRefunded: number; total: number };
   /** Optional authoritative settled amount when BE adds it to the Return DTO. */
@@ -86,22 +93,85 @@ export interface OrderRefundRecord {
 }
 
 export type ReturnStaffAction = 'process' | 'receive';
+export interface ReturnInspectionBody {
+  items: Array<{orderItemId:string;receivedQty:number;quality:'RESELLABLE'|'DAMAGED'|'DISCARDED'}>;
+  note?: string;
+}
 export type ReturnManagerAction = 'approve' | 'reject';
 export type OrderWriteAction = 'confirm' | 'process' | 'ship' | 'mark-delivered';
 @Injectable({ providedIn: 'root' })
 export class AdminOrderApiService {
   private readonly api = inject(ApiClientService);
 
-  /** The deployed API may return fewer orders than its reported totalCount. */
+  /**
+   * Retry only read-only order-list requests after transient transport/server
+   * failures (for example a service waking after a deploy). Never retry auth,
+   * validation or a write request, and never fabricate an empty order list.
+   */
+  private getOrderPage(path: string, params: HttpParams): Observable<unknown> {
+    return this.api.get<unknown>(path,{params}).pipe(
+      retry({
+        count: 2,
+        delay: (error: unknown, attempt: number) => {
+          const status = error instanceof AppHttpError
+            ? error.status
+            : typeof error === 'object' && error !== null && 'status' in error
+              ? Number((error as {status?: unknown}).status)
+              : -1;
+          if (![0, 500, 502, 503, 504].includes(status)) {
+            return throwError(() => error);
+          }
+          return timer(attempt * 1200);
+        },
+      }),
+    );
+  }
+
+  private listAll<T>(path:string, resource:string): Observable<{items:T[];totalCount?:number;nextCursor?:string|null}> {
+    const fetch=(cursor?:string)=>this.getOrderPage(path,
+      cursor
+        ? new HttpParams().set('limit','100').set('cursor',cursor)
+        : new HttpParams().set('limit','100'),
+    ).pipe(map(response=>this.requirePage<T>(response,resource)));
+    return fetch().pipe(
+      expand(page=>page.nextCursor?fetch(page.nextCursor):EMPTY),
+      reduce((all,page)=>({
+        items:[...all.items,...page.items],
+        totalCount:all.totalCount??page.totalCount,
+        nextCursor:page.nextCursor??null,
+      }),{items:[] as T[],totalCount:undefined as number|undefined,nextCursor:null as string|null}),
+    );
+  }
+
   list(): Observable<OrderListResponse> {
-    return this.api.get<unknown>('/orders', {
-      params: new HttpParams().set('limit', '100'),
-    }).pipe(map((response) => this.requirePage<OrderRecord>(response, 'Đơn hàng')));
+    return this.listAll<OrderRecord>('/orders','Đơn hàng');
+  }
+
+  /** Dashboard M23 clickthrough: BE filters the full Order collection before pagination. */
+  listDashboardFiltered(filters: {
+    status?: string;
+    branchId?: string;
+    from: string;
+    to: string;
+  }): Observable<OrderListResponse> {
+    let base = new HttpParams().set('limit', '100')
+      .set('from', filters.from).set('to', filters.to);
+    if (filters.status) base = base.set('status', filters.status);
+    if (filters.branchId) base = base.set('branchId', filters.branchId);
+    const fetch = (cursor?: string) => this.getOrderPage('/orders',
+      cursor ? base.set('cursor', cursor) : base,
+    ).pipe(map(result => this.requirePage<OrderRecord>(result, 'Đơn hàng')));
+    return fetch().pipe(
+      expand(page => page.nextCursor ? fetch(page.nextCursor) : EMPTY),
+      reduce((all, page) => ({
+        items: [...all.items, ...page.items],
+        totalCount: all.totalCount ?? page.totalCount,
+        nextCursor: page.nextCursor ?? null,
+      }), {items: [] as OrderRecord[], totalCount: undefined as number | undefined, nextCursor: null as string | null}),
+    );
   }
   listReturns(): Observable<OrderReturnListResponse> {
-    return this.api.get<unknown>('/order-returns', {
-      params: new HttpParams().set('limit', '100'),
-    }).pipe(map((response) => this.requirePage<OrderReturnSummary>(response, 'Trả hàng')));
+    return this.listAll<OrderReturnSummary>('/order-returns','Trả hàng');
   }
 
   /**
@@ -111,7 +181,7 @@ export class AdminOrderApiService {
   private requirePage<T>(response: unknown, resource: string): { items: T[]; totalCount?: number; nextCursor?: string | null } {
     if (!response || typeof response !== 'object' || !('items' in response) ||
         !Array.isArray((response as { items: unknown }).items)) {
-      throw new Error('API ' + resource + ' trả về sai cấu trúc danh sách.');
+      throw new Error('Dữ liệu danh sách ' + resource.toLowerCase() + ' chưa đồng bộ. Vui lòng tải lại.');
     }
     return response as { items: T[]; totalCount?: number; nextCursor?: string | null };
   }
@@ -119,9 +189,10 @@ export class AdminOrderApiService {
   getReturn(id: string): Observable<OrderReturnSummary> {
     return this.api.get<OrderReturnSummary>('/order-returns/' + encodeURIComponent(id));
   }
-  returnStaffAction(id: string, action: ReturnStaffAction): Observable<OrderReturnSummary> {
-    return this.api.post<OrderReturnSummary, Record<string, never>>(
-      '/order-returns/' + encodeURIComponent(id) + '/' + action, {});
+  returnStaffAction(id: string, action: ReturnStaffAction, body?: ReturnInspectionBody): Observable<OrderReturnSummary> {
+    return this.api.post<OrderReturnSummary, ReturnInspectionBody | Record<string, never>>(
+      '/order-returns/' + encodeURIComponent(id) + '/' + action,
+      action === 'receive' ? (body ?? {items:[]}) : {});
   }
   returnManagerAction(id: string, action: ReturnManagerAction, body: { note?: string; reason?: string }): Observable<OrderReturnSummary> {
     return this.api.post<OrderReturnSummary, { note?: string; reason?: string }>(
@@ -139,10 +210,21 @@ export class AdminOrderApiService {
   get(id: string): Observable<OrderRecord> {
     return this.api.get<OrderRecord>('/orders/' + encodeURIComponent(id));
   }
-  changeStatus(id: string, action: OrderWriteAction, shipping?: { carrier?: string; trackingNumber?: string }): Observable<OrderRecord> {
+  changeStatus(
+    id: string,
+    action: OrderWriteAction,
+    body?: { carrier?: string; trackingNumber?: string; note?: string },
+  ): Observable<OrderRecord> {
+    const payload: { carrier?: string; trackingNumber?: string } = {};
+    // Current BE transition handlers do not persist a free-form status note.
+    // Keep the Figma field in the UI, but do not send an unsupported property.
+    if (action === 'ship') {
+      if (body?.carrier) payload.carrier = body.carrier;
+      if (body?.trackingNumber) payload.trackingNumber = body.trackingNumber;
+    }
     return this.api.post<OrderRecord, object>(
       '/orders/' + encodeURIComponent(id) + '/' + action,
-      action === 'ship' ? (shipping ?? {}) : {},
+      payload,
     );
   }
   cancel(id: string, reason: string, idempotencyKey: string): Observable<OrderRecord> {

@@ -1,6 +1,6 @@
-<h1 class="w-full text-[32px] font-semibold leading-10 text-black/87">Kết quả tìm kiếm cho <span class="text-[#0D47A1]">"{{ query() }}"</span>
+<h1 class="results-header__text-black-87 text-black/87">Kết quả tìm kiếm cho <span class="results-header__query">"{{ query() }}"</span>
 </h1>
-<p class="text-[16px] leading-6 text-black/60">
+<p class="results-header__summary">
   @if (isEmpty()) {
     {{ emptyState().summary }}
   } @else {
@@ -8,7 +8,7 @@
   }
 </p>
 @if (!isEmpty()) {
-  <div class="flex flex-wrap items-center gap-3 pt-4">
+  <div class="results-header__row">
     @for (option of sortOptions(); track option.id) {
       <button
         app-sort-button

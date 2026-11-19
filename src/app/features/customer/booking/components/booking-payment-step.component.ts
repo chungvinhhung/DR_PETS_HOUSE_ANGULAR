@@ -13,6 +13,7 @@ import { getWeightValue, getBookingPets, getPetWeight, getPetId, getDistributedQ
   standalone: true,
   imports: [AppointmentDetailsComponent, PaymentPanelComponent],
   templateUrl: './booking-payment-step.component.html',
+  styleUrl: './booking-payment-step.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -68,6 +69,10 @@ export class BookingPaymentStepComponent implements OnInit {
   readonly pricingPreview = signal<any>(null);
   readonly pricingLoading = signal<any>(false);
   readonly pricingError = signal<any>("");
+  readonly validatedVoucherCode = signal<string | null>(null);
+  readonly selectedServiceIds = computed<string[]>(() => this.selectedServices()
+    .map((service: any) => String(service.serviceId || service.id || '').trim())
+    .filter(Boolean));
 
   constructor() {
     // useEffect(..., [petCount, selectedServices])
@@ -178,6 +183,6 @@ export class BookingPaymentStepComponent implements OnInit {
       ]),
     );
 
-    this.onConfirm.emit({ quantities: normalizedQuantities });
+    this.onConfirm.emit({ quantities: normalizedQuantities, voucherCode: this.validatedVoucherCode() || undefined });
   }
 }

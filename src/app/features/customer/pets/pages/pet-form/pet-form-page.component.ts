@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 
 import { CustomerNavigationService } from '../../../../../core/customer/services/customer-navigation.service';
@@ -21,12 +21,17 @@ const uploadIcon = '/assets/customer/icons/upload-icon.png';
   standalone: true,
   imports: [NgTemplateOutlet, MedicalRecordCardComponent, SelectValueDirective, ReactStyleDirective, CustomerLinkDirective],
   templateUrl: './pet-form-page.component.html',
+  styleUrl: './pet-form-page.component.scss',
   host: {
     'class': 'max-w-4xl mx-auto pb-10 pt-6 px-4 font-sans',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PetFormPageComponent {
+  readonly embedded = input(false);
+  readonly onSaved = output<any>();
+  readonly onCancel = output<void>();
+
   // --- Service dùng chung ---
   protected readonly navService = inject(CustomerNavigationService);
   protected readonly decisionModalService = inject(DecisionModalService);
@@ -158,7 +163,9 @@ export class PetFormPageComponent {
               (currentPet.name && (petImages as any)[currentPet.name]) ||
               null,
             );
-            const apiRecords = recordsResult?.status === "fulfilled" ? recordsResult.value || [] : [];
+            const apiRecords = recordsResult?.status === "fulfilled" && Array.isArray(recordsResult.value) && recordsResult.value.length > 0
+              ? recordsResult.value
+              : (Array.isArray(currentPet.medicalRecords) ? currentPet.medicalRecords : []);
             this.medicalRecords.set(apiRecords);
             this.originalMedicalRecordIds.set(apiRecords.map((record: any) => String(record.id)));
             return;
@@ -187,12 +194,39 @@ export class PetFormPageComponent {
     }
   }
 
-  protected goBackToPetList() {
-    this.navService.navigate("/thu-cung-cua-toi");
+    protected goBackToPetList() {
+    if (this.isEdit()) {
+      const currentPet = this.pet();
+      const targetSlug = currentPet
+        ? toPetSlug(currentPet)
+        : String(this.navService.params()['id'] || '');
+
+      if (targetSlug) {
+        this.navService.navigate(`/thu-cung-cua-toi/${targetSlug}`);
+        return;
+      }
+    }
+    this.navService.navigate('/thu-cung-cua-toi');
   }
+
 
   protected handleLeaveForm(event: any) {
     event?.preventDefault();
+
+    if (this.embedded()) {
+      if (!this.formTouched()) {
+        this.onCancel.emit();
+        return;
+      }
+
+      this.decisionModalService.confirmCancel({
+        message: "Bạn chắc chắn muốn quay lại?\nCác thông tin vừa nhập sẽ không được lưu",
+        cancelLabel: "Ở lại",
+        confirmLabel: "Hủy",
+        onConfirm: () => this.onCancel.emit(),
+      });
+      return;
+    }
 
     if (!this.formTouched()) {
       this.goBackToPetList();
@@ -284,13 +318,27 @@ export class PetFormPageComponent {
         ...deletedIds.map((id: string) => this.petApi.deleteMedicalRecord(id)),
       ]);
 
+      const savedPetForParent = { ...savedPet, id: backendPetId, name: petData.name };
       if (recordResults.some((result: any) => result.status === "rejected")) {
         alert("Đã lưu hồ sơ nhưng có bệnh án chưa lưu được lên hệ thống. Vui lòng kiểm tra lại.");
+        if (this.embedded()) {
+          this.onSaved.emit(savedPetForParent);
+          return;
+        }
         this.navService.navigate(`/thu-cung-cua-toi/${toPetSlug({ ...savedPet, id: backendPetId, name: petData.name })}`);
         return;
       }
 
-      this.navService.navigate("/thu-cung-cua-toi");
+      if (this.embedded()) {
+        this.onSaved.emit(savedPetForParent);
+        return;
+      }
+        if (this.isEdit()) {
+            this.navService.navigate(`/thu-cung-cua-toi/${toPetSlug(savedPetForParent)}`);
+            return;
+          }
+
+      this.navService.navigate('/thu-cung-cua-toi');
     } catch (error: any) {
       this.formError.set(error?.message || "Không thể lưu hồ sơ. Vui lòng thử lại.");
     } finally {

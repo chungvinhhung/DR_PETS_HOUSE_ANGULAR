@@ -12,6 +12,7 @@ import { inputClass } from './user-profile-page.helpers';
   standalone: true,
   imports: [UserProfileFieldComponent],
   templateUrl: './change-password-modal.component.html',
+  styleUrl: './change-password-modal.component.scss',
   host: {
     'class': 'fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(6,16,90,0.24)] p-4 backdrop-blur-[2px]',
   },

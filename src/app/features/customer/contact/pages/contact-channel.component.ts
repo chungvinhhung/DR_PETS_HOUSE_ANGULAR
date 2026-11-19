@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   standalone: true,
   imports: [],
   templateUrl: './contact-channel.component.html',
+  styleUrl: './contact-channel.component.scss',
   host: {
     'class': 'contact-channel',
     '[attr.href]': 'channel().href',

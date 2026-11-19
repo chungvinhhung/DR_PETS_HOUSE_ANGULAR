@@ -35,7 +35,7 @@
     }
 
     @if (loading()) {
-      <div class="service-editor__error" role="status">Đang tải thông tin dịch vụ...</div>
+      <app-admin-data-state kind="loading" title="Đang tải thông tin dịch vụ" />
     } @else if (missingService()) {
       <div class="service-editor__error" role="alert">
         Không thể tải thông tin dịch vụ. Vui lòng thử lại.
@@ -126,13 +126,15 @@
                     <strong>{{ branch.name }}</strong>
                     <small>{{ branch.summary }}</small>
                   </div>
-                  <button type="button" class="service-editor__detail-config-link"
+                  @if (canConfigureBranch()) {
+                   <button type="button" class="service-editor__detail-config-link"
                     [disabled]="saving()" [attr.aria-label]="'Cấu hình dịch vụ tại ' + branch.name"
                     [title]="'Cấu hình dịch vụ tại ' + branch.name"
                     (click)="openBranchConfiguration(branch.id)">
                     <img src="/assets/service-catalog/icon-settings.svg"
                       width="20" height="20" alt="" aria-hidden="true"/>
                   </button>
+                 }
                 </div>
               }
             </div>
@@ -194,7 +196,11 @@
               <input type="number" min="1" max="1440" step="1"
                 [disabled]="!mayEdit"
                 [(ngModel)]="durationMinutes" (ngModelChange)="markDirty()"
+                [attr.aria-invalid]="durationMinutes !== null && durationMinutes < 0"
                 placeholder="Nhập thời lượng"/>
+              @if (durationMinutes !== null && durationMinutes < 0) {
+                <small class="service-editor__price-error">Thời lượng không được là số âm.</small>
+              }
             </label>
             <label class="service-editor__field">
               <span>Vai trò thực hiện <b>*</b></span>
@@ -224,7 +230,7 @@
         <h2 id="service-price-title">Giá dịch vụ</h2>
         @if (pricingDataWarning) {
           <p class="service-editor__pricing-warning" role="status">
-              Thông tin giá từ Backend chưa khớp các mức giá đang hỗ trợ. Các số tiền chưa được xác nhận sẽ không hiển thị là giá cơ sở.
+              Một số mức giá chưa được xác nhận. Vui lòng kiểm tra lại giá trước khi tiếp tục.
           </p>
         }
         <label class="service-editor__field service-editor__price-settings">
@@ -253,7 +259,7 @@
                     <td><strong>{{ weightPricing ? tier.key : 'Chung' }}</strong></td>
                     <td>{{ weightPricing ? tier.weight : 'Mọi cân nặng' }}</td>
                     <td>
-                      <select [disabled]="!mayEdit" class="service-editor__price-select"
+                      <select [disabled]="!mayEdit || (weightPricing && tier.key === 'XL')" class="service-editor__price-select"
                         [ngModel]="tier.mode" (ngModelChange)="setTierMode(tier, $event)"
                         [attr.aria-label]="'Hình thức thu phí mức ' + tier.key">
                         <option value="FIXED">Giá cố định</option>
@@ -264,13 +270,17 @@
                       @if (tier.mode === 'QUOTE') {
                         <span class="service-editor__amount-unset">Chưa xác định giá</span>
                       } @else {
-                        <span class="service-editor__price-input">
+                        <span class="service-editor__price-input" [class.service-editor__price-input--invalid]="invalidTierPrices.has(tier.key)">
                           <input type="text" inputmode="numeric" autocomplete="off" [disabled]="!mayEdit"
-                            [value]="formatMoney(tier.price)" (input)="setTierPrice(tier, $any($event.target).value)"
+                            [value]="priceInputText(tier)" (input)="setTierPrice(tier, $any($event.target).value)"
                             [attr.aria-label]="'Giá cơ sở mức ' + tier.key"
+                            [attr.aria-invalid]="invalidTierPrices.has(tier.key)"
                             placeholder="Nhập giá"/>
                           <span>đ</span>
                         </span>
+                        @if (invalidTierPrices.has(tier.key)) {
+                          <small class="service-editor__price-error">Giá cơ sở không được là số âm.</small>
+                        }
                       }
                     </td>
                     <td class="service-editor__amount-words-cell" aria-live="polite">
@@ -285,13 +295,22 @@
       </section>
 
       <section class="service-editor__card" aria-labelledby="service-materials-title">
-        <h2 id="service-materials-title">Vật liệu mặc định</h2>
+        <div class="service-editor__branch-section-heading">
+          <h2 id="service-materials-title">Vật liệu mặc định ({{materials.length}})</h2>
+          @if (mayEdit) {
+            <button #materialAddTrigger type="button"
+              class="flash-editor__btn flash-editor__btn--outline"
+              [disabled]="saving()" (click)="openMaterialPicker()">
+              <span class="web2-add-icon" aria-hidden="true">+</span> Thêm vật liệu
+            </button>
+          }
+        </div>
 
         <div class="service-editor__table-scroll">
           <table class="service-editor__table service-editor__table--materials">
             <thead><tr>
               <th scope="col">Mã vật liệu</th>
-              <th scope="col">Tên vật liệu (tìm sản phẩm)</th>
+              <th scope="col">Tên vật liệu</th>
               <th scope="col">Số lượng mặc định</th>
               <th scope="col">Đơn vị</th>
               <th scope="col">Thao tác</th>
@@ -301,45 +320,17 @@
                 <tr>
                   <td><input class="service-editor__readonly" [value]="line.sku" placeholder="SKU" readonly tabindex="-1" aria-label="Mã SKU đã chọn"/></td>
                   <td>
-                    <div class="service-editor__product-combobox">
-                      <input type="text" role="combobox" autocomplete="off" [disabled]="!mayEdit"
-                        [attr.aria-expanded]="openMaterialKey() === line.key"
-                        [attr.aria-controls]="'service-material-results-' + line.key"
-                        [ngModel]="line.query" (focus)="openMaterialKey.set(line.key)"
-                        (input)="openMaterialKey.set(line.key)"
-                        (blur)="closeMaterialMenu(line.key)"
-                        (ngModelChange)="matchProduct(line, $event)"
-                        (keydown.escape)="openMaterialKey.set(null)"
-                        placeholder="Tìm SKU / tên sản phẩm..."
-                        [attr.aria-label]="'Tìm sản phẩm vật liệu dòng ' + ($index + 1)" />
-                      @if (mayEdit && openMaterialKey() === line.key) {
-                        <div class="service-editor__product-results" [id]="'service-material-results-' + line.key" role="listbox">
-                          @for (product of filteredMaterialOptions(line); track product.sku) {
-                            <button type="button" role="option" class="service-editor__product-option"
-                              (mousedown)="$event.preventDefault()"
-                              (click)="chooseMaterial(line, product)">
-                              @if (product.image) {
-                                <img class="service-editor__product-thumbnail" [src]="product.image"
-                                  alt="" loading="lazy" />
-                              } @else {
-                                <span class="service-editor__product-thumbnail service-editor__product-thumbnail--empty">Ảnh</span>
-                              }
-                              <span class="service-editor__product-description">
-                                <strong>{{ product.name }}</strong>
-                                <small>{{ product.sku }} · {{ productCategoryLabel(product.categoryId) }}</small>
-                              </span>
-                              <span class="service-editor__product-price">{{ formatMoney(product.price) }}đ</span>
-                            </button>
-                          } @empty {
-                            <p class="service-editor__product-empty">Không tìm thấy sản phẩm phù hợp.</p>
-                          }
-                        </div>
-                      }
+                    <div class="service-editor__product-description">
+                      <strong>{{line.query || line.sku || '—'}}</strong>
                     </div>
                   </td>
                   <td><input type="number" min="0.01" step="0.01" [disabled]="!mayEdit"
                     [(ngModel)]="line.quantity" (ngModelChange)="markMaterialDirty()"
-                    placeholder="Nhập số lượng" [attr.aria-label]="'Số lượng vật liệu dòng ' + ($index + 1)"/></td>
+                    [attr.aria-invalid]="line.quantity !== null && line.quantity < 0"
+                    placeholder="Nhập số lượng" [attr.aria-label]="'Số lượng vật liệu dòng ' + ($index + 1)"/>
+                    @if (line.quantity !== null && line.quantity < 0) {
+                      <small class="service-editor__price-error">Số lượng không được là số âm.</small>
+                    }</td>
                   <td>
                     <select [disabled]="!mayEdit" [(ngModel)]="line.unit" (ngModelChange)="markMaterialDirty()"
                       [attr.aria-label]="'Đơn vị vật liệu dòng ' + ($index + 1)">
@@ -361,22 +352,18 @@
                 </tr>
               }
               @if (!materials.length) {
-                <tr><td colspan="5" class="service-editor__no-rows">Chưa có vật liệu. Bạn có thể thêm từ SKU hiện có.</td></tr>
+                <tr><td colspan="5" class="service-editor__no-rows">Chưa có vật liệu. Nhấn Thêm vật liệu để chọn.</td></tr>
               }
             </tbody>
           </table>
         </div>
-        @if (mayEdit) {
-          <button type="button" class="service-editor__btn service-editor__btn--secondary service-editor__add-material"
-            (click)="addMaterial()">+ Thêm vật liệu</button>
-        }
       </section>
 
       <section class="service-editor__card" aria-labelledby="service-branches-title">
         <div class="service-editor__branch-section-heading">
           <h2 id="service-branches-title">Áp dụng tại chi nhánh</h2>
           @if (mayEdit) {
-            <button type="button" class="service-editor__btn service-editor__btn--secondary"
+            <button type="button" class="flash-editor__btn flash-editor__btn--outline"
               [disabled]="saving()" (click)="openBranchConfiguration()">
               Chọn chi nhánh để cấu hình
             </button>
@@ -411,7 +398,89 @@
     }
   </main>
 </app-admin-catalog-shell>
-@if (branchConfigFlowOpen()) {
+@if (materialPickerOpen()) {
+  <div class="flash-editor__overlay" role="presentation" (click)="closeMaterialPicker()">
+    <section #materialPickerDialog class="flash-editor__dialog service-editor__material-picker"
+      role="dialog" aria-modal="true" aria-labelledby="service-material-picker-title"
+      (click)="$event.stopPropagation()">
+      <header class="flash-editor__dialog-heading">
+        <h2 id="service-material-picker-title">Thêm vật liệu</h2>
+        <button type="button" class="flash-editor__close" aria-label="Đóng"
+          (click)="closeMaterialPicker()">
+          <img src="/assets/admin-inventory/close-outlined.svg" width="18" height="18" alt="">
+        </button>
+      </header>
+      <label class="flash-editor__picker-search">
+        <img src="/assets/service-catalog/search.svg" width="18" height="18" alt="">
+        <input #materialSearchInput type="search" [value]="materialPickerSearch()"
+          (input)="setMaterialPickerSearch(materialSearchInput.value)"
+          placeholder="Tìm tên sản phẩm hoặc SKU..." aria-label="Tìm sản phẩm theo tên, SKU, biến thể hoặc loại sử dụng">
+      </label>
+      <div class="flash-editor__picker-scroll">
+        @if (materialCatalogError()) {
+          <div class="flash-editor__picker-error" role="alert">
+            <span>{{materialCatalogError()}}</span>
+            <button type="button" class="flash-editor__btn flash-editor__btn--outline"
+              (click)="loadMaterialCatalog()">Thử lại</button>
+          </div>
+        }
+        <div class="service-editor__material-picker-scroll">
+          <table class="flash-editor__table flash-editor__picker-table service-editor__material-picker-table">
+            <thead><tr>
+              <th scope="col">Chọn</th>
+              <th scope="col">Sản phẩm</th>
+              <th scope="col">SKU / Biến thể</th>
+              <th scope="col">Loại sử dụng</th>
+            </tr></thead>
+            <tbody>
+              @for (item of materialPickerMatches().slice(0,materialPickerVisible()); track item.materialId) {
+                <tr>
+                  <td><input #choice type="checkbox"
+                    [checked]="materialPickerPending().includes(item.materialId) || materialAlreadyAdded(item.materialId)"
+                    [disabled]="materialAlreadyAdded(item.materialId)"
+                    (change)="toggleMaterialPending(item.materialId,choice.checked)"
+                    [attr.aria-label]="'Chọn vật liệu ' + item.name"></td>
+                  <td>
+                    <div class="flash-editor__product-info">
+                      @if (item.image) { <img [src]="item.image" width="36" height="36" alt=""> }
+                      <strong>{{item.productName}}</strong>
+                    </div>
+                  </td>
+                  <td class="service-editor__material-sku">
+                    <span>{{item.sku}}</span>
+                    <small>{{item.variantLabel || 'Mặc định'}}</small>
+                  </td>
+                  <td class="service-editor__material-usage">{{usageTypeLabel(item.usageType)}}</td>
+                </tr>
+              } @empty {
+                @if (!materialCatalogLoading() && !materialCatalogError()) {
+                  <tr><td colspan="4" class="flash-editor__no-products">Không tìm thấy sản phẩm phù hợp.</td></tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (materialCatalogLoading()) {
+          <p class="flash-editor__muted" role="status">Đang tải vật liệu...</p>
+        }
+        @if (!materialCatalogLoading() && !materialCatalogError() &&
+             materialPickerMatches().length > materialPickerVisible()) {
+          <button type="button" class="flash-editor__btn flash-editor__btn--tertiary flash-editor__load-more"
+            (click)="materialPickerVisible.set(materialPickerVisible()+20)">Tải thêm vật liệu</button>
+        }
+      </div>
+      <footer class="flash-editor__dialog-actions">
+        <span>Đã chọn: {{materialPickerPending().length}} vật liệu</span>
+        <button type="button" class="flash-editor__btn flash-editor__btn--outline"
+          (click)="closeMaterialPicker()">Hủy bỏ</button>
+        <button type="button" class="flash-editor__btn flash-editor__btn--primary"
+          [disabled]="!materialPickerPending().length || materialCatalogLoading()"
+          (click)="applyMaterials()">Thêm vật liệu</button>
+      </footer>
+    </section>
+  </div>
+}
+@if (branchConfigFlowOpen() && canConfigureBranch()) {
   <app-service-branch-config-flow
     [service]="branchConfigService"
     [draftMode]="isNew"

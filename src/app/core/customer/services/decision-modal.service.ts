@@ -1,11 +1,16 @@
 import { Injectable, signal } from '@angular/core';
 
-export type DecisionModalType = 'delete' | 'cancel' | 'success';
+/** notice: icon cảnh báo như delete/cancel nhưng nút vàng như success (thông báo, không phải thao tác nguy hiểm). */
+export type DecisionModalType = 'delete' | 'cancel' | 'success' | 'notice';
 
 export interface DecisionModalOptions {
   type?: DecisionModalType;
   title?: string;
   message?: string;
+  /** Phần in đậm nối ngay sau message, vd. message "Bạn chắc chắn muốn " + messageBold "Ẩn hồ sơ của Ted" + messageSuffix "?" */
+  messageBold?: string;
+  image?: string;
+  messageSuffix?: string;
   cancelLabel?: string;
   confirmLabel?: string;
   onConfirm?: (() => void) | null;
@@ -15,6 +20,7 @@ export interface DecisionModalOptions {
 export interface DecisionModalState extends Required<Omit<DecisionModalOptions, 'onConfirm' | 'onCancel'>> {
   open: boolean;
   variant?: string;
+  image: string;
   onConfirm: (() => void) | null;
   onCancel: (() => void) | null;
 }
@@ -39,6 +45,13 @@ const DEFAULT_COPY: Record<DecisionModalType, Partial<DecisionModalState>> = {
     confirmLabel: 'Tiếp tục',
     variant: 'success',
   },
+  notice: {
+    title: 'THÔNG BÁO',
+    message: '',
+    cancelLabel: 'Quay về Trang chủ',
+    confirmLabel: 'Đóng',
+    variant: 'notice',
+  },
 };
 
 const INITIAL_STATE: DecisionModalState = {
@@ -46,6 +59,9 @@ const INITIAL_STATE: DecisionModalState = {
   type: 'delete',
   title: '',
   message: '',
+  messageBold: '',
+  messageSuffix: '',
+  image: '',
   cancelLabel: '',
   confirmLabel: '',
   onConfirm: null,
@@ -86,6 +102,10 @@ export class DecisionModalService {
 
   readonly showSuccessModal = (options: DecisionModalOptions = {}): void => {
     this.openDecisionModal({ type: 'success', ...options });
+  }
+
+  readonly showNotice = (options: DecisionModalOptions = {}): void => {
+    this.openDecisionModal({ type: 'notice', ...options });
   }
 
   readonly close = (): void => {

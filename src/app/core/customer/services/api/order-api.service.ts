@@ -72,6 +72,16 @@ function normalizeOrderProduct(item: any = {}) {
   };
 }
 
+/** Preserve an explicit recipient; never substitute generic placeholder names. */
+function verifiedRecipientName(...values: unknown[]): string {
+  for (const value of values) {
+    if (typeof value !== "string") continue;
+    const text = value.trim();
+    if (text && !/^(khách hàng|guest customer|thành viên|customer)$/i.test(text)) return text;
+  }
+  return "";
+}
+
 export function normalizeOrder(order: any = {}) {
   const rawItems = Array.isArray(order.items) ? order.items : (Array.isArray(order.order_items) ? order.order_items : []);
   const products = rawItems.map(normalizeOrderProduct);
@@ -99,7 +109,12 @@ export function normalizeOrder(order: any = {}) {
     discount,
     totalAmount,
     recipient: {
-      name: order.recipient_name || order.shippingAddress?.recipientName || order.shippingAddress?.fullName || order.contactSnapshot?.fullName || order.address?.recipient_name || "Khách hàng",
+      name: verifiedRecipientName(
+        order.recipient_name, order.shippingAddress?.recipientName, order.shippingAddress?.fullName,
+        order.recipient?.name, order.address?.recipient_name,
+        order.contactSnapshot?.fullName, order.contactSnapshot?.name,
+        order.customer?.fullName, order.customer?.name,
+      ) || "—",
       phone: order.recipient_phone || order.shippingAddress?.phone || order.contactSnapshot?.phone || order.address?.recipient_phone || "",
       address: order.shipping_address || (order.shippingAddress ? [order.shippingAddress.addressLine, order.shippingAddress.line1, order.shippingAddress.ward, order.shippingAddress.district, order.shippingAddress.city].filter(Boolean).join(", ") : "") || order.address?.address_line || (typeof order.shippingAddress === 'string' ? order.shippingAddress : "") || "Tại cửa hàng",
     },
@@ -118,15 +133,42 @@ export function toCheckoutItems(items: any) {
 export class OrderApiService {
   private readonly http = inject(CustomerHttpService);
 
-  async checkoutOrder({ addressId, selectedAddress, paymentMethod, voucherCode, note, items, cartId }: any) {
+  async checkoutOrder({ addressId, selectedAddress, customerProfile, paymentMethod, voucherCode, note, items, cartId }: any) {
     const address = selectedAddress || {};
+    // Address API normalizes the recipient as `name`, not necessarily `fullName`.
+    const recipientName = verifiedRecipientName(
+      address.recipientName, address.fullName, address.name, address.receiverName,
+      customerProfile?.fullName,
+    );
+    const phone = String(address.phone || address.receiverPhone || customerProfile?.phone || "").trim();
+    if (!recipientName || !phone) {
+      throw new Error("Vui lòng cập nhật tên và số điện thoại người nhận trước khi đặt hàng.");
+    }
+    // Use the exact saved address shown in "ĐỊA CHỈ NHẬN HÀNG".
+    // Some BE addresses contain only ward/district/city, so normalizeAddress()
+    // has a valid displayAddress even when addressLine is empty.
+    const deliveryAddress = String(
+      address.addressLine || address.address || address.street ||
+      address.displayAddress || address.raw?.address_line ||
+      address.raw?.addressLine || address.raw?.line1 || address.raw?.addressDetail || ""
+    ).trim();
+    if (!deliveryAddress) {
+      throw new Error("Vui lòng nhập địa chỉ nhận hàng trước khi đặt hàng.");
+    }
+    // The contact snapshot identifies the ordering account. It must never
+    // fall back to the selected delivery address's recipient name.
+    // If the signed-in profile has no verified name, BE resolves the live
+    // customer account from the authenticated actor.
+    const customerName = verifiedRecipientName(customerProfile?.fullName);
     const payload: any = {
       addressId: addressId || undefined,
       cartId: cartId || undefined,
+      contact: customerName ? { fullName: customerName, phone: String(customerProfile?.phone || phone).trim() } : undefined,
       shippingAddress: {
-        fullName: address.fullName || address.receiverName || "Khách hàng",
-        phone: address.phone || address.receiverPhone || "0912345678",
-        addressLine: address.addressLine || address.address || address.street || "Địa chỉ nhận hàng",
+        recipientName,
+        fullName: recipientName,
+        phone,
+        addressLine: deliveryAddress,
         ward: address.ward || "",
         district: address.district || "",
         city: address.city || "Hồ Chí Minh",
@@ -218,6 +260,34 @@ export class OrderApiService {
       payment_method: payload.paymentMethod || payload.payment_method || "online",
     });
     return assertSuccess(response);
+  }
+
+  /**
+   * Gửi yêu cầu trả hàng hoàn tiền (multipart: thông tin yêu cầu + ảnh/video minh chứng).
+   * BE tạo bản ghi Return (xem admin: /order-returns) với trạng thái REQUESTED.
+   */
+  async createReturnRequest(orderId: any, { items, reason, description, returnMethod, pickupAddress, files }: any) {
+    const formData = new FormData();
+    formData.append("items", JSON.stringify(
+      (items || []).map((item: any) => ({ orderItemId: item.orderItemId, quantity: item.quantity })),
+    ));
+    formData.append("reason", reason || "");
+    formData.append("description", description || "");
+    formData.append("returnMethod", returnMethod || "pickup");
+    if (pickupAddress) formData.append("pickupAddress", JSON.stringify(pickupAddress));
+    (files || []).forEach((file: File) => formData.append("evidence", file));
+
+    try {
+      const response = await this.http.post(`/orders/${orderId}/returns`, formData);
+      return assertSuccess(response);
+    } catch (err: any) {
+      if (err?.status === 404) {
+        formData.append("orderId", String(orderId));
+        const response = await this.http.post("/order-returns", formData);
+        return assertSuccess(response);
+      }
+      throw err;
+    }
   }
 
   async canReviewOrderProduct(productId: any) {

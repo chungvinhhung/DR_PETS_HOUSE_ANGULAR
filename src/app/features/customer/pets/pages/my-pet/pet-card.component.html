@@ -1,33 +1,49 @@
-<div class="relative aspect-[216/192] w-full overflow-hidden bg-[#ececf3]">
+<div class="pet-card__box">
   @if (image()) {
-    <img [attr.src]="image()" [attr.alt]="pet().name" class="h-full w-full object-cover" loading="lazy" />
+    <img class="pet-card__name" [src]="image()" [alt]="pet().name || 'Thú cưng'" />
   } @else {
-    <div class="flex h-full w-full items-center justify-center text-5xl text-[#c4c4d0]" aria-hidden="true">🐾</div>
+    <div class="flex h-full w-full items-center justify-center text-4xl">🐾</div>
   }
+
   <span
-    class="absolute right-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium leading-4"
+    class="pet-card__text"
     [style.background-color]="badge().bg"
     [style.color]="badge().text"
   >
-    <span class="h-1.5 w-1.5 rounded-full" [style.background-color]="badge().dot"></span>
+    <span
+      class="pet-card__text-2"
+      [style.background-color]="badge().dot"
+    ></span>
     {{ statusLabel() }}
   </span>
 </div>
-<div class="flex flex-1 flex-col px-4 pb-4 pt-4">
-  <div class="flex items-start justify-between gap-2">
-    <div class="min-w-0">
-      <h3 class="truncate text-[20px] font-bold leading-7 text-[#18181b]">{{ pet().name }}</h3>
-      <p class="mt-0.5 truncate text-[14px] leading-5 text-[#52525b]">{{ pet().breed || 'Chưa phân loại' }}</p>
-      <p class="mt-0.5 truncate text-[14px] leading-5 text-[#52525b]">{{ ageText() }}</p>
+
+<div class="pet-card__stack">
+  <div class="pet-card__row">
+    <div class="pet-card__box-2">
+      <h3 class="pet-card__name-2">{{ pet().name }}</h3>
+      <p class="pet-card__breed">{{ subtitle() }}</p>
     </div>
-    <app-gender-icon [gender]="pet().gender" className="mt-1 h-5 w-5 shrink-0 text-[#52525b]" />
+    <app-gender-icon [gender]="pet().gender" className="mt-1 h-5 w-5 shrink-0" ></app-gender-icon>
   </div>
-  <div class="mt-5 border-t border-[#e4e4e7] pt-2.5">
-    <p class="text-[12px] leading-4 tracking-[0.2px] text-[#71717a]">Khám gần nhất</p>
-    <p [class]="`mt-0.5 text-[14px] leading-5 ${checkup() === 'Chưa khám' ? 'italic text-[#a1a1aa]' : 'text-[#27272a]'}`">{{ checkup() }}</p>
+
+  <div class="pet-card__box-3">
+    <p class="pet-card__kham-gan-nhat-text">Khám gần nhất</p>
+    <p
+      class="mt-0.5 text-[14px] leading-5"
+      [class]="checkup() === 'Chưa khám' ? 'text-[#71717a]' : 'font-medium text-[#18181b]'"
+    >
+      {{ checkup() }}
+    </p>
   </div>
-  <a
-    [appCustomerLink]="`/thu-cung-cua-toi/${petId()}`"
-    class="mt-4 flex h-8 w-full items-center justify-center rounded-md bg-[#06105a] text-[13px] font-medium text-white transition hover:bg-[#0d1a7a]"
-  >Xem chi tiết</a>
+
+  @if (hidden()) {
+    <span class="pet-card__pet-id-link pet-card__pet-id-link--hidden">
+      Xem chi tiết
+    </span>
+  } @else {
+    <span class="pet-card__pet-id-link">
+      Xem chi tiết
+    </span>
+  }
 </div>

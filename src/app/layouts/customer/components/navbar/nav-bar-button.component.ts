@@ -10,6 +10,7 @@ import { ReactStyleDirective } from '../../../../shared/customer/directives/reac
   standalone: true,
   imports: [ReactStyleDirective],
   templateUrl: './nav-bar-button.component.html',
+  styleUrl: './nav-bar-button.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

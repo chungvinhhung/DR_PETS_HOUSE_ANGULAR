@@ -11,6 +11,7 @@ import { medicalAssets } from '../../data/medical-treatment-data';
   standalone: true,
   imports: [CustomerLinkDirective],
   templateUrl: './medical-hero.component.html',
+  styleUrl: './medical-hero.component.scss',
   host: {
     'class': 'medical-hero',
   },

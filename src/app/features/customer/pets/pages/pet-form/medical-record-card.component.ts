@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
   standalone: true,
   imports: [],
   templateUrl: './medical-record-card.component.html',
+  styleUrl: './medical-record-card.component.scss',
   host: {
     'class': 'flex items-center justify-between p-3 border border-slate-100 rounded-lg bg-slate-50/50 hover:bg-slate-50 transition',
   },

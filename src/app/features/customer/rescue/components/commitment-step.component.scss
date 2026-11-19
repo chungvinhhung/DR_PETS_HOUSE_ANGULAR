@@ -1,0 +1,7 @@
+.commitment-step__row {
+  @apply flex w-full items-center gap-4 rounded-[4px] border border-[rgba(186,26,26,0.2)] bg-[rgba(255,218,214,0.3)] px-[25px] py-[11px];
+}
+
+.commitment-step__adoption-commitment-note {
+  @apply text-justify text-[13px] font-semibold leading-5 tracking-[0.28px] text-[#93000A];
+}

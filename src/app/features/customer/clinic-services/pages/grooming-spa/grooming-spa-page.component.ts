@@ -4,6 +4,7 @@ import { NavBarComponent } from '../../../../../layouts/customer/components/navb
 import { ScaledCanvasLayoutComponent } from '../../../../../shared/customer/components/scaled-canvas-layout/scaled-canvas-layout.component';
 import { GroomingCanvasComponent } from './grooming-canvas.component';
 import { ServicePricingModalComponent } from '../../components/service-pricing-modal/service-pricing-modal.component';
+import { FooterComponent } from '../../../../../layouts/customer/components/footer/footer.component';
 
 /**
  * GroomingSpaPage — chuyển từ React: src/pages/Services/GroomingSpaPage.jsx
@@ -11,8 +12,9 @@ import { ServicePricingModalComponent } from '../../components/service-pricing-m
 @Component({
   selector: 'div[app-grooming-spa-page]',
   standalone: true,
-  imports: [NavBarComponent, ScaledCanvasLayoutComponent, GroomingCanvasComponent, ServicePricingModalComponent],
+  imports: [NavBarComponent, ScaledCanvasLayoutComponent, GroomingCanvasComponent, ServicePricingModalComponent, FooterComponent],
   templateUrl: './grooming-spa-page.component.html',
+  styleUrl: './grooming-spa-page.component.scss',
   host: {
     'class': 'min-h-screen bg-[#f5f5f5]',
   },

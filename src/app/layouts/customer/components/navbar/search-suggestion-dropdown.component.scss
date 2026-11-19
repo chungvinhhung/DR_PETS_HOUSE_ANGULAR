@@ -1,0 +1,23 @@
+.search-suggestion-dropdown__panel-slide-in {
+  @apply absolute right-0 top-[41px] z-[80] flex w-[466px] max-w-[calc(100vw-24px)] flex-col items-start overflow-hidden rounded-[4px] pt-5 shadow-[0px_10px_7.5px_rgba(0,0,0,0.1),0px_4px_3px_rgba(0,0,0,0.1)];
+}
+
+.search-suggestion-dropdown__stack {
+  @apply flex w-full flex-col bg-[#FFFDE7] pt-1;
+}
+
+.search-suggestion-dropdown__section {
+  @apply flex w-full flex-col gap-3 px-4 py-[10px];
+}
+
+.search-suggestion-dropdown__goi-y-phu-title {
+  @apply font-['Roboto'] text-[16px] font-bold leading-6 tracking-[0.15px] text-[#353535];
+}
+
+.search-suggestion-dropdown__row {
+  @apply flex w-full items-start justify-center gap-3;
+}
+
+.search-suggestion-dropdown__stack-2 {
+  @apply flex w-full flex-col items-center px-4 py-[10px];
+}

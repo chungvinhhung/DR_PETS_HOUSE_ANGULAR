@@ -1,0 +1,19 @@
+.search-results-page__main {
+  @apply bg-gradient-to-b from-white to-[#E5F6FD] px-4 pt-6 sm:px-8 xl:px-[120px];
+}
+
+.search-results-page__stack {
+  @apply mx-auto flex w-full max-w-page flex-col items-start gap-6 lg:flex-row;
+}
+
+.search-results-page__section {
+  @apply flex w-full min-w-0 flex-1 flex-col gap-8 pb-[75px];
+}
+
+.search-results-page__dang-tai-ket-el {
+  @apply py-20 text-center text-[18px] font-semibold text-[#0D47A1];
+}
+
+.search-results-page__load-error {
+  @apply py-20 text-center text-[18px] font-semibold text-[#D32F2F];
+}

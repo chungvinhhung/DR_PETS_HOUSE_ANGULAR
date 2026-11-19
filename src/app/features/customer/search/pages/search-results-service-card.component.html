@@ -1,21 +1,21 @@
-<div class="h-full w-[192px] shrink-0 overflow-hidden">
-  <img [attr.src]="service().image" [attr.alt]="service().title" class="h-full w-full object-cover" />
+<div class="search-results-service-card__box">
+  <img [attr.src]="service().image" [attr.alt]="service().title" class="search-results-service-card__title" />
 </div>
-<div class="flex min-w-0 flex-1 flex-col justify-between p-4">
+<div class="search-results-service-card__stack">
   <div>
-    <h3 class="text-[18px] font-bold leading-7 text-black/87">{{ service().title }}</h3>
+    <h3 class="search-results-service-card__text-black-87 text-black/87">{{ service().title }}</h3>
     @if (steps()) {
-      <ol class="mt-1 list-decimal pl-6 text-[16px] leading-6 text-[#6C6D71]">
+      <ol class="search-results-service-card__list">
         @for (step of steps(); track step) {
           <li>{{ step }}</li>
         }
       </ol>
     } @else {
-      <p class="mt-1 text-[16px] leading-7 text-black/60">{{ service().description }}</p>
+      <p class="search-results-service-card__description">{{ service().description }}</p>
     }
   </div>
-  <div class="flex items-center justify-between">
-    <p class="text-[18px] font-bold leading-7 text-[#0D47A1]">{{ formatServicePrice(service().priceValue ?? parseServicePrice(service().price)) }}</p>
-    <a appCustomerLink="/dat-lich" class="btn-yellow h-[35px] rounded-full px-[22px] text-[16px]">Đặt lịch ngay</a>
+  <div class="search-results-service-card__row">
+    <p class="search-results-service-card__price">{{ formatServicePrice(service().priceValue ?? parseServicePrice(service().price)) }}</p>
+    <a appCustomerLink="/dat-lich" class="search-results-service-card__btn-yellow btn-yellow">Đặt lịch ngay</a>
   </div>
 </div>

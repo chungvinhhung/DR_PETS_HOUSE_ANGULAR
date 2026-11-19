@@ -6,13 +6,13 @@
   [className]="'h-6 shrink-0'"
 />
 <p
-  class="mt-2 shrink-0 overflow-hidden text-[16px] leading-7 text-[#333] line-clamp-4"
+  class="feedback-card__quote"
   [appStyle]="{ height: FEEDBACK_QUOTE_HEIGHT }"
 >“{{ review().text }}”</p>
-<div class="mt-3 flex shrink-0 items-center gap-4" [appStyle]="{ height: FEEDBACK_AUTHOR_HEIGHT }">
-  <img [attr.src]="review().avatar" alt="" class="h-11 w-11 shrink-0 rounded-full object-cover" />
-  <div class="min-w-0 flex-1">
-    <p class="truncate text-[24px] font-medium leading-6 text-[#02000F]">{{ review().name }}</p>
-    <p class="truncate text-[16px] leading-7 text-[#6C6D71]">{{ review().company }}</p>
+<div class="feedback-card__author" [appStyle]="{ height: FEEDBACK_AUTHOR_HEIGHT }">
+  <img [attr.src]="review().avatar" alt="" class="feedback-card__avatar" />
+  <div class="feedback-card__author-info">
+    <p class="feedback-card__name">{{ review().name }}</p>
+    <p class="feedback-card__company">{{ review().company }}</p>
   </div>
 </div>

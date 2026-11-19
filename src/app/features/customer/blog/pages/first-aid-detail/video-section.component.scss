@@ -1,0 +1,122 @@
+// Breakpoints chuẩn của Tailwind
+$screen-sm: 640px;
+$screen-lg: 1024px;
+
+.video-info {
+  width: 100%;
+
+  @media (min-width: $screen-lg) {
+    width: 532px;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 40px; // leading-10
+
+    @media (min-width: $screen-sm) {
+      font-size: 32px;
+    }
+  }
+
+  &__rich-desc,
+  &__desc {
+    margin-top: 16px; // mt-4
+    font-size: 16px;
+    line-height: 24px; // leading-6
+  }
+
+  &__highlights {
+    margin-top: 16px; // mt-4
+    display: flex;
+    flex-direction: column;
+    gap: 8px; // space-y-2
+    list-style: none;
+    padding: 0;
+  }
+
+  &__highlight-item {
+    display: flex;
+    align-items: center;
+    gap: 8px; // gap-2
+    font-size: 16px;
+    line-height: 24px; // leading-6
+
+    // Hỗ trợ truyền class vào component icon con
+    ::ng-deep .icon-check {
+      width: 16px; // w-4
+      height: 16px; // h-4
+      flex-shrink: 0;
+    }
+  }
+}
+
+// Style dùng chung cho thẻ <video>, <a>, và <button>
+.video-media {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 32px;
+  background-color: #000000;
+
+  @media (min-width: $screen-lg) {
+    margin-left: 40px; // lg:ml-10
+    width: 500px;
+    height: 281px;
+  }
+
+  &--external,
+  &--trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 16 / 9; // aspect-video
+    border: 1px solid #c1c6d5;
+
+    @media (min-width: $screen-lg) {
+      aspect-ratio: auto; // lg:aspect-auto
+    }
+  }
+
+  &--external {
+    gap: 12px; // gap-3
+    color: #ffffff;
+    text-decoration: none;
+
+    ::ng-deep .icon-play-lg {
+      width: 28px; // w-7
+      height: 28px; // h-7
+    }
+  }
+
+  &--trigger {
+    cursor: pointer;
+
+    .play-button-circle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 80px; // w-20
+      height: 80px; // h-20
+      border-radius: 9999px; // rounded-full
+      background-color: #fdd835;
+      color: #000000;
+      transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+
+      &:hover {
+        transform: scale(1.05);
+      }
+
+      &.is-playing {
+        transform: scale(0.9);
+      }
+
+      ::ng-deep .icon-play-btn {
+        margin-left: 4px; // ml-1
+        width: 28px; // w-7
+        height: 28px; // h-7
+        fill: currentColor;
+      }
+    }
+  }
+}

@@ -1,0 +1,51 @@
+.pet-info-card__row {
+  @apply mb-5 flex items-center justify-between gap-4;
+}
+
+.pet-info-card__title {
+  @apply text-xl font-black text-blue-900;
+}
+
+.pet-info-card__grid {
+  @apply grid gap-5 md:grid-cols-6;
+}
+
+.pet-info-card__khi-chon-khac-dung {
+  @apply block md:col-span-2;
+}
+
+.pet-info-card__loai-text {
+  @apply mb-2 block text-sm font-medium text-slate-900;
+}
+
+.pet-info-card__text {
+  @apply text-red-500;
+}
+
+.pet-info-card__select {
+  @apply h-full w-[96px] shrink-0 border-0 bg-transparent pl-4 pr-1 text-sm text-slate-800 outline-none;
+}
+
+.pet-info-card__text-2 {
+  @apply h-6 w-px shrink-0 bg-slate-300;
+}
+
+.pet-info-card__box {
+  @apply md:col-span-3;
+}
+
+.pet-info-card__gioi-tinh-text {
+  @apply mb-3 text-sm font-medium text-slate-900;
+}
+
+.pet-info-card__row-2 {
+  @apply flex flex-wrap gap-5 text-sm;
+}
+
+.pet-info-card__label {
+  @apply md:col-span-6;
+}
+
+.pet-info-card__h-15 {
+  @apply w-full text-sm resize-none rounded-2xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-900;
+}

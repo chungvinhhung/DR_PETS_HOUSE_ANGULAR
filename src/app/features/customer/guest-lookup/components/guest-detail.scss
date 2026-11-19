@@ -1,0 +1,56 @@
+/* Dùng chung cho GuestOrderDetail và GuestAppointmentDetail. */
+:host {
+  @apply flex flex-col gap-5 font-['Roboto'];
+}
+
+.guest-detail__header {
+  @apply flex flex-col gap-2 border-b border-[#eef2f4] pb-4 sm:flex-row sm:items-start sm:justify-between;
+}
+
+.guest-detail__eyebrow {
+  @apply text-xs font-semibold uppercase tracking-wide text-[#7e8085];
+}
+
+.guest-detail__code {
+  @apply text-[22px] font-bold text-[#06105a] sm:text-[26px];
+}
+
+.guest-detail__status {
+  @apply w-fit rounded-full px-3 py-1 text-sm font-semibold;
+}
+
+.guest-detail__grid {
+  @apply grid gap-4 md:grid-cols-2;
+}
+
+.guest-detail__section {
+  @apply flex flex-col gap-2 rounded-xl border border-[#e3edf2] p-4;
+}
+
+.guest-detail__section-title {
+  @apply text-sm font-semibold uppercase tracking-wide text-[#06105a];
+}
+
+.guest-detail__row {
+  @apply flex justify-between gap-4 text-sm text-[#4f5359];
+
+  span:last-child {
+    @apply text-right font-medium text-[#060b16];
+  }
+}
+
+.guest-detail__total {
+  @apply flex justify-between gap-4 border-t border-[#eef2f4] pt-2 text-base font-bold text-[#06105a];
+}
+
+.guest-detail__line {
+  @apply flex items-center gap-3 border-b border-[#eef2f4] py-3 last:border-b-0;
+}
+
+.guest-detail__thumb {
+  @apply size-14 shrink-0 rounded-lg border border-[#eef2f4] object-cover;
+}
+
+.guest-detail__muted {
+  @apply text-sm text-[#7e8085];
+}

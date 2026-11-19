@@ -11,6 +11,7 @@ import { informationStepCheck } from './booking-page.helpers';
   standalone: true,
   imports: [AssetIconComponent],
   templateUrl: './stepper.component.html',
+  styleUrl: './stepper.component.scss',
   host: {
     'class': 'mx-auto flex w-full max-w-[320px] items-start justify-center px-0 py-5 md:max-w-[688px] md:px-0 lg:max-w-xl lg:px-4',
   },

@@ -12,6 +12,7 @@ import { CheckoutComponent } from '../components/checkout.component';
   standalone: true,
   imports: [NavBarComponent, CheckoutComponent],
   templateUrl: './checkout-page.component.html',
+  styleUrl: './checkout-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white',
   },

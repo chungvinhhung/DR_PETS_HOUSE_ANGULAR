@@ -1,0 +1,67 @@
+.guest-order-success-overlay__overlay-fade-in {
+  @apply pointer-events-auto fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(6,16,90,0.2)] p-4 backdrop-blur-[6px];
+}
+
+.guest-order-success-overlay__panel-slide-in {
+  @apply relative h-[609px] max-h-[calc(100vh-32px)] w-[1023px] max-w-[calc(100vw-32px)];
+}
+
+.guest-order-success-overlay__layer {
+  @apply absolute inset-0 overflow-hidden rounded-[10px] border border-[#ababab] bg-white shadow-[0px_100px_203px_0px_rgba(0,0,0,0.07),0px_22.336px_45.343px_0px_rgba(0,0,0,0.04),0px_6.65px_13.5px_0px_rgba(0,0,0,0.03)];
+}
+
+.guest-order-success-overlay__card-background {
+  @apply size-full object-cover;
+}
+
+.guest-order-success-overlay__layer-2 {
+  @apply absolute left-1/2 top-1/2 flex w-full max-w-[1023px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-10 px-6 py-[50px];
+}
+
+.guest-order-success-overlay__success-icon {
+  @apply size-[69px] shrink-0;
+}
+
+.guest-order-success-overlay__stack {
+  @apply flex flex-col items-center gap-2;
+}
+
+.guest-order-success-overlay__dat-hang-thanh-title {
+  @apply whitespace-nowrap font-['Roboto'] text-[48px] font-bold leading-[1.167] text-[#3d3d3d];
+}
+
+.guest-order-success-overlay__don-dat-hang-text {
+  @apply w-[481px] max-w-full text-center font-['Roboto'] text-[16px] leading-[1.5] tracking-[0.15px] text-[#949494];
+}
+
+.guest-order-success-overlay__stack-2 {
+  @apply flex min-h-[74px] w-[338px] max-w-full flex-col gap-[10px] rounded-[4px] bg-[#f5f5f5] p-[10px] font-['Roboto'] text-[16px] leading-[1.5] tracking-[0.15px];
+}
+
+.guest-order-success-overlay__row {
+  @apply flex w-full items-start gap-[15px];
+}
+
+.guest-order-success-overlay__ten-dang-nhap-text {
+  @apply h-[23px] w-[112px] shrink-0 text-[rgba(0,0,0,0.6)];
+}
+
+.guest-order-success-overlay__username {
+  @apply h-[23px] text-[rgba(0,0,0,0.87)];
+}
+
+.guest-order-success-overlay__password {
+  @apply min-w-0 flex-1 text-[rgba(0,0,0,0.87)];
+}
+
+.guest-order-success-overlay__row-2 {
+  @apply flex flex-wrap items-center justify-center gap-5;
+}
+
+.guest-order-success-overlay__tro-ve-trang-text {
+  @apply whitespace-nowrap font-['Roboto'] text-[15px] font-bold uppercase leading-[26px] tracking-[0.46px] text-black;
+}
+
+.guest-order-success-overlay__dang-nhap-text {
+  @apply whitespace-nowrap font-['Roboto'] text-[15px] font-medium uppercase leading-[26px] tracking-[0.46px] text-black;
+}

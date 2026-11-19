@@ -9,6 +9,7 @@ import { NgTemplateOutlet } from '@angular/common';
   standalone: true,
   imports: [NgTemplateOutlet],
   templateUrl: './user-profile-field.component.html',
+  styleUrl: './user-profile-field.component.scss',
   host: {
     'class': 'block min-w-0',
   },

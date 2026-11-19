@@ -2,7 +2,7 @@
 <main class="assign-page">
   <nav class="assign-crumb" aria-label="Đường dẫn"><span>Vận hành</span><span aria-hidden="true">›</span><a routerLink="/admin/staff">Nhân sự</a><span aria-hidden="true">›</span><a routerLink="/admin/staff/schedule">Lịch làm việc</a><span aria-hidden="true">›</span><strong aria-current="page">Phân ca</strong></nav>
   <header class="assign-header"><h1>Phân ca theo tuần</h1><div><button type="button" class="assign-cancel" (click)="requestClose()">Hủy</button><button type="button" class="assign-save" (click)="validatePreview()">Kiểm tra phân ca</button></div></header>
-  <p class="assign-note">Danh sách nhân viên và ca hiện có lấy từ API Render. Thêm ca vẫn là bản nháp, chưa ghi Backend.</p>
+  <p class="assign-note">Bạn có thể chuẩn bị ca mới trong bản nháp. Chỉ ca đã lưu mới xuất hiện trên lịch làm việc.</p>
   @if (staffApi.loading() || staffApi.shiftLoading()) { <p role="status">Đang tải nhân sự và ca làm...</p> }
   @if (staffApi.error()) { <p role="alert">{{ staffApi.error() }}</p> }
   @if (staffApi.shiftError()) { <p role="alert">{{ staffApi.shiftError() }}</p> }
@@ -18,7 +18,7 @@
     </app-admin-staff-week-nav></div>
     @if (!selectedStaff()) { <p class="assign-empty">Chọn nhân viên để bắt đầu phân ca.</p> }
     @else {
-      <div class="assign-table"><table><thead><tr><th>Ngày</th><th>Ca đã phân công (Backend)</th><th>Ca thêm trong bản nháp</th><th>Thêm ca</th></tr></thead>
+      <div class="assign-table"><table><thead><tr><th>Ngày</th><th>Ca đã phân công</th><th>Ca thêm trong bản nháp</th><th>Thêm ca</th></tr></thead>
       <tbody>@for (day of days(); track day) {
         <tr><td>{{ day }}</td><td>@for (shift of otherShifts(day); track $index) { <div class="assign-existing">{{ shift.shiftName }} · {{ shift.time }} · {{ shift.branch }}</div> } @empty { — }</td>
         <td>@for (shift of shiftsFor(day); track shift) { <div class="assign-draft">{{ shift.template }} · {{ shift.start }}–{{ shift.end }} · {{ shift.branch }} <button type="button" (click)="remove(shift)" aria-label="Bỏ ca trong bản nháp">×</button></div> } @empty { — }</td>

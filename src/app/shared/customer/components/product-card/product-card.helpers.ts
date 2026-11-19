@@ -4,6 +4,7 @@
  */
 import { productCardImages } from '../../assets/product-card-assets';
 import { formatVnd, getNumericPrice } from '../../utils/currency';
+import { buildProductPath } from '../../utils/slug';
 
 export function getFirstValue(...values: any[]) {
   return values.find((value: any) => value !== undefined && value !== null && value !== "");
@@ -16,13 +17,10 @@ export function formatProductPrice(value: any) {
   return formatVnd(value);
 }
 
+/** Link tới trang chi tiết: luôn dùng URL slug chuẩn SEO /san-pham/<ten>-i.<id>. */
 export function buildProductHref(product: any, fallbackHref: any) {
-  const slugOrId = getFirstValue(product?.slug, product?.id, product?.productId);
-  if (fallbackHref) {
-    return slugOrId && fallbackHref === "/product-details"
-      ? `${fallbackHref}/${slugOrId}`
-      : fallbackHref;
-  }
-  return slugOrId ? `/product-details/${slugOrId}` : undefined;
+  const hasId = Boolean(getFirstValue(product?.id, product?.productId));
+  if (fallbackHref && fallbackHref !== "/product-details") return fallbackHref;
+  return hasId ? buildProductPath(product) : fallbackHref || undefined;
 }
 

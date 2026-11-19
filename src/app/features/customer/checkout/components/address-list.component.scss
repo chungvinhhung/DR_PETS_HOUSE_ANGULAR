@@ -1,0 +1,23 @@
+.address-list__chua-co-dia-text {
+  @apply rounded-[4px] bg-[rgba(25,118,210,0.04)] p-[10px] text-[14px] leading-5 text-[#42474F];
+}
+
+.address-list__stack {
+  @apply flex flex-col gap-[16px];
+}
+
+.address-list__row {
+  @apply flex w-full items-start gap-[5px] rounded-[4px] bg-[rgba(25,118,210,0.04)] p-[10px];
+}
+
+.address-list__name {
+  @apply text-[16px] leading-[24px] tracking-[0.15px] text-[#191C1E];
+}
+
+.address-list__display-address {
+  @apply text-[14px] leading-[20px] tracking-[0.17px] text-[#42474F];
+}
+
+.address-list__mac-dinh-text {
+  @apply w-fit rounded-[2px] bg-[#D2E4FF] px-2 py-1 text-[12px] leading-[20px] tracking-[0.4px] text-[#001C37];
+}

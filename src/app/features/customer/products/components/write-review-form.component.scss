@@ -1,0 +1,51 @@
+.write-review-form__stack {
+  @apply flex min-w-0 flex-1 flex-col gap-[30px];
+}
+
+.write-review-form__row {
+  @apply flex flex-wrap items-start gap-8;
+}
+
+.write-review-form__stack-2 {
+  @apply flex w-full max-w-[400px] flex-col gap-[10px];
+}
+
+.write-review-form__ten-cua-ban-label {
+  @apply font-['Roboto'] text-[16px] leading-[1.705] text-[#3d3d3d];
+}
+
+.write-review-form__stack-3 {
+  @apply flex min-w-[280px] flex-col pt-6 gap-[20px];
+}
+
+.write-review-form__row-2 {
+  @apply flex gap-[10px] overflow-hidden font-['Roboto'] text-[16px] leading-[1.705];
+}
+
+.write-review-form__target-label {
+  @apply shrink-0 text-[#3d3d3d];
+}
+
+.write-review-form__target-name {
+  @apply min-w-0 flex-1 text-[rgba(0,0,0,0.6)];
+}
+
+.write-review-form__row-3 {
+  @apply flex items-center gap-[10px];
+}
+
+.write-review-form__box {
+  @apply w-full;
+}
+
+.write-review-form__review-text {
+  @apply h-[136px] w-full resize-none rounded-[16px] border border-solid border-[rgba(0,0,0,0.15)] bg-white px-5 pb-2 pt-[18px] font-['Roboto'] text-[16px] leading-[1.705] text-[#3d3d3d] placeholder:text-[#949494] outline-none backdrop-blur-[11px] focus:border-[#0d47a1];
+}
+
+.write-review-form__row-4 {
+  @apply flex justify-center;
+}
+
+.write-review-form__gui-danh-gia-text {
+  @apply font-['Roboto'] text-[15px] font-bold uppercase leading-[26px] tracking-[0.46px] text-black;
+}

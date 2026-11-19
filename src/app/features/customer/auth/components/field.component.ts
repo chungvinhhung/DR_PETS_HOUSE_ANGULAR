@@ -10,6 +10,7 @@ import { CustomerIconComponent } from '../../../../shared/customer/components/ic
   standalone: true,
   imports: [CustomerIconComponent],
   templateUrl: './field.component.html',
+  styleUrl: './field.component.scss',
   host: {
     '[class]': '`block text-sm ${isSoft() ? \'font-medium text-[#060B16]\' : \'font-semibold text-[rgba(0,0,0,0.87)]\'}`',
   },
@@ -25,6 +26,7 @@ export class FieldComponent {
   readonly required = input<any>(false);
   readonly hint = input<any>(undefined);
   readonly placeholder = input<any>(undefined);
+  readonly autoComplete = input<any>(undefined, { alias: 'autoComplete' });
   readonly Icon = input<any>(undefined, { alias: 'icon' });
   readonly error = input<any>("");
   readonly variant = input<any>("default");

@@ -1,0 +1,139 @@
+.rescue-page__main {
+  @apply relative min-h-[1985px] overflow-hidden bg-[linear-gradient(180deg,#FFFFFF_0%,#E5F6FD_36%)] px-4 pb-[84px] pt-[34px] sm:px-8 lg:px-[60px] xl:px-[120px];
+}
+
+.rescue-page__section {
+  @apply relative mx-auto flex max-w-page flex-col items-center gap-8 lg:h-[486px] lg:flex-row lg:items-start lg:gap-0;
+}
+
+.rescue-page__box {
+  @apply w-full pt-[34px] lg:w-[550px] lg:shrink-0;
+}
+
+.rescue-page__moi-chiec-duoi-title {
+  @apply mt-5 w-full max-w-[540px] font-display text-[40px] font-bold leading-[44px] text-[#111827] sm:text-[52px] sm:leading-[54px] xl:text-[64px] xl:leading-[62px];
+}
+
+.rescue-page__to-am-text {
+  @apply text-[#FF9800];
+}
+
+.rescue-page__yeu-thuong-text {
+  @apply text-[#0D47A1];
+}
+
+.rescue-page__tu-hom-nay-text {
+  @apply mt-7 w-full max-w-[480px] text-[16px] leading-6 text-[#414753];
+}
+
+.rescue-page__box-2 {
+  @apply relative mt-2 h-[470px] w-[520px] max-w-full origin-top max-sm:h-[330px] max-sm:w-[365px] lg:ml-auto xl:ml-[92px];
+}
+
+.rescue-page__box-3 {
+  @apply relative h-[470px] w-[520px] origin-top-left max-sm:scale-[0.7];
+}
+
+.rescue-page__layer {
+  @apply absolute right-0 top-0 h-[450px] w-[480px] rounded-[50%] bg-[#C7DAF7];
+}
+
+.rescue-page__layer-2 {
+  @apply absolute left-3 top-7 h-[422px] w-[422px] overflow-hidden rounded-full border-[10px] border-white shadow-[0_18px_35px_rgba(13,71,161,0.16)];
+}
+
+.rescue-page__nguoi-nhan-nuoi-om {
+  @apply h-full w-full object-cover;
+}
+
+.rescue-page__layer-3 {
+  @apply absolute bottom-[58px] left-[26px] flex h-[54px] w-[164px] items-center gap-3 rounded-[18px] bg-white px-4 shadow-[0_12px_26px_rgba(13,71,161,0.16)];
+}
+
+.rescue-page__text {
+  @apply grid h-8 w-8 place-items-center rounded-full bg-[#FDD835] text-[15px] font-bold text-[#715B00];
+}
+
+.rescue-page__text-2 {
+  @apply text-[16px] font-bold leading-5 text-[#0D47A1];
+}
+
+.rescue-page__thu-cung-da-text {
+  @apply text-[10px] leading-3 text-[#64748B];
+}
+
+.rescue-page__section-2 {
+  @apply relative mx-auto max-w-page;
+}
+
+.rescue-page__tim-kiem-nguoi-title {
+  @apply mt-3 text-[28px] font-bold leading-[36px] text-[#111827] sm:text-[40px] sm:leading-[48px];
+}
+
+.rescue-page__yellow-doodle {
+  @apply absolute right-[250px] top-[18px] hidden h-[38px] w-[55px] xl:block;
+}
+
+.rescue-page__grid {
+  @apply mt-7 grid w-full max-w-page auto-rows-fr grid-cols-1 justify-items-center gap-x-5 gap-y-8 md:grid-cols-2 xl:grid-cols-3;
+}
+
+.rescue-page__dang-tai-danh-el {
+  @apply col-span-full flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1];
+}
+
+.rescue-page__khong-tim-thay-el {
+  @apply col-span-full flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#414753];
+}
+
+.rescue-page__load-error {
+  @apply mt-4 text-[14px] text-[#0D47A1];
+}
+
+.rescue-page__row {
+  @apply mt-8 flex justify-center gap-3 text-[#0D47A1];
+}
+
+.rescue-page__section-3 {
+  @apply mx-auto mt-[54px] max-w-page rounded-[22px] border-4 border-[#0D47A1] border-r-[#FDD835] bg-white px-6 py-8 sm:px-[54px] sm:py-[38px];
+}
+
+.rescue-page__cuu-mot-con-el {
+  @apply w-full text-[20px] sm:text-[24px] font-bold leading-8 text-[#0D47A1];
+}
+
+.rescue-page__hay-cung-chung-text {
+  @apply mt-4 w-full text-[15px] leading-6 text-[#414753];
+}
+
+.rescue-page__section-4 {
+  @apply relative mx-auto mt-[54px] max-w-page;
+}
+
+.rescue-page__theo-doi-nhanh-text {
+  @apply mt-3 text-[16px] leading-6 text-[#475569];
+}
+
+.rescue-page__grid-2 {
+  @apply mt-8 grid w-full grid-cols-1 gap-6 lg:grid-cols-2;
+}
+
+.rescue-page__dang-tai-don-el {
+  @apply col-span-full flex h-36 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1];
+}
+
+.rescue-page__ban-chua-co-el {
+  @apply col-span-full flex h-36 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#475569];
+}
+
+.rescue-page__section-5 {
+  @apply relative mx-auto mt-[70px] max-w-page;
+}
+
+.rescue-page__yellow-doodle-2 {
+  @apply absolute right-[170px] top-6 hidden h-[74px] w-[124px] xl:block;
+}
+
+.rescue-page__grid-3 {
+  @apply mt-9 grid w-full auto-rows-fr grid-cols-1 justify-items-center gap-8 md:grid-cols-2 xl:grid-cols-3;
+}

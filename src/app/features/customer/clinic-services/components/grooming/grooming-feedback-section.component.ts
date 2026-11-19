@@ -15,6 +15,7 @@ import { groomingTitleStyles } from '../../utils/grooming-title-styles';
   standalone: true,
   imports: [GroomingFeedbackSectionFeedbackCardComponent, GroomingFeedbackSectionFeedbackDotComponent, ReactStyleDirective],
   templateUrl: './grooming-feedback-section.component.html',
+  styleUrl: './grooming-feedback-section.component.scss',
   host: {
     'class': 'relative h-[683px] w-full overflow-hidden',
     'aria-label': 'Phản hồi của khách hàng',

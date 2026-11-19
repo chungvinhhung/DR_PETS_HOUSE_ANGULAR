@@ -1,9 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminBreadcrumbComponent } from '../../../../shared/admin-breadcrumb/admin-breadcrumb.component';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminStaffWeekNavComponent } from '../components/admin-staff-week-nav.component';
 import { formatStaffWeekRange } from '../utils/staff-week-range';
-import { AdminToastService } from '../../../../shared/services/admin-toast.service';
+import { AdminToastService, adminErrorMessage } from '../../../../shared/services/admin-toast.service';
+import { AdminUsersService } from '../../users/services/admin-users.service';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
 import { AdminStaffApiService, staffTodayISO, staffWeekMonday } from '../services/admin-staff-api.service';
 import {
@@ -40,7 +43,7 @@ function dayLabel(day: number): string {
 @Component({
   selector: 'app-admin-staff-detail',
   standalone: true,
-  imports: [RouterLink, AdminCatalogShellComponent, AdminStaffWeekNavComponent],
+  imports: [RouterLink, AdminCatalogShellComponent, AdminBreadcrumbComponent, AdminDataStateComponent, AdminStaffWeekNavComponent],
   templateUrl: './admin-staff-detail.component.html',
   styleUrl: './admin-staff-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,7 +53,9 @@ export class AdminStaffDetailComponent {
   private readonly router = inject(Router);
   private readonly toast = inject(AdminToastService);
   private readonly session = inject(AuthSessionService);
+  private readonly usersApi = inject(AdminUsersService);
   blockDialogOpen = false;
+  blockBusy = false;
 
   readonly staffApi = inject(AdminStaffApiService);
   readonly staffId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -104,7 +109,9 @@ export class AdminStaffDetailComponent {
     this.weekMonday.set(isoDate(monday));
   }
 
-  get canBlockAccount(): boolean { return false; /* No verified Staff account-block API. */ }
+  get canBlockAccount(): boolean {
+    return this.session.hasAnyRole(['ADMIN']) && !!this.staff()?.userId;
+  }
   openBlockConfirmation(): void {
     if (!this.canBlockAccount) {
       this.toast.show('Tài khoản không có quyền chặn hoặc bỏ chặn nhân viên.', 'error');
@@ -116,8 +123,28 @@ export class AdminStaffDetailComponent {
     this.blockDialogOpen = false;
   }
   confirmBlockPreview(): void {
-    this.blockDialogOpen = false;
-    this.toast.show('Chưa xác minh API quản lý tài khoản nhân sự. Không thay đổi trạng thái.', 'info');
+    const staff = this.staff();
+    if (!this.canBlockAccount || !staff?.userId || this.blockBusy) return;
+    const next = staff.accountStatus === 'BLOCKED' ? 'ACTIVE' : 'BLOCKED';
+    this.blockBusy = true;
+    this.usersApi.updateStatus(staff.userId, { accountStatus: next }).subscribe({
+      next: () => {
+        this.blockBusy = false;
+        this.blockDialogOpen = false;
+        this.staffApi.loadRoster(true);
+        this.toast.show(next === 'BLOCKED' ? 'Đã chặn tài khoản nhân viên.' : 'Đã bỏ chặn tài khoản nhân viên.', 'success');
+      },
+      error: err => {
+        this.blockBusy = false;
+        const status = (err as { status?: number } | null)?.status;
+        this.toast.show(
+          status === 404 || status === 405 || status === 501
+            ? 'BE chưa hỗ trợ API khóa/mở tài khoản nội bộ trên phiên bản hiện tại.'
+            : adminErrorMessage(err, 'Không thể cập nhật trạng thái tài khoản.'),
+          'error',
+        );
+      },
+    });
   }
   goBack(): void {
     void this.router.navigateByUrl('/admin/staff');

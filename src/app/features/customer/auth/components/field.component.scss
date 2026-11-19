@@ -1,0 +1,11 @@
+.field__text {
+  @apply text-[#c62828];
+}
+
+.field__hint {
+  @apply mt-1 block text-[11px] font-normal italic text-gray-500;
+}
+
+.field__error {
+  @apply mt-1 block text-xs font-normal text-[#c62828];
+}

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, signal, SimpleChanges } from '@angular/core';
 import { StaffPreview, StaffShiftPreview, displayStaffName } from '../models/staff-preview.model';
 
 export interface ShiftOption { id: string; name: string; start: string; end: string; enabled: boolean; }
@@ -49,21 +49,13 @@ export function overlaps(a: DayShiftDraft, b: DayShiftDraft): boolean {
             @if (o.enabled) { <option [value]="o.id">{{ o.name }} ({{ o.start }}–{{ o.end }})</option> }
           }
         </select>
-        <button type="button" [disabled]="!chosen()" (click)="add()">+ Thêm ca</button>
+        <button type="button" [disabled]="!chosen() || templatesLoading || saving" (click)="add()">+ Thêm ca</button>
       </div>
       <button type="button" class="shift-assign-new" (click)="requestCreate.emit()">+ Tạo ca làm việc mới</button>
-      @if (!options.length) { <p class="shift-assign-hint">Chưa có danh sách mẫu ca được đồng bộ từ hệ thống.</p> }
-      <fieldset class="shift-assign-scope">
-        <legend>Phạm vi áp dụng</legend>
-        <label><input type="radio" name="repeatScope" value="day" [checked]="scope()==='day'" (change)="scope.set('day')"> Chỉ ngày này</label>
-        <label><input type="radio" name="repeatScope" value="weekly" [checked]="scope()==='weekly'" (change)="scope.set('weekly')"> Lặp lại hằng tuần</label>
-      </fieldset>
-      @if (scope() === 'weekly') {
-        <div class="shift-assign-validity"><h3>Thời gian hiệu lực</h3>
-          <label>Từ ngày<input type="date" [value]="from()" (change)="from.set($any($event.target).value)"></label>
-          <label>Đến ngày<input type="date" [value]="to()" (change)="to.set($any($event.target).value)"></label>
-        </div>
-      }
+      @if (templatesLoading) { <p class="shift-assign-hint">Đang tải ca làm việc của chi nhánh...</p> }
+      @else if (templatesError) { <p role="alert" class="shift-assign-error">{{templatesError}}</p> }
+      @else if (!options.length) { <p class="shift-assign-hint">Chi nhánh chưa có mẫu ca làm việc. Chọn Tạo ca làm việc mới để thêm.</p> }
+      
       @if (error()) { <p role="alert" class="shift-assign-error">{{ error() }}</p> }
       @if (confirmDiscard()) {
         <div class="shift-assign-discard"><p>Bỏ các thay đổi chưa lưu?</p>
@@ -73,16 +65,20 @@ export function overlaps(a: DayShiftDraft, b: DayShiftDraft): boolean {
       }
       <footer class="shift-assign-footer">
         <button type="button" (click)="askClose()">Hủy</button>
-        <button type="button" class="shift-assign-save" (click)="save()">Lưu phân công</button>
+        <button type="button" class="shift-assign-save" [disabled]="saving || !dirty()" (click)="save()">{{saving ? 'Đang lưu...' : 'Lưu phân công'}}</button>
       </footer>
     </section>
   </div>`,
 })
-export class StaffShiftAssignmentDialogComponent {
+export class StaffShiftAssignmentDialogComponent implements OnChanges {
   @Input({required:true}) employee!: StaffPreview;
   @Input({required:true}) isoDate = '';
   @Input({required:true}) branchName = '';
   @Input() options: readonly ShiftOption[] = [];
+  @Input() autoSelectTemplateId = '';
+  @Input() templatesLoading = false;
+  @Input() templatesError = '';
+  @Input() saving = false;
   @Input() existing: readonly DayShiftDraft[] = [];
   @Input() otherBranchShifts: readonly StaffShiftPreview[] = [];
   @Output() closed = new EventEmitter<void>();
@@ -97,11 +93,33 @@ export class StaffShiftAssignmentDialogComponent {
   readonly dirty = signal(false);
   readonly confirmDiscard = signal(false);
   readonly displayName = displayStaffName;
+  private lastExistingSignature = '';
   get dateLabel(): string {const [year,month,day]=this.isoDate.split('-');return [day,month,year].join('/');}
-  ngOnInit():void {
-    this.draft.set(this.existing.map(x=>({...x})));
-    this.from.set(this.isoDate);
-    this.to.set(this.isoDate);
+  ngOnChanges(changes: SimpleChanges): void {
+    // Existing shifts are loaded asynchronously. The grid can already show a
+    // shift while the dialog still holds an empty snapshot from its first render.
+    // Keep a clean draft in sync, but never overwrite local edits.
+    if (changes['existing'] || changes['isoDate'] || changes['employee']) {
+      const signature=this.existing
+        .map(row=>[row.shiftId||'',row.id,row.start,row.end].join('|'))
+        .sort().join(';');
+      if (!this.dirty() && signature!==this.lastExistingSignature) {
+        this.draft.set(this.existing.map(row=>({...row})));
+        this.lastExistingSignature=signature;
+      }
+    }
+    if(changes['isoDate']) {
+      this.from.set(this.isoDate);
+      this.to.set(this.isoDate);
+    }
+    if (!changes['autoSelectTemplateId'] && !changes['options']) return;
+    const id=this.autoSelectTemplateId;
+    if (!id) return;
+    const selected=this.options.find(o=>o.id===id&&o.enabled);
+    if (selected && !this.draft().some(x=>x.id===id)) {
+      this.chosen.set(id);
+      this.add();
+    }
   }
   add():void {
     const option=this.options.find(o=>o.id===this.chosen() && o.enabled);
@@ -120,12 +138,9 @@ export class StaffShiftAssignmentDialogComponent {
   remove(id:string):void {this.draft.update(xs=>xs.filter(x=>x.id!==id));this.dirty.set(true);this.error.set('');}
   askClose():void {if(this.dirty())this.confirmDiscard.set(true);else this.closed.emit();}
   save():void {
+    if (!this.dirty() || this.saving) return;
     const items=this.draft();
     if(items.some((v,i)=>items.slice(i+1).some(y=>overlaps(v,y)))) {this.error.set('Các ca làm việc đang bị trùng giờ.');return;}
-    if(this.scope()==='weekly' && (!this.from()||!this.to()||this.to()<this.from())) {
-      this.error.set('Vui lòng nhập khoảng thời gian hiệu lực hợp lệ.');return;
-    }
-    // Preview contract only. Do not signal server persistence.
-    this.checked.emit({draft:items,scope:this.scope(),from:this.from(),to:this.to()});
+    this.checked.emit({draft:items,scope:'day',from:this.isoDate,to:this.isoDate});
   }
 }

@@ -72,7 +72,7 @@
 
       <div class="credentials-block">
         <div class="field-stack">
-          <label class="field" [class.field--invalid]="showError('identifier')">
+          <label class="field web2-composite-field" [class.field--invalid]="showError('identifier')">
             <span class="field__icon field__identifier-icon" aria-hidden="true"></span>
             <input
               type="text"
@@ -88,7 +88,7 @@
         </div>
 
         <div class="field-stack">
-          <label class="field" [class.field--invalid]="showError('password')">
+          <label class="field web2-composite-field" [class.field--invalid]="showError('password')">
             <img class="field__icon" src="/assets/admin-login/lock-outlined.svg" alt="" aria-hidden="true" />
             <input
               [type]="passwordVisible() ? 'text' : 'password'"

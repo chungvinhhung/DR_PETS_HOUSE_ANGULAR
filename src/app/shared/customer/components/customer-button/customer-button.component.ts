@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
   standalone: true,
   imports: [],
   templateUrl: './customer-button.component.html',
+  styleUrl: './customer-button.component.scss',
   host: {
     '[attr.type]': 'type()',
     '(click)': 'onClick.emit($event)',

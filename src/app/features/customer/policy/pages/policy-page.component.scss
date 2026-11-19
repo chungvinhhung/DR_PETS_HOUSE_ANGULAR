@@ -1,0 +1,11 @@
+.policy-page__main {
+  @apply flex flex-col items-center px-4 pb-12 pt-[43px] sm:px-6 lg:px-20;
+}
+
+.policy-page__stack {
+  @apply mt-6 flex w-full max-w-page flex-col items-start gap-12;
+}
+
+.policy-page__stack-2 {
+  @apply flex w-full flex-col items-start gap-8 lg:flex-row lg:gap-12;
+}

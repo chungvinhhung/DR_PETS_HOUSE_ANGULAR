@@ -1,0 +1,24 @@
+// Chiều cao trích dẫn / tác giả đặt bằng [appStyle] (hằng số dùng chung với carousel).
+.feedback-card__quote {
+  @apply mt-2 shrink-0 overflow-hidden text-[16px] leading-7 text-[#333] line-clamp-4;
+}
+
+.feedback-card__author {
+  @apply mt-3 flex shrink-0 items-center gap-4;
+}
+
+.feedback-card__avatar {
+  @apply h-11 w-11 shrink-0 rounded-full object-cover;
+}
+
+.feedback-card__author-info {
+  @apply min-w-0 flex-1;
+}
+
+.feedback-card__name {
+  @apply truncate text-[24px] font-medium leading-6 text-[#02000F];
+}
+
+.feedback-card__company {
+  @apply truncate text-[16px] leading-7 text-[#6C6D71];
+}

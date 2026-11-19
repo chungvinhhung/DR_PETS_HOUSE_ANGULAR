@@ -1,44 +1,42 @@
 @if (!(!cartService.isGuestSuccessOpen())) {
   <div
-    class="overlay-fade-in pointer-events-auto fixed inset-0 z-[80] flex items-center justify-center bg-[rgba(6,16,90,0.2)] p-4 backdrop-blur-[6px]"
+    class="guest-order-success-overlay__overlay-fade-in overlay-fade-in"
     role="dialog"
     aria-label="Đặt hàng thành công"
     aria-modal="true"
   >
-    <div class="panel-slide-in relative h-[609px] max-h-[calc(100vh-32px)] w-[1023px] max-w-[calc(100vw-32px)]">
-      <div class="absolute inset-0 overflow-hidden rounded-[10px] border border-[#ababab] bg-white shadow-[0px_100px_203px_0px_rgba(0,0,0,0.07),0px_22.336px_45.343px_0px_rgba(0,0,0,0.04),0px_6.65px_13.5px_0px_rgba(0,0,0,0.03)]">
-        <img [attr.src]="guestSuccessImages.cardBackground" alt="" class="size-full object-cover" />
+    <div class="guest-order-success-overlay__panel-slide-in panel-slide-in">
+      <div class="guest-order-success-overlay__layer">
+        <img [attr.src]="guestSuccessImages.cardBackground" alt="" class="guest-order-success-overlay__card-background" />
       </div>
-      <div class="absolute left-1/2 top-1/2 flex w-full max-w-[1023px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-10 px-6 py-[50px]">
-        <img [attr.src]="guestSuccessImages.successIcon" alt="" class="size-[69px] shrink-0" />
-        <div class="flex flex-col items-center gap-2">
-          <h2 class="whitespace-nowrap font-['Roboto'] text-[48px] font-bold leading-[1.167] text-[#3d3d3d]">Đặt hàng thành công</h2>
-          <p class="w-[481px] max-w-full text-center font-['Roboto'] text-[16px] leading-[1.5] tracking-[0.15px] text-[#949494]">Đơn đặt hàng của bạn đã được xác nhận. Để xem chi tiết và theo dõi đơn hàng, bạn vui lòng đăng nhập tài khoản sau:</p>
+      <div class="guest-order-success-overlay__layer-2">
+        <img [attr.src]="guestSuccessImages.successIcon" alt="" class="guest-order-success-overlay__success-icon" />
+        <div class="guest-order-success-overlay__stack">
+          <h2 class="guest-order-success-overlay__dat-hang-thanh-title">Đặt hàng thành công</h2>
+          <p class="guest-order-success-overlay__don-dat-hang-text">Đơn đặt hàng của bạn đã được ghi nhận. Bạn có thể tra cứu và theo dõi đơn bất cứ lúc nào bằng số điện thoại/email đã dùng khi đặt hàng và mã OTP — không cần tài khoản.</p>
         </div>
-        <div class="flex min-h-[74px] w-[338px] max-w-full flex-col gap-[10px] rounded-[4px] bg-[#f5f5f5] p-[10px] font-['Roboto'] text-[16px] leading-[1.5] tracking-[0.15px]">
-          <div class="flex w-full items-start gap-[15px]">
-            <span class="h-[23px] w-[112px] shrink-0 text-[rgba(0,0,0,0.6)]">Tên đăng nhập:</span>
-            <span class="h-[23px] text-[rgba(0,0,0,0.87)]">{{ guestAccount().username }}</span>
+        @if (orderCode()) {
+          <div class="guest-order-success-overlay__stack-2">
+            <div class="guest-order-success-overlay__row">
+              <span class="guest-order-success-overlay__ten-dang-nhap-text">Mã đơn hàng:</span>
+              <span class="guest-order-success-overlay__username">{{ orderCode() }}</span>
+            </div>
           </div>
-          <div class="flex w-full items-start gap-[15px]">
-            <span class="h-[23px] w-[112px] shrink-0 text-[rgba(0,0,0,0.6)]">Mật khẩu:</span>
-            <span class="min-w-0 flex-1 text-[rgba(0,0,0,0.87)]">{{ guestAccount().password }}</span>
-          </div>
-        </div>
-        <div class="flex flex-wrap items-center justify-center gap-5">
+        }
+        <div class="guest-order-success-overlay__row-2">
           <button
             type="button"
             (click)="handleGoHome()"
             class="btn-yellow px-[22px] py-2 normal-case tracking-[0.46px]"
           >
-            <span class="whitespace-nowrap font-['Roboto'] text-[15px] font-bold uppercase leading-[26px] tracking-[0.46px] text-black">Trở về trang chủ</span>
+            <span class="guest-order-success-overlay__tro-ve-trang-text">Trở về trang chủ</span>
           </button>
           <button
             type="button"
-            (click)="handleLogin()"
+            (click)="handleLookup()"
             class="btn-yellow-outline w-[190px] px-[22px] py-2 normal-case tracking-[0.46px]"
           >
-            <span class="whitespace-nowrap font-['Roboto'] text-[15px] font-medium uppercase leading-[26px] tracking-[0.46px] text-black">Đăng nhập</span>
+            <span class="guest-order-success-overlay__dang-nhap-text">Tra cứu đơn hàng</span>
           </button>
         </div>
       </div>

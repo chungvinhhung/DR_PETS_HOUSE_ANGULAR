@@ -1,0 +1,11 @@
+.policy-article__title {
+  @apply w-full text-[32px] font-bold leading-[40px] text-[#0D47A1];
+}
+
+.policy-article__row {
+  @apply mt-4 flex h-[54px] w-full items-center gap-6 border-y border-[#C1C6D5] py-[17px] text-[14px] font-semibold leading-5 tracking-[0.14px] text-[#414753];
+}
+
+.policy-article__text {
+  @apply flex items-center gap-2;
+}

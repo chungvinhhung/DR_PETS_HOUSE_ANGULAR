@@ -1,0 +1,15 @@
+.booking-field__label {
+  @apply mb-2 block text-sm font-medium text-slate-900 md:text-base lg:text-sm;
+}
+
+.booking-field__text {
+  @apply text-red-600;
+}
+
+.booking-field__text-2 {
+  @apply relative block;
+}
+
+.booking-field__suffix {
+  @apply absolute right-4 top-2.5 text-sm text-slate-600;
+}

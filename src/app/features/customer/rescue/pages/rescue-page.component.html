@@ -1,55 +1,55 @@
 <div app-canvas-layout>
   <app-nav-bar />
-  <main class="relative min-h-[1985px] overflow-hidden bg-[linear-gradient(180deg,#FFFFFF_0%,#E5F6FD_36%)] px-4 pb-[84px] pt-[34px] sm:px-8 lg:px-[60px] xl:px-[120px]">
-    <section class="relative mx-auto flex max-w-[1200px] flex-col items-center gap-8 lg:h-[486px] lg:flex-row lg:items-start lg:gap-0">
-      <div class="w-full pt-[34px] lg:w-[550px] lg:shrink-0">
+  <main class="rescue-page__main">
+    <section class="rescue-page__section">
+      <div class="rescue-page__box">
         <div app-section-label>Tìm một người bạn thân</div>
-        <h1 class="mt-5 w-full max-w-[540px] font-display text-[40px] font-bold leading-[44px] text-[#111827] sm:text-[52px] sm:leading-[54px] xl:text-[64px] xl:leading-[62px]">Mọi chiếc đuôi đều xứng đáng có một <span class="text-[#FF9800]">tổ ấm </span>
-          <span class="text-[#0D47A1]">yêu thương </span>
+        <h1 class="rescue-page__moi-chiec-duoi-title">Mọi chiếc đuôi đều xứng đáng có một <span class="rescue-page__to-am-text">tổ ấm </span>
+          <span class="rescue-page__yeu-thuong-text">yêu thương </span>
         </h1>
-        <p class="mt-7 w-full max-w-[480px] text-[16px] leading-6 text-[#414753]">Từ hôm nay, danh mục cứu trợ là nơi để bạn chung tay giúp đỡ hoặc mở cửa nhà đón một bạn nhỏ cần được yêu thương.</p>
+        <p class="rescue-page__tu-hom-nay-text">Từ hôm nay, danh mục cứu trợ là nơi để bạn chung tay giúp đỡ hoặc mở cửa nhà đón một bạn nhỏ cần được yêu thương.</p>
       </div>
-      <div class="relative mt-2 h-[470px] w-[520px] max-w-full origin-top max-sm:h-[330px] max-sm:w-[365px] lg:ml-auto xl:ml-[92px]"><div class="relative h-[470px] w-[520px] origin-top-left max-sm:scale-[0.7]">
-        <div class="absolute right-0 top-0 h-[450px] w-[480px] rounded-[50%] bg-[#C7DAF7]"></div>
-        <div class="absolute left-3 top-7 h-[422px] w-[422px] overflow-hidden rounded-full border-[10px] border-white shadow-[0_18px_35px_rgba(13,71,161,0.16)]">
+      <div class="rescue-page__box-2"><div class="rescue-page__box-3">
+        <div class="rescue-page__layer"></div>
+        <div class="rescue-page__layer-2">
           <img
             [attr.src]="rescueImages.heroFamily"
             alt="Người nhận nuôi ôm chú chó"
-            class="h-full w-full object-cover"
+            class="rescue-page__nguoi-nhan-nuoi-om"
           />
         </div>
-        <div class="absolute bottom-[58px] left-[26px] flex h-[54px] w-[164px] items-center gap-3 rounded-[18px] bg-white px-4 shadow-[0_12px_26px_rgba(13,71,161,0.16)]">
-          <span class="grid h-8 w-8 place-items-center rounded-full bg-[#FDD835] text-[15px] font-bold text-[#715B00]">+</span>
+        <div class="rescue-page__layer-3">
+          <span class="rescue-page__text">+</span>
           <div>
-            <p class="text-[16px] font-bold leading-5 text-[#0D47A1]">1200+</p>
-            <p class="text-[10px] leading-3 text-[#64748B]">Thú cưng đã tìm được nhà</p>
+            <p class="rescue-page__text-2">1200+</p>
+            <p class="rescue-page__thu-cung-da-text">Thú cưng đã tìm được nhà</p>
           </div>
         </div>
       </div></div>
     </section>
-    <section class="relative mx-auto max-w-[1200px]">
+    <section class="rescue-page__section-2">
       <div app-section-label>Đang cần được hỗ trợ</div>
-      <h2 class="mt-3 text-[28px] font-bold leading-[36px] text-[#111827] sm:text-[40px] sm:leading-[48px]">Tìm kiếm người bạn bốn chân</h2>
+      <h2 class="rescue-page__tim-kiem-nguoi-title">Tìm kiếm người bạn bốn chân</h2>
       <img
         [attr.src]="rescueImages.yellowDoodle"
         alt=""
-        class="absolute right-[250px] top-[18px] hidden h-[38px] w-[55px] xl:block"
+        class="rescue-page__yellow-doodle"
       />
-      <div class="mt-7 grid w-full max-w-[1180px] grid-cols-1 justify-items-center gap-x-5 gap-y-8 md:grid-cols-2 xl:grid-cols-3">
+      <div class="rescue-page__grid">
         @if (isLoading()) {
-          <div class="col-span-full flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">Đang tải danh sách nhận nuôi...</div>
+          <div class="rescue-page__dang-tai-danh-el">Đang tải danh sách nhận nuôi...</div>
         } @else if (pets().length) {
           @for (pet of pets(); track pet.id) {
             <article app-rescue-pet-card [pet]="pet" (onAdopt)="selectedAdoptionPet.set($event)"></article>
           }
         } @else {
-          <div class="col-span-full flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#414753]">Không tìm thấy bạn nhỏ phù hợp.</div>
+          <div class="rescue-page__khong-tim-thay-el">Không tìm thấy bạn nhỏ phù hợp.</div>
         }
       </div>
       @if (loadError()) {
-        <p class="mt-4 text-[14px] text-[#0D47A1]">{{ loadError() }}</p>
+        <p class="rescue-page__load-error">{{ loadError() }}</p>
       }
-      <div class="mt-8 flex justify-center gap-3 text-[#0D47A1]">
+      <div class="rescue-page__row">
         <button
           type="button"
           (click)="handle1()"
@@ -84,50 +84,52 @@
         </button>
       </div>
     </section>
-    <section class="mx-auto mt-[54px] max-w-[1200px] rounded-[22px] border-4 border-[#0D47A1] border-r-[#FDD835] bg-white px-6 py-8 sm:px-[54px] sm:py-[38px]">
-      <blockquote class="w-full text-[20px] sm:text-[24px] font-bold leading-8 text-[#0D47A1]">“Cứu một con vật không thay đổi thế giới, nhưng với nó, thế giới đã thay đổi hoàn toàn.”</blockquote>
-      <p class="mt-4 w-full text-[15px] leading-6 text-[#414753]">Hãy cùng chúng tôi xây dựng mạng lưới cứu trợ vững mạnh nhất để không một mảnh đời nhỏ bé nào bị bỏ phía sau.</p>
+    <section class="rescue-page__section-3">
+      <blockquote class="rescue-page__cuu-mot-con-el">“Cứu một con vật không thay đổi thế giới, nhưng với nó, thế giới đã thay đổi hoàn toàn.”</blockquote>
+      <p class="rescue-page__hay-cung-chung-text">Hãy cùng chúng tôi xây dựng mạng lưới cứu trợ vững mạnh nhất để không một mảnh đời nhỏ bé nào bị bỏ phía sau.</p>
     </section>
     @if (authService.isAuthenticated()) {
-      <section class="relative mx-auto mt-[54px] max-w-[1200px]">
+      <section class="rescue-page__section-4">
         <div app-section-label>Theo dõi hồ sơ</div>
-        <h2 class="mt-3 text-[28px] font-bold leading-[36px] text-[#111827] sm:text-[40px] sm:leading-[48px]">Đơn nhận nuôi của tôi</h2>
-        <p class="mt-3 text-[16px] leading-6 text-[#475569]">Theo dõi nhanh trạng thái những đơn bạn đã gửi tới các bé đang chờ một mái nhà.</p>
-        <div class="mt-8 grid w-full grid-cols-1 gap-6 lg:grid-cols-2">
+        <h2 class="rescue-page__tim-kiem-nguoi-title">Đơn nhận nuôi của tôi</h2>
+        <p class="rescue-page__theo-doi-nhanh-text">Theo dõi nhanh trạng thái những đơn bạn đã gửi tới các bé đang chờ một mái nhà.</p>
+        <div class="rescue-page__grid-2">
           @if (isLoadingMyRequests()) {
-            <div class="col-span-full flex h-36 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">Đang tải đơn nhận nuôi...</div>
+            <div class="rescue-page__dang-tai-don-el">Đang tải đơn nhận nuôi...</div>
           } @else if (myRequests().length) {
             @for (request of myRequests().slice(0, 4); track request.id) {
               <article app-adoption-request-card [request]="request"></article>
             }
           } @else {
-            <div class="col-span-full flex h-36 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#475569]">Bạn chưa có đơn nhận nuôi nào.</div>
+            <div class="rescue-page__ban-chua-co-el">Bạn chưa có đơn nhận nuôi nào.</div>
           }
         </div>
       </section>
     }
-    <section class="relative mx-auto mt-[70px] max-w-[1200px]">
+    <section class="rescue-page__section-5">
       <div app-section-label>Kết nối hỗ trợ</div>
-      <h2 class="mt-3 text-[28px] font-bold leading-[36px] text-[#111827] sm:text-[40px] sm:leading-[48px]">Mạng lưới đối tác cứu trợ</h2>
-      <p class="mt-3 text-[16px] leading-6 text-[#475569]">Danh sách các đơn vị cứu hộ và trạm tạm trú đang đồng hành trong hành trình vì thú cưng.</p>
+      <h2 class="rescue-page__tim-kiem-nguoi-title">Mạng lưới đối tác cứu trợ</h2>
+      <p class="rescue-page__theo-doi-nhanh-text">Danh sách các đơn vị cứu hộ và trạm tạm trú đang đồng hành trong hành trình vì thú cưng.</p>
       <img
         [attr.src]="rescueImages.yellowDoodle"
         alt=""
-        class="absolute right-[170px] top-6 hidden h-[74px] w-[124px] xl:block"
+        class="rescue-page__yellow-doodle-2"
       />
-      <div class="mt-9 grid w-full grid-cols-1 justify-items-center gap-8 md:grid-cols-2 xl:grid-cols-3">
+      <div class="rescue-page__grid-3">
         @for (partner of RESCUE_PARTNERS; track partner.id) {
           <article app-partner-card [partner]="partner"></article>
         }
       </div>
     </section>
   </main>
+  @if (selectedAdoptionPet()) {
+    <app-adoption-application-modal
+      [open]="Boolean(selectedAdoptionPet())"
+      [pet]="selectedAdoptionPet()"
+      (onClose)="selectedAdoptionPet.set(null)"
+      (onSubmitApplication)="handleSubmitApplication($event)"
+      [hasOnSubmitApplication]="true"
+    />
+  }
   <app-footer [variant]="'white'" />
 </div>
-<app-adoption-application-modal
-  [open]="compute4()"
-  [pet]="selectedAdoptionPet()"
-  (onClose)="selectedAdoptionPet.set(null)"
-  (onSubmitApplication)="handleSubmitAdoptionApplication($any($event))"
-  [hasOnSubmitApplication]="true"
-/>

@@ -32,6 +32,7 @@ const groomingSpa = () => import('./clinic-services/pages/grooming-spa/grooming-
 const medicalTreatment = () =>
   import('./clinic-services/pages/medical-treatment/medical-treatment-page.component').then((m) => m.MedicalTreatmentPageComponent);
 const checkout = () => import('./checkout/pages/checkout-page.component').then((m) => m.CheckoutPageComponent);
+const guestLookup = () => import('./guest-lookup/pages/guest-lookup-page.component').then((m) => m.GuestLookupPageComponent);
 const notFound = () => import('./not-found/pages/not-found-page.component').then((m) => m.NotFoundPageComponent);
 
 export const CUSTOMER_ROUTES: Routes = [
@@ -45,6 +46,10 @@ export const CUSTOMER_ROUTES: Routes = [
   { path: 'shop', loadComponent: shop },
   { path: 'products', loadComponent: productList },
   { path: 'san-pham', loadComponent: productList },
+  // URL chuẩn SEO: /san-pham/<ten-khong-dau>-i.<id> (xem shared/customer/utils/slug.ts)
+  { path: 'san-pham/:productSlug', loadComponent: productDetails },
+  { path: 'san-pham/:productSlug/viet-danh-gia', canActivate: [customerAuthGuard], loadComponent: writeReview },
+  // URL cũ theo id: vẫn mở được, trang chi tiết tự chuyển (replace) sang URL slug chuẩn
   { path: 'product-details', loadComponent: productDetails },
   { path: 'product-details/:productId', loadComponent: productDetails },
   { path: 'product-details/:productId/write-review', canActivate: [customerAuthGuard], loadComponent: writeReview },
@@ -76,6 +81,9 @@ export const CUSTOMER_ROUTES: Routes = [
   { path: 'appointment/history', redirectTo: 'lich-su-dat-lich', pathMatch: 'full' },
   { path: 'appointment-history', redirectTo: 'lich-su-dat-lich', pathMatch: 'full' },
   { path: 'appointments', redirectTo: 'lich-su-dat-lich', pathMatch: 'full' },
+  // Slug tìm kiếm chuẩn SEO: /tim-kiem/thuc-an-cho-meo; /search?q=... cũ tự chuyển sang dạng này
+  { path: 'tim-kiem', loadComponent: search },
+  { path: 'tim-kiem/:keyword', loadComponent: search },
   { path: 'search', loadComponent: search },
   { path: 'about', loadComponent: about },
   { path: 've-chung-toi', loadComponent: about },
@@ -92,6 +100,19 @@ export const CUSTOMER_ROUTES: Routes = [
   { path: 'dich-vu/grooming-spa', loadComponent: groomingSpa },
   { path: 'dich-vu/kham-dieu-tri', loadComponent: medicalTreatment },
   { path: 'checkout', loadComponent: checkout },
+  // Tra cứu đơn hàng / lịch hẹn cho khách chưa có tài khoản (SĐT/email + OTP) — không cần đăng nhập
+  { path: 'tra-cuu-don-hang', loadComponent: guestLookup, title: "Tra cứu đơn hàng / lịch hẹn - Dr. Pet's House" },
+  { path: 'tra-cuu', redirectTo: 'tra-cuu-don-hang', pathMatch: 'full' },
+  { path: 'tra-cuu-lich-hen', redirectTo: 'tra-cuu-don-hang', pathMatch: 'full' },
+  { path: 'tra-cuu-khach-vang-lai', redirectTo: 'tra-cuu-don-hang', pathMatch: 'full' },
+  { path: 'guest-lookup', redirectTo: 'tra-cuu-don-hang', pathMatch: 'full' },
+  { path: 'guest', redirectTo: 'tra-cuu-don-hang', pathMatch: 'full' },
+  // Trang yêu cầu trả hàng hoàn tiền: toàn chiều rộng (không dùng sidebar tài khoản)
+  {
+    path: 'don-hang-cua-toi/:orderId/yeu-cau-hoan-tien',
+    canActivate: [customerAuthGuard],
+    loadComponent: () => import('./orders/pages/refund-request-page.component').then((m) => m.RefundRequestPageComponent),
+  },
 
   // Nhóm trang tài khoản: có sidebar riêng, bắt buộc đăng nhập
   {

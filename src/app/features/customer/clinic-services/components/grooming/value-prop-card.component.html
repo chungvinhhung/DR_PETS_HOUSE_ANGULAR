@@ -1,20 +1,20 @@
 <article
-  class="group absolute left-[658px] h-[171px] w-[645px] transition-transform duration-200 hover:translate-x-1"
+  class="value-prop-card__card group hover:translate-x-1"
   [appStyle]="{ top: prop().top }"
 >
-  <div class="absolute inset-0" [appStyle]="cssMask(groomingImages.whyusCardMask, '645px 171px')">
-    <div class="absolute inset-x-0 top-[13px] h-[148px] rounded-[10px] bg-[#FBF6EA]"></div>
+  <div class="value-prop-card__layer" [appStyle]="cssMask(groomingImages.whyusCardMask, '645px 171px')">
+    <div class="value-prop-card__layer-2"></div>
   </div>
-  <div class="relative flex h-full gap-[18px] pl-[46px] pr-[52px] pt-[26px]">
+  <div class="value-prop-card__row">
     <img
       [attr.src]="groomingImages.checkmark"
       alt=""
       class="mt-1 size-[33px] shrink-0 transition-transform duration-200 group-hover:scale-110"
       aria-hidden="true"
     />
-    <div class="min-w-0 flex-1">
+    <div class="value-prop-card__box">
       <h3
-        class="line-clamp-2 pr-2 text-black"
+        class="value-prop-card__title"
         [appStyle]="{
               fontFamily: 'Roboto, sans-serif',
               fontWeight: 700,
@@ -23,7 +23,7 @@
             }"
       >{{ prop().title }}</h3>
       <p
-        class="mt-1 line-clamp-3 text-black"
+        class="value-prop-card__desc"
         [appStyle]="{
               fontFamily: 'Roboto, sans-serif',
               fontWeight: 400,
@@ -34,7 +34,7 @@
       >{{ prop().desc }}</p>
     </div>
     <span
-      class="absolute right-[8px] top-[12px] text-[#02000F]"
+      class="value-prop-card__num"
       [appStyle]="{
             fontFamily: 'Roboto, sans-serif',
             fontWeight: 500,

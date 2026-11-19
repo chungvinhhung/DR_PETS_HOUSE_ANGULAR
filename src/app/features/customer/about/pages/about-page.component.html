@@ -1,22 +1,22 @@
 <app-nav-bar />
 <div app-scaled-canvas-layout [className]="'bg-white'">
   <main>
-    <section class="relative mt-0 min-h-[846px] overflow-visible bg-white max-[620px]:min-h-[645px] max-[620px]:rounded-b-[60px]">
+    <section class="about-page__section">
       <img
         class="pointer-events-none absolute left-0 top-[-1px] z-0 h-[747px] w-[1440px] object-fill"
         [attr.src]="figmaImageUrl('hero-vector-2.svg')"
         alt=""
         aria-hidden="true"
       />
-      <div class="relative z-[2] mx-auto h-[759px] w-[min(1200px,calc(100%-48px))] pt-[72px] text-center max-[620px]:w-[calc(100%-28px)] max-[620px]:pt-[45px]">
-        <p class="relative z-[2] mb-2 mt-0 font-['Baloo_Tamma'] text-[56px] font-normal leading-[1.1] text-blue-900 max-[900px]:text-[28px] max-[620px]:text-[20px]">TRUNG TÂM CHĂM SÓC THÚ CƯNG</p>
+      <div class="about-page__box">
+        <p class="about-page__trung-tam-cham-text">TRUNG TÂM CHĂM SÓC THÚ CƯNG</p>
         <img
-          class="relative z-[2] mx-auto mb-[9px] block w-[482px] object-contain max-[900px]:w-[min(482px,70vw)] max-[620px]:w-[min(360px,88vw)]"
+          class="about-page__dr-pet-s-house"
           [attr.src]="heroLogo"
           alt="Dr. Pet's House"
         />
-        <p class="relative z-[2] mx-auto mb-0 mt-0 w-[900px] max-w-full font-['Inter'] text-[20px] leading-7 text-[#4a5565] max-[620px]:text-[13px]">Một nơi mà thú cưng cần thăm quan đúng nghĩa - với dịch vụ chăm sóc thú y, làm đẹp chuyên nghiệp, thế giới mua sắm đa dạng và rất nhiều tình yêu thương.</p>
-        <div class="relative z-[3] mt-[22px] flex justify-center gap-3.5">
+        <p class="about-page__mot-noi-ma-text">Một nơi mà thú cưng cần thăm quan đúng nghĩa - với dịch vụ chăm sóc thú y, làm đẹp chuyên nghiệp, thế giới mua sắm đa dạng và rất nhiều tình yêu thương.</p>
+        <div class="about-page__row">
           <a [class]="primaryButtonClass" appCustomerLink="/dat-lich">ĐẶT LỊCH NGAY</a>
           <a
             [class]="cx(
@@ -27,12 +27,12 @@
           >DỊCH VỤ NỔI BẬT</a>
         </div>
         <img
-          class="absolute left-1/2 top-[291px] z-0 h-[594px] w-[970px] -translate-x-1/2 object-cover object-top opacity-[0.8] max-[620px]:w-[480px]"
+          class="about-page__ba-thu-cung-tai"
           [attr.src]="imageUrl('hero-pets.png')"
           alt="Ba thú cưng tại Dr. Pet's House"
         />
       </div>
-      <div class="absolute bottom-[-54px] left-1/2 z-[5] grid min-h-[143px] w-[min(1200px,calc(100%-80px))] -translate-x-1/2 grid-cols-3 gap-[30px] drop-shadow-[0_8px_12px_rgba(23,61,91,0.18)] max-[620px]:bottom-[-92px] max-[620px]:min-h-[150px] max-[620px]:w-[calc(100%-28px)]">
+      <div class="about-page__let-value-el">
         @for (__item1 of [
               ['5+', 'NĂM KINH NGHIỆM'],
               ['24/7', 'CẤP CỨU MỌI LÚC, HỖ TRỢ TẬN TÂM'],
@@ -40,46 +40,46 @@
             ]; track $index) {
           @let value = __item1[0];
           @let label = __item1[1];
-          <div class="flex flex-col items-center justify-center rounded-[14px] border border-[rgba(18,73,122,0.13)] bg-[#fff7ca]">
-            <strong class="font-['Baloo_Tamma'] text-[48px] font-normal leading-[1.1] text-blue-900 max-[620px]:text-[23px]">{{ value }}</strong>
-            <span class="mt-1 font-['Roboto'] text-[16px] font-bold leading-[1.5] tracking-[0.15px] max-[620px]:px-1.5 max-[620px]:text-center max-[620px]:text-[8px]">{{ label }}</span>
+          <div class="about-page__stack">
+            <strong class="about-page__strong">{{ value }}</strong>
+            <span class="about-page__label">{{ label }}</span>
           </div>
         }
       </div>
     </section>
     <section [class]="cx(containerClass, 'pb-[54px] pt-[100px] max-[620px]:pt-[165px]')">
-      <h2 [class]="cx(sectionTitleClass, 'mb-5')"><span class="text-[#fbc02d]">Cam kết</span> của chúng tôi</h2>
-      <div class="grid grid-cols-[0.95fr_1.05fr] items-center gap-[70px] max-[900px]:grid-cols-1">
+      <h2 [class]="cx(sectionTitleClass, 'mb-5')"><span class="about-page__cam-ket-text">Cam kết</span> của chúng tôi</h2>
+      <div class="about-page__grid">
         <div>
-          <h3 class="mb-[22px] mt-0 font-['Baloo_Tamma'] text-[45px] font-normal leading-[54px] text-[#02000f]">Đặt sức khỏe của<br />thú cưng lên đầu</h3>
-          <p class="mt-0 text-[18px] leading-[1.75] text-[#4e5868]">Trong hơn 5 năm, chúng tôi đã nỗ lực để mỗi lần các bé thú cưng thăm khám, khỏe mạnh hơn và nhận được nhiều yêu thương hơn. Bởi vì chúng tôi không chỉ hiểu rằng, thú cưng không chỉ là người bạn, mà còn là gia đình.</p>
-          <p class="mt-0 text-[18px] leading-[1.75] text-[#4e5868]">Ở Dr.Pet's House chúng tôi có:</p>
-          <div class="grid grid-cols-2 gap-x-[17px] gap-y-[13px] max-[620px]:grid-cols-1">
+          <h3 class="about-page__dat-suc-khoe-title">Đặt sức khỏe của<br />thú cưng lên đầu</h3>
+          <p class="about-page__trong-hon-5-text">Trong hơn 5 năm, chúng tôi đã nỗ lực để mỗi lần các bé thú cưng thăm khám, khỏe mạnh hơn và nhận được nhiều yêu thương hơn. Bởi vì chúng tôi không chỉ hiểu rằng, thú cưng không chỉ là người bạn, mà còn là gia đình.</p>
+          <p class="about-page__trong-hon-5-text">Ở Dr.Pet's House chúng tôi có:</p>
+          <div class="about-page__grid-2">
             @for (item of commitmentBenefits; track item.label) {
-              <span class="flex min-h-[45px] items-center gap-3 text-[16px]">
-                <i class="grid size-[41px] shrink-0 place-items-center overflow-hidden rounded-[7px] bg-secondary not-italic">
-                  <img class="size-[31px] object-contain" [attr.src]="item.icon" alt="" />
+              <span class="about-page__text">
+                <i class="about-page__icon">
+                  <img class="about-page__icon-2" [attr.src]="item.icon" alt="" />
                 </i>{{ item.label }}</span>
             }
           </div>
         </div>
         <img
-          class="w-full"
+          class="about-page__cam-ket-cham-soc"
           [attr.src]="imageUrl('commitment.png')"
           alt="Cam kết chăm sóc thú cưng khỏe mạnh"
         />
       </div>
     </section>
     <section [class]="cx(containerClass, 'pb-[62px] pt-[18px]')">
-      <h2 [class]="cx(sectionTitleClass, 'mb-2.5')">Khám phá <span class="text-[#fbc02d]">không gian bên trong</span> nào!</h2>
+      <h2 [class]="cx(sectionTitleClass, 'mb-2.5')">Khám phá <span class="about-page__cam-ket-text">không gian bên trong</span> nào!</h2>
       <div [class]="cx(
               'grid min-h-[727px] grid-cols-[645px_minmax(0,1fr)] gap-6 rounded-3xl bg-white px-8 py-6 shadow-[0_0_20px_rgba(0,0,0,0.25)] max-[900px]:grid-cols-1 max-[620px]:p-4',
               activeGallery().layout === 'grid' &&
                 'relative left-1/2 min-h-[781px] w-[min(1240px,calc(100vw-48px))] -translate-x-1/2'
             )">
-        <div class="flex min-w-0 flex-col gap-[18px]">
+        <div class="about-page__stack-2">
           @if (activeGallery().layout === 'grid') {
-            <div class="grid h-[693px] grid-cols-[repeat(3,199px)] grid-rows-[repeat(3,215px)] gap-6">
+            <div class="about-page__grid-3">
               @for (image of activeGallery().images; track image; let index = $index) {
                 <button
                   type="button"
@@ -87,7 +87,7 @@
                   (click)="openSpacePreview(index)"
                 >
                   <img
-                    class="h-[215px] w-[199px] object-cover transition-transform duration-200 hover:scale-[1.04]"
+                    class="about-page__nh"
                     [attr.src]="image"
                     [attr.alt]="`Chi nhánh ${index + 1}`"
                   />
@@ -101,12 +101,12 @@
               (click)="openSpacePreview(0)"
             >
               <img
-                class="size-full object-cover transition-transform duration-200 hover:scale-[1.025]"
+                class="about-page__title"
                 [attr.src]="activeGallery().images[0]"
                 [attr.alt]="activeGallery().title"
               />
             </button>
-            <div class="grid grid-cols-3 gap-6">
+            <div class="about-page__grid-4">
               @for (image of activeGallery().images.slice(1); track image; let index = $index) {
                 <button
                   type="button"
@@ -114,14 +114,14 @@
                   (click)="openSpacePreview(index + 1)"
                   [attr.aria-label]="`Phóng to ảnh ${index + 2} của ${activeGallery().title}`"
                 >
-                  <img class="size-full object-cover" [attr.src]="image" alt="" />
+                  <img class="about-page__image" [attr.src]="image" alt="" />
                 </button>
               }
             </div>
           }
         </div>
-        <div class="flex min-w-0 flex-col items-start p-0 max-[900px]:px-2.5 max-[900px]:pb-2.5 max-[900px]:pt-[35px]">
-          <div class="mb-[35px] ml-[15px] flex gap-[9px]">
+        <div class="about-page__stack-3">
+          <div class="about-page__row-2">
             <button
               type="button"
               [class]="roundControlClass"
@@ -139,9 +139,9 @@
               <app-customer-icon name="chevron-right" [size]="18" />
             </button>
           </div>
-          <h3 class="mb-[19px] mt-0 font-sans text-[40px] font-bold leading-[56px] text-blue-900">{{ activeGallery().title }}</h3>
+          <h3 class="about-page__title-2">{{ activeGallery().title }}</h3>
           @for (paragraph of activeGallery().paragraphs; track paragraph) {
-            <p class="mb-6 mt-0 w-full text-justify text-[24px] leading-[1.334] text-[#1b1b1b]">{{ paragraph }}</p>
+            <p class="about-page__paragraph">{{ paragraph }}</p>
           }
           <a
             [class]="cx(
@@ -154,7 +154,7 @@
         </div>
       </div>
     </section>
-    <section class="relative min-h-[743px] w-full px-[60px] pb-20 pt-5">
+    <section class="about-page__section-2">
       @for (shape of aboutDecorations.journeyShapes; track shape; let index = $index) {
         <img
           [class]="cx(
@@ -168,51 +168,51 @@
           alt=""
         />
       }
-      <h2 [class]="cx(sectionTitleClass, 'relative z-[2] mb-[33px]')">Hành trình <span class="text-[#fbc02d]">phát triển</span></h2>
-      <div class="relative z-[2] mx-auto grid w-[min(1320px,100%)] grid-cols-4 gap-6 max-[900px]:grid-cols-2 max-[620px]:grid-cols-1">
+      <h2 [class]="cx(sectionTitleClass, 'relative z-[2] mb-[33px]')">Hành trình <span class="about-page__cam-ket-text">phát triển</span></h2>
+      <div class="about-page__grid-5">
         @for (item of aboutMilestones; track item.year) {
-          <article class="flex flex-col items-center">
-            <strong class="grid h-[60px] min-w-[100px] place-items-center rounded-[48px] border border-[#a1a4b1] text-[24px] font-semibold text-[#02000f]">{{ item.year }}</strong>
+          <article class="about-page__card">
+            <strong class="about-page__year">{{ item.year }}</strong>
             <img
-              class="my-5 h-[69px] w-[190px] rounded-none object-contain"
+              class="about-page__journey-connector"
               [attr.src]="aboutDecorations.journeyConnector"
               alt=""
             />
-            <img class="h-[180px] w-full rounded-2xl object-cover" [attr.src]="item.image" alt="" />
-            <p class="mx-[26px] mb-0 mt-5 text-center text-[16px] leading-7 text-[#6c6d71]">{{ item.copy }}</p>
+            <img class="about-page__image-2" [attr.src]="item.image" alt="" />
+            <p class="about-page__copy">{{ item.copy }}</p>
           </article>
         }
       </div>
     </section>
-    <section class="relative mb-0 min-h-[1952px] overflow-hidden bg-[#e3f2fd]" id="services">
+    <section class="about-page__services" id="services">
       <img
-        class="pointer-events-none absolute left-0 top-0 z-[1] h-[145px] w-full"
+        class="about-page__services-wave-top"
         [attr.src]="aboutDecorations.servicesWaveTop"
         alt=""
       />
       <img
-        class="pointer-events-none absolute bottom-0 left-0 z-[1] h-[215px] w-full"
+        class="about-page__services-wave-bottom"
         [attr.src]="aboutDecorations.servicesWaveBottom"
         alt=""
       />
       <img
-        class="pointer-events-none absolute right-[-46px] top-8 z-[1] h-[154px] w-[312px] object-contain"
+        class="about-page__services-paw"
         [attr.src]="aboutDecorations.servicesPaw"
         alt=""
       />
-      <span class="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-1 bg-white"></span>
-      <div class="relative z-[2] mx-auto w-[min(1280px,calc(100%-48px))] py-[83px] pb-28">
-        <div class="relative mb-5 ml-10 inline-block w-[610px] text-left">
-          <h2 class="m-0 text-left font-['Baloo_Tamma'] text-[64px] font-normal leading-[1.1] text-[rgba(0,0,0,0.87)]">
-            <span class="text-[#fbc02d]">Dịch vụ</span>
+      <span class="about-page__text-2"></span>
+      <div class="about-page__box-2">
+        <div class="about-page__box-3">
+          <h2 class="about-page__title-3">
+            <span class="about-page__cam-ket-text">Dịch vụ</span>
             <br />chúng tôi cung cấp</h2>
           <img
-            class="absolute left-[1178px] top-[67px] h-[72px] w-[76px] object-contain max-[620px]:hidden"
+            class="about-page__services-bone"
             [attr.src]="aboutDecorations.servicesBone"
             alt=""
           />
         </div>
-        <div class="mx-auto flex w-[1192px] max-w-full flex-col gap-14">
+        <div class="about-page__let-title-el">
           @for (__item2 of aboutServices; track $index; let index = $index) {
             @let title = __item2.title;
             @let image = __item2.image;
@@ -220,7 +220,7 @@
             @let copy = __item2.copy;
             @let points = __item2.points;
             @let shape = serviceShapes[index];
-            <article class="grid min-h-[500px] grid-cols-[568px_560px] items-center gap-16 max-[900px]:grid-cols-1 max-[620px]:gap-[30px]">
+            <article class="about-page__card-2">
               <div [class]="cx('relative h-[450px] w-[568px]', index % 2 && 'order-2 max-[900px]:order-none')">
                 <img
                   [class]="cx('relative z-[2] size-full object-cover shadow-[0_14px_26px_rgba(21,70,113,0.2)]', shape.image)"
@@ -229,20 +229,20 @@
                 />
                 <span [class]="cx('absolute inset-[-28px] z-[1]', shape.ring)"></span>
                 @if (index === 0) {
-                  <span class="absolute bottom-[-24px] right-[-24px] z-[3] flex items-center gap-3 rounded-2xl border border-[#e9e8e7] bg-[#fbf9f8] p-[17px] text-[12px] shadow-[0_7px_16px_rgba(0,0,0,0.15)]">
-                    <img class="size-9" [attr.src]="aboutDecorations.servicesBadgeIcon" alt="" />
-                    <span class="flex flex-col leading-4">
-                      <strong class="text-[14px] text-[#1b1c1c]">Bác sĩ chuyên khoa</strong>Sẵn sàng 24/7</span>
+                  <span class="about-page__text-3">
+                    <img class="about-page__services-badge-icon" [attr.src]="aboutDecorations.servicesBadgeIcon" alt="" />
+                    <span class="about-page__text-4">
+                      <strong class="about-page__bac-si-chuyen-strong">Bác sĩ chuyên khoa</strong>Sẵn sàng 24/7</span>
                   </span>
                 }
               </div>
               <div>
-                <h3 class="mb-[18px] mt-0 flex items-center font-['Roboto'] text-[32px] font-bold leading-[41.6px] text-blue-900">{{ title }}</h3>
-                <p class="mt-0 text-justify font-sans text-[18px] leading-[28.8px] text-black">{{ copy }}</p>
-                <ul class="my-[18px] list-none p-0">
+                <h3 class="about-page__title-4">{{ title }}</h3>
+                <p class="about-page__copy-2">{{ copy }}</p>
+                <ul class="about-page__list">
                   @for (point of points; track point) {
-                    <li class="my-3 flex items-center gap-3 font-sans text-[16px] leading-6">
-                      <img class="size-5 shrink-0" [attr.src]="aboutDecorations.servicesCheckIcon" alt="" />{{ point }}</li>
+                    <li class="about-page__item">
+                      <img class="about-page__point" [attr.src]="aboutDecorations.servicesCheckIcon" alt="" />{{ point }}</li>
                   }
                 </ul>
                 <a
@@ -256,25 +256,25 @@
         </div>
       </div>
     </section>
-    <section class="relative mt-0 min-h-[821px] w-full bg-white px-0 pb-[58px] pt-[46px] text-center">
+    <section class="about-page__section-3">
       <img
-        class="absolute right-[70px] top-[177px] z-[1] h-[46px] w-[58px] object-contain"
+        class="about-page__doctors-shape"
         [attr.src]="aboutDecorations.doctorsShape"
         alt=""
       />
-      <h2 [class]="cx(sectionTitleClass, 'relative z-[2] mb-[18px]')">Đội ngũ          <span class="relative inline-block text-[#0f172a]">bác sĩ thú y<img
-            class="absolute bottom-[5px] right-[-4px] z-[-1] h-3 w-[327px]"
+      <h2 [class]="cx(sectionTitleClass, 'relative z-[2] mb-[18px]')">Đội ngũ          <span class="about-page__bac-si-thu-text">bác sĩ thú y<img
+            class="about-page__doctors-underline"
             [attr.src]="aboutDecorations.doctorsUnderline"
             alt=""
           />
         </span>
       </h2>
-      <p class="mx-auto mb-[25px] mt-0 w-[1200px] max-w-full text-[18px] leading-[1.6] text-[#0f172a]">Đội ngũ bác sĩ tại Dr.Pet's House luôn đặt sức khỏe và sự an toàn của thú cưng lên hàng đầu. Với kiến thức chuyên môn cùng sự tận tình trong chăm sóc, chúng tôi mang đến trải nghiệm thăm khám đáng tin cậy cho mọi khách hàng.</p>
+      <p class="about-page__doi-ngu-bac-text">Đội ngũ bác sĩ tại Dr.Pet's House luôn đặt sức khỏe và sự an toàn của thú cưng lên hàng đầu. Với kiến thức chuyên môn cùng sự tận tình trong chăm sóc, chúng tôi mang đến trải nghiệm thăm khám đáng tin cậy cho mọi khách hàng.</p>
       <a
         [class]="cx(primaryButtonClass, 'mb-[38px] min-h-14 px-8 py-4 text-[20px] font-bold tracking-[0.5px] shadow-elevation')"
         appCustomerLink="/dat-lich"
       >ĐẶT LỊCH NGAY</a>
-      <div class="relative mx-auto mt-[37px] h-[376px] w-[1440px]">
+      <div class="about-page__box-4">
         <button
           class="absolute left-[19px] top-[150px] z-[3] grid size-14 place-items-center rounded-full border-0 bg-secondary text-[#0f172a] transition-[background-color,color,box-shadow,transform] duration-200 hover:scale-[1.08] hover:bg-blue-900 hover:text-white hover:shadow-[0_6px_16px_rgba(13,71,161,0.28)] active:scale-[0.94] active:shadow-none max-[900px]:hidden"
           type="button"
@@ -283,19 +283,19 @@
         >
           <app-customer-icon name="chevron-left" />
         </button>
-        <div class="absolute left-[111px] top-0 grid w-[1229px] grid-cols-[repeat(4,277px)] gap-10 max-[900px]:grid-cols-2 max-[620px]:grid-cols-1">
+        <div class="about-page__grid-6">
           @for (doctor of visibleDoctors(); track doctor.name) {
-            <article class="h-[376px] min-w-0 overflow-hidden rounded-lg border-0 bg-white text-left shadow-[0_5px_15px_rgba(35,56,81,0.08)]">
-              <div class="h-[228px] overflow-hidden bg-[#dce7ef] max-[620px]:h-[340px]">
+            <article class="about-page__card-3">
+              <div class="about-page__box-5">
                 <img
-                  class="size-full object-cover object-center"
+                  class="about-page__name"
                   [attr.src]="doctor.image"
                   [attr.alt]="doctor.name"
                 />
               </div>
-              <h3 class="mx-4 mb-[7px] mt-4 font-['Roboto'] text-[20px] font-bold text-blue-900">{{ doctor.name }}</h3>
-              <strong class="mx-4 block font-['Roboto'] text-[17px] font-normal text-[#555]">{{ doctor.role }}</strong>
-              <p class="mx-4 mb-[18px] mt-3 block font-['Roboto'] text-[15px] leading-[1.45] text-[#777]">{{ doctor.school }}</p>
+              <h3 class="about-page__name-2">{{ doctor.name }}</h3>
+              <strong class="about-page__role">{{ doctor.role }}</strong>
+              <p class="about-page__school">{{ doctor.school }}</p>
             </article>
           }
         </div>
@@ -309,7 +309,7 @@
         </button>
       </div>
       <div
-        class="mt-[34px] flex justify-center gap-[5px]"
+        class="about-page__doctor-slide"
         [attr.aria-label]="`Trạng thái bác sĩ ${doctorSlide() + 1}`"
       >
         @for (page of [0, 1, 2, 3]; track page) {
@@ -328,11 +328,11 @@
     </section>
     <section app-feedback-section [layout]="'flow'"></section>
   </main>
-  <app-footer />
 </div>
+<app-footer />
 @if (previewImage()) {
   <div
-    class="fixed inset-0 z-[120] grid cursor-zoom-out place-items-center bg-[rgba(2,0,15,0.72)] px-24 py-[52px] max-[620px]:px-[18px] max-[620px]:pb-9 max-[620px]:pt-[72px]"
+    class="about-page__xem-anh-khong-gian"
     role="dialog"
     aria-modal="true"
     aria-label="Xem ảnh không gian"
@@ -353,15 +353,15 @@
       <app-customer-icon name="chevron-left" [size]="30" />
     </button>
     <figure
-      class="relative m-0 grid w-[min(1100px,84vw)] cursor-default place-items-center max-[620px]:w-full"
+      class="about-page__figure"
       (click)="$any($event).stopPropagation()"
     >
       <img
-        class="block max-h-[86vh] max-w-full rounded-3xl object-contain shadow-[0_24px_70px_rgba(0,0,0,0.38)]"
+        class="about-page__alt"
         [attr.src]="previewImage().src"
         [attr.alt]="previewImage().alt"
       />
-      <figcaption class="absolute bottom-[18px] right-[18px] min-w-14 rounded-full bg-[rgba(2,0,15,0.72)] px-3 py-[7px] text-center text-[15px] font-bold leading-none text-white">{{ previewImageIndex() + 1 }}/{{ activeGallery().images.length }}</figcaption>
+      <figcaption class="about-page__preview-image-index">{{ previewImageIndex() + 1 }}/{{ activeGallery().images.length }}</figcaption>
     </figure>
     <button
       type="button"

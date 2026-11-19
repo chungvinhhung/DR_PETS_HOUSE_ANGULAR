@@ -10,6 +10,7 @@ import { ReactStyleDirective } from '../../directives/react-style.directive';
   standalone: true,
   imports: [ReactStyleDirective],
   templateUrl: './canvas-layout.component.html',
+  styleUrl: './canvas-layout.component.scss',
   host: {
     'class': 'block w-full overflow-x-clip bg-white',
   },

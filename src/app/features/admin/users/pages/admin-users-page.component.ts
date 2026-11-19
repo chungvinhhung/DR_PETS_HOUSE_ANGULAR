@@ -5,6 +5,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import {
@@ -19,22 +20,21 @@ import {
   AdminUser,
 } from '../models/admin-user.model';
 import { AdminUsersService } from '../services/admin-users.service';
-import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagination';
+import { ADMIN_TABLE_PAGE_SIZE, adminPageWindow, AdminPageItem } from '../../../../shared/utils/admin-table-pagination';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
+import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
 
 @Component({
   selector: 'app-admin-users-page',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink, AdminDataStateComponent, AdminCatalogShellComponent],
   template: `
+    <app-admin-catalog-shell activeItem="staff">
     <section class="users-page">
       <header class="page-heading">
         <div>
           <p class="eyebrow">AUTH / RBAC</p>
           <h1>Quản lý tài khoản nội bộ</h1>
-          <p>
-            Admin có thể tạo tài khoản và thay đổi role/status. Manager chỉ được
-            xem danh sách trong phạm vi branch do Backend trả về.
-          </p>
         </div>
         <button type="button" (click)="loadUsers()" [disabled]="loading()">
           {{ loading() ? 'Đang tải...' : 'Tải lại' }}
@@ -46,7 +46,6 @@ import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagi
           <div class="panel-heading">
             <div>
               <h2>Tạo tài khoản nội bộ</h2>
-              <p>Chỉ ADMIN được phép thực hiện thao tác này.</p>
             </div>
           </div>
 
@@ -81,17 +80,17 @@ import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagi
             </label>
 
             <label>
-              <span>System role</span>
+              <span>Vai trò hệ thống</span>
               <select formControlName="systemRole">
-                <option value="MANAGER">MANAGER</option>
                 <option value="STAFF">STAFF</option>
                 <option value="ADMIN">ADMIN</option>
               </select>
+              <small>Manager được tạo bằng form riêng với phạm vi chi nhánh quản lý. <a routerLink="/admin/staff/new">Thêm quản lý</a></small>
             </label>
 
             @if (createForm.controls.systemRole.value === 'STAFF') {
               <label>
-                <span>Staff sub-role</span>
+                <span>Vai trò nghiệp vụ</span>
                 <select formControlName="staffSubRole">
                   <option value="RECEPTIONIST">RECEPTIONIST</option>
                   <option value="CARE_STAFF_GROOMER">CARE_STAFF_GROOMER</option>
@@ -114,32 +113,30 @@ import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagi
         <p class="notice" role="status">{{ notice() }}</p>
       }
 
-      @if (errorMessage()) {
-        <p class="error" role="alert">{{ errorMessage() }}</p>
-      }
-
       <section class="panel">
         <div class="panel-heading">
           <div>
             <h2>Danh sách người dùng</h2>
-            <p>Danh sách tài khoản trong phạm vi Backend cho phép.</p>
+            <p>Danh sách tài khoản trong phạm vi được phân quyền.</p>
           </div>
         </div>
 
         @if (loading()) {
-          <p class="empty-state">Đang tải danh sách...</p>
+          <app-admin-data-state kind="loading" title="Đang tải danh sách tài khoản" />
+        } @else if (errorMessage()) {
+          <app-admin-data-state kind="error" title="Không thể tải danh sách tài khoản" [message]="errorMessage() || ''" (retry)="loadUsers()" />
         } @else if (users().length === 0) {
-          <p class="empty-state">Không có tài khoản nào trong phạm vi được phép xem.</p>
+          <app-admin-data-state kind="empty" title="Chưa có tài khoản" message="Không có tài khoản nào trong phạm vi được phép xem." />
         } @else {
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
                   <th>Người dùng</th>
-                  <th>Role</th>
+                  <th>Vai trò</th>
                   <th>Trạng thái</th>
-                  <th>Branch</th>
-                  <th>Quyền thao tác FE</th>
+                  <th>Chi nhánh</th>
+                  <th>Quyền thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -159,12 +156,12 @@ import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagi
                           [disabled]="saving()"
                         >
                           <option value="ADMIN">ADMIN</option>
-                          <option value="MANAGER">MANAGER</option>
+                          <option value="MANAGER" [disabled]="user.systemRole === 'STAFF'">MANAGER</option>
                           <option value="STAFF">STAFF</option>
-                          <option value="CUSTOMER">CUSTOMER</option>
                         </select>
 
                         @if (user.systemRole === 'STAFF') {
+                          <small class="role-guidance">Không chuyển trực tiếp Staff thành Manager. <a routerLink="/admin/staff/new">Tạo Manager riêng</a></small>
                           <select
                             class="compact-select compact-select--sub"
                             [value]="user.staffSubRole || 'RECEPTIONIST'"
@@ -220,9 +217,12 @@ import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagi
             <nav aria-label="Phân trang tài khoản">
               <button type="button" aria-label="Trang trước"
                 [disabled]="page() === 1" (click)="goToPage(page() - 1)">‹</button>
-              @for (number of visiblePageNumbers; track number) {
-                <button type="button" class="users-page-number" [attr.aria-current]="page() === number ? 'page' : null"
-                  [disabled]="loading()" (click)="goToPage(number)">{{ number }}</button>
+              @for (number of visiblePageNumbers; track $index) {
+                @if(number==='…') { <span class="users-pagination__ellipsis" aria-hidden="true">…</span> }
+                @else {
+                  <button type="button" class="users-page-number" [attr.aria-current]="page() === number ? 'page' : null"
+                    [disabled]="loading()" (click)="goToPage(number)">{{ number }}</button>
+                }
               }
               <button type="button" aria-label="Trang tiếp"
                 [disabled]="page() >= pageCount" (click)="goToPage(page() + 1)">›</button>
@@ -231,6 +231,7 @@ import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagi
         }
       </section>
     </section>
+    </app-admin-catalog-shell>
   `,
   styles: [`
     :host {
@@ -238,8 +239,12 @@ import { ADMIN_TABLE_PAGE_SIZE } from '../../../../shared/utils/admin-table-pagi
     }
 
     .users-page {
+      box-sizing: border-box;
       display: grid;
       gap: 22px;
+      min-width: 0;
+      padding: 28px 30px 42px;
+      background: #f8fafd;
     }
 
     .page-heading,
@@ -565,11 +570,8 @@ export class AdminUsersPageComponent {
   get pageCount(): number {
     return Math.max(1, Math.ceil(this.total() / this.pageSize));
   }
-  get visiblePageNumbers(): number[] {
-    const total = this.pageCount;
-    const current = this.page();
-    const start = Math.max(1, Math.min(current - 1, total - 2));
-    return Array.from({length: Math.min(3, total)}, (_, i) => start + i);
+  get visiblePageNumbers(): AdminPageItem[] {
+    return adminPageWindow(this.page(), this.pageCount);
   }
 
   goToPage(target: number): void {
@@ -614,6 +616,10 @@ export class AdminUsersPageComponent {
     }
 
     const value = this.createForm.getRawValue();
+    if (value.systemRole === 'MANAGER') {
+      this.errorMessage.set('Manager cần được tạo bằng form Nhân sự → Thêm quản lý, kèm chi nhánh quản lý.');
+      return;
+    }
     this.saving.set(true);
 
     this.usersService
@@ -657,6 +663,11 @@ export class AdminUsersPageComponent {
       return;
     }
 
+    if (user.systemRole === 'STAFF' && role === 'MANAGER') {
+      this.errorMessage.set('Không thể chuyển trực tiếp Staff thành Manager. Vui lòng tạo tài khoản Manager riêng tại Nhân sự → Thêm quản lý.');
+      this.loadUsers();
+      return;
+    }
     const systemRole = role as SystemRole;
     const staffSubRole =
       systemRole === 'STAFF'

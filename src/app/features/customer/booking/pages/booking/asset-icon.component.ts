@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './asset-icon.component.html',
+  styleUrl: './asset-icon.component.scss',
   host: {
     '[attr.src]': 'src()',
     '[attr.alt]': 'alt()',

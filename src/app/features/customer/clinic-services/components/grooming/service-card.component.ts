@@ -11,6 +11,7 @@ import { maskStyle } from './grooming-services.helpers';
   standalone: true,
   imports: [ReactStyleDirective],
   templateUrl: './service-card.component.html',
+  styleUrl: './service-card.component.scss',
   host: {
     'class': 'group relative h-[422px] w-[355px] shrink-0 transition-[transform,filter] duration-300 ease-out hover:-translate-y-1 hover:drop-shadow-[0_12px_18px_rgba(13,71,161,0.18)]',
   },

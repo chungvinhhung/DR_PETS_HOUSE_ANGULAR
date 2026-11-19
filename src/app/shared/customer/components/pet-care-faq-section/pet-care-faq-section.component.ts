@@ -11,6 +11,7 @@ import { ReactStyleDirective } from '../../directives/react-style.directive';
   standalone: true,
   imports: [NgTemplateOutlet, ReactStyleDirective],
   templateUrl: './pet-care-faq-section.component.html',
+  styleUrl: './pet-care-faq-section.component.scss',
   host: {
     'class': 'pet-care-faq',
   },

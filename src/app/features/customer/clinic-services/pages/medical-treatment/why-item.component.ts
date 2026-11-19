@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './why-item.component.html',
+  styleUrl: './why-item.component.scss',
   host: {
     '[class]': '`medical-why__item medical-why__item--${align()}`',
   },

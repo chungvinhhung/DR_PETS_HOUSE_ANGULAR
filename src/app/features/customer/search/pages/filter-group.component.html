@@ -1,21 +1,21 @@
-<div class="flex items-center gap-[17px]">
-  <div class="h-6 w-[3px] rounded-full bg-[#0D47A1]"></div>
-  <h3 class="flex-1 text-[22px] font-bold leading-none text-[#0D47A1]">{{ group().title }}</h3>
+<div class="filter-group__row">
+  <div class="filter-group__box"></div>
+  <h3 class="filter-group__title">{{ group().title }}</h3>
 </div>
-<div class="mt-6 flex flex-col gap-4">
+<div class="filter-group__option-label-option-count-el">
   @for (option of group().options; track $index) {
     @let checked = option.id === allOptionId()
           ? selectedValues().length === 0
           : selectedValues().includes(option.id);
     @let label = option.count === null ? option.label : `${option.label} (${option.count})`;
-    <label class="flex cursor-pointer items-center gap-5 text-[#414141]">
+    <label class="filter-group__label">
       <input
         type="checkbox"
         [checked]="checked"
         (change)="onToggle.emit([group().id, option.id])"
         class="size-5 accent-[#0D47A1]"
       />
-      <span class="text-[16px] leading-[27px]">{{ label }}</span>
+      <span class="filter-group__label-2">{{ label }}</span>
     </label>
   }
 </div>

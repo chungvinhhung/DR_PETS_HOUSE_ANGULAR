@@ -12,6 +12,7 @@ import { orderSuccessImages } from '../assets/order-success-assets';
   standalone: true,
   imports: [],
   templateUrl: './order-success-overlay.component.html',
+  styleUrl: './order-success-overlay.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

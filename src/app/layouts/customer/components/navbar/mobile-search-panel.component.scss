@@ -1,0 +1,75 @@
+.mobile-search-panel__tim-kiem {
+  @apply fixed inset-0 z-[95] bg-[rgba(6,16,90,0.2)] backdrop-blur-[6px] lg:hidden;
+}
+
+.mobile-search-panel__mobile-panel-enter {
+  @apply h-full w-full bg-white;
+}
+
+.mobile-search-panel__row {
+  @apply flex h-12 w-full items-center justify-center bg-white px-[15px] md:h-16;
+}
+
+.mobile-search-panel__form {
+  @apply flex h-[26px] min-w-0 flex-1 items-center justify-between gap-[13px];
+}
+
+.mobile-search-panel__label {
+  @apply relative h-[26px] min-w-0 flex-1;
+}
+
+.mobile-search-panel__text {
+  @apply absolute inset-0 rounded border border-[#FDD835];
+}
+
+.mobile-search-panel__dog-search {
+  @apply absolute -left-0.5 top-px h-[25px] w-[27px] object-cover;
+}
+
+.mobile-search-panel__box {
+  @apply h-[calc(100vh-48px)] overflow-y-auto bg-[#FFFDE7] pt-1 md:h-[calc(100vh-64px)];
+}
+
+.mobile-search-panel__section {
+  @apply flex w-full flex-col gap-3 px-4 py-[10px];
+}
+
+.mobile-search-panel__goi-y-phu-title {
+  @apply font-['Roboto'] text-[16px] font-bold leading-6 tracking-[0.15px] text-[#353535];
+}
+
+.mobile-search-panel__stack {
+  @apply flex min-h-[172px] flex-col justify-between;
+}
+
+.mobile-search-panel__dang-tai-goi-text {
+  @apply rounded-[8px] border-b border-[#E0E0E0] p-2 font-['Roboto'] text-[14px] leading-6 text-black/60;
+}
+
+.mobile-search-panel__label-2 {
+  @apply min-w-0 truncate;
+}
+
+.mobile-search-panel__grid {
+  @apply grid grid-cols-2 gap-3;
+}
+
+.mobile-search-panel__name {
+  @apply size-12 shrink-0 rounded-[8px] object-cover;
+}
+
+.mobile-search-panel__text-2 {
+  @apply min-w-0;
+}
+
+.mobile-search-panel__text-black-87 {
+  @apply block truncate font-['Roboto'] text-[13px] leading-[19.5px];
+}
+
+.mobile-search-panel__price {
+  @apply block truncate font-['Roboto'] text-[12px] leading-[18px] text-[#0D47A1];
+}
+
+.mobile-search-panel__box-2 {
+  @apply px-4 py-[10px];
+}

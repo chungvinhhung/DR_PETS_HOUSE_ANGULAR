@@ -1,0 +1,255 @@
+<app-admin-catalog-shell activeItem="content-articles">
+  <main class="article-studio">
+    <app-admin-breadcrumb [items]="breadcrumb" />
+    <header class="article-studio__heading">
+      <div>
+        <h1>{{isEditing ? 'Chỉnh sửa bài viết kiến thức' : 'Tạo bài viết kiến thức'}}</h1>
+      </div>
+      <div class="article-studio__actions">
+        <button type="button" class="article-studio__btn article-studio__btn--outline"
+          [disabled]="saving()" (click)="cancel()">Hủy bỏ</button>
+        <button type="button" class="article-studio__btn article-studio__btn--danger-outline"
+          [disabled]="saving() || loading() || !canWrite()" (click)="save('DRAFT')">
+          Lưu bản nháp
+        </button>
+        <button type="button" class="article-studio__btn article-studio__btn--primary"
+          [disabled]="saving() || loading() || !canWrite()" (click)="save('PUBLISHED')">
+          {{saving() ? 'Đang lưu...' : 'Xuất bản'}}
+        </button>
+      </div>
+    </header>
+
+    @if (loading()) {
+      <div class="article-studio__message" role="status">Đang tải nội dung bài viết...</div>
+    } @else if (loadError()) {
+      <div class="article-studio__message article-studio__message--error" role="alert">{{loadError()}}</div>
+    } @else {
+      @if (error()) {
+        <div class="article-studio__message article-studio__message--error" role="alert">{{error()}}</div>
+      }
+      @if (!canWrite()) {
+        <div class="article-studio__message" role="status">Chỉ Quản trị viên được phép tạo và chỉnh sửa bài viết.</div>
+      }
+      <div class="article-studio__columns">
+        <div class="article-studio__editing">
+          <section class="article-studio__section" aria-labelledby="article-information-heading">
+            <div class="article-studio__section-heading">
+              <h2 id="article-information-heading">Thông tin bài viết</h2>
+              @if (isEditing) {
+                <span class="article-studio__status">{{savedStatus() === 'PUBLISHED' ? 'Đã xuất bản' : savedStatus() === 'ARCHIVED' ? 'Đã lưu trữ' : 'Bản nháp'}}</span>
+              }
+            </div>
+            <div class="article-studio__fields">
+              <label class="article-studio__field article-studio__field--wide">
+                <span>Tiêu đề bài viết <b>*</b></span>
+                <input type="text" maxlength="180" placeholder="Nhập tiêu đề bài viết"
+                  [disabled]="!canWrite() || saving()" [ngModel]="title()" (ngModelChange)="setField('title',$event)">
+              </label>
+              <label class="article-studio__field">
+                <span>Chủ đề <b>*</b></span>
+                <select [disabled]="!canWrite() || saving()" [ngModel]="category()"
+                  (ngModelChange)="setField('category',$event)" aria-label="Chọn chủ đề bài viết">
+                  <option value="" disabled>Chọn chủ đề</option>
+                  @for (item of categories; track item.id) {
+                    <option [value]="item.label">{{item.label}}</option>
+                  }
+                </select>
+              </label>
+              <div class="article-studio__field">
+                <label for="article-tag-input">Thẻ nội dung (Hashtag)</label>
+                <div class="article-studio__tag-editor">
+                  <div class="article-studio__tag-entry">
+                    <span aria-hidden="true">#</span>
+                    <input id="article-tag-input" type="text" maxlength="41"
+                      placeholder="Ví dụ: SucKhoeThuCung"
+                      [disabled]="!canWrite() || saving() || tags().length >= 12"
+                      [ngModel]="tagDraft()" (ngModelChange)="tagDraft.set($event)"
+                      (keydown)="handleTagKey($event)" (blur)="commitTag()"
+                      aria-label="Nhập hashtag">
+                    <button type="button" aria-label="Thêm thẻ nội dung"
+                      [disabled]="!canWrite() || saving() || !tagDraft().trim() || tags().length >= 12"
+                      (click)="commitTag()">Thêm</button>
+                  </div>
+                  @if (tags().length) {
+                    <div class="article-studio__tag-chips" aria-label="Các thẻ nội dung đã chọn">
+                      @for (tag of tags(); track tag) {
+                        <span class="article-studio__tag-chip">
+                          #{{tag}}
+                          <button type="button" [attr.aria-label]="'Xóa thẻ '+tag"
+                            [disabled]="!canWrite() || saving()" (click)="removeTag(tag)">×</button>
+                        </span>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+              <label class="article-studio__field article-studio__field--wide">
+                <span>Tóm tắt</span>
+                <textarea rows="3" maxlength="500" placeholder="Tóm tắt ngắn để hiển thị trên thẻ bài viết"
+                  [disabled]="!canWrite() || saving()" [ngModel]="excerpt()" (ngModelChange)="setField('excerpt',$event)"></textarea>
+              </label>
+              <label class="article-studio__field article-studio__field--wide">
+                <span>Đường dẫn ảnh bìa</span>
+                <input type="url" placeholder="https://... (ảnh minh họa bài viết)"
+                  [disabled]="!canWrite() || saving()" [ngModel]="coverUrl()" (ngModelChange)="setField('coverUrl',$event)">
+              </label>
+            </div>
+          </section>
+
+          <section class="article-studio__section" aria-labelledby="article-blocks-heading">
+            <div class="article-studio__section-heading">
+              <h2 id="article-blocks-heading">Nội dung bài viết</h2>
+              <span class="article-studio__count">{{blocks().length}} khối</span>
+            </div>
+            <div class="article-studio__block-list">
+              @for (block of blocks(); track block.id; let index=$index) {
+                <div class="article-studio__block">
+                  <div class="article-studio__block-toolbar">
+                    <span>{{typeNames[block.type]}} {{index+1}}</span>
+                    <div>
+                      <button type="button" title="Di chuyển lên" [disabled]="index === 0 || saving() || !canWrite()"
+                        (click)="moveBlock(block.id,-1)" aria-label="Di chuyển khối lên">↑</button>
+                      <button type="button" title="Di chuyển xuống" [disabled]="index === blocks().length-1 || saving() || !canWrite()"
+                        (click)="moveBlock(block.id,1)" aria-label="Di chuyển khối xuống">↓</button>
+                      <button type="button" title="Xóa khối" [disabled]="saving() || !canWrite()"
+                        (click)="removeBlock(block.id)" aria-label="Xóa khối">×</button>
+                    </div>
+                  </div>
+                  @if (block.type === 'image' || block.type === 'video') {
+                    <label class="article-studio__field">
+                      <span>{{block.type === 'image' ? 'URL hình ảnh' : 'URL video'}}</span>
+                      <input type="url" [placeholder]="block.type === 'image' ? 'https://.../image.jpg' : 'https://.../video.mp4'"
+                        [disabled]="!canWrite() || saving()" [ngModel]="block.text" (ngModelChange)="updateBlock(block.id,'text',$event)">
+                    </label>
+                  } @else {
+                    <app-admin-article-rich-block
+                      [type]="$any(block.type)" [text]="block.text" [html]="block.html || ''"
+                      [disabled]="!canWrite() || saving()"
+                      (contentChange)="updateRichBlock(block.id,$event)">
+                    </app-admin-article-rich-block>
+                  }
+                </div>
+              } @empty {
+                <div class="article-studio__empty">Chưa có khối nội dung. Hãy thêm khối bên dưới.</div>
+              }
+            </div>
+            <div class="article-studio__add-block">
+              <label for="article-block-type">Loại nội dung</label>
+              <select id="article-block-type" #blockType [disabled]="saving() || !canWrite()" aria-label="Loại khối nội dung">
+                <option value="paragraph">Đoạn văn</option>
+                <option value="heading">Tiêu đề phụ</option>
+                <option value="quote">Trích dẫn</option>
+                <option value="image">Hình ảnh</option>
+                <option value="video">Video</option>
+              </select>
+              <button type="button" class="article-studio__btn article-studio__btn--outline"
+                [disabled]="saving() || !canWrite()" (click)="addBlock($any(blockType.value))">
+                <span aria-hidden="true">+</span> Thêm khối
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <aside class="article-studio__side" aria-label="Chọn bố cục và xem trước">
+          <section class="article-studio__section">
+            <h2>Bố cục hiển thị</h2>
+            <div class="article-studio__layouts">
+              <button type="button" [class.is-selected]="layout()==='STANDARD'"
+                [attr.aria-pressed]="layout()==='STANDARD'"
+                [disabled]="!canWrite() || saving()" (click)="setLayout('STANDARD')">
+                <span class="article-studio__layout-shape"><span></span><span></span></span>
+                <strong>Bài viết thường</strong>
+                <small>Thẻ chuẩn trong danh sách</small>
+              </button>
+              <button type="button" [class.is-selected]="layout()==='FEATURED'"
+                [attr.aria-pressed]="layout()==='FEATURED'"
+                [disabled]="!canWrite() || saving()" (click)="setLayout('FEATURED')">
+                <span class="article-studio__layout-shape article-studio__layout-shape--featured"><span></span><span></span></span>
+                <strong>Bài viết nổi bật</strong>
+                <small>Ảnh lớn, nội dung bên cạnh</small>
+              </button>
+            </div>
+          </section>
+          <section class="article-studio__section article-studio__preview-section">
+            <div class="article-studio__section-heading">
+              <h2>Xem trước</h2>
+              <div class="article-studio__preview-tabs" role="group" aria-label="Kiểu xem trước">
+                <button type="button" [class.is-selected]="previewMode()==='CARD'"
+                  [attr.aria-pressed]="previewMode()==='CARD'" (click)="previewMode.set('CARD')">Thẻ</button>
+                <button type="button" [class.is-selected]="previewMode()==='DETAIL'"
+                  [attr.aria-pressed]="previewMode()==='DETAIL'" (click)="previewMode.set('DETAIL')">Chi tiết</button>
+              </div>
+            </div>
+            @if (previewMode() === 'CARD') {
+              <div class="article-studio__customer-card-preview" aria-label="Xem trước thẻ bài viết Customer">
+                @if (layout() === 'FEATURED') {
+                  <div class="article-studio__featured-render">
+                    <div class="article-studio__featured-canvas">
+                      <app-featured-post [post]="previewPost()" />
+                    </div>
+                  </div>
+                } @else {
+                  <div class="article-studio__blog-card-render">
+                    <article app-blog-card [post]="previewPost()"></article>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="article-studio__preview-detail">
+                <h3>{{title() || 'Tiêu đề bài viết'}}</h3>
+                <div class="article-studio__preview-author">Dr. Pet's House · {{category() || 'Chủ đề'}}</div>
+                <div class="article-studio__preview-cover">
+                  @if (coverUrl()) { <img [src]="coverUrl()" alt="Ảnh bìa xem trước"> }
+                  @else { <span>Ảnh bìa</span> }
+                </div>
+                @if (excerpt()) { <p class="article-studio__preview-intro">{{excerpt()}}</p> }
+                @for (block of previewBlocks(); track block.id) {
+                  @switch (block.type) {
+                    @case ('heading') {
+                      @if (block.html) {
+                        <div class="article-studio__preview-rich-heading" [innerHTML]="block.html"></div>
+                      } @else { <h4>{{block.text}}</h4> }
+                    }
+                    @case ('quote') {
+                      <blockquote>
+                        @if (block.html) { <div class="article-studio__rich-html" [innerHTML]="block.html"></div> }
+                        @else { {{block.text}} }
+                      </blockquote>
+                    }
+                    @case ('list') {
+                      <div class="article-studio__numbered-content">
+                        @if (block.html) {
+                          <div [innerHTML]="block.html"></div>
+                        } @else {
+                          <ol>
+                            @for (line of block.text.split('\n'); track $index) {
+                              @if (line.trim()) { <li>{{line}}</li> }
+                            }
+                          </ol>
+                        }
+                      </div>
+                    }
+                    @case ('image') { <img class="article-studio__preview-inline-image" [src]="block.text" [alt]="block.alt || ''"> }
+                    @case ('video') {
+                      <div class="article-studio__preview-video">Video: {{block.text}}</div>
+                    }
+                    @default {
+                      @if (block.html) {
+                        <div class="article-studio__rich-html" [innerHTML]="block.html"></div>
+                      } @else { <p>{{block.text}}</p> }
+                    }
+                  }
+                }
+                @if (categoryTags().length) {
+                  <div class="article-studio__preview-tags">
+                    @for (tag of categoryTags(); track tag) { <span>#{{tag}}</span> }
+                  </div>
+                }
+              </div>
+            }
+          </section>
+        </aside>
+      </div>
+    }
+  </main>
+</app-admin-catalog-shell>

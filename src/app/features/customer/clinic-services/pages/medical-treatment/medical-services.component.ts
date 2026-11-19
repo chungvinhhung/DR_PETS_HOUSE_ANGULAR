@@ -8,6 +8,7 @@ import { medicalAssets } from '../../data/medical-treatment-data';
   standalone: true,
   imports: [ReactStyleDirective],
   templateUrl: './medical-services.component.html',
+  styleUrl: './medical-services.component.scss',
   host: {
     'class': 'medical-services',
   },

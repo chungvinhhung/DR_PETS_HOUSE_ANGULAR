@@ -10,6 +10,9 @@ import { CheckoutOverlayComponent } from '../../../features/customer/checkout/co
 import { GuestOrderSuccessOverlayComponent } from '../../../features/customer/checkout/components/guest-order-success-overlay.component';
 import { OrderSuccessOverlayComponent } from '../../../features/customer/checkout/components/order-success-overlay.component';
 import { DecisionModalComponent } from '../../../shared/customer/components/decision-modal/decision-modal.component';
+import { CustomerBackToTopComponent } from '../components/back-to-top/customer-back-to-top.component';
+import { AUTH_MODAL_PARAM, CustomerAuthService } from '../../../core/customer/services/customer-auth.service';
+import { RETURN_URL_PARAM } from '../../../core/utils/return-url';
 
 const CUSTOMER_STYLESHEET_ID = 'customer-stylesheet';
 
@@ -35,19 +38,35 @@ const CUSTOMER_STYLESHEET_ID = 'customer-stylesheet';
     OrderSuccessOverlayComponent,
     GuestOrderSuccessOverlayComponent,
     DecisionModalComponent,
+    CustomerBackToTopComponent,
   ],
   templateUrl: './customer-layout.component.html',
+  styleUrl: './customer-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerLayoutComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly router = inject(Router);
+  private readonly authService = inject(CustomerAuthService);
 
   /** Chỉ hiển thị nội dung khi CSS đã tải xong để tránh "nháy" giao diện chưa có style. */
   protected readonly stylesReady = signal(false);
 
+  // Resolved after the Customer stylesheet has loaded. AppComponent keeps
+  // its single existing mascot loader visible until this promise settles.
+  private finishStylesReady!: () => void;
+  readonly whenStylesReady: Promise<void> = new Promise<void>((resolve) => {
+    this.finishStylesReady = resolve;
+  });
+
+  private markStylesReady(): void {
+    this.stylesReady.set(true);
+    this.finishStylesReady();
+  }
+
   constructor() {
     this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
+      this.openLoginFromUrl();
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       this.document.documentElement.scrollTop = 0;
       this.document.body.scrollTop = 0;
@@ -58,18 +77,45 @@ export class CustomerLayoutComponent implements OnInit {
     this.loadCustomerStylesheet();
   }
 
+  /**
+   * Callback URL: /?auth=login&returnUrl=/don-hang-cua-toi -> mở popup đăng nhập,
+   * đăng nhập xong chuyển tới returnUrl (CustomerAuthService đã kiểm tra an toàn).
+   */
+  private openLoginFromUrl(): void {
+    const params = this.router.parseUrl(this.router.url).queryParamMap;
+    if (params.get(AUTH_MODAL_PARAM) !== 'login' && !params.has(RETURN_URL_PARAM)) return;
+    this.authService.loginWithReturnUrl(params.get(RETURN_URL_PARAM) ?? '/');
+  }
+
+  protected retryCustomerStylesheet(): void {
+    this.stylesReady.set(false);
+    this.document.getElementById(CUSTOMER_STYLESHEET_ID)?.remove();
+    this.loadCustomerStylesheet();
+  }
+
   private loadCustomerStylesheet(): void {
     const existing = this.document.getElementById(CUSTOMER_STYLESHEET_ID) as HTMLLinkElement | null;
     if (existing) {
-      this.stylesReady.set(true);
+      // A pre-existing link might still be loading or may have failed.
+      // Reuse its real load state rather than exposing unstyled Customer content.
+      if (existing.sheet) {
+        this.markStylesReady();
+      } else {
+        existing.addEventListener('load', () => this.markStylesReady(), { once: true });
+        existing.addEventListener('error', () => this.stylesReady.set(false), { once: true });
+      }
       return;
     }
     const link = this.document.createElement('link');
     link.id = CUSTOMER_STYLESHEET_ID;
     link.rel = 'stylesheet';
-    link.href = 'customer.css';
-    link.onload = () => this.stylesReady.set(true);
-    link.onerror = () => this.stylesReady.set(true);
+    // Root-relative so direct entry on /blog/cong-dong or any nested route
+    // never requests /blog/customer.css.
+    // The production build publishes a stable /customer.css alongside the
+    // content-hashed CSS bundle (see scripts/publish-customer-styles.mjs).
+    link.href = '/customer.css';
+    link.onload = () => this.markStylesReady();
+    link.onerror = () => this.stylesReady.set(false);
     this.document.head.appendChild(link);
   }
 }

@@ -1,9 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
+  HostListener,
+  ViewChild,
   inject,
   signal,
   effect,
+  computed,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -11,23 +15,26 @@ import { AppHttpError } from '../../../../core/models/app-http-error.model';
 import { DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { catchError, firstValueFrom, from, map, mergeMap, of, toArray } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, from, map, mergeMap, of, switchMap, toArray } from 'rxjs';
 
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { canAdmin } from '../../../../core/guards/admin-role-policy';
 import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
 import { AdminToastService } from '../../../../shared/services/admin-toast.service';
 import { CatalogService, ServiceApiRecord, ServiceBookingMode, ServicePriceVariant, ServiceWrite } from '../models/service-catalog.model';
 import { ServiceCatalogApiService, serviceFromApi } from '../services/service-catalog-api.service';
 import { resolveServicePricing } from '../services/service-pricing.utils';
-import { AdminProductService } from '../../products/services/admin-product.service';
+import { AdminInventoryService } from '../../inventory/services/admin-inventory.service';
+import type { ProductUsageType } from '../../products/models/admin-product.model';
 import { AdminCategoryService } from '../../categories/services/admin-category.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
 import { DraftBranchSelection, ServiceBranchConfigFlowComponent } from '../components/service-branch-config-flow.component';
 
 type PriceMode = 'FIXED' | 'QUOTE';
 type Tier = { key: string; weight: string; mode: PriceMode; price: number | null };
-type MaterialOption = { sku: string; name: string; unit: string; image: string | null; categoryId: string; price: number };
-type MaterialLine = { key: number; sku: string; query: string; quantity: number | null; unit: string };
+type MaterialOption = { materialId: string; sku: string; name: string; productName: string; unit: string; image: string | null; categoryId: string; variantLabel: string; usageType: ProductUsageType | null; price: number };
+type MaterialLine = { key: number; materialId: string; sku: string; query: string; quantity: number | null; unit: string };
 type BranchDetailRow = { id: string; name: string; summary: string };
 const TIER_WEIGHTS = [
   { key: 'XS', weight: '< 5 kg' },
@@ -43,14 +50,14 @@ const TIER_WEIGHTS = [
 @Component({
   selector: 'app-service-catalog-editor',
   standalone: true,
-  imports: [FormsModule, RouterLink, AdminCatalogShellComponent, ServiceBranchConfigFlowComponent],
+  imports: [FormsModule, RouterLink, AdminCatalogShellComponent, AdminDataStateComponent, ServiceBranchConfigFlowComponent],
   templateUrl: './service-catalog-editor.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServiceCatalogEditorComponent {
   private readonly repository = inject(ServiceCatalogApiService);
   private readonly branchesApi = inject(BranchManagementApiService);
-  private readonly productsApi = inject(AdminProductService);
+  private readonly inventoryApi = inject(AdminInventoryService);
   private readonly categoryApi = inject(AdminCategoryService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
@@ -59,7 +66,19 @@ export class ServiceCatalogEditorComponent {
   private readonly toast = inject(AdminToastService);
   private readonly previewToast = effect(() => {
     const message = this.notice();
+    if (message) this.toast.show(message, /thành công/i.test(message) ? 'success' : 'info');
+  });
+  private readonly branchErrorToast = effect(() => {
+    const message = this.branchLoadError();
+    if (message) this.toast.show(message, 'error');
+  });
+  private readonly activationToast = effect(() => {
+    const message = this.activationNotice();
     if (message) this.toast.show(message, 'info');
+  });
+  private readonly errorToast = effect(() => {
+    const message = this.errors()[0];
+    if (message) this.toast.show(message, 'error');
   });
 
   readonly editorMode = (this.route.snapshot.data['editorMode'] ?? 'create') as 'create' | 'edit' | 'view';
@@ -83,6 +102,7 @@ export class ServiceCatalogEditorComponent {
   source: CatalogService | null = null;
   readonly branchDetailRows = signal<readonly BranchDetailRow[]>([]);
   readonly stagedBranchConfigs = signal<readonly DraftBranchSelection[]>([]);
+  readonly canConfigureBranch = computed(() => canAdmin(this.authSession.user(), 'services.configureBranch'));
   readonly branchConfigFlowOpen = signal(false);
   readonly branchConfigTargetId = signal<string | null>(null);
   get displayedBranchRows(): readonly BranchDetailRow[] {
@@ -111,6 +131,9 @@ export class ServiceCatalogEditorComponent {
     };
   }
   openBranchConfiguration(branchId: string | null = null): void {
+    if (!this.canConfigureBranch()) return;
+    const scope = this.authSession.user()?.branchScope ?? [];
+    if (this.authSessionRole === 'MANAGER' && (!branchId || !scope.includes(branchId))) return;
     if (this.isNew && !this.active) {
       this.toast.show('Vui lòng bật trạng thái dịch vụ trước khi chọn chi nhánh.', 'info');
       return;
@@ -152,7 +175,15 @@ export class ServiceCatalogEditorComponent {
   readonly title = this.editorMode === 'view' ? 'Chi tiết dịch vụ' : this.isNew ? 'Thêm dịch vụ' : 'Chỉnh sửa dịch vụ';
   productOptions: MaterialOption[] = [];
   readonly productCategoryNames = new Map<string, string>();
-  readonly openMaterialKey = signal<number | null>(null);
+  @ViewChild('materialSearchInput') private materialSearchInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('materialPickerDialog') private materialPickerDialog?: ElementRef<HTMLElement>;
+  @ViewChild('materialAddTrigger') private materialAddTrigger?: ElementRef<HTMLButtonElement>;
+  readonly materialPickerOpen = signal(false);
+  readonly materialPickerSearch = signal('');
+  readonly materialPickerPending = signal<string[]>([]);
+  readonly materialPickerVisible = signal(20);
+  readonly materialCatalogLoading = signal(true);
+  readonly materialCatalogError = signal('');
   private materialsDirty = false;
 
   serviceName = '';
@@ -169,6 +200,8 @@ export class ServiceCatalogEditorComponent {
     ...item, mode: 'QUOTE', price: null,
   }));
   materials: MaterialLine[] = [];
+  /** Retain invalid negative input so it can be corrected, rather than silently stripping '-'. */
+  readonly invalidTierPrices = new Map<string, string>();
   private nextMaterialKey = 1;
 
   readonly errors = signal<string[]>([]);
@@ -184,21 +217,7 @@ export class ServiceCatalogEditorComponent {
         for (const category of page.items) this.productCategoryNames.set(category.id, category.name);
       },
     });
-    this.productsApi.listProducts({ limit: 100, status: 'ACTIVE' }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (page) => {
-        this.productOptions = page.items.flatMap((product) => product.variants
-          .filter((variant) => variant.status === 'ACTIVE' && !!variant.sku)
-          .map((variant) => ({
-            sku: variant.sku,
-            name: product.name,
-            unit: '',
-            image: variant.image || product.images.find((item) => item.isPrimary)?.url || product.images[0]?.url || null,
-            categoryId: product.categoryId,
-            price: variant.finalPrice ?? variant.price,
-          })));
-      },
-      error: () => { this.productOptions = []; },
-    });
+    this.loadMaterialCatalog();
     if (this.serviceId && this.editorMode !== 'create') {
       this.repository.get(this.serviceId).pipe(
         takeUntilDestroyed(this.destroyRef),
@@ -217,55 +236,82 @@ export class ServiceCatalogEditorComponent {
     }
   }
 
+  loadMaterialCatalog(): void {
+    this.materialCatalogLoading.set(true);
+    this.materialCatalogError.set('');
+    forkJoin({
+      items: this.inventoryApi.listItems(),
+      products: this.inventoryApi.listCatalogProducts(),
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({items, products}) => {
+        const productBySku = new Map(products.flatMap(product => product.variants.map(variant => [
+          variant.sku.trim().toLocaleUpperCase(),
+          {
+            image: variant.image || product.images.find(image => image.isPrimary)?.url || product.images[0]?.url || null,
+            categoryId: product.categoryId,
+            productName: product.name,
+            variantLabel: variant.label || '',
+            usageType: product.usageType,
+            price: variant.finalPrice ?? variant.price,
+          },
+        ] as const)));
+        this.productOptions = items.filter(item => item.status === 'ACTIVE').map(item => {
+          const product = productBySku.get(item.sku.trim().toLocaleUpperCase());
+          return {
+            materialId: item.id, sku: item.sku, name: item.name,
+            unit: item.unit || '', image: product?.image ?? null,
+            productName: product?.productName || item.name,
+            categoryId: product?.categoryId ?? '', variantLabel: product?.variantLabel ?? '',
+            usageType: product?.usageType ?? null, price: product?.price ?? 0,
+          };
+        });
+        this.refreshMaterialLabels();
+        this.materialCatalogLoading.set(false);
+      },
+      error: () => {
+        this.productOptions = [];
+        this.materialCatalogLoading.set(false);
+        this.materialCatalogError.set('Không tải được danh sách vật liệu. Vui lòng thử lại.');
+      },
+    });
+  }
+
   /** Read-only branch cards: do not collapse every branch into aggregate counts.
    * Branch names come from the BE branch scope. Individual config is displayed
    * only if BE returns it for the selected service and branch. */
   private loadBranchDetailRows(): void {
+    if (!this.serviceId) return;
     this.branchesLoading.set(true);
     this.branchLoadError.set('');
-    this.repository.listBranchesForServiceDetail().pipe(
+    this.repository.getBranchConfigs(this.serviceId).pipe(
       takeUntilDestroyed(this.destroyRef),
     ).subscribe({
-      next: (branches) => {
-        this.branchDetailRows.set(branches.map((branch) => ({
-          id: branch.id,
-          name: branch.name,
-          summary: 'Đang tải cấu hình...',
-        })));
+      next: (configs) => {
+        const role = this.authSessionRole;
+        const scope = new Set(this.authSession.user()?.branchScope ?? []);
+        const visible = role === 'ADMIN'
+          ? configs
+          : configs.filter((config) => scope.has(config.branchId));
+        this.branchDetailRows.set(visible.map((config) => {
+          const status = this.source?.status !== 'ACTIVE'
+            ? 'Chưa thể bật'
+            : config.branchStatus === 'INACTIVE'
+              ? 'Chi nhánh ngừng hoạt động'
+              : config.enabled && config.capacity > 0 ? 'Đang bật' : 'Đang tắt';
+          const availability = this.bookingMode === 'CONTACT_ONLY'
+            ? 'Liên hệ'
+            : 'Khả dụng theo lịch';
+          return {
+            id: config.branchId,
+            name: config.branchName,
+            summary: `${status} · Sức chứa ${config.capacity} · ${availability}`,
+          };
+        }));
         this.branchesLoading.set(false);
-        for (const branch of branches) {
-          this.repository.list({
-            search: this.serviceName,
-            branchId: branch.id,
-            mode: 'ALL',
-            status: 'ALL',
-            page: 1,
-            pageSize: 100,
-          }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-            next: (page) => {
-              const service = page.items.find((item) => item.id === this.serviceId);
-              const config = service?.branchServices.find((item) => item.branchId === branch.id);
-              if (!config) {
-                this.updateBranchSummary(branch.id, 'Chưa có dữ liệu cấu hình tại chi nhánh');
-                return;
-              }
-              const status = this.source?.status !== 'ACTIVE'
-                ? 'Chưa thể bật'
-                : config.enabled && config.capacity > 0 ? 'Đang bật' : 'Đang tắt';
-              const availability = service?.availabilityText ||
-                (this.bookingMode === 'CONTACT_ONLY' ? 'Liên hệ' : 'Khả dụng do Backend tính');
-              this.updateBranchSummary(
-                branch.id,
-                `${status} · Sức chứa ${config.capacity} · ${availability}`,
-              );
-            },
-            error: () => this.updateBranchSummary(branch.id, 'Chưa tải được cấu hình tại chi nhánh'),
-          });
-        }
       },
       error: () => {
         this.branchesLoading.set(false);
-        this.branchLoadError.set('Không tải được danh sách chi nhánh. Vui lòng thử lại.');
+        this.branchLoadError.set('Không tải được cấu hình chi nhánh. Vui lòng thử lại.');
       },
     });
   }
@@ -292,7 +338,7 @@ export class ServiceCatalogEditorComponent {
       const price = pricing.fixedTiers.get(t.key);
       return {
         ...t,
-        mode: price !== undefined ? 'FIXED' as const : 'QUOTE' as const,
+        mode: price !== undefined && t.key !== 'XL' ? 'FIXED' as const : 'QUOTE' as const,
         price: price ?? null,
       };
     });
@@ -300,15 +346,15 @@ export class ServiceCatalogEditorComponent {
       this.priceTiers[0].mode = 'FIXED';
       this.priceTiers[0].price = pricing.confirmedBasePrice;
     }
-    // InventoryItem.materialId is NOT a Product SKU. Preserve existing
-    // materials server-side and show them read-only until Inventory lookup is ready.
     this.materials = (raw.defaultMaterials ?? []).map((m) => ({
       key: this.nextMaterialKey++,
-      sku: m.materialId,
+      materialId: m.materialId,
+      sku: '',
       query: m.materialId,
       quantity: m.defaultQuantity,
       unit: m.unit,
     }));
+    this.refreshMaterialLabels();
   }
 
   private errorLabel(error: HttpErrorResponse | AppHttpError): string {
@@ -371,9 +417,20 @@ export class ServiceCatalogEditorComponent {
     return price === null || !Number.isFinite(price) ? '' : new Intl.NumberFormat('vi-VN').format(price);
   }
 
+  priceInputText(tier: Tier): string {
+    return this.invalidTierPrices.get(tier.key) ?? this.formatMoney(tier.price);
+  }
+
   setTierPrice(tier: Tier, input: string): void {
-    const digits = input.replace(/[^0-9]/g, '');
-    tier.price = digits ? Number(digits) : null;
+    const raw = input.trim();
+    if (raw.startsWith('-')) {
+      this.invalidTierPrices.set(tier.key, input);
+      tier.price = null;
+    } else {
+      this.invalidTierPrices.delete(tier.key);
+      const digits = input.replace(/[^0-9]/g, '');
+      tier.price = digits ? Number(digits) : null;
+    }
     this.markPricingDirty();
   }
 
@@ -413,8 +470,12 @@ export class ServiceCatalogEditorComponent {
   }
 
   setTierMode(tier: Tier, mode: PriceMode): void {
+    if (tier.key === 'XL' && this.weightPricing && mode !== 'QUOTE') return;
     tier.mode = mode;
-    if (mode === 'QUOTE') tier.price = null;
+    if (mode === 'QUOTE') {
+      tier.price = null;
+      this.invalidTierPrices.delete(tier.key);
+    }
     this.markPricingDirty();
   }
 
@@ -428,53 +489,104 @@ export class ServiceCatalogEditorComponent {
     this.markDirty();
   }
 
-  addMaterial(): void {
-    this.materialsDirty = true;
-    this.materials.push({
-      key: this.nextMaterialKey++, sku: '', query: '', quantity: null, unit: '',
-    });
-    this.markDirty();
+  openMaterialPicker(): void {
+    if (this.readOnly || this.saving()) return;
+    this.materialPickerPending.set([]);
+    this.materialPickerSearch.set('');
+    this.materialPickerVisible.set(20);
+    this.materialPickerOpen.set(true);
+    setTimeout(() => this.materialSearchInput?.nativeElement.focus(), 0);
   }
-
+  closeMaterialPicker(): void {
+    this.materialPickerOpen.set(false);
+    this.materialPickerPending.set([]);
+    setTimeout(() => this.materialAddTrigger?.nativeElement.focus(), 0);
+  }
+  setMaterialPickerSearch(value: string): void {
+    this.materialPickerSearch.set(value);
+    this.materialPickerVisible.set(20);
+  }
+  usageTypeLabel(usageType: ProductUsageType | null): string {
+    switch (usageType) {
+      case 'SALE': return 'Hàng bán';
+      case 'SERVICE_SUPPLY': return 'Vật tư dịch vụ';
+      case 'SHARED': return 'Dùng chung';
+      default: return 'Chưa xác định';
+    }
+  }
+  materialPickerMatches(): MaterialOption[] {
+    const term = this.materialPickerSearch().trim().toLocaleLowerCase('vi');
+    return this.productOptions.filter(item =>
+      !term || item.name.toLocaleLowerCase('vi').includes(term) ||
+      item.productName.toLocaleLowerCase('vi').includes(term) ||
+      item.sku.toLocaleLowerCase('vi').includes(term) ||
+      item.variantLabel.toLocaleLowerCase('vi').includes(term) ||
+      this.usageTypeLabel(item.usageType).toLocaleLowerCase('vi').includes(term));
+  }
+  materialAlreadyAdded(id: string): boolean {
+    return this.materials.some(line => line.materialId === id);
+  }
+  toggleMaterialPending(id: string, checked: boolean): void {
+    if (this.materialAlreadyAdded(id)) return;
+    this.materialPickerPending.update(current =>
+      checked ? (current.includes(id) ? current : [...current, id]) : current.filter(x => x !== id));
+  }
+  applyMaterials(): void {
+    if (this.readOnly || this.saving()) return;
+    const pending = new Set(this.materialPickerPending());
+    const picked = this.productOptions.filter(item =>
+      pending.has(item.materialId) && !this.materialAlreadyAdded(item.materialId));
+    for (const item of picked) {
+      this.materials.push({
+        key: this.nextMaterialKey++, materialId: item.materialId, sku: item.sku,
+        query: item.name, quantity: null, unit: item.unit,
+      });
+    }
+    if (picked.length) this.markMaterialDirty();
+    this.closeMaterialPicker();
+  }
   removeMaterial(key: number): void {
-    this.materialsDirty = true;
-    this.materials = this.materials.filter((line) => line.key !== key);
-    if (this.openMaterialKey() === key) this.openMaterialKey.set(null);
-    this.markDirty();
+    this.materials = this.materials.filter(line => line.key !== key);
+    this.markMaterialDirty();
+  }
+  @HostListener('document:keydown', ['$event'])
+  onMaterialPickerKey(event: KeyboardEvent): void {
+    if (!this.materialPickerOpen()) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.closeMaterialPicker();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const dialog = this.materialPickerDialog?.nativeElement;
+    if (!dialog) return;
+    const focusable = [...dialog.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), a[href]')].filter(el => el.getClientRects().length > 0);
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || !dialog.contains(active))) {
+      event.preventDefault(); last.focus();
+    } else if (!event.shiftKey && (active === last || !dialog.contains(active))) {
+      event.preventDefault(); first.focus();
+    }
   }
 
-  matchProduct(line: MaterialLine, text: string): void {
-    this.materialsDirty = true;
-    line.query = text;
-    const normalized = text.trim().toLocaleLowerCase('vi');
-    const product = this.productOptions.find((item) =>
-      item.name.toLocaleLowerCase('vi') === normalized || item.sku.toLocaleLowerCase('vi') === normalized);
-    line.sku = product?.sku ?? '';
-    if (product && !line.unit) line.unit = product.unit;
-    this.markDirty();
-  }
-
-  filteredMaterialOptions(line: MaterialLine): MaterialOption[] {
-    const term = line.query.trim().toLocaleLowerCase('vi');
-    return this.productOptions.filter((item) =>
-      !term || item.name.toLocaleLowerCase('vi').includes(term) || item.sku.toLocaleLowerCase('vi').includes(term)
-    ).slice(0, 20);
+  private refreshMaterialLabels(): void {
+    if (!this.productOptions.length || !this.materials.length) return;
+    for (const line of this.materials) {
+      const option = this.productOptions.find(item =>
+        item.materialId === line.materialId || (!!line.sku && item.sku === line.sku));
+      if (!option) continue;
+      line.materialId = option.materialId;
+      line.sku = option.sku;
+      line.query = option.name;
+      if (!line.unit) line.unit = option.unit;
+    }
   }
 
   productCategoryLabel(id: string): string {
     return this.productCategoryNames.get(id) || 'Chưa có danh mục';
-  }
-
-  chooseMaterial(line: MaterialLine, item: MaterialOption): void {
-    line.query = item.name;
-    line.sku = item.sku;
-    if (!line.unit) line.unit = item.unit;
-    this.openMaterialKey.set(null);
-    this.markMaterialDirty();
-  }
-
-  closeMaterialMenu(key: number): void {
-    if (this.openMaterialKey() === key) this.openMaterialKey.set(null);
   }
 
   toggleStatus(): void {
@@ -484,6 +596,10 @@ export class ServiceCatalogEditorComponent {
 
   private validate(): string[] {
     const messages: string[] = [];
+    if (this.priceTiers.some(t => (this.weightPricing || t.key === 'XS') && t.mode === 'FIXED' &&
+      this.invalidTierPrices.has(t.key))) {
+      messages.push('Giá cơ sở không được là số âm.');
+    }
     if (this.pricingDirty && this.pricingDataWarning) {
       messages.push('Giá hiện tại chưa khớp với các mức giá. Vui lòng liên hệ quản trị viên trước khi thay đổi.');
     }
@@ -513,6 +629,13 @@ export class ServiceCatalogEditorComponent {
       messages.push('Dịch vụ cấp cứu cần chọn hình thức “Liên hệ trực tiếp”.');
     }
 
+    for (const material of this.materials) {
+      if (!material.materialId) messages.push('Vui lòng chọn vật liệu hợp lệ từ danh sách.');
+      if (!material.quantity || !Number.isFinite(material.quantity) || material.quantity <= 0) {
+        messages.push('Số lượng vật liệu mặc định phải lớn hơn 0.');
+      }
+    }
+
     if (this.weightPricing) {
       for (const tier of this.priceTiers) {
         if (tier.mode === 'FIXED' && (tier.price === null ||
@@ -533,19 +656,24 @@ export class ServiceCatalogEditorComponent {
     if (!this.weightPricing) {
       return { basePrice: this.priceTiers[0].mode === 'FIXED' ? this.priceTiers[0].price ?? 0 : 0, priceVariants: [] };
     }
-    const bounds: Record<string, [number | undefined, number | undefined]> = {
-      XS: [undefined, 5], S: [5, 10], M: [10, 20], L: [20, 30], XL: [30, undefined],
+    const bounds: Record<string, [number, number | null]> = {
+      XS: [0, 4.999], S: [5, 9.999], M: [10, 19.999], L: [20, 30], XL: [30.001, null],
     };
-    const priceVariants = this.priceTiers.filter((t) => t.mode === 'FIXED' && t.price !== null)
-      .map((t) => {
-        const [minWeightKg, maxWeightKg] = bounds[t.key] ?? [];
-        return {
-          label: t.key, price: t.price!,
-          ...(minWeightKg === undefined ? {} : { minWeightKg }),
-          ...(maxWeightKg === undefined ? {} : { maxWeightKg }),
-        };
-      });
-    return { basePrice: priceVariants.length ? Math.min(...priceVariants.map((v) => v.price)) : 0, priceVariants };
+    const priceVariants: ServicePriceVariant[] = this.priceTiers.map(t => {
+      const [minWeightKg, maxWeightKg] = bounds[t.key];
+      const isQuote = t.key === 'XL' || t.mode === 'QUOTE';
+      return {
+        tier: t.key as ServicePriceVariant['tier'],
+        label: t.key + ' (' + t.weight + ')' + (t.key === 'XL' ? ' - Liên hệ / Báo giá' : ''),
+        mode: isQuote ? 'QUOTE' : 'FIXED',
+        price: isQuote ? null : t.price,
+        minWeightKg,
+        maxWeightKg,
+      };
+    });
+    const fixedPrices = priceVariants.filter(v => v.mode === 'FIXED' && v.price !== null)
+      .map(v => v.price as number);
+    return { basePrice: fixedPrices.length ? Math.min(...fixedPrices) : 0, priceVariants };
   }
 
   validateDraft(): void {
@@ -560,10 +688,6 @@ export class ServiceCatalogEditorComponent {
       this.notice.set('');
       return;
     }
-    if (this.materialsDirty) {
-      this.errors.set(['Hiện chưa thể lưu thay đổi vật liệu. Vui lòng giữ nguyên phần vật liệu để tiếp tục.']);
-      return;
-    }
     const prices = this.pricePayload();
     const body: ServiceWrite = {
       name: this.serviceName.trim(),
@@ -574,23 +698,41 @@ export class ServiceCatalogEditorComponent {
       requiredStaffRole: this.executorRole as ServiceWrite['requiredStaffRole'],
       durationMinutes: this.bookingMode === 'CONTACT_ONLY' ? this.durationMinutes : this.durationMinutes!,
       status: this.active ? 'ACTIVE' : 'INACTIVE',
+      defaultMaterials: this.materials.map(material => ({
+        materialId: material.materialId,
+        defaultQuantity: material.quantity ?? 1,
+        unit: material.unit.trim(),
+      })),
+      ...(this.isNew ? {
+        autoEnableActiveBranches: this.active,
+        branchConfigs: this.stagedBranchConfigs().map((item) => ({
+          branchId: item.branchId,
+          enabled: item.enabled && this.active,
+          capacity: item.capacity,
+          availability: [],
+        })),
+      } : {}),
       ...prices,
     };
-    // Never send Product SKU strings as InventoryItem IDs.
-    // On EDIT, leave existing defaultMaterials untouched in Backend.
     this.saving.set(true);
+    const updateBody = this.pricingDirty
+      ? body
+      : (({ basePrice: _price, priceVariants: _variants, autoEnableActiveBranches: _auto, branchConfigs: _branches, ...rest }) => rest)(body);
+    const shouldArchive = !this.isNew && this.source?.status === 'ACTIVE' && !this.active;
     const request = this.isNew
       ? this.repository.create(body, this.saveIdempotencyKey ??= crypto.randomUUID())
-      : this.repository.update(this.serviceId!, this.pricingDirty
-        ? body : (({ basePrice: _price, priceVariants: _variants, ...rest }) => rest)(body));
+      : this.repository.update(this.serviceId!, updateBody).pipe(
+          switchMap((saved) => shouldArchive
+            ? this.repository.archive(saved.id, crypto.randomUUID())
+            : of(saved)),
+        );
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (saved) => {
         this.dirty.set(false);
-        if (this.isNew && saved.id) {
-          // A successful POST must never be retried when branch provisioning fails.
+        if (!this.isNew && this.active && saved.id) {
+          // Existing services may predate automatic branch provisioning.
+          // Reconcile only missing configs; creation is already atomic in BE.
           this.pendingActivationServiceId.set(saved.id);
-        }
-        if ((this.active || this.stagedBranchConfigs().length > 0) && saved.id) {
           void this.enableUnconfiguredBranches(saved.id);
           return;
         }
@@ -606,13 +748,9 @@ export class ServiceCatalogEditorComponent {
   }
 
   /**
-   * FB #16: A newly created active Service defaults to being offered at all
-   * currently active branches. Persist this, never fake branch status in UI.
-   * Existing explicit branch settings always win: only missing configs are seeded.
-   *
-   * The current BE has no atomic "enable at all branches" operation. This
-   * retryable reconciliation is idempotent but does not cover branches created
-   * in the future. BE must enforce that long-term business rule.
+   * Existing services created before atomic branch provisioning may be missing
+   * BranchServiceConfig rows. Reconcile missing configs only for those records.
+   * New services send branchConfigs/autoEnableActiveBranches in the create payload.
    */
   async enableUnconfiguredBranches(serviceId: string): Promise<void> {
     if (!serviceId) return;

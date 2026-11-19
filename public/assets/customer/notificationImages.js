@@ -4,6 +4,7 @@ import iconClose from "./images/notification/icon-close.svg";
 import iconSearchPaw from "./images/notification/icon-search-paw.svg";
 import iconCalendar from "./images/notification/icon-calendar.svg";
 import iconNote from "./images/notification/icon-note.svg";
+import decisionDog from "./images/notification/decision-dog.svg";
 
 export const notificationImages = {
   petBong,
@@ -12,4 +13,5 @@ export const notificationImages = {
   iconSearchPaw,
   iconCalendar,
   iconNote,
+  decisionDog,
 };

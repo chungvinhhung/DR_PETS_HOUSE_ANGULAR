@@ -1,22 +1,17 @@
 <app-admin-catalog-shell activeItem="inventory">
 <section class="inventory-page">
-  <div class="page-title"><h1>Kho hàng</h1></div>
-  @if (loading()) { <div class="inventory-state" role="status">Đang tải tồn kho...</div> }
-  @if (loadError()) { <div class="inventory-state inventory-state--error" role="alert">{{loadError()}} <button type="button" (click)="loadAll()">Thử lại</button></div> }
+  <div class="page-title"><h1>{{tab()==='history' ? 'Lịch sử kho' : 'Kho hàng'}}</h1></div>
   <div class="inventory-tabs" role="tablist" aria-label="Kho">
     <button type="button" role="tab" [attr.aria-selected]="tab()==='stock'" [class.active]="tab()==='stock'" (click)="switchTab('stock')">Tồn kho</button>
     <button type="button" role="tab" [attr.aria-selected]="tab()==='history'" [class.active]="tab()==='history'" (click)="switchTab('history')">Lịch sử kho</button>
   </div>
 
-  <div class="toolbar web2-filterbar">
+  <div class="toolbar web2-filterbar" [class.toolbar--history]="tab()==='history'">
     <div class="search-field">
       <img src="/assets/admin-inventory/search.svg" alt="" aria-hidden="true" />
       <input [ngModel]="search()" (ngModelChange)="search.set($event);onFilter()" aria-label="Tìm kiếm sản phẩm hoặc SKU" placeholder="Tìm sản phẩm / SKU..." />
     </div>
     <div class="toolbar-selects">
-      @if (tab()==='history') {
-        <label class="date-filter"><span>Từ ngày</span><input type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event);onFilter()" aria-label="Lọc lịch sử từ ngày"/></label>
-      }
       <select aria-label="Chi nhánh" [ngModel]="branch()" (ngModelChange)="branch.set($event);onFilter()">
         <option value="">Tất cả chi nhánh</option>
         @for (b of branches(); track b) {<option [value]="b">{{b}}</option>}
@@ -33,14 +28,27 @@
         <select aria-label="Loại biến động" [ngModel]="changeType()" (ngModelChange)="changeType.set($event);onFilter()">
           <option value="">Tất cả biến động</option><option>Nhập kho</option><option>Xuất kho</option><option>Điều chỉnh</option><option>Chuyển kho</option><option>Hoàn stock</option>
         </select>
+        <select aria-label="Khoảng thời gian" [ngModel]="historyRange()" (ngModelChange)="setHistoryRange($event)">
+          <option value="30">30 ngày qua</option>
+          <option value="7">7 ngày qua</option>
+          <option value="90">90 ngày qua</option>
+          <option value="all">Tất cả thời gian</option>
+        </select>
       }
     </div>
   </div>
 
-  @if (tab()==='history' && historyLoading()) { <div class="inventory-state" role="status">Đang tải lịch sử kho...</div> }
-  @if (tab()==='history' && historyError()) { <div class="inventory-state inventory-state--error" role="alert">{{historyError()}} <button type="button" (click)="loadHistory()">Thử lại</button></div> }
   <div class="table-shell" [class.table-shell--history]="tab()==='history'">
-    <div class="table-scroll" [class.table-scroll--history]="tab()==='history'">
+    @if (loading()) {
+      <app-admin-data-state kind="loading" title="Đang tải tồn kho" />
+    } @else if (loadError()) {
+      <app-admin-data-state kind="error" title="Không thể tải tồn kho" [message]="loadError()" (retry)="loadAll()" />
+    } @else if (tab()==='history' && historyLoading()) {
+      <app-admin-data-state kind="loading" title="Đang tải lịch sử kho" />
+    } @else if (tab()==='history' && historyError()) {
+      <app-admin-data-state kind="error" title="Không thể tải lịch sử kho" [message]="historyError()" (retry)="loadHistory()" />
+    } @else {
+      <div class="table-scroll" [class.table-scroll--history]="tab()==='history'">
       @if (tab()==='stock') {
         <table class="stock-table">
           <colgroup>
@@ -71,36 +79,86 @@
                 </div>
               </td>
             </tr>
-          } @empty {<tr><td colspan="8" class="empty">Không tìm thấy sản phẩm phù hợp.</td></tr>}
+          } @empty {<tr><td colspan="8" class="empty"><app-admin-data-state kind="empty" title="Không tìm thấy sản phẩm" message="Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác." /></td></tr>}
         </tbody></table>
       } @else {
         <table class="history-table">
           <colgroup>
-            <col style="width:12%"/><col style="width:18%"/><col style="width:13%"/><col style="width:14%"/>
-            <col style="width:11%"/><col style="width:10%"/><col style="width:11%"/><col style="width:11%"/>
+            <col style="width:16%"/><col style="width:12%"/><col style="width:17%"/><col style="width:12%"/>
+            <col style="width:16%"/><col style="width:9%"/><col style="width:8%"/><col style="width:10%"/>
           </colgroup>
           <thead><tr>
-          <th>Thời gian</th><th>Sản phẩm | SKU | Biến thể</th><th>Chi nhánh / Tuyến</th><th>Giao dịch & Lý do</th><th>Thay đổi</th><th>Tồn sau</th><th>Tham chiếu</th><th>Người thao tác</th>
-        </tr></thead><tbody>
-          @for (record of currentHistory();track record.reference) {
-            <tr><td>{{record.date}}</td><td><div class="product">{{record.item}}</div><small>{{formatVariantSku(record.sku, record.variant)}}</small></td><td>{{record.branch}}</td><td><strong>{{record.action}}</strong><small>{{record.reason}}</small></td><td class="number" [class.positive]="record.delta.startsWith('+')">{{record.delta}}</td><td>{{record.after}}</td><td>{{record.reference}}</td><td>{{record.actor}}</td></tr>
-          } @empty {<tr><td colspan="8" class="empty">Không có lịch sử kho phù hợp.</td></tr>}
+            <th>Mã GD / Tham chiếu</th>
+            <th>Thời gian</th>
+            <th>Sản phẩm | Biến thể | SKU</th>
+            <th>Chi nhánh / Tuyến</th>
+            <th>Giao dịch &amp; Lý do</th>
+            <th>Thay đổi</th>
+            <th>Tồn sau</th>
+            <th>Người thao tác</th>
+          </tr></thead><tbody>
+          @for (record of currentHistory(); track record.id) {
+            <tr>
+              <td class="history-code-cell">
+                <div class="history-code-stack">
+                  <span class="history-code" [title]="record.transactionCode || '—'">{{ record.transactionCode || '—' }}</span>
+                  <div class="history-reference-line">
+                    <span class="history-ref-separator" aria-hidden="true">/</span>
+                    @if (record.sourceLabel) {
+                      @if (referenceLink(record); as target) {
+                        <a class="history-reference" [routerLink]="target" [title]="record.sourceLabel">{{record.sourceLabel}}</a>
+                      } @else {
+                        <span class="history-reference-text" [title]="record.sourceLabel">{{record.sourceLabel}}</span>
+                      }
+                    } @else { <span class="history-reference-text">—</span> }
+                  </div>
+                </div>
+              </td>
+              <td>{{record.date}}</td>
+              <td><div class="product">{{record.item}}</div><small>{{record.variant}} | {{record.sku}}</small></td>
+              <td>{{record.branch}}</td>
+              <td><strong>{{record.action}}</strong><small>{{record.reason}}</small></td>
+              <td class="number" [class.positive]="record.delta.startsWith('+')">{{record.delta}}</td>
+              <td class="number">{{record.after}}</td>
+              <td>{{record.actor}}</td>
+            </tr>
+          } @empty {<tr><td colspan="8" class="empty"><app-admin-data-state kind="empty" title="Không tìm thấy lịch sử kho" message="Thử thay đổi từ khóa hoặc bộ lọc để xem kết quả khác." /></td></tr>}
         </tbody></table>
       }
     </div>
     <div class="table-footer">
-      <span>Đang hiển thị {{visibleCount()}} trên tổng số {{totalCount()}} {{tab() === 'stock' ? 'sản phẩm' : 'giao dịch'}}</span>
-      <nav class="pagination-buttons" aria-label="Phân trang danh sách kho">
+      @if (tab()==='stock') {
+        <span>Đang hiển thị {{visibleCount()}} trên tổng số {{totalCount()}} sản phẩm</span>
+      } @else {
+        <span>Đang hiển thị {{visibleHistoryTransactionCount()}} trên tổng số {{totalHistoryTransactionCount()}} giao dịch</span>
+      }
+      <nav class="pagination-buttons web2-admin-pagination-strip" aria-label="Phân trang danh sách kho">
         <button type="button" aria-label="Trang trước" (click)="setPage(page()-1)" [disabled]="page()===1">‹</button>
-        @for (n of pageNumbers();track n) {
-          <button type="button" class="pagination-page" [class.pagination-page--active]="page()===n"
-            [attr.aria-current]="page() === n ? 'page' : null" [attr.aria-label]="'Đến trang ' + n"
-            (click)="setPage(n)">{{n}}</button>
+        @for (n of pageNumbers(); track n === '…' ? 'gap-' + $index : 'page-' + n) {
+          @if (n==='…') { <span class="pagination-ellipsis" aria-hidden="true">…</span> }
+          @else {
+            <button type="button" class="pagination-page" [class.pagination-page--active]="page()===n"
+              [attr.aria-current]="page() === n ? 'page' : null" [attr.aria-label]="'Đến trang ' + n"
+              (click)="setPage(n)">{{n}}</button>
+          }
         }
         <button type="button" aria-label="Trang sau" (click)="setPage(page()+1)" [disabled]="page()===totalPages()">›</button>
       </nav>
     </div>
+    }
   </div>
+
+  @if (selectedHistoryRow(); as row) {
+    <app-admin-inventory-transaction-drawer
+      [transactions]="selectedTransactionGroup()"
+      [items]="inventoryItems()"
+      [branch]="row.branch"
+      [transactionCode]="row.transactionCode"
+      [reference]="row.sourceLabel"
+      [referenceLink]="referenceLink(row)"
+      (closed)="closeTransactionDrawer()"
+    />
+  }
 </section>
 
 @if (modal()) {
@@ -122,7 +180,7 @@
                     (keydown)="onReceiptSearchKeydown($event)"
                     [attr.aria-expanded]="receiptLookupOpen()"
                     aria-controls="inventory-receipt-product-options"
-                    aria-autocomplete="list" placeholder="Tìm SKU / tên sản phẩm..."
+                    aria-autocomplete="list" placeholder="Tìm Sản phẩm / SKU..."
                     aria-label="Tìm sản phẩm theo SKU hoặc tên">
                 </span>
                 @if (receiptLookupOpen()) {

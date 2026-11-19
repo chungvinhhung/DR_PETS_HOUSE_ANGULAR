@@ -1,0 +1,7 @@
+.booking-payment-step__grid {
+  @apply grid gap-5 md:gap-8 lg:grid-cols-[minmax(0,2fr)_390px];
+}
+
+.booking-payment-step__box {
+  @apply mt-5 md:mt-6;
+}

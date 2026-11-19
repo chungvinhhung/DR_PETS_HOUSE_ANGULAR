@@ -10,6 +10,7 @@ import { ShoppingProductCardComponent } from '../../../../../shared/customer/com
   standalone: true,
   imports: [ShoppingProductCardComponent],
   templateUrl: './product-grid.component.html',
+  styleUrl: './product-grid.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

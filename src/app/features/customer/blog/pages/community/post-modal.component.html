@@ -1,25 +1,25 @@
 <div
-  class="flex h-[795px] max-h-[calc(100vh-48px)] w-[1024px] max-w-[calc(100vw-32px)] flex-col overflow-y-auto md:flex-row md:overflow-hidden rounded-[16px] border border-[#C1C6D5] bg-white shadow-2xl"
+  class="post-modal__stack"
   (mousedown)="$any($event).stopPropagation()"
 >
-  <div class="flex min-h-0 w-full shrink-0 flex-col border-b border-[#C1C6D5] md:w-[60.8%] md:shrink md:border-b-0 md:border-r">
-    <div class="border-b border-[#C1C6D5] px-6 py-4">Bài viết của {{ post().author }}</div>
+  <div class="post-modal__stack-2">
+    <div class="post-modal__author">Bài viết của {{ post().author }}</div>
     @if (post().image) {
-      <img [attr.src]="post().image" alt="" class="h-[220px] w-full object-cover sm:h-[360px]" />
+      <img [attr.src]="post().image" alt="" class="post-modal__image" />
     }
     @if (post().video) {
-      <video [attr.src]="post().video" controls class="h-[220px] w-full bg-black object-contain sm:h-[360px]"></video>
+      <video [attr.src]="post().video" controls class="post-modal__video-video"></video>
     }
-    <div class="min-h-0 flex-1 overflow-y-auto p-6">
-      <div class="flex items-start justify-between">
+    <div class="post-modal__box">
+      <div class="post-modal__row">
         <div app-author [post]="post()" [large]="true"></div>
         <app-type-badge [type]="post().type" />
       </div>
       @if (post().title) {
-        <h2 class="mt-5 text-[16px] font-semibold">{{ post().title }}</h2>
+        <h2 class="post-modal__title">{{ post().title }}</h2>
       }
-      <div class="mt-4 whitespace-pre-line text-[16px] leading-[26px] text-[#414753]">{{ post().content }}</div>
-      <div class="mt-6">
+      <div class="post-modal__content">{{ post().content }}</div>
+      <div class="post-modal__box-2">
         <div
           app-actions
           [post]="post()"
@@ -31,68 +31,68 @@
       </div>
     </div>
   </div>
-  <div class="flex min-h-[420px] w-full flex-col md:min-h-0 md:w-[39.2%]">
-    <div class="flex items-center justify-between border-b border-[#C1C6D5] px-6 py-4">
+  <div class="post-modal__stack-3">
+    <div class="post-modal__row-2">
       <span>Bình luận ({{ comments().length }})</span>
       <button type="button" (click)="onClose.emit($event)"><app-customer-icon name="x" className="h-5 w-5" /></button>
     </div>
-    <div class="min-h-0 flex-1 overflow-y-auto p-6">
+    <div class="post-modal__box">
       @if (comments().length) {
         @for (comment of comments(); track comment.id) {
           @let authorName = getCommentAuthorName(comment);
           @let avatarUrl = getCommentAvatar(comment);
-          <div class="mb-4 flex gap-3">
+          <div class="post-modal__row-3">
             @if (avatarUrl) {
-              <img [attr.src]="avatarUrl" [attr.alt]="authorName" class="h-8 w-8 shrink-0 rounded-full object-cover" />
+              <img [attr.src]="avatarUrl" [attr.alt]="authorName" class="post-modal__author-name" />
             } @else {
-              <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0D47A1] text-xs font-bold text-white uppercase">
+              <div class="post-modal__author-name-2">
                 {{ (authorName || 'U').charAt(0) }}
               </div>
             }
-            <div class="flex-1">
-              <div class="rounded-bl-[16px] rounded-br-[16px] rounded-tr-[16px] bg-[#F3F3F3] p-3">
-                <p class="text-[14px] font-bold text-[#1A1C1C]">{{ authorName }}</p>
+            <div class="post-modal__box-3">
+              <div class="post-modal__box-4">
+                <p class="post-modal__author-name-3">{{ authorName }}</p>
                 @if (comment.replyTo) {
-                  <p class="text-xs text-[#005AB4]">Trả lời {{ comment.replyTo }}</p>
+                  <p class="post-modal__reply-to">Trả lời {{ comment.replyTo }}</p>
                 }
-                <p class="text-[16px] text-[#414753]">{{ comment.content }}</p>
+                <p class="post-modal__content-2">{{ comment.content }}</p>
               </div>
-              <div class="mt-1 flex gap-4 px-1 text-[12px]">
+              <div class="post-modal__row-4">
                 <button
                   [class]="likedComments()[comment.id] ? 'font-semibold text-[#005AB4]' : ''"
                   (click)="handle1(comment)"
                 >Thích</button>
                 <button (click)="handle2(comment)">Trả lời</button>
-                <span class="opacity-60">{{ comment.time }}</span>
+                <span class="post-modal__time">{{ comment.time }}</span>
               </div>
             </div>
           </div>
         }
       } @else {
-        <div class="flex h-full flex-col items-center justify-center text-center text-[#414753]">
+        <div class="post-modal__stack-4">
           <app-customer-icon name="message-square" className="h-14 w-14 text-[#C1C6D5]" />
-          <p class="mt-3 text-[#1A1C1C]">Chưa có bình luận nào</p>
+          <p class="post-modal__chua-co-binh-text">Chưa có bình luận nào</p>
           <p>Hãy là người đầu tiên bình luận.</p>
         </div>
       }
     </div>
-    <div class="flex gap-3 border-t border-[#C1C6D5] p-3">
+    <div class="post-modal__row-5">
       @if (currentUserAvatar()) {
         <img
           [attr.src]="currentUserAvatar()"
           alt=""
-          class="h-10 w-10 rounded-full border-2 border-[#005AB4] object-cover"
+          class="post-modal__current-user-avatar"
         />
       } @else {
         <img
           [attr.src]="blogImages.communityAuthor"
           alt=""
-          class="h-10 w-10 rounded-full border-2 border-[#005AB4]"
+          class="post-modal__community-author"
         />
       }
-      <div class="flex-1 rounded-[16px] bg-[#EEE] p-3">
+      <div class="post-modal__box-5">
         @if (replyTo()) {
-          <div class="mb-2 flex justify-between text-[12px] text-[#414753]">
+          <div class="post-modal__row-6">
             <span>Đang trả lời <b>{{ replyTo() }}</b></span>
             <button (click)="replyTo.set(null); replyingComment.set(null)"><app-customer-icon name="x" className="h-3 w-3" /></button>
           </div>
@@ -105,16 +105,16 @@
           (keydown)="handle4($any($event))"
           [attr.placeholder]="canInteract() ? 'Sen nghĩ gì về bài đăng này...' : 'Đăng nhập để bình luận...'"
           [readOnly]="!canInteract()"
-          class="h-12 w-full resize-none bg-transparent outline-none"
+          class="post-modal__textarea"
         ></textarea>
         @if (attachment()) {
-          <div class="mb-2 flex items-center justify-between rounded-lg bg-white px-2 py-1 text-[11px] text-[#005AB4]">
-            <span class="truncate">{{ attachment().name }}</span>
+          <div class="post-modal__row-7">
+            <span class="post-modal__name">{{ attachment().name }}</span>
             <button type="button" (click)="attachment.set(null)"><app-customer-icon name="x" className="h-3 w-3" /></button>
           </div>
         }
-        <div class="flex items-center justify-between border-t border-[#C1C6D5]/30 pt-2">
-          <div class="flex gap-2">
+        <div class="post-modal__row-8">
+          <div class="post-modal__row-9">
             <input
               #imageInput
               type="file"

@@ -1,5 +1,5 @@
-<h2 class="mb-[10px] font-['Roboto'] text-[17px] font-bold uppercase leading-[1.25] text-[#0D47A1]">{{ title() }}</h2>
-<ul class="flex flex-col gap-[10px]">
+<h2 class="tablet-footer-column__title">{{ title() }}</h2>
+<ul class="tablet-footer-column__let-label-list">
   @for (__item1 of links(); track $index) {
     @let label = __item1[0];
     @let to = __item1[1];

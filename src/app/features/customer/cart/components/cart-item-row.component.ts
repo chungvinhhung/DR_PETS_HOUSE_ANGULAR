@@ -7,6 +7,7 @@ import { ProductApiService } from '../../../../core/customer/services/api/produc
 import { SelectValueDirective } from '../../../../shared/customer/directives/select-value.directive';
 import { cartImages } from '../../../../shared/customer/assets/cart-images';
 import { formatPrice, normalizeVariantOption } from './my-cart-panel.helpers';
+import { buildProductPath } from '../../../../shared/customer/utils/slug';
 
 /**
  * CartItemRow — chuyển từ React: src/components/cart/MyCartPanel.jsx
@@ -16,6 +17,7 @@ import { formatPrice, normalizeVariantOption } from './my-cart-panel.helpers';
   standalone: true,
   imports: [SelectValueDirective],
   templateUrl: './cart-item-row.component.html',
+  styleUrl: './cart-item-row.component.scss',
   host: {
     '[class]': '`relative flex min-h-[118px] w-full shrink-0 items-center gap-[10px] border-b border-solid border-[#e0e0e0] px-[6px] py-[10px] transition-all duration-200 lg:my-[10px] lg:min-h-[132px] lg:w-full lg:px-[10px] lg:py-[14px] ${ deleting() ? \'translate-x-full opacity-0\' : \'translate-x-0 opacity-100\' }`',
     '[attr.role]': 'item().productId ? \'link\' : undefined',
@@ -81,19 +83,10 @@ export class CartItemRowComponent {
   }
 
   protected handleDelete() {
-    this.decisionModalService.confirmDelete({
-      message: `Bạn chắc chắn muốn xóa "${this.item().name}" khỏi giỏ hàng?\nHành động này không thể hoàn tác`,
-      confirmLabel: "Xóa",
-      onConfirm: () => {
-        this.deleting.set(true);
-        setTimeout(() => {
-          this.cartService.removeCartItem(this.item().id);
-          this.decisionModalService.showSuccessModal({
-            message: "Đã xóa sản phẩm khỏi giỏ hàng.\nBạn có thể tiếp tục mua sắm hoặc quay về trang chủ",
-          });
-        }, 250);
-      },
-    });
+    this.deleting.set(true);
+    setTimeout(() => {
+      this.cartService.removeCartItem(this.item().id);
+    }, 200);
   }
 
   protected handleVariantChange(event: any) {
@@ -114,7 +107,7 @@ export class CartItemRowComponent {
 
   protected handleOpenProduct() {
     if (!this.item().productId) return;
-    this.navService.navigate(`/product-details/${this.item().productId}`);
+    this.navService.navigate(buildProductPath({ id: this.item().productId, name: this.item().name }));
   }
 
   protected handleOpenProductByKeyboard(event: any) {

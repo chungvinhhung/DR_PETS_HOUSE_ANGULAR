@@ -15,7 +15,27 @@ export class LoyaltyApiService {
 
   async applyVoucher({ code, orderValue, branchId, serviceIds, cartId }: any) {
     const formattedCode = String(code || "").trim().toUpperCase();
-    const scope = serviceIds && serviceIds.length > 0 ? "SERVICE" : "ORDER";
+    const scope = Array.isArray(serviceIds) && serviceIds.length > 0 ? "SERVICE" : "ORDER";
+    // Service vouchers must be checked with actual selected services. An
+    // invalid response is final: /apply is only an alias of /validate, not
+    // permission to try the wrong scope or to award a local fake discount.
+    if (scope === "SERVICE") {
+      const response = await this.http.post("/vouchers/validate", {
+        code: formattedCode,
+        scope: "SERVICE",
+        serviceIds: [...new Set(serviceIds.map((id: unknown) => String(id).trim()).filter(Boolean))],
+        branchId: branchId || undefined,
+      });
+      const data = assertSuccess(response);
+      if (data?.valid !== true) {
+        throw new Error(String(data?.reason || "VOUCHER_INVALID"));
+      }
+      const discount = Number(data?.discount ?? 0);
+      if (!Number.isFinite(discount) || discount <= 0) {
+        throw new Error("DISCOUNT_NOT_AVAILABLE");
+      }
+      return {...data, discount, discountAmount: discount};
+    }
     try {
       const response = await this.http.post("/vouchers/validate", {
         code: formattedCode,

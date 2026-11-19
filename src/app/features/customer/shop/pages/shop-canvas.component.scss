@@ -1,0 +1,139 @@
+.shop-canvas__section {
+  @apply absolute left-0 top-[calc(755px+0.5cm)] h-[287px] w-[1440px] bg-white pt-[6px];
+}
+
+.shop-canvas__box {
+  @apply h-[68px] px-[124px] pb-0 pt-[10px];
+}
+
+.shop-canvas__danh-muc-san-title {
+  @apply text-center text-[#02000F];
+}
+
+.shop-canvas__box-2 {
+  @apply mx-auto mt-0 w-[992px] px-0 py-[10px];
+}
+
+.shop-canvas__grid {
+  @apply grid grid-cols-5;
+}
+
+.shop-canvas__label {
+  @apply mx-auto h-[110px] w-[106px] object-contain;
+}
+
+.shop-canvas__label-2 {
+  @apply mt-0 font-['Roboto'] text-[18px] font-normal leading-[1.6] text-black;
+}
+
+.shop-canvas__section-2 {
+  @apply absolute left-0 top-[calc(1055px+0.5cm)] w-[1440px] px-[83px] py-[10px];
+}
+
+.shop-canvas__box-3 {
+  @apply rounded-[40px] bg-[#FFF9C4] px-[10px] pb-[27px] pt-[20px] shadow-[inset_0_0_10px_rgba(0,0,0,0.25)];
+}
+
+.shop-canvas__flash-sale-title {
+  @apply text-center text-[#01579B];
+}
+
+.shop-canvas__row {
+  @apply mt-1 flex justify-center;
+}
+
+.shop-canvas__box-4 {
+  @apply w-[88px] text-center;
+}
+
+.shop-canvas__flash-sale-countdown {
+  @apply mx-auto flex h-[50px] w-[58px] items-center justify-center rounded-[30px] bg-[#FDD835] font-['Fredoka'] text-[32px] font-semibold leading-[67.98px] text-[rgba(0,0,0,0.87)];
+}
+
+.shop-canvas__label-3 {
+  @apply mt-1 font-['Roboto'] text-[20px] font-medium leading-[1.6] tracking-[0.15px] text-[#02000F];
+}
+
+.shop-canvas__row-2 {
+  @apply mt-3 flex items-center justify-center gap-5;
+}
+
+.shop-canvas__box-5 {
+  @apply overflow-hidden pt-3 pb-3;
+}
+
+.shop-canvas__dang-tai-san-el {
+  @apply flex h-[230px] items-center justify-center font-['Roboto'] text-[16px] font-medium text-[#01579B];
+}
+
+.shop-canvas__row-3 {
+  @apply flex gap-5 transition-transform duration-300 ease-in-out;
+}
+
+.shop-canvas__box-6 {
+  @apply shrink-0;
+}
+
+.shop-canvas__product-error {
+  @apply flex h-[230px] items-center justify-center text-center font-['Roboto'] text-[16px] font-medium text-[#01579B];
+}
+
+.shop-canvas__section-3 {
+  @apply absolute left-0 top-[calc(1538px+0.5cm)] h-[767px] w-[1440px] bg-[radial-gradient(50%_50%_at_50%_50%,#E3F2FD_25.48%,#FFFFFF_100%)] py-[50px];
+}
+
+.shop-canvas__box-7 {
+  @apply relative mx-auto h-[70px] w-[900px];
+}
+
+.shop-canvas__best-seller-stroke {
+  @apply absolute left-[479px] top-[50px] h-[7px] w-[243px];
+}
+
+.shop-canvas__san-pham-ban-title {
+  @apply text-center text-[#0F172A];
+}
+
+.shop-canvas__best-seller-spark {
+  @apply absolute left-[717px] top-[-12px] h-[42px] w-[43px];
+}
+
+.shop-canvas__grid-2 {
+  @apply mx-auto mt-5 grid w-[1200px] grid-cols-6 justify-items-center gap-x-5 gap-y-[10px];
+}
+
+.shop-canvas__dang-tai-san-el-2 {
+  @apply col-span-6 flex h-[260px] items-center justify-center font-['Roboto'] text-[16px] font-medium text-[#01579B];
+}
+
+.shop-canvas__product-error-2 {
+  @apply col-span-6 flex h-[260px] items-center justify-center text-center font-['Roboto'] text-[16px] font-medium text-[#01579B];
+}
+
+.shop-canvas__row-4 {
+  @apply mt-5 pt-5 flex justify-center;
+}
+
+.shop-canvas__text {
+  @apply text-xl leading-none;
+}
+
+.shop-canvas__section-4 {
+  @apply absolute left-0 top-[calc(2308px)] w-[1440px] bg-white py-4;
+}
+
+.shop-canvas__row-5 {
+  @apply mx-auto flex h-[269px] w-[1274px] items-center justify-between;
+}
+
+.shop-canvas__row-6 {
+  @apply flex w-[1158px] items-center justify-between;
+}
+
+.shop-canvas__promotion-banner-left {
+  @apply h-[269px] w-[570px] rounded-[30px] object-cover;
+}
+
+.shop-canvas__row-7 {
+  @apply mt-[10px] flex items-center justify-center gap-[7px];
+}

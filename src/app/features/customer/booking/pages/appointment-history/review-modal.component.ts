@@ -10,6 +10,7 @@ import { WriteReviewFormComponent } from '../../../products/components/write-rev
   standalone: true,
   imports: [WriteReviewFormComponent],
   templateUrl: './review-modal.component.html',
+  styleUrl: './review-modal.component.scss',
   host: {
     'class': 'overlay-fade-in fixed inset-0 z-40 flex items-center justify-center bg-[rgba(6,16,90,0.2)] px-6 backdrop-blur-[2px]',
   },

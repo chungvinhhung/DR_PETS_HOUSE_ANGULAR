@@ -1,10 +1,10 @@
 <app-masked-blue-panel [maskUrl]="maskUrl()" [maskSize]="'100% 100%'" />
-<div class="relative grid h-full grid-cols-[132px_1fr] gap-5 px-10 pb-[52px] pt-10">
-  <img [attr.src]="image()" alt="" class="h-[140px] w-[132px] rounded-[16px] object-cover" />
-  <div class="flex min-w-0 flex-col gap-0.5 pr-[170px]">
-    <h3 class="line-clamp-2 font-['Roboto'] text-[24px] font-medium italic leading-[30px] text-[#02000F]">{{ title() }}</h3>
-    <p class="shrink-0 font-['Roboto'] text-[20px] italic leading-[28px] text-[#02000F]">{{ price() }}</p>
-    <p class="line-clamp-2 font-['Roboto'] text-[16px] leading-[22px] text-[#6C6D71]">{{ description() }}</p>
+<div class="small-combo-card__grid">
+  <img [attr.src]="image()" alt="" class="small-combo-card__image" />
+  <div class="small-combo-card__stack">
+    <h3 class="small-combo-card__title">{{ title() }}</h3>
+    <p class="small-combo-card__price">{{ price() }}</p>
+    <p class="small-combo-card__description">{{ description() }}</p>
   </div>
 </div>
 <app-book-button [className]="'absolute bottom-[-2px] right-[2px] w-[181.77px]'" />

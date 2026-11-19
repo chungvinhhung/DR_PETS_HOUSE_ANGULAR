@@ -1,0 +1,23 @@
+.nav-bar-guest__header {
+  @apply fixed inset-x-0 top-0 z-[70] hidden w-full bg-white lg:block;
+}
+
+.nav-bar-guest__row {
+  @apply mx-auto flex max-w-page items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-6 xl:px-20;
+}
+
+.nav-bar-guest__link {
+  @apply shrink-0;
+}
+
+.nav-bar-guest__dr-pet-s-house {
+  @apply h-[52px] w-auto object-contain sm:h-[59px];
+}
+
+.nav-bar-guest__row-2 {
+  @apply flex min-w-0 flex-auto items-center justify-between gap-2 sm:gap-3;
+}
+
+.nav-bar-guest__cart-icon {
+  @apply h-9 w-9;
+}

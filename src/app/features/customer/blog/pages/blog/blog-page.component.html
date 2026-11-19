@@ -1,26 +1,30 @@
 <div app-canvas-layout>
   <app-nav-bar />
-  <main class="flex min-h-[1931px] flex-col items-center gap-3 bg-[#E5F6FD] px-4 sm:px-6 pb-6">
-    <nav class="flex h-14 w-full max-w-[1200px] items-center gap-6 overflow-x-auto whitespace-nowrap text-[16px] sm:gap-10 lg:pr-16">
+  <main class="blog-page__main">
+    <nav class="blog-page__nav">
       <button type="button" class="h-full border-b-2 border-[#0D47A1] pb-0.5 font-bold text-[#0D47A1]">Kiến thức thú cưng</button>
-      <a appCustomerLink="/blog/cong-dong" class="font-medium text-[#4B5563]">Cộng đồng chia sẻ</a>
-      <a appCustomerLink="/blog/so-cuu" class="font-medium text-[#4B5563]">Cẩm nang sơ cứu</a>
+      <a appCustomerLink="/blog/cong-dong" class="blog-page__cong-dong-chia-link">Cộng đồng chia sẻ</a>
+      <a appCustomerLink="/blog/so-cuu" class="blog-page__cong-dong-chia-link">Cẩm nang sơ cứu</a>
     </nav>
-    <section class="flex w-full max-w-[1200px] flex-wrap items-end justify-between gap-4 pb-5">
+    <section class="blog-page__section">
       <div>
-        <h1 class="flex flex-wrap items-center gap-1 text-[28px] font-bold leading-[36px] tracking-[-0.8px] sm:text-[40px] sm:leading-[48px]">Kiến thức<span class="text-[#0D47A1]">thú cưng</span>
-          <img [attr.src]="blogImages.titlePet" alt="" class="h-12 w-12 object-contain" />
+        <h1 class="blog-page__kien-thuc-title">Kiến thức<span class="blog-page__thu-cung-text">thú cưng</span>
+          <img [attr.src]="blogImages.titlePet" alt="" class="blog-page__title-pet" />
         </h1>
-        <p class="mt-2 text-[16px] leading-6 text-[#4B5563]">Kiến thức chăm sóc thú cưng từ chuyên gia!!</p>
+        <p class="blog-page__kien-thuc-cham-text">Kiến thức chăm sóc thú cưng từ chuyên gia!!</p>
       </div>
     </section>
-    <app-featured-post [post]="featuredPost()" />
-    <section app-trending-section [posts]="trendingPosts()"></section>
-    <section id="latest-posts" class="mt-1 flex w-full max-w-[1202px] scroll-mt-4 flex-col items-center gap-8 pt-4">
-      <div class="flex w-full flex-wrap items-center gap-2">
-        <h2 class="shrink-0 text-[24px] font-bold leading-8 text-[#111827]">Bài viết</h2>
-        <div class="ml-2 h-1 min-w-[60px] flex-1 bg-[#FDD835]"></div>
-        <div class="flex flex-wrap gap-3">
+    @if (!isLoading() && featuredPost()) {
+      <app-featured-post [post]="featuredPost()" />
+    }
+    @if (!isLoading() && trendingPosts().length) {
+      <section app-trending-section [posts]="trendingPosts()"></section>
+    }
+    <section id="latest-posts" class="blog-page__latest-posts">
+      <div class="blog-page__row">
+        <h2 class="blog-page__bai-viet-title">Bài viết</h2>
+        <div class="blog-page__box"></div>
+        <div class="blog-page__row-2">
           @for (item of categories(); track item.id) {
             <button
               type="button"
@@ -40,13 +44,13 @@
       </div>
       <form
         (submit)="handle1($any($event))"
-        class="flex h-[56px] w-full items-center justify-between rounded-[42px] border border-[rgba(25,118,210,0.5)] bg-white/80 py-2 pl-6 pr-2 backdrop-blur-[11px]"
+        class="blog-page__form"
       >
         <input
           [value]="search() ?? ''"
           (input)="search.set($any($event).target.value)"
           placeholder="Bạn đang tìm kiếm bài viết gì?"
-          class="min-w-0 flex-1 bg-transparent text-[16px] text-[#5F5F5F] outline-none placeholder:text-[#5F5F5F]"
+          class="blog-page__ban-dang-tim-kiem"
         />
         @if (search()) {
           <button
@@ -61,28 +65,28 @@
           class="flex h-10 w-10 items-center justify-center rounded-full text-[#0D47A1] transition-colors hover:bg-[#FFF176]"
           aria-label="Tìm kiếm bài viết"
         >
-          <img [attr.src]="productImages.searchIcon" alt="" class="h-7 w-7" />
+          <img [attr.src]="productImages.searchIcon" alt="" class="blog-page__search-icon" />
         </button>
       </form>
       @if (searchQuery()) {
-        <p class="-mt-5 w-full text-[16px] leading-6 text-[#414753]">Kết quả tìm kiếm cho "{{ searchQuery() }}"</p>
+        <p class="blog-page__search-query">Kết quả tìm kiếm cho "{{ searchQuery() }}"</p>
       }
       @if (loadError()) {
-        <p class="-mt-5 w-full text-[14px] leading-5 text-[#D32F2F]">{{ loadError() }}</p>
+        <p class="blog-page__load-error">{{ loadError() }}</p>
       }
       @if (apiEmptyMessage() && !loadError()) {
-        <p class="-mt-5 w-full text-[14px] leading-5 text-[#0D47A1]">{{ apiEmptyMessage() }}</p>
+        <p class="blog-page__api-empty-message">{{ apiEmptyMessage() }}</p>
       }
       @if (isLoading()) {
-        <div class="flex h-48 w-full items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">Đang tải bài viết...</div>
+        <div class="blog-page__dang-tai-bai-el">Đang tải bài viết...</div>
       } @else if (posts().length) {
-        <div class="grid w-full grid-cols-1 justify-items-center gap-x-[16px] gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div class="blog-page__grid">
           @for (post of posts(); track post.id) {
             <article app-blog-card [post]="post"></article>
           }
         </div>
       } @else {
-        <div class="flex h-48 w-full items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#414753]">Không tìm thấy bài viết phù hợp.</div>
+        <div class="blog-page__khong-tim-thay-el">Không tìm thấy bài viết phù hợp.</div>
       }
       @if (posts().length < total()) {
         <button

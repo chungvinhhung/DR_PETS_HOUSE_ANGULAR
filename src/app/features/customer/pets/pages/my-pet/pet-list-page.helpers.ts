@@ -220,3 +220,26 @@ export const matchPetBySlug = (pets: any[], slugParam: string) => {
   return pets.find((p) => getPetId(p).endsWith(shortId)) || null;
 };
 
+
+/** Hồ sơ bị ẩn (is_hidden / is_active = false / status HIDDEN...) — đã chuẩn hoá trong pet-api.service */
+export const isPetHidden = (pet: any = {}) => Boolean(pet?.isHidden);
+
+export const PET_VISIBILITY_FILTERS = [
+  { value: "all", label: "Tất cả" },
+  { value: "active", label: "Hoạt động" },
+  { value: "hidden", label: "Đã ẩn" },
+];
+
+/** Màu badge nhỏ góc trên thẻ thú cưng */
+export const getPetBadgeColor = (status: any) => {
+  switch (status) {
+    case "Đã ẩn":
+      return { bg: "#f4f4f5e6", dot: "#a1a1aa", text: "#52525b" };
+    case "Đang điều trị":
+      return { bg: "#fde68ae6", dot: "#a16207", text: "#713f12" };
+    case "Cần tái khám":
+      return { bg: "#fee2e2e6", dot: "#dc2626", text: "#991b1b" };
+    default:
+      return { bg: "#e4e4f7e6", dot: "#52525b", text: "#27272a" };
+  }
+};

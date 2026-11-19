@@ -24,6 +24,7 @@ import { STATUS_STEPS, buildCheckoutItemsFromOrder, getStepDateLabel } from './o
   standalone: true,
   imports: [ProductSummaryComponent, OrderPagesYellowButtonComponent, OutlineButtonComponent, InvoiceModalComponent, OrderReviewModalComponent, ReactStyleDirective, CustomerLinkDirective],
   templateUrl: './order-details-page.component.html',
+  styleUrl: './order-details-page.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

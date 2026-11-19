@@ -9,6 +9,7 @@ import { Injectable, inject } from '@angular/core';
 
 import { CustomerHttpService, assertSuccess } from '../customer-http.service';
 import { rescueImages } from '../../../../shared/customer/assets/rescue-images';
+import { RESCUE_PARTNERS } from '../../../../features/customer/rescue/data/rescue-data';
 
 function getPrimaryImage(images: any = []) {
   if (!images || !images.length) return rescueImages.rescuePlaceholder;
@@ -18,42 +19,54 @@ function getPrimaryImage(images: any = []) {
 }
 
 export function normalizeAdoptionPet(pet: any = {}) {
-  const isAdopted = pet.status === "adopted" || pet.status === "ADOPTED";
-  const state = isAdopted ? "adopted" : "waiting";
-  const speciesLabel = pet.species === "DOG" ? "Chó" : pet.species === "CAT" ? "Mèo" : (pet.species || "Thú cưng");
-
+  const isAdopted=String(pet.status||'').toUpperCase()==='ADOPTED';
+  const partnerId=String(pet.supportPartnerId||'').trim();
+  // Only route to a known partner in the existing public partner network.
+  // Never redirect an unmatched pet to Dr. Pet or an arbitrary other rescue.
+  const partner=RESCUE_PARTNERS.find(item=>item.id===partnerId);
   return {
     ...pet,
-    id: String(pet.adoption_pet_id || pet._id || pet.id || pet.petCode || ""),
-    name: pet.petName || pet.name || "Bạn nhỏ",
-    image: getPrimaryImage(pet.images || pet.adoption_pet_images || []),
-    state,
-    ribbon: isAdopted ? "Đã có tổ ấm" : "Đang chờ nhận nuôi",
-    description: pet.rescueStory || pet.description || pet.personality || "Một bạn nhỏ đang chờ được yêu thương và chăm sóc.",
-    status: ([speciesLabel, pet.ageDescription || pet.age_text, pet.breed, pet.branchId?.name || pet.region].filter(Boolean) as any[]).join(" - ") || "Đang chờ nhận nuôi",
-    need: pet.healthStatus || pet.adoption_conditions || "Cần một gia đình có thời gian chăm sóc và đồng hành lâu dài.",
+    id:String(pet._id||pet.adoption_pet_id||pet.id||pet.petCode||''),
+    name:String(pet.petName||pet.name||'Bạn nhỏ'),
+    image:getPrimaryImage(pet.images||pet.adoption_pet_images||[]),
+    state:isAdopted?'adopted':'waiting',
+    ribbon:isAdopted?'ĐÃ CÓ TỔ ẤM':'CÒN CHỜ',
+    description:String(pet.rescueStory||pet.description||''),
+    status:String(pet.healthStatus||''),
+    need:String(pet.supportNeeds||''),
+    supportPartnerId:partner?.id||'',
+    supportPartnerName:partner?.name||'',
+    supportPartnerHref:partner?.href||'',
   };
 }
 
 export function normalizeAdoptionRequest(request: any = {}) {
-  const pet = request.adoption_pet || request.pet || {};
-  const status = request.status || "pending";
-  const statusLabels = {
-    pending: "Đang chờ duyệt",
-    approved: "Đã được chấp nhận",
-    rejected: "Đã bị từ chối",
+  // My-requests GET populates rescuePetId, but POST can return an unpopulated
+  // ObjectId. Keep the selected Customer pet details for the immediate card.
+  const linkedPet=request.rescuePetId;
+  const pet=linkedPet && typeof linkedPet==='object' &&
+    (linkedPet.petName || linkedPet.name)
+      ? linkedPet
+      : (request.adoption_pet || request.pet || {});
+  const linkedPetId=typeof linkedPet==='string'?linkedPet
+    : String(linkedPet?._id||linkedPet?.id||'');
+  const status = String(request.status || 'PENDING').toLowerCase();
+  const statusLabels: Record<string,string> = {
+    pending: 'Đang chờ duyệt',
+    approved: 'Đã được chấp nhận',
+    rejected: 'Đã bị từ chối',
+    cancelled: 'Đã hủy',
   };
-
   return {
     ...request,
-    id: String(request.adoption_request_id || request.id || ""),
-    petId: String(pet.adoption_pet_id || pet.id || request.adoption_pet_id || ""),
-    petName: pet.name || "Bạn nhỏ",
-    petImage: getPrimaryImage(pet.images || pet.adoption_pet_images || []),
+    id:String(request._id || request.adoption_request_id || request.id || ''),
+    petId:String(linkedPetId || pet._id || pet.adoption_pet_id || pet.id || request.adoption_pet_id || ''),
+    petName:pet.petName || pet.name || 'Bạn nhỏ',
+    petImage:getPrimaryImage(pet.images || pet.adoption_pet_images || []),
     status,
-    statusLabel: (statusLabels as any)[status] || status,
-    submittedAt: request.created_at || request.createdAt || null,
-    reason: request.reason || "",
+    statusLabel:statusLabels[status] || status,
+    submittedAt:request.createdAt || request.created_at || null,
+    reason:request.applicantInfo?.message || request.reason || '',
   };
 }
 
@@ -76,14 +89,24 @@ export class RescueApiService {
   private readonly http = inject(CustomerHttpService);
 
   async getAdoptionPets() {
-    try {
-      const response = await this.http.get("/adoptions/pets");
-      const data = assertSuccess(response);
-      const list = Array.isArray(data) ? data : (data?.items || data?.pets || []);
-      return list.map(normalizeAdoptionPet);
-    } catch {
-      return [];
-    }
+    // Read all official BE pages (not the old static sample or first 100 only).
+    // Keep API failures visible to Customer rather than silently hiding them.
+    const results:any[]=[];
+    let page=1;
+    let pages=1;
+    do {
+      const response=await this.http.get('/adoptions/pets',{params:{page,limit:100}});
+      const data=assertSuccess(response);
+      const items=Array.isArray(data)?data:(data?.items || data?.pets || []);
+      if(!Array.isArray(items))throw new Error('Dữ liệu thú cưng cứu trợ không hợp lệ.');
+      results.push(...items);
+      const reported=Number(data?.totalPages);
+      const total=Number(data?.total ?? data?.totalRows);
+      pages=Number.isFinite(reported)&&reported>0?reported:
+        Number.isFinite(total)&&total>0?Math.ceil(total/100):1;
+      page+=1;
+    } while(page<=Math.min(100,pages));
+    return results.map(normalizeAdoptionPet);
   }
 
   async getRescueStations() {

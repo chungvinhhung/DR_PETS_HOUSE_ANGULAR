@@ -19,8 +19,9 @@ import { formatMoney } from './appointment-history-page.helpers';
   standalone: true,
   imports: [SmallIconComponent, PaymentCountdownComponent, ActionButtonComponent],
   templateUrl: './appointment-card.component.html',
+  styleUrl: './appointment-card.component.scss',
   host: {
-    '[class]': '`flex w-full cursor-pointer items-center justify-between rounded-[16px] border border-[#C2C6D4] bg-white py-6 pl-7 pr-6 transition hover:border-[#1976D2] hover:shadow-md ${ active() ? \'ring-2 ring-[#90caf9]\' : \'\' } ${status().value === \'cancelled\' ? \'opacity-80\' : \'\'}`',
+    '[class]': '`mb-6 flex w-full cursor-pointer items-center justify-between rounded-[16px] border border-[#C2C6D4] bg-white py-6 pl-7 pr-6 transition hover:border-[#1976D2] hover:shadow-md ${ active() ? \'ring-2 ring-[#90caf9]\' : \'\' } ${status().value === \'cancelled\' ? \'opacity-80\' : \'\'}`',
     '(click)': 'onSelect.emit(appointment())',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,

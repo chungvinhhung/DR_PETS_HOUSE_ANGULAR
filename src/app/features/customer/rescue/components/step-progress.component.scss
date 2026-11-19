@@ -1,0 +1,11 @@
+.step-progress__layer {
+  @apply absolute left-0 top-0 h-[3px] bg-[#FDD835];
+}
+
+.step-progress__row {
+  @apply relative z-10 flex items-center gap-2;
+}
+
+.step-progress__label {
+  @apply whitespace-nowrap text-[14px] font-semibold leading-5 tracking-[0.28px] text-[rgba(0,0,0,0.87)];
+}

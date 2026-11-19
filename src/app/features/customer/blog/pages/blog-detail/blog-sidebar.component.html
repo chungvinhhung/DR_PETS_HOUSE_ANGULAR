@@ -1,20 +1,20 @@
-<section class="rounded-[12px] bg-white p-6 shadow-sm">
+<section class="blog-sidebar__section">
   <div app-sidebar-heading>XEM NHANH</div>
-  <div class="mt-6 flex flex-col gap-4">
+  <div class="blog-sidebar__stack">
     @for (post of QUICK_READ_POSTS; track post.id) {
-      <a [appCustomerLink]="`/blog/${post.id}`" class="group flex gap-3">
-        <img [attr.src]="post.image" alt="" class="h-20 w-20 shrink-0 rounded-lg object-cover" />
-        <div class="flex min-w-0 flex-col justify-center">
-          <h3 class="line-clamp-2 text-[14px] font-semibold leading-5 text-[#1A1C1C] group-hover:text-[#0D47A1]">{{ post.title }}</h3>
-          <p class="mt-1 text-[12px] font-medium leading-4 text-[#414753]/75">{{ post.publishedAt }}</p>
+      <a [appCustomerLink]="`/blog/${post.id}`" class="blog-sidebar__id-link group flex">
+        <img [attr.src]="post.image" alt="" class="blog-sidebar__image" />
+        <div class="blog-sidebar__stack-2">
+          <h3 class="blog-sidebar__title group-hover:text-[#0D47A1] text-[#1A1C1C]">{{ post.title }}</h3>
+          <p class="blog-sidebar__published-at">{{ post.publishedAt }}</p>
         </div>
       </a>
     }
   </div>
 </section>
-<section class="rounded-[12px] bg-white p-6 shadow-sm">
+<section class="blog-sidebar__section">
   <div app-sidebar-heading>CHỦ ĐỀ</div>
-  <div class="mt-6 flex flex-col gap-6">
+  <div class="blog-sidebar__stack-3">
     @for (item of list1(); track item.id) {
       <a
         [appCustomerLink]="`/blog?category=${item.id}#latest-posts`"

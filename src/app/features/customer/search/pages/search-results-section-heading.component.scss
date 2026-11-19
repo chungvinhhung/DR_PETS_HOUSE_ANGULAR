@@ -1,0 +1,7 @@
+.search-results-section-heading__title {
+  @apply shrink-0 text-[24px] font-semibold uppercase leading-8 text-[#0D47A1];
+}
+
+.search-results-section-heading__box {
+  @apply h-1 flex-1 rounded-full bg-[#FDD835];
+}

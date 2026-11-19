@@ -1,0 +1,91 @@
+.service-selection__grid {
+  @apply grid items-stretch gap-5 md:gap-6 lg:grid-cols-[minmax(0,2fr)_320px];
+}
+
+.service-selection__service-selected-check {
+  @apply absolute right-4 top-4 h-4 w-4;
+}
+
+.service-selection__row {
+  @apply flex items-center gap-4;
+}
+
+.service-selection__icon {
+  @apply h-12 w-12 rounded object-cover shadow;
+}
+
+.service-selection__desc {
+  @apply mt-3 text-base leading-6 text-slate-600 lg:mt-5;
+}
+
+.service-selection__title {
+  @apply mb-5 flex items-center gap-2 text-xl font-bold text-blue-900;
+}
+
+.service-selection__row-2 {
+  @apply relative mb-6 flex h-12 items-center rounded-lg border border-slate-300 bg-white py-1 pl-4 pr-2 focus-within:border-blue-900;
+}
+
+.service-selection__search-icon {
+  @apply h-7 w-7 shrink-0;
+}
+
+.service-selection__let-active-el {
+  @apply min-h-0 flex-1 overflow-y-auto pr-1 md:pr-2;
+}
+
+.service-selection__box {
+  @apply min-w-0;
+}
+
+.service-selection__name {
+  @apply text-sm font-bold text-slate-900 md:text-base;
+}
+
+.service-selection__desc-2 {
+  @apply text-xs font-medium leading-4 text-slate-700 md:text-sm;
+}
+
+.service-selection__thoi-luong-du-text {
+  @apply mt-1 text-xs font-medium leading-4 text-slate-700 md:text-sm;
+}
+
+.service-selection__duration-minutes {
+  @apply ml-1;
+}
+
+.service-selection__price {
+  @apply text-sm font-bold text-blue-900 md:text-base;
+}
+
+.service-selection__text {
+  @apply relative z-10 text-base leading-none;
+}
+
+.service-selection__chua-co-dich-text {
+  @apply rounded-2xl bg-slate-50 p-5 text-sm font-medium text-slate-500;
+}
+
+.service-selection__row-3 {
+  @apply mt-5 flex items-center justify-between rounded-xl bg-slate-100 p-5 shadow;
+}
+
+.service-selection__box-2 {
+  @apply text-right;
+}
+
+.service-selection__total {
+  @apply text-base font-black text-blue-900 md:text-2xl;
+}
+
+.service-selection__chua-bao-gom-text {
+  @apply text-xs text-slate-500;
+}
+
+.service-selection__aside {
+  @apply grid gap-6 lg:h-[744px] lg:grid-rows-[auto_minmax(0,1fr)];
+}
+
+.service-selection__dang-tai-khung-text {
+  @apply mt-2 text-sm font-medium text-blue-900;
+}

@@ -11,6 +11,7 @@ import { searchSuggestionImages } from '../../../../shared/customer/assets/searc
   standalone: true,
   imports: [HighlightedTextComponent],
   templateUrl: './text-suggestion-item.component.html',
+  styleUrl: './text-suggestion-item.component.scss',
   host: {
     'type': 'button',
     '(click)': 'onSelect.emit(suggestion())',

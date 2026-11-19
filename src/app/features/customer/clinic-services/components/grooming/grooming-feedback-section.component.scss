@@ -1,0 +1,51 @@
+.grooming-feedback-section__background {
+  @apply absolute inset-0 h-full w-full object-cover;
+}
+
+.grooming-feedback-section__box {
+  @apply relative z-10 px-[120px] pt-10;
+}
+
+.grooming-feedback-section__phan-hoi-cua-title {
+  @apply text-center;
+}
+
+.grooming-feedback-section__box-2 {
+  @apply relative mt-[58px] h-[280px] overflow-hidden;
+}
+
+.grooming-feedback-section__chon-trang-phan-hoi {
+  @apply mt-[58px] flex items-center justify-center gap-[21px];
+}
+
+.grooming-feedback-section__carousel-left {
+  @apply h-[10px] w-[271px] object-contain;
+}
+
+.grooming-feedback-section__row {
+  @apply flex items-center gap-[21px];
+}
+
+.grooming-feedback-section__paw-small {
+  @apply pointer-events-none absolute left-[278px] top-[103px] h-[60px] w-[60px];
+}
+
+.grooming-feedback-section__paw-small-2 {
+  @apply pointer-events-none absolute left-[1085px] top-[90px] h-[60px] w-[60px];
+}
+
+.grooming-feedback-section__paw-blue {
+  @apply pointer-events-none absolute left-[1145px] top-[102px] h-[48px] w-[49px];
+}
+
+.grooming-feedback-section__paw-blue-2 {
+  @apply pointer-events-none absolute left-[158.39px] top-[512.17px] h-[48px] w-[49px];
+}
+
+.grooming-feedback-section__paw-blue-small {
+  @apply pointer-events-none absolute left-[158.39px] top-[526.17px] h-[34px] w-[34px];
+}
+
+.grooming-feedback-section__paw-dark {
+  @apply pointer-events-none absolute bottom-0 right-[50px] h-[87px] w-[87px];
+}

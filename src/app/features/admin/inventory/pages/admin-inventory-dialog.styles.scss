@@ -82,9 +82,20 @@ app-admin-inventory-page {
 }
 .field-label input[readonly] { background: #eff6ff; color: #52647d; }
 .field-label .computed-input { background: #eff6ff; }
-.sku-input-wrap { position: relative; display: block; }
-.sku-input-wrap input { padding-left: 40px; }
-.sku-input-wrap img { position: absolute; left: 13px; top: 13px; width: 15px; height: 15px; pointer-events: none; }
+.inventory-sku-combobox { position: relative; width: 100%; min-width: 0; }
+.sku-input-wrap { position: relative; display: flex; align-items: center; width: 100%; min-width: 0; }
+.sku-input-wrap input,
+.field-label .sku-input-wrap input {
+  display: block; width: 100%; min-width: 0; height: 40px; line-height: normal;
+  margin: 0; padding: 0 12px 0 40px; border: 1px solid #dce5ef; border-radius: 7px;
+  background: #fff; color: #1c2531; font: 13px Roboto,Arial,sans-serif;
+}
+.sku-input-wrap input::placeholder { color: #8392a8; opacity: 1; }
+.sku-input-wrap input:focus { outline: none; box-shadow: 0 0 0 2px #d5e6ff; border-color: #0d47a1; }
+.sku-input-wrap img {
+  position: absolute; z-index: 1; left: 13px; top: 50%; transform: translateY(-50%);
+  width: 16px; height: 16px; pointer-events: none;
+}
 .required { color: #c62828; }
 .transaction-preview {
   box-sizing: border-box;

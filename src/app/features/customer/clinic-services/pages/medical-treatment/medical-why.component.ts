@@ -11,6 +11,7 @@ import { medicalAssets, medicalWhyItems } from '../../data/medical-treatment-dat
   standalone: true,
   imports: [WhyItemComponent],
   templateUrl: './medical-why.component.html',
+  styleUrl: './medical-why.component.scss',
   host: {
     'class': 'medical-why',
   },

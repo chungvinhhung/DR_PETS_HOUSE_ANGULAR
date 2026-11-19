@@ -1,0 +1,27 @@
+.booking-success-modal__stack {
+  @apply flex min-h-[310px] w-full max-w-[320px] flex-col items-center justify-center gap-6 rounded-[10px] border border-slate-300 bg-white bg-cover bg-center p-6 text-center shadow-2xl md:max-w-[688px] md:gap-8 md:p-10 lg:max-w-4xl;
+}
+
+.booking-success-modal__success-check-group {
+  @apply h-[69px] w-[69px];
+}
+
+.booking-success-modal__dat-lich-thanh-title {
+  @apply text-3xl font-bold text-[#3d3d3d] md:text-5xl;
+}
+
+.booking-success-modal__lich-hen-cua-text {
+  @apply mx-auto mt-3 max-w-lg text-base text-[#949494];
+}
+
+.booking-success-modal__stack-2 {
+  @apply flex flex-col justify-center gap-3 md:flex-row md:flex-wrap md:gap-5;
+}
+
+.booking-success-modal__tro-ve-trang-link {
+  @apply rounded bg-secondary px-6 py-3 text-sm font-bold uppercase tracking-[0.46px] shadow-elevation;
+}
+
+.booking-success-modal__chi-tiet-lich-link {
+  @apply rounded border border-secondary px-6 py-3 text-sm font-medium uppercase tracking-[0.46px];
+}

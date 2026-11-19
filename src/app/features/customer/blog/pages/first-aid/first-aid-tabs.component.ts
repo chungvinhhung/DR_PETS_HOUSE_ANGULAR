@@ -10,8 +10,9 @@ import { CustomerLinkDirective } from '../../../../../shared/customer/directives
   standalone: true,
   imports: [CustomerLinkDirective],
   templateUrl: './first-aid-tabs.component.html',
+  styleUrl: './first-aid-tabs.component.scss',
   host: {
-    'class': 'flex h-14 w-full max-w-[1200px] items-center gap-6 overflow-x-auto whitespace-nowrap text-[16px] sm:gap-10',
+    'class': 'flex h-14 w-full max-w-page items-center gap-6 overflow-x-auto whitespace-nowrap text-[16px] sm:gap-10',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

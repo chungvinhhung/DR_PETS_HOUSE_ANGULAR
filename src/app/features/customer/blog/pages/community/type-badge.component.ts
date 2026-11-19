@@ -10,6 +10,7 @@ import { POST_TYPES } from './community-page.helpers';
   standalone: true,
   imports: [],
   templateUrl: './type-badge.component.html',
+  styleUrl: './type-badge.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -10,6 +10,7 @@ import { contactAssets } from '../data/contact-data';
   standalone: true,
   imports: [],
   templateUrl: './branch-card.component.html',
+  styleUrl: './branch-card.component.scss',
   host: {
     'type': 'button',
     '[class]': '`contact-branch-card${active() ? \' is-active\' : \'\'}`',

@@ -14,6 +14,7 @@ import { groomingTitleStyles } from '../../utils/grooming-title-styles';
   standalone: true,
   imports: [ValuePropCardComponent, ReactStyleDirective],
   templateUrl: './grooming-why-us.component.html',
+  styleUrl: './grooming-why-us.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

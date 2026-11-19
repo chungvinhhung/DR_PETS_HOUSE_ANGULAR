@@ -1,0 +1,363 @@
+<app-admin-catalog-shell [activeItem]="activeItem">
+  <main class="content-admin web2-admin-page">
+    <header class="web2-admin-page__header">
+      <h1>{{title}}</h1>
+    </header>
+
+    @if (mode === 'rescue' || mode === 'adoptions') {
+      <nav class="web2-admin-tabs" aria-label="Cứu trợ và nhận nuôi">
+        <a routerLink="/admin/content/rescue" [class.active]="mode === 'rescue'">Cứu trợ &amp; Nhận nuôi</a>
+        <a routerLink="/admin/content/adoptions" [class.active]="mode === 'adoptions'">Đơn đăng ký nhận nuôi</a>
+      </nav>
+    }
+
+    @if (notice()) {
+      <div class="web2-admin-notice" role="status">
+        <span>{{notice()}}</span>
+        <button type="button" aria-label="Đóng thông báo" (click)="notice.set('')">×</button>
+      </div>
+    }
+
+    <section class="filterbar web2-filterbar" role="search" aria-label="Tìm kiếm và lọc nội dung">
+      <label class="search search-field">
+        <img src="/assets/service-catalog/search.svg" alt="" aria-hidden="true">
+        <input type="search"
+          [placeholder]="mode === 'adoptions' ? 'Tìm đơn đăng ký...' : mode === 'rescue' ? 'Tìm tên thú cưng cứu trợ' : mode === 'community' ? 'Tìm bài đăng...' : mode === 'first-aid' ? 'Tìm cẩm nang sơ cứu...' : 'Tìm bài viết, kiến thức...'"
+          [ngModel]="search()" (ngModelChange)="search.set($event); onFilter()">
+      </label>
+      <div class="filters toolbar-selects">
+        @if (mode === 'rescue') {
+          <select class="web2-admin-filter-select" aria-label="Loài thú cưng" [ngModel]="filter()" (ngModelChange)="filter.set($event); onFilter()">
+            <option value="">Tất cả loài</option>
+            <option value="DOG">Chó</option>
+            <option value="CAT">Mèo</option>
+            <option value="OTHER">Khác</option>
+          </select>
+        } @else if (mode === 'community') {
+          <select class="web2-admin-filter-select" aria-label="Loại bài"
+            [ngModel]="filter()" (ngModelChange)="filter.set($event); onFilter()"
+            [title]="hasCommunityTypes() ? 'Lọc theo thẻ bài đăng Customer' : 'Chưa có thông tin loại bài để lọc'">
+            <option value="">Tất cả loại bài</option>
+            @for (type of communityTypes; track type) {
+              <option [value]="type">{{type}}</option>
+            }
+          </select>
+        } @else if (mode === 'articles' || mode === 'first-aid') {
+          <select class="web2-admin-filter-select" aria-label="Chủ đề / nhóm nội dung" [ngModel]="filter()" (ngModelChange)="filter.set($event); onFilter()">
+            <option value="">{{mode === 'first-aid' ? 'Tất cả nhóm tình huống' : 'Tất cả chủ đề'}}</option>
+            @for (category of postCategories(); track category) {
+              <option [value]="category">{{category}}</option>
+            }
+          </select>
+        }
+        <select class="web2-admin-filter-select" aria-label="Trạng thái" [ngModel]="status()" (ngModelChange)="status.set($event); onFilter()">
+          <option value="">Tất cả trạng thái</option>
+          @if (mode === 'articles' || mode === 'first-aid') {
+            <option value="PUBLISHED">Đã xuất bản</option>
+            <option value="DRAFT">Bản nháp</option>
+            <option value="ARCHIVED">Đã lưu trữ</option>
+          } @else if (mode === 'community') {
+            <option value="APPROVED">Bình thường</option>
+            <option value="REPORTED">Bị báo cáo</option>
+            <option value="HIDDEN">Ẩn</option>
+            <option value="PENDING">Chờ duyệt</option>
+            <option value="REJECTED">Đã từ chối</option>
+          } @else if (mode === 'rescue') {
+            <option value="LOOKING_FOR_HOME">Còn chờ</option>
+            <option value="ADOPTED">Đã có tổ ấm</option>
+          } @else {
+            <option value="PENDING">Chờ duyệt</option>
+            <option value="APPROVED">Đã duyệt</option>
+            <option value="REJECTED">Đã từ chối</option>
+            <option value="CANCELLED">Đã hủy</option>
+          }
+        </select>
+        @if (mode === 'adoptions') {
+          <select class="web2-admin-filter-select" aria-label="Khoảng thời gian gửi đơn"
+            [ngModel]="adoptionPeriod()" (ngModelChange)="adoptionPeriod.set($event); onFilter()">
+            <option value="7">7 ngày qua</option>
+            <option value="30">30 ngày qua</option>
+            <option value="90">90 ngày qua</option>
+            <option value="ALL">Tất cả thời gian</option>
+          </select>
+        }
+      </div>
+      @if (canCreate()) {
+        @if (mode === 'community') {
+          <a class="web2-add-button" href="https://drpetshouse.lat/bai-viet/cong-dong"
+            target="_blank" rel="noopener noreferrer"
+            aria-label="Tạo bài đăng trên trang Cộng đồng">
+            <img src="/assets/admin-product/icon-add.svg" alt="" aria-hidden="true">
+            <span>Tạo bài đăng</span>
+          </a>
+        } @else {
+          <button type="button" class="web2-add-button" (click)="openCreate()">
+            <img src="/assets/admin-product/icon-add.svg" alt="" aria-hidden="true">
+            <span>{{mode === 'rescue' ? 'Thêm hồ sơ' : mode === 'first-aid' ? 'Thêm cẩm nang' : 'Thêm bài viết'}}</span>
+          </button>
+        }
+      }
+    </section>
+
+    <section class="table-card web2-admin-table-panel">
+      @if (loading()) {
+        <app-admin-data-state kind="loading" [title]="'Đang tải ' + title.toLocaleLowerCase('vi')" />
+      } @else if (error()) {
+        <app-admin-data-state kind="error" [title]="'Không thể tải ' + title.toLocaleLowerCase('vi')" [message]="error()" (retry)="load()" />
+      } @else {
+        <div class="table-scroll web2-admin-table-scroll">
+          <table class="web2-admin-table"
+            [class.web2-admin-table--articles]="mode === 'articles'"
+            [class.web2-admin-table--first-aid]="mode === 'first-aid'"
+            [class.web2-admin-table--community]="mode === 'community'"
+            [class.web2-admin-table--rescue]="mode === 'rescue'"
+            [class.web2-admin-table--adoptions]="mode === 'adoptions'">
+
+            @if (mode === 'articles') {
+              <colgroup><col style="width:30%"><col style="width:15%"><col style="width:15%"><col style="width:14%"><col style="width:14%"><col style="width:12%"></colgroup>
+              <thead><tr><th>Tiêu đề</th><th>Chủ đề</th><th>Tác giả</th><th class="is-center">Ngày đăng</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
+              <tbody>
+                @for (r of visible(); track r.id || r._id || $index) {
+                  <tr>
+                    <td>{{name(r)}}</td><td>{{category(r)}}</td><td>{{author(r)}}</td>
+                    <td class="is-center">{{date(r)}}</td>
+                    <td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
+                    <td class="is-center actions">
+                      @if (canWriteContent()) {
+                        <button type="button" class="web2-admin-icon-button" title="Chỉnh sửa" aria-label="Chỉnh sửa bài viết" (click)="openEdit(r)"><img src="/assets/admin-staff/icon-edit.svg" alt=""></button>
+                        <button type="button" class="web2-admin-icon-button" title="Xóa" aria-label="Xóa bài viết" (click)="deleteRow(r)"><img src="/assets/admin-product/icon-delete.svg" alt=""></button>
+                      }
+                    </td>
+                  </tr>
+                } @empty { <tr><td colspan="6" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có bài viết" message="Danh sách bài viết hiện đang trống." /></td></tr> }
+              </tbody>
+            } @else if (mode === 'first-aid') {
+              <colgroup><col style="width:30%"><col style="width:20%"><col style="width:11%"><col style="width:13%"><col style="width:14%"><col style="width:12%"></colgroup>
+              <thead><tr><th>Tiêu đề</th><th>Nhóm tình huống</th><th>Mức độ</th><th class="is-center">Cập nhật</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
+              <tbody>
+                @for (r of visible(); track r.id || r._id || $index) {
+                  <tr>
+                    <td>{{name(r)}}</td><td>{{category(r)}}</td><td>{{urgencyLabel(r)}}</td>
+                    <td class="is-center">{{date(r)}}</td>
+                    <td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
+                    <td class="is-center actions">
+                      @if (canWriteContent()) {
+                        <button type="button" class="web2-admin-icon-button" title="Chỉnh sửa" aria-label="Chỉnh sửa cẩm nang" (click)="openEdit(r)"><img src="/assets/admin-staff/icon-edit.svg" alt=""></button>
+                        <button type="button" class="web2-admin-icon-button" title="Xóa" aria-label="Xóa cẩm nang" (click)="deleteRow(r)"><img src="/assets/admin-product/icon-delete.svg" alt=""></button>
+                      }
+                    </td>
+                  </tr>
+                } @empty { <tr><td colspan="6" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có cẩm nang" message="Danh sách cẩm nang sơ cứu hiện đang trống." /></td></tr> }
+              </tbody>
+            } @else if (mode === 'community') {
+              <colgroup><col style="width:18%"><col style="width:31%"><col style="width:12%"><col style="width:9%"><col style="width:9%"><col style="width:11%"><col style="width:10%"></colgroup>
+              <thead><tr><th>Người đăng</th><th>Nội dung</th><th>Loại</th><th class="is-center">Lượt thích</th><th class="is-center">Bình luận</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
+              <tbody>
+                @for (r of visible(); track r.id || r._id || $index) {
+                  <tr>
+                    <td>{{author(r)}}</td><td>{{name(r)}}</td><td>{{category(r)}}</td>
+                    <td class="is-center">{{likes(r)}}</td><td class="is-center">{{comments(r)}}</td>
+                    <td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
+                    <td class="is-center actions"><button type="button" class="web2-admin-icon-button" aria-label="Kiểm duyệt bài đăng" (click)="openCommunity(r)"><img src="/assets/admin-branch/figma-eye.svg" alt=""></button></td>
+                  </tr>
+                } @empty { <tr><td colspan="7" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có bài đăng cộng đồng" message="Hiện chưa có bài đăng phù hợp với bộ lọc." /></td></tr> }
+              </tbody>
+            } @else if (mode === 'rescue') {
+              <colgroup><col style="width:11%"><col style="width:18%"><col style="width:12%"><col style="width:29%"><col style="width:9%"><col style="width:11%"><col style="width:10%"></colgroup>
+              <thead><tr><th>Thú cưng</th><th>Loài</th><th>Khu vực</th><th>Tình trạng</th><th class="is-center">Ngày đăng</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
+              <tbody>
+                @for (r of visible(); track r.id || r._id || $index) {
+                  <tr>
+                    <td>{{name(r)}}</td><td>{{rescueSpecies(r)}}</td><td [title]="rescuePartnerName(r)">{{rescueArea(r)}}</td><td>{{rescueCondition(r)}}</td>
+                    <td class="is-center">{{date(r)}}</td><td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
+                    <td class="is-center actions">
+                      <span class="rescue-action-group">
+                        @if (canManageRescueRow(r)) {
+                          <button type="button" class="web2-admin-icon-button" aria-label="Chỉnh sửa hồ sơ cứu trợ" (click)="openEdit(r)"><img src="/assets/admin-staff/icon-edit.svg" alt=""></button>
+                          <button type="button" class="web2-admin-icon-button" aria-label="Xóa hồ sơ cứu trợ" (click)="deleteRow(r)"><img src="/assets/admin-product/icon-delete.svg" alt=""></button>
+                        }
+                      </span>
+                    </td>
+                  </tr>
+                } @empty { <tr><td colspan="7" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có hồ sơ cứu trợ" message="Hiện chưa có bé nào phù hợp với bộ lọc." /></td></tr> }
+              </tbody>
+            } @else {
+              <colgroup><col style="width:12%"><col style="width:17%"><col style="width:14%"><col style="width:14%"><col style="width:12%"><col style="width:12%"><col style="width:11%"><col style="width:8%"></colgroup>
+              <thead><tr><th>Mã đơn</th><th>Người đăng ký</th><th>Thú cưng</th><th>Loại nhà ở</th><th>Ở một mình</th><th class="is-center">Ngày gửi</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
+              <tbody>
+                @for (r of visible(); track r.id || r._id || $index) {
+                  <tr>
+                    <td>{{adoptionCode(r)}}</td><td>{{adoptionApplicant(r)}}</td><td>{{adoptionPet(r)}}</td><td>{{adoptionHousing(r)}}</td><td>{{adoptionAloneTime(r)}}</td>
+                    <td class="is-center">{{date(r)}}</td><td class="is-center"><span class="badge" [attr.data-kind]="statusClass(r)">{{statusLabel(r)}}</span></td>
+                    <td class="is-center actions"><a class="web2-admin-icon-button" [routerLink]="['/admin/content/adoptions', r.id || r._id]" aria-label="Xem chi tiết đơn nhận nuôi"><img src="/assets/admin-branch/figma-eye.svg" alt=""></a></td>
+                  </tr>
+                } @empty { <tr><td colspan="8" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có đơn đăng ký" message="Hiện chưa có đơn đăng ký nhận nuôi phù hợp." /></td></tr> }
+              </tbody>
+            }
+          </table>
+        </div>
+        <footer class="web2-admin-pagination">
+          <span>Đang hiển thị {{visible().length}} trên tổng số {{filtered().length}} {{mode === 'articles' ? 'kiến thức' : mode === 'first-aid' ? 'cẩm nang' : mode === 'community' ? 'bài đăng' : mode === 'rescue' ? 'bé' : 'đơn đăng ký'}}</span>
+          <div class="web2-admin-pagination__controls">
+            <button type="button" class="web2-admin-page-arrow" aria-label="Trang trước" (click)="goToPage(page() - 1)" [disabled]="page() === 1"><img src="/assets/admin-product/expand_more.svg" alt=""></button>
+            @for (p of pageNumbers(); track $index) {
+              @if (p === '…') { <span class="pagination-ellipsis">…</span> }
+              @else { <button type="button" class="pagination-page" [class.pagination-page--active]="page() === p" [attr.aria-current]="page() === p ? 'page' : null" (click)="goToPage(p)">{{p}}</button> }
+            }
+            <button type="button" class="web2-admin-page-arrow" aria-label="Trang sau" (click)="goToPage(page() + 1)" [disabled]="page() === totalPages()"><img src="/assets/admin-product/expand_more.svg" alt=""></button>
+          </div>
+        </footer>
+      }
+    </section>
+  </main>
+
+  @if (editorDialog(); as editor) {
+    <div class="content-dialog-backdrop" (click)="closeEditor()">
+      <section class="content-dialog content-dialog--editor" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <header>
+          <div>
+            <h2>{{editing() ? 'Chỉnh sửa' : 'Tạo mới'}} {{editor === 'rescue' ? 'hồ sơ cứu trợ' : mode === 'first-aid' ? 'cẩm nang sơ cứu' : 'bài viết'}}</h2>
+          </div>
+          <button type="button" class="content-dialog__close" aria-label="Đóng" [disabled]="actionBusy()" (click)="closeEditor()">×</button>
+        </header>
+        <div class="content-dialog__body content-editor">
+          @if (editor === 'post') {
+            <label><span class="content-editor__field-label">Tiêu đề <span class="content-editor__required" aria-hidden="true">*</span></span><input type="text" [ngModel]="postDraft().title" (ngModelChange)="updatePostDraft('title',$event)"></label>
+            <label><span class="content-editor__field-label">Chủ đề <span class="content-editor__required" aria-hidden="true">*</span></span><input type="text" [ngModel]="postDraft().category" (ngModelChange)="updatePostDraft('category',$event)"></label>
+            <label>Tóm tắt<input type="text" [ngModel]="postDraft().excerpt" (ngModelChange)="updatePostDraft('excerpt',$event)"></label>
+            @if (mode === 'first-aid') {
+              <label>Hotline cấp cứu<input type="text" [ngModel]="postDraft().emergencyPhone" (ngModelChange)="updatePostDraft('emergencyPhone',$event)"></label>
+            }
+            <label><span class="content-editor__field-label">Nội dung <span class="content-editor__required" aria-hidden="true">*</span></span><textarea rows="7" [ngModel]="postDraft().content" (ngModelChange)="updatePostDraft('content',$event)"></textarea></label>
+            <label>Trạng thái
+              <select [ngModel]="postDraft().status" (ngModelChange)="updatePostDraft('status',$event)">
+                <option value="DRAFT">Bản nháp</option><option value="PUBLISHED">Đã xuất bản</option><option value="ARCHIVED">Đã lưu trữ</option>
+              </select>
+            </label>
+          } @else {
+            <label><span class="content-editor__field-label">Tên thú cưng <span class="content-editor__required" aria-hidden="true">*</span></span><input type="text" [ngModel]="rescueDraft().petName" (ngModelChange)="updateRescueDraft('petName',$event)"></label>
+            <label><span class="content-editor__field-label">Loài <span class="content-editor__required" aria-hidden="true">*</span></span>
+              <select [ngModel]="rescueDraft().species" (ngModelChange)="updateRescueDraft('species',$event)"><option value="DOG">Chó</option><option value="CAT">Mèo</option><option value="OTHER">Khác</option></select>
+            </label>
+            <label><span class="content-editor__field-label">Giống <span class="content-editor__required" aria-hidden="true">*</span></span><input type="text" [ngModel]="rescueDraft().breed" (ngModelChange)="updateRescueDraft('breed',$event)"></label>
+            <label><span class="content-editor__field-label">Độ tuổi <span class="content-editor__required" aria-hidden="true">*</span></span><input type="text" [ngModel]="rescueDraft().ageDescription" (ngModelChange)="updateRescueDraft('ageDescription',$event)"></label>
+            <label><span class="content-editor__field-label">Tình trạng sức khỏe <span class="content-editor__required" aria-hidden="true">*</span></span><input type="text" [ngModel]="rescueDraft().healthStatus" (ngModelChange)="updateRescueDraft('healthStatus',$event)"></label>
+            <label><span class="content-editor__field-label">Câu chuyện cứu hộ <span class="content-editor__required" aria-hidden="true">*</span></span><textarea rows="5" [ngModel]="rescueDraft().rescueStory" (ngModelChange)="updateRescueDraft('rescueStory',$event)"></textarea></label>
+            @if (editing()) {
+              <label>Trạng thái
+                <select [ngModel]="rescueDraft().status" (ngModelChange)="updateRescueDraft('status',$event)">
+                  <option value="LOOKING_FOR_HOME">Còn chờ</option><option value="ADOPTED">Đã có tổ ấm</option>
+                </select>
+              </label>
+            }
+          }
+          @if (editorError()) { <p class="content-dialog__error" role="alert">{{editorError()}}</p> }
+        </div>
+        <footer>
+          <span class="content-dialog__spacer"></span>
+          <button type="button" class="web2-admin-btn web2-admin-btn--outline" [disabled]="actionBusy()" (click)="closeEditor()">Đóng</button>
+          <button type="button" class="web2-admin-btn web2-admin-btn--primary" [disabled]="actionBusy()" (click)="saveEditor()">{{actionBusy() ? 'Đang lưu...' : 'Lưu'}}</button>
+        </footer>
+      </section>
+    </div>
+  }
+
+  @if (communityDialog(); as post) {
+    <div class="content-dialog-backdrop" (click)="closeCommunity()">
+      <section class="content-dialog content-dialog--community-review" role="dialog" aria-modal="true" aria-labelledby="community-dialog-title" (click)="$event.stopPropagation()">
+        <header>
+          <div>
+            <h2 id="community-dialog-title">{{post.title || 'Bài đăng cộng đồng'}}</h2>
+            <p>{{post.authorNameSnapshot || 'Thành viên'}}</p>
+          </div>
+          <button type="button" class="content-dialog__close" aria-label="Đóng" [disabled]="actionBusy()" (click)="closeCommunity()">×</button>
+        </header>
+        <div class="content-dialog__body">
+          <div class="community-review__meta">
+            <span class="badge" [attr.data-kind]="statusClass(post)">{{statusLabel(post)}}</span>
+            <span>{{date(post)}}</span>
+            @if (communityType(post)) { <span>{{communityType(post)}}</span> }
+          </div>
+          <p>{{post.content || '—'}}</p>
+          @if (post.imageUrls?.length) {
+            <div class="community-review__images">
+              @for (url of post.imageUrls; track url) {
+                <img [src]="url" alt="Ảnh đính kèm bài đăng">
+              }
+            </div>
+          }
+          @if (post.status === 'REJECTED' && post.rejectionReason) {
+            <div class="content-dialog__reason"><span>Lý do từ chối trước đó</span><strong>{{post.rejectionReason}}</strong></div>
+          }
+          @if (communityError()) {
+            <div class="content-dialog__error" role="alert">{{communityError()}}</div>
+          }
+          @if (rejecting()) {
+            <div class="community-review__inline-action">
+              <label for="community-rejection-reason">Lý do từ chối <span aria-hidden="true">*</span></label>
+              <textarea id="community-rejection-reason" rows="3" maxlength="1000"
+                [ngModel]="rejectionReason()" (ngModelChange)="rejectionReason.set($event)"
+                placeholder="Cho biết vì sao bài đăng không được duyệt"></textarea>
+            </div>
+          }
+          @if (confirmCommunityDelete()) {
+            <div class="community-review__delete-confirm" role="alert">
+              <strong>Xóa vĩnh viễn bài đăng này?</strong>
+              <span>Thao tác này không thể hoàn tác.</span>
+            </div>
+          }
+        </div>
+        <footer class="community-review__footer">
+          @if (rejecting() || confirmCommunityDelete()) {
+            <button type="button" class="web2-admin-btn web2-admin-btn--outline"
+              [disabled]="actionBusy()" (click)="cancelCommunityAction()">Hủy</button>
+            <span class="content-dialog__spacer"></span>
+            @if (rejecting()) {
+              <button type="button" class="web2-admin-btn web2-admin-btn--primary"
+                [disabled]="actionBusy() || rejectionReason().trim().length < 3"
+                (click)="moderateCommunity('REJECTED')">
+                {{actionBusy() ? 'Đang xử lý...' : 'Xác nhận từ chối'}}
+              </button>
+            } @else {
+              <button type="button" class="web2-admin-btn community-review__danger"
+                [disabled]="actionBusy()" (click)="deleteRow(post)">
+                {{actionBusy() ? 'Đang xóa...' : 'Xóa bài đăng'}}
+              </button>
+            }
+          } @else {
+            @if (isCommunityPublic(post)) {
+              <a class="community-review__web-link" [href]="communityPostPublicUrl(post)" target="_blank"
+                rel="noopener noreferrer" aria-label="Xem bài đăng này trên trang Cộng đồng">
+                Xem trên trang web <span aria-hidden="true">↗</span>
+              </a>
+            } @else {
+              <button type="button" class="community-review__web-link community-review__web-link--disabled"
+                disabled title="Bài đăng đang chờ duyệt, bị từ chối hoặc bị ẩn nên chưa thể xem trên trang Customer">
+                Xem trên trang web <span aria-hidden="true">↗</span>
+              </button>
+            }
+            <span class="content-dialog__spacer"></span>
+            @if (communityIsPending(post)) {
+              <button type="button" class="web2-admin-btn web2-admin-btn--outline"
+                [disabled]="actionBusy()" (click)="startCommunityRejection()">Từ chối</button>
+            }
+            @if (communityIsApproved(post)) {
+              <button type="button" class="web2-admin-btn web2-admin-btn--outline"
+                [disabled]="actionBusy()" (click)="moderateCommunity('HIDDEN')">Ẩn bài đăng</button>
+            }
+            @if (communityCanDelete(post)) {
+              <button type="button" class="web2-admin-btn web2-admin-btn--outline community-review__delete"
+                [disabled]="actionBusy()" (click)="startCommunityDeletion()">Xóa vĩnh viễn</button>
+            }
+            @if (!communityIsApproved(post)) {
+              <button type="button" class="web2-admin-btn web2-admin-btn--primary"
+                [disabled]="actionBusy()" (click)="moderateCommunity('APPROVED')">
+                {{actionBusy() ? 'Đang xử lý...' : (post.status === 'HIDDEN' ? 'Hiện bài' : post.status === 'REJECTED' ? 'Duyệt lại' : 'Duyệt bài')}}
+              </button>
+            }
+          }
+        </footer>
+      </section>
+    </div>
+  }
+</app-admin-catalog-shell>

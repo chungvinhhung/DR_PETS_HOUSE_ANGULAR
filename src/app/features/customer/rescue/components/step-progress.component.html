@@ -1,11 +1,11 @@
 <div
-  class="absolute left-0 top-0 h-[3px] bg-[#FDD835]"
+  class="step-progress__layer"
   [appStyle]="{ width: `${((stepIndex() + 1) / ADOPTION_STEPS.length) * 100}%` }"
 ></div>
 @for (step of ADOPTION_STEPS; track $index; let index = $index) {
   @let completed = index < stepIndex();
   @let active = index === stepIndex();
-  <div class="relative z-10 flex items-center gap-2">
+  <div class="step-progress__row">
     <div [class]="`flex h-10 w-10 items-center justify-center rounded-full text-[16px] font-bold leading-6 ${
               completed ? 'bg-[#0058BE]' : active ? 'bg-[#FDD835]' : 'bg-[#D9E3F6]'
             }`">
@@ -15,6 +15,6 @@
         <span>{{ index + 1 }}</span>
       }
     </div>
-    <span class="whitespace-nowrap text-[14px] font-semibold leading-5 tracking-[0.28px] text-[rgba(0,0,0,0.87)]">{{ step.label }}</span>
+    <span class="step-progress__label">{{ step.label }}</span>
   </div>
 }

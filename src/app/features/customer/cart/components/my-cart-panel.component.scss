@@ -1,0 +1,59 @@
+.my-cart-panel__header {
+  @apply flex h-12 w-full shrink-0 items-center justify-between bg-white pr-[10px] lg:h-auto lg:w-[503px] lg:bg-transparent lg:pr-0;
+}
+
+.my-cart-panel__text {
+  @apply whitespace-nowrap tracking-[0.15px] text-[#353535];
+}
+
+.my-cart-panel__gio-hang-text {
+  @apply font-['Roboto'] text-[16px] font-bold leading-[1.5];
+}
+
+.my-cart-panel__item-count {
+  @apply font-['Roboto'] text-[16px] font-bold leading-[1.5] text-[#f45757];
+}
+
+.my-cart-panel__icon-close {
+  @apply size-full;
+}
+
+.my-cart-panel__item-list {
+  @apply flex min-h-0 w-full max-w-[340px] flex-1 flex-col items-start overflow-x-clip overflow-y-auto lg:max-w-none;
+}
+
+.my-cart-panel__stack {
+  @apply flex w-full flex-col items-center justify-center gap-3 py-16;
+}
+
+.my-cart-panel__empty-cart-svg {
+  @apply text-[#ccc];
+}
+
+.my-cart-panel__gio-hang-trong-text {
+  @apply font-['Roboto'] text-[16px] font-medium leading-[1.5] text-[#999];
+}
+
+.my-cart-panel__them-san-pham-text {
+  @apply font-['Roboto'] text-[13px] leading-[1.5] text-[#bbb] text-center;
+}
+
+.my-cart-panel__footer {
+  @apply flex h-[60px] w-full shrink-0 items-center justify-center gap-6 rounded bg-[#f5f5f5] p-6;
+}
+
+.my-cart-panel__row {
+  @apply flex h-5 min-w-0 flex-1 items-center gap-5 font-['Roboto'] text-[16px] font-bold leading-[1.5] tracking-[0.15px];
+}
+
+.my-cart-panel__tam-tinh-text {
+  @apply shrink-0 whitespace-nowrap text-[rgba(0,0,0,0.87)];
+}
+
+.my-cart-panel__subtotal {
+  @apply min-w-0 flex-1 text-[#f45757];
+}
+
+.my-cart-panel__dat-hang-text {
+  @apply whitespace-nowrap font-['Roboto'] text-[13px] font-medium uppercase leading-[22px] tracking-[0.46px] text-black;
+}

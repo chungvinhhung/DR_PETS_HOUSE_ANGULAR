@@ -21,6 +21,7 @@ import { FIRST_AID_POSTS, getFirstAidDetail } from '../../../../../shared/custom
   standalone: true,
   imports: [CanvasLayoutComponent, NavBarComponent, BreadcrumbComponent, EmergencySupportComponent, StepSectionComponent, VideoSectionComponent, RelatedSectionComponent, FooterComponent, CustomerIconComponent],
   templateUrl: './first-aid-detail-page.component.html',
+  styleUrl: './first-aid-detail-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white',
   },

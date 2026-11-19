@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, afterNextRender, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, afterNextRender, computed, inject, signal, viewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import { CustomerAuthService } from '../../../../../core/customer/services/customer-auth.service';
 import { ContentApiService } from '../../../../../core/customer/services/api/content-api.service';
@@ -10,8 +11,7 @@ import { FooterComponent } from '../../../../../layouts/customer/components/foot
 import { PostModalComponent } from './post-modal.component';
 import { CustomerLinkDirective } from '../../../../../shared/customer/directives/customer-link.directive';
 import { blogImages } from '../../../../../shared/customer/assets/blog-images';
-import { COMMUNITY_POSTS, FEATURED_COMMUNITY_POST, INITIAL_COMMUNITY_COMMENTS } from '../../../../../shared/customer/data/community-data';
-import { EMPTY_COMMENTS, normalizeCommunityPost, normalizeApiCommunityPost, splitBalanced } from './community-page.helpers';
+import { EMPTY_COMMENTS, splitBalanced } from './community-page.helpers';
 
 /**
  * CommunityPage — chuyển từ React: src/pages/Blog/CommunityPage.jsx
@@ -21,6 +21,7 @@ import { EMPTY_COMMENTS, normalizeCommunityPost, normalizeApiCommunityPost, spli
   standalone: true,
   imports: [CanvasLayoutComponent, NavBarComponent, ComposerComponent, CommunityCardComponent, FooterComponent, PostModalComponent, CustomerLinkDirective],
   templateUrl: './community-page.component.html',
+  styleUrl: './community-page.component.scss',
   host: {
     'class': 'min-h-screen bg-white',
   },
@@ -31,21 +32,23 @@ export class CommunityPageComponent {
   protected readonly authService = inject(CustomerAuthService);
   protected readonly contentApi = inject(ContentApiService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
 
   // --- Dữ liệu & hàm dùng trong template ---
   protected readonly blogImages: any = blogImages;
   protected readonly EMPTY_COMMENTS: any = EMPTY_COMMENTS;
 
   // --- Giá trị tính toán (computed) ---
-  readonly featured = computed<any>(() => ({ ...normalizeCommunityPost(FEATURED_COMMUNITY_POST), featured: true }));
-  readonly allPosts = computed<any>(() => [this.featured(), ...this.posts()]);
+  readonly allPosts = computed<any>(() => this.posts());
   readonly columns = computed<any>(() => splitBalanced(this.allPosts()));
   readonly selectedPost = computed<any>(() => this.allPosts().find((post: any) => post.id === this.selectedId()));
 
   // --- Trạng thái (signal = useState / useRef) ---
-  readonly posts = signal<any>((() => COMMUNITY_POSTS.map(normalizeCommunityPost))());
+  readonly posts = signal<any[]>([]);
+  readonly posting = signal(false);
+  readonly composer = viewChild(ComposerComponent);
   readonly selectedId = signal<any>(null);
-  readonly commentsByPost = signal<any>({ [this.featured().id]: INITIAL_COMMUNITY_COMMENTS });
+  readonly commentsByPost = signal<any>({});
   readonly postState = signal<any>({});
   readonly shareNotice = signal<any>("");
   readonly isLoading = signal<any>(false);
@@ -62,18 +65,29 @@ export class CommunityPageComponent {
         this.loadError.set("");
         this.apiEmptyMessage.set("");
 
-        this.contentApi.getCommunityPosts({ limit: 100 })
+        this.contentApi.getCommunityPostsPage({ page: 1, limit: 100 })
           .then((payload: any) => {
             if (!active) return;
-            if (!payload.items || !payload.items.length) {
-              this.apiEmptyMessage.set("API cộng đồng chưa có dữ liệu, đang hiển thị dữ liệu mẫu từ giao diện.");
-              return;
+            const items = (payload.posts || payload.items || []).filter((post: any) =>
+              !post.status || String(post.status).toUpperCase() === 'APPROVED'
+            );
+            this.posts.set(items);
+            if (!items.length) {
+              this.apiEmptyMessage.set("Chưa có bài đăng cộng đồng đã được duyệt.");
             }
-            this.posts.set(payload.items);
+            const requestedId = this.route.snapshot.queryParamMap.get('postId');
+            if (requestedId) {
+              if (items.some((post: any) => post.id === requestedId)) {
+                void this.openPost(requestedId);
+              } else {
+                this.apiEmptyMessage.set('Không tìm thấy bài đăng đã duyệt.');
+              }
+            }
           })
           .catch((error: any) => {
             if (!active) return;
-            this.apiEmptyMessage.set(error?.message || "Không thể tải bài viết cộng đồng, đang hiển thị dữ liệu mẫu từ giao diện.");
+            this.posts.set([]);
+            this.loadError.set(error?.message || "Không thể tải bài viết cộng đồng. Vui lòng thử lại.");
           })
           .finally(() => {
             if (active) this.isLoading.set(false);
@@ -159,53 +173,48 @@ export class CommunityPageComponent {
   }
 
   protected async sharePost(post: any) {
-    const url = `${window.location.origin}/blog/cong-dong#${post.id}`;
+    const url = `${window.location.origin}/blog/cong-dong?postId=${encodeURIComponent(String(post.id))}`;
     if (navigator.share) await navigator.share({ title: post.title || "Bài viết cộng đồng", url }).catch(() => {});
     else await navigator.clipboard?.writeText(url);
     this.shareNotice.set("Đã sao chép liên kết bài viết");
     window.setTimeout(() => this.shareNotice.set(""), 1800);
   }
 
-  protected async addPost(payload: any) {
+  protected async addPost(payload: any): Promise<void> {
     if (!this.authService.isAuthenticated()) {
       this.requireAuth("đăng bài");
       return;
     }
-    const content = payload.content || "";
-    const title = payload.title || (content.length > 60 ? content.slice(0, 60) + "..." : content) || "Bài viết chia sẻ";
-    const imageUrls = payload.image ? [payload.image] : (payload.images || []);
+    if (this.posting()) return;
+    const content = String(payload?.content || '').trim();
+    if (!content) {
+      this.shareNotice.set('Vui lòng nhập nội dung bài đăng.');
+      return;
+    }
+    // A blob: URL is only local to this browser and cannot be published as a real upload.
+    if (payload?.image || payload?.video) {
+      this.shareNotice.set('Chưa thể tải ảnh/video lên máy chủ. Vui lòng bỏ tệp đính kèm rồi đăng bài.');
+      return;
+    }
 
-    const userSnapshot = this.authService.userProfile();
-    const authorName = userSnapshot?.fullName || userSnapshot?.name || "Bạn";
-    const tempId = `post-${Date.now()}`;
-    const optimisticPost = {
-      id: tempId,
-      backendId: "",
-      author: authorName,
-      initials: authorName.slice(0, 1).toUpperCase(),
-      time: "Vừa xong",
-      likes: 0,
-      comments: 0,
-      ...payload,
-    };
-    this.posts.update((items: any) => [optimisticPost, ...items]);
-
+    const title = (content.split(/\r?\n/).find(line => line.trim()) || content).slice(0, 120);
+    this.posting.set(true);
+    this.shareNotice.set('');
     try {
       const created = await this.contentApi.createCommunityPost({
-        title,
-        content,
-        imageUrls,
+        title, content, imageUrls: [], type: String(payload?.type || ''),
       });
-      this.shareNotice.set("Đăng bài chia sẻ thành công! Cảm ơn bạn đã đóng góp cho cộng đồng.");
-      window.setTimeout(() => this.shareNotice.set(""), 3000);
-      if (created?.id) {
-        this.posts.update((items: any) =>
-          items.map((item: any) => (item.id === tempId ? { ...item, ...created } : item))
-        );
+      if (!created?.backendId || String(created?.status || '').toUpperCase() !== 'PENDING') {
+        throw new Error('BE chưa xác nhận bài đăng ở trạng thái chờ duyệt. Vui lòng kiểm tra trước khi gửi lại.');
       }
+      // Only APPROVED posts can enter the public feed.
+      this.composer()?.reset();
+      this.shareNotice.set('Đã gửi bài thành công. Bài viết sẽ xuất hiện sau khi được duyệt.');
+      window.setTimeout(() => this.shareNotice.set(''), 5000);
     } catch (error: any) {
-      this.shareNotice.set(error?.message || "Đã đăng bài viết.");
-      window.setTimeout(() => this.shareNotice.set(""), 3000);
+      this.shareNotice.set(error?.message || 'Không thể gửi bài. Nội dung vẫn được giữ lại để thử lại.');
+    } finally {
+      this.posting.set(false);
     }
   }
 
@@ -321,8 +330,17 @@ export class CommunityPageComponent {
 
     try {
       await this.contentApi.togglePostLike(post.backendId);
-    } catch {
-      // Keep optimistic update silently
+    } catch (error: any) {
+      // Restore the original count and like state if BE rejects the change.
+      this.postState.update((state: any) => ({
+        ...state, [post.id]: { ...((state as any)[post.id] || {}), liked: currentlyLiked },
+      }));
+      this.posts.update((items: any) =>
+        items.map((item: any) => item.id === post.id
+          ? { ...item, likes: Math.max(0, Number(item.likes || 0) + (currentlyLiked ? 1 : -1)) }
+          : item)
+      );
+      this.shareNotice.set(error?.message || 'Không thể thích bài viết lúc này.');
     }
   }
 }

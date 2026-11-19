@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './rich-text.component.html',
+  styleUrl: './rich-text.component.scss',
   host: {
     '[class]': 'className()',
   },

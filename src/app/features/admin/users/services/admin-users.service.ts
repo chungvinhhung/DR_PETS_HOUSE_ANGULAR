@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 import { ApiClientService } from '../../../../core/services/api-client.service';
 import {
@@ -31,6 +31,32 @@ export class AdminUsersService {
       '/admin/users',
       request,
     );
+  }
+
+  /** MANAGER is a User.systemRole, never a StaffProfile.staffSubRole. */
+  createManager(request: {
+    fullName: string;
+    phone?: string;
+    email?: string;
+    assignedBranchIds: string[];
+  }): Observable<{ id: string; credentials?: { username: string; password: string } }> {
+    return this.api.post<unknown, typeof request>('/managers', request).pipe(
+      map(response => {
+        const data = (response as { data?: { id?: string; credentials?: { username: string; password: string } } })?.data
+          ?? response as { id?: string; credentials?: { username: string; password: string } };
+        if (!data?.id) throw new Error('Chưa xác nhận được tài khoản quản lý vừa tạo. Vui lòng kiểm tra danh sách trước khi thử lại.');
+        return { id: data.id, credentials: data.credentials };
+      }),
+    );
+  }
+
+  updateManager(id: string, request: {
+    fullName: string;
+    phone?: string;
+    email?: string;
+    assignedBranchIds: string[];
+  }): Observable<unknown> {
+    return this.api.patch('/managers/' + encodeURIComponent(id), request);
   }
 
   updateStatus(

@@ -10,6 +10,7 @@ import { ReactStyleDirective } from '../../../../../shared/customer/directives/r
   standalone: true,
   imports: [ReactStyleDirective],
   templateUrl: './load-more.component.html',
+  styleUrl: './load-more.component.scss',
   host: {
     'class': 'mx-auto mt-[32px] flex h-[202px] w-full max-w-[498px] flex-col items-center gap-[26px] py-[24px]',
   },

@@ -8,6 +8,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   imports: [],
   templateUrl: './detail.component.html',
+  styleUrl: './detail.component.scss',
   host: {
     'class': 'rounded-2xl bg-[#f2f4f6] p-4',
   },

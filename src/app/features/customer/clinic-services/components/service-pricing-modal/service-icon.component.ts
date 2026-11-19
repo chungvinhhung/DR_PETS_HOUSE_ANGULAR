@@ -11,6 +11,7 @@ import { iconByName } from './service-pricing-modal.helpers';
   standalone: true,
   imports: [CustomerIconComponent],
   templateUrl: './service-icon.component.html',
+  styleUrl: './service-icon.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

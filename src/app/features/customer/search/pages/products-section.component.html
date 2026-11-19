@@ -1,9 +1,22 @@
-<div app-search-results-section-heading>Sản phẩm liên quan</div>
+<div app-search-results-section-heading>Sản phẩm phù hợp</div>
 <div app-products-grid [products]="results().products"></div>
-@if (!allMode()) {
-  <div app-search-results-section-heading>Có thể bạn cũng cần</div>
+@if (results().suggestedProducts?.length) {
+  <!-- Gợi ý bán chéo: sản phẩm related + luật danh mục (CrossSellService) -->
+  <div app-search-results-section-heading>Thường được mua kèm</div>
+  @if (crossSellServices().length) {
+    <div class="products-section__cross-sell-services">
+      @for (service of crossSellServices(); track service.href) {
+        <a [appCustomerLink]="service.href" class="products-section__cross-sell-service">
+          <strong>{{ service.label }}</strong>
+          <span>{{ service.description }}</span>
+        </a>
+      }
+    </div>
+  }
   <div app-products-grid [products]="results().suggestedProducts"></div>
-  <div class="flex justify-center">
-    <a appCustomerLink="/products" class="btn-yellow-main h-[42px] px-[22px] text-[15px] font-medium">Xem tất cả sản phẩm</a>
+}
+@if (!allMode()) {
+  <div class="products-section__row">
+    <a appCustomerLink="/products" class="products-section__btn-yellow-main btn-yellow-main">Xem tất cả sản phẩm</a>
   </div>
 }

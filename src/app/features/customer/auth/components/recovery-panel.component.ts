@@ -18,6 +18,7 @@ import { EMAIL_PATTERN, VALIDATION_SCHEMAS, getFormErrors, submitValidatedForm }
   standalone: true,
   imports: [AuthBackgroundBlobComponent, FieldComponent, PrimaryButtonComponent, OtpFormComponent, CustomerIconComponent],
   templateUrl: './recovery-panel.component.html',
+  styleUrl: './recovery-panel.component.scss',
   host: {
     'class': 'relative flex w-full flex-col items-center overflow-hidden rounded-xl bg-[#90CAF9] px-5 pb-[15px] pt-14 shadow-2xl md:min-h-[637px] md:flex-row md:p-12',
   },
@@ -60,6 +61,30 @@ export class RecoveryPanelComponent {
   readonly submitting = signal<any>(false);
   readonly submitError = signal<any>("");
   readonly resetToken = signal<any>("");
+  readonly debugOtp = signal<string>("");
+
+  readonly activeDebugOtp = computed<string>(() => {
+    if (this.screen() === 'registerOtp') {
+      return this.forms()?.register?.debugOtp || this.debugOtp();
+    }
+    return this.debugOtp();
+  });
+
+  readonly otpRecipientPhone = computed<string>(() => {
+    if (this.screen() === 'registerOtp') {
+      return this.forms()?.register?.phone || '';
+    }
+    const acc = String(this.forms()?.forgot?.account || '').trim();
+    return !acc.includes('@') ? acc : (this.forms()?.forgot?.phone || '');
+  });
+
+  readonly otpRecipientEmail = computed<string>(() => {
+    if (this.screen() === 'registerOtp') {
+      return this.forms()?.register?.email || '';
+    }
+    const acc = String(this.forms()?.forgot?.account || '').trim();
+    return acc.includes('@') ? acc : (this.forms()?.forgot?.email || '');
+  });
 
   /** Hàm set kiểu React cho signal "forgotValidationAttempted" (dùng khi truyền cho component con / callback) */
   protected readonly setForgotValidationAttemptedFn = reactSetter(this.forgotValidationAttempted);
@@ -76,13 +101,35 @@ export class RecoveryPanelComponent {
     this.submitError.set("");
     try {
       const account = this.forms().forgot.account.trim();
-      if (!EMAIL_PATTERN.test(account)) {
-        throw new Error("Backend hien chi ho tro quen mat khau bang email");
+      if (!account) {
+        throw new Error("Vui lòng nhập số điện thoại hoặc email");
       }
-      await this.authApi.forgotPassword(account);
+      const res: any = await this.authApi.forgotPassword(account);
+      if (res?.debugOtp) {
+        this.debugOtp.set(String(res.debugOtp));
+      }
       this.changeScreen()("resetOtp");
     } catch (error: any) {
-      this.submitError.set(error?.message || "Khong the gui OTP");
+      this.submitError.set(error?.message || "Không thể gửi OTP");
+    } finally {
+      this.submitting.set(false);
+    }
+  }
+
+  protected async handleResendOtp() {
+    this.submitting.set(true);
+    this.submitError.set("");
+    try {
+      const isRegister = this.screen() === "registerOtp";
+      const account = isRegister
+        ? (this.forms().register.phone || this.forms().register.email)
+        : this.forms().forgot.account;
+      const res: any = await this.authApi.resendOtp(account, isRegister ? "REGISTER" : "FORGOT_PASSWORD");
+      if (res?.debugOtp) {
+        this.debugOtp.set(String(res.debugOtp));
+      }
+    } catch (error: any) {
+      this.submitError.set(error?.message || "Không thể gửi lại OTP");
     } finally {
       this.submitting.set(false);
     }
@@ -100,14 +147,17 @@ export class RecoveryPanelComponent {
         this.changeScreen()("success");
         return;
       }
-      const data = await this.authApi.verifyForgotOtp({
-        email: this.forms().forgot.account.trim(),
+      const account = this.forms().forgot.account.trim();
+      const data: any = await this.authApi.verifyForgotOtp({
+        account,
+        email: account,
         otpCode,
       });
-      this.resetToken.set(data?.reset_token || "");
+      const token = data?.resetToken || data?.reset_token || data?.token || "";
+      this.resetToken.set(token);
       this.changeScreen()("reset");
     } catch (error: any) {
-      this.submitError.set(error?.message || "OTP khong hop le");
+      this.submitError.set(error?.message || "OTP không hợp lệ");
     } finally {
       this.submitting.set(false);
     }

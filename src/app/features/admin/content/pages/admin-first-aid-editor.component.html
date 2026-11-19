@@ -1,0 +1,273 @@
+<app-admin-catalog-shell activeItem="content-first-aid">
+  <main class="article-studio aid-studio">
+    <app-admin-breadcrumb [items]="breadcrumb" />
+    <header class="article-studio__heading">
+      <div><h1>{{isEditing ? 'Chỉnh sửa cẩm nang sơ cứu' : 'Tạo cẩm nang sơ cứu'}}</h1></div>
+      <div class="article-studio__actions">
+        <button type="button" class="article-studio__btn article-studio__btn--outline"
+          [disabled]="saving()" (click)="cancel()">Hủy bỏ</button>
+        <button type="button" class="article-studio__btn article-studio__btn--danger-outline"
+          [disabled]="saving() || loading() || !canWrite()" (click)="save('DRAFT')">Lưu bản nháp</button>
+        <button type="button" class="article-studio__btn article-studio__btn--primary"
+          [disabled]="saving() || loading() || !canWrite()" (click)="save('PUBLISHED')">
+          {{saving() ? 'Đang lưu...' : 'Xuất bản'}}
+        </button>
+      </div>
+    </header>
+    @if (loading()) {
+      <div class="article-studio__message" role="status">Đang tải cẩm nang sơ cứu...</div>
+    } @else if (loadError()) {
+      <div class="article-studio__message article-studio__message--error" role="alert">{{loadError()}}</div>
+    } @else {
+      @if (error()) {
+        <div class="article-studio__message article-studio__message--error" role="alert">{{error()}}</div>
+      }
+      @if (!canWrite()) {
+        <div class="article-studio__message" role="status">Chỉ Quản trị viên được phép tạo/chỉnh sửa cẩm nang sơ cứu.</div>
+      }
+      <div class="article-studio__columns">
+        <div class="article-studio__editing">
+          <section class="article-studio__section" aria-labelledby="aid-basic-heading">
+            <div class="article-studio__section-heading">
+              <h2 id="aid-basic-heading">Thông tin cẩm nang</h2>
+              @if (isEditing) {
+                <span class="article-studio__status">
+                  {{savedStatus()==='PUBLISHED'?'Đã xuất bản':savedStatus()==='ARCHIVED'?'Đã lưu trữ':'Bản nháp'}}
+                </span>
+              }
+            </div>
+            <div class="article-studio__fields">
+              <label class="article-studio__field article-studio__field--wide">
+                <span>Tiêu đề cẩm nang <b>*</b></span>
+                <input type="text" maxlength="180" placeholder="Nhập tiêu đề"
+                  [disabled]="!canWrite() || saving()" [ngModel]="title()"
+                  (ngModelChange)="setField('title',$event)">
+              </label>
+              <label class="article-studio__field">
+                <span>Nhóm tình huống <b>*</b></span>
+                <select [disabled]="!canWrite() || saving()" [ngModel]="category()"
+                  (ngModelChange)="setField('category',$event)">
+                  <option value="" disabled>Chọn nhóm tình huống</option>
+                  @for (c of categories; track c.id) {
+                    <option [value]="c.id">{{c.label}}</option>
+                  }
+                </select>
+              </label>
+              <div class="article-studio__field">
+                <span>Mức độ tình huống</span>
+                <div class="aid-studio__urgency-control" role="group" aria-label="Mức độ tình huống">
+                  <button type="button" [class.is-active]="urgency()==='NORMAL'"
+                    [attr.aria-pressed]="urgency()==='NORMAL'" [disabled]="!canWrite() || saving()"
+                    (click)="setUrgency('NORMAL')">Thông thường</button>
+                  <button type="button" [class.is-active]="urgency()==='URGENT'"
+                    [attr.aria-pressed]="urgency()==='URGENT'" [disabled]="!canWrite() || saving()"
+                    (click)="setUrgency('URGENT')">Khẩn cấp</button>
+                </div>
+              </div>
+              <label class="article-studio__field article-studio__field--wide">
+                <span>Mô tả tình huống <b>*</b></span>
+                <textarea rows="4" maxlength="800"
+                  placeholder="Mô tả triệu chứng, dấu hiệu nhận biết và lưu ý trước khi sơ cứu..."
+                  [disabled]="!canWrite() || saving()" [ngModel]="summary()"
+                  (ngModelChange)="setField('summary',$event)"></textarea>
+              </label>
+              <label class="article-studio__field article-studio__field--wide">
+                <span>Đường dẫn ảnh bìa</span>
+                <input type="url" placeholder="https://.../anh-bia.jpg"
+                  [disabled]="!canWrite() || saving()" [ngModel]="coverUrl()"
+                  (ngModelChange)="setField('coverUrl',$event)">
+              </label>
+            </div>
+          </section>
+
+          <section class="article-studio__section" aria-labelledby="aid-steps-heading">
+            <div class="article-studio__section-heading">
+              <h2 id="aid-steps-heading">Các bước sơ cứu tại chỗ</h2>
+              <span class="article-studio__count">{{steps().length}} bước</span>
+            </div>
+            <div class="aid-studio__badge-field">
+              <label for="aid-step-badge-input">Nhãn lưu ý sơ cứu</label>
+              <div class="article-studio__tag-editor aid-studio__badge-editor">
+                <div class="article-studio__tag-entry">
+                  <input id="aid-step-badge-input" type="text" maxlength="40"
+                    placeholder="Ví dụ: Thực hiện chậm, Quan sát kỹ"
+                    [disabled]="!canWrite() || saving() || stepBadges().length >= 6"
+                    [ngModel]="badgeDraft()" (ngModelChange)="badgeDraft.set($event)"
+                    (keydown)="handleStepBadgeKey($event)" (blur)="commitStepBadge()"
+                    aria-label="Nhập nhãn lưu ý sơ cứu">
+                  <button type="button" aria-label="Thêm nhãn lưu ý"
+                    [disabled]="!canWrite() || saving() || !badgeDraft().trim() || stepBadges().length >= 6"
+                    (click)="commitStepBadge()">Thêm</button>
+                </div>
+                @if (stepBadges().length) {
+                  <div class="article-studio__tag-chips" aria-label="Nhãn lưu ý đã thêm">
+                    @for (badge of stepBadges(); track badge) {
+                      <span class="article-studio__tag-chip aid-studio__badge-chip">
+                        {{badge}}
+                        <button type="button" [attr.aria-label]="'Xóa nhãn '+badge"
+                          [disabled]="!canWrite() || saving()" (click)="removeStepBadge(badge)">×</button>
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="aid-studio__steps-edit">
+              @for (step of steps(); track step.id; let idx=$index) {
+                <div class="aid-studio__step-edit">
+                  <div class="aid-studio__step-edit-head">
+                    <span class="aid-studio__step-number">{{idx+1}}</span>
+                    <strong>Bước {{idx+1}}</strong>
+                    <div class="aid-studio__step-actions">
+                      <button type="button" title="Chuyển bước lên" aria-label="Chuyển bước lên"
+                        [disabled]="idx===0 || saving() || !canWrite()" (click)="moveStep(step.id,-1)">↑</button>
+                      <button type="button" title="Chuyển bước xuống" aria-label="Chuyển bước xuống"
+                        [disabled]="idx===steps().length-1 || saving() || !canWrite()" (click)="moveStep(step.id,1)">↓</button>
+                      <button type="button" title="Xóa bước" aria-label="Xóa bước"
+                        [disabled]="saving() || !canWrite()" (click)="removeStep(step.id)">×</button>
+                    </div>
+                  </div>
+                  <label class="article-studio__field">
+                    <span>Tên bước <b>*</b></span>
+                    <input type="text" maxlength="150" placeholder="Ví dụ: Quan sát dấu hiệu"
+                      [disabled]="saving() || !canWrite()" [ngModel]="step.title"
+                      (ngModelChange)="editStep(step.id,'title',$event)">
+                  </label>
+                  <label class="article-studio__field">
+                    <span>Hướng dẫn thực hiện <b>*</b></span>
+                    <textarea rows="4" maxlength="2500" placeholder="Nhập hướng dẫn rõ ràng theo thứ tự..."
+                      [disabled]="saving() || !canWrite()" [ngModel]="step.description"
+                      (ngModelChange)="editStep(step.id,'description',$event)"></textarea>
+                  </label>
+                </div>
+              } @empty {
+                <div class="article-studio__empty">Chưa có bước sơ cứu.</div>
+              }
+            </div>
+            <button type="button" class="article-studio__btn article-studio__btn--outline aid-studio__add-step"
+              [disabled]="saving() || !canWrite()" (click)="addStep()">
+              <span aria-hidden="true">+</span> Thêm bước sơ cứu
+            </button>
+          </section>
+
+          <section class="article-studio__section" aria-labelledby="aid-video-heading">
+            <div class="article-studio__section-heading">
+              <h2 id="aid-video-heading">Video hướng dẫn (không bắt buộc)</h2>
+            </div>
+            <div class="article-studio__fields">
+              <label class="article-studio__field article-studio__field--wide">
+                <span>Đường dẫn video</span>
+                <input type="url" placeholder="https://.../video.mp4 hoặc link video"
+                  [disabled]="saving() || !canWrite()" [ngModel]="videoUrl()"
+                  (ngModelChange)="setField('videoUrl',$event)">
+              </label>
+              <label class="article-studio__field article-studio__field--wide">
+                <span>Tiêu đề video</span>
+                <input type="text" maxlength="160" placeholder="Tên video hướng dẫn"
+                  [disabled]="saving() || !canWrite()" [ngModel]="videoTitle()"
+                  (ngModelChange)="setField('videoTitle',$event)">
+              </label>
+              <div class="article-studio__field article-studio__field--wide">
+                <span>Mô tả video</span>
+                <app-admin-article-rich-block
+                  type="paragraph" listStyle="check"
+                  placeholder="Nhập mô tả video. Chọn ✓ để tạo danh sách lưu ý..."
+                  [text]="videoDescription()" [html]="videoDescriptionHtml()"
+                  [disabled]="saving() || !canWrite()"
+                  (contentChange)="updateVideoRichContent($event)">
+                </app-admin-article-rich-block>
+              </div>
+            </div>
+          </section>
+        </div>
+        <aside class="article-studio__side" aria-label="Xem trước cẩm nang sơ cứu">
+          <section class="article-studio__section">
+            <h2>Kiểu thẻ hiển thị</h2>
+            <div class="article-studio__layouts">
+              <button type="button" [class.is-selected]="urgency()==='NORMAL'"
+                [attr.aria-pressed]="urgency()==='NORMAL'" [disabled]="saving() || !canWrite()"
+                (click)="setUrgency('NORMAL')">
+                <span class="article-studio__layout-shape"><span></span><span></span></span>
+                <strong>Thẻ thường</strong>
+                <small>Cẩm nang tình huống thông thường</small>
+              </button>
+              <button type="button" [class.is-selected]="urgency()==='URGENT'"
+                [attr.aria-pressed]="urgency()==='URGENT'" [disabled]="saving() || !canWrite()"
+                (click)="setUrgency('URGENT')">
+                <span class="article-studio__layout-shape article-studio__layout-shape--featured"><span></span><span></span></span>
+                <strong>Thẻ khẩn cấp</strong>
+                <small>Thẻ nổi bật kèm nhãn cảnh báo</small>
+              </button>
+            </div>
+          </section>
+          <section class="article-studio__section aid-studio__preview">
+            <div class="article-studio__section-heading">
+              <h2>Xem trước</h2>
+              <div class="article-studio__preview-tabs" role="group" aria-label="Kiểu xem trước">
+                <button type="button" [class.is-selected]="previewMode()==='CARD'"
+                  [attr.aria-pressed]="previewMode()==='CARD'" (click)="previewMode.set('CARD')">Thẻ</button>
+                <button type="button" [class.is-selected]="previewMode()==='DETAIL'"
+                  [attr.aria-pressed]="previewMode()==='DETAIL'" (click)="previewMode.set('DETAIL')">Chi tiết</button>
+              </div>
+            </div>
+            @if (previewMode()==='CARD') {
+              <div class="aid-studio__customer-card"
+                [class.aid-studio__customer-card--urgent]="urgency()==='URGENT'"
+                aria-label="Xem trước thẻ cẩm nang trên Customer">
+                <app-first-aid-card [post]="previewGuide()" />
+              </div>
+            } @else {
+              <div class="aid-studio__detail">
+                <div class="aid-studio__hero">
+                  <img [src]="previewGuide().image" alt="Banner cẩm nang">
+                  <div class="aid-studio__hero-gradient"></div>
+                  <div class="aid-studio__hero-content">
+                    @if (urgency()==='URGENT') {
+                      <span class="aid-studio__urgent-badge">
+                        <app-customer-icon name="siren" className="h-4 w-4" /> Cấp cứu khẩn cấp
+                      </span>
+                    }
+                    <h3>{{previewGuide().heroTitle}}</h3>
+                    <p>{{previewGuide().description}}</p>
+                  </div>
+                </div>
+                <div class="aid-studio__steps-heading">
+                  <h4>Các bước sơ cứu tại chỗ</h4>
+                  @if (stepBadges().length) {
+                    <div class="aid-studio__steps-badges">
+                      @for (badge of stepBadges(); track badge) {
+                        <span>{{badge}}</span>
+                      }
+                    </div>
+                  }
+                </div>
+                <ol class="aid-studio__detail-steps">
+                  @for (step of completedSteps(); track step.id; let idx=$index) {
+                    <li>
+                      <span class="aid-studio__step-number">{{idx+1}}</span>
+                      <strong>{{step.title}}</strong>
+                      <p>{{step.description}}</p>
+                    </li>
+                  } @empty {
+                    <li class="aid-studio__step-empty">Thêm các bước sơ cứu để xem trước nội dung.</li>
+                  }
+                </ol>
+                @if (videoUrl()) {
+                  <div class="aid-studio__video">
+                    <h4>{{videoTitle() || 'Video hướng dẫn'}}</h4>
+                    @if (videoDescriptionHtml()) {
+                      <div class="first-aid-video-rich" [innerHTML]="videoDescriptionHtml()"></div>
+                    } @else if (videoDescription()) {
+                      <p>{{videoDescription()}}</p>
+                    }
+                    <div class="aid-studio__video-link">Video: {{videoUrl()}}</div>
+                  </div>
+                }
+              </div>
+            }
+          </section>
+        </aside>
+      </div>
+    }
+  </main>
+</app-admin-catalog-shell>

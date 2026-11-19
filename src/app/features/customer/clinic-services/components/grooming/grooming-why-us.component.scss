@@ -1,0 +1,27 @@
+.grooming-why-us__section {
+  @apply relative h-[897px] w-[1440px] overflow-hidden bg-white;
+}
+
+.grooming-why-us__hay-de-chung-title {
+  @apply absolute left-[160px] top-[72px] w-[1106px];
+}
+
+.grooming-why-us__be-cung-cua-text {
+  @apply absolute left-[174px] top-[147px] w-[1077px] text-center text-[#0F172A];
+}
+
+.grooming-why-us__layer {
+  @apply absolute left-[160px] top-[237px] size-[316px] overflow-hidden rounded-[44px] bg-white;
+}
+
+.grooming-why-us__whyus-main {
+  @apply size-full object-cover;
+}
+
+.grooming-why-us__layer-2 {
+  @apply absolute left-[299px] top-[469px] h-[315px] w-[318px] overflow-hidden rounded-[46px] bg-white;
+}
+
+.grooming-why-us__whyus-secondary {
+  @apply size-full rounded-[50px] object-cover;
+}

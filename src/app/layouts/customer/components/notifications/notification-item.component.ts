@@ -11,6 +11,7 @@ import { NotificationMessageComponent } from './notification-message.component';
   standalone: true,
   imports: [NotificationVisualComponent, NotificationMessageComponent],
   templateUrl: './notification-item.component.html',
+  styleUrl: './notification-item.component.scss',
   host: {
     'type': 'button',
     '[class]': '`notification-item ${typeClass()} ${isUnread() ? \'notification-item--unread\' : \'\'}`',

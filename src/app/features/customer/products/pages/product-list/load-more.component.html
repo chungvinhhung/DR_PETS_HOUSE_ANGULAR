@@ -1,5 +1,5 @@
-<p class="text-[16px] leading-[27px] text-[#414141]">Hiển thị {{ fromLabel() }}–{{ shown() }} trong {{ total() }} sản phẩm</p>
-<div class="relative h-px w-full bg-[#90CAF9]"><span class="absolute inset-y-0 left-0 bg-[#1976D2]" [appStyle]="styles1()"></span></div>
+<p class="load-more__from-label">Hiển thị {{ fromLabel() }}–{{ shown() }} trong {{ total() }} sản phẩm</p>
+<div class="load-more__box"><span class="load-more__text" [appStyle]="styles1()"></span></div>
 @if (hasMore()) {
   <button
     type="button"

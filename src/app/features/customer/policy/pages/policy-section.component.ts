@@ -11,6 +11,7 @@ import { ReactStyleDirective } from '../../../../shared/customer/directives/reac
   standalone: true,
   imports: [RichTextComponent, ReactStyleDirective],
   templateUrl: './policy-section.component.html',
+  styleUrl: './policy-section.component.scss',
   host: {
     'class': 'policy-article__section',
   },

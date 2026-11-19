@@ -8,6 +8,7 @@ on:
       - feat/figma-branch-v2-admin
       - integration/branch-v2-service-pricing-staff
       - feature/admin-order-management-phase1
+      - feature/admin-flash-sale-content-management
   pull_request:
     branches:
       - develop
@@ -32,6 +33,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
+
+      - name: Check customer component stylesheets
+        run: npm run check:customer-styles
 
       - name: Build Angular application
         run: npm run build

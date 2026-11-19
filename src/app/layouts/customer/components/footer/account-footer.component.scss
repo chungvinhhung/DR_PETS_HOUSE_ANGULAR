@@ -1,0 +1,15 @@
+.account-footer__row {
+  @apply flex h-6 w-full max-w-page items-center justify-between gap-6 text-[14px] text-[rgba(0,0,0,0.6)] md:h-auto md:text-[13px] lg:h-6 lg:text-[14px];
+}
+
+.account-footer__text {
+  @apply min-w-0 shrink text-left italic leading-[1.43] md:whitespace-nowrap md:not-italic md:leading-[1.35] lg:italic lg:leading-[1.43];
+}
+
+.account-footer__lien-ket-chan-trang {
+  @apply hidden shrink-0 items-center gap-3 font-medium leading-none sm:flex md:items-start md:gap-[10px] md:leading-[1.3] lg:items-center lg:gap-3 lg:leading-none;
+}
+
+.account-footer__label {
+  @apply whitespace-nowrap transition-colors hover:text-[#0D47A1];
+}

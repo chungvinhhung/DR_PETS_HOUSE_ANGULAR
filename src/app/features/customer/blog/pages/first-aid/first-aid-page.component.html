@@ -1,6 +1,6 @@
 <div app-canvas-layout>
   <app-nav-bar />
-  <main class="flex min-h-[1900px] flex-col items-center bg-[#E5F6FD] px-4 sm:px-6 pb-12">
+  <main class="flex min-h-[1900px] flex-col items-center bg-[#E5F6FD] px-4 sm:px-6 lg:px-20 pb-12">
     <nav app-first-aid-tabs></nav>
     <section class="w-full max-w-[1200px] pt-6">
       <div class="flex flex-wrap items-end justify-between gap-4">
@@ -43,14 +43,33 @@
         <p class="mt-4 text-[14px] text-[#D32F2F]">{{ loadError() }}</p>
       }
       @if (apiEmptyMessage() && !loadError()) {
-        <p class="mt-4 text-[14px] text-[#0D47A1]">{{ apiEmptyMessage() }}</p>
+        <div role="status" class="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-[#C4DCF4] bg-white/60 px-4 py-3 text-[13px] text-[#244467]">
+          <span>{{ apiEmptyMessage() }}</span>
+          <button type="button" (click)="loadGuides()" [disabled]="isLoading()"
+            class="rounded-md border border-[#0D47A1] px-3 py-1.5 font-semibold text-[#0D47A1] hover:bg-[#E3F2FD] disabled:opacity-50">
+            Thử tải lại
+          </button>
+        </div>
       }
       @if (isLoading()) {
         <div class="mt-12 flex h-48 items-center justify-center rounded-[24px] bg-white/70 text-[18px] text-[#0D47A1]">Đang tải cẩm nang sơ cứu...</div>
       } @else if (visiblePosts().length) {
-        <div class="mt-12 grid grid-cols-1 auto-rows-auto gap-6 md:grid-cols-12">
+        <!-- Mobile: one column in chronological order. Desktop: responsive paired rows. -->
+        <div class="mt-12 flex flex-col gap-6 md:hidden">
           @for (post of visiblePosts(); track post.id) {
             <app-first-aid-card [post]="post" />
+          }
+        </div>
+        <div class="first-aid-layout mt-12 hidden md:flex" aria-label="Danh sách cẩm nang sơ cứu">
+          @for (row of cardRows(); track $index) {
+            <div class="first-aid-layout-row"
+              [class.first-aid-layout-row--mixed]="row.layout === 'mixed'"
+              [class.first-aid-layout-row--square-first]="row.squareFirst"
+              [class.first-aid-layout-row--single-square]="row.layout === 'single-square'">
+              @for (post of row.posts; track post.id) {
+                <app-first-aid-card [post]="post" />
+              }
+            </div>
           }
         </div>
       } @else {

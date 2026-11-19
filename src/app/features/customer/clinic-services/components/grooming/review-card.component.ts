@@ -12,6 +12,7 @@ import { groomingImages } from '../../../../../shared/customer/assets/grooming-i
   standalone: true,
   imports: [ProductRatingComponent, ReactStyleDirective],
   templateUrl: './review-card.component.html',
+  styleUrl: './review-card.component.scss',
   host: {
     'class': 'flex flex-[1_0_0] flex-col justify-center gap-[10px] rounded-[24px] bg-white p-10',
   },

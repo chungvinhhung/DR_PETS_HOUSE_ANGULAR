@@ -1,0 +1,7 @@
+.sidebar-heading__box {
+  @apply h-1 flex-1 rounded-full bg-[#FDD835];
+}
+
+.sidebar-heading__title {
+  @apply shrink-0 text-[20px] font-semibold leading-7 text-[#002D62];
+}

@@ -1,0 +1,43 @@
+.grooming-combos__combo-sieu-tiet-title {
+  @apply absolute left-1/2 top-[98.57px] w-[884px] -translate-x-1/2 -translate-y-1/2;
+}
+
+.grooming-combos__n {
+  @apply absolute left-1/2 top-[168.98px] w-[1293px] -translate-x-1/2 -translate-y-1/2 whitespace-pre-wrap text-center text-[#0F172A];
+}
+
+.grooming-combos__card {
+  @apply absolute left-[50px] top-[235px] h-[464px] w-[658px] overflow-visible;
+}
+
+.grooming-combos__row {
+  @apply relative flex h-full;
+}
+
+.grooming-combos__layer {
+  @apply absolute left-[101px] top-[28px] h-[408px] w-[261px] overflow-hidden rounded-[16px];
+}
+
+.grooming-combos__combo-tam-11-buoc {
+  @apply size-full object-cover;
+}
+
+.grooming-combos__layer-2 {
+  @apply absolute left-[391px] top-[28px] w-[252px] pb-[56px] pr-[8px];
+}
+
+.grooming-combos__combo-tam-11-title {
+  @apply font-['Roboto'] text-[24px] font-medium italic leading-[34px] text-[#02000F];
+}
+
+.grooming-combos__tu-150-000d-text {
+  @apply mt-1 font-['Roboto'] text-[20px] italic leading-[35px] text-[#02000F];
+}
+
+.grooming-combos__list {
+  @apply mt-3 list-decimal pl-6 font-['Roboto'] text-[16px] leading-6 text-[#6C6D71];
+}
+
+.grooming-combos__layer-3 {
+  @apply absolute left-[720px] top-[242px] flex w-[670px] flex-col gap-6;
+}

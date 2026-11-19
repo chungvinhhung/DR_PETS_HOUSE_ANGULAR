@@ -13,8 +13,9 @@ import { TRENDING_BLOG_POSTS } from '../../../../../shared/customer/data/blog-da
   standalone: true,
   imports: [CategoryIconComponent, CustomerIconComponent, CustomerLinkDirective],
   templateUrl: './trending-section.component.html',
+  styleUrl: './trending-section.component.scss',
   host: {
-    'class': 'w-full max-w-[1200px] pt-4',
+    'class': 'w-full max-w-page pt-4',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

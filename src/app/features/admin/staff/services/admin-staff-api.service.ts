@@ -1,4 +1,4 @@
-import { HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { catchError, expand, forkJoin, map, Observable, of, reduce, throwError } from 'rxjs';
 
@@ -42,8 +42,27 @@ interface ShiftWire {
   id?: string; _id?: string; staffId?: string; branchId?: string;
   startAt?: string; endAt?: string; status?: string;
 }
+export interface StaffShiftRecord {
+  id: string;
+  staffId: string;
+  branchId: string;
+  branch: string;
+  startAt: string;
+  endAt: string;
+}
+
 
 export interface StaffBranchOption { id: string; name: string; }
+export interface StaffCreateResult extends StaffPreview {
+  credentials?: { username: string; password: string };
+}
+export interface StaffPasswordResetResult {
+  success: boolean;
+  message?: string;
+  temporaryPassword?: string;
+  staffId?: string;
+  username?: string;
+}
 
 function idOf(input: string | { id?: string; _id?: string } | null | undefined): string {
   if (typeof input === 'string') return input;
@@ -54,7 +73,7 @@ function unboxPage<T>(wire: unknown): { items: T[]; nextCursor: string | null } 
   const inner = outer && !Array.isArray(outer) && 'data' in outer ? outer.data : outer;
   if (Array.isArray(inner)) return { items: inner, nextCursor: null };
   if (!inner || !('items' in inner) || !Array.isArray(inner.items)) {
-    throw new Error('API Staff/Shift trả về dữ liệu không đúng hợp đồng.');
+    throw new Error('Không thể đọc dữ liệu nhân sự hoặc ca làm việc lúc này.');
   }
   return { items: inner.items, nextCursor: inner.nextCursor ?? null };
 }
@@ -90,10 +109,11 @@ function safeRole(role: string | undefined): JobRole {
 }
 function errorText(error: unknown, resource: string): string {
   const http = error as HttpErrorResponse;
+  const label = resource === 'Staff' ? 'danh sách nhân sự' : resource === 'Shift' ? 'lịch làm việc' : resource;
   if (http?.status === 401) return 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.';
-  if (http?.status === 403) return 'Bạn không có quyền xem dữ liệu ' + resource + ' của chi nhánh này.';
-  if (http?.status === 404) return 'Backend trên Render chưa cung cấp API ' + resource + '.';
-  return 'Không thể tải ' + resource + ' từ Backend. Kiểm tra kết nối Render và API.';
+  if (http?.status === 403) return 'Bạn không có quyền xem ' + label + ' trong phạm vi này.';
+  if (http?.status === 404) return 'Dữ liệu ' + label + ' hiện chưa khả dụng.';
+  return 'Không thể tải ' + label + '. Vui lòng thử lại.';
 }
 
 /**
@@ -122,7 +142,7 @@ export class AdminStaffApiService {
       expand((page) => page.nextCursor && page.index < 19
         ? this.api.get<unknown>(path, { params: params.set('limit', '100').set('cursor', page.nextCursor) }).pipe(
           map(raw => ({ ...unboxPage<T>(raw), index: page.index + 1 })),
-        ) : page.nextCursor ? throwError(() => new Error('API phân trang vượt quá 20 trang; cần lọc server.')) : of()),
+        ) : page.nextCursor ? throwError(() => new Error('Có quá nhiều kết quả. Vui lòng thu hẹp phạm vi tìm kiếm.')) : of()),
       reduce((all, page) => [...all, ...page.items], [] as T[]),
     );
   }
@@ -164,11 +184,12 @@ export class AdminStaffApiService {
       rawStatus === 'ACTIVE' ? 'ACTIVE' : 'UNKNOWN';
     return {
       id,
+      userId: idOf(input.userId),
       staffCode: input.staffCode ?? input.code ?? '',
       fullName: input.fullName ?? account?.fullName ?? account?.name ?? 'Chưa cập nhật họ tên',
       jobRole: safeRole(input.staffSubRole ?? input.jobRole),
       branchIds: ids,
-      branches: ids.map(b => branchNames.get(b) ?? b),
+      branches: [...new Set(ids.map(b => branchNames.get(b) ?? 'Chưa tải được tên chi nhánh'))],
       homeBranchId: homeId,
       homeBranch: homeId ? (branchNames.get(homeId) ?? homeId) : undefined,
       phone: input.phone ?? account?.phone,
@@ -184,28 +205,46 @@ export class AdminStaffApiService {
     this.error.set('');
     this.loading.set(true);
     this.loaded.set(false);
-    // Staff endpoint enforces server-side assigned-branch scope for managers.
-    // Non-manager STAFF does not have access to the organization-wide roster.
-    if (!this.session.hasAnyRole(['ADMIN', 'MANAGER'])) {
+    // BE listStaff explicitly scopes STAFF to actor.userId, MANAGER to assigned
+    // branches, and ADMIN to all. Never fetch another staff user's profile
+    // under a STAFF session; also filter to the current actor defensively.
+    if (!this.session.hasAnyRole(['ADMIN', 'MANAGER', 'STAFF'])) {
       this.staff.set([]);
       this.loading.set(false);
-      this.error.set('Tài khoản không có quyền xem danh sách nhân sự.');
+      this.error.set('Tài khoản không có quyền xem lịch làm việc.');
       return;
     }
     forkJoin({
       profiles: this.getAll<StaffWire>('/staff'),
       branches: this.listBranches().pipe(catchError(() => of([] as StaffBranchOption[]))),
-      // Account directory is ADMIN-only; the /staff DTO supplies manager-visible names.
-      accounts: this.session.hasAnyRole(['ADMIN'])
-        ? this.listAccounts().pipe(catchError(() => of([] as UserWire[])))
-        : of([] as UserWire[]),
+      // /staff already returns the populated account fields required by this screen.
+      // Avoid a duplicate dependency on /admin/users, which is not mounted on the
+      // currently inspected foundation-v6 backend.
+      accounts: of([] as UserWire[]),
     }).subscribe({
       next: ({ profiles, branches, accounts }) => {
-        this.branches.set(branches);
-        const byId = new Map(branches.map(b => [b.id, b.name]));
+        const currentUser = this.session.user();
+        const role = currentUser?.systemRole;
+        const scope = new Set(this.session.user()?.branchScope ?? []);
+        if (role === 'STAFF') {
+          // Use the server-scoped StaffProfile as the source of truth for a
+          // staff member's branches. Some /auth/me versions omit branchScope.
+          for (const profile of profiles) {
+            if (idOf(profile.userId) !== currentUser?.id) continue;
+            for (const value of profile.authorizedBranchIds ?? []) scope.add(idOf(value));
+            const home = idOf(profile.homeBranchId);
+            if (home) scope.add(home);
+          }
+        }
+        const visibleBranches = role === 'ADMIN'
+          ? branches
+          : branches.filter((branch) => scope.has(branch.id));
+        this.branches.set(visibleBranches);
+        const byId = new Map(visibleBranches.map(b => [b.id, b.name]));
         const byAccount = new Map(accounts.map(a => [idOf(a.id ?? a._id), a]));
         this.staff.set(profiles.map(p => this.staffFromWire(p, byId, byAccount))
-          .filter((s): s is StaffPreview => s !== null));
+          .filter((staff): staff is StaffPreview => staff !== null)
+          .filter(staff => currentUser?.systemRole !== 'STAFF' || staff.userId === currentUser.id));
         this.loaded.set(true);
         this.loading.set(false);
       },
@@ -216,6 +255,44 @@ export class AdminStaffApiService {
     });
   }
 
+  createStaff(payload: {
+    fullName: string;
+    email?: string;
+    phone?: string;
+    staffSubRole: 'RECEPTIONIST' | 'CARE_STAFF_GROOMER' | 'VETERINARIAN' | 'NURSE';
+    authorizedBranchIds: string[];
+    homeBranchId?: string;
+  }): Observable<StaffCreateResult> {
+    return this.api.post<StaffWire & { credentials?: { username: string; password: string } }, typeof payload>(
+      '/staff',
+      payload,
+      { headers: new HttpHeaders().set('Idempotency-Key', crypto.randomUUID()) },
+    ).pipe(map(raw => {
+      const branchNames = new Map(this.branches().map(branch => [branch.id, branch.name]));
+      const staff = this.staffFromWire(raw, branchNames, new Map());
+      if (!staff) throw new Error('Không đọc được hồ sơ nhân viên vừa tạo.');
+      return { ...staff, credentials: raw.credentials };
+    }));
+  }
+
+  updateStaffRole(id: string, staffSubRole: 'RECEPTIONIST' | 'CARE_STAFF_GROOMER' | 'VETERINARIAN' | 'NURSE'): Observable<unknown> {
+    return this.api.patch('/staff/' + encodeURIComponent(id), { staffSubRole });
+  }
+
+  updateStaffBranches(id: string, payload: {
+    homeBranchId?: string;
+    authorizedBranchIds: string[];
+  }): Observable<unknown> {
+    return this.api.put('/staff/' + encodeURIComponent(id) + '/branches', payload);
+  }
+
+  resetStaffPassword(id: string, newPassword: string): Observable<StaffPasswordResetResult> {
+    return this.api.post<StaffPasswordResetResult, { newPassword: string }>(
+      '/staff/' + encodeURIComponent(id) + '/reset-password',
+      { newPassword },
+    );
+  }
+
   /**
    * Create an actual, dated staff shift. This is NOT a reusable shift template:
    * that requires a separate contract from Backend.
@@ -224,7 +301,35 @@ export class AdminStaffApiService {
   createShift(payload: {
     staffId: string; branchId: string; startAt: string; endAt: string;
   }): Observable<unknown> {
-    return this.api.post<unknown>('/shifts', payload);
+    return this.api.post<unknown>('/shifts', payload, {
+      headers: new HttpHeaders().set('Idempotency-Key', crypto.randomUUID()),
+    });
+  }
+
+  /** Permanently delete a shift that has not yet begun (BE checks appointments). */
+  deleteShift(id: string): Observable<unknown> {
+    return this.api.delete('/shifts/' + encodeURIComponent(id));
+  }
+
+  /** Soft-cancel a shift; BE blocks cancellation when appointments depend on it. */
+  cancelShift(id: string): Observable<unknown> {
+    return this.api.post('/shifts/' + encodeURIComponent(id) + '/cancel', {}, {
+      headers: new HttpHeaders().set('Idempotency-Key', crypto.randomUUID()),
+    });
+  }
+  /** Fresh, employee-scoped shifts for overlap checks, including other visible branches. */
+  listStaffShiftRecords(staffId: string, dateFrom: string, dateTo: string): Observable<StaffShiftRecord[]> {
+    const params = new HttpParams().set('staffId', staffId)
+      .set('dateFrom', dateFrom).set('dateTo', dateTo);
+    return this.getAll<ShiftWire>('/shifts', params).pipe(map(rows => {
+      const branches = new Map(this.branches().map(b => [b.id, b.name]));
+      return rows.filter(row => row.status !== 'CANCELLED' && !!row.startAt && !!row.endAt)
+        .map(row => ({
+          id: idOf(row.id ?? row._id), staffId: idOf(row.staffId),
+          branchId: idOf(row.branchId), branch: branches.get(idOf(row.branchId)) ?? idOf(row.branchId),
+          startAt: row.startAt!, endAt: row.endAt!,
+        }));
+    }));
   }
 
   loadWeek(monday: string, force = false): void {

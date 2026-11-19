@@ -1,0 +1,15 @@
+.login-form__submit-error {
+  @apply rounded bg-red-50 px-3 py-2 text-sm text-[#c62828];
+}
+
+.login-form__row {
+  @apply flex items-center justify-between pb-2 text-sm;
+}
+
+.login-form__label {
+  @apply flex items-center gap-2;
+}
+
+.login-form__chua-co-tai-text {
+  @apply text-center text-sm;
+}

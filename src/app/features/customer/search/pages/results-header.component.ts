@@ -11,6 +11,7 @@ import { SORT_OPTIONS } from './search-results-page.helpers';
   standalone: true,
   imports: [SortButtonComponent],
   templateUrl: './results-header.component.html',
+  styleUrl: './results-header.component.scss',
   host: {
     'class': 'flex w-full flex-col items-start gap-2',
   },

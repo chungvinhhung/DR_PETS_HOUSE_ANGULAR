@@ -17,6 +17,7 @@ import { navbarImages } from '../../../../shared/customer/assets/navbar-images';
   standalone: true,
   imports: [NavLinksComponent, NavSearchBarComponent, YellowButtonComponent, NotificationBellComponent, NavUserMenuComponent],
   templateUrl: './nav-bar-authenticated.component.html',
+  styleUrl: './nav-bar-authenticated.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

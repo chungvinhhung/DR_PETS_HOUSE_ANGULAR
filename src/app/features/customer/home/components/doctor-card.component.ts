@@ -10,6 +10,7 @@ import { homeImages } from '../../../../shared/customer/assets/home-images';
   standalone: true,
   imports: [],
   templateUrl: './doctor-card.component.html',
+  styleUrl: './doctor-card.component.scss',
   host: {
     'class': 'relative flex h-[330px] w-full items-end justify-center',
   },

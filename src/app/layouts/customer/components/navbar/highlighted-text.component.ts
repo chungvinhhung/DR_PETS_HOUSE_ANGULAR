@@ -10,6 +10,7 @@ import { highlightKeywordParts } from '../../../../shared/customer/utils/search-
   standalone: true,
   imports: [],
   templateUrl: './highlighted-text.component.html',
+  styleUrl: './highlighted-text.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

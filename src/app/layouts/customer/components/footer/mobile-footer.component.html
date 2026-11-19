@@ -1,4 +1,4 @@
-<div class="flex w-full flex-col gap-[5px]">
+<div class="mobile-footer__stack">
   @for (section of sections(); track section.id) {
     <section
       app-mobile-footer-section
@@ -10,29 +10,29 @@
     ></section>
   }
 </div>
-<div class="flex h-[165px] w-full flex-col items-center justify-end pb-1">
-  <div class="flex w-full flex-col gap-[10px]">
-    <div class="flex h-[104px] w-full flex-col items-center justify-center">
-      <div class="flex w-full flex-col items-center justify-center gap-[7px]">
+<div class="mobile-footer__stack-2">
+  <div class="mobile-footer__stack-3">
+    <div class="mobile-footer__stack-4">
+      <div class="mobile-footer__stack-5">
         <a appCustomerLink="/" aria-label="Dr. Pet's House - Trang chủ">
-          <img [attr.src]="homeImages.logo" alt="Dr. Pet's House" class="h-[38px] w-[88px] object-contain" />
+          <img [attr.src]="homeImages.logo" alt="Dr. Pet's House" class="mobile-footer__dr-pet-s-house" />
         </a>
-        <p class="whitespace-nowrap font-['Baloo_Tamma','Baloo_2',cursive] text-[16px] leading-[17.6px] text-[#0D47A1]">TRUNG TÂM CHĂM SÓC THÚ CƯNG</p>
-        <p class="w-full text-center font-['Roboto'] text-[12px] font-normal leading-[16.8px] text-[#475569]">Cung cấp dịch vụ khám bệnh, làm đẹp, và mua sắm sản phẩm cho thú cưng của bạn.</p>
+        <p class="mobile-footer__trung-tam-cham-text">TRUNG TÂM CHĂM SÓC THÚ CƯNG</p>
+        <p class="mobile-footer__cung-cap-dich-text">Cung cấp dịch vụ khám bệnh, làm đẹp, và mua sắm sản phẩm cho thú cưng của bạn.</p>
       </div>
     </div>
-    <div class="flex w-full items-center justify-between">
+    <div class="mobile-footer__row">
       <div app-mobile-social-links></div>
       <a
         href="tel:0868686868"
-        class="flex h-[22px] w-[108px] shrink-0 items-center justify-center rounded bg-[#FFF176] px-[6px] shadow-elevation"
+        class="mobile-footer__link"
       >
-        <img [attr.src]="homeImages.phone" alt="" class="size-4 shrink-0" />
-        <span class="w-[79px] whitespace-nowrap font-['Roboto'] text-[12px] font-bold uppercase leading-[31.92px] tracking-[1px] text-black">0868686868</span>
+        <img [attr.src]="homeImages.phone" alt="" class="mobile-footer__phone" />
+        <span class="mobile-footer__text">0868686868</span>
       </a>
     </div>
   </div>
 </div>
-<div class="absolute inset-x-0 bottom-0 flex h-6 items-center justify-center bg-[#B3E5FC]">
-  <p class="whitespace-nowrap text-center font-['Roboto'] text-[10px] italic leading-[14px] text-black/60">© 2026 Dr.Pet's House. Bản quyền thuộc về Dr.Pet's House.</p>
+<div class="mobile-footer__layer">
+  <p class="mobile-footer__text-2">© 2026 Dr.Pet's House. Bản quyền thuộc về Dr.Pet's House.</p>
 </div>

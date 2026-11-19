@@ -1,7 +1,7 @@
-<div class="policy-related__heading flex h-7 w-full items-center justify-center gap-4">
-  <h2 class="whitespace-nowrap text-[20px] font-semibold uppercase leading-7 text-[#002D62]">CÓ LIÊN QUAN</h2>
+<div class="policy-related-sidebar__heading policy-related__heading">
+  <h2 class="policy-related-sidebar__co-lien-quan-title">CÓ LIÊN QUAN</h2>
 </div>
-<nav class="mt-6 flex w-full flex-col gap-6" aria-label="Chính sách liên quan">
+<nav class="policy-related-sidebar__chinh-sach-lien-quan" aria-label="Chính sách liên quan">
   @for (item of relatedPolicies(); track item.label) {
     <a
       [appCustomerLink]="item.href"

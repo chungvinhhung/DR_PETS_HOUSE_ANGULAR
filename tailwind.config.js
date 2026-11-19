@@ -16,6 +16,11 @@ module.exports = {
     './src/app/features/customer/**/*.{html,ts}',
     './src/app/shared/customer/**/*.{html,ts}',
     './src/app/core/customer/**/*.ts',
+    // Quét cả SCSS của component: các utility chỉ còn nằm trong @apply vẫn được
+    // Tailwind nhận diện để sinh biến mặc định --tw-* (transform, shadow, ring...).
+    './src/app/layouts/customer/**/*.component.scss',
+    './src/app/features/customer/**/*.component.scss',
+    './src/app/shared/customer/components/**/*.component.scss',
   ],
   important: '.customer-root',
   corePlugins: {
@@ -64,7 +69,7 @@ module.exports = {
           'feedback-in-prev 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards',
       },
       maxWidth: {
-        page: '1440px',
+        page: '100%',
       },
     },
   },

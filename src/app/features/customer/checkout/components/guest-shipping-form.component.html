@@ -1,9 +1,9 @@
-<div class="flex items-center gap-2">
+<div class="guest-shipping-form__row">
   <img [attr.src]="checkoutImages.locationPin" alt="" class="h-5 w-4 shrink-0" aria-hidden="true" />
-  <h2 class="text-xl font-black text-blue-900">ĐỊA CHỈ NHẬN HÀNG</h2>
+  <h2 class="guest-shipping-form__dia-chi-nhan-title">ĐỊA CHỈ NHẬN HÀNG</h2>
 </div>
-<div class="grid gap-5 md:grid-cols-2">
-  <div class="flex flex-col gap-2">
+<div class="guest-shipping-form__grid">
+  <div class="guest-shipping-form__stack">
     <label app-field-label [required]="true">Họ tên</label>
     <app-pill-input
       [id]="'guest-full-name'"
@@ -13,7 +13,7 @@
       (onChange)="update('fullName')($event)"
     />
   </div>
-  <div class="flex flex-col gap-2">
+  <div class="guest-shipping-form__stack">
     <label app-field-label [required]="true">Số điện thoại</label>
     <app-pill-input
       [id]="'guest-phone'"
@@ -24,7 +24,7 @@
       (onChange)="update('phone')($event)"
     />
   </div>
-  <div class="flex flex-col gap-2">
+  <div class="guest-shipping-form__stack">
     <label app-field-label>Email</label>
     <app-pill-input
       [id]="'guest-email'"
@@ -35,7 +35,7 @@
       (onChange)="update('email')($event)"
     />
   </div>
-  <div class="flex flex-col gap-2">
+  <div class="guest-shipping-form__stack">
     <label app-field-label [required]="true">Quốc gia</label>
     <app-pill-input
       [id]="'guest-country'"
@@ -44,7 +44,7 @@
       (onChange)="update('country')($event)"
     />
   </div>
-  <div class="flex flex-col gap-2 md:col-span-2">
+  <div class="guest-shipping-form__stack-2">
     <label app-field-label [required]="true">Địa chỉ cụ thể</label>
     <app-pill-input
       [id]="'guest-address'"
@@ -54,7 +54,7 @@
       (onChange)="update('address')($event)"
     />
   </div>
-  <div class="flex flex-col gap-2 md:col-span-2">
+  <div class="guest-shipping-form__stack-2">
     <label app-field-label [required]="true">Tỉnh/Thành phố</label>
     <app-pill-input
       [id]="'guest-city'"

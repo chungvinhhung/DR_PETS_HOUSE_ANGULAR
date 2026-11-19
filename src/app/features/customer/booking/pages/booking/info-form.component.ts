@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 
+import { CustomerAuthService } from '../../../../../core/customer/services/customer-auth.service';
 import { PetSummaryCardComponent } from './pet-summary-card.component';
 import { PetInfoCardComponent } from './pet-info-card.component';
 import { BookingCardComponent } from './booking-card.component';
@@ -21,6 +22,8 @@ import { serviceSelectedCheck, createEmptyPetInfo, profileToPetInfo, isPetInfoCo
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InfoFormComponent {
+  private readonly authService = inject(CustomerAuthService);
+
   // --- Input / Output (props của React) ---
   readonly selectedPets = input<any>(undefined);
   readonly setSelectedPets = input<any>(undefined);
@@ -40,10 +43,46 @@ export class InfoFormComponent {
   // --- Giá trị tính toán (computed) ---
   readonly profileMode = computed<any>(() => this.selectedPets().length > 0);
   readonly activePetInfos = computed<any>(() => this.petInfos().length > 0 ? this.petInfos() : [createEmptyPetInfo()]);
-  readonly infoComplete = computed<any>(() => this.activePetInfos().every(isPetInfoComplete) &&
+    // Kiểm tra định dạng số điện thoại Việt Nam
+  readonly phoneValid = computed(() => {
+    const phone = (this.ownerInfo()?.phone ?? '').trim();
+    return /^(0\d{9,10}|\+84\d{9,10})$/.test(phone);
+  });
+
+  // Email không bắt buộc, nhưng nếu nhập phải đúng định dạng
+  readonly emailValid = computed(() => {
+    const email = (this.ownerInfo()?.email ?? '').trim();
+    return !email || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+  });
+
+  // Thông báo lỗi số điện thoại
+  readonly phoneError = computed(() => {
+    const phone = (this.ownerInfo()?.phone ?? '').trim();
+
+    if (!phone) return 'Vui lòng nhập số điện thoại';
+
+    return this.phoneValid()
+      ? ''
+      : 'Số điện thoại không đúng định dạng';
+  });
+
+  // Thông báo lỗi email
+  readonly emailError = computed(() => {
+    const email = (this.ownerInfo()?.email ?? '').trim();
+
+    return this.emailValid()
+      ? ''
+      : 'Email không đúng định dạng';
+  });
+
+  // Kiểm tra toàn bộ thông tin trước khi tiếp tục
+  readonly infoComplete = computed<any>(() =>
+    this.activePetInfos().every(isPetInfoComplete) &&
     this.ownerInfo().name.trim() &&
-    this.ownerInfo().phone.trim() &&
-    this.ownerInfo().agreed);
+    this.phoneValid() &&
+    this.emailValid() &&
+    this.ownerInfo().agreed
+  );
 
   // --- Trạng thái (signal = useState / useRef) ---
   readonly showPetPicker = signal<any>(false);
@@ -74,6 +113,10 @@ export class InfoFormComponent {
     this.setPetInfos()((current: any) =>
       current.length <= 1 ? current : current.filter((petInfo: any) => petInfo.id !== petId),
     );
+  }
+
+  protected openPetPicker() {
+    this.authService.requireAuth(() => this.showPetPicker.set(true));
   }
 
   protected handleNext() {

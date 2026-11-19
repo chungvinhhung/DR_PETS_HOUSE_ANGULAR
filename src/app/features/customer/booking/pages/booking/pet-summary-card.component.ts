@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { CustomerAuthService } from '../../../../../core/customer/services/customer-auth.service';
 import { serviceSelectedCheck, informationSelectedPetPhoto, petImages } from './booking-page.helpers';
 
 const buddyImg = '/assets/customer/images/pets/buddy.jpg';
@@ -12,6 +12,7 @@ const buddyImg = '/assets/customer/images/pets/buddy.jpg';
   standalone: true,
   imports: [],
   templateUrl: './pet-summary-card.component.html',
+  styleUrl: './pet-summary-card.component.scss',
   host: {
     'type': 'button',
     '(click)': 'onClick.emit($event)',
@@ -20,6 +21,8 @@ const buddyImg = '/assets/customer/images/pets/buddy.jpg';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PetSummaryCardComponent {
+  protected readonly authService = inject(CustomerAuthService);
+
   // --- Input / Output (props của React) ---
   readonly selectedPets = input<any>(undefined);
   readonly active = input<any>(undefined);

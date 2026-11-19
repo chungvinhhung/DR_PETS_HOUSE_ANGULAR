@@ -1,9 +1,9 @@
-<div class="w-full max-w-[1040px]">
-  <div class="rounded-[18px] bg-white p-6 shadow-xl">
-    <div class="mb-5 flex items-start justify-between gap-4">
+<div class="order-review-modal__box">
+  <div class="order-review-modal__box-2">
+    <div class="order-review-modal__row">
       <div>
-        <h2 class="text-[28px] font-bold text-[#031635]">Đánh giá sản phẩm</h2>
-        <p class="text-[14px] text-[#667085]">Đơn hàng #{{ order().id }}</p>
+        <h2 class="order-review-modal__danh-gia-san-title">Đánh giá sản phẩm</h2>
+        <p class="order-review-modal__id">Đơn hàng #{{ order().id }}</p>
       </div>
       <button
         type="button"
@@ -13,10 +13,10 @@
       >×</button>
     </div>
     @if (isLoading()) {
-      <p class="py-10 text-center text-[#0D47A1]">Đang kiểm tra sản phẩm có thể đánh giá...</p>
+      <p class="order-review-modal__dang-kiem-tra-text">Đang kiểm tra sản phẩm có thể đánh giá...</p>
     } @else if (reviewableProducts().length) {
       <div class="space-y-5">
-        <div class="flex flex-wrap gap-3">
+        <div class="order-review-modal__let-active-el">
           @for (product of reviewableProducts(); track $index) {
             @let active = compute1(product);
             <button
@@ -31,9 +31,9 @@
               <img
                 [attr.src]="product.image || productImages.detailImage"
                 [attr.alt]="product.name"
-                class="h-12 w-12 rounded object-cover"
+                class="order-review-modal__name"
               />
-              <span class="max-w-[220px] text-[14px] font-medium text-[#1D2939]">{{ product.name }}</span>
+              <span class="order-review-modal__name-2">{{ product.name }}</span>
             </button>
           }
         </div>
@@ -50,7 +50,7 @@
         }
       </div>
     } @else {
-      <p class="py-10 text-center text-[#667085]">Hiện chưa có sản phẩm nào trong đơn hàng này đủ điều kiện để đánh giá.</p>
+      <p class="order-review-modal__hien-chua-co-text">Hiện chưa có sản phẩm nào trong đơn hàng này đủ điều kiện để đánh giá.</p>
     }
   </div>
 </div>

@@ -1,15 +1,25 @@
 /** Raw BE Service Master contract; response fields are NOT demo data. */
 export interface ServicePriceVariant {
   label: string;
-  price: number;
-  minWeightKg?: number;
-  maxWeightKg?: number;
+  /** Canonical BE tier identifier; labels contain display text and weight range. */
+  tier?: 'XS' | 'S' | 'M' | 'L' | 'XL';
+  mode?: 'FIXED' | 'QUOTE';
+  price: number | null;
+  minWeightKg?: number | null;
+  maxWeightKg?: number | null;
 }
 export interface ServiceDefaultMaterial {
   materialId: string;
   defaultQuantity: number;
   unit: string;
 }
+export interface ServiceBranchConfigWrite {
+  branchId: string;
+  enabled: boolean;
+  capacity: number;
+  availability: readonly { dayOfWeek: number; open: string; close: string }[];
+}
+
 export interface ServiceWrite {
   name: string;
   serviceType: 'GROOMING' | 'MEDICAL';
@@ -21,6 +31,10 @@ export interface ServiceWrite {
   requiredStaffRole: 'CARE_STAFF_GROOMER' | 'NURSE' | 'VETERINARIAN';
   bookingMode: ServiceBookingMode;
   status: ServiceMasterStatus;
+  defaultMaterials?: ServiceDefaultMaterial[];
+  /** BE createService supports atomic initial branch provisioning. */
+  autoEnableActiveBranches?: boolean;
+  branchConfigs?: ServiceBranchConfigWrite[];
 }
 export interface ServiceApiRecord extends ServiceWrite {
   id: string;
@@ -78,11 +92,16 @@ export interface CatalogService {
 
 export type CatalogFilterStatus = ServiceMasterStatus | 'ALL';
 export type CatalogFilterMode = ServiceBookingMode | 'ALL';
+export type CatalogFilterServiceType = 'ALL' | 'MEDICAL' | 'GROOMING';
 
 export interface CatalogListQuery {
   search: string;
   branchId: string;
   mode: CatalogFilterMode;
+  /** Internal listing supports a comma-separated booking-mode OR filter. */
+  bookingModes?: readonly ServiceBookingMode[];
+  /** Optional because other service pickers intentionally do not filter by type. */
+  serviceType?: CatalogFilterServiceType;
   status: CatalogFilterStatus;
   page: number;
   pageSize: number;

@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { AuthApiService } from '../../../../core/customer/services/api/auth-api.service';
+import { CustomerAuthService } from '../../../../core/customer/services/customer-auth.service';
 import { FieldComponent } from './field.component';
 import { PrimaryButtonComponent } from './primary-button.component';
 import { DividerComponent } from './divider.component';
@@ -16,6 +18,7 @@ import { VALIDATION_SCHEMAS, getFormErrors, submitValidatedForm } from './auth-m
   standalone: true,
   imports: [FieldComponent, PrimaryButtonComponent, DividerComponent, GoogleButtonComponent],
   templateUrl: './login-form.component.html',
+  styleUrl: './login-form.component.scss',
   host: {
     'novalidate': '',
     'class': 'flex flex-col gap-5',
@@ -26,6 +29,8 @@ import { VALIDATION_SCHEMAS, getFormErrors, submitValidatedForm } from './auth-m
 export class LoginFormComponent {
   // --- Service dùng chung ---
   protected readonly authApi = inject(AuthApiService);
+  private readonly customerAuth = inject(CustomerAuthService);
+  private readonly router = inject(Router);
 
   // --- Input / Output (props của React) ---
   readonly form = input<any>(undefined);
@@ -51,6 +56,14 @@ export class LoginFormComponent {
 
   protected update({ target }: any) {
     return this.setForm()((current: any) => ({ ...current, [target.name]: target.type === "checkbox" ? target.checked : target.value }));
+  }
+
+  protected goToGuestLookup(event: MouseEvent): void {
+    // Preserve Ctrl/Cmd-click and other native browser link gestures.
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    this.customerAuth.dismissAuthForNavigation();
+    void this.router.navigateByUrl('/tra-cuu-don-hang');
   }
 
   protected async handleSubmit() {

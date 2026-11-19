@@ -11,6 +11,7 @@ import { BANK_TRANSFER_INFO, bankTransferImages } from '../assets/bank-transfer-
   standalone: true,
   imports: [],
   templateUrl: './bank-transfer-modal.component.html',
+  styleUrl: './bank-transfer-modal.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -1,49 +1,492 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { adminPageWindowWithEdges } from '../../../../shared/utils/admin-table-pagination';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { HttpParams } from '@angular/common/http';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, debounceTime, distinctUntilChanged, forkJoin, map, of, Subject } from 'rxjs';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 
-import { PageTitleComponent } from '../../../../shared/components/page-title/page-title.component';
+import { ApiClientService } from '../../../../core/services/api-client.service';
+import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { AdminStaffApiService } from '../../staff/services/admin-staff-api.service';
+import { AdminCatalogShellComponent } from '../../../../shared/admin-catalog-shell/admin-catalog-shell.component';
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
+import { adminErrorMessage } from '../../../../shared/services/admin-toast.service';
+import {
+  AppointmentView, normalizeAppointmentPage, statusLabel,
+} from './admin-appointment-workflow.model';
 
 @Component({
-  selector: 'app-admin-appointments-page',
-  standalone: true,
-  imports: [PageTitleComponent],
-  template: `
-    <section class="route-page">
-      <app-page-title
-        title="Admin Appointments"
-        subtitle="Administration appointment management route foundation."
-      />
-
-      <div class="route-page__status">
-        <strong>Admin appointments</strong>
-        <p>This admin route is wired correctly. Operational UI will be implemented later.</p>
+ selector: 'app-admin-appointments-page',
+ standalone: true,
+ imports: [RouterLink, AdminCatalogShellComponent, AdminDataStateComponent],
+ changeDetection: ChangeDetectionStrategy.OnPush,
+ template: `
+<app-admin-catalog-shell activeItem="appointments">
+<main class="appointments">
+  <header class="heading"><h1>Quản lý lịch hẹn</h1></header>
+  @if (dashboardFilter(); as filter) {
+    <div class="dashboard-scope">
+      <span>Đang xem lịch hẹn tạo trong kỳ {{filter.from}} – {{filter.to}}
+        @if (filter.status) { · {{filter.status}} }
+      </span>
+      <a routerLink="/admin/appointments">Xóa lọc Dashboard</a>
+    </div>
+  }
+  @if (recentOnly()) {
+    <div class="recent-only-notice" role="status">
+      <span>Danh sách đầy đủ đang tạm gián đoạn. Hiện chỉ hiển thị lịch hẹn được tạo hôm nay.</span>
+      <button type="button" (click)="load()">Tải lại toàn bộ</button>
+    </div>
+  }
+  <section class="appointments__kpis" aria-label="Thống kê lịch hẹn trong dữ liệu đã tải">
+    <article class="appointments__kpi" data-kpi-tone="neutral">
+      <span>Tổng lịch hẹn</span>
+      <strong>{{ loading() || error() || recentOnly() ? '—' : kpis().total }}</strong>
+    </article>
+    <article class="appointments__kpi" data-kpi-tone="warning">
+      <span>Chờ thanh toán</span>
+      <strong class="appointments__kpi--blue">{{ loading() || error() || recentOnly() ? '—' : kpis().pendingPayment }}</strong>
+    </article>
+    <article class="appointments__kpi" data-kpi-tone="info">
+      <span>Đang thực hiện</span>
+      <strong>{{ loading() || error() || recentOnly() ? '—' : kpis().inProgress }}</strong>
+    </article>
+    <article class="appointments__kpi" data-kpi-tone="success">
+      <span>Hoàn tất</span>
+      <strong>{{ loading() || error() || recentOnly() ? '—' : kpis().completed }}</strong>
+    </article>
+  </section>
+  <section class="panel filters web2-filterbar" aria-label="Bộ lọc lịch hẹn">
+    <label class="search web2-management-search">
+      <img src="/assets/service-catalog/search.svg" width="16" height="16" alt="" />
+      <span class="sr">Tìm lịch hẹn hoặc khách hàng</span>
+      <input type="search" placeholder="Tìm theo số điện thoại khách hàng, mã lịch hẹn..." [value]="search()"
+        (input)="onSearch($any($event.target).value)" (keydown.enter)="lookup()">
+    </label>
+    <div class="filter-actions web2-management-actions">
+      <label class="filter-control web2-management-control">
+        <span class="sr" id="appointment-status-label">Trạng thái lịch hẹn</span>
+        <select aria-labelledby="appointment-status-label" id="appointment-status-filter" [value]="status()" (change)="changeStatus($any($event.target).value)">
+          <option value="">Tất cả trạng thái</option>
+          <option value="PENDING_PAYMENT">Chờ thanh toán</option>
+          <option value="CONFIRMED">Đã xác nhận</option>
+          <option value="IN_PROGRESS">Đang thực hiện</option>
+          <option value="COMPLETED">Hoàn tất</option>
+          <option value="NO_SHOW">Không đến</option>
+          <option value="CANCELLED">Đã hủy</option>
+        </select>
+      </label>
+      <label class="filter-control web2-management-control">
+        <span class="sr" id="appointment-date-label">Khoảng thời gian</span>
+        <select id="appointment-date-filter" aria-labelledby="appointment-date-label"
+          [value]="dateRange()" (change)="changeDateRange($any($event.target).value)">
+          <option value="all">Tất cả thời gian</option>
+          <option value="30">30 ngày qua</option>
+          <option value="90">90 ngày qua</option>
+        </select>
+      </label>
+      @if (canCreateAppointment()) {
+        <a routerLink="/admin/appointments/new" class="primary web2-add-button">
+          <span class="web2-add-icon" aria-hidden="true">+</span>Tạo lịch hẹn
+        </a>
+      }
+    </div>
+  </section>
+  @if (searchLoading()) {
+    <p class="lookup-hint" role="status">Đang tìm lịch hẹn theo mã...</p>
+  } @else if (searchWarning()) {
+    <p class="lookup-hint" role="status">{{searchWarning()}}</p>
+  }
+  <section class="panel">
+    @if (loading()) {
+      <app-admin-data-state kind="loading" title="Đang tải danh sách lịch hẹn" />
+    } @else if (error()) {
+      <app-admin-data-state kind="error" title="Không thể tải danh sách lịch hẹn" [message]="error()" (retry)="load()" />
+    } @else {
+      <div class="scroll">
+        <table>
+          <thead><tr>
+            <th>Mã lịch</th><th>Ngày tạo</th><th>Giờ tạo</th>
+            <th>Khách hàng</th><th>Dịch vụ</th><th>Trạng thái</th><th>Thao tác</th>
+          </tr></thead>
+          <tbody>
+            @for (item of rows(); track item.id) {
+              <tr>
+                <td class="code">#{{displayCode(item.code)}}</td>
+                <td>{{formatDate(item.createdAt)}}</td>
+                <td>{{formatClock(item.createdAt)}}</td>
+                <td>{{item.customerName || '—'}}</td>
+                <td>{{item.serviceNames.length ? item.serviceNames.join(', ') : '—'}}</td>
+                <td><span class="badge" [attr.data-status]="statusColor(item)">
+                  {{label(item)}}</span></td>
+                <td>
+                  <div class="actions">
+                    <a [routerLink]="['/admin/appointments',item.id]" title="Xem chi tiết"
+                      [attr.aria-label]="'Xem chi tiết lịch hẹn '+item.code">
+                      <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="" />
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="message">Không có lịch hẹn phù hợp.</td></tr>
+            }
+          </tbody>
+        </table>
       </div>
-    </section>
-  `,
-  styles: [
-    `
-      :host {
-        display: block;
-      }
-
-      .route-page {
-        display: grid;
-        gap: 24px;
-      }
-
-      .route-page__status {
-        padding: 20px;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        background: #ffffff;
-      }
-
-      .route-page__status p {
-        margin: 8px 0 0;
-        color: #64748b;
-        line-height: 1.6;
-      }
-    `,
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+      <footer class="list-footer">
+        <p>@if (recentOnly()) {Đang hiển thị {{rows().length}} trên {{total()}} lịch hẹn tạo hôm nay}
+          @else {Đang hiển thị {{rows().length}} trên tổng số {{total()}} lịch hẹn}
+        </p>
+        @if (pageCount() > 1) {
+          <nav class="pagination web2-admin-pagination-strip" aria-label="Phân trang lịch hẹn">
+            <button type="button" [disabled]="page()===1" (click)="goto(page()-1)" aria-label="Trang trước">‹</button>
+            @for (n of pageNumbers(); track n === '…' ? 'gap-' + $index : 'page-' + n) {
+              @if(n==='…'){<span aria-hidden="true">…</span>}
+              @else {
+                <button type="button" [attr.aria-current]="page()===n?'page':null"
+                  [class.selected]="page()===n" (click)="goto(n)">{{n}}</button>
+              }
+            }
+            <button type="button" [disabled]="page()===pageCount()" (click)="goto(page()+1)" aria-label="Trang sau">›</button>
+          </nav>
+        }
+      </footer>
+    }
+  </section>
+</main></app-admin-catalog-shell>`,
+ styles:[`
+ :host{display:block;font-family:Roboto,Arial,sans-serif;color:#26364a}
+ .appointments{box-sizing:border-box;width:100%;min-width:0;padding:32px}
+ .heading{display:flex;align-items:center;min-height:36px;margin:0 0 20px}.heading h1{font-size:28px;line-height:34px;font-weight:700;margin:0;color:#1d2a42}
+ .panel{border:1px solid #dee5f0;border-radius:10px;background:#fff;margin-bottom:18px;overflow:hidden}
+ .filters{margin-bottom:20px;min-height:70px!important;padding:14px!important;border-radius:10px!important}.search{min-width:0}.search input{color:#26364a;font-size:13px}
+ .filters .search{flex:0 1 430px!important;width:430px!important;max-width:430px!important;height:40px!important;min-height:40px!important}
+ .filter-actions{display:flex;align-items:center;gap:12px}.filter-control{width:170px;height:40px}
+ .filters .filter-control{height:40px!important;min-height:40px!important}
+ .filters .filter-control:nth-child(2){width:170px!important}
+ .filters .web2-add-button{height:40px!important;min-height:40px!important;padding:0 15px!important}
+ .filters .filter-control select{box-sizing:border-box;appearance:none;-webkit-appearance:none;width:100%;height:40px;padding:0 38px 0 12px;
+   border:1px solid #dee5f0;border-radius:8px;background:#fff url('/assets/admin-product/icon-chevron-down.svg') no-repeat right 14px center;
+   background-size:18px 18px;color:#26364a;font:400 13px Roboto,Arial,sans-serif;cursor:pointer}
+ .primary{background:#0d47a1;border:1px solid #0d47a1;color:#fff;text-decoration:none;font-weight:600}
+ .primary:hover{background:#083a89}.secondary{padding:9px 15px;border:1px solid #d5deeb;border-radius:8px;color:#0d47a1;background:#fff;cursor:pointer}
+ .scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:800px;font-size:12px;color:#41506a}
+ th{height:44px;background:#f8fafc;color:#26364a;text-align:left;font-weight:650;padding:10px 12px;white-space:nowrap}
+ td{border-top:1px solid #e2e8f0;height:76px;padding:12px;line-height:1.5;overflow-wrap:anywhere}
+ /* Mã lịch 14% + five equally spaced fields (5 × 15.4%) + Thao tác 9% = 100%.
+    Date, time, customer, service and status have equal column widths. */
+ th:nth-child(1){width:14%}
+ th:nth-child(2),th:nth-child(3),th:nth-child(4),th:nth-child(5),th:nth-child(6){width:15.4%}
+ th:nth-child(7){width:9%}
+ /* Date, time and customer are center-aligned on equal-width columns.
+    Keep service names left-aligned, but inset that column's heading and
+    values together so their visible starting edge does not crowd Customer. */
+ .scroll table :is(th,td):not(:nth-child(1)):not(:nth-child(5)){text-align:center}
+ .scroll table :is(th,td):nth-child(1){text-align:left}
+ .scroll table :is(th,td):nth-child(5){
+   text-align:left;
+   padding-left:clamp(28px,4.2vw,60px);
+ }
+ .scroll table :is(th,td){vertical-align:middle}
+ .code{font-weight:600;color:#29354b}
+ .badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 9px;border-radius:99px;white-space:nowrap;background:#edf2f8;color:#556174;font-size:12px}
+ .badge[data-status=warning]{background:#fff2dd;color:#bc790e}.badge[data-status=success]{background:#e5f5e6;color:#317744}
+ .badge[data-status=info]{background:#e3f3ff;color:#276c9b}.badge[data-status=danger]{background:#ffdddd;color:#b93131}.actions{display:flex;justify-content:center;gap:12px;align-items:center}
+ .actions a{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px}
+ .actions a img{display:block;width:20px;height:20px}
+ .actions a:hover{background:#eef5ff}.message{text-align:center;color:#718096;padding:26px}
+ .list-footer{min-height:60px;display:flex;justify-content:space-between;gap:12px;align-items:center;padding:8px 12px;color:#6c7c93;font-size:12px;border-top:1px solid #e2e8f0}
+ .list-footer p{margin:0;font-size:12px}.data-scope{color:#64748b}
+ /* Product Management pagination: joined 44px rectangular cells and
+    light-blue active number, never disconnected round blue buttons. */
+ .pagination{display:flex;align-items:stretch;gap:0;max-width:100%;overflow-x:auto;
+   border:1px solid #e2e8f0;border-radius:8px;scrollbar-width:thin}
+ .pagination :is(button,span){box-sizing:border-box;display:grid;place-items:center;
+   flex:0 0 48px;width:48px;min-width:48px;height:44px;padding:0;
+   border:0;border-right:1px solid #e2e8f0;border-radius:0;
+   background:#fff;color:#475569;font:400 14px/20px Roboto,Arial,sans-serif}
+ .pagination :is(button,span):last-child{border-right:0}
+ .pagination button:first-child,.pagination button:last-child{flex-basis:44px;width:44px;min-width:44px}.pagination button{cursor:pointer}
+ .pagination button:hover:not(:disabled):not(.selected){background:#f1f5f9}
+ .pagination button.selected{background:#e5f6fd;color:#0d47a1;
+   box-shadow:inset 0 0 0 1px #0d47a1;font-weight:700}
+ .pagination button:disabled{color:#bac8d9;cursor:not-allowed}
+ .pagination button:focus-visible{outline:2px solid #0d47a1;outline-offset:-3px}
+ .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+ @media(max-width:1120px){.filters{flex-wrap:wrap}.filter-actions{flex-wrap:wrap;justify-content:flex-start;width:100%}}
+ @media(max-width:1050px){.scroll table :is(th,td):nth-child(5){padding-left:32px}}
+ .lookup-hint{margin:0 0 10px;font-size:12px;color:#546a82}
+ .recent-only-notice{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px;
+   padding:10px 14px;border:1px solid #d7e6f7;border-radius:8px;background:#f6faff;color:#335376;font-size:12px}
+ .recent-only-notice button{border:1px solid #bfd6f5;background:#fff;color:#0d47a1;border-radius:6px;padding:7px 12px;cursor:pointer;font-weight:600}
+ .recent-only-notice button:hover{background:#eef5ff}
+ .dashboard-scope{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 12px;padding:10px 14px;border:1px solid #d8e6f6;border-radius:9px;background:#f5f9ff;font-size:12px;color:#3d5978}
+ .dashboard-scope a{color:#0d47a1;font-weight:650;text-decoration:none}
+ .dashboard-scope a:hover{text-decoration:underline}
+ @media(max-width:650px){.appointments{padding:16px}.filter-control{flex:1;min-width:130px}.list-footer{flex-wrap:wrap}
+   .pagination{margin-left:auto}}
+ `]
 })
-export class AdminAppointmentsPageComponent {}
+export class AdminAppointmentsPageComponent {
+  private readonly api=inject(ApiClientService);
+  private readonly route=inject(ActivatedRoute);
+  private readonly session=inject(AuthSessionService);
+  private readonly staffApi=inject(AdminStaffApiService);
+  private readonly destroyRef=inject(DestroyRef);
+  private requestVersion=0;
+  private searchRequestVersion=0;
+  private lastSearchedTerm='';
+  private readonly searchTerms = new Subject<string>();
+  readonly search=signal('');
+  readonly status=signal('');
+  readonly dashboardFilter=signal<{from:string;to:string;status?:string;branchId?:string}|null>(null);
+  readonly dateRange=signal('all');
+  readonly page=signal(1);
+  readonly limit=7;
+  readonly loading=signal(false);
+  readonly error=signal('');
+  readonly searchLoading=signal(false);
+  readonly searchWarning=signal('');
+  private readonly codeSearchRows=signal<AppointmentView[]|null>(null);
+  private readonly fetchedRows=signal<AppointmentView[]>([]);
+  readonly partial=signal(false);
+  readonly recentOnly=signal(false);
+  readonly canCreateAppointment=computed(()=>{
+    const user=this.session.user();
+    return user?.systemRole==='ADMIN' || user?.systemRole==='MANAGER' ||
+      (user?.systemRole==='STAFF' && user.staffSubRole==='RECEPTIONIST');
+  });
+  private scopeRows(rows:AppointmentView[]):AppointmentView[] {
+    const user=this.session.user();
+    if(!user || user.systemRole==='ADMIN') return rows;
+    if(user.systemRole==='MANAGER' || (user.systemRole==='STAFF' && user.staffSubRole==='RECEPTIONIST')){
+      const scope=user.branchScope ?? [];
+      return rows.filter(row=>scope.includes(row.branchId));
+    }
+    if(user.systemRole==='STAFF') {
+      // Clinical staff may only see appointments assigned to their StaffProfile.
+      const ownProfile=this.staffApi.staff().find(staff=>staff.userId===user.id);
+      if(!ownProfile)return [];
+      return rows.filter(row=>row.reviewerStaffId===ownProfile.id ||
+        row.serviceSegments.some(segment=>segment.assignedStaffId===ownProfile.id));
+    }
+    return [];
+  }
+  private readonly scopedRows=computed(()=>this.scopeRows(this.fetchedRows()));
+  private normalizeSearch(value:string):string{
+    return value.trim().toLocaleLowerCase('vi').replace(/^#+/,'');
+  }
+  private dateFromAppointmentCode(value:string):string|null{
+    const term=this.normalizeSearch(value);
+    if(!/^apt(?:-|_)/.test(term))return null;
+    const match=term.match(/(?:^|[^0-9])(20\d{6})(?:[^0-9]|$)/);
+    if(!match)return null;
+    const day=match[1];
+    const iso=`${day.slice(0,4)}-${day.slice(4,6)}-${day.slice(6,8)}`;
+    const parsed=new Date(iso+'T12:00:00Z');
+    return Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0,10)!==iso ? null : iso;
+  }
+  private todayInVietnam():string{
+    const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',
+      year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+    const part=(type:string)=>parts.find(item=>item.type===type)?.value||'';
+    return `${part('year')}-${part('month')}-${part('day')}`;
+  }
+  readonly kpis=computed(()=>{
+    const appointments=this.scopedRows();
+    return {
+      total: appointments.length,
+      pendingPayment: appointments.filter(row=>row.status==='PENDING_PAYMENT').length,
+      inProgress: appointments.filter(row=>row.status==='IN_PROGRESS').length,
+      completed: appointments.filter(row=>row.status==='COMPLETED').length,
+    };
+  });
+  readonly filteredRows=computed(()=>{
+    const search=this.normalizeSearch(this.search());
+    const status=this.status();
+    const days=this.dateRange();
+    const cutoff=days==='all'?null:Date.now()-Number(days)*24*60*60*1000;
+    // Code lookup uses a date-scoped BE query; all other searches use the
+    // available list until BE implements global server-side pagination/search.
+    const source=this.codeSearchRows()===null ? this.scopedRows() : this.scopeRows(this.codeSearchRows()!);
+    return source.filter(row=>
+      (cutoff===null || (row.createdAt!==null && new Date(row.createdAt).getTime()>=cutoff)) &&
+      (!status || row.rawStatus===status) &&
+      (!search || [row.code,row.customerName,row.customerPhone,row.id,...row.serviceNames]
+        .some(t=>this.normalizeSearch(t).includes(search))))
+      .sort((a,b)=>{
+        // Newest CREATED appointment first (not latest scheduled visit).
+        const delta=(b.createdAt ? Date.parse(b.createdAt) || 0 : 0) -
+          (a.createdAt ? Date.parse(a.createdAt) || 0 : 0);
+        return delta || b.code.localeCompare(a.code,'vi');
+      });
+  });
+  readonly total=computed(()=>this.filteredRows().length);
+  readonly pageCount=computed(()=>Math.max(1,Math.ceil(this.total()/this.limit)));
+  readonly pageNumbers=computed(()=>adminPageWindowWithEdges(this.page(),this.pageCount()));
+  readonly rows=computed(()=>this.filteredRows().slice((this.page()-1)*this.limit,this.page()*this.limit));
+
+  constructor(){
+    if (this.session.user()?.systemRole==='STAFF' &&
+        this.session.user()?.staffSubRole!=='RECEPTIONIST') this.staffApi.loadRoster();
+    this.searchTerms.pipe(debounceTime(350),distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef)).subscribe(term=>this.searchCodeByCreatedDate(term));
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(query=>{
+      const from=query.get('from')||'';
+      const to=query.get('to')||'';
+      const status=query.get('status')||'';
+      const branchId=query.get('branchId')||'';
+      const value=/^\d{4}-\d{2}-\d{2}$/.test(from) && /^\d{4}-\d{2}-\d{2}$/.test(to) && from<=to
+        ? {from,to,...(status?{status}:{}),...(branchId?{branchId}:{})}
+        : null;
+      this.dashboardFilter.set(value);
+      this.status.set(value?.status||'');
+      this.dateRange.set('all');
+      this.page.set(1);
+      this.resetCodeSearch();
+      this.load();
+    });
+  }
+  private resetCodeSearch():void{
+    ++this.searchRequestVersion;
+    this.lastSearchedTerm='';
+    this.codeSearchRows.set(null);
+    this.searchLoading.set(false);
+    this.searchWarning.set('');
+  }
+  onSearch(value:string):void{
+    this.search.set(value);this.page.set(1);
+    this.resetCodeSearch();
+    if(this.dateFromAppointmentCode(value))this.searchTerms.next(value);
+  }
+  lookup():void{this.page.set(1);this.searchCodeByCreatedDate(this.search());}
+  changeStatus(value:string):void{
+    this.status.set(value);this.page.set(1);
+    this.resetCodeSearch();
+    if(this.dateFromAppointmentCode(this.search()))this.searchTerms.next(this.search());
+  }
+  changeDateRange(value:string):void{this.dateRange.set(value);this.page.set(1);}
+  goto(page:number):void{
+    if(page<1 || page>Math.max(1,Math.ceil(this.total()/this.limit)))return;
+    this.page.set(page);
+  }
+  private searchCodeByCreatedDate(value:string):void{
+    const date=this.dateFromAppointmentCode(value);
+    // The Dashboard report scope must never be bypassed by searching another day.
+    if(!date || this.dashboardFilter())return;
+    if(this.lastSearchedTerm===value)return;
+    this.lastSearchedTerm=value;
+    const version=++this.searchRequestVersion;
+    const params=new HttpParams().set('limit','100').set('dateField','createdAt')
+      .set('from',date).set('to',date);
+    this.searchLoading.set(true);this.searchWarning.set('');
+    this.api.get<unknown>('/appointments',{params})
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next:response=>{
+          if(version!==this.searchRequestVersion || this.search()!==value)return;
+          try{
+            const data=normalizeAppointmentPage(response);
+            this.codeSearchRows.set(data.items);
+          }catch{
+            this.searchWarning.set('Không đọc được kết quả tìm kiếm từ máy chủ.');
+          }
+          this.searchLoading.set(false);
+        },
+        error:()=>{
+          if(version!==this.searchRequestVersion || this.search()!==value)return;
+          this.searchWarning.set('Chưa thể tìm kiếm theo mã trên máy chủ; đang tìm trong danh sách đã tải.');
+          this.searchLoading.set(false);
+        },
+      });
+  }
+  load():void{
+    // The current BE caps each query at 100 and sorts by scheduledStart.
+    // Fetch the recent createdAt day alongside the ordinary list to avoid
+    // hiding newly-created bookings with distant scheduled dates.
+    const filter=this.dashboardFilter();
+    let params=new HttpParams().set('limit','100');
+    if(filter){
+      params=params.set('from',filter.from).set('to',filter.to).set('dateField','createdAt');
+      if(filter.status)params=params.set('status',filter.status);
+      if(filter.branchId)params=params.set('branchId',filter.branchId);
+    }
+    const version=++this.requestVersion;
+    this.loading.set(true);this.error.set('');this.recentOnly.set(false);
+    const baseRequest=this.api.get<unknown>('/appointments',{params}).pipe(
+      map(raw=>({ok:true as const,raw})),
+      catchError(error=>of({ok:false as const,error})),
+    );
+    const today=this.todayInVietnam();
+    const recentParams=new HttpParams().set('limit','100').set('dateField','createdAt')
+      .set('from',today).set('to',today);
+    // Keep the fallback date-scoped request independent from the unfiltered one.
+    // An HTTP 500 from the main list must not discard valid data from today.
+    const recentRequest=filter ? of(null) :
+      this.api.get<unknown>('/appointments',{params:recentParams})
+        .pipe(catchError(()=>of(null)));
+    forkJoin([baseRequest,recentRequest]).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:([main,recentRaw])=>{
+        if(version!==this.requestVersion)return;
+        try{
+          let recent:AppointmentView[]|null=null;
+          if(recentRaw!==null){
+            try{recent=normalizeAppointmentPage(recentRaw).items;}catch{recent=null;}
+          }
+          if(main.ok){
+            const data=normalizeAppointmentPage(main.raw);
+            const byId=new Map<string,AppointmentView>();
+            for(const row of [...data.items,...(recent||[])])byId.set(row.id,row);
+            this.fetchedRows.set([...byId.values()]);
+            this.partial.set(data.items.length>=100 || (recent?.length||0)>=100);
+            this.recentOnly.set(false);
+            this.page.set(1);
+          }else if(recent!==null && !filter){
+            // The server returned real data, but only for this date. Do not
+            // present these rows or KPI counts as all-time totals.
+            this.fetchedRows.set(recent);
+            this.partial.set(true);
+            this.recentOnly.set(true);
+            this.page.set(1);
+          }else{
+            throw main.ok ? new Error('Dữ liệu lịch hẹn chưa hợp lệ.') : main.error;
+          }
+          this.error.set('');
+          this.loading.set(false);
+        }catch(err){
+          this.fetchedRows.set([]);
+          this.partial.set(false);
+          this.recentOnly.set(false);
+          this.error.set(adminErrorMessage(err,'Chưa tải được danh sách lịch hẹn. Vui lòng thử lại.'));
+          this.loading.set(false);
+        }
+      },
+      error:err=>{
+        if(version!==this.requestVersion)return;
+        this.fetchedRows.set([]);
+        this.partial.set(false);
+        this.recentOnly.set(false);
+        this.error.set(adminErrorMessage(err,'Chưa tải được danh sách lịch hẹn. Vui lòng thử lại.'));
+        this.loading.set(false);
+      },
+    });
+  }
+  displayCode(value:string):string{return value.replace(/^#/,'');}
+  label(row:AppointmentView):string{return statusLabel(row.status,row.rawStatus);}
+  statusColor(row:AppointmentView):string{
+    return ['CANCELLED','NO_SHOW'].includes(row.status)?'danger':
+      ['CONFIRMED','COMPLETED'].includes(row.status)?'success':
+      row.status==='IN_PROGRESS'?'info':
+      (['PENDING','PENDING_PAYMENT'].includes(row.status))?'warning':'neutral';
+  }
+  formatDate(value:string|null):string{
+    if(!value)return '—';const d=new Date(value);
+    return Number.isNaN(d.getTime())?'—':
+      new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric'}).format(d);
+  }
+  formatClock(value:string|null):string{
+    if(!value)return '—';const d=new Date(value);
+    return Number.isNaN(d.getTime())?'—':
+      new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(d);
+  }
+}

@@ -9,7 +9,6 @@ import { MedicalWhyComponent } from './medical-why.component';
 import { MedicalDoctorsComponent } from './medical-doctors.component';
 import { GroomingFeedbackSectionComponent } from '../../components/grooming/grooming-feedback-section.component';
 import { MedicalFaqComponent } from './medical-faq.component';
-import { FooterComponent } from '../../../../../layouts/customer/components/footer/footer.component';
 import { medicalServices } from '../../data/medical-treatment-data';
 import { mergeMedicalServiceCards } from './medical-treatment-page.helpers';
 
@@ -19,8 +18,9 @@ import { mergeMedicalServiceCards } from './medical-treatment-page.helpers';
 @Component({
   selector: 'app-medical-canvas',
   standalone: true,
-  imports: [MedicalHeroComponent, MedicalServicesComponent, MedicalCtaComponent, MedicalStatsComponent, MedicalWhyComponent, MedicalDoctorsComponent, GroomingFeedbackSectionComponent, MedicalFaqComponent, FooterComponent],
+  imports: [MedicalHeroComponent, MedicalServicesComponent, MedicalCtaComponent, MedicalStatsComponent, MedicalWhyComponent, MedicalDoctorsComponent, GroomingFeedbackSectionComponent, MedicalFaqComponent],
   templateUrl: './medical-canvas.component.html',
+  styleUrl: './medical-canvas.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

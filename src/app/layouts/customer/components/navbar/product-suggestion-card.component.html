@@ -1,11 +1,19 @@
 <img
   [attr.src]="product().image || searchSuggestionImages.productThumb"
   [attr.alt]="product().name"
-  class="size-12 shrink-0 rounded-[8px] object-cover"
+  class="product-suggestion-card__name"
 />
-<span class="flex min-w-0 flex-1 flex-col items-start">
-  <span class="w-full truncate font-['Roboto'] text-[13px] font-normal leading-[19.5px] text-black/87">
+<span class="product-suggestion-card__text">
+  <span class="product-suggestion-card__text-black-87 text-black/87">
     <app-highlighted-text [text]="product().name" [keyword]="query()" />
   </span>
-  <span class="w-full truncate font-['Roboto'] text-[12px] font-normal leading-[18px] text-[#0D47A1]">{{ formatVnd(product().price) }}</span>
+  <span class="product-suggestion-card__price">{{ formatVnd(product().price) }}</span>
+  @if (product().matchSnippet?.length) {
+    <!-- Khớp trong MÔ TẢ: hiện đoạn trích có tô sáng từ khóa -->
+    <span class="product-suggestion-card__snippet" [attr.title]="'Khớp trong mô tả sản phẩm'">
+      @for (segment of product().matchSnippet; track $index) {
+        <span [class.product-suggestion-card__hit]="segment.hit">{{ segment.text }}</span>
+      }
+    </span>
+  }
 </span>

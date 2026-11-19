@@ -12,6 +12,7 @@ import { EMPTY_ORDER_PRODUCT, getOrderProductType, getOrderProductSize } from '.
   standalone: true,
   imports: [],
   templateUrl: './product-summary.component.html',
+  styleUrl: './product-summary.component.scss',
   host: {
     '[class]': '`flex items-center gap-[10px] ${large() ? \'min-h-[100px] w-full\' : \'h-[100px] w-[372px]\'}`',
   },

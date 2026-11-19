@@ -17,6 +17,9 @@
 .order-admin__heading-actions {display:flex;gap:10px;flex-wrap:wrap}
 .order-admin__btn {display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:8px;border:1px solid var(--brand);white-space:nowrap;font-weight:500}
 .order-admin__btn--outline {color:var(--brand);background:#fff}
+/* Same red outlined destructive action as Refund/Return "Từ chối hoàn tiền". */
+.order-admin__btn--outline-danger {color:#de414c;border-color:#ed6b72;background:#fff}
+.order-admin__btn--outline-danger:hover:not(:disabled) {background:#fff1f1}
 .order-admin__btn--primary {color:#fff;background:var(--brand)}
 .order-admin__btn--danger {color:#fff;background:#b72b36;border-color:#b72b36}
 .order-admin__btn--primary:not(:disabled):hover {background:#093875}
@@ -138,3 +141,30 @@
 .order-admin__heading h1{font-size:28px;line-height:36px}
 .order-admin__table-panel{overflow:hidden}
 @media(max-width:800px){.order-admin__card{padding:16px}}
+
+/* Clearly distinguish a verified recent subset from the complete order list. */
+.order-admin__limited-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 11px 14px;
+  border: 1px solid #d8e6f6;
+  border-radius: 8px;
+  background: #f6faff;
+  color: #355779;
+  font-size: 13px;
+}
+.order-admin__limited-notice button {
+  padding: 7px 12px;
+  border: 1px solid #bfd6f5;
+  border-radius: 6px;
+  background: #fff;
+  color: #0d47a1;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.order-admin__limited-notice button:hover { background: #eef5ff; }

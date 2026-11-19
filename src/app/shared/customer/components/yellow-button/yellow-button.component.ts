@@ -12,6 +12,7 @@ import { VARIANT_CLASS } from './yellow-button.helpers';
   standalone: true,
   imports: [NgTemplateOutlet, CustomerLinkDirective],
   templateUrl: './yellow-button.component.html',
+  styleUrl: './yellow-button.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

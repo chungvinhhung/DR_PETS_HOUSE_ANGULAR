@@ -1,24 +1,43 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { AdminToastService } from '../../../../shared/services/admin-toast.service';
-import { AdminStaffWeekNavComponent } from '../../staff/components/admin-staff-week-nav.component';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, from, map, mergeMap, of } from 'rxjs';
 
-/** Slot figures are copied from the Figma illustration, not computed Backend availability. */
-interface SlotRow { label: string; booked: number; total: number; }
-const FIGMA_SLOTS: readonly SlotRow[] = [
-  { label:'07:00–08:00', booked:1, total:4 }, { label:'08:00–09:00', booked:2, total:5 },
-  { label:'09:00–10:00', booked:4, total:5 }, { label:'10:00–11:00', booked:5, total:5 },
-  { label:'11:00–12:00', booked:2, total:5 }, { label:'12:00–13:00', booked:0, total:0 },
-  { label:'13:00–14:00', booked:4, total:5 }, { label:'14:00–15:00', booked:3, total:6 },
-  { label:'15:00–16:00', booked:1, total:5 }, { label:'16:00–17:00', booked:5, total:5 },
-  { label:'17:00–18:00', booked:3, total:5 }, { label:'18:00–19:00', booked:2, total:4 },
-  { label:'19:00–20:00', booked:1, total:4 }, { label:'20:00–21:00', booked:1, total:4 },
-];
-const DAY_TOTALS = [28,35,41,34,46,52,31];
+import { AdminDataStateComponent } from '../../../../shared/admin-data-state/admin-data-state.component';
+import { AdminStaffWeekNavComponent } from '../../staff/components/admin-staff-week-nav.component';
+import { CatalogService } from '../../service-catalog/models/service-catalog.model';
+import {
+  BranchManagementApiService,
+  BranchOperationSlotsResponse,
+  ServiceAvailabilityResponse,
+  ServiceAvailabilitySlot,
+} from '../services/branch-management-api.service';
+
+interface SlotRow {
+  key: string;
+  label: string;
+  start: string;
+  end: string;
+  booked: number;
+  total: number;
+  remaining: number;
+  status: 'AVAILABLE' | 'FULL' | 'BLOCKED' | 'UNAVAILABLE';
+}
 
 @Component({
   selector: 'app-branch-hours-preview',
   standalone: true,
-  imports: [AdminStaffWeekNavComponent],
+  imports: [AdminStaffWeekNavComponent, AdminDataStateComponent],
   template: `
     <section class="branch-v2" aria-labelledby="branch-hours-heading">
       <div class="branch-v2__heading">
@@ -38,50 +57,61 @@ const DAY_TOTALS = [28,35,41,34,46,52,31];
           <button type="button" [class.branch-v2__day--active]="selectedDate() === day.iso"
             [attr.aria-pressed]="selectedDate() === day.iso" (click)="chooseDate(day.iso)">
             <span>{{ day.weekday }}</span><strong>{{ day.dayMonth }}</strong>
-            <small>{{ isFigmaWeek() ? day.total + ' / 62' : '—' }}</small>
+            <small [attr.title]="'Đã đặt / Tổng số chỗ ngày ' + day.dayMonth">{{ weekDaySummary(day.iso) }}</small>
           </button>
         }
       </div>
 
-      
+      @if (loading()) {
+        <app-admin-data-state kind="loading" title="Đang tải lịch hoạt động" />
+      } @else if (error()) {
+        <app-admin-data-state kind="error" title="Không thể tải lịch hoạt động" [message]="error()" (retry)="load()" />
+      } @else {
+        <div class="branch-v2__table-scroll">
+          <table class="branch-v2__monitor">
+            <thead><tr>
+              <th scope="col">Khung giờ</th><th scope="col">Trạng thái</th>
+              <th scope="col">Đặt / Tổng</th><th scope="col" title="Số chỗ có thể đặt thực tế, sau khi tính lịch nhân viên và điều kiện dịch vụ">Còn trống</th><th scope="col" title="Tỷ lệ lịch đã đặt trên công suất cấu hình">Lấp đầy</th><th scope="col">Thao tác</th>
+            </tr></thead>
+            <tbody>
+              @for (slot of timeRows(); track slot.key) {
+                <tr>
+                  <td>{{ slot.label }}</td>
+                  <td><span class="branch-v2__status"
+                    [class.branch-v2__status--locked]="slot.status === 'BLOCKED'"
+                    [class.branch-v2__status--full]="slot.status === 'FULL'"
+                    [class.branch-v2__status--unavailable]="slot.status === 'UNAVAILABLE'"
+                    [title]="slotStatusHint(slot)"
+                    [class.branch-v2__status--near]="slot.status === 'AVAILABLE' && slotPercent(slot) >= 80">
+                    {{ slotStatus(slot) }}
+                  </span></td>
+                  <td>{{ slot.booked }} / {{ slot.total }}</td>
+                  <td>{{ slot.remaining }}</td>
+                  <td>
+                    <div class="branch-v2__fill">
+                      <span>{{ slotPercent(slot) }}%</span>
+                      <div class="branch-v2__progress"><i [style.width.%]="slotPercent(slot)"
+                        [class.branch-v2__progress--near]="slotPercent(slot) >= 80 && slotPercent(slot) < 100"
+                        [class.branch-v2__progress--full]="slotPercent(slot) >= 100"></i></div>
+                    </div>
+                  </td>
+                  <td><button type="button" class="branch-v2__eye"
+                    (click)="showSlotInfo(slot)" [attr.aria-label]="'Xem khung giờ ' + slot.label" title="Xem chi tiết">
+                    <img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="" />
+                  </button></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="6"><app-admin-data-state kind="empty" title="Chưa có khung giờ hoạt động" message="Không có dịch vụ khả dụng trong ngày đã chọn." /></td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
 
-      <div class="branch-v2__table-scroll">
-        <table class="branch-v2__monitor">
-          <thead><tr>
-            <th scope="col">Khung giờ</th><th scope="col">Trạng thái</th>
-            <th scope="col">Đặt / Tổng</th><th scope="col">Còn trống</th><th scope="col">Lấp đầy</th><th scope="col">Thao tác</th>
-          </tr></thead>
-          <tbody>
-            @for (slot of timeRows; track slot.label) {
-              <tr>
-                <td>{{ slot.label }}</td>
-                <td><span class="branch-v2__status"
-                  [class.branch-v2__status--locked]="isFigmaDay() && slot.total === 0"
-                  [class.branch-v2__status--full]="isFigmaDay() && slot.total > 0 && slot.booked === slot.total"
-                  [class.branch-v2__status--near]="isFigmaDay() && slot.total > 0 && slot.booked / slot.total >= 0.8 && slot.booked < slot.total">
-                  {{ isFigmaDay() ? slotStatus(slot) : 'Chưa có dữ liệu' }}
-                </span></td>
-                <td>{{ isFigmaDay() ? slot.booked + ' / ' + slot.total : '—' }}</td>
-                <td>{{ isFigmaDay() ? slot.total - slot.booked : '—' }}</td>
-                <td>
-                  <div class="branch-v2__fill">
-                    <span>{{ isFigmaDay() ? slotPercent(slot) + '%' : '—' }}</span>
-                    <div class="branch-v2__progress"><i [style.width.%]="isFigmaDay() ? slotPercent(slot) : 0"
-                      [class.branch-v2__progress--near]="slotPercent(slot) >= 80 && slotPercent(slot) < 100"
-                      [class.branch-v2__progress--full]="slotPercent(slot) >= 100"></i></div>
-                  </div>
-                </td>
-                <td><button type="button" class="branch-v2__eye"
-                  (click)="showSlotInfo(slot)" [attr.aria-label]="'Xem khung giờ ' + slot.label" title="Xem chi tiết"><img src="/assets/admin-branch/figma-eye.svg" width="20" height="20" alt="" /></button></td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
       @if (selectedSlot(); as slot) {
         <div class="branch-v2__overlay" role="presentation" (click)="closeSlot()">
-          <section class="branch-v2__modal branch-v2__slot-modal" role="dialog" aria-modal="true" aria-labelledby="branch-slot-modal"
-            (click)="$event.stopPropagation()">
+          <section class="branch-v2__modal branch-v2__slot-modal" role="dialog" aria-modal="true"
+            aria-labelledby="branch-slot-modal" (click)="$event.stopPropagation()">
             <header class="branch-v2__modal-header">
               <div><h2 id="branch-slot-modal">Chi tiết khung giờ</h2>
                 <p>{{ displayDate() }} · {{ slot.label }}</p>
@@ -89,27 +119,29 @@ const DAY_TOTALS = [28,35,41,34,46,52,31];
               <button type="button" aria-label="Đóng" (click)="closeSlot()">×</button>
             </header>
             <div class="branch-v2__slot-stats">
-              <div><span>Trạng thái</span><strong>{{ isFigmaDay() ? slotStatus(slot) : '—' }}</strong></div>
-              <div><span>Đã đặt / Tổng</span><strong>{{ isFigmaDay() ? slot.booked + ' / ' + slot.total : '—' }}</strong></div>
-              <div><span>Còn trống</span><strong>{{ isFigmaDay() ? slot.total - slot.booked : '—' }}</strong></div>
-              <div><span>Lấp đầy</span><strong>{{ isFigmaDay() ? slotPercent(slot) + '%' : '—' }}</strong></div>
+              <div><span>Trạng thái</span><strong>{{ slotStatus(slot) }}</strong></div>
+              <div><span>Đã đặt / Tổng</span><strong>{{ slot.booked }} / {{ slot.total }}</strong></div>
+              <div><span>Còn trống</span><strong>{{ slot.remaining }}</strong></div>
+              <div><span>Lấp đầy</span><strong>{{ slotPercent(slot) }}%</strong></div>
             </div>
             <h3>Dịch vụ trong khung giờ</h3>
             <table class="branch-v2__modal-table">
               <thead><tr><th>Dịch vụ</th><th>Đã đặt / Tổng</th><th>Còn trống</th><th>Trạng thái</th></tr></thead>
               <tbody>
-                @if (isFigmaDay() && slot.label === '09:00–10:00') {
-                  <tr><td>Tắm &amp; Sấy khô</td><td>2 / 3</td><td>1</td><td>Còn chỗ</td></tr>
-                  <tr><td>Khám tổng quát</td><td>2 / 2</td><td>0</td><td>Đầy</td></tr>
-                } @else {
+                @for (row of selectedServiceRows(); track row.serviceId) {
+                  <tr>
+                    <td>{{ row.name }}</td>
+                    <td>{{ row.booked }} / {{ row.total }}</td>
+                    <td>{{ row.remaining }}</td>
+                    <td>{{ row.status }}</td>
+                  </tr>
+                } @empty {
                   <tr><td colspan="4">Chưa có dữ liệu dịch vụ cho khung giờ này.</td></tr>
                 }
               </tbody>
             </table>
-            @if (actionNotice()) { <p class="branch-v2__preview-note" role="status">{{ actionNotice() }}</p> }
             <footer class="branch-v2__modal-footer">
               <button type="button" class="branch-v2__modal-close" (click)="closeSlot()">Đóng</button>
-              <button type="button" class="branch-v2__modal-lock" (click)="showLockUnavailable()">♙ Khóa khung giờ</button>
             </footer>
           </section>
         </div>
@@ -118,12 +150,24 @@ const DAY_TOTALS = [28,35,41,34,46,52,31];
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BranchHoursPreviewComponent {
-  private readonly toast = inject(AdminToastService);
-  readonly selectedDate = signal('2026-10-01'); // Figma preview day (not current live availability)
+export class BranchHoursPreviewComponent implements OnInit, OnChanges {
+  private readonly api = inject(BranchManagementApiService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  @Input({ required: true }) branchId = '';
+  @Input() services: readonly CatalogService[] = [];
+
+  readonly selectedDate = signal(this.toLocalIso(new Date()));
   readonly selectedSlot = signal<SlotRow | null>(null);
-  readonly actionNotice = signal('');
-  readonly timeRows = FIGMA_SLOTS;
+  readonly loading = signal(false);
+  readonly error = signal('');
+  readonly response = signal<BranchOperationSlotsResponse | null>(null);
+  /** Keep all seven day totals visible even before a day is selected. */
+  readonly weekSummaries = signal<Record<string, string>>({});
+  private weekSummaryRequest = 0;
+  private currentWeekKey = '';
+  private dayDetailRequest = 0;
+
   readonly weekDays = computed(() => {
     const selected = this.fromIso(this.selectedDate());
     const monday = new Date(selected);
@@ -131,38 +175,218 @@ export class BranchHoursPreviewComponent {
     const labels = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
     return labels.map((weekday, index) => {
       const date = new Date(monday); date.setDate(monday.getDate() + index);
-      return { weekday, iso: this.toLocalIso(date), dayMonth: String(date.getDate()).padStart(2,'0') + '/' + String(date.getMonth()+1).padStart(2,'0'), total: DAY_TOTALS[index] };
+      return {
+        weekday,
+        iso: this.toLocalIso(date),
+        dayMonth: String(date.getDate()).padStart(2, '0') + '/' + String(date.getMonth() + 1).padStart(2, '0'),
+      };
     });
   });
+
   readonly weekLabel = computed(() => {
     const days = this.weekDays();
     return this.formatDate(days[0].iso) + ' – ' + this.formatDate(days[6].iso);
   });
   readonly displayDate = computed(() => this.fromIso(this.selectedDate()).toLocaleDateString('vi-VN'));
-  readonly isFigmaWeek = computed(() => this.weekDays()[0].iso === '2026-09-28');
-  readonly isFigmaDay = computed(() => this.selectedDate() === '2026-10-01');
 
-  private formatDate(iso: string): string {
-    const [y,m,d] = iso.split('-'); return d + '/' + m + '/' + y;
+  readonly timeRows = computed<readonly SlotRow[]>(() => {
+    const groups = new Map<string, SlotRow>();
+    for (const availability of this.response()?.servicesAvailability ?? []) {
+      for (const slot of availability.slots ?? []) {
+        const key = slot.start;
+        const existing = groups.get(key);
+        const booked = Math.max(0, Number(slot.bookedCount) || 0);
+        const total = Math.max(0, Number(slot.totalCount) || 0);
+        const remaining = Math.max(0, Number(slot.remaining) || 0);
+        const status = this.availabilityStatus(slot);
+        if (!existing) {
+          groups.set(key, {
+            key,
+            label: this.slotLabel(slot),
+            start: slot.start,
+            end: slot.end,
+            booked,
+            total,
+            remaining,
+            status,
+          });
+        } else {
+          existing.booked += booked;
+          existing.total += total;
+          existing.remaining += remaining;
+          existing.status = this.mergeStatuses(existing.status, status);
+        }
+      }
+    }
+    return [...groups.values()].sort((a, b) => a.start.localeCompare(b.start));
+  });
+
+  readonly daySummary = computed(() => {
+    const rows = this.timeRows();
+    const booked = rows.reduce((sum, row) => sum + row.booked, 0);
+    const total = rows.reduce((sum, row) => sum + row.total, 0);
+    return booked + ' / ' + total;
+  });
+
+  readonly selectedServiceRows = computed(() => {
+    const selected = this.selectedSlot();
+    if (!selected) return [];
+    const names = new Map(this.services.map(service => [service.id, service.name]));
+    return (this.response()?.servicesAvailability ?? []).flatMap(availability => {
+      const slot = availability.slots?.find(candidate => candidate.start === selected.start);
+      if (!slot) return [];
+      const serviceId = availability.serviceIds?.[0] ?? '';
+      const remaining = Math.max(0, Number(slot.remaining) || 0);
+      return [{
+        serviceId,
+        name: names.get(serviceId) ?? 'Dịch vụ',
+        booked: Math.max(0, Number(slot.bookedCount) || 0),
+        total: Math.max(0, Number(slot.totalCount) || 0),
+        remaining,
+        status: this.statusText(this.availabilityStatus(slot)),
+      }];
+    });
+  });
+
+  ngOnInit(): void {
+    this.loadWeekSummaries();
+    this.load();
   }
-  private toLocalIso(value: Date): string {
-    return [value.getFullYear(),String(value.getMonth()+1).padStart(2,'0'),String(value.getDate()).padStart(2,'0')].join('-');
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['branchId'] && !changes['branchId'].firstChange) {
+      this.loadWeekSummaries();
+      this.load();
+    }
   }
-  private fromIso(iso: string): Date {
-    const [year,month,day] = iso.split('-').map(Number);
-    return new Date(year,month-1,day);
+
+  weekDaySummary(iso: string): string {
+    // A dash pair is reserved for an API failure. An empty/zero-capacity
+    // day that BE confirms successfully is displayed as 0 / 0.
+    return this.weekSummaries()[iso] ?? 'Đang tải…';
   }
-  slotPercent(row: SlotRow): number { return row.total > 0 ? Math.round(row.booked * 100 / row.total) : 0; }
+
+  private summarizeDay(response: BranchOperationSlotsResponse): string {
+    let booked = 0;
+    let total = 0;
+    for (const entry of response.servicesAvailability ?? []) {
+      for (const slot of entry.slots ?? []) {
+        booked += Math.max(0, Number(slot.bookedCount) || 0);
+        total += Math.max(0, Number(slot.totalCount) || 0);
+      }
+    }
+    return booked + ' / ' + total;
+  }
+
+  /** Fetch the six other days just once per (branch, week).
+   * Concurrency is limited to two to avoid hammering the live BE.
+   */
+  private loadWeekSummaries(): void {
+    if (!this.branchId) return;
+    const days = this.weekDays().map(day => day.iso);
+    const key = this.branchId + ':' + days[0];
+    if (key === this.currentWeekKey) return;
+    this.currentWeekKey = key;
+    const request = ++this.weekSummaryRequest;
+    const branch = this.branchId;
+    const selected = this.selectedDate();
+    this.weekSummaries.set(Object.fromEntries(days.map(day => [day, 'Đang tải…'])));
+
+    from(days.filter(day => day !== selected)).pipe(
+      mergeMap(day => this.api.getOperationSlots(branch, day).pipe(
+        map(response => ({ day, label: this.summarizeDay(response) })),
+        catchError(() => of({ day, label: '— / —' })),
+      ), 2),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(({ day, label }) => {
+      if (request !== this.weekSummaryRequest || key !== this.currentWeekKey) return;
+      this.weekSummaries.update(previous => ({ ...previous, [day]: label }));
+    });
+  }
+
+  load(): void {
+    if (!this.branchId) return;
+    const request = ++this.dayDetailRequest;
+    const branch = this.branchId;
+    const day = this.selectedDate();
+    this.loading.set(true);
+    this.error.set('');
+    this.selectedSlot.set(null);
+    this.api.getOperationSlots(branch, day)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: response => {
+          if (request !== this.dayDetailRequest ||
+              branch !== this.branchId || day !== this.selectedDate()) return;
+          this.response.set(response);
+          this.weekSummaries.update(previous => ({
+            ...previous, [day]: this.summarizeDay(response),
+          }));
+          this.loading.set(false);
+        },
+        error: () => {
+          if (request !== this.dayDetailRequest ||
+              branch !== this.branchId || day !== this.selectedDate()) return;
+          this.response.set(null);
+          this.weekSummaries.update(previous => ({ ...previous, [day]: '— / —' }));
+          this.loading.set(false);
+          this.error.set('Không thể tải lịch hoạt động. Vui lòng thử lại.');
+        },
+      });
+  }
+
+  /**
+   * BE uses FULL both for occupied capacity and absence of a qualifying staff
+   * shift. Only call the slot "Đầy" if bookings + active holds exhaust its capacity.
+   */
+  private availabilityStatus(slot: ServiceAvailabilitySlot): SlotRow['status'] {
+    if (slot.status === 'BLOCKED') return 'BLOCKED';
+    const remaining = Math.max(0, Number(slot.remaining) || 0);
+    if (remaining > 0) return 'AVAILABLE';
+    const total = Math.max(0, Number(slot.totalCount) || 0);
+    const booked = Math.max(0, Number(slot.bookedCount) || 0);
+    const held = Math.max(0, Number(slot.heldCount) || 0);
+    return total > 0 && booked + held >= total ? 'FULL' : 'UNAVAILABLE';
+  }
+
+  private mergeStatuses(a: SlotRow['status'], b: SlotRow['status']): SlotRow['status'] {
+    if (a === 'AVAILABLE' || b === 'AVAILABLE') return 'AVAILABLE';
+    if (a === b) return a;
+    return 'UNAVAILABLE';
+  }
+
+  private statusText(status: SlotRow['status']): string {
+    switch (status) {
+      case 'BLOCKED': return 'Tạm khóa';
+      case 'FULL': return 'Đầy';
+      case 'UNAVAILABLE': return 'Chưa khả dụng';
+      default: return 'Còn chỗ';
+    }
+  }
+
+  slotPercent(row: SlotRow): number {
+    return row.total > 0 ? Math.min(100, Math.round(row.booked * 100 / row.total)) : 0;
+  }
+
   slotStatus(row: SlotRow): string {
-    if (row.total === 0) return 'Tạm khóa';
-    if (row.booked >= row.total) return 'Đầy';
-    if (this.slotPercent(row) >= 80) return 'Sắp đầy';
-    return 'Còn chỗ';
+    if (row.status === 'AVAILABLE' && this.slotPercent(row) >= 80) return 'Sắp đầy';
+    return this.statusText(row.status);
+  }
+
+  slotStatusHint(row: SlotRow): string {
+    if (row.status === 'UNAVAILABLE') {
+      return 'Khung giờ chưa nhận đặt lịch dù công suất chưa sử dụng hết. Có thể do ca nhân viên, giờ hoạt động hoặc điều kiện dịch vụ. BE chưa trả lý do chi tiết.';
+    }
+    if (row.status === 'FULL') return 'Công suất đã hết do lịch đặt và/hoặc lượt giữ chỗ.';
+    if (row.status === 'BLOCKED') return 'Khung giờ bị khóa đặt lịch.';
+    return 'Khung giờ hiện có thể nhận đặt lịch.';
   }
   chooseDate(iso: string): void {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return;
     const date = this.fromIso(iso);
-    if (Number.isFinite(date.getTime()) && this.toLocalIso(date) === iso) this.selectedDate.set(iso);
+    if (!Number.isFinite(date.getTime()) || this.toLocalIso(date) !== iso) return;
+    this.selectedDate.set(iso);
+    this.loadWeekSummaries();
+    this.load();
   }
   moveWeek(steps: number): void {
     const day = this.fromIso(this.selectedDate());
@@ -170,9 +394,23 @@ export class BranchHoursPreviewComponent {
     this.chooseDate(this.toLocalIso(day));
   }
   goToday(): void { this.chooseDate(this.toLocalIso(new Date())); }
-  showSlotInfo(row: SlotRow): void { this.selectedSlot.set(row); this.actionNotice.set(''); }
-  closeSlot(): void { this.selectedSlot.set(null); this.actionNotice.set(''); }
-  showLockUnavailable(): void {
-    this.toast.show('Chức năng khóa khung giờ hiện chưa khả dụng.', 'info');
+  showSlotInfo(row: SlotRow): void { this.selectedSlot.set(row); }
+  closeSlot(): void { this.selectedSlot.set(null); }
+
+  private slotLabel(slot: ServiceAvailabilitySlot): string {
+    return this.clock(slot.start) + '–' + this.clock(slot.end);
+  }
+  private clock(iso: string): string {
+    return typeof iso === 'string' && iso.length >= 16 ? iso.slice(11, 16) : '—';
+  }
+  private formatDate(iso: string): string {
+    const [y, m, d] = iso.split('-'); return d + '/' + m + '/' + y;
+  }
+  private toLocalIso(value: Date): string {
+    return [value.getFullYear(), String(value.getMonth() + 1).padStart(2, '0'), String(value.getDate()).padStart(2, '0')].join('-');
+  }
+  private fromIso(iso: string): Date {
+    const [year, month, day] = iso.split('-').map(Number);
+    return new Date(year, month - 1, day);
   }
 }

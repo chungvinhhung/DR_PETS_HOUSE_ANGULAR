@@ -4,6 +4,8 @@ import { CustomerAuthService } from '../../../../core/customer/services/customer
 import { CartService } from '../../../../core/customer/services/cart.service';
 import { OrderApiService } from '../../../../core/customer/services/api/order-api.service';
 import { UserApiService } from '../../../../core/customer/services/api/user-api.service';
+import { FooterComponent } from '../../../../layouts/customer/components/footer/footer.component';
+import { NavBarComponent } from '../../../../layouts/customer/components/navbar/nav-bar.component';
 import { AddressChangeModalComponent } from './address-change-modal.component';
 import { GuestLoginBannerComponent } from './guest-login-banner.component';
 import { GuestShippingFormComponent } from './guest-shipping-form.component';
@@ -13,7 +15,6 @@ import { PaymentModeToggleComponent } from './payment-mode-toggle.component';
 import { OnlinePaymentMethodsComponent } from './online-payment-methods.component';
 import { CouponAndSummaryComponent } from './coupon-and-summary.component';
 import { checkoutImages } from '../assets/checkout-assets';
-import { DEFAULT_USER_ADDRESSES } from '../../../../core/customer/constants/user-profile-data';
 
 /**
  * ShoppingCheckout — chuyển từ React: src/components/checkout/ShoppingCheckout.jsx
@@ -21,8 +22,9 @@ import { DEFAULT_USER_ADDRESSES } from '../../../../core/customer/constants/user
 @Component({
   selector: 'div[app-shopping-checkout]',
   standalone: true,
-  imports: [AddressChangeModalComponent, GuestLoginBannerComponent, GuestShippingFormComponent, AuthenticatedAddressCardComponent, OrderDetailsCardComponent, PaymentModeToggleComponent, OnlinePaymentMethodsComponent, CouponAndSummaryComponent],
+  imports: [NavBarComponent, FooterComponent, AddressChangeModalComponent, GuestLoginBannerComponent, GuestShippingFormComponent, AuthenticatedAddressCardComponent, OrderDetailsCardComponent, PaymentModeToggleComponent, OnlinePaymentMethodsComponent, CouponAndSummaryComponent],
   templateUrl: './shopping-checkout.component.html',
+  styleUrl: './shopping-checkout.component.scss',
   host: {
     'class': 'pointer-events-auto fixed inset-0 z-[70] overflow-y-auto bg-[#e5f6fd]',
     'role': 'dialog',
@@ -93,9 +95,10 @@ export class ShoppingCheckoutComponent {
           })
           .catch((error: any) => {
             if (!isMounted) return;
-            this.addresses.set(DEFAULT_USER_ADDRESSES);
-            this.selectedAddressId.set(DEFAULT_USER_ADDRESSES[0]?.id ?? null);
-            this.addressError.set(error?.message || "Không thể tải địa chỉ, đang hiển thị địa chỉ mẫu.");
+            // Never substitute demo delivery details when the real address API fails.
+            this.addresses.set([]);
+            this.selectedAddressId.set(null);
+            this.addressError.set("Không thể tải địa chỉ giao hàng. Vui lòng thử lại hoặc nhập địa chỉ mới.");
           })
           .finally(() => {
             if (isMounted) this.addressesLoading.set(false);
@@ -126,6 +129,7 @@ export class ShoppingCheckoutComponent {
         : await this.orderApi.checkoutOrder({
             addressId: this.selectedAddress()?.addressId || this.selectedAddress()?.id,
             selectedAddress: this.selectedAddress(),
+            customerProfile: this.authService.userProfile(),
             paymentMethod: this.cartService.paymentMode(),
             voucherCode,
             note: this.note(),

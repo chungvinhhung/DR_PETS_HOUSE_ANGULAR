@@ -10,6 +10,7 @@ import { formatAddressLine } from './user-profile-page.helpers';
   standalone: true,
   imports: [],
   templateUrl: './address-card.component.html',
+  styleUrl: './address-card.component.scss',
   host: {
     '[class]': '`rounded-lg border p-[17px] text-base ${ address().isDefault ? \'border-[rgba(25,118,210,0.5)] bg-[rgba(25,118,210,0.04)]\' : \'border-[#c1c6d5] bg-white\' }`',
   },

@@ -14,6 +14,12 @@ export interface UpdateProfileRequest {
   avatarUrl?: string | null;
 }
 
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -25,6 +31,13 @@ export class AdminProfileService {
     return this.api.get<CurrentUserResponse>('/auth/me').pipe(
       map((response) => this.normalizeUser(response)),
       tap((user) => this.authSession.updateUser(user)),
+    );
+  }
+
+  changePassword(request: ChangePasswordRequest): Observable<{ message: string }> {
+    return this.api.post<{ message: string }, ChangePasswordRequest>(
+      '/auth/change-password',
+      request,
     );
   }
 
@@ -40,12 +53,17 @@ export class AdminProfileService {
   private normalizeUser(response: CurrentUserResponse): AuthUser {
     return {
       id: response.id ?? response._id ?? '',
+      username: response.username ?? null,
       phone: response.phone,
       fullName: response.fullName,
       email: response.email ?? null,
       systemRole: response.systemRole,
       staffSubRole: response.staffSubRole ?? null,
       avatarUrl: response.avatarUrl ?? null,
+      accountStatus: response.accountStatus,
+      activationStatus: response.activationStatus,
+      lastLogin: response.lastLogin ?? null,
+      branchScope: [...(response.branchScope ?? [])],
     };
   }
 }

@@ -11,6 +11,7 @@ import { MyCartPanelComponent } from './my-cart-panel.component';
   standalone: true,
   imports: [MyCartPanelComponent],
   templateUrl: './cart-drawer.component.html',
+  styleUrl: './cart-drawer.component.scss',
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

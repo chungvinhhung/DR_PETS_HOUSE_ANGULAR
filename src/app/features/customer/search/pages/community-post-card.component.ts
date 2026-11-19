@@ -10,6 +10,7 @@ import { CustomerIconComponent } from '../../../../shared/customer/components/ic
   standalone: true,
   imports: [CustomerIconComponent],
   templateUrl: './community-post-card.component.html',
+  styleUrl: './community-post-card.component.scss',
   host: {
     'class': 'w-full rounded-[24px] border border-[#EEE] bg-white p-[25px] shadow-[0_1px_1px_rgba(0,0,0,0.05)]',
   },
