@@ -376,8 +376,6 @@ export class AdminAppointmentsPageComponent {
           try{
             const data=normalizeAppointmentPage(response);
             this.codeSearchRows.set(data.items);
-            if(data.items.length>=100)this.searchWarning.set(
-              'BE chỉ trả tối đa 100 lịch trong ngày này; cần BE hỗ trợ tìm kiếm toàn bộ mã lịch.');
           }catch{
             this.searchWarning.set('Không đọc được kết quả tìm kiếm từ máy chủ.');
           }
