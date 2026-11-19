@@ -1,20 +1,21 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, afterNextRender, inject, signal } from '@angular/core';
 import { CustomerAuthService } from '../../../../core/customer/services/customer-auth.service';
 import { AuthApiService } from '../../../../core/customer/services/api/auth-api.service';
 import { environment } from '../../../../../environments/environment';
 
 /**
- * GoogleButton — chuyển từ React: src/components/auth/AuthModal.jsx
+ * Actual Google OAuth access-token flow. Never use the BE's simulated account
+ * selector: it is not proof that someone owns a Google account.
  */
 @Component({
   selector: 'button[app-google-button]',
   standalone: true,
-  imports: [],
   templateUrl: './google-button.component.html',
   styleUrl: './google-button.component.scss',
   host: {
     'type': 'button',
     'class': 'focus-ring-brand flex h-[39px] w-full items-center justify-center gap-2 rounded-md border border-black bg-white text-sm font-medium',
+    '[disabled]': 'isLoading()',
     '(click)': 'handleGoogleLogin($event)',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -22,75 +23,91 @@ import { environment } from '../../../../../environments/environment';
 export class GoogleButtonComponent {
   private readonly customerAuth = inject(CustomerAuthService);
   private readonly authApi = inject(AuthApiService);
+  private googleScriptPromise?: Promise<void>;
   readonly isLoading = signal(false);
+
+  constructor() {
+    afterNextRender(() => {
+      if (environment.googleOAuthClientId) {
+        void this.loadGoogleIdentity().catch(() => {
+          // A visible error is shown on click if Google fails to load.
+        });
+      }
+    });
+  }
+
+  private loadGoogleIdentity(): Promise<void> {
+    if ((window as any).google?.accounts?.oauth2) return Promise.resolve();
+    if (!this.googleScriptPromise) {
+      this.googleScriptPromise = new Promise<void>((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => {
+          this.googleScriptPromise = undefined;
+          reject(new Error('Không thể tải dịch vụ đăng nhập Google. Vui lòng thử lại.'));
+        };
+        document.head.appendChild(script);
+      });
+    }
+    return this.googleScriptPromise;
+  }
 
   async handleGoogleLogin(event: Event) {
     event.preventDefault();
     if (this.isLoading()) return;
+
+    const clientId = environment.googleOAuthClientId?.trim();
+    if (!clientId) {
+      window.alert('Đăng nhập Google chưa được cấu hình OAuth chính thức. Vui lòng liên hệ quản trị viên.');
+      return;
+    }
+
     this.isLoading.set(true);
-
     try {
-      const width = 520;
-      const height = 660;
-      const left = Math.max(0, window.screenX + (window.outerWidth - width) / 2);
-      const top = Math.max(0, window.screenY + (window.outerHeight - height) / 2);
-
-      const apiOrigin = new URL(environment.apiBaseUrl).origin;
-      const authUrl = new URL(environment.apiBaseUrl.replace(/[/]+$/, '') + '/auth/google');
-      authUrl.searchParams.set('returnUrl', window.location.pathname + window.location.search);
-      const popup = window.open(
-        authUrl.toString(),
-        'GoogleOAuthPopup',
-        `width=${width},height=${height},left=${left},top=${top},status=no,toolbar=no,menubar=no,location=no,resizable=yes`,
-      );
-
-      if (!popup) {
-        // Redirect directly to Google Account Chooser like Facebook / Instagram standard OAuth flow
-        window.location.href = authUrl.toString();
-        return;
+      await this.loadGoogleIdentity();
+      const google = (window as any).google;
+      if (!google?.accounts?.oauth2?.initTokenClient) {
+        throw new Error('Không thể khởi tạo đăng nhập Google.');
       }
 
-      await new Promise<void>((resolve, reject) => {
-        let cleanupDone = false;
-
-        const onMessage = (msgEvent: MessageEvent) => {
-          if (msgEvent.origin !== apiOrigin || msgEvent.source !== popup) return;
-          if (msgEvent.data?.type === 'GOOGLE_AUTH_SUCCESS' && typeof msgEvent.data.token === 'string' && msgEvent.data.token) {
-            cleanup();
-            const { token, user } = msgEvent.data;
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: 'openid email profile',
+        callback: async (response: any) => {
+          try {
+            if (response?.error || !response?.access_token) {
+              throw new Error('Google không trả về thông tin xác thực hợp lệ.');
+            }
+            const data = await this.authApi.loginWithGoogle({ accessToken: response.access_token });
+            if (!data.accessToken || !data.user) {
+              throw new Error('Máy chủ chưa hoàn tất xác thực Google.');
+            }
             this.customerAuth.completeLogin({
-              fullName: user?.full_name || user?.fullName || 'Người dùng Google',
-              email: user?.email || '',
-              phone: user?.phone || '',
+              fullName: data.user.fullName || data.user.full_name || 'Người dùng Google',
+              email: data.user.email || '',
+              phone: data.user.phone || '',
             }, {
-              accessToken: token,
-              user,
+              accessToken: data.accessToken,
+              user: data.user,
               remember: true,
             });
-            resolve();
+          } catch (error: any) {
+            window.alert(error?.message || 'Đăng nhập Google thất bại. Vui lòng thử lại.');
+          } finally {
+            this.isLoading.set(false);
           }
-        };
-
-        const timer = setInterval(() => {
-          if (popup.closed) {
-            cleanup();
-            resolve();
-          }
-        }, 600);
-
-        const cleanup = () => {
-          if (cleanupDone) return;
-          cleanupDone = true;
-          window.removeEventListener('message', onMessage);
-          clearInterval(timer);
-        };
-
-        window.addEventListener('message', onMessage);
+        },
+        error_callback: () => {
+          this.isLoading.set(false);
+          window.alert('Cửa sổ đăng nhập Google bị đóng hoặc không thể mở.');
+        },
       });
-    } catch (err: any) {
-      alert(err?.message || 'Đăng nhập Google thất bại. Vui lòng thử lại.');
-    } finally {
+      client.requestAccessToken({ prompt: 'select_account' });
+    } catch (error: any) {
       this.isLoading.set(false);
+      window.alert(error?.message || 'Không thể khởi tạo đăng nhập Google.');
     }
   }
 }
