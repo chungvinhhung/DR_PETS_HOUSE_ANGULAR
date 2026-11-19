@@ -25,6 +25,7 @@ interface PetOption {
   id: string;
   name: string;
   species: string;
+  speciesDetail?: string;
   breed: string;
   age: string;
   weightKg: string;
@@ -78,7 +79,8 @@ function petFromWire(input: unknown): PetOption | null {
   return {
     id,
     name: textOf(pet['name'] ?? pet['petName'] ?? pet['pet_name']),
-    species: textOf(species?.['name'] ?? species?.['species_name'] ?? pet['speciesName'] ?? pet['species_name'] ?? pet['species']),
+    species: textOf(species?.['name'] ?? species?.['species_name'] ?? pet['species'] ?? pet['speciesName'] ?? pet['species_name']),
+    speciesDetail: textOf(pet['speciesDetail'] ?? pet['speciesName'] ?? pet['otherSpecies']),
     breed: textOf(breed?.['name'] ?? breed?.['breed_name'] ?? pet['breedName'] ?? pet['breed_name'] ?? pet['breed']),
     age: textOf(pet['ageYears'] ?? pet['age'] ?? ''),
     weightKg: textOf(pet['weightKg'] ?? pet['weight_kg'] ?? ''),
@@ -188,6 +190,7 @@ export class AdminAppointmentCreateComponent {
     branch: this.branchId(),
     pets: this.selectedPets().map(pet => [pet.id, pet.name, pet.species, pet.breed, pet.age, pet.weightKg, pet.health]),
     services: this.plannedSegments().map(segment => [segment.petId, segment.serviceId]),
+    voucher: this.voucherCode().trim().toUpperCase(),
     pending: this.extraServices().filter(row => !row.serviceId).map(row => row.id),
   }));
   readonly currentPreview = computed(() =>
@@ -196,7 +199,7 @@ export class AdminAppointmentCreateComponent {
   readonly previewOutdated = computed(() =>
     this.pricingStatus() === 'ready' && this.pricingKeyAtResponse() !== this.pricingRequestKey());
   readonly paymentEstimate = computed(() => {
-    const total = this.currentPreview()?.total ?? this.estimatedSubtotal();
+    const total = this.currentPreview() ? this.currentPreview()!.total : this.estimatedSubtotal();
     return typeof total === 'number' && total > 0
       ? estimateAppointmentPayment(total, this.paymentMethod())
       : null;
@@ -602,13 +605,68 @@ export class AdminAppointmentCreateComponent {
     this.clearReview();
   }
 
-  /** The deployed BE booking API has no non-mutating quote endpoint.
-   * Never probe a nonexistent preview route or estimate a final voucher/penalty.
-   */
+  /** Canonical BE-07 read-only pricing preview; booking still rechecks availability. */
   requestPricingPreview(): void {
+    const pets = this.selectedPets();
+    const serviceIds = this.plannedSegments().map(row => row.serviceId).filter(Boolean);
+    if (!this.branchId() || pets.length !== 1 || !serviceIds.length ||
+        this.extraServices().some(row => !row.serviceId)) {
+      this.pricingStatus.set('error');
+      this.pricingError.set('Chọn một thú cưng, chi nhánh và đầy đủ dịch vụ để xem báo giá.');
+      return;
+    }
+    const pet = pets[0];
+    const weight = Number(pet.weightKg);
+    const payload = {
+      branchId: this.branchId(),
+      serviceIds,
+      ...(this.selectedPetIds().includes(pet.id) ? { petId: pet.id } : {}),
+      ...(Number.isFinite(weight) && weight > 0 ? { petWeightKg: weight } : {}),
+      ...(this.voucherCode().trim() ? { voucherCode: this.voucherCode().trim().toUpperCase() } : {}),
+    };
+    const version = ++this.priceRequestVersion;
+    const requestKey = this.pricingRequestKey();
     this.pricingSnapshot.set(null);
-    this.pricingStatus.set('error');
-    this.pricingError.set('Chưa thể xem tổng tiền chính xác lúc này. Vui lòng thử lại sau.');
+    this.pricingStatus.set('loading');
+    this.pricingError.set('');
+    this.api.post<unknown, typeof payload>('/appointments/preview-pricing', payload)
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: response => {
+          if (version !== this.priceRequestVersion || requestKey !== this.pricingRequestKey()) return;
+          try {
+            const data = objectOf(unwrap(response));
+            if (!data) throw new Error('BE chưa trả dữ liệu báo giá.');
+            const requiresQuote = data['requiresQuote'] === true;
+            const subtotal = safeNumber(data['subtotal']);
+            const total = safeNumber(data['finalAmount']);
+            if (!requiresQuote && (subtotal === null || total === null)) {
+              throw new Error('Báo giá chưa đủ tổng tiền, không sử dụng giá ước lượng.');
+            }
+            this.pricingSnapshot.set({
+              subtotal: subtotal ?? 0,
+              surchargeAmount: safeNumber(data['surchargeTotal']) ?? 0,
+              discountAmount: safeNumber(data['voucherDiscount']) ?? 0,
+              total: total ?? 0,
+              petCount: 1,
+              requiresQuote,
+              weightMissing: data['weightMissing'] === true,
+              quoteMessage: textOf(data['quoteMessage']),
+              depositAmount: safeNumber(data['depositAmount']),
+              balanceAmount: safeNumber(data['balanceAmount']),
+            });
+            this.pricingKeyAtResponse.set(requestKey);
+            this.pricingStatus.set('ready');
+          } catch (error) {
+            this.pricingStatus.set('error');
+            this.pricingError.set(error instanceof Error ? error.message : 'Không đọc được báo giá.');
+          }
+        },
+        error: error => {
+          if (version !== this.priceRequestVersion) return;
+          this.pricingStatus.set('error');
+          this.pricingError.set(adminErrorMessage(error, 'Không tải được báo giá. Vui lòng kiểm tra phiên bản BE.'));
+        },
+      });
   }
 
   updateVoucher(value: string): void {
@@ -659,24 +717,8 @@ export class AdminAppointmentCreateComponent {
           this.voucherNotice.set(labels[result.reason??'']??'Mã giảm giá không hợp lệ.');
           return;
         }
-        const subtotal=this.estimatedSubtotal();
-        const discount=Math.max(0,Number(result.discount)||0);
-        if (subtotal === null) {
-          this.pricingSnapshot.set(null);
-          this.pricingStatus.set('idle');
-          this.voucherNotice.set('Mã '+result.code+' hợp lệ · giảm '+this.money(discount)+'. Chưa có đủ giá dịch vụ để tính tổng tiền.');
-          return;
-        }
-        this.pricingSnapshot.set({
-          subtotal,
-          surchargeAmount:0,
-          discountAmount:discount,
-          total:Math.max(0,subtotal-discount),
-          petCount:this.petCount(),
-        });
-        this.pricingKeyAtResponse.set(this.pricingRequestKey());
-        this.pricingStatus.set('ready');
-        this.voucherNotice.set('Mã '+result.code+' hợp lệ · giảm '+this.money(discount)+'.');
+        this.voucherNotice.set('Mã '+result.code+' hợp lệ. Đang tính giá từ hệ thống.');
+        this.requestPricingPreview();
       },
       error:error=>{
         this.pricingSnapshot.set(null);
@@ -697,7 +739,6 @@ export class AdminAppointmentCreateComponent {
       errors.push('Tra cứu số điện thoại khách hàng hợp lệ trước khi tiếp tục.');
     if (this.lookupState() === 'found' && !customer) errors.push('Chọn khách hàng trong danh sách tra cứu.');
     if (customer?.accountStatus === 'BLOCKED') errors.push('Tài khoản đang bị chặn, không thể tạo lịch hẹn.');
-    if (customer) errors.push('Hiện chưa thể tạo lịch nội bộ gắn trực tiếp với khách hàng đã có tài khoản.');
     if (!this.customerName().trim()) errors.push('Nhập họ tên khách hàng.');
     if (this.customerEmail().trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.customerEmail().trim()))
       errors.push('Email chưa đúng định dạng.');
@@ -729,33 +770,36 @@ export class AdminAppointmentCreateComponent {
     const healthMap:Record<string,string>={
       healthy:'NORMAL',treating:'TREATING',need_recheck:'NEED_RECHECK',unknown:'UNKNOWN',
     };
-    const payload={
+    const existingPet = this.selectedPetIds().includes(pet.id);
+    const speciesDetail = pet.species === 'Khác' || pet.species === 'OTHER'
+      ? pet.speciesDetail?.trim() || null : null;
+    const petPayload = {
+      name: pet.name.trim(),
+      species: speciesMap[pet.species] ?? 'OTHER',
+      ...(speciesDetail ? { speciesDetail, speciesName: speciesDetail } : {}),
+      breed: pet.breed?.trim() ?? '',
+      ageYears: Number(pet.age) || 0,
+      weightKg: Number(pet.weightKg) || 0,
+      healthStatus: healthMap[pet.health] ?? pet.health ?? '',
+      medicalNotes: pet.additionalInfo?.trim() || '',
+    };
+    const payload = {
       serviceIds,
-      branchId:this.branchId(),
-      slotStart:this.selectedSlotId(),
-      pet:{
-        name:pet.name.trim(),
-        species:speciesMap[pet.species]??'OTHER',
-        breed:pet.breed?.trim()??'',
-        ageYears:Number(pet.age)||0,
-        weightKg:Number(pet.weightKg)||0,
-        healthStatus:healthMap[pet.health]??pet.health??'',
-        // BE currently stores species as an enum; preserve detail in appointment notes pending schema support.
-        medicalNotes:[
-          ...(pet.species === 'Khác' && 'speciesDetail' in pet && typeof pet.speciesDetail === 'string' && pet.speciesDetail.trim()
-            ? ['Loài cụ thể: ' + pet.speciesDetail.trim()] : []),
-          ...(pet.additionalInfo?.trim() ? [pet.additionalInfo.trim()] : []),
-        ].join('\n'),
-      },
-      contact:{
-        name:this.customerName().trim(),
-        phone,
-        ...(this.customerEmail().trim() ? {email:this.customerEmail().trim().toLowerCase()} : {}),
-      },
-      ...(this.voucherCode().trim()?{voucherCode:this.voucherCode().trim().toUpperCase()}:{}),
-      ...(this.note().trim()?{note:this.note().trim()}:{}),
-      ...(pet.additionalInfo?.trim()?{conditionDescription:pet.additionalInfo.trim()}:{}),
-      paymentMethod:this.paymentMethod(),
+      branchId: this.branchId(),
+      slotStart: this.selectedSlotId(),
+      ...(customer ? { customerId: customer.id } : {}),
+      ...(customer && existingPet ? { petId: pet.id } : { pet: petPayload }),
+      ...(!customer ? {
+        contact: {
+          name: this.customerName().trim(),
+          phone,
+          ...(this.customerEmail().trim() ? { email: this.customerEmail().trim().toLowerCase() } : {}),
+        },
+      } : {}),
+      ...(this.voucherCode().trim() ? { voucherCode: this.voucherCode().trim().toUpperCase() } : {}),
+      ...(this.note().trim() ? { note: this.note().trim() } : {}),
+      ...(pet.additionalInfo?.trim() ? { conditionDescription: pet.additionalInfo.trim() } : {}),
+      paymentMethod: this.paymentMethod(),
     };
     const fingerprint=JSON.stringify(payload);
     if(fingerprint!==this.lastCreateFingerprint){
