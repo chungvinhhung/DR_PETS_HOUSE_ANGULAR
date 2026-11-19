@@ -3384,17 +3384,15 @@ html:has(.customer-root) {
 /* Mixed: ~660px landscape + ~330px compact, rather than a 600px-wide
    "square"; preserve the compact visual size from the original page. */
 .first-aid-layout-row--mixed {
-  /* Constrain the whole pair, then center it between the page gutters.
-     Do not distribute leftover space after the compact card. */
-  width: min(100%, 1020px);
+  /* Landscape card expands to fill the section; compact neighbor stays compact. */
+  width: 100%;
   max-width: 100%;
-  align-self: center;
-  margin-left: auto;
-  margin-right: auto;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  align-self: stretch;
+  margin: 0;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 31%);
 }
 .first-aid-layout-row--mixed.first-aid-layout-row--square-first {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  grid-template-columns: minmax(300px, 31%) minmax(0, 1fr);
 }
 .first-aid-layout-row--single-square {
   width: min(100%, 1020px);
