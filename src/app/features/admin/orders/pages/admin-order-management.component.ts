@@ -11,6 +11,7 @@ import { AdminReturnNotificationService } from '../../../../shared/services/admi
 import { AdminOrderNotificationService } from '../../../../shared/services/admin-order-notification.service';
 import { orderErrorMessage } from '../services/admin-order-error-message';
 import { AuthSessionService } from '../../../../core/services/auth-session.service';
+import { ApiClientService } from '../../../../core/services/api-client.service';
 import { BranchManagementApiService } from '../../branch-management/services/branch-management-api.service';
 import { AdminCustomerService } from '../../customers/services/admin-customer.service';
 import { AdminProductService } from '../../products/services/admin-product.service';
@@ -46,6 +47,7 @@ export class AdminOrderManagementComponent {
   private readonly api = inject(AdminOrderApiService);
   private readonly branchApi = inject(BranchManagementApiService);
   private readonly customersApi = inject(AdminCustomerService);
+  private readonly coreApi = inject(ApiClientService);
   private readonly requestedCustomerIds = new Set<string>();
   private readonly inventoryApi = inject(AdminInventoryService);
   private readonly productApi = inject(AdminProductService);
@@ -679,7 +681,21 @@ export class AdminOrderManagementComponent {
             !!name && !/^(khách hàng|guest customer|thành viên|customer)$/i.test(name);
           return { id, name: verified ? name : '' };
         }),
-        catchError(() => of({ id, name: '' })),
+        catchError(() => {
+          // Some legacy accounts have a User but no Customer profile document.
+          // Admin may resolve that same exact User ID via the authorized API;
+          // Managers and staff are not allowed to bypass customer scoping.
+          if (this.session.user()?.systemRole !== 'ADMIN') return of({ id, name: '' });
+          return this.coreApi.get<{ id: string; fullName?: string }>('/admin/users/' + encodeURIComponent(id)).pipe(
+            map(user => {
+              const name = String(user.fullName || '').trim();
+              return { id, name: String(user.id) === id &&
+                name && !/^(khách hàng|guest customer|thành viên|customer)$/i.test(name)
+                ? name : '' };
+            }),
+            catchError(() => of({ id, name: '' })),
+          );
+        }),
       ), 4),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe(({ id, name }) => {
