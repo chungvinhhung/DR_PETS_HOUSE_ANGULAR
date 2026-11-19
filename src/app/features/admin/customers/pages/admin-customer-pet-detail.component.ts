@@ -1,3 +1,4 @@
+import { getPrimaryImage } from '../../../../core/customer/services/api/pet-api.service';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -27,7 +28,11 @@ export class AdminCustomerPetDetailComponent{
    error:()=>this.error.set('Đã có lỗi xảy ra khi tải hồ sơ thú cưng. Vui lòng thử lại.'),
   });
  }
- image(p:any):string{return p?.photoUrl||p?.photo_url||p?.profileImageUrl||p?.profile_image_url||p?.imageUrl||p?.avatarUrl||'/assets/admin-login/mascot.png';}
+ image(p:any):string{return getPrimaryImage(p)||'/assets/admin-login/mascot.png';}
+  onPetImageError(event:Event):void {
+    const image=event.target as HTMLImageElement|null;
+    if(image && !image.src.endsWith('/assets/admin-login/mascot.png')) image.src='/assets/admin-login/mascot.png';
+  }
   species(p:any):string {
     const kind=String(p?.species||'').toUpperCase();
     const labels:Record<string,string>={DOG:'Chó',CAT:'Mèo',BIRD:'Chim',RABBIT:'Thỏ',OTHER:'Khác'};
