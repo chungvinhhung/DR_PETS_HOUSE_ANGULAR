@@ -153,6 +153,16 @@ function getAppointmentServices(appointment: any) {
     .filter(Boolean) as any[]);
 }
 
+/** Display names must come from the appointment/customer payload, never a placeholder. */
+function appointmentOwnerName(...names: unknown[]): string {
+  for (const name of names) {
+    if (typeof name !== "string") continue;
+    const value = name.trim();
+    if (value && !/^(khách hàng|guest customer|thành viên|customer)$/i.test(value)) return value;
+  }
+  return "—";
+}
+
 export function normalizeAppointmentHistoryItem(appointment: any = {}) {
   const rawDate = appointment.appointment_date || appointment.scheduledStart || appointment.rawDate || appointment.date;
   const startTime = formatTime(appointment.start_time || appointment.scheduledStart || appointment.time);
@@ -222,8 +232,15 @@ export function normalizeAppointmentHistoryItem(appointment: any = {}) {
     reviewed: Boolean(appointment.reviewed),
     freeChangeDaysLeft: appointment.freeChangeDaysLeft ?? (status === "confirmed" ? 2 : 0),
     owner: {
-      name: appointment.customer_name_snapshot || appointment.contactSnapshot?.fullName || appointment.owner?.name || appointment.user?.full_name || "Khách hàng",
-      phone: appointment.customer_phone_snapshot || appointment.contactSnapshot?.phone || appointment.owner?.phone || appointment.user?.phone || "",
+      name: appointmentOwnerName(
+        appointment.customerSnapshot?.fullName, appointment.customerSnapshot?.name,
+        appointment.customerName, appointment.customer_name_snapshot,
+        appointment.contactSnapshot?.fullName, appointment.contactSnapshot?.name,
+        appointment.customer?.fullName, appointment.owner?.name,
+        appointment.user?.full_name,
+      ),
+      phone: appointment.customer_phone_snapshot || appointment.customerSnapshot?.phone ||
+        appointment.contactSnapshot?.phone || appointment.owner?.phone || appointment.user?.phone || "",
       address: appointment.branch?.address || appointment.owner?.address || "",
     },
     pet: {
