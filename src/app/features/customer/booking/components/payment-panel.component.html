@@ -83,8 +83,8 @@
           <p class="coupon-success text-green-700 text-xs mt-1 font-semibold" role="alert">{{ couponSuccess() }}</p>
         }
       </div>
-      <button type="button" class="coupon-apply-btn" (click)="handleApplyCoupon()">
-        Áp dụng
+      <button type="button" class="coupon-apply-btn" [disabled]="applyingVoucher() || pricingLoading()" (click)="handleApplyCoupon()">
+        {{ applyingVoucher() ? 'Đang kiểm tra...' : 'Áp dụng' }}
       </button>
     </div>
   </div>
@@ -120,7 +120,7 @@
   }
 
   <!-- Nút xác nhận -->
-  <button type="button" class="confirm-submit-btn" (click)="handleConfirm()">
+  <button type="button" class="confirm-submit-btn" [disabled]="applyingVoucher()" (click)="handleConfirm()">
     Xác nhận đặt lịch
   </button>
 
