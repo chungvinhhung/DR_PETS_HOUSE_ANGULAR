@@ -52,6 +52,18 @@ export class CustomerLayoutComponent implements OnInit {
   /** Chỉ hiển thị nội dung khi CSS đã tải xong để tránh "nháy" giao diện chưa có style. */
   protected readonly stylesReady = signal(false);
 
+  // Resolved after the Customer stylesheet has loaded. AppComponent keeps
+  // its single existing mascot loader visible until this promise settles.
+  private finishStylesReady!: () => void;
+  readonly whenStylesReady: Promise<void> = new Promise<void>((resolve) => {
+    this.finishStylesReady = resolve;
+  });
+
+  private markStylesReady(): void {
+    this.stylesReady.set(true);
+    this.finishStylesReady();
+  }
+
   constructor() {
     this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
       this.openLoginFromUrl();
@@ -87,9 +99,9 @@ export class CustomerLayoutComponent implements OnInit {
       // A pre-existing link might still be loading or may have failed.
       // Reuse its real load state rather than exposing unstyled Customer content.
       if (existing.sheet) {
-        this.stylesReady.set(true);
+        this.markStylesReady();
       } else {
-        existing.addEventListener('load', () => this.stylesReady.set(true), { once: true });
+        existing.addEventListener('load', () => this.markStylesReady(), { once: true });
         existing.addEventListener('error', () => this.stylesReady.set(false), { once: true });
       }
       return;
@@ -102,7 +114,7 @@ export class CustomerLayoutComponent implements OnInit {
     // The production build publishes a stable /customer.css alongside the
     // content-hashed CSS bundle (see scripts/publish-customer-styles.mjs).
     link.href = '/customer.css';
-    link.onload = () => this.stylesReady.set(true);
+    link.onload = () => this.markStylesReady();
     link.onerror = () => this.stylesReady.set(false);
     this.document.head.appendChild(link);
   }
