@@ -130,7 +130,6 @@ import {
       </div>
       <footer class="list-footer">
         <p>Đang hiển thị {{rows().length}} trên tổng số {{total()}} lịch hẹn
-          @if(partial()){<span class="data-scope"> (BE giới hạn tối đa 100 lịch mỗi truy vấn)</span>}
         </p>
         @if (pageCount() > 1) {
           <nav class="pagination web2-admin-pagination-strip" aria-label="Phân trang lịch hẹn">
