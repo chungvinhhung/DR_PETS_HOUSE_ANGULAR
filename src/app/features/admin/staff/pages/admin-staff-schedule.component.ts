@@ -207,12 +207,10 @@ export class AdminStaffScheduleComponent {
     try {
       for (const row of removed) {
         removing=true;
-        // BE allows hard deletion only before the shift begins. Historical
-        // shifts must use the soft-cancel API (audit trail stays intact).
-        const startsAt=toInstant(context.date,row.start);
-        await firstValueFrom(startsAt.getTime()>Date.now()
-          ? this.staffApi.deleteShift(row.shiftId!)
-          : this.staffApi.cancelShift(row.shiftId!));
+        // Gỡ phân công = CANCELLED on BE, including upcoming shifts.
+        // DELETE is not necessary and can be rejected on older deployments.
+        // A confirmed appointment still blocks this API with HTTP 409.
+        await firstValueFrom(this.staffApi.cancelShift(row.shiftId!));
         completed++;
       }
       removing=false;
@@ -233,10 +231,12 @@ export class AdminStaffScheduleComponent {
       this.staffApi.loadWeek(this.monday(),true);
       const status=(error as {status?:number})?.status;
       const message=removing && status===409
-        ? 'Không thể xóa ca vì có lịch hẹn đã xác nhận hoặc đang phục vụ. Vui lòng kiểm tra lịch hẹn liên quan.'
-        : removing && status===400
-          ? 'Máy chủ từ chối xóa/hủy ca này. Vui lòng kiểm tra thời gian ca và điều kiện từ BE.'
-          : adminErrorMessage(error,'Không thể lưu phân công. Vui lòng thử lại.');
+        ? 'Không thể gỡ ca vì có lịch hẹn đã xác nhận hoặc đang phục vụ. Vui lòng kiểm tra lịch hẹn liên quan.'
+        : removing && status===404
+          ? 'Không tìm thấy ca này trên máy chủ. Lịch làm việc đang được tải lại.'
+          : removing && (status===400 || status===422)
+            ? 'Không thể hủy ca này theo quy định của máy chủ. Kiểm tra ca và các lịch hẹn liên quan.'
+            : adminErrorMessage(error,'Không thể lưu phân công. Vui lòng thử lại.');
       this.toast.show(
         completed ? 'Một số ca đã được cập nhật nhưng có thao tác thất bại. Vui lòng tải lại lịch để kiểm tra.'
           : message, 'error');
