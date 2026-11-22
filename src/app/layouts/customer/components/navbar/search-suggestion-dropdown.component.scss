@@ -1,13 +1,13 @@
 .search-suggestion-dropdown__panel-slide-in {
-  @apply absolute right-0 top-[41px] z-[80] flex w-[466px] max-w-[calc(100vw-24px)] flex-col items-start overflow-hidden rounded-[4px] pt-5 shadow-[0px_10px_7.5px_rgba(0,0,0,0.1),0px_4px_3px_rgba(0,0,0,0.1)];
+  @apply absolute right-0 top-[41px] z-[80] flex max-h-[min(680px,calc(100vh-120px))] w-[466px] max-w-[calc(100vw-24px)] flex-col items-start overflow-hidden rounded-[4px] pt-5 shadow-[0px_10px_7.5px_rgba(0,0,0,0.1),0px_4px_3px_rgba(0,0,0,0.1)];
 }
 
 .search-suggestion-dropdown__stack {
-  @apply flex w-full flex-col bg-[#FFFDE7] pt-1;
+  @apply flex max-h-[min(640px,calc(100vh-160px))] w-full flex-col overflow-y-auto bg-[#FFFDE7] pt-1;
 }
 
 .search-suggestion-dropdown__section {
-  @apply flex w-full flex-col gap-3 px-4 py-[10px];
+  @apply flex w-full shrink-0 flex-col gap-3 px-4 py-[10px];
 }
 
 .search-suggestion-dropdown__goi-y-phu-title {
@@ -15,9 +15,9 @@
 }
 
 .search-suggestion-dropdown__row {
-  @apply flex w-full items-start justify-center gap-3;
+  @apply grid w-full grid-cols-2 items-start gap-3;
 }
 
 .search-suggestion-dropdown__stack-2 {
-  @apply flex w-full flex-col items-center px-4 py-[10px];
+  @apply sticky bottom-0 z-10 flex w-full shrink-0 flex-col items-center bg-[#FFFDE7] px-4 py-[10px];
 }

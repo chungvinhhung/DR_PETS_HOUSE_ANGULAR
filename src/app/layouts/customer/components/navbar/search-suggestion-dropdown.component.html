@@ -20,8 +20,8 @@
     <section class="search-suggestion-dropdown__section">
       <h3 class="search-suggestion-dropdown__goi-y-phu-title">Gợi ý phù hợp</h3>
       <div [class]="[
-                'flex w-full flex-col items-start',
-                shouldUseFigmaListHeight() ? 'h-[172px] justify-between' : 'gap-2'
+                'flex w-full flex-col items-start overflow-y-auto',
+                shouldUseFigmaListHeight() ? 'max-h-[172px]' : 'max-h-[172px] gap-2'
               ].join(' ')">
         @if (isLoading()) {
           <div app-search-suggestion-status>Đang tải gợi ý...</div>
