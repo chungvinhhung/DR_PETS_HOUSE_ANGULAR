@@ -161,7 +161,15 @@ export interface RankFieldWeights {
 
 const PRODUCT_FIELDS: RankFieldWeights = { name: 3, categoryName: 2, productCode: 2, description: 1 };
 const SERVICE_FIELDS: RankFieldWeights = { name: 3, serviceType: 2, description: 1 };
-const POST_FIELDS: RankFieldWeights = { title: 3, categoryLabel: 2, excerpt: 1 };
+const POST_FIELDS: RankFieldWeights = {
+  title: 3,
+  name: 3,
+  categoryLabel: 2,
+  type: 2,
+  excerpt: 1,
+  content: 1,
+  description: 1,
+};
 const FIELDS_BY_KIND = { product: PRODUCT_FIELDS, service: SERVICE_FIELDS, post: POST_FIELDS };
 
 /**

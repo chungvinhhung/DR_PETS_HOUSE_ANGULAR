@@ -14,6 +14,7 @@ import { normalizeProduct } from './product-api.service';
 import { analyzeSearchQuery, describeMatch, mergeById, rankSearchItems, demoteOtherSpecies } from '../smart-search';
 import { ProductSearchIndexService } from '../product-search-index.service';
 import { buildProductPath } from '../../../../shared/customer/utils/slug';
+import { normalizeCommunityPostFromApi, normalizePost } from './content-api.service';
 
 function toBackendScope(type: any) {
   if (type === "shopping") return "product";
@@ -55,20 +56,33 @@ function normalizeSearchService(service: any = {}) {
 }
 
 function normalizeSearchPost(post: any = {}) {
+  const rawContent = post.content || post.description || post.body || post.excerpt || "";
+  const rawType = String(post.postType || post.post_type || post.section || "").toUpperCase();
+  const category = post.category?.slug || post.category?.category_slug || post.category?.id ||
+    post.category?.category_id || post.category || post.categorySlug || "";
+  const categoryLabel = post.category?.category_name || post.categoryLabel || post.category?.name ||
+    (rawType.includes("COMMUNITY") || String(post.post_type || "").toLowerCase() === "community" ? "Cộng đồng" : "Kiến thức");
+  const isCommunity = rawType.includes("COMMUNITY") || String(post.post_type || "").toLowerCase() === "community" ||
+    post.section === "community";
+  const isFirstAid = rawType.includes("FIRST_AID") || post.section === "first_aid" || post.section === "firstAid";
+
   return {
     ...post,
     id: post.slug || post.post_id,
     title: post.title || "Bai viet",
     image: post.thumbnail_url || productCardImages.placeholder,
-    excerpt: post.excerpt || "",
-    description: post.excerpt || "",
-    category: "care",
-    categoryLabel: post.category?.category_name || (post.post_type === "community" ? "Cong dong" : "Kien thuc"),
+    excerpt: post.excerpt || rawContent,
+    description: post.description || post.excerpt || rawContent,
+    category: isFirstAid ? (category || "accident") : (category || "care"),
+    categoryLabel,
     publishedAt: formatPublishedAt(post.created_at),
     author: post.author?.full_name || "",
     likes: post.likes_count || 0,
     comments: 0,
-    content: post.excerpt || "",
+    content: rawContent,
+    section: isCommunity ? "community" : (isFirstAid ? "first_aid" : "knowledge"),
+    post_type: isCommunity ? "community" : post.post_type,
+    postType: isFirstAid ? "FIRST_AID" : post.postType,
     tags: (String(post.hashtags || "").split(",").map((tag: any) => tag.trim()).filter(Boolean) as any[]),
   };
 }
@@ -90,11 +104,20 @@ function splitSearchResults(payload: any) {
       blogs: results.filter((item: any) => typeOf(item) === "blog"),
     };
   }
+
   return {
     products: Array.isArray(results?.products) ? results.products : [],
     services: Array.isArray(results?.services) ? results.services : [],
     blogs: Array.isArray(results?.blogs) ? results.blogs : Array.isArray(results?.posts) ? results.posts : [],
   };
+}
+
+function extractApiItems(payload: any): any[] {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.posts)) return payload.posts;
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.results)) return payload.results;
+  return [];
 }
 
 function emptyBuckets(): any {
@@ -159,7 +182,8 @@ export class SearchApiService {
     }
 
     const includeProducts = type === "all" || type === "shopping";
-    const [settled, localProducts] = await Promise.all([
+    const includeArticles = type === "all" || type === "article";
+    const [settled, localProducts, articleResponses] = await Promise.all([
       Promise.allSettled(
         analysis.apiKeywords.map((keyword) =>
           this.http.get("/search", {
@@ -168,10 +192,36 @@ export class SearchApiService {
         ),
       ),
       includeProducts ? withTimeout(this.productIndex.search(analysis.terms, limit), LOCAL_INDEX_TIMEOUT_MS, []) : Promise.resolve([]),
+      includeArticles
+        ? Promise.allSettled([
+            this.http.get("/posts", { params: { postType: "FIRST_AID", page: 1, limit } }),
+            this.http.get("/posts", { params: { postType: "OFFICIAL_BLOG", page: 1, limit } }),
+            this.http.get("/community/posts", { params: { page: 1, limit } }),
+          ])
+        : Promise.resolve([]),
     ]);
     const payloads = settled
       .filter((result): result is PromiseFulfilledResult<any> => result.status === "fulfilled")
       .map((result) => splitSearchResults(assertSuccess(result.value)));
+
+    const extraPosts: any[] = [];
+    if (Array.isArray(articleResponses)) {
+      const [firstAidResult, knowledgeResult, communityResult] = articleResponses as PromiseSettledResult<any>[];
+      if (firstAidResult?.status === "fulfilled") {
+        const payload = assertSuccess<any>(firstAidResult.value);
+        extraPosts.push(...extractApiItems(payload).map((post: any) => normalizePost(post)));
+      }
+      if (knowledgeResult?.status === "fulfilled") {
+        const payload = assertSuccess<any>(knowledgeResult.value);
+        extraPosts.push(...extractApiItems(payload).map((post: any) => normalizePost(post)));
+      }
+      if (communityResult?.status === "fulfilled") {
+        const payload = assertSuccess<any>(communityResult.value);
+        extraPosts.push(...extractApiItems(payload)
+          .filter((post: any) => !post.status || String(post.status).toUpperCase() === "APPROVED")
+          .map((post: any) => normalizeCommunityPostFromApi(post)));
+      }
+    }
 
     let facetCounts: any = {};
     for (const s of settled) {
@@ -184,7 +234,7 @@ export class SearchApiService {
       }
     }
     // Backend lỗi hết mà chỉ mục FE cũng không có gì -> báo lỗi để trang dùng dữ liệu dự phòng
-    if (!payloads.length && !localProducts.length) {
+    if (!payloads.length && !localProducts.length && !extraPosts.length) {
       throw (settled[0] as PromiseRejectedResult).reason;
     }
 
@@ -205,19 +255,34 @@ export class SearchApiService {
       "service",
     );
     const blogs = rankSearchItems(
-      mergeById(payloads.map((payload) => payload.blogs), (item: any) => item.post_id ?? item.slug ?? item.id).map(normalizeSearchPost),
+      mergeById(
+        [
+          ...payloads.map((payload) => payload.blogs),
+          extraPosts,
+        ],
+        (item: any) => item.post_id ?? item.postId ?? item.slug ?? item.id ?? item.backendId,
+      ).map((post: any) => normalizeSearchPost(post)),
       analysis.terms,
       "post",
     );
 
     buckets.products = sortClientSide(products, sort).map((product: any) => ({ ...product, href: buildProductPath(product) }));
     buckets.services = sortClientSide(services, sort);
-    blogs.forEach((post: any) => (post.post_type === "community" ? buckets.community : buckets.knowledge).push(post));
+    blogs.forEach((post: any) => {
+      if (post.section === "community" || post.post_type === "community") {
+        buckets.community.push(post);
+      } else if (post.section === "first_aid" || post.postType === "FIRST_AID") {
+        buckets.firstAid.push(post);
+      } else {
+        buckets.knowledge.push(post);
+      }
+    });
 
     const counts = this.countBuckets(buckets);
     return {
       ...baseResponse,
-      total: buckets.products.length + buckets.services.length + buckets.knowledge.length + buckets.community.length,
+      total: buckets.products.length + buckets.services.length + buckets.otherServices.length +
+        buckets.firstAid.length + buckets.knowledge.length + buckets.community.length,
       counts,
       facetCounts,
       results: buckets,
@@ -287,7 +352,7 @@ export class SearchApiService {
 
   private countBuckets(buckets: any) {
     return {
-      service: buckets.services.length,
+      service: buckets.services.length + buckets.otherServices.length,
       shopping: buckets.products.length,
       firstAid: buckets.firstAid.length,
       knowledge: buckets.knowledge.length,

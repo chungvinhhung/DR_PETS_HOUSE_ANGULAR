@@ -165,6 +165,8 @@ export function normalizeCommunityPostFromApi(item: any = {}) {
     ...item,
     id,
     backendId: String(item._id || item.id || ""),
+    section: "community",
+    post_type: "community",
     title: item.title || "",
     content: item.content || "",
     author,
