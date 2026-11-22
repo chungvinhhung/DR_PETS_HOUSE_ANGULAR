@@ -41,7 +41,7 @@ const DEFAULT_SERVICE_COUNTS: Record<string, number> = {
   "clinic": 7,
 };
 
-export function buildFacets(facetCounts: any = {}) {
+export function buildFacets(facetCounts: any = {}, results: any = {}) {
   const productCategoryCounts = {
     ...DEFAULT_PRODUCT_COUNTS,
     ...(facetCounts?.productCategories || {}),
@@ -83,6 +83,54 @@ export function buildFacets(facetCounts: any = {}) {
             count: option.id === "all-services" ? total : Number(directCount ?? indexedCount ?? fallback),
           };
         }),
+      };
+    }
+
+    if (group.id === "firstAid") {
+      const items = Array.isArray(results?.firstAid) ? results.firstAid : [];
+      const counts = items.reduce((acc: Record<string, number>, item: any) => {
+        const categoryId = getArticleCategoryId(item);
+        if (categoryId) acc[String(categoryId)] = (acc[String(categoryId)] || 0) + 1;
+        return acc;
+      }, {});
+      return {
+        ...group,
+        options: group.options.map((option: any) => ({
+          ...option,
+          count: option.id === "all-first-aid" ? items.length : Number(counts[option.id] || 0),
+        })),
+      };
+    }
+
+    if (group.id === "knowledge") {
+      const items = Array.isArray(results?.knowledge) ? results.knowledge : [];
+      const counts = items.reduce((acc: Record<string, number>, item: any) => {
+        const categoryId = getArticleCategoryId(item);
+        if (categoryId) acc[String(categoryId)] = (acc[String(categoryId)] || 0) + 1;
+        return acc;
+      }, {});
+      return {
+        ...group,
+        options: group.options.map((option: any) => ({
+          ...option,
+          count: option.id === "all-knowledge" ? items.length : Number(counts[option.id] || 0),
+        })),
+      };
+    }
+
+    if (group.id === "community") {
+      const items = Array.isArray(results?.community) ? results.community : [];
+      const counts = items.reduce((acc: Record<string, number>, item: any) => {
+        const filterId = getCommunityFilterId(item);
+        if (filterId) acc[String(filterId)] = (acc[String(filterId)] || 0) + 1;
+        return acc;
+      }, {});
+      return {
+        ...group,
+        options: group.options.map((option: any) => ({
+          ...option,
+          count: option.id === "all-community" ? items.length : Number(counts[option.id] || 0),
+        })),
       };
     }
 

@@ -137,7 +137,7 @@ export class SearchResultsPageComponent {
             this.searchResponse.set({
               ...EMPTY_SEARCH_RESPONSE,
               ...data,
-              facets: buildFacets(data.facetCounts),
+              facets: buildFacets(data.facetCounts, data.results),
               emptyState: SEARCH_EMPTY_STATE,
             });
             this.loadCrossSell(data, () => active);
