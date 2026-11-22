@@ -2771,24 +2771,24 @@ html:has(.customer-root) {
 
 .medical-service-card__number {
   position: absolute;
-  right: 0;
+  right: 15px;
   top: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 79px;
+  width: 59px;
   height: 59px;
-  transform: rotate(-36.71deg) skewX(16.58deg);
+  transform: rotate(-36.71deg);
 }
 
 .medical-service-card__number > div {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
+  width: 59px;
+  height: 59px;
   border: 1px solid #a1a4b1;
-  border-radius: 28px;
+  border-radius: 50%;
   padding: 4px 7px;
 }
 
@@ -2798,7 +2798,7 @@ html:has(.customer-root) {
   font-weight: 400;
   line-height: 1.334;
   text-align: center;
-  transform: rotate(45deg);
+  transform: rotate(36.71deg);
 }
 
 .medical-service-card__copy {

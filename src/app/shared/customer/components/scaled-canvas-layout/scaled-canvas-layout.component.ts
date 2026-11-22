@@ -41,27 +41,42 @@ export class ScaledCanvasLayoutComponent {
   constructor() {
     const destroyRef = inject(DestroyRef);
     const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    let resizeFrame: number | null = null;
+
     afterNextRender(() => {
       // Đo chiều rộng thật của khung chứa (không tính thanh cuộn) để canvas luôn vừa khít khi zoom / đổi kích thước.
       const updateScale = () => {
-        this.scale.set(computeCanvasScale(host.clientWidth || window.innerWidth, this.designWidth(), 0));
+        const nextScale = computeCanvasScale(host.clientWidth || window.innerWidth, this.designWidth(), 0);
+        if (this.scale() !== nextScale) this.scale.set(nextScale);
         measure();
       };
       const measure = () => {
         const node = this.inner()?.nativeElement;
-        if (node) this.scaledHeight.set(node.offsetHeight * this.scale());
+        if (!node) return;
+
+        const nextHeight = Math.ceil(node.offsetHeight * this.scale());
+        if (this.scaledHeight() !== nextHeight) this.scaledHeight.set(nextHeight);
       };
+      const scheduleUpdate = () => {
+        if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
+        resizeFrame = requestAnimationFrame(() => {
+          resizeFrame = null;
+          updateScale();
+        });
+      };
+
       updateScale();
-      window.addEventListener('resize', updateScale);
-      const observer = new ResizeObserver(measure);
+      window.addEventListener('resize', scheduleUpdate);
+      const observer = new ResizeObserver(scheduleUpdate);
       const node = this.inner()?.nativeElement;
       if (node) observer.observe(node);
-      const hostObserver = new ResizeObserver(updateScale);
+      const hostObserver = new ResizeObserver(scheduleUpdate);
       hostObserver.observe(host);
       destroyRef.onDestroy(() => {
-        window.removeEventListener('resize', updateScale);
+        window.removeEventListener('resize', scheduleUpdate);
         observer.disconnect();
         hostObserver.disconnect();
+        if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
       });
     });
   }

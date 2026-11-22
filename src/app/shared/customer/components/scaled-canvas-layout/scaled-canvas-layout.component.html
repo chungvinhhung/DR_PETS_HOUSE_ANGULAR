@@ -5,7 +5,13 @@
   <div
     #innerRef
     [class]="className()"
-    [ngStyle]="{ 'width.px': designWidth(), transform: 'scale(' + scale() + ')', 'transform-origin': 'top left' }"
+    [ngStyle]="{
+      'width.px': designWidth(),
+      transform: 'scale(' + scale() + ')',
+      'transform-origin': 'top left',
+      'will-change': 'transform',
+      'backface-visibility': 'hidden'
+    }"
   >
     <ng-content />
   </div>

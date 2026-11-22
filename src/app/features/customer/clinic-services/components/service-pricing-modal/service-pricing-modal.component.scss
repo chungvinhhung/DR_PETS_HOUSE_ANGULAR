@@ -47,7 +47,7 @@
 
 /* 5 cột giá: 150px, cách nhau 26px (tổng 854px) */
 .service-pricing-modal__cells {
-  @apply flex w-[854px] shrink-0 items-center gap-[26px];
+  @apply flex w-[854px] shrink-0 items-center gap-[26px] rounded-[16px];
 }
 
 .service-pricing-modal__stack--single-column .service-pricing-modal__cells {

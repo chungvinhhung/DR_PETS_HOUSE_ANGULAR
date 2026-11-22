@@ -85,7 +85,7 @@
           </div>
         </div>
         <div class="service-pricing-modal__stack-2">
-          @for (row of displayRows(); track row.title) {
+          @for (row of displayRows(); track $index) {
             <div
               class="service-pricing-modal__row-2"
               [appStyle]="{ backgroundColor: row.background }"
@@ -101,7 +101,13 @@
               </div>
               <div class="service-pricing-modal__cells">
                 @if (row.single) {
-                  <div app-price-pill [value]="row.prices[0]" [tone]="'primary'" [wide]="true"></div>
+                  <div
+                    app-price-pill
+                    [value]="row.prices[0]"
+                    [tone]="'primary'"
+                    [wide]="true"
+                    [fullWidth]="selectedFilter() === 'all'"
+                  ></div>
                 } @else {
                   @for (price of row.prices; track $index; let index = $index) {
                     <div app-price-pill [value]="price" [tone]="displayColumns()[index].tone"></div>
