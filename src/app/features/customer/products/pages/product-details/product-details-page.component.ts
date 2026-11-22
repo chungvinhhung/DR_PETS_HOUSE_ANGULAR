@@ -401,12 +401,10 @@ export class ProductDetailsPageComponent implements OnInit {
   }
 
   protected handleReadMore() {
-    if (this.isReviewTab()) {
-      this.isReviewTab.set(false);
-    }
-    setTimeout(() => {
-      (this.descriptionRef()?.nativeElement || this.tabSectionRef()?.nativeElement)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 0);
+    this.isReviewTab.set(false);
+    window.requestAnimationFrame(() => {
+      this.scrollToTabSection();
+    });
   }
 
   protected handleDecrement() {
