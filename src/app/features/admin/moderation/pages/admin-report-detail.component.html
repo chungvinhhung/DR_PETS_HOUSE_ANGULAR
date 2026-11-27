@@ -1,20 +1,96 @@
 <app-admin-catalog-shell activeItem="moderation-reports">
   <main class="report-detail web2-admin-page">
-    <app-admin-breadcrumb [items]="[
-      {label:'Báo cáo vi phạm', link:'/admin/moderation/reports'},
-      {label:'Chi tiết báo cáo'}
-    ]" />
-    <header class="web2-admin-page__header">
-      <h1>Báo cáo vi phạm</h1>
-      <div class="web2-admin-page__actions">
-        <button type="button" class="web2-admin-btn web2-admin-btn--outline" disabled>Không vi phạm</button>
-        <button type="button" class="web2-admin-btn web2-admin-btn--primary" disabled>Ẩn bài đăng</button>
-      </div>
-    </header>
-    <section class="unavailable web2-admin-section">
-      <app-admin-data-state kind="empty"
-        title="Chức năng báo cáo vi phạm chưa sẵn sàng"
-        message="Chức năng xử lý báo cáo vi phạm hiện chưa khả dụng." />
-    </section>
+    @if (loading()) {
+      <app-admin-data-state kind="loading" title="Đang tải chi tiết báo cáo vi phạm" />
+    } @else if (error() && !data()) {
+      <app-admin-data-state kind="error" title="Không thể tải chi tiết báo cáo vi phạm" [message]="error()" (retry)="load()" />
+    } @else if (data(); as r) {
+      <app-admin-breadcrumb [items]="[
+        {label:'Báo cáo vi phạm', link:'/admin/moderation/reports'},
+        {label:'Chi tiết báo cáo ' + (r.reportCode || '')}
+      ]" />
+
+      <header class="web2-admin-page__header">
+        <div>
+          <h1>Chi tiết báo cáo vi phạm #{{r.reportCode || id}}</h1>
+        </div>
+        <div class="web2-admin-page__actions">
+          <button type="button" class="web2-admin-btn web2-admin-btn--outline"
+            [disabled]="!canAction() || busy()"
+            (click)="startResolve('NO_VIOLATION')">
+            Xác nhận không vi phạm
+          </button>
+          <button type="button" class="web2-admin-btn web2-admin-btn--primary"
+            [disabled]="!canAction() || busy()"
+            (click)="startResolve('HIDE_POST')">
+            Ẩn bài đăng vi phạm
+          </button>
+        </div>
+      </header>
+
+      @if (error()) { <div class="web2-admin-inline-error" role="alert">{{error()}}</div> }
+      @if (success()) { <div class="feedback-detail__success" role="status">{{success()}}</div> }
+
+      @if (actionPanel()) {
+        <section class="feedback-detail__action" aria-labelledby="report-action-title">
+          <h2 id="report-action-title">
+            {{selectedDecision() === 'HIDE_POST' ? 'Xác nhận ẩn bài đăng vi phạm' : 'Xác nhận không có vi phạm'}}
+          </h2>
+          <p>
+            {{selectedDecision() === 'HIDE_POST'
+              ? 'Bài đăng sẽ bị ẩn khỏi cộng đồng và tác giả sẽ nhận được cảnh báo về nội dung vi phạm.'
+              : 'Báo cáo sẽ được đóng lại và bài đăng vẫn tiếp tục được hiển thị bình thường.'}}
+          </p>
+          <label for="report-note">Ghi chú kiểm duyệt (không bắt buộc)</label>
+          <textarea id="report-note" rows="3" maxlength="2000"
+            placeholder="Nhập ghi chú hoặc căn cứ xử lý..."
+            [ngModel]="moderationNote()" (ngModelChange)="moderationNote.set($event)" [disabled]="busy()"></textarea>
+          <div class="feedback-detail__action-buttons">
+            <button type="button" class="web2-admin-btn web2-admin-btn--outline"
+              [disabled]="busy()" (click)="cancelResolve()">Hủy</button>
+            <button type="button" class="web2-admin-btn web2-admin-btn--primary"
+              [disabled]="busy()" (click)="submitResolve()">
+              {{busy() ? 'Đang lưu...' : 'Xác nhận xử lý'}}
+            </button>
+          </div>
+        </section>
+      }
+
+      <section class="web2-admin-summary-grid feedback-summary">
+        <article><span>Người báo cáo</span><strong>{{r.reporterName || r.reporterCustomerId?.fullName || '—'}}</strong></article>
+        <article><span>Số điện thoại</span><strong>{{r.reporterCustomerId?.contactPhone || r.reporterCustomerId?.phone || '—'}}</strong></article>
+        <article><span>Email</span><strong>{{r.reporterCustomerId?.contactEmail || r.reporterCustomerId?.email || '—'}}</strong></article>
+        <article><span>Lý do báo cáo</span><strong>{{reasonLabel(r.reason)}}</strong></article>
+      </section>
+
+      <section class="content-card web2-admin-section">
+        <h2 class="web2-admin-section__title">Mô tả vi phạm từ người báo cáo</h2>
+        <p>{{r.description || 'Không có mô tả chi tiết.'}}</p>
+      </section>
+
+      <section class="content-card web2-admin-section">
+        <h2 class="web2-admin-section__title">Thông tin bài đăng bị báo cáo</h2>
+        <div class="post-preview-card" style="padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 8px;">
+          <h3 style="font-size: 16px; font-weight: 600; color: #1e293b; margin-bottom: 6px;">{{r.postTitle || r.postSnapshot?.title || 'Bài đăng cộng đồng'}}</h3>
+          <p style="color: #64748b; font-size: 13px; margin-bottom: 8px;">Tác giả: <strong>{{r.postAuthorName || r.postSnapshot?.authorName || '—'}}</strong> | Ngày đăng: {{date(r.postSnapshot?.createdAt || r.postId?.createdAt)}}</p>
+          <div style="color: #334155; line-height: 1.6; font-size: 14px;">{{r.postSnapshot?.content || r.postId?.content || '—'}}</div>
+        </div>
+      </section>
+
+      @if(r.moderationNote || r.decision){
+        <section class="content-card web2-admin-section">
+          <h2 class="web2-admin-section__title">Kết quả kiểm duyệt</h2>
+          <p><strong>Quyết định:</strong> {{r.decision === 'HIDE_POST' ? 'Đã ẩn bài đăng' : r.decision === 'NO_VIOLATION' ? 'Không vi phạm' : '—'}}</p>
+          @if(r.moderationNote){ <p><strong>Ghi chú kiểm duyệt:</strong> {{r.moderationNote}}</p> }
+          @if(r.reviewedAt){ <p><strong>Thời gian xử lý:</strong> {{date(r.reviewedAt)}}</p> }
+        </section>
+      }
+
+      <section class="meta-grid web2-admin-summary-grid feedback-meta">
+        <article><span>Ngày gửi báo cáo</span><strong>{{date(r.createdAt)}}</strong></article>
+        <article><span>Mã báo cáo</span><strong>{{r.reportCode || '—'}}</strong></article>
+        <article class="status-card"><span>Trạng thái</span><strong><span class="badge" [attr.data-kind]="statusKind(r.status)">{{statusLabel(r.status)}}</span></strong></article>
+      </section>
+    }
   </main>
 </app-admin-catalog-shell>

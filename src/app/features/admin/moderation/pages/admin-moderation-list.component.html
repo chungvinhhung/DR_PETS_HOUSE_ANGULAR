@@ -95,7 +95,18 @@
             } @else {
               <colgroup><col style="width:18%"><col style="width:25%"><col style="width:20%"><col style="width:13%"><col style="width:14%"><col style="width:10%"></colgroup>
               <thead><tr><th>Người báo cáo</th><th>Bài đăng bị báo cáo</th><th>Lý do</th><th class="is-center">Ngày báo cáo</th><th class="is-center">Trạng thái</th><th class="is-center">Thao tác</th></tr></thead>
-              <tbody><tr><td colspan="6" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có báo cáo vi phạm" message="Chức năng xem báo cáo vi phạm hiện chưa khả dụng." /></td></tr></tbody>
+              <tbody>
+                @for (r of visible(); track r._id || r.id) {
+                  <tr>
+                    <td>{{r.reporterName || '—'}}</td>
+                    <td>{{r.postTitle || '—'}}</td>
+                    <td>{{reportReasonLabel(r.reason)}}</td>
+                    <td class="is-center">{{date(r.createdAt)}}</td>
+                    <td class="is-center"><span class="badge" [attr.data-kind]="statusKind(r)">{{statusLabel(r)}}</span></td>
+                    <td class="is-center"><a class="web2-admin-icon-button" [routerLink]="['/admin/moderation/reports', r._id || r.id]" aria-label="Xem chi tiết báo cáo vi phạm"><img src="/assets/admin-branch/figma-eye.svg" alt=""></a></td>
+                  </tr>
+                } @empty { <tr><td colspan="6" class="web2-admin-empty"><app-admin-data-state kind="empty" title="Chưa có báo cáo vi phạm" message="Hiện chưa có báo cáo vi phạm phù hợp với bộ lọc." /></td></tr> }
+              </tbody>
             }
           </table>
         </div>
